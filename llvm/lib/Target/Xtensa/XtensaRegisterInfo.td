@@ -139,6 +139,9 @@ def PS : SRReg<230, "ps", ["PS", "230"]>;
 // Vector base register
 def VECBASE : SRReg<231, "vecbase", ["VECBASE"]>;
 
+// Exception cause register
+def EXCCAUSE : SRReg<232, "exccause", ["EXCCAUSE"]>;
+
 // Cause of last debug exception register
 def DEBUGCAUSE : SRReg<233, "debugcause", ["DEBUGCAUSE"]>;
 
