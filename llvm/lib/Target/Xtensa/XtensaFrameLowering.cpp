@@ -376,9 +376,10 @@ void XtensaFrameLowering::determineCalleeSaves(MachineFunction &MF,
 void XtensaFrameLowering::processFunctionBeforeFrameFinalized(
     MachineFunction &MF, RegScavenger *RS) const {
   const XtensaSubtarget &STI = MF.getSubtarget<XtensaSubtarget>();
-  // XtensaFunctionInfo *XFI = MF.getInfo<XtensaFunctionInfo>();
+
   // In WinABI mode add register scavenging slot
-  if (STI.isWinABI() && (MF.getFrameInfo().estimateStackSize(MF) > 512)) {
+  // FIXME: It may be posssible to add spill slot by more optimal way
+  if (STI.isWinABI() && (MF.getFrameInfo().estimateStackSize(MF) > 256)) {
     MachineFrameInfo &MFI = MF.getFrameInfo();
     const TargetRegisterClass &RC = Xtensa::ARRegClass;
     const TargetRegisterInfo &TRI = *MF.getSubtarget().getRegisterInfo();
