@@ -9851,6 +9851,9 @@ ABIArgInfo XtensaABIInfo::classifyArgumentType(QualType Ty,
     // Treat an enum type as its underlying type.
     if (const EnumType *EnumTy = Ty->getAs<EnumType>())
       Ty = EnumTy->getDecl()->getIntegerType();
+    // Pointers can be passed as-is.
+    if (Ty->isPointerType())
+      return ABIArgInfo::getDirect();
     // All integral types are promoted to XLen width, unless passed on the
     // stack.
     if (Size < 32 && Ty->isIntegralOrEnumerationType() && !MustUseStack) {
