@@ -245,8 +245,13 @@ void XtensaFrameLowering::emitEpilogue(MachineFunction &MF,
     for (unsigned i = 0; i < MFI.getCalleeSavedInfo().size(); ++i)
       --I;
     if (STI.isWinABI()) {
-      // Insert instruction "movsp $sp, $fp" at this location.
-      BuildMI(MBB, I, dl, TII.get(Xtensa::MOVSP), SP).addReg(FP);
+      // In most architectures, we need to explicitly restore the stack pointer
+      // before returning.
+      //
+      // For Xtensa Windowed Register option, it is not needed to explicitly
+      // restore the stack pointer. Reason being is that on function return,
+      // the window of the caller (including the old stack pointer) gets
+      // restored anyways.
     } else {
       BuildMI(MBB, I, dl, TII.get(Xtensa::OR), SP).addReg(FP).addReg(FP);
     }
