@@ -533,6 +533,7 @@ static bool useFramePointerForTargetByDefault(const ArgList &Args,
   case llvm::Triple::riscv64:
   case llvm::Triple::amdgcn:
   case llvm::Triple::r600:
+  case llvm::Triple::xtensa:
     return !areOptimizationsEnabled(Args);
   default:
     break;
@@ -1627,6 +1628,10 @@ void Clang::RenderTargetOptions(const llvm::Triple &EffectiveTriple,
   case llvm::Triple::ve:
     AddVETargetArgs(Args, CmdArgs);
     break;
+
+  case llvm::Triple::xtensa:
+    AddXtensaTargetArgs(Args, CmdArgs);
+    break;
   }
 }
 
@@ -2128,6 +2133,34 @@ void Clang::AddVETargetArgs(const ArgList &Args, ArgStringList &CmdArgs) const {
   // Floating point operations and argument passing are hard.
   CmdArgs.push_back("-mfloat-abi");
   CmdArgs.push_back("hard");
+}
+
+void Clang::AddXtensaTargetArgs(const ArgList &Args,
+                                ArgStringList &CmdArgs) const {
+  const Driver &D = getToolChain().getDriver();
+
+  if (Args.getLastArg(options::OPT_malways_memw) != nullptr) {
+    CmdArgs.push_back("-mllvm");
+    CmdArgs.push_back("-malways-memw");
+  }
+
+  if (Args.getLastArg(options::OPT_mfix_esp32_psram_cache_issue) != nullptr) {
+    CmdArgs.push_back("-mllvm");
+    CmdArgs.push_back("-mfix-esp32-psram-cache-issue");
+
+    if (Arg *A =
+            Args.getLastArg(options::OPT_mfix_esp32_psram_cache_strategy_EQ)) {
+      StringRef Value = A->getValue();
+      if (Value == "memw" || Value == "nops") {
+        CmdArgs.push_back("-mllvm");
+        CmdArgs.push_back(
+            Args.MakeArgString("-mfix-esp32-psram-cache-strategy=" + Value));
+      } else {
+        D.Diag(diag::err_drv_unsupported_option_argument)
+            << A->getOption().getName() << Value;
+      }
+    }
+  }
 }
 
 void Clang::DumpCompilationDatabase(Compilation &C, StringRef Filename,

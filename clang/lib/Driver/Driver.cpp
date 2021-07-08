@@ -46,6 +46,7 @@
 #include "ToolChains/VEToolchain.h"
 #include "ToolChains/WebAssembly.h"
 #include "ToolChains/XCore.h"
+#include "ToolChains/Xtensa.h"
 #include "clang/Basic/Version.h"
 #include "clang/Config/config.h"
 #include "clang/Driver/Action.h"
@@ -5033,6 +5034,9 @@ const ToolChain &Driver::getToolChain(const ArgList &Args,
         break;
       case llvm::Triple::ve:
         TC = std::make_unique<toolchains::VEToolChain>(*this, Target, Args);
+        break;
+      case llvm::Triple::xtensa:
+        TC = std::make_unique<toolchains::XtensaToolChain>(*this, Target, Args);
         break;
       default:
         if (Target.getVendor() == llvm::Triple::Myriad)
