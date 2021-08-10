@@ -97,7 +97,7 @@ def FeatureATOMCTL           : SubtargetFeature<"atomctl", "HasATOMCTL", "true",
 def HasATOMCTL               : Predicate<"Subtarget->hasATOMCTL()">,
                                           AssemblerPredicate<(all_of FeatureATOMCTL)>;
 
-def FeatureMEMCTL           : SubtargetFeature<"atomctl", "HasMEMCTL", "true",
+def FeatureMEMCTL           : SubtargetFeature<"memctl", "HasMEMCTL", "true",
                                                 "Enable Xtensa MEMCTL option">;
 def HasMEMCTL               : Predicate<"Subtarget->hasMEMCTL()">,
                                           AssemblerPredicate<(all_of FeatureMEMCTL)>;
@@ -112,7 +112,7 @@ def FeatureException         : SubtargetFeature<"exception", "HasException", "tr
 def HasException             : Predicate<"Subtarget->hasException()">,
                                           AssemblerPredicate<(all_of FeatureException)>;
 
-def FeatureHighPriInterrupts : SubtargetFeature<"exception",
+def FeatureHighPriInterrupts : SubtargetFeature<"highpriinterrupts",
                                                 "HasHighPriInterrupts", "true",
                                                 "Enable Xtensa HighPriInterrupts option">;
 def HasHighPriInterrupts     : Predicate<"Subtarget->hasHighPriInterrupts()">,
