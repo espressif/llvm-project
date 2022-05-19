@@ -38,10 +38,6 @@ XtensaToolChain::XtensaToolChain(const Driver &D, const llvm::Triple &Triple,
 
   GCCInstallation.init(Triple, Args);
 
-  if (!GCCInstallation.isValid()) {
-    llvm_unreachable("Unexpected Xtensa GCC toolchain version");
-  }
-
   Multilibs = GCCInstallation.getMultilibs();
   SelectedMultilib = GCCInstallation.getMultilib();
 
