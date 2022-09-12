@@ -755,14 +755,19 @@ static bool CC_Xtensa_Custom(unsigned ValNo, MVT ValVT, MVT LocVT,
   unsigned Reg;
 
   Align OrigAlign = ArgFlags.getNonZeroOrigAlign();
-  bool isI64 = (ValVT == MVT::i32 && OrigAlign == Align(8));
+  bool needs64BitAlign = (ValVT == MVT::i32 && OrigAlign == Align(8));
+  bool needs128BitAlign = (ValVT == MVT::i32 && OrigAlign == Align(16));
 
   if (ValVT == MVT::i32 || ValVT == MVT::f32) {
     Reg = State.AllocateReg(IntRegs);
     // If this is the first part of an i64 arg,
     // the allocated register must be either A2, A4 or A6.
-    if (isI64 && (Reg == Xtensa::A3 || Reg == Xtensa::A5 || Reg == Xtensa::A7))
+    if (needs64BitAlign && (Reg == Xtensa::A3 || Reg == Xtensa::A5 || Reg == Xtensa::A7))
       Reg = State.AllocateReg(IntRegs);
+    // arguments with 16byte alignment must be passed in the first register or passed via stack
+    if (needs128BitAlign && Reg != Xtensa::A2)
+      while ( (Reg = State.AllocateReg(IntRegs)) ) {
+      }
     LocVT = MVT::i32;
   } else if (ValVT == MVT::f64) {
     // Allocate int register and shadow next int register.
