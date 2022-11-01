@@ -29,6 +29,11 @@ static cl::opt<bool> TextSectionLiterals("mtext-section-literals",
 
 bool XtensaSubtarget::useTextSectionLiterals() const
 {
+  // If code model is large then always place literals in
+  // test section.
+  if (TLInfo.getTargetMachine().getCodeModel() == CodeModel::Large)
+    return true;
+
   return TextSectionLiterals;
 }
 
