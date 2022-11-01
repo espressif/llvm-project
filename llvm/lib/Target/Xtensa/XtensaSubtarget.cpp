@@ -24,6 +24,14 @@
 
 using namespace llvm;
 
+static cl::opt<bool> TextSectionLiterals("mtext-section-literals",
+                                         cl::init(false), cl::Hidden);
+
+bool XtensaSubtarget::useTextSectionLiterals() const
+{
+  return TextSectionLiterals;
+}
+
 XtensaSubtarget &
 XtensaSubtarget::initializeSubtargetDependencies(StringRef CPU, StringRef FS) {
   StringRef CPUName = CPU;
