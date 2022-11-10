@@ -1793,12 +1793,16 @@ SDValue XtensaTargetLowering::LowerFunnelShift(SDValue Op,
   bool IsFSHR = Op.getOpcode() == ISD::FSHR;
   assert((VT == MVT::i32) && "Unexpected funnel shift type!");
 
+  SDValue SetSAR;
+
   if (!IsFSHR) {
-    Shamt = DAG.getNode(ISD::SUB, DL, MVT::i32,
-                        DAG.getConstant(32, DL, MVT::i32), Shamt);
+    SetSAR = DAG.getNode(XtensaISD::SSL, DL,
+                         MVT::Glue, Shamt);
+  } else {
+    SetSAR = DAG.getNode(XtensaISD::SSR, DL,
+                         MVT::Glue, Shamt);
   }
-  SDValue SetSAR = DAG.getNode(XtensaISD::SSR, DL,
-                               MVT::Glue, Shamt);
+
   return DAG.getNode(XtensaISD::SRC, DL, VT, Op0, Op1, SetSAR);
 }
 

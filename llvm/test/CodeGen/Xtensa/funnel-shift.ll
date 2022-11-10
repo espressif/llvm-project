@@ -11,9 +11,7 @@ entry:
 
 define dso_local i32 @test_fshl(i32 %value1, i32 %value2, i32 %shift) nounwind {
 ; CHECK-LABEL: @test_fshl
-; CHECK: movi.n a8, 32
-; CHECK: sub a8, a8, a4
-; CHECK: ssr a8
+; CHECK: ssl a4
 ; CHECK: src a2, a2, a3
 entry:
   %0 = tail call i32 @llvm.fshl.i32(i32 %value1, i32 %value2, i32 %shift)
