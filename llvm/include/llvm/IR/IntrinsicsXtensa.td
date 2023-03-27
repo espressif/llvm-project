@@ -258,6 +258,51 @@ def int_xtensa_xt_movt_s: ClangBuiltin<"__builtin_xtensa_xt_movt_s">,
 def int_xtensa_xt_movf_s: ClangBuiltin<"__builtin_xtensa_xt_movf_s">,
   Intrinsic<[llvm_float_ty], [llvm_float_ty, llvm_float_ty, llvm_v1i1_ty], [IntrNoMem]>;
 
+def int_xtensa_xt_oeq_s: ClangBuiltin<"__builtin_xtensa_xt_oeq_s">,
+  Intrinsic<[llvm_v1i1_ty], [llvm_float_ty, llvm_float_ty], [IntrNoMem]>;
+
+def int_xtensa_xt_ole_s: ClangBuiltin<"__builtin_xtensa_xt_ole_s">,
+  Intrinsic<[llvm_v1i1_ty], [llvm_float_ty, llvm_float_ty], [IntrNoMem]>;
+
+def int_xtensa_xt_olt_s: ClangBuiltin<"__builtin_xtensa_xt_olt_s">,
+  Intrinsic<[llvm_v1i1_ty], [llvm_float_ty, llvm_float_ty], [IntrNoMem]>;
+
+def int_xtensa_xt_ueq_s: ClangBuiltin<"__builtin_xtensa_xt_ueq_s">,
+  Intrinsic<[llvm_v1i1_ty], [llvm_float_ty, llvm_float_ty], [IntrNoMem]>;
+
+def int_xtensa_xt_ule_s: ClangBuiltin<"__builtin_xtensa_xt_ule_s">,
+  Intrinsic<[llvm_v1i1_ty], [llvm_float_ty, llvm_float_ty], [IntrNoMem]>;
+
+def int_xtensa_xt_ult_s: ClangBuiltin<"__builtin_xtensa_xt_ult_s">,
+  Intrinsic<[llvm_v1i1_ty], [llvm_float_ty, llvm_float_ty], [IntrNoMem]>;
+
+def int_xtensa_xt_un_s: ClangBuiltin<"__builtin_xtensa_xt_un_s">,
+  Intrinsic<[llvm_v1i1_ty], [llvm_float_ty, llvm_float_ty], [IntrNoMem]>;
+
+def int_xtensa_xt_add_s: ClangBuiltin<"__builtin_xtensa_xt_add_s">,
+  Intrinsic<[llvm_float_ty], [llvm_float_ty, llvm_float_ty], [IntrNoMem]>;
+
+def int_xtensa_xt_abs_s: ClangBuiltin<"__builtin_xtensa_xt_abs_s">,
+  Intrinsic<[llvm_float_ty], [llvm_float_ty], [IntrNoMem]>;
+
+def int_xtensa_xt_mul_s: ClangBuiltin<"__builtin_xtensa_xt_mul_s">,
+  Intrinsic<[llvm_float_ty], [llvm_float_ty, llvm_float_ty], [IntrNoMem]>;
+
+def int_xtensa_xt_sub_s: ClangBuiltin<"__builtin_xtensa_xt_sub_s">,
+  Intrinsic<[llvm_float_ty], [llvm_float_ty, llvm_float_ty], [IntrNoMem]>;
+
+def int_xtensa_xt_trunc_s: ClangBuiltin<"__builtin_xtensa_xt_trunc_s">,
+  Intrinsic<[llvm_i32_ty], [llvm_float_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, IntrNoMem]>;
+
+def int_xtensa_xt_utrunc_s: ClangBuiltin<"__builtin_xtensa_xt_utrunc_s">,
+  Intrinsic<[llvm_i32_ty], [llvm_float_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, IntrNoMem]>;
+
+def int_xtensa_xt_float_s: ClangBuiltin<"__builtin_xtensa_xt_float_s">,
+  Intrinsic<[llvm_float_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, IntrNoMem]>;
+
+def int_xtensa_xt_ufloat_s: ClangBuiltin<"__builtin_xtensa_xt_ufloat_s">,
+  Intrinsic<[llvm_float_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, IntrNoMem]>;
+
 // Generated code
 // ---------------
 include "llvm/IR/IntrinsicsXtensaESP32S3.td"
