@@ -4589,6 +4589,14 @@ bool Sema::CheckXtensaBuiltinFunctionCall(unsigned BuiltinID,
     return SemaBuiltinConstantArgRange(TheCall, 0, 0, 3) ||
            SemaBuiltinConstantArgRange(TheCall, 2, 0, 1) ||
            SemaBuiltinConstantArgRange(TheCall, 3, 2, 3);
+  case Xtensa::BI__builtin_xtensa_xt_trunc_s:
+  case Xtensa::BI__builtin_xtensa_xt_utrunc_s:
+  case Xtensa::BI__builtin_xtensa_xt_float_s:
+  case Xtensa::BI__builtin_xtensa_xt_ufloat_s:
+    i = 1;
+    l = 0;
+    u = 15;
+    break;
   }
   return SemaBuiltinConstantArgRange(TheCall, i, l, u);
 }
