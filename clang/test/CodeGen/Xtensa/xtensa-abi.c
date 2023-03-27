@@ -25,4 +25,4 @@ void callee_struct_a16b_2(struct S16 a, int b) {}
 
 void callee_struct_a16b_3(int a, struct S16 b) {}
 
-// CHECK: define dso_local void @callee_struct_a16b_3(i32 noundef %a, %struct.S16* noundef byval(%struct.S16) align 16 %b)
+// CHECK: define dso_local void @callee_struct_a16b_3(i32 noundef %a, ptr noundef byval(%struct.S16) align 16 %b)
