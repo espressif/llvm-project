@@ -65,6 +65,10 @@ public:
   // physical register Reg.
   void loadImmediate(MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI,
                      unsigned *Reg, int64_t Value) const;
+
+  MachineInstrBuilder buildLoadImmediate(MachineBasicBlock &MBB,
+                                         MachineBasicBlock::iterator MBBI,
+                                         unsigned Reg, int64_t Value) const;
   bool
   reverseBranchCondition(SmallVectorImpl<MachineOperand> &Cond) const override;
   MachineBasicBlock *getBranchDestBlock(const MachineInstr &MI) const override;
