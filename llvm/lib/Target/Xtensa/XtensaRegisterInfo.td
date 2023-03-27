@@ -215,7 +215,7 @@ def SR :  RegisterClass<"Xtensa", [i32], 32, (add
   EPC6, EPC7, DEPC, EPS2, EPS3, EPS4, EPS5, EPS6, EPS7, CONFIGID1, EXCSAVE1, EXCSAVE2,
   EXCSAVE3, EXCSAVE4, EXCSAVE5, EXCSAVE6, EXCSAVE7, CPENABLE, INTSET, INTCLEAR, INTENABLE, PS,
   VECBASE, EXCCAUSE, DEBUGCAUSE, CCOUNT, PRID, ICOUNT, ICOUNTLEVEL, EXCVADDR, CCOMPARE0, 
-  CCOMPARE1, CCOMPARE2, MISC0, MISC1, MISC2, MISC3)>;
+  CCOMPARE1, CCOMPARE2, MISC0, MISC1, MISC2, MISC3)>; 
 
 //===----------------------------------------------------------------------===//
 // USER registers
@@ -283,5 +283,10 @@ foreach i = 0-15 in {
 }
 
 // Boolean register class
-def BR : RegisterClass<"Xtensa", [i1], 0, (add B0, B1,
-B2, B3, B4, B5, B6, B7, B8, B9, B10, B11, B12, B13, B14, B15)>;
+def BR : RegisterClass<"Xtensa", [v1i1], 8, (add B0, B1,
+B2, B3, B4, B5, B6, B7, B8, B9, B10, B11, B12, B13, B14, B15)> {
+  let Size = 8;
+}
+
+
+
