@@ -1209,9 +1209,6 @@ def MOV_S : RRR_Inst<0x00, 0x0A, 0x0f, (outs FPR:$r), (ins FPR:$s),
 def MOVEQZ_S : RRR_Inst<0x00, 0x0B, 0x08, (outs FPR:$r), (ins FPR:$s, AR:$t),
                        "moveqz.s\t$r, $s, $t", []>, Requires<[HasSingleFloat]>;
 
-def MOVF_S   : RRR_Inst<0x00, 0x0B, 0x0C, (outs FPR:$r), (ins FPR:$s, BR:$t),
-                       "movf.s\t$r, $s, $t", []>, Requires<[HasBoolean, HasSingleFloat]>;
-
 def MOVGEZ_S : RRR_Inst<0x00, 0x0B, 0x0B, (outs FPR:$r), (ins FPR:$s, AR:$t),
                        "movgez.s\t$r, $s, $t", []>, Requires<[HasSingleFloat]>;
 
@@ -1221,8 +1218,17 @@ def MOVLTZ_S : RRR_Inst<0x00, 0x0B, 0x0A, (outs FPR:$r), (ins FPR:$s, AR:$t),
 def MOVNEZ_S : RRR_Inst<0x00, 0x0B, 0x09, (outs FPR:$r), (ins FPR:$s, AR:$t),
                        "movnez.s\t$r, $s, $t", []>, Requires<[HasSingleFloat]>;
 
-def MOVT_S   : RRR_Inst<0x00, 0x0B, 0x0D, (outs FPR:$r), (ins FPR:$s, BR:$t),
-                       "movt.s\t$r, $s, $t", []>, Requires<[HasBoolean, HasSingleFloat]>;
+let Constraints = "$dr = $r,@earlyclobber $dr" in {
+  def MOVT_S   : RRR_Inst<0x00, 0x0B, 0x0D, (outs FPR:$dr), (ins FPR:$r, FPR:$s, BR:$t),
+                        "movt.s\t$r, $s, $t",
+                        [(set FPR:$dr, (int_xtensa_xt_movt_s FPR:$r, FPR:$s, BR:$t))]>,
+                        Requires<[HasBoolean, HasSingleFloat]>;
+
+  def MOVF_S   : RRR_Inst<0x00, 0x0B, 0x0C, (outs FPR:$dr), (ins FPR:$r, FPR:$s, BR:$t),
+                        "movf.s\t$r, $s, $t",
+                        [(set FPR:$dr, (int_xtensa_xt_movf_s FPR:$r, FPR:$s, BR:$t))]>,
+                        Requires<[HasBoolean, HasSingleFloat]>;
+}
 
 // FP multipy-sub
 def MSUB_S : RRR_Inst<0x00, 0x0A, 0x05, (outs FPR:$r), (ins FPR:$a, FPR:$s, FPR:$t),
