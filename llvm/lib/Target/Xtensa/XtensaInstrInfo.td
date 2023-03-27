@@ -29,6 +29,11 @@ class ArithLogic_RRR<bits<4> oper2, bits<4> oper1, string instrAsm,
   let isReMaterializable = 0;
 }
 
+class Arith_Pat<ValueType res_vt, RegisterClass op_vt, 
+                SDPatternOperator opNode, Instruction inst>
+  : Pat<(res_vt (opNode op_vt:$r, op_vt:$t)),
+          (inst op_vt:$r, op_vt:$t)>; 
+
 def ADD : ArithLogic_RRR<0x08, 0x00, "add", add, 1>;
 def SUB : ArithLogic_RRR<0x0C, 0x00, "sub", sub>;
 def AND : ArithLogic_RRR<0x01, 0x00, "and", and, 1>;
@@ -1032,6 +1037,12 @@ def ADD_S : FPArith_RRR<0x00, 0x0A, "add.s", fadd, 1>;
 def SUB_S : FPArith_RRR<0x01, 0x0A, "sub.s", fsub>;
 def MUL_S : FPArith_RRR<0x02, 0x0A, "mul.s", fmul, 1>;
 
+let Predicates = [HasSingleFloat] in {
+  def : Arith_Pat<f32, FPR, int_xtensa_xt_add_s, ADD_S>;
+  def : Arith_Pat<f32, FPR, int_xtensa_xt_sub_s, SUB_S>;
+  def : Arith_Pat<f32, FPR, int_xtensa_xt_mul_s, MUL_S>;
+}
+
 // FP load instructions
 let mayLoad = 1, usesCustomInserter = 1, Predicates = [HasSingleFloat] in {
   def LSI : RRI8_Inst<0x03, (outs FPR:$t), (ins mem32:$addr),
@@ -1112,6 +1123,16 @@ def ULT_S :  FCompare<0x05, 0x0b, "ult.s", Xtensa_cmpult, 0>;
 def ULE_S :  FCompare<0x07, 0x0b, "ule.s", Xtensa_cmpule, 0>;
 def UN_S  :  FCompare<0x01, 0x0b, "un.s",  Xtensa_cmpuo, 1>;
 
+let Predicates = [HasSingleFloat] in {
+  def : Arith_Pat<v1i1, FPR, int_xtensa_xt_ole_s, OLE_S>;
+  def : Arith_Pat<v1i1, FPR, int_xtensa_xt_ule_s, ULE_S>;
+  def : Arith_Pat<v1i1, FPR, int_xtensa_xt_olt_s, OLT_S>;
+  def : Arith_Pat<v1i1, FPR, int_xtensa_xt_ult_s, ULT_S>;
+  def : Arith_Pat<v1i1, FPR, int_xtensa_xt_oeq_s, OEQ_S>;
+  def : Arith_Pat<v1i1, FPR, int_xtensa_xt_ueq_s, UEQ_S>;
+  def : Arith_Pat<v1i1, FPR, int_xtensa_xt_un_s, UN_S>;
+}
+
 def ABS_S : RRR_Inst<0x00, 0x0A, 0x0F, (outs FPR:$r), (ins FPR:$s),
                     "abs.s\t$r, $s",
                     [(set FPR:$r, (fabs FPR:$s))]>, Requires<[HasSingleFloat]> {
@@ -1119,6 +1140,10 @@ def ABS_S : RRR_Inst<0x00, 0x0A, 0x0F, (outs FPR:$r), (ins FPR:$s),
 }
 
 def : Pat<(fabs FPR:$s), (ABS_S $s)>;
+
+def : Pat<(f32 (int_xtensa_xt_abs_s FPR:$frs)),
+          (ABS_S FPR:$frs)>,
+          Requires<[HasSingleFloat]>;
 
 def ADDEXP_S : RRR_Inst<0x00, 0x0A, 0x0F, (outs FPR:$r), (ins FPR:$s),
                        "addexp.s\t$r, $s", []>, Requires<[HasSingleFloat]> {
@@ -1161,6 +1186,10 @@ def FLOAT_S : RRR_Inst<0x00, 0x0A, 0x0c, (outs FPR:$r), (ins AR:$s, uimm4:$imm),
 }
 
 def : Pat<(f32 (sint_to_fp AR:$s)), (FLOAT_S AR:$s, 0)>;
+
+def : Pat<(f32 (int_xtensa_xt_float_s i32:$s, timm:$imm)),
+          (FLOAT_S AR:$s, uimm4:$imm)>,
+          Requires<[HasSingleFloat]>;
 
 def FLOOR_S : RRR_Inst<0x00, 0x0A, 0x0A, (outs AR:$r), (ins FPR:$s, uimm4:$imm),
                       "floor.s\t$r, $s, $imm", []>, Requires<[HasSingleFloat]> {
@@ -1291,6 +1320,10 @@ def TRUNC_S : RRR_Inst<0x00, 0x0A, 0x09, (outs AR:$r), (ins FPR:$s, uimm4:$imm),
 
 def : Pat<(i32 (any_fp_to_sint FPR:$s)), (TRUNC_S FPR:$s, 0)>;
 
+def : Pat<(i32 (int_xtensa_xt_trunc_s f32:$frs, timm:$imm)),
+          (TRUNC_S FPR:$frs, uimm4:$imm)>,
+          Requires<[HasSingleFloat]>;
+
 def UFLOAT_S : RRR_Inst<0x00, 0x0A, 0x0D, (outs FPR:$r), (ins AR:$s, uimm4:$imm),
                        "ufloat.s\t$r, $s, $imm", []>, Requires<[HasSingleFloat]> {
   bits<4> imm;
@@ -1300,6 +1333,10 @@ def UFLOAT_S : RRR_Inst<0x00, 0x0A, 0x0D, (outs FPR:$r), (ins AR:$s, uimm4:$imm)
 
 def : Pat<(f32 (uint_to_fp AR:$s)), (UFLOAT_S AR:$s, 0)>;
 
+def : Pat<(f32 (int_xtensa_xt_ufloat_s i32:$s, timm:$imm)),
+          (UFLOAT_S AR:$s, uimm4:$imm)>,
+          Requires<[HasSingleFloat]>;
+
 def UTRUNC_S : RRR_Inst<0x00, 0x0A, 0x0e, (outs AR:$r), (ins FPR:$s, uimm4:$imm),
                        "utrunc.s\t$r, $s, $imm", []>, Requires<[HasSingleFloat]> {
   bits<4> imm;
@@ -1308,6 +1345,10 @@ def UTRUNC_S : RRR_Inst<0x00, 0x0A, 0x0e, (outs AR:$r), (ins FPR:$s, uimm4:$imm)
 }
 
 def : Pat<(i32 (any_fp_to_uint FPR:$s)), (UTRUNC_S FPR:$s, 0)>;
+
+def : Pat<(i32 (int_xtensa_xt_utrunc_s f32:$frs, timm:$imm)),
+          (UTRUNC_S FPR:$frs, uimm4:$imm)>,
+          Requires<[HasSingleFloat]>;
 
 def WFR : RRR_Inst<0x00, 0x0A, 0x0f, (outs FPR:$r), (ins AR:$s),
                   "wfr\t$r, $s",
