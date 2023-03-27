@@ -161,23 +161,22 @@ void XtensaInstrInfo::getLoadStoreOpcodes(const TargetRegisterClass *RC,
     llvm_unreachable("Unsupported regclass to load or store");
 }
 
-void XtensaInstrInfo::loadImmediate(MachineBasicBlock &MBB,
+MachineInstrBuilder
+XtensaInstrInfo::buildLoadImmediate(MachineBasicBlock &MBB,
                                     MachineBasicBlock::iterator MBBI,
-                                    unsigned *Reg, int64_t Value) const {
+                                    unsigned Reg, int64_t Value) const {
   DebugLoc DL = MBBI != MBB.end() ? MBBI->getDebugLoc() : DebugLoc();
-  MachineRegisterInfo &RegInfo = MBB.getParent()->getRegInfo();
-  const TargetRegisterClass *RC = &Xtensa::ARRegClass;
 
-  // create virtual reg to store immediate
-  *Reg = RegInfo.createVirtualRegister(RC);
   if (Value >= -2048 && Value <= 2047) {
-    BuildMI(MBB, MBBI, DL, get(Xtensa::MOVI), *Reg).addImm(Value);
+    return BuildMI(MBB, MBBI, DL, get(Xtensa::MOVI), Reg).addImm(Value);
   } else if (Value >= -32768 && Value <= 32767) {
     int Low = Value & 0xFF;
     int High = Value & ~0xFF;
 
-    BuildMI(MBB, MBBI, DL, get(Xtensa::MOVI), *Reg).addImm(Low);
-    BuildMI(MBB, MBBI, DL, get(Xtensa::ADDMI), *Reg).addReg(*Reg).addImm(High);
+    BuildMI(MBB, MBBI, DL, get(Xtensa::MOVI), Reg).addImm(Low);
+    return BuildMI(MBB, MBBI, DL, get(Xtensa::ADDMI), Reg)
+        .addReg(Reg)
+        .addImm(High);
   } else if (Value >= -4294967296LL && Value <= 4294967295LL) {
     // 32 bit arbirary constant
     MachineConstantPool *MCP = MBB.getParent()->getConstantPool();
@@ -187,12 +186,25 @@ void XtensaInstrInfo::loadImmediate(MachineBasicBlock &MBB,
         false);
     unsigned Idx = MCP->getConstantPoolIndex(CVal, Align(2U));
     //	MCSymbol MSym
-    BuildMI(MBB, MBBI, DL, get(Xtensa::L32R), *Reg).addConstantPoolIndex(Idx);
+    return BuildMI(MBB, MBBI, DL, get(Xtensa::L32R), Reg)
+        .addConstantPoolIndex(Idx);
   } else {
     // use L32R to let assembler load immediate best
     // TODO replace to L32R
     llvm_unreachable("Unsupported load immediate value");
   }
+}
+
+void XtensaInstrInfo::loadImmediate(MachineBasicBlock &MBB,
+                                    MachineBasicBlock::iterator MBBI,
+                                    unsigned *Reg, int64_t Value) const {
+  DebugLoc DL = MBBI != MBB.end() ? MBBI->getDebugLoc() : DebugLoc();
+  MachineRegisterInfo &RegInfo = MBB.getParent()->getRegInfo();
+  const TargetRegisterClass *RC = &Xtensa::ARRegClass;
+
+  // create virtual reg to store immediate
+  *Reg = RegInfo.createVirtualRegister(RC);
+  buildLoadImmediate(MBB, MBBI, *Reg, Value);
 }
 
 unsigned XtensaInstrInfo::getInstSizeInBytes(const MachineInstr &MI) const {
