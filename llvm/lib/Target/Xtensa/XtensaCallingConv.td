@@ -14,11 +14,15 @@
 class CCIfAlign<string Align, CCAction A>
   : CCIf<!strconcat("ArgFlags.getNonZeroOrigAlign() == ", Align), A>;
 
+class CCIfFeature<string Feature, CCAction A>:
+  CCIf<!strconcat("State.getMachineFunction().getSubtarget<XtensaSubtarget>().has", Feature, "()"), A>;
+
 //===----------------------------------------------------------------------===//
 // Xtensa return value calling convention
 //===----------------------------------------------------------------------===//
 def RetCC_Xtensa : CallingConv<[
   CCIfType<[i1, i8, i16], CCPromoteToType<i32>>,
+  CCIfFeature<"Boolean",CCIfType<[v1i1], CCAssignToReg<[B0]>>>,
   CCIfType<[f32], CCBitConvertToType<i32>>,
 
   //First two return values go in a2, a3, a4, a5
@@ -39,6 +43,7 @@ def CSRWE_Xtensa : CalleeSavedRegs<(add)> {
 
 def RetCCW_Xtensa : CallingConv<[
   CCIfType<[i1, i8, i16], CCPromoteToType<i32>>,
+  CCIfFeature<"Boolean",CCIfType<[v1i1], CCAssignToReg<[B0]>>>,
   CCIfType<[f32], CCBitConvertToType<i32>>,
 
   //First two return values go in a10, a11, a12, a13

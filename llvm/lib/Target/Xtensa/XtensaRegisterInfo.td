@@ -308,5 +308,10 @@ foreach i = 0-15 in {
 }
 
 // Boolean register class
-def BR : RegisterClass<"Xtensa", [i1], 0, (add B0, B1,
-B2, B3, B4, B5, B6, B7, B8, B9, B10, B11, B12, B13, B14, B15)>;
+def BR : RegisterClass<"Xtensa", [v1i1], 8, (add B0, B1,
+B2, B3, B4, B5, B6, B7, B8, B9, B10, B11, B12, B13, B14, B15)> {
+  let Size = 8;
+}
+
+
+
