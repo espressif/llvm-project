@@ -206,6 +206,13 @@ def : Proc<"esp32s3", [FeatureDensity, FeatureSingleFloat, FeatureLoop, FeatureM
                        FeatureInterrupt, FeatureRelocatableVector, FeatureTimerInt, FeaturePRID, FeatureRegionProtection, FeatureMiscSR,
                        FeatureMINMAX, FeatureCLAMPS, FeatureESP32S3Ops]>;
 
+def : Proc<"cnl", [FeatureDensity, FeatureSingleFloat, FeatureLoop,  FeatureWindowed, FeatureBoolean, 
+                    FeatureSEXT, FeatureNSA, FeatureMul32, FeatureMul32High,  FeatureS32C1I,
+                    FeatureTHREADPTR, FeatureDiv32, FeatureATOMCTL, FeatureMEMCTL, FeatureDebug, 
+                    FeatureException, FeatureHighPriInterrupts, FeatureCoprocessor,
+                     FeatureInterrupt, FeatureRelocatableVector, FeatureTimerInt, FeaturePRID,
+                     FeatureRegionProtection, FeatureMiscSR]>; 
+
 //===----------------------------------------------------------------------===//
 // Register File Description
 //===----------------------------------------------------------------------===//
