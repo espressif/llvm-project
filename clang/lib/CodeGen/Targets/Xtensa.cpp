@@ -98,6 +98,13 @@ ABIArgInfo XtensaABIInfo::classifyArgumentType(QualType Ty,
     return ABIArgInfo::getDirect(llvm::IntegerType::get(getVMContext(), Size));
   }
 
+  // xtbool
+  if (getTarget().hasFeature("bool") && Size == 1 && Ty->isVectorType()) {
+    llvm::Type *ResType =
+        llvm::FixedVectorType::get(llvm::Type::getInt1Ty(getVMContext()), 1);
+    return ABIArgInfo::getDirect(ResType);
+  }
+
   // Aggregates which are <= 6*32 will be passed in registers if possible,
   // so coerce to integers.
   if ((Size <= (MaxNumArgGPRs * 32)) && (!MustUseStack)) {
@@ -189,7 +196,7 @@ Address XtensaABIInfo::EmitVAArg(CodeGenFunction &CGF, Address VAListAddr,
         Address(Builder.CreateInBoundsGEP(CGF.Int32Ty, RegSaveArea.getPointer(),
                                           ARIndex),
                 CGF.Int32Ty, RegSaveArea.getAlignment().alignmentOfArrayElement(RegSize));
-    RegAddr = RegSaveArea.withElementType(DirectTy);
+    RegAddr = Builder.CreateElementBitCast(RegSaveArea, DirectTy);
     CGF.EmitBranch(Cont);
   }
 
@@ -214,7 +221,7 @@ Address XtensaABIInfo::EmitVAArg(CodeGenFunction &CGF, Address VAListAddr,
         Address(Builder.CreateInBoundsGEP(
                     CGF.Int32Ty, OverflowArea.getPointer(), ARIndexCorr),
                 CGF.Int32Ty, OverflowArea.getAlignment().alignmentOfArrayElement(RegSize));
-    MemAddr = OverflowArea.withElementType(DirectTy);
+    MemAddr = Builder.CreateElementBitCast(OverflowArea, DirectTy);
     CGF.EmitBranch(Cont);
   }
 

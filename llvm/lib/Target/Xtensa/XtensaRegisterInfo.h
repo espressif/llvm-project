@@ -56,8 +56,10 @@ public:
 
 private:
   bool eliminateFI(MachineBasicBlock::iterator II, unsigned OpNo,
-                   int FrameIndex, uint64_t StackSize,
-                   int64_t SPOffset) const;
+                   int FrameIndex, uint64_t StackSize, int64_t SPOffset,
+                   RegScavenger *RS) const;
+
+  bool requiresFrameIndexReplacementScavenging(const MachineFunction &MF) const override;
 };
 
 } // end namespace llvm
