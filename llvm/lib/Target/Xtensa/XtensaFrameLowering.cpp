@@ -375,12 +375,30 @@ void XtensaFrameLowering::processFunctionBeforeFrameFinalized(
 
   // In WinABI mode add register scavenging slot
   // FIXME: It may be posssible to add spill slot by more optimal way
-  if (STI.isWinABI() && (MF.getFrameInfo().estimateStackSize(MF) > 256)) {
+  // Presence of SPILL_* pseudo-instructions also requires a spill slot
+  int NeedRegs = 0;
+  for (const MachineBasicBlock &MBB : MF) {
+    for (const MachineInstr &MI : MBB) {
+      unsigned Opcode = MI.getOpcode();
+      if (Opcode == Xtensa::SPILL_BOOL)
+        NeedRegs += 1;
+
+      if (Opcode == Xtensa::RESTORE_BOOL)
+        NeedRegs += 3;
+    }
+  }
+
+  NeedRegs = std::min(16, NeedRegs);
+
+  if ((STI.isWinABI() && (MF.getFrameInfo().estimateStackSize(MF) > 256)) ||
+      (NeedRegs > 0)) {
     MachineFrameInfo &MFI = MF.getFrameInfo();
     const TargetRegisterClass &RC = Xtensa::ARRegClass;
     const TargetRegisterInfo &TRI = *MF.getSubtarget().getRegisterInfo();
     unsigned Size = TRI.getSpillSize(RC);
     Align Alignment = TRI.getSpillAlign(RC);
-    RS->addScavengingFrameIndex(MFI.CreateStackObject(Size, Alignment, false));
+    for (int i = 0; i < NeedRegs; i++)
+      RS->addScavengingFrameIndex(
+          MFI.CreateStackObject(Size, Alignment, false));
   }
 }

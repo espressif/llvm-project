@@ -33,7 +33,8 @@ extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeXtensaTarget() {
 static std::string computeDataLayout(const Triple &TT, StringRef CPU,
                                      const TargetOptions &Options,
                                      bool IsLittle) {
-  std::string Ret = "e-m:e-p:32:32-i8:8:32-i16:16:32-i64:64-i128:128-n32";
+  std::string Ret =
+      "e-m:e-p:32:32-v1:8:8-i8:8:32-i16:16:32-i64:64-i128:128-n32";
 
   return Ret;
 }

@@ -18,6 +18,7 @@
 #include "XtensaSubtarget.h"
 #include "llvm/CodeGen/MachineInstrBuilder.h"
 #include "llvm/CodeGen/MachineRegisterInfo.h"
+#include "llvm/CodeGen/RegisterScavenging.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/raw_ostream.h"
@@ -61,16 +62,21 @@ BitVector XtensaRegisterInfo::getReservedRegs(const MachineFunction &MF) const {
 
   // Reserve stack pointer.
   Reserved.set(Xtensa::SP);
+  Reserved.set(Xtensa::BREG);
   return Reserved;
 }
 
 void XtensaRegisterInfo::eliminateFI(MachineBasicBlock::iterator II,
                                      unsigned OpNo, int FrameIndex,
-                                     uint64_t StackSize,
-                                     int64_t SPOffset) const {
+                                     uint64_t StackSize, int64_t SPOffset,
+                                     RegScavenger *RS) const {
   MachineInstr &MI = *II;
   MachineFunction &MF = *MI.getParent()->getParent();
   MachineFrameInfo &MFI = MF.getFrameInfo();
+  MachineBasicBlock &MBB = *MI.getParent();
+  DebugLoc DL = II->getDebugLoc();
+  const XtensaInstrInfo &TII = *static_cast<const XtensaInstrInfo *>(
+      MBB.getParent()->getSubtarget().getInstrInfo());
 
   const std::vector<CalleeSavedInfo> &CSI = MFI.getCalleeSavedInfo();
   int MinCSFI = 0;
@@ -116,6 +122,8 @@ void XtensaRegisterInfo::eliminateFI(MachineBasicBlock::iterator II,
   case Xtensa::L8I_P:
   case Xtensa::L8UI:
   case Xtensa::S8I:
+  case Xtensa::SPILL_BOOL:
+  case Xtensa::RESTORE_BOOL:
     Valid = (Offset >= 0 && Offset <= 255);
     break;
   case Xtensa::L16SI:
@@ -151,6 +159,85 @@ void XtensaRegisterInfo::eliminateFI(MachineBasicBlock::iterator II,
     IsKill = true;
   }
 
+  unsigned BRegBase = Xtensa::B0;
+  switch (MI.getOpcode()) {
+  case Xtensa::SPILL_BOOL: {
+    Register TempAR = RS->scavengeRegister(&Xtensa::ARRegClass, II, 0);
+    RS->setRegUsed(TempAR);
+
+    BuildMI(MBB, II, DL, TII.get(Xtensa::RSR), TempAR).addReg(Xtensa::BREG);
+    MachineOperand &Breg = MI.getOperand(0);
+    unsigned RegNo = Breg.getReg().id() - BRegBase;
+
+    BuildMI(MBB, II, DL, TII.get(Xtensa::EXTUI), TempAR)
+        .addReg(TempAR)
+        .addImm(RegNo)
+        .addImm(1);
+
+    BuildMI(MBB, II, DL, TII.get(Xtensa::S8I))
+        .addReg(TempAR, RegState::Kill)
+        .addReg(FrameReg, getKillRegState(IsKill))
+        .addImm(Offset);
+
+    MI.eraseFromParent();
+    return;
+  }
+  case Xtensa::RESTORE_BOOL: {
+
+    Register SrcAR = RS->scavengeRegister(&Xtensa::ARRegClass, II, 0);
+    RS->setRegUsed(SrcAR);
+    Register MaskAR = RS->scavengeRegister(&Xtensa::ARRegClass, II, 0);
+    RS->setRegUsed(MaskAR);
+    Register BRegAR = RS->scavengeRegister(&Xtensa::ARRegClass, II, 0);
+    RS->setRegUsed(BRegAR);
+
+    MachineOperand &Breg = MI.getOperand(0);
+    unsigned RegNo = Breg.getReg().id() - BRegBase;
+
+    BuildMI(MBB, II, DL, TII.get(Xtensa::L8UI), SrcAR)
+        .addReg(FrameReg, getKillRegState(IsKill))
+        .addImm(Offset);
+
+    BuildMI(MBB, II, DL, TII.get(Xtensa::EXTUI), SrcAR)
+        .addReg(SrcAR)
+        .addImm(0)
+        .addImm(1);
+
+    if (RegNo != 0) {
+      BuildMI(MBB, II, DL, TII.get(Xtensa::SLLI), SrcAR)
+          .addReg(SrcAR)
+          .addImm(RegNo);
+    }
+
+    BuildMI(MBB, II, DL, TII.get(Xtensa::RSR), BRegAR).addReg(Xtensa::BREG);
+
+    unsigned Mask = ~(1 << RegNo) & 0x3ff;
+    BuildMI(MBB, II, DL, TII.get(Xtensa::MOVI), MaskAR)
+        .addImm(RegNo < 12 ? Mask : 1);
+    if (RegNo >= 12) {
+      BuildMI(MBB, II, DL, TII.get(Xtensa::SLLI), MaskAR)
+          .addReg(MaskAR)
+          .addImm(RegNo);
+    }
+    BuildMI(MBB, II, DL, TII.get(Xtensa::AND), BRegAR)
+        .addReg(BRegAR)
+        .addReg(MaskAR);
+
+    BuildMI(MBB, II, DL, TII.get(Xtensa::OR), BRegAR)
+        .addReg(SrcAR)
+        .addReg(BRegAR);
+
+    BuildMI(MBB, II, DL, TII.get(Xtensa::WSR))
+        .addReg(Xtensa::BREG, RegState::Define)
+        .addReg(BRegAR)
+        .addDef(Breg.getReg(), RegState::Implicit);
+
+    MI.eraseFromParent();
+    return;
+  }
+  default:
+    break;
+  }
   MI.getOperand(OpNo).ChangeToRegister(FrameReg, false, false, IsKill);
   MI.getOperand(OpNo + 1).ChangeToImmediate(Offset);
 }
@@ -160,6 +247,8 @@ void XtensaRegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator II,
                                              RegScavenger *RS) const {
   MachineInstr &MI = *II;
   MachineFunction &MF = *MI.getParent()->getParent();
+
+  assert(RS && "Need register scavenger");
 
   LLVM_DEBUG(errs() << "\nFunction : " << MF.getName() << "\n";
              errs() << "<--------->\n"
@@ -173,11 +262,17 @@ void XtensaRegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator II,
                     << "spOffset   : " << spOffset << "\n"
                     << "stackSize  : " << stackSize << "\n");
 
-  eliminateFI(MI, FIOperandNum, FrameIndex, stackSize, spOffset);
+  eliminateFI(MI, FIOperandNum, FrameIndex, stackSize, spOffset, RS);
 }
 
 Register XtensaRegisterInfo::getFrameRegister(const MachineFunction &MF) const {
   const TargetFrameLowering *TFI = MF.getSubtarget().getFrameLowering();
   return TFI->hasFP(MF) ? (Subtarget.isWinABI() ? Xtensa::A7 : Xtensa::A15)
                         : Xtensa::SP;
+}
+
+bool XtensaRegisterInfo::requiresFrameIndexReplacementScavenging(
+    const MachineFunction &MF) const {
+  const MachineFrameInfo &MFI = MF.getFrameInfo();
+  return MFI.hasStackObjects();
 }

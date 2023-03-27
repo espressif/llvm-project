@@ -25,9 +25,9 @@ def SDT_XtensaSelectCC            : SDTypeProfile<1, 5,
                                                   SDTCisVT<5, i32>]>;
 
 def SDT_XtensaMOVSP               : SDTypeProfile<1, 1, [SDTCisSameAs<0, 1>, SDTCisVT<0, i32>]>;
-def SDT_XtensaBrBool              : SDTypeProfile<0, 2, [SDTCisVT<0, i1>, SDTCisVT<1, OtherVT>]>;
+def SDT_XtensaBrBool              : SDTypeProfile<0, 2, [SDTCisVT<0, v1i1>, SDTCisVT<1, OtherVT>]>;
 def SDT_XtensaBrCCFP              : SDTypeProfile<0, 4, [SDTCisVT<0, i32>, SDTCisVT<1, f32>, SDTCisVT<2, f32>, SDTCisVT<3, OtherVT>]>;
-def SDT_XtensaCmp                 : SDTypeProfile<1, 2, [SDTCisVT<0, i1>, SDTCisVT<1, f32>, SDTCisVT<2, f32>]>;
+def SDT_XtensaCmp                 : SDTypeProfile<1, 2, [SDTCisVT<0, v1i1>, SDTCisVT<1, f32>, SDTCisVT<2, f32>]>;
 def SDT_XtensaMADD                : SDTypeProfile<1, 3, [SDTCisSameAs<0, 1>, SDTCisSameAs<0, 2>, SDTCisSameAs<0, 3>, SDTCisVT<0, f32>]>;
 def SDT_XtensaMOVS                : SDTypeProfile<1, 1, [SDTCisSameAs<0, 1>, SDTCisVT<0, f32>]>;
 def SDT_XtensaSelectCCFP          : SDTypeProfile<1, 5, [SDTCisSameAs<0, 3>, SDTCisSameAs<1, 2>, SDTCisSameAs<3, 4>, SDTCisVT<5, i32>]>;

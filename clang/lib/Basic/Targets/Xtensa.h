@@ -34,6 +34,7 @@ class LLVM_LIBRARY_VISIBILITY XtensaTargetInfo : public TargetInfo {
   std::string CPU;
   bool HasFP = false;
   bool HasWindowed = false;
+  bool HasBoolean = false;
 
 public:
   XtensaTargetInfo(const llvm::Triple &Triple, const TargetOptions &)
@@ -50,7 +51,8 @@ public:
     WIntType = UnsignedInt;
     UseZeroLengthBitfieldAlignment = true;
     MaxAtomicPromoteWidth = MaxAtomicInlineWidth = 32;
-    resetDataLayout("e-m:e-p:32:32-i8:8:32-i16:16:32-i64:64-i128:128-n32");
+    resetDataLayout(
+        "e-m:e-p:32:32-v1:8:8-i8:8:32-i16:16:32-i64:64-i128:128-n32");
   }
 
   void getTargetDefines(const LangOptions &Opts,
