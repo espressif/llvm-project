@@ -651,6 +651,20 @@ def RUR : RRR_Inst<0x00, 0x03, 0x0E, (outs AR:$r), (ins UR:$ur),
   let t = ur{3-0};
 }
 
+def WUR_FCR :RRR_Inst<0x00, 0x03, 0x0F, (outs), (ins AR:$t),
+                  "wur.fcr \t$t", []> {
+  let r = 232{7-4};
+  let s = 232{3-0};
+  let Defs = [FCR];
+}
+
+def WUR_FSR :RRR_Inst<0x00, 0x03, 0x0F, (outs), (ins AR:$t),
+                  "wur.fsr\t $t", []> {
+  let r = 233{7-4};
+  let s = 233{3-0};
+  let Defs = [FSR];
+}
+
 //===----------------------------------------------------------------------===//
 // External Registers read/write instructions
 //===----------------------------------------------------------------------===//
@@ -1054,20 +1068,22 @@ let mayLoad = 1, usesCustomInserter = 1, Predicates = [HasSingleFloat] in {
     let s{3-0} = addr{3-0};
   }
 
-  def LSIP : RRI8_Inst<0x03, (outs FPR:$t), (ins mem32:$addr),
-                      "lsip\t$t, $addr", []> {
-    bits<12> addr;
+  def LSIP : RRI8_Inst<0x03, (outs FPR:$t, AR:$ds), (ins AR:$s, offset8m32:$off),
+                      "lsip\t$t, $s, $off", []> {
+    bits<10> off;
 
     let r = 0x08;
-    let imm8{7-0} = addr{11-4};
-    let s{3-0} = addr{3-0};
+    let imm8{7-0} = off{9-2};
+    let Constraints = "$ds = $s,@earlyclobber $ds";
   }
 
-  def LSX : RRR_Inst<0x00, 0x08, 0x00, (outs), (ins FPR:$r, AR:$s, AR:$t),
+  def LSX : RRR_Inst<0x00, 0x08, 0x00, (outs FPR:$r), (ins AR:$s, AR:$t),
                     "lsx\t$r, $s, $t", []>;
 
-  def LSXP : RRR_Inst<0x00, 0x08, 0x01, (outs), (ins FPR:$r, AR:$s, AR:$t),
-                     "lsxp\t$r, $s, $t", []>;
+  def LSXP : RRR_Inst<0x00, 0x08, 0x01, (outs FPR:$r, AR:$ds), (ins AR:$s, AR:$t),
+                     "lsxp\t$r, $s, $t", []> {
+    let Constraints = "$ds = $s,@earlyclobber $ds";
+  }
 }
 
 def : Pat<(f32 (load addr_ish4:$addr)), (f32 (LSI mem32:$addr))>;
@@ -1083,20 +1099,22 @@ let mayStore = 1, usesCustomInserter = 1, Predicates = [HasSingleFloat] in {
     let s{3-0} = addr{3-0};
   }
 
-  def SSIP : RRI8_Inst<0x03, (outs), (ins FPR:$t, mem32:$addr),
-                      "ssip\t$t, $addr", []> {
-    bits<12> addr;
+  def SSIP : RRI8_Inst<0x03, (outs AR:$ds), (ins FPR:$t, AR:$s, offset8m32:$off),
+                      "ssip\t$t, $s, $off", []> {
+    bits<10> off;
 
     let r = 0x0C;
-    let imm8{7-0} = addr{11-4};
-    let s{3-0} = addr{3-0};
+    let imm8{7-0} = off{9-2};
+    let Constraints = "$ds = $s,@earlyclobber $ds";
   }
 
   def SSX: RRR_Inst<0x00, 0x08, 0x04, (outs), (ins FPR:$r, AR:$s, AR:$t),
                    "ssx\t$r, $s, $t", []>;
 
-  def SSXP: RRR_Inst<0x00, 0x08, 0x05, (outs), (ins FPR:$r, AR:$s, AR:$t),
-                    "ssxp\t$r, $s, $t", []>;
+  def SSXP: RRR_Inst<0x00, 0x08, 0x05, (outs AR:$ds), (ins FPR:$r, AR:$s, AR:$t),
+                    "ssxp\t$r, $s, $t", []> {
+    let Constraints = "$ds = $s,@earlyclobber $ds";
+  }
 }
 
 def : Pat<(store FPR:$t, addr_ish4:$addr), (SSI FPR:$t, mem32:$addr)>;
@@ -1145,14 +1163,17 @@ def : Pat<(f32 (int_xtensa_xt_abs_s FPR:$frs)),
           (ABS_S FPR:$frs)>,
           Requires<[HasSingleFloat]>;
 
-def ADDEXP_S : RRR_Inst<0x00, 0x0A, 0x0F, (outs FPR:$r), (ins FPR:$s),
+let Constraints = "$dr = $r,@earlyclobber $dr" in {
+
+def ADDEXP_S : RRR_Inst<0x00, 0x0A, 0x0F, (outs FPR:$dr), (ins FPR:$r, FPR:$s),
                        "addexp.s\t$r, $s", []>, Requires<[HasSingleFloat]> {
   let t = 0x0E;
 }
 
-def ADDEXPM_S : RRR_Inst<0x00, 0x0A, 0x0F, (outs FPR:$r), (ins FPR:$s),
+def ADDEXPM_S : RRR_Inst<0x00, 0x0A, 0x0F, (outs FPR:$dr), (ins FPR:$r, FPR:$s),
                         "addexpm.s\t$r, $s", []>, Requires<[HasSingleFloat]> {
   let t = 0x0F;
+}
 }
 
 def CEIL_S : RRR_Inst<0x00, 0x0A, 0x0B, (outs AR:$r), (ins FPR:$s, uimm4:$imm),
@@ -1175,8 +1196,10 @@ def DIV0_S : RRR_Inst<0x00, 0x0A, 0x0F, (outs FPR:$r), (ins FPR:$s),
   let t = 0x7;
 }
 
-def DIVN_S : RRR_Inst<0x00, 0x0A, 0x07, (outs FPR:$r), (ins FPR:$s, FPR:$t),
-                     "divn.s\t$r, $s, $t", []>, Requires<[HasSingleFloat]>;
+def DIVN_S : RRR_Inst<0x00, 0x0A, 0x07, (outs FPR:$dr), (ins FPR:$r, FPR:$s, FPR:$t),
+                     "divn.s\t$r, $s, $t", []>, Requires<[HasSingleFloat]> {
+let Constraints = "$dr = $r,@earlyclobber $dr";
+}
 
 def FLOAT_S : RRR_Inst<0x00, 0x0A, 0x0c, (outs FPR:$r), (ins AR:$s, uimm4:$imm),
                       "float.s\t$r, $s, $imm", []>, Requires<[HasSingleFloat]> {
@@ -1218,9 +1241,10 @@ def MADD_S : RRR_Inst<0x00, 0x0A, 0x04, (outs FPR:$r), (ins FPR:$a, FPR:$s, FPR:
 def : Pat<(fma FPR:$r1, FPR:$r2, FPR:$r3),
           (MADD_S $r3, $r1, $r2)>;
 
-def MKDADJ_S : RRR_Inst<0x00, 0x0A, 0x0F, (outs FPR:$r), (ins FPR:$s),
+def MKDADJ_S : RRR_Inst<0x00, 0x0A, 0x0F, (outs FPR:$dr), (ins FPR:$r, FPR:$s),
                        "mkdadj.s\t$r, $s", []>, Requires<[HasSingleFloat]> {
   let t = 0x0D;
+  let Constraints = "$dr = $r,@earlyclobber $dr";
 }
 
 def MKSADJ_S : RRR_Inst<0x00, 0x0A, 0x0F, (outs FPR:$r), (ins FPR:$s),
@@ -1235,19 +1259,20 @@ def MOV_S : RRR_Inst<0x00, 0x0A, 0x0f, (outs FPR:$r), (ins FPR:$s),
   let t = 0x00;
 }
 
-def MOVEQZ_S : RRR_Inst<0x00, 0x0B, 0x08, (outs FPR:$r), (ins FPR:$s, AR:$t),
-                       "moveqz.s\t$r, $s, $t", []>, Requires<[HasSingleFloat]>;
-
-def MOVGEZ_S : RRR_Inst<0x00, 0x0B, 0x0B, (outs FPR:$r), (ins FPR:$s, AR:$t),
-                       "movgez.s\t$r, $s, $t", []>, Requires<[HasSingleFloat]>;
-
-def MOVLTZ_S : RRR_Inst<0x00, 0x0B, 0x0A, (outs FPR:$r), (ins FPR:$s, AR:$t),
-                       "movltz.s\t$r, $s, $t", []>, Requires<[HasSingleFloat]>;
-
-def MOVNEZ_S : RRR_Inst<0x00, 0x0B, 0x09, (outs FPR:$r), (ins FPR:$s, AR:$t),
-                       "movnez.s\t$r, $s, $t", []>, Requires<[HasSingleFloat]>;
-
 let Constraints = "$dr = $r,@earlyclobber $dr" in {
+
+  def MOVEQZ_S : RRR_Inst<0x00, 0x0B, 0x08, (outs FPR:$dr), (ins FPR:$r, FPR:$s, AR:$t),
+                        "moveqz.s\t$r, $s, $t", []>, Requires<[HasSingleFloat]>;
+
+  def MOVGEZ_S : RRR_Inst<0x00, 0x0B, 0x0B, (outs FPR:$dr), (ins FPR:$r, FPR:$s, AR:$t),
+                        "movgez.s\t$r, $s, $t", []>, Requires<[HasSingleFloat]>;
+
+  def MOVLTZ_S : RRR_Inst<0x00, 0x0B, 0x0A, (outs FPR:$dr), (ins FPR:$r, FPR:$s, AR:$t),
+                        "movltz.s\t$r, $s, $t", []>, Requires<[HasSingleFloat]>;
+
+  def MOVNEZ_S : RRR_Inst<0x00, 0x0B, 0x09, (outs FPR:$dr), (ins FPR:$r, FPR:$s, AR:$t),
+                        "movnez.s\t$r, $s, $t", []>, Requires<[HasSingleFloat]>;
+
   def MOVT_S   : RRR_Inst<0x00, 0x0B, 0x0D, (outs FPR:$dr), (ins FPR:$r, FPR:$s, BR:$t),
                         "movt.s\t$r, $s, $t",
                         [(set FPR:$dr, (int_xtensa_xt_movt_s FPR:$r, FPR:$s, BR:$t))]>,
@@ -1868,6 +1893,115 @@ let Predicates = [HasESP32S3Ops] in {
 }
 include "XtensaS3DSPInstrInfo.td"
 
+
+//===----------------------------------------------------------------------===//
+// FP intrinsic patterns
+//===----------------------------------------------------------------------===//
+let Predicates = [HasSingleFloat] in {
+
+  def ADDEXP_S_PAT :Pat<(f32 (int_xtensa_xt_addexp_s FPR:$frr, FPR:$frs)),
+  (ADDEXP_S FPR:$frr, FPR:$frs)>;
+
+  def ADDEXPM_S_PAT :Pat<(f32 (int_xtensa_xt_addexpm_s FPR:$frr, FPR:$frs)),
+  (ADDEXPM_S FPR:$frr, FPR:$frs)>;
+
+  def CEIL_S_PAT :Pat<(i32 (int_xtensa_xt_ceil_s FPR:$frs, timm:$imm_t)),
+  (CEIL_S FPR:$frs, timm:$imm_t)>;
+
+  def DIV0_S_PAT :Pat<(f32 (int_xtensa_xt_div0_s FPR:$frs)),
+  (DIV0_S FPR:$frs)>;
+
+  def DIVN_S_PAT :Pat<(f32 (int_xtensa_xt_divn_s FPR:$frr, FPR:$frs, FPR:$frt)),
+  (DIVN_S FPR:$frr, FPR:$frs, FPR:$frt)>;
+
+  def FLOOR_S_PAT :Pat<(i32 (int_xtensa_xt_floor_s FPR:$frs, timm:$imm_t)),
+  (FLOOR_S FPR:$frs, timm:$imm_t)>;
+
+  def LSI_PAT :Pat<(f32 (int_xtensa_xt_lsi AR:$ars, timm:$imm8x4)),
+  (LSI AR:$ars, timm:$imm8x4)>;
+
+  def LSX_PAT :Pat<(f32 (int_xtensa_xt_lsx AR:$ars, AR:$art)),
+  (LSX AR:$ars, AR:$art)>;
+
+  def MADD_S_PAT :Pat<(f32 (int_xtensa_xt_madd_s FPR:$frr, FPR:$frs, FPR:$frt)),
+  (MADD_S FPR:$frr, FPR:$frs, FPR:$frt)>;
+
+  def MADDN_S_PAT :Pat<(f32 (int_xtensa_xt_maddn_s FPR:$frr, FPR:$frs, FPR:$frt)),
+  (MADDN_S FPR:$frr, FPR:$frs, FPR:$frt)>;
+
+  def MKDADJ_S_PAT :Pat<(f32 (int_xtensa_xt_mkdadj_s FPR:$frr, FPR:$frs)),
+  (MKDADJ_S FPR:$frr, FPR:$frs)>;
+
+  def MKSADJ_S_PAT :Pat<(f32 (int_xtensa_xt_mksadj_s FPR:$frs)),
+  (MKSADJ_S FPR:$frs)>;
+
+  def MOV_S_PAT :Pat<(f32 (int_xtensa_xt_mov_s FPR:$frs)),
+  (MOV_S FPR:$frs)>;
+
+  def MOVEQZ_S_PAT :Pat<(f32 (int_xtensa_xt_moveqz_s FPR:$frr, FPR:$frs, AR:$art)),
+  (MOVEQZ_S FPR:$frr, FPR:$frs, AR:$art)>;
+
+  def MOVGEZ_S_PAT :Pat<(f32 (int_xtensa_xt_movgez_s FPR:$frr, FPR:$frs, AR:$art)),
+  (MOVGEZ_S FPR:$frr, FPR:$frs, AR:$art)>;
+
+  def MOVLTZ_S_PAT :Pat<(f32 (int_xtensa_xt_movltz_s FPR:$frr, FPR:$frs, AR:$art)),
+  (MOVLTZ_S FPR:$frr, FPR:$frs, AR:$art)>;
+
+  def MOVNEZ_S_PAT :Pat<(f32 (int_xtensa_xt_movnez_s FPR:$frr, FPR:$frs, AR:$art)),
+  (MOVNEZ_S FPR:$frr, FPR:$frs, AR:$art)>;
+
+  def MSUB_S_PAT :Pat<(f32 (int_xtensa_xt_msub_s FPR:$frr, FPR:$frs, FPR:$frt)),
+  (MSUB_S FPR:$frr, FPR:$frs, FPR:$frt)>;
+
+  def NEG_S_PAT :Pat<(f32 (int_xtensa_xt_neg_s FPR:$frs)),
+  (NEG_S FPR:$frs)>;
+
+  def NEXP01_S_PAT :Pat<(f32 (int_xtensa_xt_nexp01_s FPR:$frs)),
+  (NEXP01_S FPR:$frs)>;
+
+  def RECIP0_S_PAT :Pat<(f32 (int_xtensa_xt_recip0_s FPR:$frs)),
+  (RECIP0_S FPR:$frs)>;
+
+  def RFR_PAT :Pat<(i32 (int_xtensa_xt_rfr FPR:$frs)),
+  (RFR FPR:$frs)>;
+
+  def ROUND_S_PAT :Pat<(i32 (int_xtensa_xt_round_s FPR:$frs, timm:$imm_t)),
+  (ROUND_S FPR:$frs, timm:$imm_t)>;
+
+  def RSQRT0_S_PAT :Pat<(f32 (int_xtensa_xt_rsqrt0_s FPR:$frs)),
+  (RSQRT0_S FPR:$frs)>;
+
+  def RUR_FCR_PAT :Pat<(i32 (int_xtensa_xt_rur_fcr )),
+  (RUR FCR)>;
+
+  def RUR_FSR_PAT :Pat<(i32 (int_xtensa_xt_rur_fsr )),
+  (RUR FSR )>;
+
+  def SQRT0_S_PAT :Pat<(f32 (int_xtensa_xt_sqrt0_s FPR:$frs)),
+  (SQRT0_S FPR:$frs)>;
+
+  def SSI_PAT :Pat<(int_xtensa_xt_ssi FPR:$frt, AR:$ars, timm:$imm8x4),
+  (SSI FPR:$frt, AR:$ars, timm:$imm8x4)>;
+
+  def SSIP_PAT :Pat<(i32 (int_xtensa_xt_ssip FPR:$frt, AR:$ars, timm:$imm8x4)),
+  (SSIP FPR:$frt, AR:$ars, timm:$imm8x4)>;
+
+  def SSX_PAT :Pat<(int_xtensa_xt_ssx FPR:$frr, AR:$ars, AR:$art),
+  (SSX FPR:$frr, AR:$ars, AR:$art)>;
+
+  def SSXP_PAT :Pat<(i32 (int_xtensa_xt_ssxp FPR:$frr, AR:$ars, AR:$art)),
+  (SSXP FPR:$frr, AR:$ars, AR:$art)>;
+
+  def WFR_PAT :Pat<(f32 (int_xtensa_xt_wfr AR:$ars)),
+  (WFR AR:$ars)>;
+
+  def WUR_FCR_PAT :Pat<(int_xtensa_xt_wur_fcr AR:$art),
+  (WUR_FCR AR:$art)>;
+
+  def WUR_FSR_PAT :Pat<(int_xtensa_xt_wur_fsr AR:$art),
+  (WUR_FSR AR:$art)>;
+
+}
 //===----------------------------------------------------------------------===//
 // DSP Instructions
 //===----------------------------------------------------------------------===//

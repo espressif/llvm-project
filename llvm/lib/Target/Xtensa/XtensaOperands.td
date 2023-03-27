@@ -123,7 +123,10 @@ def offset8m16 : Immediate<i32,
 def Offset8m32_AsmOperand : ImmAsmOperand<"Offset8m32">;
 def offset8m32 : Immediate<i32,
     [{ return Imm >= 0 && Imm <= 1020 && (Imm & 0x3 == 0); }],
-    "Offset8m32_AsmOperand">;
+    "Offset8m32_AsmOperand"> {
+  let EncoderMethod = "getOffset8m32OpValue";
+  let DecoderMethod = "decodeOffset8m32Operand";
+}
 
 // Memory offset 0..60 for 32-bit memory accesses
 def Offset4m32_AsmOperand : ImmAsmOperand<"Offset4m32">;

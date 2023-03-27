@@ -50,6 +50,7 @@
 #include "llvm/IR/IntrinsicsVE.h"
 #include "llvm/IR/IntrinsicsWebAssembly.h"
 #include "llvm/IR/IntrinsicsX86.h"
+#include "llvm/IR/IntrinsicsXtensa.h"
 #include "llvm/IR/MDBuilder.h"
 #include "llvm/IR/MatrixBuilder.h"
 #include "llvm/Support/AArch64TargetParser.h"
@@ -5482,6 +5483,8 @@ static Value *EmitTargetArchBuiltinExpr(CodeGenFunction *CGF,
   case llvm::Triple::loongarch32:
   case llvm::Triple::loongarch64:
     return CGF->EmitLoongArchBuiltinExpr(BuiltinID, E);
+  case llvm::Triple::xtensa:
+    return CGF->EmitXtensaBuiltinExpr(BuiltinID, E, ReturnValue, Arch);
   default:
     return nullptr;
   }
@@ -19801,4 +19804,47 @@ Value *CodeGenFunction::EmitLoongArchBuiltinExpr(unsigned BuiltinID,
 
   llvm::Function *F = CGM.getIntrinsic(ID);
   return Builder.CreateCall(F, Ops);
+}
+
+llvm::Value *
+CodeGenFunction::EmitXtensaBuiltinExpr(unsigned BuiltinID, const CallExpr *E,
+                                      ReturnValueSlot ReturnValue,
+                                      llvm::Triple::ArchType Arch) {
+
+  unsigned IntrinsicID;
+  switch (BuiltinID) {
+  case Xtensa::BI__builtin_xtensa_xt_lsxp:
+    IntrinsicID = Intrinsic::xtensa_xt_lsxp;
+    break;
+  case Xtensa::BI__builtin_xtensa_xt_lsip:
+    IntrinsicID = Intrinsic::xtensa_xt_lsip;
+    break;
+  default:
+    llvm_unreachable("unexpected builtin ID");
+  }
+
+  llvm::Function *F = CGM.getIntrinsic(IntrinsicID);
+  // 1st argument is passed by pointer
+  /* float lsip(float **a, int off) =>     float p = *a
+                                           ret, p' = @int.xtensa.lsip(p, off)
+                                           *a = p'
+  */
+  auto InoutPtrTy = F->getArg(0)->getType()->getPointerTo();
+  Address InoutPtrAddr = Builder.CreateElementBitCast(
+      EmitPointerWithAlignment(E->getArg(0)), InoutPtrTy);
+
+  unsigned NumArgs = E->getNumArgs();
+  Value *InoutVal = Builder.CreateLoad(InoutPtrAddr);
+  SmallVector<Value *, 8> Args;
+
+  Args.push_back(InoutVal);
+  for (unsigned i = 1; i < NumArgs; i++)
+    Args.push_back(EmitScalarExpr(E->getArg(i)));
+
+  Value *Val = Builder.CreateCall(F, Args, "retval");
+  Value *Val0 = Builder.CreateExtractValue(Val, 0);
+  Value *Val1 = Builder.CreateExtractValue(Val, 1);
+  // ret store
+  Builder.CreateStore(Val1, InoutPtrAddr);
+  return Val0;
 }
