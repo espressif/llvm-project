@@ -732,7 +732,14 @@ static bool CC_Xtensa_Custom(unsigned ValNo, MVT ValVT, MVT LocVT,
 
   if (ArgFlags.isByVal()) {
     Align ByValAlign = ArgFlags.getNonZeroByValAlign();
-    unsigned Offset = State.AllocateStack(ArgFlags.getByValSize(), ByValAlign);
+    unsigned ByValSize = ArgFlags.getByValSize();
+    if (ByValSize < 4) {
+      ByValSize = 4;
+    }
+    if (ByValAlign < Align(4)) {
+      ByValAlign = Align(4);
+    }
+    unsigned Offset = State.AllocateStack(ByValSize, ByValAlign);
     State.addLoc(CCValAssign::getMem(ValNo, ValVT, Offset, LocVT, LocInfo));
     // Allocate rest of registers, because rest part is not used to pass
     // arguments
