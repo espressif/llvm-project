@@ -15,7 +15,7 @@ variables:
   CLANG_VER: "16"
   GCC_REL_NAME: "esp-2022r1"
   GCC_REL_VER: "gcc11_2_0"
-  NEWLIB_REF: "esp-2022r1"
+  NEWLIB_REF: "esp-4.1.0_20230425"
   BINUTILS_REF: "esp-2022r1-binutils"
   XTENSA_OVERLAYS_REF: "master"
   LLVM_GCC_TESTSUITE_REF: "esp-16.0.0-20230419"
