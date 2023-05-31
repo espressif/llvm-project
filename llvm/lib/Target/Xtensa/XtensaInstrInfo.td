@@ -1441,7 +1441,7 @@ let isBarrier = 1, isTerminator = 1 in {
     let s = 0;
   }
 
-  def ILL_N : RRRN_Inst<0x0C, (outs), (ins),
+  def ILL_N : RRRN_Inst<0x0D, (outs), (ins),
                        "ill.n", []>, Requires<[HasDensity]> {
     let r = 0xf;
     let s = 0x0;

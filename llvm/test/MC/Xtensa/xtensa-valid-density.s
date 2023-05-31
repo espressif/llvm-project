@@ -5,5 +5,5 @@
 LBL0:
 
 # CHECK-INST:  ill.n
-# CHECK: encoding: [0x6c,0xf0]
+# CHECK: encoding: [0x6d,0xf0]
 ill.n
