@@ -12,13 +12,13 @@ variables:
 
   # move all these to CI/CD settings
   REL_SFX: "llvm"
-  CLANG_VER: "15.0.0"
+  CLANG_VER: "16"
   GCC_REL_NAME: "esp-2022r1"
   GCC_REL_VER: "gcc11_2_0"
   NEWLIB_REF: "esp-2022r1"
   BINUTILS_REF: "esp-2022r1-binutils"
   XTENSA_OVERLAYS_REF: "master"
-  LLVM_GCC_TESTSUITE_REF: "esp-15.0.0-20221201"
+  LLVM_GCC_TESTSUITE_REF: "esp-16.0.0-20230419"
   XTENSA_CLANG_TOOLCHAIN_REF: "esp-15.0.0-20221201"
 
   CROSS_ARM_IMAGE: $CI_DOCKER_REGISTRY/llvm-build-cross-arm:1
