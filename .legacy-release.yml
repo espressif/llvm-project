@@ -104,11 +104,11 @@ linux_amd64_testsuite:
     - ${UNARCHIVE_TOOL} ${DIST_DIR}/${ARCHIVE_NAME}
 
     # getting testsuite
-    - git clone -b ${LLVM_GCC_TESTSUITE_REF} --depth 1 $GITLAB_SSH_SERVER/idf/llvm-xtensa-testsuite.git
+    - git clone -b ${LLVM_GCC_TESTSUITE_REF} --depth 1 $GITLAB_SSH_SERVER/idf/${LLVM_TESTSUITE_REPO}.git
 
     # preparing testsuite
     - export PATH=${PWD}/${XTENSA_CLANG_TOOLCHAIN}/bin/:$PATH
-    - cd llvm-xtensa-testsuite
+    - cd ${LLVM_TESTSUITE_REPO}
 
     # qemu
     - ./qemu_esp32_install.sh
