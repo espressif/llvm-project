@@ -153,8 +153,8 @@ bool XtensaFixupHwLoops::runOnMachineFunction(MachineFunction &mf) {
 // Scan loop and find hardware loop pseudo instructions LOOPSTART and LOOPEND.
 // Transform LOOPSTART to Xtensa instructions and remove LOOPEND.
 bool XtensaFixupHwLoops::fixupLoopInstrs(MachineLoop *L) {
-  // const TargetInstrInfo *TII = MF.getSubtarget().getInstrInfo();
   MachineBasicBlock &MBB = *(L->getHeader());
+  const TargetInstrInfo *TII = MBB.getParent()->getSubtarget().getInstrInfo();
   bool Changed = false;
   unsigned Num = MBB.getNumber();
   unsigned Offset = BlockInfo[Num].Offset;
@@ -168,10 +168,17 @@ bool XtensaFixupHwLoops::fixupLoopInstrs(MachineLoop *L) {
   MachineInstr *PredI1 = nullptr;
   MachineInstr *FirstMI = nullptr;
 
+  // Find appropriate place for the LOOPEND block
   for (auto MBI = L->block_begin(), MBIE = L->block_end(); MBI != MBIE; ++MBI) {
-    if (LastBlockOffset < BlockInfo[(*MBI)->getNumber()].Offset) {
-      LastBlockOffset = BlockInfo[(*MBI)->getNumber()].Offset;
-      LastBlock = (*MBI);
+    MachineBasicBlock *TBB = nullptr, *FBB = nullptr;
+    SmallVector<MachineOperand, 4> Cond;
+    if (!TII->analyzeBranch(*(*MBI), TBB, FBB, Cond)) {
+      if (FBB && TBB) {
+        if (LastBlockOffset < BlockInfo[(*MBI)->getNumber()].Offset) {
+          LastBlockOffset = BlockInfo[(*MBI)->getNumber()].Offset;
+          LastBlock = (*MBI);
+        }
+      }
     }
   }
 
@@ -220,12 +227,43 @@ bool XtensaFixupHwLoops::fixupLoopInstrs(MachineLoop *L) {
             DebugLoc DL = PII->getDebugLoc();
             unsigned OffsetLE = BlockInfo[PMBB->getNumber()].Offset;
 
-            // Check if loop end is placed before loop header
-            // In such case add special MBB after loop header and create jump
-            // from loop end to it
+            // In most cases we expect that blocks in loop are ordered by such manner that block
+            // with LOOPSTART instruction preceeds block with LOOPEND instruction.
+            // But in some cases after transformations loop block which contains LOOPEND instruction
+            // maybe placed before LOOPSTART block during code generaion. We must handle such situation
+            // because "loop" instruction placed instead of LOOPSTART must have positive offset in the target
+            // field to the LOOPEND block.
+            // So, in such situation we add new LOOPEND block after the LOOPSTART block and create jump from old
+            // LOOPEND block to the new LOOPEND block adn set new LOOPEND block then as target for "loop" instruction
             if (OffsetLE < LHOffset) {
               LoopEnd = MF->CreateMachineBasicBlock();
-              MF->insert(++LastBlock->getIterator(), LoopEnd);
+
+              // If last block in the loop is whithin 256 byte offset from loop instruction
+              // then just place LOOPEND block after the last block.
+              if ((LastBlockOffset - LHOffset) < 256) {
+                //Insert after appropriate block
+                MF->insert(++LastBlock->getIterator(), LoopEnd);
+              } else {
+                // If loop is to large for hardware loop instructuin offset then
+                // place LoopEnd block just after loop header
+                MF->insert(++MBB.getIterator(), LoopEnd);
+                MachineBasicBlock *TBB = nullptr, *FBB = nullptr;
+                SmallVector<MachineOperand, 4> Cond;
+                if (!TII->analyzeBranch(MBB, TBB, FBB, Cond)) {
+                  if (!FBB) {
+                    // LH block just falls through to its succ
+                    for (auto I = MBB.succ_begin(), E = MBB.succ_end(); I != E;
+                         ++I) {
+                      MachineBasicBlock *Succ = *I;
+                      if (Succ != TBB) {
+                        BuildMI(MBB, MBB.end(), DL, TII->get(Xtensa::J))
+                            .addMBB(Succ);
+                      }
+                    }
+                  }
+                }
+              }
+
               LoopEnd->transferSuccessors(PMBB);
               LoopEnd->splice(LoopEnd->end(), PMBB, PII, PMBB->end());
 
