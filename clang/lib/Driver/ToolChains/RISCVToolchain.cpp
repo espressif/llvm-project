@@ -192,7 +192,17 @@ void RISCV::Linker::ConstructJob(Compilation &C, const JobAction &JA,
   }
 
   if (WantCRTs) {
-    CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("crt0.o")));
+    /* Espressif toolcahin uses newlib. crt0.o from it refers to 'main' symbol.
+       In 'freestanding' mode 'main' is not marked as special symbol by clang,
+       so when compiling C++ program with 'clang++' 'main' gets mmangled
+       (if not decalred as 'extern "C"' ) and linker can not resolve it.
+       The problem can happen, for example, when cmake checks C++ compiler by buiding simple C++ code,
+       unfortunately 'main' function in that code is not decalred as 'extern "C"'. */
+    bool Freestanding =
+        Args.hasFlag(options::OPT_ffreestanding, options::OPT_fhosted, false);
+    if (!Freestanding || ToolChain.getTriple().getVendor() != llvm::Triple::Espressif) {
+      CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("crt0.o")));
+    }
     CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath(crtbegin)));
   }
 
