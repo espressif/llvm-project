@@ -4,26 +4,29 @@
 ; Function Attrs: nounwind optsize
 define i32 @test_hwloop(i32 %a, i32 %b, i32 %n) local_unnamed_addr #1 {
 ; CHECK-LABEL: test_hwloop:
-; CHECK:         entry a1, 32
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0: # %entry
+; CHECK-NEXT:    entry a1, 32
 ; CHECK-NEXT:    .cfi_def_cfa_offset 32
-; CHECK-NEXT:    blti a4, 1, .LBB0_5
-; CHECK-NEXT:  # %bb.1: # %for.body.preheader
 ; CHECK-NEXT:    movi.n a8, 0
+; CHECK-NEXT:    bge a8, a4, .LBB0_5
+; CHECK-NEXT:  # %bb.1:
+; CHECK-NEXT:    movi.n a9, 0
 ; CHECK-NEXT:    j .LBB0_3
 ; CHECK-NEXT:  .LBB0_2: # %for.body
 ; CHECK-NEXT:    # in Loop: Header=BB0_3 Depth=1
-; CHECK-NEXT:    add.n a2, a9, a2
+; CHECK-NEXT:    add.n a2, a10, a2
 ; CHECK-NEXT:    #APP
 ; CHECK-NEXT:    #NO_APP
-; CHECK-NEXT:    addi.n a4, a4, -1
-; CHECK-NEXT:    beqz a4, .LBB0_5
+; CHECK-NEXT:    addi.n a8, a8, 1
+; CHECK-NEXT:    bge a8, a4, .LBB0_5
 ; CHECK-NEXT:  .LBB0_3: # %for.body
 ; CHECK-NEXT:    # =>This Inner Loop Header: Depth=1
-; CHECK-NEXT:    mov.n a9, a8
-; CHECK-NEXT:    bge a8, a2, .LBB0_2
+; CHECK-NEXT:    mov.n a10, a9
+; CHECK-NEXT:    bge a9, a2, .LBB0_2
 ; CHECK-NEXT:  # %bb.4: # %for.body
 ; CHECK-NEXT:    # in Loop: Header=BB0_3 Depth=1
-; CHECK-NEXT:    mull a9, a2, a3
+; CHECK-NEXT:    mull a10, a2, a3
 ; CHECK-NEXT:    j .LBB0_2
 ; CHECK-NEXT:  .LBB0_5: # %for.cond.cleanup
 ; CHECK-NEXT:    retw.n

@@ -92,8 +92,8 @@ static uint64_t adjustFixupValue(const MCFixup &Fixup, uint64_t Value,
     if (!Value)
       return 0;
     Value -= 4;
-    if (!isUInt<6>(Value))
-      Ctx.reportError(Fixup.getLoc(), "fixup value out of range");
+    if (!isInt<6>(Value))
+      Ctx.reportError(Fixup.getLoc(), "branch 6-bit fixup value out is of range");
     unsigned Hi2 = (Value >> 4) & 0x3;
     unsigned Lo4 = Value & 0xf;
     return (Hi2 << 4) | (Lo4 << 12);
@@ -101,36 +101,36 @@ static uint64_t adjustFixupValue(const MCFixup &Fixup, uint64_t Value,
   case Xtensa::fixup_xtensa_branch_8:
     Value -= 4;
     if (!isInt<8>(Value))
-      Ctx.reportError(Fixup.getLoc(), "fixup value out of range");
+      Ctx.reportError(Fixup.getLoc(), "branch 8-bit fixup value out of range");
     return (Value & 0xff);
   case Xtensa::fixup_xtensa_branch_12:
     Value -= 4;
     if (!isInt<12>(Value))
-      Ctx.reportError(Fixup.getLoc(), "fixup value out of range");
+      Ctx.reportError(Fixup.getLoc(), "branch 12-bit fixup value out of range");
     return (Value & 0xfff);
   case Xtensa::fixup_xtensa_jump_18:
     Value -= 4;
     if (!isInt<18>(Value))
-      Ctx.reportError(Fixup.getLoc(), "fixup value out of range");
+      Ctx.reportError(Fixup.getLoc(), "jump fixup value out of range");
     return (Value & 0x3ffff);
   case Xtensa::fixup_xtensa_call_18:
     Value -= 4;
     if (!isInt<20>(Value))
-      Ctx.reportError(Fixup.getLoc(), "fixup value out of range");
+      Ctx.reportError(Fixup.getLoc(), "call fixup value out of range");
     if (Value & 0x3)
       Ctx.reportError(Fixup.getLoc(), "fixup value must be 4-byte aligned");
     return (Value & 0xffffc) >> 2;
   case Xtensa::fixup_xtensa_loop_8:
     Value -= 4;
     if (!isUInt<8>(Value))
-      Ctx.reportError(Fixup.getLoc(), "fixup value out of range");
+      Ctx.reportError(Fixup.getLoc(), "loop fixup value out of range");
     return (Value & 0xff);
   case Xtensa::fixup_xtensa_l32r_16:
     unsigned Offset = Fixup.getOffset();
     if (Offset & 0x3)
       Value -= 4;
     if (!isInt<18>(Value) && (Value & 0x20000))
-      Ctx.reportError(Fixup.getLoc(), "fixup value out of range");
+      Ctx.reportError(Fixup.getLoc(), "l32r fixup value out of range");
     if (Value & 0x3)
       Ctx.reportError(Fixup.getLoc(), "fixup value must be 4-byte aligned");
     return (Value & 0x3fffc) >> 2;
