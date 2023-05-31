@@ -65,6 +65,14 @@
     expire_in: 1 day
   variables:
     BUILD_TOOLCHAIN_CMD_EXTRA_ARGS: ""
+  after_script:
+    # help to identify that build failed due to OOM
+    - >
+      if [ $CI_JOB_STATUS == 'failed' ]; then
+        [ ! -f "${BUILD_DIR}/build.log" ] || grep -i "internal compiler error\|Killed" ${BUILD_DIR}/build.log || true
+        [ ! -f "${BUILD_DIR}/tests.log" ] || grep -i "internal compiler error\|Killed" ${BUILD_DIR}/tests.log || true
+        [ ! -f "${BUILD_DIR}/lld-tests.log" ] || grep -i "internal compiler error\|Killed" ${BUILD_DIR}/lld-tests.log || true
+      fi
   script:
     - *get_release_name
     - mkdir ${DOWNLOADS_DIR}
