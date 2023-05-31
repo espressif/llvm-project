@@ -28,6 +28,9 @@
 
 # Nested build directory
 /build*
+/*/build-*
+/_build
+/_dist
 
 #==============================================================================#
 # Explicit files to ignore (only matches one).
