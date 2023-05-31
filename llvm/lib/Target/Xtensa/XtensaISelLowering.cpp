@@ -2579,7 +2579,9 @@ MachineBasicBlock *XtensaTargetLowering::emitAtomicRMW(MachineInstr &MI,
   const TargetRegisterClass *RC = getRegClassFor(MVT::i32);
 
   unsigned R1 = MRI.createVirtualRegister(RC);
-  BuildMI(*BB, MI, DL, TII.get(Xtensa::L32I), R1).add(AtomicValAddr).addImm(0);
+  BuildMI(*BB, MI, DL, TII.get(Xtensa::L32I), R1)
+      .addReg(AtomicValAddr.getReg())
+      .addImm(0);
 
   BB = BBLoop;
 
@@ -2643,7 +2645,7 @@ MachineBasicBlock *XtensaTargetLowering::emitAtomicRMW(MachineInstr &MI,
   BuildMI(BB, DL, TII.get(Xtensa::WSR), Xtensa::SCOMPARE1).addReg(AtomicValPhi);
   BuildMI(BB, DL, TII.get(Xtensa::S32C1I), R4)
       .addReg(R2)
-      .addReg(AtomicValAddr.getReg())
+      .addReg(AtomicValAddr.getReg(), getKillRegState(AtomicValAddr.isDead()))
       .addImm(0);
 
   BuildMI(BB, DL, TII.get(Xtensa::MOV_N), AtomicValLoop).addReg(R4);
