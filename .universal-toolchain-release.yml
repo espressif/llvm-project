@@ -58,6 +58,7 @@
   artifacts:
     paths:
       - ${DIST_DIR}/
+      - ${BUILD_DIR}/lld-tests.log
       - ${BUILD_DIR}/tests.log
       - ${BUILD_DIR}/build.log
     when: always
@@ -94,6 +95,9 @@
         touch ${BUILD_PATH}/tests.log;
         chmod o+w ${BUILD_PATH}/tests.log;
         runuser -l test_runner -c 'cmake --build '${LLVM_BUILD_PATH}' --target check-all 2>&1 > '${BUILD_PATH}'/tests.log';
+        touch ${BUILD_PATH}/lld-tests.log;
+        chmod o+w ${BUILD_PATH}/lld-tests.log;
+        runuser -l test_runner -c 'cmake --build '${LLVM_BUILD_PATH}' --target lld-test 2>&1 > '${BUILD_PATH}'/lld-tests.log';
       fi
     - export DISTRO_DIR=$PWD/$DIST_DIR
     - pushd ${BUILD_PATH}
