@@ -11,12 +11,12 @@ variables:
   # move all these to CI/CD settings
   REL_SFX: "llvm14_0_0"
   CLANG_VER: "14.0.0"
-  GCC_REL_NAME: "esp-2022r1-RC1"
+  GCC_REL_NAME: "esp-2022r1"
   GCC_REL_VER: "gcc11_2_0"
   NEWLIB_REPO: "newlib-cygwin"
-  NEWLIB_REF: "esp_based_on_4_1_0"
+  NEWLIB_REF: "esp-2022r1"
   BINUTILS_REPO: "binutils-gdb"
-  BINUTILS_REF: "esp_based_on_binutils-2_35"
+  BINUTILS_REF: "esp-2022r1-binutils"
   XTENSA_OVERLAYS_REPO: "xtensa-overlays"
   XTENSA_OVERLAYS_REF: "master"
   # TODO: update vars below to tags names after related branches are merged in those repos
