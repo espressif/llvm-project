@@ -475,11 +475,6 @@ upload_to_http:
     GIT_STRATEGY: fetch
   needs:
     - job: pack_x86_64-linux-gnu
-    - job: pack_arm-linux-gnueabihf
-    - job: pack_aarch64-linux-gnu
-    - job: pack_x86_64-w64-mingw32
-    - job: sign_x86_64-apple-darwin
-    - job: sign_aarch64-apple-darwin
   before_script:
     - !reference [.use_ci_tools, script]
   script:
