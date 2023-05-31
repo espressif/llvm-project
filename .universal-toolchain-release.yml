@@ -1,0 +1,409 @@
+
+# Prepare release name/number
+.get_release_name: &get_release_name |
+  # using annotated tags
+  REL_NUM=$(git describe --abbrev=7)
+  REL_NAME=${REL_SFX}-${REL_NUM}-${PLATFORM_NAME}
+  ARCHIVE_NAME=${REL_NAME}.${ARCHIVE_EXT}
+  LIBS_ARCHIVE_NAME=libs_${REL_NAME}.${LIBS_ARCHIVE_EXT}
+  echo "PLATFORM_NAME: $PLATFORM_NAME"
+  echo "REL_NUM: $REL_NUM"
+  echo "REL_NAME: $REL_NAME"
+  echo "ARCHIVE_NAME: $ARCHIVE_NAME"
+
+# Get an existing crosstool-ng builds for all chips
+.get_gcc_toolchain: &get_gcc_toolchain |
+  declare -a XTENSA_CPUS=("esp32"
+                         "esp32s2"
+                         "esp32s3")
+  for ((i = 0; i < ${#XTENSA_CPUS[@]}; i++)); do
+    XTENSA_CPU=${XTENSA_CPUS[$i]}
+    GCC_TOOLCHAIN_ARCH=xtensa-${XTENSA_CPU}-elf-${GCC_REL_VER}-${GCC_REL_NAME}-${PLATFORM_NAME}.${GCC_ARCHIVE_EXT}
+    wget --no-verbose https://dl.espressif.com/github_assets/espressif/crosstool-NG/releases/download/${GCC_REL_NAME}/${GCC_TOOLCHAIN_ARCH}
+    ${GCC_UNARCHIVE_TOOL} ${GCC_TOOLCHAIN_ARCH}
+  done;
+  GCC_TOOLCHAIN_ARCH=riscv32-esp-elf-${GCC_REL_VER}-${GCC_REL_NAME}-${PLATFORM_NAME}.${GCC_ARCHIVE_EXT}
+  wget --no-verbose https://dl.espressif.com/github_assets/espressif/crosstool-NG/releases/download/${GCC_REL_NAME}/${GCC_TOOLCHAIN_ARCH}
+  ${GCC_UNARCHIVE_TOOL} ${GCC_TOOLCHAIN_ARCH}
+
+# Pack the toolchain
+.package_toolchain: &package_toolchain |
+  ${ARCHIVE_TOOL} ${ARCHIVE_NAME} esp-clang/
+  mkdir -p ${DISTRO_DIR}
+  mv ${ARCHIVE_NAME} ${DISTRO_DIR}/
+  echo "${ARCHIVE_NAME}" > ${DISTRO_DIR}/file_${PLATFORM_NAME}
+
+# Pack libs to be used for Rust, Go etc.
+.package_libs: &package_libs |
+  ${LIBS_ARCHIVE_TOOL} ${LIBS_ARCHIVE_NAME} esp-clang/lib/libclang* esp-clang/lib/clang/${CLANG_VER}/include
+  mkdir -p ${DISTRO_DIR}
+  mv ${LIBS_ARCHIVE_NAME} ${DISTRO_DIR}/
+  echo "${LIBS_ARCHIVE_NAME}" > ${DISTRO_DIR}/file_libs-${PLATFORM_NAME}
+
+.get_binutils: &get_binutils |
+  git clone -b ${BINUTILS_REF} --single-branch ${GITLAB_SSH_SERVER}/idf/${BINUTILS_REPO}.git
+  BINUTILS_PATH=$PWD/${BINUTILS_REPO}
+
+.get_xtensa_overlays: &get_xtensa_overlays |
+  git clone -b ${XTENSA_OVERLAYS_REF} --single-branch ${GITLAB_SSH_SERVER}/idf/${XTENSA_OVERLAYS_REPO}.git
+  XTENSA_OVERLAYS_PATH=$PWD/${XTENSA_OVERLAYS_REPO}
+
+.get_newlib: &get_newlib |
+  git clone -b ${NEWLIB_REF} --single-branch ${GITLAB_SSH_SERVER}/idf/${NEWLIB_REPO}.git
+  NEWLIB_PATH=$PWD/${NEWLIB_REPO}
+
+.build_template:
+  stage: build
+  tags: [ "amd64", "build" ]
+  artifacts:
+    paths:
+      - ${DIST_DIR}/
+      - ${BUILD_DIR}/tests.log
+      - ${BUILD_DIR}/build.log
+    when: always
+    expire_in: 1 day
+  variables:
+    BUILD_TOOLCHAIN_CMD_EXTRA_ARGS: ""
+  script:
+    - *get_release_name
+    - mkdir ${DOWNLOADS_DIR}
+    - pushd ${DOWNLOADS_DIR}
+    - ESP_GCC_TOOLCHAIN_DIST_BASE=$PWD
+    - *get_gcc_toolchain
+    - *get_binutils
+    - *get_xtensa_overlays
+    - popd
+    - !reference [.get_clang_toolchain_build_scripts, script]
+    - !reference [.fix_origin_remote_for_public, script]
+    - LLVM_PROJECT_PATH=$PWD
+    - BUILD_PATH=$PWD/${BUILD_DIR}
+    - mkdir -p ${BUILD_PATH}
+    - export USE_PARALLEL_LINK_JOBS=2
+    # build Clang toolchain w/o newlib
+    - ${BUILD_TOOLCHAIN_CMD} --llvm-path=${LLVM_PROJECT_PATH}
+      --gcc-toolchains-path=${ESP_GCC_TOOLCHAIN_DIST_BASE} --binutils-path=${BINUTILS_PATH}
+      --xtensa-overlays-path=${XTENSA_OVERLAYS_PATH} --host=${CONF_HOST} ${BUILD_TOOLCHAIN_CMD_EXTRA_ARGS} ${BUILD_PATH} 2>&1 > ${BUILD_PATH}/build.log
+    - BUILD_HOST=$(gcc -dumpmachine)
+    # Do not run unit tests for cross-builds.
+    # Run as non-root user because permission tests fail when run by root.
+    - if [ "${CONF_HOST}" == "${BUILD_HOST}" ]; then
+        export LLVM_BUILD_PATH=${LLVM_PROJECT_PATH}/llvm/build-${CONF_HOST}-Release;
+        echo "Run unit tests for native build in ${LLVM_BUILD_PATH}";
+        useradd -m test_runner;
+        chown -R test_runner ${LLVM_BUILD_PATH};
+        touch ${BUILD_PATH}/tests.log;
+        chmod o+w ${BUILD_PATH}/tests.log;
+        runuser -l test_runner -c 'cmake --build '${LLVM_BUILD_PATH}' --target check-all 2>&1 > '${BUILD_PATH}'/tests.log';
+      fi
+    - export DISTRO_DIR=$PWD/$DIST_DIR
+    - pushd ${BUILD_PATH}
+    - *package_toolchain
+    - popd
+
+.build_linux-gnu_template:
+  extends: .build_template
+  variables:
+    ARCHIVE_TOOL: "${ARCHIVE_TOOL_LINUX}"
+    ARCHIVE_EXT: "${ARCHIVE_EXT_LINUX}"
+    GCC_UNARCHIVE_TOOL: "${UNARCHIVE_TOOL_LINUX}"
+    GCC_ARCHIVE_EXT: "${ARCHIVE_EXT_LINUX}"
+    BUILD_TOOLCHAIN_CMD: "./build-toolchain.sh"
+
+build_x86_64-linux-gnu:
+  extends: .build_linux-gnu_template
+  variables:
+    CONF_HOST: "x86_64-linux-gnu"
+    PLATFORM_NAME: "${PLATFORM_NAME_LINUX}"
+
+build_arm-linux-gnueabihf:
+  extends: .build_linux-gnu_template
+  image: ${CROSS_ARM_IMAGE}
+  variables:
+    CONF_HOST: "arm-linux-gnueabihf"
+    PLATFORM_NAME: "${PLATFORM_NAME_LINUX_ARMHF}"
+
+build_aarch64-linux-gnu:
+  extends: .build_linux-gnu_template
+  image: ${CROSS_ARM_IMAGE}
+  variables:
+    CONF_HOST: "aarch64-linux-gnu"
+    PLATFORM_NAME: "${PLATFORM_NAME_LINUX_ARM64}"
+
+build_x86_64-w64-mingw32:
+  extends: .build_template
+  needs:
+    # needs native toolchain and newlib from this job
+    - job: build_x86_64-linux-gnu
+  before_script:
+    - !reference [.use_ci_tools, script]
+    - !reference [.add_gitlab_key, script]
+    # get ARCHIVE_NAME for Linux release. Modify vars to make get_release_name working properly
+    - CLANG_LINUX_ARCHIVE=$(cat ${DIST_DIR}/file_${PLATFORM_NAME_LINUX})
+    # unpack x86_64-linux-gnu toolchain to re-use it as native Clang for Windows build
+    - mkdir -p esp-clang-${PLATFORM_NAME_LINUX}
+    - ${UNARCHIVE_TOOL_LINUX} ${DIST_DIR}/${CLANG_LINUX_ARCHIVE} -C esp-clang-${PLATFORM_NAME_LINUX}
+    # we do not want to keep artifacts from 'x86_64-linux-gnu' job
+    - rm -rf ${DIST_DIR}
+    - rm -rf ${BUILD_DIR}
+    # add build command args speciifc for Windows build
+    - export BUILD_TOOLCHAIN_CMD_EXTRA_ARGS="--native-esp-clang-path=$PWD/esp-clang-${PLATFORM_NAME_LINUX}"
+  variables:
+    CONF_HOST: "x86_64-w64-mingw32"
+    PLATFORM_NAME: "${PLATFORM_NAME_WIN}"
+    ARCHIVE_TOOL: "${ARCHIVE_TOOL_LINUX}"
+    ARCHIVE_EXT: "${ARCHIVE_EXT_LINUX}"
+    GCC_UNARCHIVE_TOOL: "${UNARCHIVE_TOOL_WIN}"
+    GCC_ARCHIVE_EXT: "${ARCHIVE_EXT_WIN}"
+    BUILD_TOOLCHAIN_CMD: "./build-toolchain-win.sh"
+
+.build_apple-darwin_template:
+  extends: .build_template
+  variables:
+    ARCHIVE_TOOL: "${ARCHIVE_TOOL_MACOS}"
+    ARCHIVE_EXT: "${ARCHIVE_EXT_MACOS}"
+    GCC_UNARCHIVE_TOOL: "${UNARCHIVE_TOOL_MACOS}"
+    GCC_ARCHIVE_EXT: "${ARCHIVE_EXT_MACOS}"
+    BUILD_TOOLCHAIN_CMD: "./build-toolchain.sh"
+
+build_x86_64-apple-darwin:
+  extends: .build_apple-darwin_template
+  variables:
+    CONF_HOST: "x86_64-apple-darwin21.1"
+    PLATFORM_NAME: "${PLATFORM_NAME_MACOS}"
+
+build_aarch64-apple-darwin:
+  extends: .build_apple-darwin_template
+  variables:
+    CONF_HOST: "aarch64-apple-darwin21.1"
+    PLATFORM_NAME: "${PLATFORM_NAME_MACOS_ARM64}"
+
+build_newlib:
+  stage: build
+  tags: [ "amd64", "build" ]
+  needs:
+    # needs native toolchainfrom this job
+    - job: build_x86_64-linux-gnu
+  artifacts:
+    paths:
+      - ${DIST_DIR}/
+      - ${BUILD_DIR}/build.log
+    when: always
+    expire_in: 1 day
+  variables:
+    PLATFORM_NAME: "${PLATFORM_NAME_LINUX}"
+    ARCHIVE_TOOL: "${ARCHIVE_TOOL_LINUX}"
+    UNARCHIVE_TOOL: "${UNARCHIVE_TOOL_LINUX}"
+    ARCHIVE_EXT: "${ARCHIVE_EXT_LINUX}"
+  script:
+    # get ARCHIVE_NAME for Linux release.
+    - CLANG_ARCHIVE=$PWD/${DIST_DIR}/$(cat ${DIST_DIR}/file_${PLATFORM_NAME_LINUX})
+    - mkdir -p ${DOWNLOADS_DIR}
+    - pushd ${DOWNLOADS_DIR}
+    - *get_xtensa_overlays
+    - *get_newlib
+    # unpack clang
+    - ${UNARCHIVE_TOOL} ${CLANG_ARCHIVE}
+    - export PATH=$PWD/esp-clang/bin:$PATH
+    - popd
+    - rm -rf $PWD/${DIST_DIR}
+    - !reference [.get_clang_toolchain_build_scripts, script]
+    # build newlib overlay using ESP native (Linux) clang toolchain only
+    # it will be re-used for cross-buit toolchains (win and mac).
+    - NEWLIB_OVERLAY_DISTRO_PATH=$PWD/${DIST_DIR}
+    - mkdir -p ${NEWLIB_OVERLAY_DISTRO_PATH}
+    - BUILD_PATH=$PWD/${BUILD_DIR}
+    - mkdir -p ${BUILD_PATH}
+    - ./build-toolchain.sh --newlib-path=${NEWLIB_PATH} --xtensa-overlays-path=${XTENSA_OVERLAYS_PATH} ${BUILD_PATH} 2>&1 > ${BUILD_PATH}/build.log
+    - pushd ${BUILD_PATH}
+    - ${ARCHIVE_TOOL_NEWLIB} ${NEWLIB_OVERLAY_DISTRO_PATH}/esp-clang-newlib-overlay.${ARCHIVE_EXT_NEWLIB} esp-clang/
+    - popd
+
+.pack_template:
+  stage: pack
+  tags: [ "amd64", "build" ]
+  artifacts:
+    paths:
+      - ${DIST_DIR}/
+    when: always
+    expire_in: 3 day
+  script:
+    - *get_release_name
+    - export BUILD_PATH=$PWD/${BUILD_DIR}
+    - mkdir -p ${BUILD_PATH}
+    # unpack clang
+    - ${UNARCHIVE_TOOL} ${DIST_DIR}/${ARCHIVE_NAME} -C ${BUILD_PATH}
+    # unpack newlib
+    - ${UNARCHIVE_TOOL_NEWLIB} ${DIST_DIR}/esp-clang-newlib-overlay.${ARCHIVE_EXT_NEWLIB} -C ${BUILD_PATH}
+    - rm -rf ${DIST_DIR}
+    - !reference [.get_clang_toolchain_build_scripts, script]
+    # strip binutils afer newlib is built
+    - STRIP_BINUTILS=YES ./build-toolchain.sh --host=${CONF_HOST} ${BUILD_PATH}
+    - DISTRO_DIR=$PWD/${DIST_DIR}
+    - pushd ${BUILD_PATH}
+    - *package_toolchain
+    - *package_libs
+    - popd
+
+.pack_linux-gnu_template:
+  extends: .pack_template
+  variables:
+    ARCHIVE_TOOL: "${ARCHIVE_TOOL_LINUX}"
+    UNARCHIVE_TOOL: "${UNARCHIVE_TOOL_LINUX}"
+    ARCHIVE_EXT: "${ARCHIVE_EXT_LINUX}"
+    LIBS_ARCHIVE_TOOL: "${ARCHIVE_TOOL_LINUX}"
+    LIBS_UNARCHIVE_TOOL: "${UNARCHIVE_TOOL_LINUX}"
+    LIBS_ARCHIVE_EXT: "${ARCHIVE_EXT_LINUX}"
+
+pack_x86_64-linux-gnu:
+  extends: .pack_linux-gnu_template
+  needs:
+    - job: build_x86_64-linux-gnu
+    - job: build_newlib
+  variables:
+    CONF_HOST: "x86_64-linux-gnu"
+    PLATFORM_NAME: "${PLATFORM_NAME_LINUX}"
+
+pack_arm-linux-gnueabihf:
+  extends: .pack_linux-gnu_template
+  image: ${CROSS_ARM_IMAGE}
+  needs:
+    - job: build_arm-linux-gnueabihf
+    - job: build_newlib
+  variables:
+    CONF_HOST: "arm-linux-gnueabihf"
+    PLATFORM_NAME: "${PLATFORM_NAME_LINUX_ARMHF}"
+
+pack_aarch64-linux-gnu:
+  extends: .pack_linux-gnu_template
+  image: ${CROSS_ARM_IMAGE}
+  needs:
+    - job: build_aarch64-linux-gnu
+    - job: build_newlib
+  variables:
+    CONF_HOST: "aarch64-linux-gnu"
+    PLATFORM_NAME: "${PLATFORM_NAME_LINUX_ARM64}"
+
+pack_x86_64-w64-mingw32:
+  extends: .pack_template
+  needs:
+    - job: build_x86_64-w64-mingw32
+    - job: build_newlib
+  variables:
+    CONF_HOST: "x86_64-w64-mingw32"
+    PLATFORM_NAME: "${PLATFORM_NAME_WIN}"
+    ARCHIVE_TOOL: "${ARCHIVE_TOOL_LINUX}"
+    UNARCHIVE_TOOL: "${UNARCHIVE_TOOL_LINUX}"
+    ARCHIVE_EXT: "${ARCHIVE_EXT_LINUX}"
+    LIBS_ARCHIVE_TOOL: "${ARCHIVE_TOOL_WIN}"
+    LIBS_UNARCHIVE_TOOL: "${UNARCHIVE_TOOL_WIN}"
+    LIBS_ARCHIVE_EXT: "${ARCHIVE_EXT_WIN}"
+
+.pack_apple-darwin_template:
+  extends: .pack_template
+  variables:
+    ARCHIVE_TOOL: "${ARCHIVE_TOOL_MACOS}"
+    UNARCHIVE_TOOL: "${UNARCHIVE_TOOL_MACOS}"
+    ARCHIVE_EXT: "${ARCHIVE_EXT_MACOS}"
+    LIBS_ARCHIVE_TOOL: "${ARCHIVE_TOOL_MACOS}"
+    LIBS_UNARCHIVE_TOOL: "${UNARCHIVE_TOOL_MACOS}"
+    LIBS_ARCHIVE_EXT: "${ARCHIVE_EXT_MACOS}"
+
+pack_x86_64-apple-darwin:
+  extends: .pack_apple-darwin_template
+  needs:
+    - job: build_x86_64-apple-darwin
+    - job: build_newlib
+  variables:
+    CONF_HOST: "x86_64-apple-darwin21.1"
+    PLATFORM_NAME: "${PLATFORM_NAME_MACOS}"
+
+pack_aarch64-apple-darwin:
+  extends: .pack_apple-darwin_template
+  needs:
+    - job: build_aarch64-apple-darwin
+    - job: build_newlib
+  variables:
+    CONF_HOST: "aarch64-apple-darwin21.1"
+    PLATFORM_NAME: "${PLATFORM_NAME_MACOS_ARM64}"
+
+test_x86_64-linux-gnu:
+  stage: test
+  tags: [ "amd64", "build" ]
+  needs:
+    - job: pack_x86_64-linux-gnu
+  variables:
+    PLATFORM_NAME: "${PLATFORM_NAME_LINUX}"
+    ARCHIVE_TOOL: "${ARCHIVE_TOOL_LINUX}"
+    UNARCHIVE_TOOL: "${UNARCHIVE_TOOL_LINUX}"
+    ARCHIVE_EXT: "${ARCHIVE_EXT_LINUX}"
+  script:
+    - *get_release_name
+    - ${UNARCHIVE_TOOL} ${DIST_DIR}/${ARCHIVE_NAME}
+    # getting testsuite
+    - git clone -b ${LLVM_GCC_TESTSUITE_REF} --depth 1 $GITLAB_SSH_SERVER/idf/llvm-xtensa-testsuite.git
+    # preparing testsuite
+    - export PATH=${PWD}/esp-clang/bin:$PATH
+    - cd llvm-xtensa-testsuite
+    # qemu
+    - ./qemu_esp32_install.sh
+    # run testsuite for esp32
+    - ./run_esp32_tests.sh
+
+upload_to_http:
+  stage: private_deploy
+  when: manual
+  allow_failure: true
+  tags: [ "deploy", "shiny" ]
+  variables:
+    # force the fetch strategy to clean old archives up in dist/ dir
+    GIT_STRATEGY: fetch
+  needs:
+    - job: pack_x86_64-linux-gnu
+    - job: pack_arm-linux-gnueabihf
+    - job: pack_aarch64-linux-gnu
+    - job: pack_x86_64-w64-mingw32
+    - job: pack_x86_64-apple-darwin
+    - job: pack_aarch64-apple-darwin
+  before_script:
+    - !reference [.use_ci_tools, script]
+  script:
+    - cit_add_ssh_key "${HTTP_UPLOAD_KEY}"
+    # List of archives
+    - FILES=$(find ${DIST_DIR} -name file_\* -exec cat {} \+)
+    - cd ${DIST_DIR}
+    - ls -l $FILES
+    - scp ${FILES} ${HTTP_UPLOAD_DIR}/ct-ng/llvm-builds
+    # Show info
+    - echo -e "\nArchives were published there:\n\n$(for n in ${FILES}; do echo "${HTTP_PUBLIC_DIR}/ct-ng/llvm-builds/${n}"; done)\n"
+
+upload_to_github:
+  stage: public_deploy
+  when: manual
+  allow_failure: true
+  only:
+    - tags
+  tags: [ "amd64", "internet" ]
+  image: espressif/github-hub:2
+  variables:
+    GIT_STRATEGY: fetch
+    GITHUB_TOKEN: "${GH_TOKEN}"
+    GITHUB_REPO: "${GH_REPO_HTTPS}"
+    TAG: "${CI_COMMIT_TAG}"
+  needs:
+    - job: pack_x86_64-linux-gnu
+    - job: pack_arm-linux-gnueabihf
+    - job: pack_aarch64-linux-gnu
+    - job: pack_x86_64-w64-mingw32
+    - job: pack_x86_64-apple-darwin
+    - job: pack_aarch64-apple-darwin
+  before_script: []
+  script:
+    - ls -l dist*/
+    - git remote add github ${GH_REPO_HTTPS}
+    - hub release show ${TAG} || { echo "Please create a release on GitHub with ${TAG} tag at first"; exit 1; }
+    # List of archives
+    - FILES=$(find ${DIST_DIR} -name file_\* -exec cat {} \+)
+    - cd ${DIST_DIR}
+    - ls -l $FILES
+    # Upload archives
+    - for n in ${FILES}; do hub release edit -m "" -a "${n}" "${TAG}"; done
