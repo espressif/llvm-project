@@ -10,8 +10,8 @@ image: ${CI_DOCKER_REGISTRY}/llvm-build:4
 variables:
 
   # move all these to CI/CD settings
-  REL_SFX: "llvm14_0_0"
-  CLANG_VER: "14.0.0"
+  REL_SFX: "llvm15_0_0"
+  CLANG_VER: "15.0.0"
   GCC_REL_NAME: "esp-2022r1"
   GCC_REL_VER: "gcc11_2_0"
   NEWLIB_REPO: "newlib-cygwin"
