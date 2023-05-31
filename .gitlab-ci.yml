@@ -23,10 +23,12 @@ variables:
   LLVM_GCC_TESTSUITE_REF: "release_universal_clang_toolchain"
   # TODO: update var below to tags names after related branches are merged in those repos
   # XTENSA_CLANG_TOOLCHAIN_REF: "release_universal_clang_toolchain"
-  XTENSA_CLANG_TOOLCHAIN_REF: "build_macos_arm64"
+  XTENSA_CLANG_TOOLCHAIN_REF: "universal_toolchain/build_linux_arm64"
 
-  PLATFORM_NAME_LINUX_ARM64: "linux-arm64"
+  CROSS_ARM_IMAGE: $CI_DOCKER_REGISTRY/llvm-build-cross-arm:1
   PLATFORM_NAME_LINUX: "linux-amd64"
+  PLATFORM_NAME_LINUX_ARMHF: "linux-armhf"
+  PLATFORM_NAME_LINUX_ARM64: "linux-arm64"
   PLATFORM_NAME_WIN: "win64"
   PLATFORM_NAME_MACOS: "macos"
   PLATFORM_NAME_MACOS_ARM64: "macos-arm64"
@@ -171,7 +173,7 @@ before_script:
     # Do not run unit tests for cross-builds.
     # Run as non-root user because permission tests fail when run by root.
     - if [ "${CONF_HOST}" == "${BUILD_HOST}" ]; then
-        export LLVM_BUILD_PATH=${LLVM_PROJECT_PATH}/llvm/build-Release-${CONF_HOST};
+        export LLVM_BUILD_PATH=${LLVM_PROJECT_PATH}/llvm/build-${CONF_HOST}-Release;
         echo "Run unit tests for native build in ${LLVM_BUILD_PATH}";
         useradd -m test_runner;
         chown -R test_runner ${LLVM_BUILD_PATH};
@@ -184,15 +186,33 @@ before_script:
     - *package_toolchain
     - popd
 
-build_x86_64-linux-gnu:
+.build_linux-gnu_template:
   extends: .build_template
   variables:
-    CONF_HOST: "x86_64-linux-gnu"
-    PLATFORM_NAME: "${PLATFORM_NAME_LINUX}"
     ARCHIVE_TOOL: "${ARCHIVE_TOOL_LINUX}"
     UNARCHIVE_TOOL: "${UNARCHIVE_TOOL_LINUX}"
     ARCHIVE_EXT: "${ARCHIVE_EXT_LINUX}"
     BUILD_TOOLCHAIN_CMD: "./build-toolchain.sh"
+
+build_x86_64-linux-gnu:
+  extends: .build_linux-gnu_template
+  variables:
+    CONF_HOST: "x86_64-linux-gnu"
+    PLATFORM_NAME: "${PLATFORM_NAME_LINUX}"
+
+build_arm-linux-gnueabihf:
+  extends: .build_linux-gnu_template
+  image: ${CROSS_ARM_IMAGE}
+  variables:
+    CONF_HOST: "arm-linux-gnueabihf"
+    PLATFORM_NAME: "${PLATFORM_NAME_LINUX_ARMHF}"
+
+build_aarch64-linux-gnu:
+  extends: .build_linux-gnu_template
+  image: ${CROSS_ARM_IMAGE}
+  variables:
+    CONF_HOST: "aarch64-linux-gnu"
+    PLATFORM_NAME: "${PLATFORM_NAME_LINUX_ARM64}"
 
 build_x86_64-w64-mingw32:
   extends: .build_template
@@ -228,20 +248,19 @@ build_x86_64-w64-mingw32:
     ARCHIVE_TOOL: "${ARCHIVE_TOOL_MACOS}"
     UNARCHIVE_TOOL: "${UNARCHIVE_TOOL_MACOS}"
     ARCHIVE_EXT: "${ARCHIVE_EXT_MACOS}"
+    BUILD_TOOLCHAIN_CMD: "./build-toolchain.sh"
 
 build_x86_64-apple-darwin:
   extends: .build_apple-darwin_template
   variables:
     CONF_HOST: "x86_64-apple-darwin21.1"
     PLATFORM_NAME: "${PLATFORM_NAME_MACOS}"
-    BUILD_TOOLCHAIN_CMD: "./build-toolchain-macos.sh --host-arch=x86_64"
 
 build_aarch64-apple-darwin:
   extends: .build_apple-darwin_template
   variables:
     CONF_HOST: "aarch64-apple-darwin21.1"
     PLATFORM_NAME: "${PLATFORM_NAME_MACOS_ARM64}"
-    BUILD_TOOLCHAIN_CMD: "./build-toolchain-macos.sh --host-arch=aarch64"
 
 build_newlib:
   stage: build
@@ -318,17 +337,41 @@ build_newlib:
     - *package_libs
     - popd
 
-pack_x86_64-linux-gnu:
+.pack_linux-gnu_template:
   extends: .pack_template
+  variables:
+    ARCHIVE_TOOL: "${ARCHIVE_TOOL_LINUX}"
+    UNARCHIVE_TOOL: "${UNARCHIVE_TOOL_LINUX}"
+    ARCHIVE_EXT: "${ARCHIVE_EXT_LINUX}"
+
+pack_x86_64-linux-gnu:
+  extends: .pack_linux-gnu_template
   needs:
     - job: build_x86_64-linux-gnu
     - job: build_newlib
   variables:
     CONF_HOST: "x86_64-linux-gnu"
     PLATFORM_NAME: "${PLATFORM_NAME_LINUX}"
-    ARCHIVE_TOOL: "${ARCHIVE_TOOL_LINUX}"
-    UNARCHIVE_TOOL: "${UNARCHIVE_TOOL_LINUX}"
-    ARCHIVE_EXT: "${ARCHIVE_EXT_LINUX}"
+
+pack_arm-linux-gnueabihf:
+  extends: .pack_linux-gnu_template
+  image: ${CROSS_ARM_IMAGE}
+  needs:
+    - job: build_arm-linux-gnueabihf
+    - job: build_newlib
+  variables:
+    CONF_HOST: "arm-linux-gnueabihf"
+    PLATFORM_NAME: "${PLATFORM_NAME_LINUX_ARMHF}"
+
+pack_aarch64-linux-gnu:
+  extends: .pack_linux-gnu_template
+  image: ${CROSS_ARM_IMAGE}
+  needs:
+    - job: build_aarch64-linux-gnu
+    - job: build_newlib
+  variables:
+    CONF_HOST: "aarch64-linux-gnu"
+    PLATFORM_NAME: "${PLATFORM_NAME_LINUX_ARM64}"
 
 pack_x86_64-w64-mingw32:
   extends: .pack_template
@@ -459,7 +502,7 @@ linux_amd64_build:
 
 linux_arm64_build:
   extends: .build_template_old
-  image: $CI_DOCKER_REGISTRY/llvm-build-cross-arm:1
+  image: ${CROSS_ARM_IMAGE}
   variables:
     PLATFORM_NAME: "${PLATFORM_NAME_LINUX_ARM64}"
     ARCHIVE_TOOL: "${ARCHIVE_TOOL_LINUX}"
