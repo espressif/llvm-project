@@ -1467,13 +1467,14 @@ def WITLB : RRR_Inst<0x00, 0x00, 0x05, (outs AR:$t), (ins AR:$s),
 // Illegal instructions
 //===----------------------------------------------------------------------===//
 
-let isTerminator = 1 in
-def ILL : CALLX_Inst<0x00, 0x00, 0x00, (outs), (ins),
-                    "ill", []> {
-  let m = 0x0;
-  let n = 0x0;
-  let r = 0;
-  let s = 0;
+let isBarrier = 1, isTerminator = 1 in {
+  def ILL : CALLX_Inst<0x00, 0x00, 0x00, (outs), (ins),
+                      "ill", []> {
+    let m = 0x0;
+    let n = 0x0;
+    let r = 0;
+    let s = 0;
+  }
 }
 
 //===----------------------------------------------------------------------===//
