@@ -71,6 +71,9 @@ RelExpr Xtensa::getRelExpr(RelType type, const Symbol &s,
     // Because it's a relaxation hint, this relocation can be ignored for now
     // until linker relaxations are implemented.
     return R_NONE;
+  case R_XTENSA_DIFF8:
+  case R_XTENSA_DIFF16:
+  case R_XTENSA_DIFF32:
   case R_XTENSA_PDIFF8:
   case R_XTENSA_PDIFF16:
   case R_XTENSA_PDIFF32:
