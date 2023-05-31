@@ -96,7 +96,7 @@
     # Do not run unit tests for cross-builds.
     # Run as non-root user because permission tests fail when run by root.
     - if [ "${CONF_HOST}" == "${BUILD_HOST}" ]; then
-        export LLVM_BUILD_PATH=${LLVM_PROJECT_PATH}/llvm/build-${CONF_HOST}-Release;
+        export LLVM_BUILD_PATH=${BUILD_PATH}/build/llvm/build-${CONF_HOST}-Release;
         echo "Run unit tests for native build in ${LLVM_BUILD_PATH}";
         useradd -m test_runner;
         chown -R test_runner ${LLVM_BUILD_PATH};
@@ -193,7 +193,7 @@ build_newlib:
   stage: build
   tags: [ "amd64", "build" ]
   needs:
-    # needs native toolchainfrom this job
+    # needs native toolchain
     - job: build_x86_64-linux-gnu
   artifacts:
     paths:
@@ -230,6 +230,52 @@ build_newlib:
     - ${ARCHIVE_TOOL_NEWLIB} ${NEWLIB_OVERLAY_DISTRO_PATH}/esp-clang-newlib-overlay.${ARCHIVE_EXT_NEWLIB} esp-clang/
     - popd
 
+build_compiler-rt:
+  stage: build
+  tags: [ "amd64", "build" ]
+  needs:
+    # needs native toolchain with newlib
+    # newlib is necessary for building tests
+    - job: build_x86_64-linux-gnu
+    - job: build_newlib
+  artifacts:
+    paths:
+      - ${DIST_DIR}/
+      - ${BUILD_DIR}/build.log
+    when: always
+    expire_in: 1 day
+  variables:
+    PLATFORM_NAME: "${PLATFORM_NAME_LINUX}"
+    ARCHIVE_TOOL: "${ARCHIVE_TOOL_LINUX}"
+    UNARCHIVE_TOOL: "${UNARCHIVE_TOOL_LINUX}"
+    ARCHIVE_EXT: "${ARCHIVE_EXT_LINUX}"
+  script:
+    - LLVM_PROJECT_PATH=$PWD
+    # get ARCHIVE_NAME for Linux release.
+    - CLANG_ARCHIVE=$PWD/${DIST_DIR}/$(cat ${DIST_DIR}/file_${PLATFORM_NAME_LINUX})
+    - NEWLIB_ARCHIVE=$PWD/${DIST_DIR}/esp-clang-newlib-overlay.${ARCHIVE_EXT_NEWLIB}
+    - mkdir -p ${DOWNLOADS_DIR}
+    - pushd ${DOWNLOADS_DIR}
+    # unpack clang
+    - ${UNARCHIVE_TOOL} ${CLANG_ARCHIVE}
+    # unpack newlib
+    - ${UNARCHIVE_TOOL_NEWLIB} ${NEWLIB_ARCHIVE}
+    # now Linux toolchain with newlib is in $PWD/esp-clang
+    - export PATH=$PWD/esp-clang/bin:$PATH
+    - popd
+    - rm -rf $PWD/${DIST_DIR}
+    - !reference [.get_clang_toolchain_build_scripts, script]
+    # build compiler-rt overlay using ESP native (Linux) clang toolchain only
+    # it will be re-used for cross-buit toolchains (win and mac).
+    - COMPILER_RT_OVERLAY_DISTRO_PATH=$PWD/${DIST_DIR}
+    - mkdir -p ${COMPILER_RT_OVERLAY_DISTRO_PATH}
+    - BUILD_PATH=$PWD/${BUILD_DIR}
+    - mkdir -p ${BUILD_PATH}
+    - ./build-toolchain.sh --llvm-path=${LLVM_PROJECT_PATH} --build-llvm=no --build-compiler-rt=yes ${BUILD_PATH} 2>&1 > ${BUILD_PATH}/build.log
+    - pushd ${BUILD_PATH}
+    - ${ARCHIVE_TOOL_COMPILER_RT} ${COMPILER_RT_OVERLAY_DISTRO_PATH}/esp-clang-compiler-rt-overlay.${ARCHIVE_EXT_COMPILER_RT} esp-clang/
+    - popd
+
 .pack_template:
   stage: pack
   tags: [ "amd64", "build" ]
@@ -246,6 +292,8 @@ build_newlib:
     - ${UNARCHIVE_TOOL} ${DIST_DIR}/${ARCHIVE_NAME} -C ${BUILD_PATH}
     # unpack newlib
     - ${UNARCHIVE_TOOL_NEWLIB} ${DIST_DIR}/esp-clang-newlib-overlay.${ARCHIVE_EXT_NEWLIB} -C ${BUILD_PATH}
+    # unpack compiler-rt
+    - ${UNARCHIVE_TOOL_COMPILER_RT} ${DIST_DIR}/esp-clang-compiler-rt-overlay.${ARCHIVE_EXT_COMPILER_RT} -C ${BUILD_PATH}
     - rm -rf ${DIST_DIR}
     - !reference [.get_clang_toolchain_build_scripts, script]
     # strip binutils afer newlib is built
@@ -268,6 +316,7 @@ pack_x86_64-linux-gnu:
   needs:
     - job: build_x86_64-linux-gnu
     - job: build_newlib
+    - job: build_compiler-rt
   variables:
     CONF_HOST: "x86_64-linux-gnu"
     PLATFORM_NAME: "${PLATFORM_NAME_LINUX}"
@@ -278,6 +327,7 @@ pack_arm-linux-gnueabihf:
   needs:
     - job: build_arm-linux-gnueabihf
     - job: build_newlib
+    - job: build_compiler-rt
   variables:
     CONF_HOST: "arm-linux-gnueabihf"
     PLATFORM_NAME: "${PLATFORM_NAME_LINUX_ARMHF}"
@@ -288,6 +338,7 @@ pack_aarch64-linux-gnu:
   needs:
     - job: build_aarch64-linux-gnu
     - job: build_newlib
+    - job: build_compiler-rt
   variables:
     CONF_HOST: "aarch64-linux-gnu"
     PLATFORM_NAME: "${PLATFORM_NAME_LINUX_ARM64}"
@@ -297,6 +348,7 @@ pack_x86_64-w64-mingw32:
   needs:
     - job: build_x86_64-w64-mingw32
     - job: build_newlib
+    - job: build_compiler-rt
   variables:
     CONF_HOST: "x86_64-w64-mingw32"
     PLATFORM_NAME: "${PLATFORM_NAME_WIN}"
@@ -317,6 +369,7 @@ pack_x86_64-apple-darwin:
   needs:
     - job: build_x86_64-apple-darwin
     - job: build_newlib
+    - job: build_compiler-rt
   variables:
     CONF_HOST: "x86_64-apple-darwin21.1"
     PLATFORM_NAME: "${PLATFORM_NAME_MACOS}"
@@ -326,6 +379,7 @@ pack_aarch64-apple-darwin:
   needs:
     - job: build_aarch64-apple-darwin
     - job: build_newlib
+    - job: build_compiler-rt
   variables:
     CONF_HOST: "aarch64-apple-darwin21.1"
     PLATFORM_NAME: "${PLATFORM_NAME_MACOS_ARM64}"
