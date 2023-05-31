@@ -315,7 +315,8 @@ void xtensa::Linker::ConstructJob(Compilation &C, const JobAction &JA,
   if (WantCRTs) {
     // TODO: The crt0.o is not used for esp targets, but maybe used in
     // future for other vendors
-    // CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("crt0.o")));
+    if (ToolChain.getTriple().getVendor() != llvm::Triple::Espressif)
+      CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("crt0.o")));
     CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath(crtbegin)));
   }
 
