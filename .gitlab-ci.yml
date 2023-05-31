@@ -1,6 +1,7 @@
 stages:
   - build
   - pack
+  - sign
   - private_deploy
   - test
   - public_deploy
