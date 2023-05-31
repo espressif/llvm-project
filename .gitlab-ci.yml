@@ -15,14 +15,11 @@ variables:
   CLANG_VER: "15.0.0"
   GCC_REL_NAME: "esp-2022r1"
   GCC_REL_VER: "gcc11_2_0"
-  NEWLIB_REPO: "newlib-cygwin"
   NEWLIB_REF: "esp-2022r1"
-  BINUTILS_REPO: "binutils-gdb"
   BINUTILS_REF: "esp-2022r1-binutils"
-  XTENSA_OVERLAYS_REPO: "xtensa-overlays"
   XTENSA_OVERLAYS_REF: "master"
-  LLVM_GCC_TESTSUITE_REF: "release_universal_clang_toolchain"
-  XTENSA_CLANG_TOOLCHAIN_REF: "release_universal_clang_toolchain"
+  LLVM_GCC_TESTSUITE_REF: "esp-15.0.0-20221201"
+  XTENSA_CLANG_TOOLCHAIN_REF: "esp-15.0.0-20221201"
 
   CROSS_ARM_IMAGE: $CI_DOCKER_REGISTRY/llvm-build-cross-arm:1
   PLATFORM_NAME_LINUX: "linux-amd64"
@@ -39,10 +36,10 @@ variables:
   ARCHIVE_TOOL_WIN: "zip -9 -r"
   UNARCHIVE_TOOL_WIN: "unzip"
   ARCHIVE_EXT_WIN: "zip"
-  # Use Linux xz compressor to minimize Windows build artifact size.
-  # Upon release archive will be re-packed into zip format for uploading to GH.
-  ARCHIVE_TOOL_WIN_INT: ${ARCHIVE_TOOL_LINUX}
-  UNARCHIVE_TOOL_WIN_INT: ${UNARCHIVE_TOOL_LINUX}
+
+  PACK_ARCHIVE_TOOL_WIN: "tar -h -cJf"
+  PACK_UNARCHIVE_TOOL_WIN: "${UNARCHIVE_TOOL_LINUX}"
+  PACK_ARCHIVE_EXT_WIN: "${ARCHIVE_EXT_LINUX}"
 
   ARCHIVE_TOOL_MACOS: "tar -cJf"
   UNARCHIVE_TOOL_MACOS: "tar -xf"
@@ -51,10 +48,6 @@ variables:
   ARCHIVE_TOOL_NEWLIB: ${ARCHIVE_TOOL_LINUX}
   UNARCHIVE_TOOL_NEWLIB: ${UNARCHIVE_TOOL_LINUX}
   ARCHIVE_EXT_NEWLIB: ${ARCHIVE_EXT_LINUX}
-
-  LIBS_ARCHIVE_TOOL: "${ARCHIVE_TOOL_LINUX}"
-  LIBS_UNARCHIVE_TOOL: "${UNARCHIVE_TOOL_LINUX}"
-  LIBS_ARCHIVE_EXT: "${ARCHIVE_EXT_LINUX}"
 
   DIST_DIR: "dist"
   BUILD_DIR: "build"

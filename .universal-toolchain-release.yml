@@ -5,7 +5,7 @@
   REL_NUM=$(git describe --abbrev=7)
   REL_NAME=${REL_SFX}-${REL_NUM}-${PLATFORM_NAME}
   ARCHIVE_NAME=${REL_NAME}.${ARCHIVE_EXT}
-  LIBS_ARCHIVE_NAME=libs_${REL_NAME}.${LIBS_ARCHIVE_EXT}
+  LIBS_ARCHIVE_NAME=libs_${REL_NAME}.${ARCHIVE_EXT}
   echo "PLATFORM_NAME: $PLATFORM_NAME"
   echo "REL_NUM: $REL_NUM"
   echo "REL_NAME: $REL_NAME"
@@ -35,7 +35,7 @@
 
 # Pack libs to be used for Rust, Go etc.
 .package_libs: &package_libs |
-  ${LIBS_ARCHIVE_TOOL} ${LIBS_ARCHIVE_NAME} esp-clang/lib/libclang* esp-clang/lib/clang/${CLANG_VER}/include
+  eval ${ARCHIVE_TOOL} ${LIBS_ARCHIVE_NAME} esp-clang/lib/clang/${CLANG_VER}/include esp-clang/lib/lib{clang,LLVM}* ${LIBS_PACK_EXTRA_PATHS:-}
   mkdir -p ${DISTRO_DIR}
   mv ${LIBS_ARCHIVE_NAME} ${DISTRO_DIR}/
   echo "${LIBS_ARCHIVE_NAME}" > ${DISTRO_DIR}/file_libs-${PLATFORM_NAME}
@@ -254,9 +254,6 @@ build_newlib:
     ARCHIVE_TOOL: "${ARCHIVE_TOOL_LINUX}"
     UNARCHIVE_TOOL: "${UNARCHIVE_TOOL_LINUX}"
     ARCHIVE_EXT: "${ARCHIVE_EXT_LINUX}"
-    LIBS_ARCHIVE_TOOL: "${ARCHIVE_TOOL_LINUX}"
-    LIBS_UNARCHIVE_TOOL: "${UNARCHIVE_TOOL_LINUX}"
-    LIBS_ARCHIVE_EXT: "${ARCHIVE_EXT_LINUX}"
 
 pack_x86_64-linux-gnu:
   extends: .pack_linux-gnu_template
@@ -295,12 +292,10 @@ pack_x86_64-w64-mingw32:
   variables:
     CONF_HOST: "x86_64-w64-mingw32"
     PLATFORM_NAME: "${PLATFORM_NAME_WIN}"
-    ARCHIVE_TOOL: "${ARCHIVE_TOOL_LINUX}"
-    UNARCHIVE_TOOL: "${UNARCHIVE_TOOL_LINUX}"
-    ARCHIVE_EXT: "${ARCHIVE_EXT_LINUX}"
-    LIBS_ARCHIVE_TOOL: "${ARCHIVE_TOOL_WIN}"
-    LIBS_UNARCHIVE_TOOL: "${UNARCHIVE_TOOL_WIN}"
-    LIBS_ARCHIVE_EXT: "${ARCHIVE_EXT_WIN}"
+    ARCHIVE_TOOL: "${PACK_ARCHIVE_TOOL_WIN}"
+    UNARCHIVE_TOOL: "${PACK_UNARCHIVE_TOOL_WIN}"
+    ARCHIVE_EXT: "${PACK_ARCHIVE_EXT_WIN}"
+    LIBS_PACK_EXTRA_PATHS: esp-clang/bin/lib{c++,clang,LLVM,unwind}*
 
 .pack_apple-darwin_template:
   extends: .pack_template
@@ -308,9 +303,6 @@ pack_x86_64-w64-mingw32:
     ARCHIVE_TOOL: "${ARCHIVE_TOOL_MACOS}"
     UNARCHIVE_TOOL: "${UNARCHIVE_TOOL_MACOS}"
     ARCHIVE_EXT: "${ARCHIVE_EXT_MACOS}"
-    LIBS_ARCHIVE_TOOL: "${ARCHIVE_TOOL_MACOS}"
-    LIBS_UNARCHIVE_TOOL: "${UNARCHIVE_TOOL_MACOS}"
-    LIBS_ARCHIVE_EXT: "${ARCHIVE_EXT_MACOS}"
 
 pack_x86_64-apple-darwin:
   extends: .pack_apple-darwin_template
@@ -344,10 +336,10 @@ test_x86_64-linux-gnu:
     - *get_release_name
     - ${UNARCHIVE_TOOL} ${DIST_DIR}/${ARCHIVE_NAME}
     # getting testsuite
-    - git clone -b ${LLVM_GCC_TESTSUITE_REF} --depth 1 $GITLAB_SSH_SERVER/idf/llvm-xtensa-testsuite.git
+    - git clone -b ${LLVM_GCC_TESTSUITE_REF} --depth 1 $GITLAB_SSH_SERVER/idf/${LLVM_TESTSUITE_REPO}.git
     # preparing testsuite
     - export PATH=${PWD}/esp-clang/bin:$PATH
-    - cd llvm-xtensa-testsuite
+    - cd ${LLVM_TESTSUITE_REPO}
     # qemu
     - ./qemu_esp32_install.sh
     # run testsuite for esp32
