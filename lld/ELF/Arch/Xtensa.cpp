@@ -95,19 +95,19 @@ RelExpr Xtensa::getRelExpr(RelType type, const Symbol &s,
 }
 
 static inline bool isRRI8Branch(uint8_t *loc) {
-  if ((loc[0] & 0x0f) == 0b0111) {
-    // instructions: ball, bany, bbc, bbci, bbs, bbsi, beq, bge, bgeu, blt,
-    // bltu, bnall, bne, bnone
+  // instructions: ball, bany, bbc, bbci, bbs, bbsi, beq, bge, bgeu, blt,
+  // bltu, bnall, bne, bnone
+  if ((loc[0] & 0x0f) == 0b0111)
     return true;
-  }
-  if ((loc[0] & 0b11'1111) == 0b10'0110) {
-    // instructions: beqi, bgei, bnei, blti
+  // instructions: beqi, bgei, bnei, blti
+  if ((loc[0] & 0b11'1111) == 0b10'0110)
     return true;
-  }
-  if ((loc[0] & 0b1011'1111) == 0b1011'0110) {
-    // instructions: bgeui, bltui
+  // instructions: bgeui, bltui
+  if ((loc[0] & 0b1011'1111) == 0b1011'0110)
     return true;
-  }
+  // instruction: bt
+  if ((loc[0] & 0b0111'1111) == 0b0111'0110)
+    return true;
   // some other instruction
   return false;
 }
