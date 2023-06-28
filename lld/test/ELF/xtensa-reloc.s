@@ -52,6 +52,8 @@
 # CHECK:      beq a3, a4, . +16
 # CHECK-NEXT: ball a3, a4, . +13
 # CHECK-NEXT: blt a3, a4, . +10
+# CHECK-NEXT: bt b0, . +7
   beq a3, a4, d
   ball a3, a4, d
   blt a3, a4, d
+  bt b0, d
