@@ -76,6 +76,7 @@ bool XtensaTargetInfo::hasFeature(StringRef Feature) const {
       .Case("fp", HasFP)
       .Case("windowed", HasWindowed)
       .Case("bool", HasBoolean)
+      .Case("hifi3", HasHIFI3)
       .Default(false);
 }
 
@@ -89,6 +90,8 @@ bool XtensaTargetInfo::handleTargetFeatures(std::vector<std::string> &Features,
       HasBoolean = true;
     else if (Feature == "+windowed")
       HasWindowed = true;
+    else if (Feature == "+hifi3")
+      HasHIFI3 = true;
   }
 
   return true;
