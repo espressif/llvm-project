@@ -1991,3 +1991,4 @@ include "XtensaDSPInstrInfo.td"
 //===----------------------------------------------------------------------===//
 include "XtensaHIFIInstrFormats.td"
 include "XtensaHIFIInstrInfo.td"
+include "XtensaHIFIInstrPatterns.td"
