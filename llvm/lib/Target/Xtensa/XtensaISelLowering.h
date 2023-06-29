@@ -91,7 +91,8 @@ enum {
   SRL,
   SRC,
   SSL,
-  SSR
+  SSR,
+  TRUNC
 };
 }
 

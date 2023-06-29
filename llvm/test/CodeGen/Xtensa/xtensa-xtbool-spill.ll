@@ -21,11 +21,9 @@ declare <1 x i1> @get_xtbool()
 define <1 x i1> @test_xtbool_load(i32 %addr)  {
   ; CHECK-LABEL: test_xtbool_load
   ; CHECK: l8ui {{a[0-9]+}}
-  ; CHECK: movi.n [[C:a[0-9]+]], 1
-  ; CHECK: and [[SRC:a[0-9]+]], {{a[0-9]+}}, [[C]]
   ; CHECK: rsr [[BREG:a[0-9]+]], br
   ; CHECK: and [[AND:a[0-9]+]], {{a[0-9]+}}, [[BREG]]
-  ; CHECK: or  [[OR:a[0-9]+]], [[AND]], [[SRC]]
+  ; CHECK: or  [[OR:a[0-9]+]], [[AND]], {{a[0-9]+}}
   ; CHECK: wsr [[OR]], br
   %ptr = inttoptr i32 %addr to ptr
   %load_bits = load <8 x i1>, ptr %ptr, align 1
