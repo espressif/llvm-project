@@ -414,4 +414,22 @@ def int_xtensa_xt_wur_fcr: ClangBuiltin<"__builtin_xtensa_xt_wur_fcr">,
 def int_xtensa_xt_wur_fsr: ClangBuiltin<"__builtin_xtensa_xt_wur_fsr">,
   Intrinsic<[], [llvm_i32_ty], []>;
 
+//===----------------------------------------------------------------------===//
+// HiFi3 Intrinsics
+//===----------------------------------------------------------------------===//
+
+//Extended Access
+def int_xtensa_xt_l32ex: ClangBuiltin<"__builtin_xtensa_xt_l32ex">,
+  Intrinsic<[llvm_i32_ty], [LLVMPointerType<llvm_i32_ty>],[]>;
+
+def int_xtensa_xt_s32ex:
+  Intrinsic<[llvm_i32_ty], [llvm_i32_ty, LLVMPointerType<llvm_i32_ty>],[]>;
+
+def int_xtensa_xt_getex:
+  Intrinsic<[llvm_i32_ty], [llvm_i32_ty],[]>;
+
+def int_xtensa_xt_clrex: ClangBuiltin<"__builtin_xtensa_xt_clrex">,
+  Intrinsic<[], [],[]>;
+
+include "llvm/IR/IntrinsicsXtensaHIFI.td"
 }
