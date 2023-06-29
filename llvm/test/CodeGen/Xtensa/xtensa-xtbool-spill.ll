@@ -21,11 +21,9 @@ declare <1 x i1> @get_xtbool()
 define <1 x i1> @test_xtbool_load(i32 %addr)  {
   ; CHECK-LABEL: test_xtbool_load
   ; CHECK: l8ui {{a[0-9]+}}
-  ; CHECK: movi.n [[C:a[0-9]+]], 1
-  ; CHECK: and [[SRC:a[0-9]+]], {{a[0-9]+}}, [[C]]
   ; CHECK: rsr [[BREG:a[0-9]+]], br
   ; CHECK: and [[AND:a[0-9]+]], {{a[0-9]+}}, [[BREG]]
-  ; CHECK: or  [[OR:a[0-9]+]], [[AND]], [[SRC]]
+  ; CHECK: or  [[OR:a[0-9]+]], [[AND]], {{a[0-9]+}}
   ; CHECK: wsr [[OR]], br
   %ptr = inttoptr i32 %addr to ptr
   %load_bits = load <8 x i1>, ptr %ptr, align 1
@@ -34,13 +32,36 @@ define <1 x i1> @test_xtbool_load(i32 %addr)  {
 }
 
 define void @test_xtbool_store(i32 %addr, <1 x i1> %b) {
-entry:
-  ; CHECK-LABEL: test_xtbool_store
+  ; CHECK-LABEL: test_xtbool_store:
   ; CHECK: rsr [[BREG:a[0-9]+]], br
   ; CHECK: extui [[DST:a[0-9]+]], [[BREG]], 0, 1
   ; CHECK: s8i [[DST]], {{a[0-9]+}}, {{[0-9]+}}
   %ptr = inttoptr i32 %addr to ptr
   %insertvec = shufflevector <1 x i1> %b, <1 x i1> poison, <8 x i32> <i32 0, i32 undef, i32 undef, i32 undef, i32 undef, i32 undef, i32 undef, i32 undef>
+  store <8 x i1> %insertvec, ptr %ptr, align 1
+  ret void
+}
+define <2 x i1> @test_xtbool2_load(i32 %addr)  {
+  ; CHECK-LABEL: test_xtbool2_load:
+  ; CHECK: l8ui {{a[0-9]+}}
+  ; CHECK: rsr [[BREG:a[0-9]+]], br
+  ; CHECK: and [[AND:a[0-9]+]], {{a[0-9]+}}, [[BREG]]
+  ; CHECK: or  [[OR:a[0-9]+]], [[AND]], {{a[0-9]+}}
+  ; CHECK: wsr [[OR]], br
+  %ptr = inttoptr i32 %addr to ptr
+  %load_bits = load <8 x i1>, ptr %ptr, align 1
+  %extractvec = shufflevector <8 x i1> %load_bits, <8 x i1> poison,<2 x i32> <i32 0, i32 1>
+  ret <2 x i1> %extractvec
+}
+
+; Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn writeonly
+define void @test_xtbool2_store(i32 %p, <2 x i1> %v) {
+  ; CHECK-LABEL: test_xtbool2_store:
+  ; CHECK: rsr [[BREG:a[0-9]+]], br
+  ; CHECK: extui [[DST:a[0-9]+]], [[BREG]], 0, 2
+  ; CHECK: s8i [[DST]], {{a[0-9]+}}, {{[0-9]+}}
+  %ptr = inttoptr i32 %p to ptr
+  %insertvec = shufflevector <2 x i1> %v, <2 x i1> poison, <8 x i32> <i32 0, i32 1, i32 undef, i32 undef, i32 undef, i32 undef, i32 undef, i32 undef>
   store <8 x i1> %insertvec, ptr %ptr, align 1
   ret void
 }
