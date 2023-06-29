@@ -68,6 +68,38 @@ static const unsigned ARDecoderTable[] = {
     Xtensa::A6,  Xtensa::A7,  Xtensa::A8,  Xtensa::A9, Xtensa::A10, Xtensa::A11,
     Xtensa::A12, Xtensa::A13, Xtensa::A14, Xtensa::A15};
 
+static const unsigned AE_DRDecoderTable[] = {
+    Xtensa::AED0,  Xtensa::AED1,  Xtensa::AED2,  Xtensa::AED3,
+    Xtensa::AED4,  Xtensa::AED5,  Xtensa::AED6,  Xtensa::AED7,
+    Xtensa::AED8,  Xtensa::AED9,  Xtensa::AED10, Xtensa::AED11,
+    Xtensa::AED12, Xtensa::AED13, Xtensa::AED14, Xtensa::AED15};
+
+static const unsigned AE_VALIGNDecoderTable[] = {Xtensa::U0, Xtensa::U1,
+                                                 Xtensa::U2, Xtensa::U3};
+
+
+static DecodeStatus DecodeAE_DRRegisterClass(MCInst &Inst, uint64_t RegNo,
+                                             uint64_t Address,
+                                             const void *Decoder) {
+  if (RegNo >= std::size(AE_DRDecoderTable))
+    return MCDisassembler::Fail;
+
+  unsigned Reg = AE_DRDecoderTable[RegNo];
+  Inst.addOperand(MCOperand::createReg(Reg));
+  return MCDisassembler::Success;
+}
+
+static DecodeStatus DecodeAE_VALIGNRegisterClass(MCInst &Inst, uint64_t RegNo,
+                                                 uint64_t Address,
+                                                 const void *Decoder) {
+  if (RegNo >= std::size(AE_VALIGNDecoderTable))
+    return MCDisassembler::Fail;
+
+  unsigned Reg = AE_VALIGNDecoderTable[RegNo];
+  Inst.addOperand(MCOperand::createReg(Reg));
+  return MCDisassembler::Success;
+}
+
 static DecodeStatus DecodeARRegisterClass(MCInst &Inst, uint64_t RegNo,
                                           uint64_t Address,
                                           const void *Decoder) {
@@ -114,6 +146,40 @@ static const unsigned BRDecoderTable[] = {
     Xtensa::B0,  Xtensa::B1,  Xtensa::B2,  Xtensa::B3, Xtensa::B4,  Xtensa::B5,
     Xtensa::B6,  Xtensa::B7,  Xtensa::B8,  Xtensa::B9, Xtensa::B10, Xtensa::B11,
     Xtensa::B12, Xtensa::B13, Xtensa::B14, Xtensa::B15};
+
+static const unsigned BR2DecoderTable[] = {
+    Xtensa::B0_B1,  Xtensa::B2_B3,  Xtensa::B4_B5, Xtensa::B6_B7,
+    Xtensa::B8_B9, Xtensa::B10_B11, Xtensa::B12_B13, Xtensa::B14_B15};
+
+
+static const unsigned BR4DecoderTable[] = {
+    Xtensa::B0_B1_B2_B3, Xtensa::B4_B5_B6_B7, 
+    Xtensa::B8_B9_B10_B11, Xtensa::B12_B13_B14_B15};
+
+
+static DecodeStatus DecodeXtensaRegisterClass(MCInst &Inst, uint64_t RegNo,
+                                          uint64_t Address,
+                                          const void *Decoder,
+                                          ArrayRef<unsigned> DecoderTable) {
+  if (RegNo >= DecoderTable.size())
+    return MCDisassembler::Fail;
+
+  unsigned Reg = DecoderTable[RegNo];
+  Inst.addOperand(MCOperand::createReg(Reg));
+  return MCDisassembler::Success;
+}
+
+static DecodeStatus DecodeBR2RegisterClass(MCInst &Inst, uint64_t RegNo,
+                                          uint64_t Address,
+                                          const void *Decoder) {
+  return DecodeXtensaRegisterClass(Inst,RegNo,Address,Decoder,ArrayRef(BR2DecoderTable));
+}
+
+static DecodeStatus DecodeBR4RegisterClass(MCInst &Inst, uint64_t RegNo,
+                                          uint64_t Address,
+                                          const void *Decoder) {
+  return DecodeXtensaRegisterClass(Inst,RegNo,Address,Decoder,ArrayRef(BR4DecoderTable));
+}
 
 static DecodeStatus DecodeBRRegisterClass(MCInst &Inst, uint64_t RegNo,
                                           uint64_t Address,
