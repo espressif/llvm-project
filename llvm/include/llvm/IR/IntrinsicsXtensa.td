@@ -312,9 +312,6 @@ def int_xtensa_xt_addexpm_s: ClangBuiltin<"__builtin_xtensa_xt_addexpm_s">,
 def int_xtensa_xt_ceil_s: ClangBuiltin<"__builtin_xtensa_xt_ceil_s">,
   Intrinsic<[llvm_i32_ty], [llvm_float_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, IntrNoMem]>;
 
-def int_xtensa_xt_conjc_s: ClangBuiltin<"__builtin_xtensa_xt_conjc_s">,
-  Intrinsic<[llvm_v2f32_ty], [llvm_v2f32_ty], [IntrNoMem]>;
-
 def int_xtensa_xt_div0_s: ClangBuiltin<"__builtin_xtensa_xt_div0_s">,
   Intrinsic<[llvm_float_ty], [llvm_float_ty], [IntrNoMem]>;
 
