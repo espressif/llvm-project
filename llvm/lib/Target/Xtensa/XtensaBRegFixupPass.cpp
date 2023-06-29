@@ -92,10 +92,26 @@ bool XtensaBRegFixup::VisitInstruction(
   const XtensaInstrInfo &TII =
       *static_cast<const XtensaInstrInfo *>(MF->getSubtarget().getInstrInfo());
   unsigned Opcode = MI->getOpcode();
-  unsigned RegBase = Xtensa::B0;
 
   switch (Opcode) {
+  case Xtensa::MOVBA2_P2:
   case Xtensa::MOVBA_P2: {
+
+    unsigned RegBase;
+    unsigned Arity;
+
+    switch (Opcode) {
+    case Xtensa::MOVBA_P2:
+      RegBase = Xtensa::B0;
+      Arity = 1;
+      break;
+    case Xtensa::MOVBA2_P2:
+      RegBase = Xtensa::B0_B1;
+      Arity = 2;
+      break;
+    default:
+      llvm_unreachable("Unknown MOVBA opcode");
+    }
     /*
       MOVBA_P2 Breg, Dst1, Dst2, Src
        |
@@ -107,13 +123,16 @@ bool XtensaBRegFixup::VisitInstruction(
       OR        Dst2, Dst2, Dst1
       WSR       BREG, Dst2
       */
+    // TODO: Mask SRC, e.g. by EXTUI
     MachineOperand Breg = MI->getOperand(0);
     MachineOperand Dst1 = MI->getOperand(1);
     MachineOperand Dst2 = MI->getOperand(2);
     MachineOperand Src = MI->getOperand(3);
     DebugLoc DL = MI->getDebugLoc();
     unsigned RegNo = Breg.getReg().id() - RegBase;
-    int64_t Mask = 0xffff & (~(1 << RegNo));
+
+    int64_t BaseMask = (1 << Arity) - 1;
+    int64_t Mask = 0xffff & (~(BaseMask << (RegNo * Arity)));
 
     MachineInstrBuilder MIB = BuildMI(MBB, MI, DL, TII.get(Xtensa::RSR))
                                   .add(Dst1)
@@ -141,6 +160,27 @@ bool XtensaBRegFixup::VisitInstruction(
     return true;
   } break;
   case Xtensa::EXTUI_BR_P: {
+  case Xtensa::EXTUI_BR2_P:
+  case Xtensa::EXTUI_BR4_P:
+    unsigned RegBase;
+    unsigned Arity;
+
+    switch (Opcode) {
+    case Xtensa::EXTUI_BR_P:
+      RegBase = Xtensa::B0;
+      Arity = 1;
+      break;
+    case Xtensa::EXTUI_BR2_P:
+      RegBase = Xtensa::B0_B1;
+      Arity = 2;
+      break;
+    case Xtensa::EXTUI_BR4_P:
+      RegBase = Xtensa::B0_B1_B2_B3;
+      Arity = 4;
+      break;
+    default:
+      llvm_unreachable("Unknown EXTUI opcode");
+    }
 
     MachineOperand Breg = MI->getOperand(2);
     DebugLoc dl = MI->getDebugLoc();
@@ -151,8 +191,8 @@ bool XtensaBRegFixup::VisitInstruction(
     MIB.add(MI->getOperand(0));
     MIB.add(MI->getOperand(1));
     unsigned RegNo = Breg.getReg().id() - RegBase;
-    MIB.addImm(RegNo);
-    MIB.addImm(1);
+    MIB.addImm(RegNo * Arity);
+    MIB.addImm(Arity);
 
     LLVM_DEBUG(dbgs() << " Fixed EXTUI: " << *MIB);
     MBB.erase_instr(MI);
@@ -162,6 +202,7 @@ bool XtensaBRegFixup::VisitInstruction(
 
   case Xtensa::SLLI_BR_P: {
 
+    unsigned RegBase = Xtensa::B0;
     MachineOperand Breg = MI->getOperand(2);
     unsigned RegNo = Breg.getReg().id() - RegBase;
     if (RegNo != 0) {
