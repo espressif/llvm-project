@@ -204,7 +204,7 @@ BUILTIN(__builtin_xtensa_xt_lsip, "ff**i", "n")
 // xtfloat __builtin_xtensa___builtin_xtensa_xt_lsx(const xtfloat*,int)
 BUILTIN(__builtin_xtensa_xt_lsx, "ff*i", "n")
 
-BUILTIN(__builtin_xtensa_xt_lsxp, "ff*i", "n")
+BUILTIN(__builtin_xtensa_xt_lsxp, "ff**i", "n")
 
 // xtfloat __builtin_xtensa___builtin_xtensa_xt_madd_s(xtfloat,xtfloat,xtfloat)
 BUILTIN(__builtin_xtensa_xt_madd_s, "ffff", "n")
