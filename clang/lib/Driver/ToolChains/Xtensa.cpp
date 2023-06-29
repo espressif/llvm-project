@@ -251,6 +251,9 @@ void tools::xtensa::Assembler::ConstructJob(Compilation &C, const JobAction &JA,
     if (!A->getOption().matches(options::OPT_g0))
       CmdArgs.push_back("-g");
 
+  if (Args.getLastArg(options::OPT_mtext_section_literals))
+    CmdArgs.push_back("--text-section-literals");
+
   if (Args.hasFlag(options::OPT_fverbose_asm, options::OPT_fno_verbose_asm,
                    false))
     CmdArgs.push_back("-fverbose-asm");
