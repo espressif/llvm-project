@@ -11,6 +11,7 @@
 
 using namespace clang;
 using namespace clang::CodeGen;
+
 //===----------------------------------------------------------------------===//
 // Xtensa ABI Implementation
 //===----------------------------------------------------------------------===//
@@ -99,9 +100,13 @@ ABIArgInfo XtensaABIInfo::classifyArgumentType(QualType Ty,
   }
 
   // xtbool
-  if (getTarget().hasFeature("bool") && Size == 1 && Ty->isVectorType()) {
+  if (getTarget().hasFeature("bool") && Size <= 8 && Ty->isVectorType()) {
+    // The type size is rounded up to the power of two and at least 8 bits,
+    // so we need to get the "true" size from num of vector elements
+    const VectorType *VT = Ty->getAs<VectorType>();
+    unsigned NumBits = VT->getNumElements();
     llvm::Type *ResType =
-        llvm::FixedVectorType::get(llvm::Type::getInt1Ty(getVMContext()), 1);
+        llvm::FixedVectorType::get(llvm::Type::getInt1Ty(getVMContext()), NumBits);
     return ABIArgInfo::getDirect(ResType);
   }
   // Vector arguments
