@@ -11628,7 +11628,16 @@ ABIArgInfo XtensaABIInfo::classifyArgumentType(QualType Ty,
         llvm::FixedVectorType::get(llvm::Type::getInt1Ty(getVMContext()), Size);
     return ABIArgInfo::getDirect(ResType);
   }
-
+  // Vector arguments
+  if (getTarget().hasFeature("hifi3") && Ty->isVectorType() && (Size <= 64)) {
+    const VectorType *VT = Ty->getAs<VectorType>();
+    QualType EltTy = VT->getElementType();
+    unsigned EltSize = getContext().getTypeSize(EltTy);
+    if (EltSize == 8) // VAlign
+      return ABIArgInfo::getDirect(
+          llvm::IntegerType::get(getVMContext(), Size));
+    return ABIArgInfo::getDirectInReg();
+  }
   // Aggregates which are <= 6*32 will be passed in registers if possible,
   // so coerce to integers.
   if ((Size <= (MaxNumArgGPRs * 32)) && (!MustUseStack)) {
