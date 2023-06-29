@@ -168,6 +168,11 @@ def FeatureESP32S3Ops        : SubtargetFeature<"esp32s3", "HasESP32S3Ops", "tru
 def HasESP32S3Ops            : Predicate<"Subtarget->hasESP32S3Ops()">,
                                           AssemblerPredicate<(all_of FeatureESP32S3Ops)>;
 
+def FeatureHIFI3            : SubtargetFeature<"hifi3", "HasHIFI3", "true",
+                                               "Enable Xtensa HIFI3 instructions">;
+def HasHIFI3                : Predicate<"Subtarget->hasHIFI3()">,
+                                         AssemblerPredicate<(all_of FeatureHIFI3)>;
+
 //===----------------------------------------------------------------------===//
 // Xtensa supported processors.
 //===----------------------------------------------------------------------===//
@@ -199,7 +204,7 @@ def : Proc<"cnl", [FeatureDensity, FeatureSingleFloat, FeatureLoop,  FeatureWind
                     FeatureTHREADPTR, FeatureDiv32, FeatureATOMCTL, FeatureMEMCTL, FeatureDebug, 
                     FeatureException, FeatureHighPriInterrupts, FeatureCoprocessor,
                      FeatureInterrupt, FeatureRelocatableVector, FeatureTimerInt, FeaturePRID,
-                     FeatureRegionProtection, FeatureMiscSR]>; 
+                     FeatureRegionProtection, FeatureMiscSR, FeatureHIFI3]>; 
 
 //===----------------------------------------------------------------------===//
 // Register File Description

@@ -230,7 +230,8 @@ enum FeatureKind : uint64_t {
   FK_REGPROTECT =        1 << 26,
   FK_MISCSR =            1 << 27,
   FK_ESP32S2OPS =        1 << 28,
-  FK_ESP32S3OPS =        1 << 29
+  FK_ESP32S3OPS =        1 << 29,
+  FK_HIFI3 =             1 << 30
 };
 
 CPUKind parseCPUKind(StringRef CPU);

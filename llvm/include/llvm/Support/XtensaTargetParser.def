@@ -43,6 +43,7 @@ XTENSA_FEATURE(FK_REGPROTECT,        "regprotect")
 XTENSA_FEATURE(FK_MISCSR,            "miscsr")
 XTENSA_FEATURE(FK_ESP32S2OPS,        "esp32s2")
 XTENSA_FEATURE(FK_ESP32S3OPS,        "esp32s3")
+XTENSA_FEATURE(FK_HIFI3,             "hifi3")
 
 #undef XTENSA_FEATURE
 
@@ -75,7 +76,8 @@ XTENSA_CPU(CNL, {"cnl"}, (FK_DENSITY | FK_FP | FK_LOOP | FK_MAC16 | FK_WINDOWED 
                           FK_SEXT | FK_NSA | FK_MUL32 | FK_MUL32HIGH | FK_S32C1I | 
                           FK_THREADPTR | FK_DIV32 | FK_ATOMCTL | FK_MEMCTL | FK_DEBUG |
                           FK_EXCEPTION | FK_HIGHPRIINTERRUPTS | FK_COPROCESSOR |
-                          FK_INTERRUPT | FK_RVECTOR | FK_TIMERINT | FK_PRID | FK_REGPROTECT | FK_MISCSR))
+                          FK_INTERRUPT | FK_RVECTOR | FK_TIMERINT | FK_PRID | FK_REGPROTECT | FK_MISCSR |
+                          FK_HIFI3))
 
 
 #undef XTENSA_CPU
