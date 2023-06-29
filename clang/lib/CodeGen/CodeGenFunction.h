@@ -4354,6 +4354,8 @@ public:
   /// Emits a reference binding to the passed in expression.
   RValue EmitReferenceBindingToExpr(const Expr *E);
 
+  llvm::Value *ConvertXtensaToBc(const Expr *Arg, llvm::Type *destType);
+  llvm::Value *ConvertXtensaToC(llvm::Value *arg, llvm::Type *destType);
   llvm::Value *EmitXtensaBuiltinExpr(unsigned BuiltinID, const CallExpr *E,
                                      ReturnValueSlot ReturnValue,
                                      llvm::Triple::ArchType Arch);
