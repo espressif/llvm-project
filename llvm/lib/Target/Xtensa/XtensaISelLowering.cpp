@@ -65,13 +65,20 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &tm,
 
   if (Subtarget.hasBoolean()) {
     addRegisterClass(MVT::v1i1, &Xtensa::BRRegClass);
+    addRegisterClass(MVT::v2i1, &Xtensa::BR2RegClass);
+    addRegisterClass(MVT::v4i1, &Xtensa::BR4RegClass);
+    setOperationAction(ISD::Constant, MVT::v2i1, Expand);
     setOperationAction(ISD::Constant, MVT::v1i1, Expand);
-    for (MVT VT : MVT::integer_valuetypes()) {
-      setLoadExtAction(ISD::SEXTLOAD, VT, MVT::v1i1, Promote);
-      setLoadExtAction(ISD::ZEXTLOAD, VT, MVT::v1i1, Promote);
-      setLoadExtAction(ISD::EXTLOAD, VT, MVT::v1i1, Promote);
-    }
-  }
+    setTargetDAGCombine(ISD::STORE);
+    setTargetDAGCombine(ISD::BITCAST);
+    setTargetDAGCombine(ISD::EXTRACT_SUBVECTOR);
+
+    setOperationAction(ISD::STORE, MVT::v1i1, Legal);
+    setOperationAction(ISD::STORE, MVT::v2i1, Legal);
+    setOperationAction(ISD::STORE, MVT::v4i1, Legal);
+    setOperationAction(ISD::LOAD, MVT::v1i1, Legal);
+    setOperationAction(ISD::LOAD, MVT::v2i1, Legal);
+    setOperationAction(ISD::LOAD, MVT::v4i1, Legal);
 
   // Set up special registers.
   setStackPointerRegisterToSaveRestore(Xtensa::SP);
@@ -104,7 +111,8 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &tm,
 
   // Used by legalize types to correctly generate the setcc result.
   // AddPromotedToType(ISD::SETCC, MVT::i1, MVT::i32);
-  setOperationPromotedToType(ISD::SETCC, MVT::i1, MVT::i32);
+  if (!Subtarget.hasBoolean())
+    setOperationPromotedToType(ISD::SETCC, MVT::i1, MVT::i32);
   setOperationPromotedToType(ISD::BR_CC, MVT::i1, MVT::i32);
 
   setOperationAction(ISD::BR_CC, MVT::i32, Legal);
@@ -372,6 +380,14 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &tm,
 
   // Compute derived properties from the register classes
   computeRegisterProperties(STI.getRegisterInfo());
+}
+
+EVT XtensaTargetLowering::getSetCCResultType(const DataLayout &, LLVMContext &,
+                                             EVT VT) const {
+  if (!VT.isVector()) {
+    return MVT::i32;
+  }
+  return VT.changeVectorElementTypeToInteger();
 }
 
 /// Return the register type for a given MVT
@@ -707,6 +723,91 @@ static SDValue PerformBRCONDCombine(SDNode *N, SelectionDAG &DAG,
                      LHS, RHS, Dest);
 }
 
+static SDValue PerformBITCASTCombine(SDNode *N, SelectionDAG &DAG,
+                                     TargetLowering::DAGCombinerInfo &DCI,
+                                     const XtensaSubtarget &Subtarget) {
+  // (vNi1 (bitcast (iN (trunc i32)))) -> (vNi1 (xtensa_bitcast i32))
+  SDLoc DL(N);
+  SDValue Op = N->getOperand(0);
+
+  if (N->getOpcode() != ISD::BITCAST || Op.getOpcode() != ISD::TRUNCATE)
+    return SDValue();
+
+  SDValue Int = Op.getOperand(0);
+  llvm::EVT BoolVT = N->getValueType(0);
+
+  if (!BoolVT.isVector() || BoolVT.getVectorElementType() != MVT::i1 ||
+      Int.getValueType() != MVT::i32)
+    return SDValue();
+
+  SDValue Trunc = DAG.getNode(XtensaISD::TRUNC, DL, BoolVT, Int);
+
+  return Trunc;
+}
+
+static SDValue
+PerformExtractSubvectorCombine(SDNode *N, SelectionDAG &DAG,
+                               TargetLowering::DAGCombinerInfo &DCI,
+                               const XtensaSubtarget &Subtarget) {
+  // (vNi1 (extract_subvector (v8i1 (load x))) -> (vNi1 (load x))
+  SDLoc DL(N);
+  SDValue Load = N->getOperand(0);
+
+  if (N->getOpcode() != ISD::EXTRACT_SUBVECTOR)
+    return SDValue();
+
+  EVT LoadVT = Load.getValueType();
+  EVT BoolVT = N->getValueType(0);
+
+  if (!BoolVT.isVector() || BoolVT.getVectorElementType() != MVT::i1)
+    return SDValue();
+
+  if (Load.getOpcode() != ISD::LOAD)
+    return SDValue();
+
+  LoadSDNode *LdNode = cast<LoadSDNode>(Load.getNode());
+
+  if (!LoadVT.isVector() || LoadVT.getVectorElementType() != MVT::i1)
+    return SDValue();
+
+  SDValue NewLoad =
+      DAG.getLoad(BoolVT, DL, LdNode->getChain(), LdNode->getBasePtr(),
+                  LdNode->getPointerInfo(), LdNode->getOriginalAlign(),
+                  LdNode->getMemOperand()->getFlags());
+
+  return NewLoad;
+}
+static SDValue PerformSTORECombine(SDNode *N, SelectionDAG &DAG,
+                                   TargetLowering::DAGCombinerInfo &DCI,
+                                   const XtensaSubtarget &Subtarget) {
+  // (store (v8i1 (concat_vector (vNi1 elt) undef )) addr off)
+  //  -> (store (vNi1 elt) addr off)
+  SDLoc DL(N);
+
+  if (N->getOpcode() != ISD::STORE)
+    return SDValue();
+
+  StoreSDNode *StNode = cast<StoreSDNode>(N);
+
+  SDValue Concat = N->getOperand(1);
+  EVT BoolVT = Concat.getValueType();
+
+  if ((Concat.getOpcode() != ISD::CONCAT_VECTORS) || !BoolVT.isVector() ||
+      (BoolVT.getVectorElementType() != MVT::i1))
+    return SDValue();
+
+  SDValue Val = Concat.getNode()->getOperand(0);
+  EVT ValVT = Val.getValueType();
+
+  if (!ValVT.isVector() || ValVT.getVectorElementType() != MVT::i1 ||
+      ValVT.getSizeInBits() > 8) {
+    return SDValue();
+  }
+
+  return DAG.getStore(StNode->getChain(), DL, Val, StNode->getBasePtr(),
+                      StNode->getMemOperand());
+}
+
 SDValue XtensaTargetLowering::PerformDAGCombine(SDNode *N,
                                                 DAGCombinerInfo &DCI) const {
   SelectionDAG &DAG = DCI.DAG;
@@ -723,6 +824,12 @@ SDValue XtensaTargetLowering::PerformDAGCombine(SDNode *N,
     return PerformHWLoopCombine(N, DAG, DCI, Subtarget);
   case ISD::BRCOND:
     return PerformBRCONDCombine(N, DAG, DCI, Subtarget);
+  case ISD::BITCAST:
+    return PerformBITCASTCombine(N, DAG, DCI, Subtarget);
+  case ISD::EXTRACT_SUBVECTOR:
+    return PerformExtractSubvectorCombine(N, DAG, DCI, Subtarget);
+  case ISD::STORE:
+    return PerformSTORECombine(N, DAG, DCI, Subtarget);
   }
 
   return SDValue();
@@ -744,6 +851,12 @@ static bool CC_Xtensa_Custom(unsigned ValNo, MVT ValVT, MVT LocVT,
       Xtensa::B4,  Xtensa::B5,  Xtensa::B6,  Xtensa::B7,
       Xtensa::B8,  Xtensa::B9,  Xtensa::B10, Xtensa::B11,
       Xtensa::B12, Xtensa::B13, Xtensa::B14, Xtensa::B15};
+
+  ArrayRef<MCPhysReg> BR2Regs(Xtensa::BR2RegClass.begin(),
+                              Xtensa::BR2RegClass.end());
+
+  ArrayRef<MCPhysReg> BR4Regs(Xtensa::BR4RegClass.begin(),
+                              Xtensa::BR4RegClass.end());
 
   if (ArgFlags.isByVal()) {
     Align ByValAlign = ArgFlags.getNonZeroByValAlign();
@@ -793,6 +906,11 @@ static bool CC_Xtensa_Custom(unsigned ValNo, MVT ValVT, MVT LocVT,
     LocVT = MVT::i32;
   } else if (ValVT == MVT::v1i1) {
     Reg = State.AllocateReg(BoolRegs);
+  } else if (ValVT == MVT::v2i1) {
+    Reg = State.AllocateReg(BR2Regs);
+    LocVT = ValVT;
+  } else if (ValVT == MVT::v4i1) {
+    Reg = State.AllocateReg(BR4Regs);
     LocVT = ValVT;
   } else
     llvm_unreachable("Cannot handle this ValVT.");
@@ -890,6 +1008,10 @@ SDValue XtensaTargetLowering::LowerFormalArguments(
         RC = &Xtensa::ARRegClass;
       } else if (RegVT == MVT::v1i1) {
         RC = &Xtensa::BRRegClass;
+      } else if (RegVT == MVT::v2i1) {
+        RC = &Xtensa::BR2RegClass;
+      } else if (RegVT == MVT::v4i1) {
+        RC = &Xtensa::BR4RegClass;
       } else
         llvm_unreachable("RegVT not supported by FormalArguments Lowering");
 
@@ -3354,7 +3476,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitInstrWithCustomInserter(
     }
     return MBB;
   }
-  case Xtensa::MOVBA_P: {
+  case Xtensa::MOVBA_P:
+  case Xtensa::MOVBA2_P: {
     const TargetRegisterClass *AR = getRegClassFor(MVT::i32);
 
     Register Dst1 = MRI.createVirtualRegister(AR);
@@ -3365,8 +3488,21 @@ MachineBasicBlock *XtensaTargetLowering::EmitInstrWithCustomInserter(
     /*
       MOVBA_P2 Breg, Dst1, Dest2, Src
     */
-
-    BuildMI(*MBB, MI, DL, TII.get(Xtensa::MOVBA_P2), Breg.getReg())
+    unsigned TargetOpcode;
+    switch (MI.getOpcode()) {
+    case Xtensa::MOVBA_P:
+      TargetOpcode = Xtensa::MOVBA_P2;
+      break;
+    case Xtensa::MOVBA2_P:
+      TargetOpcode = Xtensa::MOVBA2_P2;
+      break;
+    case Xtensa::MOVBA4_P:
+      TargetOpcode = Xtensa::MOVBA4_P2;
+      break;
+    default:
+      llvm_unreachable("Unknown opcode");
+    }
+    BuildMI(*MBB, MI, DL, TII.get(TargetOpcode), Breg.getReg())
         .addReg(Dst1, RegState::Define | RegState::EarlyClobber)
         .addReg(Dst2, RegState::Define | RegState::EarlyClobber)
         .addReg(Src.getReg());

@@ -990,22 +990,57 @@ let Predicates = [HasBoolean] in {
                         "!movba $r, $s", []> {
     let usesCustomInserter = 1;
     let Defs = [BREG];
-    //let Uses = [BREG];
   }
 
+  def MOVBA2_P2: Pseudo<(outs BR2:$r, AR:$x, AR:$y), (ins AR:$s),
+                        "!movba $r, $x, $y, $s", []> {
+    let Defs = [BREG];
+  }
+   
+  def MOVBA2_P: Pseudo<(outs BR2:$r), (ins AR:$s),
+                        "!movba2 $r, $s", []> {
+    let usesCustomInserter = 1;
+    let Defs = [BREG];
+  }
+    
+  def MOVBA4_P2: Pseudo<(outs BR4:$r, AR:$x, AR:$y), (ins AR:$s),
+                        "!movba4 $r, $x, $y, $s", []> {
+    let Defs = [BREG];
+  }
+   
+  def MOVBA4_P: Pseudo<(outs BR4:$r), (ins AR:$s),
+                        "!movba4 $r, $s", []> {
+    let usesCustomInserter = 1;
+    let Defs = [BREG];
+  }
+  
   def EXTUI_BR_P: Pseudo<(outs AR:$r), (ins AR:$s, BR:$b),
                         "!extui_br $r, $s, $b", []>;
+  def EXTUI_BR2_P: Pseudo<(outs AR:$r), (ins AR:$s, BR2:$b),
+                        "!extui_br2 $r, $s, $b", []>;
+  def EXTUI_BR4_P: Pseudo<(outs AR:$r), (ins AR:$s, BR4:$b),
+                        "!extui_br4 $r, $s, $b", []>;
   def SLLI_BR_P: Pseudo<(outs AR:$r), (ins AR:$s, BR:$b),
                         "!slli_br $r, $s, $b", []>;
 
   def : Pat<(v1i1 (build_vector AR:$a)), (MOVBA_P AR:$a)>;
-
+  def : Pat<(v1i1 (scalar_to_vector AR:$a)), (MOVBA_P AR:$a)>;
+  
+  def : Pat<(v2i1 (build_vector AR:$a, AR:$b)), 
+             (MOVBA2_P (OR AR:$a, (SLLI AR:$b, (i32 1))))>;
+  
+  def : Pat<(v2i1 (Xtensa_trunc AR:$s)), (MOVBA2_P AR:$s)>;
+  def : Pat<(v4i1 (Xtensa_trunc AR:$s)), (MOVBA4_P AR:$s)>;
+  
   def : Pat<(i32 (vector_extract (v1i1 BR:$b), (i32 0))),
             (EXTUI_BR_P (RSR BREG), BR:$b)>;
-
   def : Pat<(v1i1 (load addr_ish1:$addr)), (MOVBA_P (L8UI mem8:$addr))>;
+  def : Pat<(v2i1 (load addr_ish1:$addr)), (MOVBA2_P (L8UI mem8:$addr))>;
+  def : Pat<(v4i1 (load addr_ish1:$addr)), (MOVBA4_P (L8UI mem8:$addr))>;
 
   def : Pat<(store BR:$b, addr_ish1:$addr), (S8I (EXTUI_BR_P (RSR BREG), BR:$b), mem32:$addr)>;
+  def : Pat<(store BR2:$b, addr_ish1:$addr), (S8I (EXTUI_BR2_P (RSR BREG), BR2:$b), mem32:$addr)>;
+  def : Pat<(store BR4:$b, addr_ish1:$addr), (S8I (EXTUI_BR4_P (RSR BREG), BR4:$b), mem32:$addr)>;
 
   def SPILL_BOOL: Pseudo<(outs), (ins BR:$b, mem8:$mem),
                             "!spill_bool $b, $mem",[]> {
