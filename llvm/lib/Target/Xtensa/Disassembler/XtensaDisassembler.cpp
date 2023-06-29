@@ -63,6 +63,37 @@ static const unsigned ARDecoderTable[] = {
     Xtensa::A6,  Xtensa::A7,  Xtensa::A8,  Xtensa::A9, Xtensa::A10, Xtensa::A11,
     Xtensa::A12, Xtensa::A13, Xtensa::A14, Xtensa::A15};
 
+static const unsigned AE_DRDecoderTable[] = {
+    Xtensa::AED0,  Xtensa::AED1,  Xtensa::AED2,  Xtensa::AED3,
+    Xtensa::AED4,  Xtensa::AED5,  Xtensa::AED6,  Xtensa::AED7,
+    Xtensa::AED8,  Xtensa::AED9,  Xtensa::AED10, Xtensa::AED11,
+    Xtensa::AED12, Xtensa::AED13, Xtensa::AED14, Xtensa::AED15};
+
+static const unsigned AE_VALIGNDecoderTable[] = {Xtensa::U0, Xtensa::U1,
+                                                 Xtensa::U2, Xtensa::U3};
+
+static DecodeStatus DecodeAE_DRRegisterClass(MCInst &Inst, uint64_t RegNo,
+                                             uint64_t Address,
+                                             const void *Decoder) {
+  if (RegNo >= array_lengthof(AE_DRDecoderTable))
+    return MCDisassembler::Fail;
+
+  unsigned Reg = AE_DRDecoderTable[RegNo];
+  Inst.addOperand(MCOperand::createReg(Reg));
+  return MCDisassembler::Success;
+}
+
+static DecodeStatus DecodeAE_VALIGNRegisterClass(MCInst &Inst, uint64_t RegNo,
+                                                 uint64_t Address,
+                                                 const void *Decoder) {
+  if (RegNo >= array_lengthof(AE_VALIGNDecoderTable))
+    return MCDisassembler::Fail;
+
+  unsigned Reg = AE_VALIGNDecoderTable[RegNo];
+  Inst.addOperand(MCOperand::createReg(Reg));
+  return MCDisassembler::Success;
+}
+
 static DecodeStatus DecodeARRegisterClass(MCInst &Inst, uint64_t RegNo,
                                           uint64_t Address,
                                           const void *Decoder) {

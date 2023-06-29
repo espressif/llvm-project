@@ -288,5 +288,66 @@ B2, B3, B4, B5, B6, B7, B8, B9, B10, B11, B12, B13, B14, B15)> {
   let Size = 8;
 }
 
+let Namespace = "Xtensa" in {
+  def bsub0 : SubRegIndex<1>;
+  def bsub1 : SubRegIndex<1, 1>;
+  def bsub2 : SubRegIndex<1, 2>;
+  def bsub3 : SubRegIndex<1, 3>;
 
 
+let SubRegIndices = [bsub0, bsub1] in {
+  def B0_B1 : RegisterWithSubRegs<"", [B0, B1]>;
+  def B2_B3 : RegisterWithSubRegs<"", [B2, B3]>;
+  def B4_B5 : RegisterWithSubRegs<"", [B4, B5]>;
+  def B6_B7 : RegisterWithSubRegs<"", [B6, B7]>;
+  def B8_B9 : RegisterWithSubRegs<"", [B8, B9]>;
+  def B10_B11 : RegisterWithSubRegs<"", [B10, B11]>;
+  def B12_B13 : RegisterWithSubRegs<"", [B12, B13]>;
+  def B14_B15 : RegisterWithSubRegs<"", [B14, B15]>;
+}
+
+let SubRegIndices = [bsub0, bsub1, bsub2, bsub3] in {
+  def B0_B1_B2_B3 : RegisterWithSubRegs<"", [B0, B1, B2, B3]>;
+  def B4_B5_B6_B7 : RegisterWithSubRegs<"", [B4, B5, B6, B7]>;
+  def B8_B9_B10_B11 : RegisterWithSubRegs<"", [B8, B9, B10, B11]>;
+  def B12_B13_B14_B15 : RegisterWithSubRegs<"", [B12, B13, B14, B15]>;
+}
+
+}
+
+def BR2 : RegisterClass<"Xtensa", [v2i1], 8, (add B0_B1, B2_B3, B4_B5,
+                                                  B6_B7, B8_B9, B10_B11, 
+                                                  B12_B13, B14_B15)> {
+  let Size = 8;
+}
+
+def BR4 : RegisterClass<"Xtensa", [v4i1], 8, (add B0_B1_B2_B3, B4_B5_B6_B7,
+                                              B8_B9_B10_B11, B12_B13_B14_B15)> {
+  let Size = 8;
+}
+//===----------------------------------------------------------------------===//
+// HIFI3 vector registers AE_DR
+//===----------------------------------------------------------------------===//
+class AEDReg<bits<4> num, string n> : XtensaReg<n> {
+  let HWEncoding{3-0} = num;
+}
+
+foreach i = 0-15 in {
+  def AED#i  : AEDReg<i, "aed"#i>,  DwarfRegNum<[-1]>;
+}
+
+def AE_DR : RegisterClass<"Xtensa",[v4i16,v2i32,v1i64,v1i32],64,
+                          (sequence "AED%u", 0, 15)>;
+
+//===----------------------------------------------------------------------===//
+// HIFI3 vector alignment registers AE_VALIGN
+//===----------------------------------------------------------------------===//
+class AEVALIGNReg<bits<2> num, string n> : XtensaReg<n> {
+  let HWEncoding{1-0} = num;
+}
+
+foreach i = 0-3 in {
+  def U#i  : AEVALIGNReg<i, "u"#i>,  DwarfRegNum<[-1]>;
+}
+
+def AE_VALIGN : RegisterClass<"Xtensa",[v8i8], 64, (sequence "U%u", 0, 3)>;
