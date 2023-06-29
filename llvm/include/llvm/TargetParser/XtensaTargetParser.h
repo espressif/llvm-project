@@ -59,7 +59,8 @@ enum FeatureKind : uint64_t {
   FK_REGPROTECT =        1 << 28,
   FK_MISCSR =            1 << 29,
   FK_ESP32S2OPS =        1 << 30,
-  FK_ESP32S3OPS =        1ULL << 31
+  FK_ESP32S3OPS =        1ULL << 31,
+  FK_HIFI3 =             1ULL << 32
 };
 
 CPUKind parseCPUKind(StringRef CPU);
