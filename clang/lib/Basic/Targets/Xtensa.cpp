@@ -24,6 +24,8 @@ static constexpr Builtin::Info BuiltinInfo[] = {
 #define BUILTIN(ID, TYPE, ATTRS)                                               \
   {#ID, TYPE, ATTRS, nullptr, HeaderDesc::NO_HEADER, ALL_LANGUAGES},
 #include "clang/Basic/BuiltinsXtensa.def"
+#include "clang/Basic/BuiltinsXtensaHIFI.def"
+#undef BUILTIN
 };
 
 ArrayRef<Builtin::Info> XtensaTargetInfo::getTargetBuiltins() const {

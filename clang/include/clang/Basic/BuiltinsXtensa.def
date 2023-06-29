@@ -286,4 +286,3 @@ BUILTIN(__builtin_xtensa_xt_wur_fsr, "vi", "n")
 // generated code
 #include "clang/Basic/BuiltinsXtensaESP32S3.def"
 
-#undef BUILTIN
