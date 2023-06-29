@@ -11623,9 +11623,9 @@ ABIArgInfo XtensaABIInfo::classifyArgumentType(QualType Ty,
   }
 
   // xtbool
-  if (getTarget().hasFeature("bool") && Size == 1 && Ty->isVectorType()) {
+  if (getTarget().hasFeature("bool") && Size <= 8 && Ty->isVectorType()) {
     llvm::Type *ResType =
-        llvm::FixedVectorType::get(llvm::Type::getInt1Ty(getVMContext()), 1);
+        llvm::FixedVectorType::get(llvm::Type::getInt1Ty(getVMContext()), Size);
     return ABIArgInfo::getDirect(ResType);
   }
 
