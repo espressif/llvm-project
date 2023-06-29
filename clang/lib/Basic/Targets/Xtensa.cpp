@@ -24,6 +24,7 @@ const Builtin::Info XtensaTargetInfo::BuiltinInfo[] = {
 #define BUILTIN(ID, TYPE, ATTRS)                                               \
   {#ID, TYPE, ATTRS, nullptr, ALL_LANGUAGES, nullptr},
 #include "clang/Basic/BuiltinsXtensa.def"
+#include "clang/Basic/BuiltinsXtensaHIFI.def"
 };
 
 void XtensaTargetInfo::getTargetDefines(const LangOptions &Opts,

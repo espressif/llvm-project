@@ -283,6 +283,3 @@ BUILTIN(__builtin_xtensa_xt_wur_fcr, "vi", "n")
 
 // void __builtin_xtensa___builtin_xtensa_xt_wur_fsr(int)
 BUILTIN(__builtin_xtensa_xt_wur_fsr, "vi", "n")
-
-
-#undef BUILTIN

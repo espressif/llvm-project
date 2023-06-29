@@ -1,0 +1,2617 @@
+//===-- BuiltinsXtensaHIFI.def - Xtensa HIFI Builtin function database ----*- C++ -*-==//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+//
+// This file defines the builtin function database for Xtensa HIFI extension. Users of
+// this file must define the BUILTIN macro to make use of this information.
+//
+//===----------------------------------------------------------------------===//
+
+// The format of this database matches clang/Basic/Builtins.def.// ae_int16x4 __builtin_xtensa_ae_abs16s(ae_int16x4 ae_arth_v1)
+
+// ae_int16x4 __builtin_xtensa_ae_abs16s(ae_int16x4 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_abs16s, "V4sV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_abs24s(ae_int32x2 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_abs24s, "V2iV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_abs32(ae_int32x2 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_abs32, "V2iV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_abs32s(ae_int32x2 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_abs32s, "V2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_abs64(ae_int64 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_abs64, "V1LLiV1LLi", "n")
+
+// ae_int64 __builtin_xtensa_ae_abs64s(ae_int64 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_abs64s, "V1LLiV1LLi", "n")
+
+// ae_int16x4 __builtin_xtensa_ae_add16(ae_int16x4 ae_arth_v0,ae_int16x4 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_add16, "V4sV4sV4s", "n")
+
+// ae_int16x4 __builtin_xtensa_ae_add16s(ae_int16x4 ae_arth_v0,ae_int16x4 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_add16s, "V4sV4sV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_add24s(ae_int32x2 ae_arth_v0,ae_int32x2 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_add24s, "V2iV2iV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_add32(ae_int32x2 ae_arth_v0,ae_int32x2 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_add32, "V2iV2iV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_add32_hl_lh(ae_int32x2 ae_arth_v0,ae_int32x2 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_add32_hl_lh, "V2iV2iV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_add32s(ae_int32x2 ae_arth_v0,ae_int32x2 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_add32s, "V2iV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_add64(ae_int64 ae_arth_v0,ae_int64 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_add64, "V1LLiV1LLiV1LLi", "n")
+
+// ae_int64 __builtin_xtensa_ae_add64s(ae_int64 ae_arth_v0,ae_int64 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_add64s, "V1LLiV1LLiV1LLi", "n")
+
+// int __builtin_xtensa_ae_addbrba32(int art,int ars)
+BUILTIN(__builtin_xtensa_ae_addbrba32, "iii", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_addsub32(ae_int32x2 ae_arth_v0,ae_int32x2 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_addsub32, "V2iV2iV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_addsub32s(ae_int32x2 ae_arth_v0,ae_int32x2 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_addsub32s, "V2iV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_and(ae_int64 ae_dr_to_dr_v0,ae_int64 ae_dr_to_dr_v1)
+BUILTIN(__builtin_xtensa_ae_and, "V1LLiV1LLiV1LLi", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_cvt32x2f16_10(ae_int16x4 ae_to_dr_v0)
+BUILTIN(__builtin_xtensa_ae_cvt32x2f16_10, "V2iV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_cvt32x2f16_32(ae_int16x4 ae_to_dr_v0)
+BUILTIN(__builtin_xtensa_ae_cvt32x2f16_32, "V2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_cvt48a32(int ars)
+BUILTIN(__builtin_xtensa_ae_cvt48a32, "V1LLii", "n")
+
+// ae_int64 __builtin_xtensa_ae_cvt64a32(int ars)
+BUILTIN(__builtin_xtensa_ae_cvt64a32, "V1LLii", "n")
+
+// ae_int64 __builtin_xtensa_ae_cvt64f32_h(ae_int32x2 ae_dr_to_dr_v0)
+BUILTIN(__builtin_xtensa_ae_cvt64f32_h, "V1LLiV2i", "n")
+
+// int __builtin_xtensa_ae_cvta32f24s_h(ae_int32x2 ae_dr_to_ar_v0)
+BUILTIN(__builtin_xtensa_ae_cvta32f24s_h, "iV2i", "n")
+
+// int __builtin_xtensa_ae_cvta32f24s_l(ae_int32x2 ae_dr_to_ar_v0)
+BUILTIN(__builtin_xtensa_ae_cvta32f24s_l, "iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_cvtq56a32s(int ars)
+BUILTIN(__builtin_xtensa_ae_cvtq56a32s, "V1LLii", "n")
+
+// ae_int64 __builtin_xtensa_ae_cvtq56p32s_h(ae_int32x2 ae_dr_to_dr_v0)
+BUILTIN(__builtin_xtensa_ae_cvtq56p32s_h, "V1LLiV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_cvtq56p32s_l(ae_int32x2 ae_dr_to_dr_v0)
+BUILTIN(__builtin_xtensa_ae_cvtq56p32s_l, "V1LLiV2i", "n")
+
+// void __builtin_xtensa_ae_db(const short** ars,int art)
+BUILTIN(__builtin_xtensa_ae_db, "vsC**i", "n")
+
+// void __builtin_xtensa_ae_db_ic(const short** ars,int art)
+BUILTIN(__builtin_xtensa_ae_db_ic, "vsC**i", "n")
+
+// void __builtin_xtensa_ae_db_ip(const short** ars,int art)
+BUILTIN(__builtin_xtensa_ae_db_ip, "vsC**i", "n")
+
+// void __builtin_xtensa_ae_dbi(const short** ars,immediate ae_ohba)
+BUILTIN(__builtin_xtensa_ae_dbi, "vsC**i", "n")
+
+// void __builtin_xtensa_ae_dbi_ic(const short** ars,immediate ae_ohba)
+BUILTIN(__builtin_xtensa_ae_dbi_ic, "vsC**i", "n")
+
+// void __builtin_xtensa_ae_dbi_ip(const short** ars,immediate ae_ohba)
+BUILTIN(__builtin_xtensa_ae_dbi_ip, "vsC**i", "n")
+
+// void __builtin_xtensa_ae_div64d32_h(ae_int64* ae_arth_v,ae_int32x2 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_div64d32_h, "vV1LLi*V2i", "n")
+
+// void __builtin_xtensa_ae_div64d32_l(ae_int64* ae_arth_v,ae_int32x2 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_div64d32_l, "vV1LLi*V2i", "n")
+
+// xtbool4 __builtin_xtensa_ae_eq16(ae_int16x4 ae_cmpp_v0,ae_int16x4 ae_cmpp_v1)
+BUILTIN(__builtin_xtensa_ae_eq16, "V4bV4sV4s", "n")
+
+// xtbool2 __builtin_xtensa_ae_eq32(ae_int32x2 ae_cmpp_v0,ae_int32x2 ae_cmpp_v1)
+BUILTIN(__builtin_xtensa_ae_eq32, "V2bV2iV2i", "n")
+
+// xtbool __builtin_xtensa_ae_eq64(ae_int64 ae_cmpp_v0,ae_int64 ae_cmpp_v1)
+BUILTIN(__builtin_xtensa_ae_eq64, "V1bV1LLiV1LLi", "n")
+
+// ae_int16x4 __builtin_xtensa_ae_l16_i(const ae_int16* ars,immediate ae_immls16)
+BUILTIN(__builtin_xtensa_ae_l16_i, "V4sV1sC*i", "n")
+
+// void __builtin_xtensa_ae_l16_ip(ae_int16x4* ae_ls_v,const ae_int16** ars,immediate ae_immls16)
+BUILTIN(__builtin_xtensa_ae_l16_ip, "vV4s*V1sC**i", "n")
+
+// ae_int16x4 __builtin_xtensa_ae_l16_x(const ae_int16* ars,int art)
+BUILTIN(__builtin_xtensa_ae_l16_x, "V4sV1sC*i", "n")
+
+// void __builtin_xtensa_ae_l16_xc(ae_int16x4* ae_ls_v,const ae_int16** ars,int art)
+BUILTIN(__builtin_xtensa_ae_l16_xc, "vV4s*V1sC**i", "n")
+
+// void __builtin_xtensa_ae_l16_xp(ae_int16x4* ae_ls_v,const ae_int16** ars,int art)
+BUILTIN(__builtin_xtensa_ae_l16_xp, "vV4s*V1sC**i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_l16m_i(const ae_int16* ars,immediate ae_immls16)
+BUILTIN(__builtin_xtensa_ae_l16m_i, "V2iV1sC*i", "n")
+
+// void __builtin_xtensa_ae_l16m_iu(ae_int32x2* ae_ls_v,const ae_int16** ars,immediate ae_immls16)
+BUILTIN(__builtin_xtensa_ae_l16m_iu, "vV2i*V1sC**i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_l16m_x(const ae_int16* ars,int art)
+BUILTIN(__builtin_xtensa_ae_l16m_x, "V2iV1sC*i", "n")
+
+// void __builtin_xtensa_ae_l16m_xc(ae_int32x2* ae_ls_v,const ae_int16** ars,int art)
+BUILTIN(__builtin_xtensa_ae_l16m_xc, "vV2i*V1sC**i", "n")
+
+// void __builtin_xtensa_ae_l16m_xu(ae_int32x2* ae_ls_v,const ae_int16** ars,int art)
+BUILTIN(__builtin_xtensa_ae_l16m_xu, "vV2i*V1sC**i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_l16x2m_i(const ae_int16x2* ars,immediate ae_immls32)
+BUILTIN(__builtin_xtensa_ae_l16x2m_i, "V2iV2sC*i", "n")
+
+// void __builtin_xtensa_ae_l16x2m_iu(ae_int32x2* ae_ls_v,const ae_int16x2** ars,immediate ae_immls32)
+BUILTIN(__builtin_xtensa_ae_l16x2m_iu, "vV2i*V2sC**i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_l16x2m_x(const ae_int16x2* ars,int art)
+BUILTIN(__builtin_xtensa_ae_l16x2m_x, "V2iV2sC*i", "n")
+
+// void __builtin_xtensa_ae_l16x2m_xc(ae_int32x2* ae_ls_v,const ae_int16x2** ars,int art)
+BUILTIN(__builtin_xtensa_ae_l16x2m_xc, "vV2i*V2sC**i", "n")
+
+// void __builtin_xtensa_ae_l16x2m_xu(ae_int32x2* ae_ls_v,const ae_int16x2** ars,int art)
+BUILTIN(__builtin_xtensa_ae_l16x2m_xu, "vV2i*V2sC**i", "n")
+
+// ae_int16x4 __builtin_xtensa_ae_l16x4_i(const ae_int16x4* ars,immediate ae_immls64)
+BUILTIN(__builtin_xtensa_ae_l16x4_i, "V4sV4sC*i", "n")
+
+// void __builtin_xtensa_ae_l16x4_ip(ae_int16x4* ae_ls_v,const ae_int16x4** ars,immediate ae_immls64pos)
+BUILTIN(__builtin_xtensa_ae_l16x4_ip, "vV4s*V4sC**i", "n")
+
+// void __builtin_xtensa_ae_l16x4_ric(ae_int16x4* ae_ls_v,const ae_int16x4** ars)
+BUILTIN(__builtin_xtensa_ae_l16x4_ric, "vV4s*V4sC**", "n")
+
+// void __builtin_xtensa_ae_l16x4_rip(ae_int16x4* ae_ls_v,const ae_int16x4** ars)
+BUILTIN(__builtin_xtensa_ae_l16x4_rip, "vV4s*V4sC**", "n")
+
+// ae_int16x4 __builtin_xtensa_ae_l16x4_x(const ae_int16x4* ars,int art)
+BUILTIN(__builtin_xtensa_ae_l16x4_x, "V4sV4sC*i", "n")
+
+// void __builtin_xtensa_ae_l16x4_xc(ae_int16x4* ae_ls_v,const ae_int16x4** ars,int art)
+BUILTIN(__builtin_xtensa_ae_l16x4_xc, "vV4s*V4sC**i", "n")
+
+// void __builtin_xtensa_ae_l16x4_xp(ae_int16x4* ae_ls_v,const ae_int16x4** ars,int art)
+BUILTIN(__builtin_xtensa_ae_l16x4_xp, "vV4s*V4sC**i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_l32_i(const ae_int32* ars,immediate ae_immls32)
+BUILTIN(__builtin_xtensa_ae_l32_i, "V2iV1iC*i", "n")
+
+// void __builtin_xtensa_ae_l32_ip(ae_int32x2* ae_ls_v,const ae_int32** ars,immediate ae_immls32)
+BUILTIN(__builtin_xtensa_ae_l32_ip, "vV2i*V1iC**i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_l32_x(const ae_int32* ars,int art)
+BUILTIN(__builtin_xtensa_ae_l32_x, "V2iV1iC*i", "n")
+
+// void __builtin_xtensa_ae_l32_xc(ae_int32x2* ae_ls_v,const ae_int32** ars,int art)
+BUILTIN(__builtin_xtensa_ae_l32_xc, "vV2i*V1iC**i", "n")
+
+// void __builtin_xtensa_ae_l32_xp(ae_int32x2* ae_ls_v,const ae_int32** ars,int art)
+BUILTIN(__builtin_xtensa_ae_l32_xp, "vV2i*V1iC**i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_l32f24_i(const ae_int32* ars,immediate ae_immls32)
+BUILTIN(__builtin_xtensa_ae_l32f24_i, "V2iV1iC*i", "n")
+
+// void __builtin_xtensa_ae_l32f24_ip(ae_int32x2* ae_ls_v,const ae_int32** ars,immediate ae_immls32)
+BUILTIN(__builtin_xtensa_ae_l32f24_ip, "vV2i*V1iC**i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_l32f24_x(const ae_int32* ars,int art)
+BUILTIN(__builtin_xtensa_ae_l32f24_x, "V2iV1iC*i", "n")
+
+// void __builtin_xtensa_ae_l32f24_xc(ae_int32x2* ae_ls_v,const ae_int32** ars,int art)
+BUILTIN(__builtin_xtensa_ae_l32f24_xc, "vV2i*V1iC**i", "n")
+
+// void __builtin_xtensa_ae_l32f24_xp(ae_int32x2* ae_ls_v,const ae_int32** ars,int art)
+BUILTIN(__builtin_xtensa_ae_l32f24_xp, "vV2i*V1iC**i", "n")
+
+// ae_int64 __builtin_xtensa_ae_l32m_i(const ae_int32* ars,immediate ae_immls32)
+BUILTIN(__builtin_xtensa_ae_l32m_i, "V1LLiV1iC*i", "n")
+
+// void __builtin_xtensa_ae_l32m_iu(ae_int64* ae_ls_v,const ae_int32** ars,immediate ae_immls32)
+BUILTIN(__builtin_xtensa_ae_l32m_iu, "vV1LLi*V1iC**i", "n")
+
+// ae_int64 __builtin_xtensa_ae_l32m_x(const ae_int32* ars,int art)
+BUILTIN(__builtin_xtensa_ae_l32m_x, "V1LLiV1iC*i", "n")
+
+// void __builtin_xtensa_ae_l32m_xc(ae_int64* ae_ls_v,const ae_int32** ars,int art)
+BUILTIN(__builtin_xtensa_ae_l32m_xc, "vV1LLi*V1iC**i", "n")
+
+// void __builtin_xtensa_ae_l32m_xu(ae_int64* ae_ls_v,const ae_int32** ars,int art)
+BUILTIN(__builtin_xtensa_ae_l32m_xu, "vV1LLi*V1iC**i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_l32x2_i(const ae_int32x2* ars,immediate ae_immls64)
+BUILTIN(__builtin_xtensa_ae_l32x2_i, "V2iV2iC*i", "n")
+
+// void __builtin_xtensa_ae_l32x2_ip(ae_int32x2* ae_ls_v,const ae_int32x2** ars,immediate ae_immls64pos)
+BUILTIN(__builtin_xtensa_ae_l32x2_ip, "vV2i*V2iC**i", "n")
+
+// void __builtin_xtensa_ae_l32x2_ric(ae_int32x2* ae_ls_v,const ae_int32x2** ars)
+BUILTIN(__builtin_xtensa_ae_l32x2_ric, "vV2i*V2iC**", "n")
+
+// void __builtin_xtensa_ae_l32x2_rip(ae_int32x2* ae_ls_v,const ae_int32x2** ars)
+BUILTIN(__builtin_xtensa_ae_l32x2_rip, "vV2i*V2iC**", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_l32x2_x(const ae_int32x2* ars,int art)
+BUILTIN(__builtin_xtensa_ae_l32x2_x, "V2iV2iC*i", "n")
+
+// void __builtin_xtensa_ae_l32x2_xc(ae_int32x2* ae_ls_v,const ae_int32x2** ars,int art)
+BUILTIN(__builtin_xtensa_ae_l32x2_xc, "vV2i*V2iC**i", "n")
+
+// void __builtin_xtensa_ae_l32x2_xp(ae_int32x2* ae_ls_v,const ae_int32x2** ars,int art)
+BUILTIN(__builtin_xtensa_ae_l32x2_xp, "vV2i*V2iC**i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_l32x2f24_i(const ae_int32x2* ars,immediate ae_immls64)
+BUILTIN(__builtin_xtensa_ae_l32x2f24_i, "V2iV2iC*i", "n")
+
+// void __builtin_xtensa_ae_l32x2f24_ip(ae_int32x2* ae_ls_v,const ae_int32x2** ars,immediate ae_immls64pos)
+BUILTIN(__builtin_xtensa_ae_l32x2f24_ip, "vV2i*V2iC**i", "n")
+
+// void __builtin_xtensa_ae_l32x2f24_ric(ae_int32x2* ae_ls_v,const ae_int32x2** ars)
+BUILTIN(__builtin_xtensa_ae_l32x2f24_ric, "vV2i*V2iC**", "n")
+
+// void __builtin_xtensa_ae_l32x2f24_rip(ae_int32x2* ae_ls_v,const ae_int32x2** ars)
+BUILTIN(__builtin_xtensa_ae_l32x2f24_rip, "vV2i*V2iC**", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_l32x2f24_x(const ae_int32x2* ars,int art)
+BUILTIN(__builtin_xtensa_ae_l32x2f24_x, "V2iV2iC*i", "n")
+
+// void __builtin_xtensa_ae_l32x2f24_xc(ae_int32x2* ae_ls_v,const ae_int32x2** ars,int art)
+BUILTIN(__builtin_xtensa_ae_l32x2f24_xc, "vV2i*V2iC**i", "n")
+
+// void __builtin_xtensa_ae_l32x2f24_xp(ae_int32x2* ae_ls_v,const ae_int32x2** ars,int art)
+BUILTIN(__builtin_xtensa_ae_l32x2f24_xp, "vV2i*V2iC**i", "n")
+
+// ae_int64 __builtin_xtensa_ae_l64_i(const ae_int64* ars,immediate ae_immls64)
+BUILTIN(__builtin_xtensa_ae_l64_i, "V1LLiV1LLiC*i", "n")
+
+// void __builtin_xtensa_ae_l64_ip(ae_int64* ae_ls_v,const ae_int64** ars,immediate ae_immls64)
+BUILTIN(__builtin_xtensa_ae_l64_ip, "vV1LLi*V1LLiC**i", "n")
+
+// ae_int64 __builtin_xtensa_ae_l64_x(const ae_int64* ars,int art)
+BUILTIN(__builtin_xtensa_ae_l64_x, "V1LLiV1LLiC*i", "n")
+
+// void __builtin_xtensa_ae_l64_xc(ae_int64* ae_ls_v,const ae_int64** ars,int art)
+BUILTIN(__builtin_xtensa_ae_l64_xc, "vV1LLi*V1LLiC**i", "n")
+
+// void __builtin_xtensa_ae_l64_xp(ae_int64* ae_ls_v,const ae_int64** ars,int art)
+BUILTIN(__builtin_xtensa_ae_l64_xp, "vV1LLi*V1LLiC**i", "n")
+
+// void __builtin_xtensa_ae_la16x4_ic(ae_int16x4* ae_ls_av,ae_valign* ae_ls_uu,const ae_int16x4** ars)
+BUILTIN(__builtin_xtensa_ae_la16x4_ic, "vV4s*V8Uc*V4sC**", "n")
+
+// void __builtin_xtensa_ae_la16x4_ip(ae_int16x4* ae_ls_av,ae_valign* ae_ls_uu,const ae_int16x4** ars)
+BUILTIN(__builtin_xtensa_ae_la16x4_ip, "vV4s*V8Uc*V4sC**", "n")
+
+// void __builtin_xtensa_ae_la16x4_ric(ae_int16x4* ae_ls_av,ae_valign* ae_ls_uu,const ae_int16x4** ars)
+BUILTIN(__builtin_xtensa_ae_la16x4_ric, "vV4s*V8Uc*V4sC**", "n")
+
+// void __builtin_xtensa_ae_la16x4_rip(ae_int16x4* ae_ls_av,ae_valign* ae_ls_uu,const ae_int16x4** ars)
+BUILTIN(__builtin_xtensa_ae_la16x4_rip, "vV4s*V8Uc*V4sC**", "n")
+
+// void __builtin_xtensa_ae_la16x4neg_pc(ae_valign* ae_ls_uu,const ae_int16x4** ars)
+BUILTIN(__builtin_xtensa_ae_la16x4neg_pc, "vV8Uc*V4sC**", "n")
+
+// void __builtin_xtensa_ae_la16x4pos_pc(ae_valign* ae_ls_uu,const ae_int16x4** ars)
+BUILTIN(__builtin_xtensa_ae_la16x4pos_pc, "vV8Uc*V4sC**", "n")
+
+// void __builtin_xtensa_ae_la24_ic(ae_int32x2* ae_ls_av,ae_valign* ae_ls_uu,const void** ars)
+BUILTIN(__builtin_xtensa_ae_la24_ic, "vV2i*V8Uc*vC**", "n")
+
+// void __builtin_xtensa_ae_la24_ip(ae_int32x2* ae_ls_av,ae_valign* ae_ls_uu,const void** ars)
+BUILTIN(__builtin_xtensa_ae_la24_ip, "vV2i*V8Uc*vC**", "n")
+
+// void __builtin_xtensa_ae_la24_ric(ae_int32x2* ae_ls_av,ae_valign* ae_ls_uu,const void** ars)
+BUILTIN(__builtin_xtensa_ae_la24_ric, "vV2i*V8Uc*vC**", "n")
+
+// void __builtin_xtensa_ae_la24_rip(ae_int32x2* ae_ls_av,ae_valign* ae_ls_uu,const void** ars)
+BUILTIN(__builtin_xtensa_ae_la24_rip, "vV2i*V8Uc*vC**", "n")
+
+// void __builtin_xtensa_ae_la24neg_pc(ae_valign* ae_ls_uu,const void** ars)
+BUILTIN(__builtin_xtensa_ae_la24neg_pc, "vV8Uc*vC**", "n")
+
+// void __builtin_xtensa_ae_la24pos_pc(ae_valign* ae_ls_uu,const void** ars)
+BUILTIN(__builtin_xtensa_ae_la24pos_pc, "vV8Uc*vC**", "n")
+
+// void __builtin_xtensa_ae_la24x2_ic(ae_int32x2* ae_ls_av,ae_valign* ae_ls_uu,const void** ars)
+BUILTIN(__builtin_xtensa_ae_la24x2_ic, "vV2i*V8Uc*vC**", "n")
+
+// void __builtin_xtensa_ae_la24x2_ip(ae_int32x2* ae_ls_av,ae_valign* ae_ls_uu,const void** ars)
+BUILTIN(__builtin_xtensa_ae_la24x2_ip, "vV2i*V8Uc*vC**", "n")
+
+// void __builtin_xtensa_ae_la24x2_ric(ae_int32x2* ae_ls_av,ae_valign* ae_ls_uu,const void** ars)
+BUILTIN(__builtin_xtensa_ae_la24x2_ric, "vV2i*V8Uc*vC**", "n")
+
+// void __builtin_xtensa_ae_la24x2_rip(ae_int32x2* ae_ls_av,ae_valign* ae_ls_uu,const void** ars)
+BUILTIN(__builtin_xtensa_ae_la24x2_rip, "vV2i*V8Uc*vC**", "n")
+
+// void __builtin_xtensa_ae_la24x2neg_pc(ae_valign* ae_ls_uu,const void** ars)
+BUILTIN(__builtin_xtensa_ae_la24x2neg_pc, "vV8Uc*vC**", "n")
+
+// void __builtin_xtensa_ae_la24x2pos_pc(ae_valign* ae_ls_uu,const void** ars)
+BUILTIN(__builtin_xtensa_ae_la24x2pos_pc, "vV8Uc*vC**", "n")
+
+// void __builtin_xtensa_ae_la32x2_ic(ae_int32x2* ae_ls_av,ae_valign* ae_ls_uu,const ae_int32x2** ars)
+BUILTIN(__builtin_xtensa_ae_la32x2_ic, "vV2i*V8Uc*V2iC**", "n")
+
+// void __builtin_xtensa_ae_la32x2_ip(ae_int32x2* ae_ls_av,ae_valign* ae_ls_uu,const ae_int32x2** ars)
+BUILTIN(__builtin_xtensa_ae_la32x2_ip, "vV2i*V8Uc*V2iC**", "n")
+
+// void __builtin_xtensa_ae_la32x2_ric(ae_int32x2* ae_ls_av,ae_valign* ae_ls_uu,const ae_int32x2** ars)
+BUILTIN(__builtin_xtensa_ae_la32x2_ric, "vV2i*V8Uc*V2iC**", "n")
+
+// void __builtin_xtensa_ae_la32x2_rip(ae_int32x2* ae_ls_av,ae_valign* ae_ls_uu,const ae_int32x2** ars)
+BUILTIN(__builtin_xtensa_ae_la32x2_rip, "vV2i*V8Uc*V2iC**", "n")
+
+// void __builtin_xtensa_ae_la32x2f24_ic(ae_int32x2* ae_ls_av,ae_valign* ae_ls_uu,const ae_int32x2** ars)
+BUILTIN(__builtin_xtensa_ae_la32x2f24_ic, "vV2i*V8Uc*V2iC**", "n")
+
+// void __builtin_xtensa_ae_la32x2f24_ip(ae_int32x2* ae_ls_av,ae_valign* ae_ls_uu,const ae_int32x2** ars)
+BUILTIN(__builtin_xtensa_ae_la32x2f24_ip, "vV2i*V8Uc*V2iC**", "n")
+
+// void __builtin_xtensa_ae_la32x2f24_ric(ae_int32x2* ae_ls_av,ae_valign* ae_ls_uu,const ae_int32x2** ars)
+BUILTIN(__builtin_xtensa_ae_la32x2f24_ric, "vV2i*V8Uc*V2iC**", "n")
+
+// void __builtin_xtensa_ae_la32x2f24_rip(ae_int32x2* ae_ls_av,ae_valign* ae_ls_uu,const ae_int32x2** ars)
+BUILTIN(__builtin_xtensa_ae_la32x2f24_rip, "vV2i*V8Uc*V2iC**", "n")
+
+// void __builtin_xtensa_ae_la32x2neg_pc(ae_valign* ae_ls_uu,const ae_int32x2** ars)
+BUILTIN(__builtin_xtensa_ae_la32x2neg_pc, "vV8Uc*V2iC**", "n")
+
+// void __builtin_xtensa_ae_la32x2pos_pc(ae_valign* ae_ls_uu,const ae_int32x2** ars)
+BUILTIN(__builtin_xtensa_ae_la32x2pos_pc, "vV8Uc*V2iC**", "n")
+
+// ae_valign __builtin_xtensa_ae_la64_pp(const void* ars)
+BUILTIN(__builtin_xtensa_ae_la64_pp, "V8UcvC*", "n")
+
+// ae_valign __builtin_xtensa_ae_lalign64_i(const ae_valign* ars,immediate ae_immls64)
+BUILTIN(__builtin_xtensa_ae_lalign64_i, "V8UcV8UcC*i", "n")
+
+// int __builtin_xtensa_ae_lb(int art)
+BUILTIN(__builtin_xtensa_ae_lb, "ii", "n")
+
+// int __builtin_xtensa_ae_lbi(immediate ae_ohba)
+BUILTIN(__builtin_xtensa_ae_lbi, "ii", "n")
+
+// int __builtin_xtensa_ae_lbk(int ars,int art)
+BUILTIN(__builtin_xtensa_ae_lbk, "iii", "n")
+
+// int __builtin_xtensa_ae_lbki(int ars,immediate ae_ohba)
+BUILTIN(__builtin_xtensa_ae_lbki, "iii", "n")
+
+// int __builtin_xtensa_ae_lbs(int art)
+BUILTIN(__builtin_xtensa_ae_lbs, "ii", "n")
+
+// int __builtin_xtensa_ae_lbsi(immediate ae_ohba)
+BUILTIN(__builtin_xtensa_ae_lbsi, "ii", "n")
+
+// xtbool4 __builtin_xtensa_ae_le16(ae_int16x4 ae_cmpp_v0,ae_int16x4 ae_cmpp_v1)
+BUILTIN(__builtin_xtensa_ae_le16, "V4bV4sV4s", "n")
+
+// xtbool2 __builtin_xtensa_ae_le32(ae_int32x2 ae_cmpp_v0,ae_int32x2 ae_cmpp_v1)
+BUILTIN(__builtin_xtensa_ae_le32, "V2bV2iV2i", "n")
+
+// xtbool __builtin_xtensa_ae_le64(ae_int64 ae_cmpp_v0,ae_int64 ae_cmpp_v1)
+BUILTIN(__builtin_xtensa_ae_le64, "V1bV1LLiV1LLi", "n")
+
+// xtbool4 __builtin_xtensa_ae_lt16(ae_int16x4 ae_cmpp_v0,ae_int16x4 ae_cmpp_v1)
+BUILTIN(__builtin_xtensa_ae_lt16, "V4bV4sV4s", "n")
+
+// xtbool2 __builtin_xtensa_ae_lt32(ae_int32x2 ae_cmpp_v0,ae_int32x2 ae_cmpp_v1)
+BUILTIN(__builtin_xtensa_ae_lt32, "V2bV2iV2i", "n")
+
+// xtbool __builtin_xtensa_ae_lt64(ae_int64 ae_cmpp_v0,ae_int64 ae_cmpp_v1)
+BUILTIN(__builtin_xtensa_ae_lt64, "V1bV1LLiV1LLi", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_max32(ae_int32x2 ae_cmpp_v0,ae_int32x2 ae_cmpp_v1)
+BUILTIN(__builtin_xtensa_ae_max32, "V2iV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_max64(ae_int64 ae_cmpp_v0,ae_int64 ae_cmpp_v1)
+BUILTIN(__builtin_xtensa_ae_max64, "V1LLiV1LLiV1LLi", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_maxabs32s(ae_int32x2 ae_cmpp_v0,ae_int32x2 ae_cmpp_v1)
+BUILTIN(__builtin_xtensa_ae_maxabs32s, "V2iV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_maxabs64s(ae_int64 ae_cmpp_v0,ae_int64 ae_cmpp_v1)
+BUILTIN(__builtin_xtensa_ae_maxabs64s, "V1LLiV1LLiV1LLi", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_min32(ae_int32x2 ae_cmpp_v0,ae_int32x2 ae_cmpp_v1)
+BUILTIN(__builtin_xtensa_ae_min32, "V2iV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_min64(ae_int64 ae_cmpp_v0,ae_int64 ae_cmpp_v1)
+BUILTIN(__builtin_xtensa_ae_min64, "V1LLiV1LLiV1LLi", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_minabs32s(ae_int32x2 ae_cmpp_v0,ae_int32x2 ae_cmpp_v1)
+BUILTIN(__builtin_xtensa_ae_minabs32s, "V2iV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_minabs64s(ae_int64 ae_cmpp_v0,ae_int64 ae_cmpp_v1)
+BUILTIN(__builtin_xtensa_ae_minabs64s, "V1LLiV1LLiV1LLi", "n")
+
+// ae_int64 __builtin_xtensa_ae_mov(ae_int64 ae_to_dr_v0)
+BUILTIN(__builtin_xtensa_ae_mov, "V1LLiV1LLi", "n")
+
+// int __builtin_xtensa_ae_movad16_0(ae_int16x4 ae_dr_to_ar_v0)
+BUILTIN(__builtin_xtensa_ae_movad16_0, "iV4s", "n")
+
+// int __builtin_xtensa_ae_movad16_1(ae_int16x4 ae_dr_to_ar_v0)
+BUILTIN(__builtin_xtensa_ae_movad16_1, "iV4s", "n")
+
+// int __builtin_xtensa_ae_movad16_2(ae_int16x4 ae_dr_to_ar_v0)
+BUILTIN(__builtin_xtensa_ae_movad16_2, "iV4s", "n")
+
+// int __builtin_xtensa_ae_movad16_3(ae_int16x4 ae_dr_to_ar_v0)
+BUILTIN(__builtin_xtensa_ae_movad16_3, "iV4s", "n")
+
+// int __builtin_xtensa_ae_movad32_h(ae_int32x2 ae_dr_to_ar_v0)
+BUILTIN(__builtin_xtensa_ae_movad32_h, "iV2i", "n")
+
+// int __builtin_xtensa_ae_movad32_l(ae_int32x2 ae_dr_to_ar_v0)
+BUILTIN(__builtin_xtensa_ae_movad32_l, "iV2i", "n")
+
+// ae_valign __builtin_xtensa_ae_movalign(ae_valign ae_uu_v)
+BUILTIN(__builtin_xtensa_ae_movalign, "V8UcV8Uc", "n")
+
+// ae_int16x4 __builtin_xtensa_ae_movda16(int ars)
+BUILTIN(__builtin_xtensa_ae_movda16, "V4si", "n")
+
+// ae_int16x4 __builtin_xtensa_ae_movda16x2(int ars,int art)
+BUILTIN(__builtin_xtensa_ae_movda16x2, "V4sii", "n")
+
+// ae_int32 __builtin_xtensa_ae_movda32(int ars)
+BUILTIN(__builtin_xtensa_ae_movda32, "V1ii", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_movda32x2(int ars,int art)
+BUILTIN(__builtin_xtensa_ae_movda32x2, "V2iii", "n")
+
+// void __builtin_xtensa_ae_movf16x4(ae_int16x4* ae_cmov_v,ae_int16x4 ae_cmov_v0,xtbool4 bt4)
+BUILTIN(__builtin_xtensa_ae_movf16x4, "vV4s*V4sV4b", "n")
+
+// void __builtin_xtensa_ae_movf32x2(ae_int32x2* ae_cmov_v,ae_int32x2 ae_cmov_v0,xtbool2 bt2)
+BUILTIN(__builtin_xtensa_ae_movf32x2, "vV2i*V2iV2b", "n")
+
+// void __builtin_xtensa_ae_movf64(ae_int64* ae_cmov_v,ae_int64 ae_cmov_v0,xtbool bt)
+BUILTIN(__builtin_xtensa_ae_movf64, "vV1LLi*V1LLiV1b", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_movi(immediate movi_imm)
+BUILTIN(__builtin_xtensa_ae_movi, "V2ii", "n")
+
+// void __builtin_xtensa_ae_movt16x4(ae_int16x4* ae_cmov_v,ae_int16x4 ae_cmov_v0,xtbool4 bt4)
+BUILTIN(__builtin_xtensa_ae_movt16x4, "vV4s*V4sV4b", "n")
+
+// void __builtin_xtensa_ae_movt32x2(ae_int32x2* ae_cmov_v,ae_int32x2 ae_cmov_v0,xtbool2 bt2)
+BUILTIN(__builtin_xtensa_ae_movt32x2, "vV2i*V2iV2b", "n")
+
+// void __builtin_xtensa_ae_movt64(ae_int64* ae_cmov_v,ae_int64 ae_cmov_v0,xtbool bt)
+BUILTIN(__builtin_xtensa_ae_movt64, "vV1LLi*V1LLiV1b", "n")
+
+// void __builtin_xtensa_ae_mul16x4(ae_int32x2* ae_mul_q1,ae_int32x2* ae_mul_q0,ae_int16x4 ae_mul_d1,ae_int16x4 ae_mul_d0)
+BUILTIN(__builtin_xtensa_ae_mul16x4, "vV2i*V2i*V4sV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mul32_hh(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mul32_hh, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mul32_lh(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mul32_lh, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mul32_ll(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mul32_ll, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mul32_ll_s2(ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mul32_ll_s2, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mul32u_ll(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mul32u_ll, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mul32x16_h0(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mul32x16_h0, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mul32x16_h0_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mul32x16_h0_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mul32x16_h1(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mul32x16_h1, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mul32x16_h1_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mul32x16_h1_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mul32x16_h2(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mul32x16_h2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mul32x16_h2_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mul32x16_h2_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mul32x16_h3(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mul32x16_h3, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mul32x16_h3_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mul32x16_h3_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mul32x16_l0(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mul32x16_l0, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mul32x16_l0_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mul32x16_l0_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mul32x16_l1(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mul32x16_l1, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mul32x16_l1_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mul32x16_l1_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mul32x16_l2(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mul32x16_l2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mul32x16_l2_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mul32x16_l2_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mul32x16_l3(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mul32x16_l3, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mul32x16_l3_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mul32x16_l3_s2, "V1LLiV2iV4s", "n")
+
+// void __builtin_xtensa_ae_mula16x4(ae_int32x2* ae_mul_q1,ae_int32x2* ae_mul_q0,ae_int16x4 ae_mul_d1,ae_int16x4 ae_mul_d0)
+BUILTIN(__builtin_xtensa_ae_mula16x4, "vV2i*V2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mula32_hh(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mula32_hh, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mula32_lh(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mula32_lh, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mula32_ll(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mula32_ll, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mula32_ll_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mula32_ll_s2, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mula32u_ll(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mula32u_ll, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mula32x16_h0(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mula32x16_h0, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mula32x16_h0_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mula32x16_h0_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mula32x16_h1(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mula32x16_h1, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mula32x16_h1_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mula32x16_h1_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mula32x16_h2(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mula32x16_h2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mula32x16_h2_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mula32x16_h2_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mula32x16_h3(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mula32x16_h3, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mula32x16_h3_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mula32x16_h3_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mula32x16_l0(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mula32x16_l0, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mula32x16_l0_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mula32x16_l0_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mula32x16_l1(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mula32x16_l1, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mula32x16_l1_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mula32x16_l1_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mula32x16_l2(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mula32x16_l2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mula32x16_l2_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mula32x16_l2_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mula32x16_l3(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mula32x16_l3, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mula32x16_l3_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mula32x16_l3_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaad24_hh_ll(ae_int64* ae_mul_q0,ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulaad24_hh_ll, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulaad24_hh_ll_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulaad24_hh_ll_s2, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulaad24_hl_lh(ae_int64* ae_mul_q0,ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulaad24_hl_lh, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulaad24_hl_lh_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulaad24_hl_lh_s2, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulaad32x16_h0_l1(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulaad32x16_h0_l1, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaad32x16_h0_l1_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulaad32x16_h0_l1_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaad32x16_h1_l0(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulaad32x16_h1_l0, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaad32x16_h1_l0_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulaad32x16_h1_l0_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaad32x16_h2_l3(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulaad32x16_h2_l3, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaad32x16_h2_l3_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulaad32x16_h2_l3_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaad32x16_h3_l2(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulaad32x16_h3_l2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaad32x16_h3_l2_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulaad32x16_h3_l2_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaafd16ss_11_00(ae_int32x2* opnd_ae_sem_mul_x2_S1_q0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulaafd16ss_11_00, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulaafd16ss_11_00_s2(ae_int32x2* ae_mul_S2_q0,ae_int16x4 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulaafd16ss_11_00_s2, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulaafd16ss_13_02(ae_int32x2* opnd_ae_sem_mul_x2_S1_q0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulaafd16ss_13_02, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulaafd16ss_13_02_s2(ae_int32x2* ae_mul_S2_q0,ae_int16x4 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulaafd16ss_13_02_s2, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulaafd16ss_33_22(ae_int32x2* opnd_ae_sem_mul_x2_S1_q0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulaafd16ss_33_22, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulaafd16ss_33_22_s2(ae_int32x2* ae_mul_S2_q0,ae_int16x4 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulaafd16ss_33_22_s2, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulaafd24_hh_ll(ae_int64* ae_mul_q0,ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulaafd24_hh_ll, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulaafd24_hh_ll_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulaafd24_hh_ll_s2, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulaafd24_hl_lh(ae_int64* ae_mul_q0,ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulaafd24_hl_lh, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulaafd24_hl_lh_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulaafd24_hl_lh_s2, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulaafd32x16_h0_l1(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulaafd32x16_h0_l1, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaafd32x16_h0_l1_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulaafd32x16_h0_l1_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaafd32x16_h1_l0(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulaafd32x16_h1_l0, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaafd32x16_h1_l0_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulaafd32x16_h1_l0_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaafd32x16_h2_l3(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulaafd32x16_h2_l3, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaafd32x16_h2_l3_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulaafd32x16_h2_l3_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaafd32x16_h3_l2(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulaafd32x16_h3_l2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaafd32x16_h3_l2_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulaafd32x16_h3_l2_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulac24(ae_int32x2* ae_mul_q0,ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulac24, "vV2i*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulac32x16_h(ae_int32x2* opnd_ae_sem_mul_x4_q0,ae_int32x2 opnd_ae_sem_mul_x4_d0,ae_int16x4 opnd_ae_sem_mul_x4_d1)
+BUILTIN(__builtin_xtensa_ae_mulac32x16_h, "vV2i*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulac32x16_l(ae_int32x2* opnd_ae_sem_mul_x4_q0,ae_int32x2 opnd_ae_sem_mul_x4_d0,ae_int16x4 opnd_ae_sem_mul_x4_d1)
+BUILTIN(__builtin_xtensa_ae_mulac32x16_l, "vV2i*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaf16ss_00(ae_int32x2* opnd_ae_sem_mul_x2_S1_q0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf16ss_00, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulaf16ss_00_s2(ae_int32x2* ae_mul_S2_q0,ae_int16x4 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf16ss_00_s2, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulaf16ss_10(ae_int32x2* ae_mul_q0,ae_int16x4 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf16ss_10, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulaf16ss_11(ae_int32x2* ae_mul_q0,ae_int16x4 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf16ss_11, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulaf16ss_20(ae_int32x2* ae_mul_q0,ae_int16x4 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf16ss_20, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulaf16ss_21(ae_int32x2* ae_mul_q0,ae_int16x4 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf16ss_21, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulaf16ss_22(ae_int32x2* ae_mul_q0,ae_int16x4 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf16ss_22, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulaf16ss_30(ae_int32x2* ae_mul_q0,ae_int16x4 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf16ss_30, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulaf16ss_31(ae_int32x2* ae_mul_q0,ae_int16x4 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf16ss_31, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulaf16ss_32(ae_int32x2* ae_mul_q0,ae_int16x4 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf16ss_32, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulaf16ss_33(ae_int32x2* ae_mul_q0,ae_int16x4 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf16ss_33, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulaf16x4ss(ae_int32x2* ae_mul_q1,ae_int32x2* ae_mul_q0,ae_int16x4 ae_mul_d1,ae_int16x4 ae_mul_d0)
+BUILTIN(__builtin_xtensa_ae_mulaf16x4ss, "vV2i*V2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulaf32r_hh(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf32r_hh, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulaf32r_lh(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf32r_lh, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulaf32r_ll(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf32r_ll, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulaf32r_ll_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf32r_ll_s2, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulaf32s_hh(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf32s_hh, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulaf32s_lh(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf32s_lh, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulaf32s_ll(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf32s_ll, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulaf32s_ll_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf32s_ll_s2, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulaf32x16_h0(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf32x16_h0, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaf32x16_h0_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf32x16_h0_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaf32x16_h1(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf32x16_h1, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaf32x16_h1_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf32x16_h1_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaf32x16_h2(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf32x16_h2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaf32x16_h2_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf32x16_h2_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaf32x16_h3(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf32x16_h3, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaf32x16_h3_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf32x16_h3_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaf32x16_l0(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf32x16_l0, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaf32x16_l0_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf32x16_l0_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaf32x16_l1(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf32x16_l1, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaf32x16_l1_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf32x16_l1_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaf32x16_l2(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf32x16_l2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaf32x16_l2_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf32x16_l2_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaf32x16_l3(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf32x16_l3, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaf32x16_l3_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf32x16_l3_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulaf48q32sp16s_l(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int64 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf48q32sp16s_l, "vV1LLi*V1LLiV2i", "n")
+
+// void __builtin_xtensa_ae_mulaf48q32sp16s_l_s2(ae_int64* ae_mul_S2_q0,ae_int64 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf48q32sp16s_l_s2, "vV1LLi*V1LLiV2i", "n")
+
+// void __builtin_xtensa_ae_mulaf48q32sp16u_l(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int64 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf48q32sp16u_l, "vV1LLi*V1LLiV2i", "n")
+
+// void __builtin_xtensa_ae_mulaf48q32sp16u_l_s2(ae_int64* ae_mul_S2_q0,ae_int64 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulaf48q32sp16u_l_s2, "vV1LLi*V1LLiV2i", "n")
+
+// void __builtin_xtensa_ae_mulafc24ra(ae_int32x2* opnd_ae_sem_mul_x4_q0,ae_int32x2 opnd_ae_sem_mul_x4_d0,ae_int32x2 opnd_ae_sem_mul_x4_d1)
+BUILTIN(__builtin_xtensa_ae_mulafc24ra, "vV2i*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulafc32x16ras_h(ae_int32x2* opnd_ae_sem_mul_x4_q0,ae_int32x2 opnd_ae_sem_mul_x4_d0,ae_int16x4 opnd_ae_sem_mul_x4_d1)
+BUILTIN(__builtin_xtensa_ae_mulafc32x16ras_h, "vV2i*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulafc32x16ras_l(ae_int32x2* opnd_ae_sem_mul_x4_q0,ae_int32x2 opnd_ae_sem_mul_x4_d0,ae_int16x4 opnd_ae_sem_mul_x4_d1)
+BUILTIN(__builtin_xtensa_ae_mulafc32x16ras_l, "vV2i*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulafd24x2_fir_h(ae_int64* ae_mul_q0,ae_int64* ae_mul_q1,ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1,ae_int32x2 ae_mul_d2)
+BUILTIN(__builtin_xtensa_ae_mulafd24x2_fir_h, "vV1LLi*V1LLi*V2iV2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulafd24x2_fir_l(ae_int64* ae_mul_q0,ae_int64* ae_mul_q1,ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1,ae_int32x2 ae_mul_d2)
+BUILTIN(__builtin_xtensa_ae_mulafd24x2_fir_l, "vV1LLi*V1LLi*V2iV2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulafd32x16x2_fir_hh(ae_int64* ae_mul_q0,ae_int64* ae_mul_q1,ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1,ae_int16x4 ae_mul_d2)
+BUILTIN(__builtin_xtensa_ae_mulafd32x16x2_fir_hh, "vV1LLi*V1LLi*V2iV2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulafd32x16x2_fir_hl(ae_int64* ae_mul_q0,ae_int64* ae_mul_q1,ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1,ae_int16x4 ae_mul_d2)
+BUILTIN(__builtin_xtensa_ae_mulafd32x16x2_fir_hl, "vV1LLi*V1LLi*V2iV2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulafd32x16x2_fir_lh(ae_int64* ae_mul_q0,ae_int64* ae_mul_q1,ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1,ae_int16x4 ae_mul_d2)
+BUILTIN(__builtin_xtensa_ae_mulafd32x16x2_fir_lh, "vV1LLi*V1LLi*V2iV2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulafd32x16x2_fir_ll(ae_int64* ae_mul_q0,ae_int64* ae_mul_q1,ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1,ae_int16x4 ae_mul_d2)
+BUILTIN(__builtin_xtensa_ae_mulafd32x16x2_fir_ll, "vV1LLi*V1LLi*V2iV2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulafp24x2r(ae_int32x2* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulafp24x2r, "vV2i*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulafp24x2r_s2(ae_int32x2* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulafp24x2r_s2, "vV2i*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulafp24x2ra(ae_int32x2* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulafp24x2ra, "vV2i*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulafp24x2ra_s2(ae_int32x2* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulafp24x2ra_s2, "vV2i*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulafp32x16x2ras_h(ae_int32x2* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulafp32x16x2ras_h, "vV2i*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulafp32x16x2ras_h_s2(ae_int32x2* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulafp32x16x2ras_h_s2, "vV2i*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulafp32x16x2ras_l(ae_int32x2* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulafp32x16x2ras_l, "vV2i*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulafp32x16x2ras_l_s2(ae_int32x2* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulafp32x16x2ras_l_s2, "vV2i*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulafp32x16x2rs_h(ae_int32x2* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulafp32x16x2rs_h, "vV2i*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulafp32x16x2rs_h_s2(ae_int32x2* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulafp32x16x2rs_h_s2, "vV2i*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulafp32x16x2rs_l(ae_int32x2* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulafp32x16x2rs_l, "vV2i*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulafp32x16x2rs_l_s2(ae_int32x2* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulafp32x16x2rs_l_s2, "vV2i*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulafp32x2ras(ae_int32x2* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulafp32x2ras, "vV2i*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulafp32x2rs(ae_int32x2* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulafp32x2rs, "vV2i*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulafq32sp24s_h_s2(ae_int64* ae_mul_S2_q0,ae_int64 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulafq32sp24s_h_s2, "vV1LLi*V1LLiV2i", "n")
+
+// void __builtin_xtensa_ae_mulafq32sp24s_l_s2(ae_int64* ae_mul_S2_q0,ae_int64 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulafq32sp24s_l_s2, "vV1LLi*V1LLiV2i", "n")
+
+// void __builtin_xtensa_ae_mulap24x2(ae_int32x2* ae_mul_q0,ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulap24x2, "vV2i*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulap24x2_s2(ae_int32x2* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulap24x2_s2, "vV2i*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulap32x16x2_h(ae_int32x2* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulap32x16x2_h, "vV2i*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulap32x16x2_l(ae_int32x2* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulap32x16x2_l, "vV2i*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulap32x2(ae_int32x2* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulap32x2, "vV2i*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulaq32sp16s_l_s2(ae_int64* ae_mul_S2_q0,ae_int64 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulaq32sp16s_l_s2, "vV1LLi*V1LLiV2i", "n")
+
+// void __builtin_xtensa_ae_mulaq32sp16u_l_s2(ae_int64* ae_mul_S2_q0,ae_int64 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulaq32sp16u_l_s2, "vV1LLi*V1LLiV2i", "n")
+
+// void __builtin_xtensa_ae_mularfq32sp24s_h_s2(ae_int64* ae_mul_S2_q0,ae_int64 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mularfq32sp24s_h_s2, "vV1LLi*V1LLiV2i", "n")
+
+// void __builtin_xtensa_ae_mularfq32sp24s_l_s2(ae_int64* ae_mul_S2_q0,ae_int64 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mularfq32sp24s_l_s2, "vV1LLi*V1LLiV2i", "n")
+
+// void __builtin_xtensa_ae_mulas32f48p16s_hh(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulas32f48p16s_hh, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulas32f48p16s_hh_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulas32f48p16s_hh_s2, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulas32f48p16s_lh(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulas32f48p16s_lh, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulas32f48p16s_lh_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulas32f48p16s_lh_s2, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulas32f48p16s_ll(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulas32f48p16s_ll, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulas32f48p16s_ll_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulas32f48p16s_ll_s2, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulasd24_hh_ll(ae_int64* ae_mul_q0,ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulasd24_hh_ll, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulasd24_hh_ll_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulasd24_hh_ll_s2, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulasd24_hl_lh(ae_int64* ae_mul_q0,ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulasd24_hl_lh, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulasd24_hl_lh_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulasd24_hl_lh_s2, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulasd32x16_h1_l0(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulasd32x16_h1_l0, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulasd32x16_h1_l0_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulasd32x16_h1_l0_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulasd32x16_h3_l2(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulasd32x16_h3_l2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulasd32x16_h3_l2_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulasd32x16_h3_l2_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulasfd24_hh_ll(ae_int64* ae_mul_q0,ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulasfd24_hh_ll, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulasfd24_hh_ll_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulasfd24_hh_ll_s2, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulasfd24_hl_lh(ae_int64* ae_mul_q0,ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulasfd24_hl_lh, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulasfd24_hl_lh_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulasfd24_hl_lh_s2, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulasfd32x16_h1_l0(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulasfd32x16_h1_l0, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulasfd32x16_h1_l0_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulasfd32x16_h1_l0_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulasfd32x16_h3_l2(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulasfd32x16_h3_l2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulasfd32x16_h3_l2_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulasfd32x16_h3_l2_s2, "vV1LLi*V2iV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulc24(ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulc24, "V2iV2iV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulc32x16_h(ae_int32x2 opnd_ae_sem_mul_x4_d0,ae_int16x4 opnd_ae_sem_mul_x4_d1)
+BUILTIN(__builtin_xtensa_ae_mulc32x16_h, "V2iV2iV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulc32x16_l(ae_int32x2 opnd_ae_sem_mul_x4_d0,ae_int16x4 opnd_ae_sem_mul_x4_d1)
+BUILTIN(__builtin_xtensa_ae_mulc32x16_l, "V2iV2iV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulf16ss_00(ae_int16x4 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulf16ss_00, "V2iV4sV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulf16ss_00_s2(ae_int16x4 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulf16ss_00_s2, "V2iV4sV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulf16ss_10(ae_int16x4 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulf16ss_10, "V2iV4sV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulf16ss_11(ae_int16x4 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulf16ss_11, "V2iV4sV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulf16ss_20(ae_int16x4 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulf16ss_20, "V2iV4sV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulf16ss_21(ae_int16x4 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulf16ss_21, "V2iV4sV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulf16ss_22(ae_int16x4 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulf16ss_22, "V2iV4sV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulf16ss_30(ae_int16x4 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulf16ss_30, "V2iV4sV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulf16ss_31(ae_int16x4 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulf16ss_31, "V2iV4sV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulf16ss_32(ae_int16x4 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulf16ss_32, "V2iV4sV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulf16ss_33(ae_int16x4 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulf16ss_33, "V2iV4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulf16x4ss(ae_int32x2* ae_mul_q1,ae_int32x2* ae_mul_q0,ae_int16x4 ae_mul_d1,ae_int16x4 ae_mul_d0)
+BUILTIN(__builtin_xtensa_ae_mulf16x4ss, "vV2i*V2i*V4sV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulf32r_hh(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulf32r_hh, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulf32r_lh(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulf32r_lh, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulf32r_ll(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulf32r_ll, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulf32r_ll_s2(ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulf32r_ll_s2, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulf32s_hh(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulf32s_hh, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulf32s_lh(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulf32s_lh, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulf32s_ll(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulf32s_ll, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulf32s_ll_s2(ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulf32s_ll_s2, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulf32x16_h0(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulf32x16_h0, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulf32x16_h0_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulf32x16_h0_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulf32x16_h1(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulf32x16_h1, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulf32x16_h1_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulf32x16_h1_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulf32x16_h2(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulf32x16_h2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulf32x16_h2_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulf32x16_h2_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulf32x16_h3(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulf32x16_h3, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulf32x16_h3_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulf32x16_h3_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulf32x16_l0(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulf32x16_l0, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulf32x16_l0_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulf32x16_l0_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulf32x16_l1(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulf32x16_l1, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulf32x16_l1_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulf32x16_l1_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulf32x16_l2(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulf32x16_l2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulf32x16_l2_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulf32x16_l2_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulf32x16_l3(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulf32x16_l3, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulf32x16_l3_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulf32x16_l3_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulf48q32sp16s_l(ae_int64 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulf48q32sp16s_l, "V1LLiV1LLiV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulf48q32sp16s_l_s2(ae_int64 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulf48q32sp16s_l_s2, "V1LLiV1LLiV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulf48q32sp16u_l(ae_int64 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulf48q32sp16u_l, "V1LLiV1LLiV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulf48q32sp16u_l_s2(ae_int64 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulf48q32sp16u_l_s2, "V1LLiV1LLiV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulfc24ra(ae_int32x2 opnd_ae_sem_mul_x4_d0,ae_int32x2 opnd_ae_sem_mul_x4_d1)
+BUILTIN(__builtin_xtensa_ae_mulfc24ra, "V2iV2iV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulfc32x16ras_h(ae_int32x2 opnd_ae_sem_mul_x4_d0,ae_int16x4 opnd_ae_sem_mul_x4_d1)
+BUILTIN(__builtin_xtensa_ae_mulfc32x16ras_h, "V2iV2iV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulfc32x16ras_l(ae_int32x2 opnd_ae_sem_mul_x4_d0,ae_int16x4 opnd_ae_sem_mul_x4_d1)
+BUILTIN(__builtin_xtensa_ae_mulfc32x16ras_l, "V2iV2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulfd24x2_fir_h(ae_int64* ae_mul_q0,ae_int64* ae_mul_q1,ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1,ae_int32x2 ae_mul_d2)
+BUILTIN(__builtin_xtensa_ae_mulfd24x2_fir_h, "vV1LLi*V1LLi*V2iV2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulfd24x2_fir_l(ae_int64* ae_mul_q0,ae_int64* ae_mul_q1,ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1,ae_int32x2 ae_mul_d2)
+BUILTIN(__builtin_xtensa_ae_mulfd24x2_fir_l, "vV1LLi*V1LLi*V2iV2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulfd32x16x2_fir_hh(ae_int64* ae_mul_q0,ae_int64* ae_mul_q1,ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1,ae_int16x4 ae_mul_d2)
+BUILTIN(__builtin_xtensa_ae_mulfd32x16x2_fir_hh, "vV1LLi*V1LLi*V2iV2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulfd32x16x2_fir_hl(ae_int64* ae_mul_q0,ae_int64* ae_mul_q1,ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1,ae_int16x4 ae_mul_d2)
+BUILTIN(__builtin_xtensa_ae_mulfd32x16x2_fir_hl, "vV1LLi*V1LLi*V2iV2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulfd32x16x2_fir_lh(ae_int64* ae_mul_q0,ae_int64* ae_mul_q1,ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1,ae_int16x4 ae_mul_d2)
+BUILTIN(__builtin_xtensa_ae_mulfd32x16x2_fir_lh, "vV1LLi*V1LLi*V2iV2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulfd32x16x2_fir_ll(ae_int64* ae_mul_q0,ae_int64* ae_mul_q1,ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1,ae_int16x4 ae_mul_d2)
+BUILTIN(__builtin_xtensa_ae_mulfd32x16x2_fir_ll, "vV1LLi*V1LLi*V2iV2iV4s", "n")
+
+// ae_int16x4 __builtin_xtensa_ae_mulfp16x4ras(ae_int16x4 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulfp16x4ras, "V4sV4sV4s", "n")
+
+// ae_int16x4 __builtin_xtensa_ae_mulfp16x4s(ae_int16x4 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulfp16x4s, "V4sV4sV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulfp24x2r(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulfp24x2r, "V2iV2iV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulfp24x2r_s2(ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulfp24x2r_s2, "V2iV2iV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulfp24x2ra(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulfp24x2ra, "V2iV2iV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulfp24x2ra_s2(ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulfp24x2ra_s2, "V2iV2iV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulfp32x16x2ras_h(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulfp32x16x2ras_h, "V2iV2iV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulfp32x16x2ras_h_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulfp32x16x2ras_h_s2, "V2iV2iV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulfp32x16x2ras_l(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulfp32x16x2ras_l, "V2iV2iV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulfp32x16x2ras_l_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulfp32x16x2ras_l_s2, "V2iV2iV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulfp32x16x2rs_h(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulfp32x16x2rs_h, "V2iV2iV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulfp32x16x2rs_h_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulfp32x16x2rs_h_s2, "V2iV2iV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulfp32x16x2rs_l(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulfp32x16x2rs_l, "V2iV2iV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulfp32x16x2rs_l_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulfp32x16x2rs_l_s2, "V2iV2iV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulfp32x2ras(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulfp32x2ras, "V2iV2iV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulfp32x2rs(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulfp32x2rs, "V2iV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulfq32sp24s_h_s2(ae_int64 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulfq32sp24s_h_s2, "V1LLiV1LLiV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulfq32sp24s_l_s2(ae_int64 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulfq32sp24s_l_s2, "V1LLiV1LLiV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulp24x2(ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulp24x2, "V2iV2iV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulp24x2_s2(ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulp24x2_s2, "V2iV2iV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulp32x16x2_h(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulp32x16x2_h, "V2iV2iV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulp32x16x2_l(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulp32x16x2_l, "V2iV2iV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulp32x2(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulp32x2, "V2iV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulq32sp16s_l_s2(ae_int64 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulq32sp16s_l_s2, "V1LLiV1LLiV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulq32sp16u_l_s2(ae_int64 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulq32sp16u_l_s2, "V1LLiV1LLiV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulrfq32sp24s_h_s2(ae_int64 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulrfq32sp24s_h_s2, "V1LLiV1LLiV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulrfq32sp24s_l_s2(ae_int64 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulrfq32sp24s_l_s2, "V1LLiV1LLiV2i", "n")
+
+// void __builtin_xtensa_ae_muls16x4(ae_int32x2* ae_mul_q1,ae_int32x2* ae_mul_q0,ae_int16x4 ae_mul_d1,ae_int16x4 ae_mul_d0)
+BUILTIN(__builtin_xtensa_ae_muls16x4, "vV2i*V2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_muls32_hh(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_muls32_hh, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_muls32_lh(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_muls32_lh, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_muls32_ll(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_muls32_ll, "vV1LLi*V2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_muls32f48p16s_hh(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_muls32f48p16s_hh, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_muls32f48p16s_hh_s2(ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_muls32f48p16s_hh_s2, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_muls32f48p16s_lh(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_muls32f48p16s_lh, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_muls32f48p16s_lh_s2(ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_muls32f48p16s_lh_s2, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_muls32f48p16s_ll(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_muls32f48p16s_ll, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_muls32f48p16s_ll_s2(ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_muls32f48p16s_ll_s2, "V1LLiV2iV2i", "n")
+
+// void __builtin_xtensa_ae_muls32u_ll(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_muls32u_ll, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_muls32x16_h0(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_muls32x16_h0, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_muls32x16_h0_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_muls32x16_h0_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_muls32x16_h1(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_muls32x16_h1, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_muls32x16_h1_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_muls32x16_h1_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_muls32x16_h2(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_muls32x16_h2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_muls32x16_h2_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_muls32x16_h2_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_muls32x16_h3(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_muls32x16_h3, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_muls32x16_h3_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_muls32x16_h3_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_muls32x16_l0(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_muls32x16_l0, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_muls32x16_l0_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_muls32x16_l0_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_muls32x16_l1(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_muls32x16_l1, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_muls32x16_l1_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_muls32x16_l1_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_muls32x16_l2(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_muls32x16_l2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_muls32x16_l2_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_muls32x16_l2_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_muls32x16_l3(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_muls32x16_l3, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_muls32x16_l3_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_muls32x16_l3_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsad24_hh_ll(ae_int64* ae_mul_q0,ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulsad24_hh_ll, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulsad24_hh_ll_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulsad24_hh_ll_s2, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulsad32x16_h1_l0(ae_int64* ae_mul_q0,ae_int32x2 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulsad32x16_h1_l0, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsad32x16_h1_l0_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulsad32x16_h1_l0_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsad32x16_h3_l2(ae_int64* ae_mul_q0,ae_int32x2 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulsad32x16_h3_l2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsad32x16_h3_l2_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulsad32x16_h3_l2_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsafd24_hh_ll(ae_int64* ae_mul_q0,ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulsafd24_hh_ll, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulsafd24_hh_ll_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulsafd24_hh_ll_s2, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulsafd32x16_h1_l0(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulsafd32x16_h1_l0, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsafd32x16_h1_l0_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulsafd32x16_h1_l0_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsafd32x16_h3_l2(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulsafd32x16_h3_l2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsafd32x16_h3_l2_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulsafd32x16_h3_l2_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsf16ss_00(ae_int32x2* opnd_ae_sem_mul_x2_S1_q0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf16ss_00, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulsf16ss_00_s2(ae_int32x2* ae_mul_S2_q0,ae_int16x4 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf16ss_00_s2, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulsf16ss_10(ae_int32x2* ae_mul_q0,ae_int16x4 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf16ss_10, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulsf16ss_11(ae_int32x2* ae_mul_q0,ae_int16x4 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf16ss_11, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulsf16ss_20(ae_int32x2* ae_mul_q0,ae_int16x4 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf16ss_20, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulsf16ss_21(ae_int32x2* ae_mul_q0,ae_int16x4 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf16ss_21, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulsf16ss_22(ae_int32x2* ae_mul_q0,ae_int16x4 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf16ss_22, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulsf16ss_30(ae_int32x2* ae_mul_q0,ae_int16x4 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf16ss_30, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulsf16ss_31(ae_int32x2* ae_mul_q0,ae_int16x4 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf16ss_31, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulsf16ss_32(ae_int32x2* ae_mul_q0,ae_int16x4 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf16ss_32, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulsf16ss_33(ae_int32x2* ae_mul_q0,ae_int16x4 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf16ss_33, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulsf16x4ss(ae_int32x2* ae_mul_q1,ae_int32x2* ae_mul_q0,ae_int16x4 ae_mul_d1,ae_int16x4 ae_mul_d0)
+BUILTIN(__builtin_xtensa_ae_mulsf16x4ss, "vV2i*V2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulsf32r_hh(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf32r_hh, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulsf32r_lh(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf32r_lh, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulsf32r_ll(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf32r_ll, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulsf32r_ll_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf32r_ll_s2, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulsf32s_hh(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf32s_hh, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulsf32s_lh(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf32s_lh, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulsf32s_ll(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf32s_ll, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulsf32x16_h0(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf32x16_h0, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsf32x16_h0_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf32x16_h0_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsf32x16_h1(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf32x16_h1, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsf32x16_h1_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf32x16_h1_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsf32x16_h2(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf32x16_h2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsf32x16_h2_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf32x16_h2_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsf32x16_h3(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf32x16_h3, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsf32x16_h3_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf32x16_h3_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsf32x16_l0(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf32x16_l0, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsf32x16_l0_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf32x16_l0_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsf32x16_l1(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf32x16_l1, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsf32x16_l1_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf32x16_l1_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsf32x16_l2(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf32x16_l2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsf32x16_l2_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf32x16_l2_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsf32x16_l3(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf32x16_l3, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsf32x16_l3_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf32x16_l3_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsf48q32sp16s_l(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int64 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf48q32sp16s_l, "vV1LLi*V1LLiV2i", "n")
+
+// void __builtin_xtensa_ae_mulsf48q32sp16s_l_s2(ae_int64* ae_mul_S2_q0,ae_int64 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf48q32sp16s_l_s2, "vV1LLi*V1LLiV2i", "n")
+
+// void __builtin_xtensa_ae_mulsf48q32sp16u_l(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int64 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf48q32sp16u_l, "vV1LLi*V1LLiV2i", "n")
+
+// void __builtin_xtensa_ae_mulsf48q32sp16u_l_s2(ae_int64* ae_mul_S2_q0,ae_int64 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulsf48q32sp16u_l_s2, "vV1LLi*V1LLiV2i", "n")
+
+// void __builtin_xtensa_ae_mulsfp24x2r(ae_int32x2* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulsfp24x2r, "vV2i*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulsfp24x2r_s2(ae_int32x2* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulsfp24x2r_s2, "vV2i*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulsfp24x2ra(ae_int32x2* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulsfp24x2ra, "vV2i*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulsfp24x2ra_s2(ae_int32x2* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulsfp24x2ra_s2, "vV2i*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulsfp32x16x2ras_h(ae_int32x2* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulsfp32x16x2ras_h, "vV2i*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsfp32x16x2ras_h_s2(ae_int32x2* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulsfp32x16x2ras_h_s2, "vV2i*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsfp32x16x2ras_l(ae_int32x2* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulsfp32x16x2ras_l, "vV2i*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsfp32x16x2ras_l_s2(ae_int32x2* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulsfp32x16x2ras_l_s2, "vV2i*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsfp32x16x2rs_h(ae_int32x2* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulsfp32x16x2rs_h, "vV2i*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsfp32x16x2rs_h_s2(ae_int32x2* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulsfp32x16x2rs_h_s2, "vV2i*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsfp32x16x2rs_l(ae_int32x2* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulsfp32x16x2rs_l, "vV2i*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsfp32x16x2rs_l_s2(ae_int32x2* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulsfp32x16x2rs_l_s2, "vV2i*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsfp32x2ras(ae_int32x2* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulsfp32x2ras, "vV2i*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulsfp32x2rs(ae_int32x2* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulsfp32x2rs, "vV2i*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulsfq32sp24s_h_s2(ae_int64* ae_mul_S2_q0,ae_int64 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulsfq32sp24s_h_s2, "vV1LLi*V1LLiV2i", "n")
+
+// void __builtin_xtensa_ae_mulsfq32sp24s_l_s2(ae_int64* ae_mul_S2_q0,ae_int64 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulsfq32sp24s_l_s2, "vV1LLi*V1LLiV2i", "n")
+
+// void __builtin_xtensa_ae_mulsp24x2(ae_int32x2* ae_mul_q0,ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulsp24x2, "vV2i*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulsp24x2_s2(ae_int32x2* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulsp24x2_s2, "vV2i*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulsp32x16x2_h(ae_int32x2* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulsp32x16x2_h, "vV2i*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsp32x16x2_l(ae_int32x2* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulsp32x16x2_l, "vV2i*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulsp32x2(ae_int32x2* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulsp32x2, "vV2i*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulsq32sp16s_l_s2(ae_int64* ae_mul_S2_q0,ae_int64 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulsq32sp16s_l_s2, "vV1LLi*V1LLiV2i", "n")
+
+// void __builtin_xtensa_ae_mulsq32sp16u_l_s2(ae_int64* ae_mul_S2_q0,ae_int64 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulsq32sp16u_l_s2, "vV1LLi*V1LLiV2i", "n")
+
+// void __builtin_xtensa_ae_mulsrfq32sp24s_h_s2(ae_int64* ae_mul_S2_q0,ae_int64 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulsrfq32sp24s_h_s2, "vV1LLi*V1LLiV2i", "n")
+
+// void __builtin_xtensa_ae_mulsrfq32sp24s_l_s2(ae_int64* ae_mul_S2_q0,ae_int64 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulsrfq32sp24s_l_s2, "vV1LLi*V1LLiV2i", "n")
+
+// void __builtin_xtensa_ae_mulss32f48p16s_hh(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulss32f48p16s_hh, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulss32f48p16s_hh_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulss32f48p16s_hh_s2, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulss32f48p16s_lh(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulss32f48p16s_lh, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulss32f48p16s_lh_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulss32f48p16s_lh_s2, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulss32f48p16s_ll(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulss32f48p16s_ll, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulss32f48p16s_ll_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulss32f48p16s_ll_s2, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulssd24_hh_ll(ae_int64* ae_mul_q0,ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulssd24_hh_ll, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulssd24_hh_ll_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulssd24_hh_ll_s2, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulssd24_hl_lh(ae_int64* ae_mul_q0,ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulssd24_hl_lh, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulssd24_hl_lh_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulssd24_hl_lh_s2, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulssd32x16_h1_l0(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulssd32x16_h1_l0, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulssd32x16_h1_l0_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulssd32x16_h1_l0_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulssd32x16_h3_l2(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulssd32x16_h3_l2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulssd32x16_h3_l2_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulssd32x16_h3_l2_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulssfd16ss_11_00(ae_int32x2* opnd_ae_sem_mul_x2_S1_q0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulssfd16ss_11_00, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulssfd16ss_11_00_s2(ae_int32x2* ae_mul_S2_q0,ae_int16x4 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulssfd16ss_11_00_s2, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulssfd16ss_13_02(ae_int32x2* opnd_ae_sem_mul_x2_S1_q0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulssfd16ss_13_02, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulssfd16ss_13_02_s2(ae_int32x2* ae_mul_S2_q0,ae_int16x4 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulssfd16ss_13_02_s2, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulssfd16ss_33_22(ae_int32x2* opnd_ae_sem_mul_x2_S1_q0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulssfd16ss_33_22, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulssfd16ss_33_22_s2(ae_int32x2* ae_mul_S2_q0,ae_int16x4 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulssfd16ss_33_22_s2, "vV2i*V4sV4s", "n")
+
+// void __builtin_xtensa_ae_mulssfd24_hh_ll(ae_int64* ae_mul_q0,ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulssfd24_hh_ll, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulssfd24_hh_ll_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulssfd24_hh_ll_s2, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulssfd24_hl_lh(ae_int64* ae_mul_q0,ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulssfd24_hl_lh, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulssfd24_hl_lh_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulssfd24_hl_lh_s2, "vV1LLi*V2iV2i", "n")
+
+// void __builtin_xtensa_ae_mulssfd32x16_h1_l0(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulssfd32x16_h1_l0, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulssfd32x16_h1_l0_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulssfd32x16_h1_l0_s2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulssfd32x16_h3_l2(ae_int64* opnd_ae_sem_mul_x2_S1_q0,ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulssfd32x16_h3_l2, "vV1LLi*V2iV4s", "n")
+
+// void __builtin_xtensa_ae_mulssfd32x16_h3_l2_s2(ae_int64* ae_mul_S2_q0,ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulssfd32x16_h3_l2_s2, "vV1LLi*V2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzaad24_hh_ll(ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulzaad24_hh_ll, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzaad24_hh_ll_s2(ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzaad24_hh_ll_s2, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzaad24_hl_lh(ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulzaad24_hl_lh, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzaad24_hl_lh_s2(ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzaad24_hl_lh_s2, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzaad32x16_h0_l1(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulzaad32x16_h0_l1, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzaad32x16_h0_l1_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzaad32x16_h0_l1_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzaad32x16_h1_l0(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulzaad32x16_h1_l0, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzaad32x16_h1_l0_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzaad32x16_h1_l0_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzaad32x16_h2_l3(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulzaad32x16_h2_l3, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzaad32x16_h2_l3_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzaad32x16_h2_l3_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzaad32x16_h3_l2(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulzaad32x16_h3_l2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzaad32x16_h3_l2_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzaad32x16_h3_l2_s2, "V1LLiV2iV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulzaafd16ss_11_00(ae_int16x4 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulzaafd16ss_11_00, "V2iV4sV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulzaafd16ss_11_00_s2(ae_int16x4 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzaafd16ss_11_00_s2, "V2iV4sV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulzaafd16ss_13_02(ae_int16x4 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulzaafd16ss_13_02, "V2iV4sV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulzaafd16ss_13_02_s2(ae_int16x4 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzaafd16ss_13_02_s2, "V2iV4sV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulzaafd16ss_33_22(ae_int16x4 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulzaafd16ss_33_22, "V2iV4sV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulzaafd16ss_33_22_s2(ae_int16x4 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzaafd16ss_33_22_s2, "V2iV4sV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzaafd24_hh_ll(ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulzaafd24_hh_ll, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzaafd24_hh_ll_s2(ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzaafd24_hh_ll_s2, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzaafd24_hl_lh(ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulzaafd24_hl_lh, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzaafd24_hl_lh_s2(ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzaafd24_hl_lh_s2, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzaafd32x16_h0_l1(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulzaafd32x16_h0_l1, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzaafd32x16_h0_l1_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzaafd32x16_h0_l1_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzaafd32x16_h1_l0(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulzaafd32x16_h1_l0, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzaafd32x16_h1_l0_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzaafd32x16_h1_l0_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzaafd32x16_h2_l3(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulzaafd32x16_h2_l3, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzaafd32x16_h2_l3_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzaafd32x16_h2_l3_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzaafd32x16_h3_l2(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulzaafd32x16_h3_l2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzaafd32x16_h3_l2_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzaafd32x16_h3_l2_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzasd24_hh_ll(ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulzasd24_hh_ll, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzasd24_hh_ll_s2(ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzasd24_hh_ll_s2, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzasd24_hl_lh(ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulzasd24_hl_lh, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzasd24_hl_lh_s2(ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzasd24_hl_lh_s2, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzasd32x16_h1_l0(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulzasd32x16_h1_l0, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzasd32x16_h1_l0_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzasd32x16_h1_l0_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzasd32x16_h3_l2(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulzasd32x16_h3_l2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzasd32x16_h3_l2_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzasd32x16_h3_l2_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzasfd24_hh_ll(ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulzasfd24_hh_ll, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzasfd24_hh_ll_s2(ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzasfd24_hh_ll_s2, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzasfd24_hl_lh(ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulzasfd24_hl_lh, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzasfd24_hl_lh_s2(ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzasfd24_hl_lh_s2, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzasfd32x16_h1_l0(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulzasfd32x16_h1_l0, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzasfd32x16_h1_l0_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzasfd32x16_h1_l0_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzasfd32x16_h3_l2(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulzasfd32x16_h3_l2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzasfd32x16_h3_l2_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzasfd32x16_h3_l2_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzsad24_hh_ll(ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulzsad24_hh_ll, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzsad24_hh_ll_s2(ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzsad24_hh_ll_s2, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzsad32x16_h1_l0(ae_int32x2 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulzsad32x16_h1_l0, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzsad32x16_h1_l0_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzsad32x16_h1_l0_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzsad32x16_h3_l2(ae_int32x2 ae_mul_d0,ae_int16x4 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulzsad32x16_h3_l2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzsad32x16_h3_l2_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzsad32x16_h3_l2_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzsafd24_hh_ll(ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulzsafd24_hh_ll, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzsafd24_hh_ll_s2(ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzsafd24_hh_ll_s2, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzsafd32x16_h1_l0(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulzsafd32x16_h1_l0, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzsafd32x16_h1_l0_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzsafd32x16_h1_l0_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzsafd32x16_h3_l2(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulzsafd32x16_h3_l2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzsafd32x16_h3_l2_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzsafd32x16_h3_l2_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzssd24_hh_ll(ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulzssd24_hh_ll, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzssd24_hh_ll_s2(ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzssd24_hh_ll_s2, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzssd24_hl_lh(ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulzssd24_hl_lh, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzssd24_hl_lh_s2(ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzssd24_hl_lh_s2, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzssd32x16_h1_l0(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulzssd32x16_h1_l0, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzssd32x16_h1_l0_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzssd32x16_h1_l0_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzssd32x16_h3_l2(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulzssd32x16_h3_l2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzssd32x16_h3_l2_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzssd32x16_h3_l2_s2, "V1LLiV2iV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulzssfd16ss_11_00(ae_int16x4 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulzssfd16ss_11_00, "V2iV4sV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulzssfd16ss_11_00_s2(ae_int16x4 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzssfd16ss_11_00_s2, "V2iV4sV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulzssfd16ss_13_02(ae_int16x4 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulzssfd16ss_13_02, "V2iV4sV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulzssfd16ss_13_02_s2(ae_int16x4 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzssfd16ss_13_02_s2, "V2iV4sV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulzssfd16ss_33_22(ae_int16x4 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulzssfd16ss_33_22, "V2iV4sV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_mulzssfd16ss_33_22_s2(ae_int16x4 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzssfd16ss_33_22_s2, "V2iV4sV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzssfd24_hh_ll(ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulzssfd24_hh_ll, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzssfd24_hh_ll_s2(ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzssfd24_hh_ll_s2, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzssfd24_hl_lh(ae_int32x2 ae_mul_d0,ae_int32x2 ae_mul_d1)
+BUILTIN(__builtin_xtensa_ae_mulzssfd24_hl_lh, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzssfd24_hl_lh_s2(ae_int32x2 ae_mul_S2_d0,ae_int32x2 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzssfd24_hl_lh_s2, "V1LLiV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzssfd32x16_h1_l0(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulzssfd32x16_h1_l0, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzssfd32x16_h1_l0_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzssfd32x16_h1_l0_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzssfd32x16_h3_l2(ae_int32x2 opnd_ae_sem_mul_x2_S1_d0,ae_int16x4 opnd_ae_sem_mul_x2_S1_d1)
+BUILTIN(__builtin_xtensa_ae_mulzssfd32x16_h3_l2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_mulzssfd32x16_h3_l2_s2(ae_int32x2 ae_mul_S2_d0,ae_int16x4 ae_mul_S2_d1)
+BUILTIN(__builtin_xtensa_ae_mulzssfd32x16_h3_l2_s2, "V1LLiV2iV4s", "n")
+
+// ae_int64 __builtin_xtensa_ae_nand(ae_int64 ae_dr_to_dr_v0,ae_int64 ae_dr_to_dr_v1)
+BUILTIN(__builtin_xtensa_ae_nand, "V1LLiV1LLiV1LLi", "n")
+
+// ae_int16x4 __builtin_xtensa_ae_neg16s(ae_int16x4 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_neg16s, "V4sV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_neg24s(ae_int32x2 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_neg24s, "V2iV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_neg32(ae_int32x2 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_neg32, "V2iV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_neg32s(ae_int32x2 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_neg32s, "V2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_neg64(ae_int64 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_neg64, "V1LLiV1LLi", "n")
+
+// ae_int64 __builtin_xtensa_ae_neg64s(ae_int64 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_neg64s, "V1LLiV1LLi", "n")
+
+// int __builtin_xtensa_ae_nsa64(ae_int64 ae_dr_to_ar_v0)
+BUILTIN(__builtin_xtensa_ae_nsa64, "iV1LLi", "n")
+
+// int __builtin_xtensa_ae_nsaz16_0(ae_int16x4 ae_dr_to_ar_v0)
+BUILTIN(__builtin_xtensa_ae_nsaz16_0, "iV4s", "n")
+
+// int __builtin_xtensa_ae_nsaz32_l(ae_int32x2 ae_dr_to_ar_v0)
+BUILTIN(__builtin_xtensa_ae_nsaz32_l, "iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_or(ae_int64 ae_dr_to_dr_v0,ae_int64 ae_dr_to_dr_v1)
+BUILTIN(__builtin_xtensa_ae_or, "V1LLiV1LLiV1LLi", "n")
+
+// void __builtin_xtensa_ae_pksr24(ae_int32x2* ae_pks_d,ae_int64 ae_pks_s,immediate ae_imm2)
+BUILTIN(__builtin_xtensa_ae_pksr24, "vV2i*V1LLii", "n")
+
+// void __builtin_xtensa_ae_pksr32(ae_int32x2* ae_pks_d,ae_int64 ae_pks_s,immediate ae_imm2)
+BUILTIN(__builtin_xtensa_ae_pksr32, "vV2i*V1LLii", "n")
+
+// ae_int16x4 __builtin_xtensa_ae_round16x4f32sasym(ae_int32x2 ae_arth_v1,ae_int32x2 ae_arth_v0)
+BUILTIN(__builtin_xtensa_ae_round16x4f32sasym, "V4sV2iV2i", "n")
+
+// ae_int16x4 __builtin_xtensa_ae_round16x4f32ssym(ae_int32x2 ae_arth_v1,ae_int32x2 ae_arth_v0)
+BUILTIN(__builtin_xtensa_ae_round16x4f32ssym, "V4sV2iV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_round24x2f48sasym(ae_int64 ae_arth_v0,ae_int64 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_round24x2f48sasym, "V2iV1LLiV1LLi", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_round24x2f48ssym(ae_int64 ae_arth_v0,ae_int64 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_round24x2f48ssym, "V2iV1LLiV1LLi", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_round32x2f48sasym(ae_int64 ae_arth_v0,ae_int64 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_round32x2f48sasym, "V2iV1LLiV1LLi", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_round32x2f48ssym(ae_int64 ae_arth_v0,ae_int64 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_round32x2f48ssym, "V2iV1LLiV1LLi", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_round32x2f64sasym(ae_int64 ae_arth_v0,ae_int64 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_round32x2f64sasym, "V2iV1LLiV1LLi", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_round32x2f64ssym(ae_int64 ae_arth_v0,ae_int64 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_round32x2f64ssym, "V2iV1LLiV1LLi", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_roundsp16f24asym(ae_int32x2 ae_arth_v0)
+BUILTIN(__builtin_xtensa_ae_roundsp16f24asym, "V2iV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_roundsp16f24sym(ae_int32x2 ae_arth_v0)
+BUILTIN(__builtin_xtensa_ae_roundsp16f24sym, "V2iV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_roundsp16q48x2asym(ae_int64 ae_arth_v0,ae_int64 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_roundsp16q48x2asym, "V2iV1LLiV1LLi", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_roundsp16q48x2sym(ae_int64 ae_arth_v0,ae_int64 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_roundsp16q48x2sym, "V2iV1LLiV1LLi", "n")
+
+// ae_int64 __builtin_xtensa_ae_roundsq32f48asym(ae_int64 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_roundsq32f48asym, "V1LLiV1LLi", "n")
+
+// ae_int64 __builtin_xtensa_ae_roundsq32f48sym(ae_int64 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_roundsq32f48sym, "V1LLiV1LLi", "n")
+
+// void __builtin_xtensa_ae_s16_0_i(ae_int16x4 ae_ls_v,ae_int16* ars,immediate ae_immls16)
+BUILTIN(__builtin_xtensa_ae_s16_0_i, "vV4sV1s*i", "n")
+
+// void __builtin_xtensa_ae_s16_0_ip(ae_int16x4 ae_ls_v,ae_int16** ars,immediate ae_immls16)
+BUILTIN(__builtin_xtensa_ae_s16_0_ip, "vV4sV1s**i", "n")
+
+// void __builtin_xtensa_ae_s16_0_x(ae_int16x4 ae_ls_v,ae_int16* ars,int art)
+BUILTIN(__builtin_xtensa_ae_s16_0_x, "vV4sV1s*i", "n")
+
+// void __builtin_xtensa_ae_s16_0_xc(ae_int16x4 ae_ls_v,ae_int16** ars,int art)
+BUILTIN(__builtin_xtensa_ae_s16_0_xc, "vV4sV1s**i", "n")
+
+// void __builtin_xtensa_ae_s16_0_xp(ae_int16x4 ae_ls_v,ae_int16** ars,int art)
+BUILTIN(__builtin_xtensa_ae_s16_0_xp, "vV4sV1s**i", "n")
+
+// void __builtin_xtensa_ae_s16m_l_i(ae_int32x2 ae_ls_v,ae_int16* ars,immediate ae_immls16)
+BUILTIN(__builtin_xtensa_ae_s16m_l_i, "vV2iV1s*i", "n")
+
+// void __builtin_xtensa_ae_s16m_l_iu(ae_int32x2 ae_ls_v,ae_int16** ars,immediate ae_immls16)
+BUILTIN(__builtin_xtensa_ae_s16m_l_iu, "vV2iV1s**i", "n")
+
+// void __builtin_xtensa_ae_s16m_l_x(ae_int32x2 ae_ls_v,ae_int16* ars,int art)
+BUILTIN(__builtin_xtensa_ae_s16m_l_x, "vV2iV1s*i", "n")
+
+// void __builtin_xtensa_ae_s16m_l_xc(ae_int32x2 ae_ls_v,ae_int16** ars,int art)
+BUILTIN(__builtin_xtensa_ae_s16m_l_xc, "vV2iV1s**i", "n")
+
+// void __builtin_xtensa_ae_s16m_l_xu(ae_int32x2 ae_ls_v,ae_int16** ars,int art)
+BUILTIN(__builtin_xtensa_ae_s16m_l_xu, "vV2iV1s**i", "n")
+
+// void __builtin_xtensa_ae_s16x2m_i(ae_int32x2 ae_ls_v,ae_int16x2* ars,immediate ae_immls32)
+BUILTIN(__builtin_xtensa_ae_s16x2m_i, "vV2iV2s*i", "n")
+
+// void __builtin_xtensa_ae_s16x2m_iu(ae_int32x2 ae_ls_v,ae_int16x2** ars,immediate ae_immls32)
+BUILTIN(__builtin_xtensa_ae_s16x2m_iu, "vV2iV2s**i", "n")
+
+// void __builtin_xtensa_ae_s16x2m_x(ae_int32x2 ae_ls_v,ae_int16x2* ars,int art)
+BUILTIN(__builtin_xtensa_ae_s16x2m_x, "vV2iV2s*i", "n")
+
+// void __builtin_xtensa_ae_s16x2m_xc(ae_int32x2 ae_ls_v,ae_int16x2** ars,int art)
+BUILTIN(__builtin_xtensa_ae_s16x2m_xc, "vV2iV2s**i", "n")
+
+// void __builtin_xtensa_ae_s16x2m_xu(ae_int32x2 ae_ls_v,ae_int16x2** ars,int art)
+BUILTIN(__builtin_xtensa_ae_s16x2m_xu, "vV2iV2s**i", "n")
+
+// void __builtin_xtensa_ae_s16x4_i(ae_int16x4 ae_ls_v,ae_int16x4* ars,immediate ae_immls64)
+BUILTIN(__builtin_xtensa_ae_s16x4_i, "vV4sV4s*i", "n")
+
+// void __builtin_xtensa_ae_s16x4_ip(ae_int16x4 ae_ls_v,ae_int16x4** ars,immediate ae_immls64pos)
+BUILTIN(__builtin_xtensa_ae_s16x4_ip, "vV4sV4s**i", "n")
+
+// void __builtin_xtensa_ae_s16x4_ric(ae_int16x4 ae_ls_v,ae_int16x4** ars)
+BUILTIN(__builtin_xtensa_ae_s16x4_ric, "vV4sV4s**", "n")
+
+// void __builtin_xtensa_ae_s16x4_rip(ae_int16x4 ae_ls_v,ae_int16x4** ars)
+BUILTIN(__builtin_xtensa_ae_s16x4_rip, "vV4sV4s**", "n")
+
+// void __builtin_xtensa_ae_s16x4_x(ae_int16x4 ae_ls_v,ae_int16x4* ars,int art)
+BUILTIN(__builtin_xtensa_ae_s16x4_x, "vV4sV4s*i", "n")
+
+// void __builtin_xtensa_ae_s16x4_xc(ae_int16x4 ae_ls_v,ae_int16x4** ars,int art)
+BUILTIN(__builtin_xtensa_ae_s16x4_xc, "vV4sV4s**i", "n")
+
+// void __builtin_xtensa_ae_s16x4_xp(ae_int16x4 ae_ls_v,ae_int16x4** ars,int art)
+BUILTIN(__builtin_xtensa_ae_s16x4_xp, "vV4sV4s**i", "n")
+
+// void __builtin_xtensa_ae_s24ra64s_i(ae_int64 ae_ls_v1,ae_int32* ars,immediate ae_immls32)
+BUILTIN(__builtin_xtensa_ae_s24ra64s_i, "vV1LLiV1i*i", "n")
+
+// void __builtin_xtensa_ae_s24ra64s_ip(ae_int64 ae_ls_v1,ae_int32** ars,immediate ae_immls32)
+BUILTIN(__builtin_xtensa_ae_s24ra64s_ip, "vV1LLiV1i**i", "n")
+
+// void __builtin_xtensa_ae_s24ra64s_x(ae_int64 ae_ls_v1,ae_int32* ars,int art)
+BUILTIN(__builtin_xtensa_ae_s24ra64s_x, "vV1LLiV1i*i", "n")
+
+// void __builtin_xtensa_ae_s24ra64s_xc(ae_int64 ae_ls_v1,ae_int32** ars,int art)
+BUILTIN(__builtin_xtensa_ae_s24ra64s_xc, "vV1LLiV1i**i", "n")
+
+// void __builtin_xtensa_ae_s24ra64s_xp(ae_int64 ae_ls_v1,ae_int32** ars,int art)
+BUILTIN(__builtin_xtensa_ae_s24ra64s_xp, "vV1LLiV1i**i", "n")
+
+// void __builtin_xtensa_ae_s24x2ra64s_ip(ae_int64 ae_ls_v2,ae_int64 ae_ls_v1,ae_int32x2** ars)
+BUILTIN(__builtin_xtensa_ae_s24x2ra64s_ip, "vV1LLiV1LLiV2i**", "n")
+
+// void __builtin_xtensa_ae_s32_l_i(ae_int32x2 ae_ls_v,ae_int32* ars,immediate ae_immls32)
+BUILTIN(__builtin_xtensa_ae_s32_l_i, "vV2iV1i*i", "n")
+
+// void __builtin_xtensa_ae_s32_l_ip(ae_int32x2 ae_ls_v,ae_int32** ars,immediate ae_immls32)
+BUILTIN(__builtin_xtensa_ae_s32_l_ip, "vV2iV1i**i", "n")
+
+// void __builtin_xtensa_ae_s32_l_x(ae_int32x2 ae_ls_v,ae_int32* ars,int art)
+BUILTIN(__builtin_xtensa_ae_s32_l_x, "vV2iV1i*i", "n")
+
+// void __builtin_xtensa_ae_s32_l_xc(ae_int32x2 ae_ls_v,ae_int32** ars,int art)
+BUILTIN(__builtin_xtensa_ae_s32_l_xc, "vV2iV1i**i", "n")
+
+// void __builtin_xtensa_ae_s32_l_xp(ae_int32x2 ae_ls_v,ae_int32** ars,int art)
+BUILTIN(__builtin_xtensa_ae_s32_l_xp, "vV2iV1i**i", "n")
+
+// void __builtin_xtensa_ae_s32f24_l_i(ae_int32x2 ae_ls_v,ae_int32* ars,immediate ae_immls32)
+BUILTIN(__builtin_xtensa_ae_s32f24_l_i, "vV2iV1i*i", "n")
+
+// void __builtin_xtensa_ae_s32f24_l_ip(ae_int32x2 ae_ls_v,ae_int32** ars,immediate ae_immls32)
+BUILTIN(__builtin_xtensa_ae_s32f24_l_ip, "vV2iV1i**i", "n")
+
+// void __builtin_xtensa_ae_s32f24_l_x(ae_int32x2 ae_ls_v,ae_int32* ars,int art)
+BUILTIN(__builtin_xtensa_ae_s32f24_l_x, "vV2iV1i*i", "n")
+
+// void __builtin_xtensa_ae_s32f24_l_xc(ae_int32x2 ae_ls_v,ae_int32** ars,int art)
+BUILTIN(__builtin_xtensa_ae_s32f24_l_xc, "vV2iV1i**i", "n")
+
+// void __builtin_xtensa_ae_s32f24_l_xp(ae_int32x2 ae_ls_v,ae_int32** ars,int art)
+BUILTIN(__builtin_xtensa_ae_s32f24_l_xp, "vV2iV1i**i", "n")
+
+// void __builtin_xtensa_ae_s32m_i(ae_int64 ae_ls_v,ae_int32* ars,immediate ae_immls32)
+BUILTIN(__builtin_xtensa_ae_s32m_i, "vV1LLiV1i*i", "n")
+
+// void __builtin_xtensa_ae_s32m_iu(ae_int64 ae_ls_v,ae_int32** ars,immediate ae_immls32)
+BUILTIN(__builtin_xtensa_ae_s32m_iu, "vV1LLiV1i**i", "n")
+
+// void __builtin_xtensa_ae_s32m_x(ae_int64 ae_ls_v,ae_int32* ars,int art)
+BUILTIN(__builtin_xtensa_ae_s32m_x, "vV1LLiV1i*i", "n")
+
+// void __builtin_xtensa_ae_s32m_xc(ae_int64 ae_ls_v,ae_int32** ars,int art)
+BUILTIN(__builtin_xtensa_ae_s32m_xc, "vV1LLiV1i**i", "n")
+
+// void __builtin_xtensa_ae_s32m_xu(ae_int64 ae_ls_v,ae_int32** ars,int art)
+BUILTIN(__builtin_xtensa_ae_s32m_xu, "vV1LLiV1i**i", "n")
+
+// void __builtin_xtensa_ae_s32ra64s_i(ae_int64 ae_ls_v1,ae_int32* ars,immediate ae_immls32)
+BUILTIN(__builtin_xtensa_ae_s32ra64s_i, "vV1LLiV1i*i", "n")
+
+// void __builtin_xtensa_ae_s32ra64s_ip(ae_int64 ae_ls_v1,ae_int32** ars,immediate ae_immls32)
+BUILTIN(__builtin_xtensa_ae_s32ra64s_ip, "vV1LLiV1i**i", "n")
+
+// void __builtin_xtensa_ae_s32ra64s_x(ae_int64 ae_ls_v1,ae_int32* ars,int art)
+BUILTIN(__builtin_xtensa_ae_s32ra64s_x, "vV1LLiV1i*i", "n")
+
+// void __builtin_xtensa_ae_s32ra64s_xc(ae_int64 ae_ls_v1,ae_int32** ars,int art)
+BUILTIN(__builtin_xtensa_ae_s32ra64s_xc, "vV1LLiV1i**i", "n")
+
+// void __builtin_xtensa_ae_s32ra64s_xp(ae_int64 ae_ls_v1,ae_int32** ars,int art)
+BUILTIN(__builtin_xtensa_ae_s32ra64s_xp, "vV1LLiV1i**i", "n")
+
+// void __builtin_xtensa_ae_s32x2_i(ae_int32x2 ae_ls_v,ae_int32x2* ars,immediate ae_immls64)
+BUILTIN(__builtin_xtensa_ae_s32x2_i, "vV2iV2i*i", "n")
+
+// void __builtin_xtensa_ae_s32x2_ip(ae_int32x2 ae_ls_v,ae_int32x2** ars,immediate ae_immls64pos)
+BUILTIN(__builtin_xtensa_ae_s32x2_ip, "vV2iV2i**i", "n")
+
+// void __builtin_xtensa_ae_s32x2_ric(ae_int32x2 ae_ls_v,ae_int32x2** ars)
+BUILTIN(__builtin_xtensa_ae_s32x2_ric, "vV2iV2i**", "n")
+
+// void __builtin_xtensa_ae_s32x2_rip(ae_int32x2 ae_ls_v,ae_int32x2** ars)
+BUILTIN(__builtin_xtensa_ae_s32x2_rip, "vV2iV2i**", "n")
+
+// void __builtin_xtensa_ae_s32x2_x(ae_int32x2 ae_ls_v,ae_int32x2* ars,int art)
+BUILTIN(__builtin_xtensa_ae_s32x2_x, "vV2iV2i*i", "n")
+
+// void __builtin_xtensa_ae_s32x2_xc(ae_int32x2 ae_ls_v,ae_int32x2** ars,int art)
+BUILTIN(__builtin_xtensa_ae_s32x2_xc, "vV2iV2i**i", "n")
+
+// void __builtin_xtensa_ae_s32x2_xp(ae_int32x2 ae_ls_v,ae_int32x2** ars,int art)
+BUILTIN(__builtin_xtensa_ae_s32x2_xp, "vV2iV2i**i", "n")
+
+// void __builtin_xtensa_ae_s32x2f24_i(ae_int32x2 ae_ls_v,ae_int32x2* ars,immediate ae_immls64)
+BUILTIN(__builtin_xtensa_ae_s32x2f24_i, "vV2iV2i*i", "n")
+
+// void __builtin_xtensa_ae_s32x2f24_ip(ae_int32x2 ae_ls_v,ae_int32x2** ars,immediate ae_immls64pos)
+BUILTIN(__builtin_xtensa_ae_s32x2f24_ip, "vV2iV2i**i", "n")
+
+// void __builtin_xtensa_ae_s32x2f24_ric(ae_int32x2 ae_ls_v,ae_int32x2** ars)
+BUILTIN(__builtin_xtensa_ae_s32x2f24_ric, "vV2iV2i**", "n")
+
+// void __builtin_xtensa_ae_s32x2f24_rip(ae_int32x2 ae_ls_v,ae_int32x2** ars)
+BUILTIN(__builtin_xtensa_ae_s32x2f24_rip, "vV2iV2i**", "n")
+
+// void __builtin_xtensa_ae_s32x2f24_x(ae_int32x2 ae_ls_v,ae_int32x2* ars,int art)
+BUILTIN(__builtin_xtensa_ae_s32x2f24_x, "vV2iV2i*i", "n")
+
+// void __builtin_xtensa_ae_s32x2f24_xc(ae_int32x2 ae_ls_v,ae_int32x2** ars,int art)
+BUILTIN(__builtin_xtensa_ae_s32x2f24_xc, "vV2iV2i**i", "n")
+
+// void __builtin_xtensa_ae_s32x2f24_xp(ae_int32x2 ae_ls_v,ae_int32x2** ars,int art)
+BUILTIN(__builtin_xtensa_ae_s32x2f24_xp, "vV2iV2i**i", "n")
+
+// void __builtin_xtensa_ae_s32x2ra64s_ip(ae_int64 ae_ls_v2,ae_int64 ae_ls_v1,ae_int32x2** ars)
+BUILTIN(__builtin_xtensa_ae_s32x2ra64s_ip, "vV1LLiV1LLiV2i**", "n")
+
+// void __builtin_xtensa_ae_s64_i(ae_int64 ae_ls_v,ae_int64* ars,immediate ae_immls64)
+BUILTIN(__builtin_xtensa_ae_s64_i, "vV1LLiV1LLi*i", "n")
+
+// void __builtin_xtensa_ae_s64_ip(ae_int64 ae_ls_v,ae_int64** ars,immediate ae_immls64)
+BUILTIN(__builtin_xtensa_ae_s64_ip, "vV1LLiV1LLi**i", "n")
+
+// void __builtin_xtensa_ae_s64_x(ae_int64 ae_ls_v,ae_int64* ars,int art)
+BUILTIN(__builtin_xtensa_ae_s64_x, "vV1LLiV1LLi*i", "n")
+
+// void __builtin_xtensa_ae_s64_xc(ae_int64 ae_ls_v,ae_int64** ars,int art)
+BUILTIN(__builtin_xtensa_ae_s64_xc, "vV1LLiV1LLi**i", "n")
+
+// void __builtin_xtensa_ae_s64_xp(ae_int64 ae_ls_v,ae_int64** ars,int art)
+BUILTIN(__builtin_xtensa_ae_s64_xp, "vV1LLiV1LLi**i", "n")
+
+// void __builtin_xtensa_ae_sa16x4_ic(ae_int16x4 ae_ls_v,ae_valign* ae_ls_su,ae_int16x4** ars)
+BUILTIN(__builtin_xtensa_ae_sa16x4_ic, "vV4sV8Uc*V4s**", "n")
+
+// void __builtin_xtensa_ae_sa16x4_ip(ae_int16x4 ae_ls_v,ae_valign* ae_ls_su,ae_int16x4** ars)
+BUILTIN(__builtin_xtensa_ae_sa16x4_ip, "vV4sV8Uc*V4s**", "n")
+
+// void __builtin_xtensa_ae_sa16x4_ric(ae_int16x4 ae_ls_v,ae_valign* ae_ls_su,ae_int16x4** ars)
+BUILTIN(__builtin_xtensa_ae_sa16x4_ric, "vV4sV8Uc*V4s**", "n")
+
+// void __builtin_xtensa_ae_sa16x4_rip(ae_int16x4 ae_ls_v,ae_valign* ae_ls_su,ae_int16x4** ars)
+BUILTIN(__builtin_xtensa_ae_sa16x4_rip, "vV4sV8Uc*V4s**", "n")
+
+// void __builtin_xtensa_ae_sa24_l_ic(ae_int32x2 ae_ls_v,ae_valign* ae_ls_su,void** ars)
+BUILTIN(__builtin_xtensa_ae_sa24_l_ic, "vV2iV8Uc*v**", "n")
+
+// void __builtin_xtensa_ae_sa24_l_ip(ae_int32x2 ae_ls_v,ae_valign* ae_ls_su,void** ars)
+BUILTIN(__builtin_xtensa_ae_sa24_l_ip, "vV2iV8Uc*v**", "n")
+
+// void __builtin_xtensa_ae_sa24_l_ric(ae_int32x2 ae_ls_v,ae_valign* ae_ls_su,void** ars)
+BUILTIN(__builtin_xtensa_ae_sa24_l_ric, "vV2iV8Uc*v**", "n")
+
+// void __builtin_xtensa_ae_sa24_l_rip(ae_int32x2 ae_ls_v,ae_valign* ae_ls_su,void** ars)
+BUILTIN(__builtin_xtensa_ae_sa24_l_rip, "vV2iV8Uc*v**", "n")
+
+// void __builtin_xtensa_ae_sa24x2_ic(ae_int32x2 ae_ls_v,ae_valign* ae_ls_su,void** ars)
+BUILTIN(__builtin_xtensa_ae_sa24x2_ic, "vV2iV8Uc*v**", "n")
+
+// void __builtin_xtensa_ae_sa24x2_ip(ae_int32x2 ae_ls_v,ae_valign* ae_ls_su,void** ars)
+BUILTIN(__builtin_xtensa_ae_sa24x2_ip, "vV2iV8Uc*v**", "n")
+
+// void __builtin_xtensa_ae_sa24x2_ric(ae_int32x2 ae_ls_v,ae_valign* ae_ls_su,void** ars)
+BUILTIN(__builtin_xtensa_ae_sa24x2_ric, "vV2iV8Uc*v**", "n")
+
+// void __builtin_xtensa_ae_sa24x2_rip(ae_int32x2 ae_ls_v,ae_valign* ae_ls_su,void** ars)
+BUILTIN(__builtin_xtensa_ae_sa24x2_rip, "vV2iV8Uc*v**", "n")
+
+// void __builtin_xtensa_ae_sa32x2_ic(ae_int32x2 ae_ls_v,ae_valign* ae_ls_su,ae_int32x2** ars)
+BUILTIN(__builtin_xtensa_ae_sa32x2_ic, "vV2iV8Uc*V2i**", "n")
+
+// void __builtin_xtensa_ae_sa32x2_ip(ae_int32x2 ae_ls_v,ae_valign* ae_ls_su,ae_int32x2** ars)
+BUILTIN(__builtin_xtensa_ae_sa32x2_ip, "vV2iV8Uc*V2i**", "n")
+
+// void __builtin_xtensa_ae_sa32x2_ric(ae_int32x2 ae_ls_v,ae_valign* ae_ls_su,ae_int32x2** ars)
+BUILTIN(__builtin_xtensa_ae_sa32x2_ric, "vV2iV8Uc*V2i**", "n")
+
+// void __builtin_xtensa_ae_sa32x2_rip(ae_int32x2 ae_ls_v,ae_valign* ae_ls_su,ae_int32x2** ars)
+BUILTIN(__builtin_xtensa_ae_sa32x2_rip, "vV2iV8Uc*V2i**", "n")
+
+// void __builtin_xtensa_ae_sa32x2f24_ic(ae_int32x2 ae_ls_v,ae_valign* ae_ls_su,ae_int32x2** ars)
+BUILTIN(__builtin_xtensa_ae_sa32x2f24_ic, "vV2iV8Uc*V2i**", "n")
+
+// void __builtin_xtensa_ae_sa32x2f24_ip(ae_int32x2 ae_ls_v,ae_valign* ae_ls_su,ae_int32x2** ars)
+BUILTIN(__builtin_xtensa_ae_sa32x2f24_ip, "vV2iV8Uc*V2i**", "n")
+
+// void __builtin_xtensa_ae_sa32x2f24_ric(ae_int32x2 ae_ls_v,ae_valign* ae_ls_su,ae_int32x2** ars)
+BUILTIN(__builtin_xtensa_ae_sa32x2f24_ric, "vV2iV8Uc*V2i**", "n")
+
+// void __builtin_xtensa_ae_sa32x2f24_rip(ae_int32x2 ae_ls_v,ae_valign* ae_ls_su,ae_int32x2** ars)
+BUILTIN(__builtin_xtensa_ae_sa32x2f24_rip, "vV2iV8Uc*V2i**", "n")
+
+// void __builtin_xtensa_ae_sa64neg_fp(ae_valign* ae_ls_su,void* ars)
+BUILTIN(__builtin_xtensa_ae_sa64neg_fp, "vV8Uc*v*", "n")
+
+// void __builtin_xtensa_ae_sa64pos_fp(ae_valign* ae_ls_su,void* ars)
+BUILTIN(__builtin_xtensa_ae_sa64pos_fp, "vV8Uc*v*", "n")
+
+// void __builtin_xtensa_ae_salign64_i(ae_valign ae_ls_su,ae_valign* ars,immediate ae_immls64)
+BUILTIN(__builtin_xtensa_ae_salign64_i, "vV8UcV8Uc*i", "n")
+
+// ae_int16x4 __builtin_xtensa_ae_sat16x4(ae_int32x2 ae_arth_v0,ae_int32x2 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_sat16x4, "V4sV2iV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_sat24s(ae_int32x2 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_sat24s, "V2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_sat48s(ae_int64 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_sat48s, "V1LLiV1LLi", "n")
+
+// ae_int64 __builtin_xtensa_ae_satq56s(ae_int64 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_satq56s, "V1LLiV1LLi", "n")
+
+// void __builtin_xtensa_ae_sb(short** ars,int art)
+BUILTIN(__builtin_xtensa_ae_sb, "vs**i", "n")
+
+// void __builtin_xtensa_ae_sb_ic(short** ars,int art)
+BUILTIN(__builtin_xtensa_ae_sb_ic, "vs**i", "n")
+
+// void __builtin_xtensa_ae_sb_ip(short** ars,int art)
+BUILTIN(__builtin_xtensa_ae_sb_ip, "vs**i", "n")
+
+// void __builtin_xtensa_ae_sbf(short** ars)
+BUILTIN(__builtin_xtensa_ae_sbf, "vs**", "n")
+
+// void __builtin_xtensa_ae_sbf_ic(short** ars)
+BUILTIN(__builtin_xtensa_ae_sbf_ic, "vs**", "n")
+
+// void __builtin_xtensa_ae_sbf_ip(short** ars)
+BUILTIN(__builtin_xtensa_ae_sbf_ip, "vs**", "n")
+
+// void __builtin_xtensa_ae_sbi(short** ars,int art,immediate ae_ohba2)
+BUILTIN(__builtin_xtensa_ae_sbi, "vs**ii", "n")
+
+// void __builtin_xtensa_ae_sbi_ic(short** ars,int art,immediate ae_ohba2)
+BUILTIN(__builtin_xtensa_ae_sbi_ic, "vs**ii", "n")
+
+// void __builtin_xtensa_ae_sbi_ip(short** ars,int art,immediate ae_ohba2)
+BUILTIN(__builtin_xtensa_ae_sbi_ip, "vs**ii", "n")
+
+// ae_int16x4 __builtin_xtensa_ae_sel16i(ae_int16x4 ae_dr_to_dr_v0,ae_int16x4 ae_dr_to_dr_v1,immediate ae_selimm)
+BUILTIN(__builtin_xtensa_ae_sel16i, "V4sV4sV4si", "n")
+
+// ae_int16x4 __builtin_xtensa_ae_sel16i_n(ae_int16x4 ae_dr_to_dr_v0,ae_int16x4 ae_dr_to_dr_v1,immediate ae_selimm_N)
+BUILTIN(__builtin_xtensa_ae_sel16i_n, "V4sV4sV4si", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_sext32(ae_int32x2 ae_dr_to_dr_v0,immediate ae_opnd_tp7)
+BUILTIN(__builtin_xtensa_ae_sext32, "V2iV2ii", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_sext32x2d16_10(ae_int16x4 ae_to_dr_v0)
+BUILTIN(__builtin_xtensa_ae_sext32x2d16_10, "V2iV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_sext32x2d16_32(ae_int16x4 ae_to_dr_v0)
+BUILTIN(__builtin_xtensa_ae_sext32x2d16_32, "V2iV4s", "n")
+
+// int __builtin_xtensa_ae_sha32(int ars)
+BUILTIN(__builtin_xtensa_ae_sha32, "ii", "n")
+
+// ae_int16x4 __builtin_xtensa_ae_shortswap(ae_int16x4 ae_to_dr_v0)
+BUILTIN(__builtin_xtensa_ae_shortswap, "V4sV4s", "n")
+
+// ae_int16x4 __builtin_xtensa_ae_slaa16s(ae_int16x4 ae_shift_d0,int ars)
+BUILTIN(__builtin_xtensa_ae_slaa16s, "V4sV4si", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_slaa32(ae_int32x2 ae_shift_d0,int ars)
+BUILTIN(__builtin_xtensa_ae_slaa32, "V2iV2ii", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_slaa32s(ae_int32x2 ae_shift_d0,int ars)
+BUILTIN(__builtin_xtensa_ae_slaa32s, "V2iV2ii", "n")
+
+// ae_int64 __builtin_xtensa_ae_slaa64(ae_int64 ae_shift_d0,int ars)
+BUILTIN(__builtin_xtensa_ae_slaa64, "V1LLiV1LLii", "n")
+
+// ae_int64 __builtin_xtensa_ae_slaa64s(ae_int64 ae_shift_d0,int ars)
+BUILTIN(__builtin_xtensa_ae_slaa64s, "V1LLiV1LLii", "n")
+
+// ae_int64 __builtin_xtensa_ae_slaaq56(ae_int64 ae_shift_d0,int ars)
+BUILTIN(__builtin_xtensa_ae_slaaq56, "V1LLiV1LLii", "n")
+
+// ae_int16x4 __builtin_xtensa_ae_slai16s(ae_int16x4 ae_shift_d0,immediate ae_osa16)
+BUILTIN(__builtin_xtensa_ae_slai16s, "V4sV4si", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_slai24(ae_int32x2 ae_shift_d0,immediate ae_osa32)
+BUILTIN(__builtin_xtensa_ae_slai24, "V2iV2ii", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_slai24s(ae_int32x2 ae_shift_d0,immediate ae_osa32)
+BUILTIN(__builtin_xtensa_ae_slai24s, "V2iV2ii", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_slai32(ae_int32x2 ae_shift_d0,immediate ae_osa32)
+BUILTIN(__builtin_xtensa_ae_slai32, "V2iV2ii", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_slai32s(ae_int32x2 ae_shift_d0,immediate ae_osa32)
+BUILTIN(__builtin_xtensa_ae_slai32s, "V2iV2ii", "n")
+
+// ae_int64 __builtin_xtensa_ae_slai64(ae_int64 ae_shift_d0,immediate ae_osa64)
+BUILTIN(__builtin_xtensa_ae_slai64, "V1LLiV1LLii", "n")
+
+// ae_int64 __builtin_xtensa_ae_slai64s(ae_int64 ae_shift_d0,immediate ae_osa64)
+BUILTIN(__builtin_xtensa_ae_slai64s, "V1LLiV1LLii", "n")
+
+// ae_int64 __builtin_xtensa_ae_slaisq56s(ae_int64 ae_shift_d0,immediate ae_osa64)
+BUILTIN(__builtin_xtensa_ae_slaisq56s, "V1LLiV1LLii", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_slas24(ae_int32x2 ae_shift_d0)
+BUILTIN(__builtin_xtensa_ae_slas24, "V2iV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_slas24s(ae_int32x2 ae_shift_d0)
+BUILTIN(__builtin_xtensa_ae_slas24s, "V2iV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_slas32(ae_int32x2 ae_shift_d0)
+BUILTIN(__builtin_xtensa_ae_slas32, "V2iV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_slas32s(ae_int32x2 ae_shift_d0)
+BUILTIN(__builtin_xtensa_ae_slas32s, "V2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_slas64(ae_int64 ae_shift_d0)
+BUILTIN(__builtin_xtensa_ae_slas64, "V1LLiV1LLi", "n")
+
+// ae_int64 __builtin_xtensa_ae_slas64s(ae_int64 ae_shift_d0)
+BUILTIN(__builtin_xtensa_ae_slas64s, "V1LLiV1LLi", "n")
+
+// ae_int64 __builtin_xtensa_ae_slasq56(ae_int64 ae_shift_d0)
+BUILTIN(__builtin_xtensa_ae_slasq56, "V1LLiV1LLi", "n")
+
+// ae_int64 __builtin_xtensa_ae_slassq56s(ae_int64 ae_shift_d0)
+BUILTIN(__builtin_xtensa_ae_slassq56s, "V1LLiV1LLi", "n")
+
+// ae_int64 __builtin_xtensa_ae_sra64_32(ae_int32x2 ae_shift_d0,int ars)
+BUILTIN(__builtin_xtensa_ae_sra64_32, "V1LLiV2ii", "n")
+
+// ae_int16x4 __builtin_xtensa_ae_sraa16rs(ae_int16x4 ae_shift_d0,int ars)
+BUILTIN(__builtin_xtensa_ae_sraa16rs, "V4sV4si", "n")
+
+// ae_int16x4 __builtin_xtensa_ae_sraa16s(ae_int16x4 ae_shift_d0,int ars)
+BUILTIN(__builtin_xtensa_ae_sraa16s, "V4sV4si", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_sraa32(ae_int32x2 ae_shift_d0,int ars)
+BUILTIN(__builtin_xtensa_ae_sraa32, "V2iV2ii", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_sraa32rs(ae_int32x2 ae_shift_d0,int ars)
+BUILTIN(__builtin_xtensa_ae_sraa32rs, "V2iV2ii", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_sraa32s(ae_int32x2 ae_shift_d0,int ars)
+BUILTIN(__builtin_xtensa_ae_sraa32s, "V2iV2ii", "n")
+
+// ae_int64 __builtin_xtensa_ae_sraa64(ae_int64 ae_shift_d0,int ars)
+BUILTIN(__builtin_xtensa_ae_sraa64, "V1LLiV1LLii", "n")
+
+// ae_int16x4 __builtin_xtensa_ae_srai16(ae_int16x4 ae_shift_d0,immediate ae_osa16)
+BUILTIN(__builtin_xtensa_ae_srai16, "V4sV4si", "n")
+
+// ae_int16x4 __builtin_xtensa_ae_srai16r(ae_int16x4 ae_shift_d0,immediate ae_osa16)
+BUILTIN(__builtin_xtensa_ae_srai16r, "V4sV4si", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_srai24(ae_int32x2 ae_shift_d0,immediate ae_osa32)
+BUILTIN(__builtin_xtensa_ae_srai24, "V2iV2ii", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_srai32(ae_int32x2 ae_shift_d0,immediate ae_osa32)
+BUILTIN(__builtin_xtensa_ae_srai32, "V2iV2ii", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_srai32r(ae_int32x2 ae_shift_d0,immediate ae_osa32)
+BUILTIN(__builtin_xtensa_ae_srai32r, "V2iV2ii", "n")
+
+// ae_int64 __builtin_xtensa_ae_srai64(ae_int64 ae_shift_d0,immediate ae_osa64)
+BUILTIN(__builtin_xtensa_ae_srai64, "V1LLiV1LLii", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_sras24(ae_int32x2 ae_shift_d0)
+BUILTIN(__builtin_xtensa_ae_sras24, "V2iV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_sras32(ae_int32x2 ae_shift_d0)
+BUILTIN(__builtin_xtensa_ae_sras32, "V2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_sras64(ae_int64 ae_shift_d0)
+BUILTIN(__builtin_xtensa_ae_sras64, "V1LLiV1LLi", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_srla32(ae_int32x2 ae_shift_d0,int ars)
+BUILTIN(__builtin_xtensa_ae_srla32, "V2iV2ii", "n")
+
+// ae_int64 __builtin_xtensa_ae_srla64(ae_int64 ae_shift_d0,int ars)
+BUILTIN(__builtin_xtensa_ae_srla64, "V1LLiV1LLii", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_srli24(ae_int32x2 ae_shift_d0,immediate ae_osa32)
+BUILTIN(__builtin_xtensa_ae_srli24, "V2iV2ii", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_srli32(ae_int32x2 ae_shift_d0,immediate ae_osa32)
+BUILTIN(__builtin_xtensa_ae_srli32, "V2iV2ii", "n")
+
+// ae_int64 __builtin_xtensa_ae_srli64(ae_int64 ae_shift_d0,immediate ae_osa64)
+BUILTIN(__builtin_xtensa_ae_srli64, "V1LLiV1LLii", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_srls24(ae_int32x2 ae_shift_d0)
+BUILTIN(__builtin_xtensa_ae_srls24, "V2iV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_srls32(ae_int32x2 ae_shift_d0)
+BUILTIN(__builtin_xtensa_ae_srls32, "V2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_srls64(ae_int64 ae_shift_d0)
+BUILTIN(__builtin_xtensa_ae_srls64, "V1LLiV1LLi", "n")
+
+// ae_int16x4 __builtin_xtensa_ae_sub16(ae_int16x4 ae_arth_v0,ae_int16x4 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_sub16, "V4sV4sV4s", "n")
+
+// ae_int16x4 __builtin_xtensa_ae_sub16s(ae_int16x4 ae_arth_v0,ae_int16x4 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_sub16s, "V4sV4sV4s", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_sub24s(ae_int32x2 ae_arth_v0,ae_int32x2 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_sub24s, "V2iV2iV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_sub32(ae_int32x2 ae_arth_v0,ae_int32x2 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_sub32, "V2iV2iV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_sub32s(ae_int32x2 ae_arth_v0,ae_int32x2 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_sub32s, "V2iV2iV2i", "n")
+
+// ae_int64 __builtin_xtensa_ae_sub64(ae_int64 ae_arth_v0,ae_int64 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_sub64, "V1LLiV1LLiV1LLi", "n")
+
+// ae_int64 __builtin_xtensa_ae_sub64s(ae_int64 ae_arth_v0,ae_int64 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_sub64s, "V1LLiV1LLiV1LLi", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_subadd32(ae_int32x2 ae_arth_v0,ae_int32x2 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_subadd32, "V2iV2iV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_subadd32s(ae_int32x2 ae_arth_v0,ae_int32x2 ae_arth_v1)
+BUILTIN(__builtin_xtensa_ae_subadd32s, "V2iV2iV2i", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_trunca32f64s_l(ae_int32x2 ae_shift_d0,ae_int64 ae_shift_sd,int ars)
+BUILTIN(__builtin_xtensa_ae_trunca32f64s_l, "V2iV2iV1LLii", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_trunca32x2f64s(ae_int64 ae_shift_d0,ae_int64 ae_shift_sd,int ars)
+BUILTIN(__builtin_xtensa_ae_trunca32x2f64s, "V2iV1LLiV1LLii", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_trunci32f64s_l(ae_int32x2 ae_shift_d0,ae_int64 ae_shift_sd,immediate ae_osa16)
+BUILTIN(__builtin_xtensa_ae_trunci32f64s_l, "V2iV2iV1LLii", "n")
+
+// ae_int32x2 __builtin_xtensa_ae_trunci32x2f64s(ae_int64 ae_shift_d0,ae_int64 ae_shift_sd,immediate ae_osa16)
+BUILTIN(__builtin_xtensa_ae_trunci32x2f64s, "V2iV1LLiV1LLii", "n")
+
+// void __builtin_xtensa_ae_vldl16c(const short** ars)
+BUILTIN(__builtin_xtensa_ae_vldl16c, "vsC**", "n")
+
+// void __builtin_xtensa_ae_vldl16c_ic(const short** ars)
+BUILTIN(__builtin_xtensa_ae_vldl16c_ic, "vsC**", "n")
+
+// void __builtin_xtensa_ae_vldl16c_ip(const short** ars)
+BUILTIN(__builtin_xtensa_ae_vldl16c_ip, "vsC**", "n")
+
+// void __builtin_xtensa_ae_vldl16t(xtbool* br,int* art,const short* ars)
+BUILTIN(__builtin_xtensa_ae_vldl16t, "vV1b*i*sC*", "n")
+
+// void __builtin_xtensa_ae_vldl32t(xtbool* br,int* art,const int* ars)
+BUILTIN(__builtin_xtensa_ae_vldl32t, "vV1b*i*iC*", "n")
+
+// void __builtin_xtensa_ae_vldsht(int art)
+BUILTIN(__builtin_xtensa_ae_vldsht, "vi", "n")
+
+// void __builtin_xtensa_ae_vlel16t(xtbool* br,int* art,const short* ars)
+BUILTIN(__builtin_xtensa_ae_vlel16t, "vV1b*i*sC*", "n")
+
+// void __builtin_xtensa_ae_vlel32t(xtbool* br,int* art,const int* ars)
+BUILTIN(__builtin_xtensa_ae_vlel32t, "vV1b*i*iC*", "n")
+
+// void __builtin_xtensa_ae_vles16c(short** ars)
+BUILTIN(__builtin_xtensa_ae_vles16c, "vs**", "n")
+
+// void __builtin_xtensa_ae_vles16c_ic(short** ars)
+BUILTIN(__builtin_xtensa_ae_vles16c_ic, "vs**", "n")
+
+// void __builtin_xtensa_ae_vles16c_ip(short** ars)
+BUILTIN(__builtin_xtensa_ae_vles16c_ip, "vs**", "n")
+
+// ae_int64 __builtin_xtensa_ae_xor(ae_int64 ae_dr_to_dr_v0,ae_int64 ae_dr_to_dr_v1)
+BUILTIN(__builtin_xtensa_ae_xor, "V1LLiV1LLiV1LLi", "n")
+
+// ae_valign __builtin_xtensa_ae_zalign64()
+BUILTIN(__builtin_xtensa_ae_zalign64, "V8Uc", "n")
+
+// int __builtin_xtensa_rur_ae_bithead()
+BUILTIN(__builtin_xtensa_rur_ae_bithead, "i", "n")
+
+// int __builtin_xtensa_rur_ae_bitptr()
+BUILTIN(__builtin_xtensa_rur_ae_bitptr, "i", "n")
+
+// int __builtin_xtensa_rur_ae_bitsused()
+BUILTIN(__builtin_xtensa_rur_ae_bitsused, "i", "n")
+
+// int __builtin_xtensa_rur_ae_cbegin0()
+BUILTIN(__builtin_xtensa_rur_ae_cbegin0, "i", "n")
+
+// int __builtin_xtensa_rur_ae_cend0()
+BUILTIN(__builtin_xtensa_rur_ae_cend0, "i", "n")
+
+// int __builtin_xtensa_rur_ae_cw_sd_no()
+BUILTIN(__builtin_xtensa_rur_ae_cw_sd_no, "i", "n")
+
+// int __builtin_xtensa_rur_ae_cwrap()
+BUILTIN(__builtin_xtensa_rur_ae_cwrap, "i", "n")
+
+// int __builtin_xtensa_rur_ae_first_ts()
+BUILTIN(__builtin_xtensa_rur_ae_first_ts, "i", "n")
+
+// int __builtin_xtensa_rur_ae_nextoffset()
+BUILTIN(__builtin_xtensa_rur_ae_nextoffset, "i", "n")
+
+// int __builtin_xtensa_rur_ae_overflow()
+BUILTIN(__builtin_xtensa_rur_ae_overflow, "i", "n")
+
+// int __builtin_xtensa_rur_ae_ovf_sar()
+BUILTIN(__builtin_xtensa_rur_ae_ovf_sar, "i", "n")
+
+// int __builtin_xtensa_rur_ae_sar()
+BUILTIN(__builtin_xtensa_rur_ae_sar, "i", "n")
+
+// int __builtin_xtensa_rur_ae_searchdone()
+BUILTIN(__builtin_xtensa_rur_ae_searchdone, "i", "n")
+
+// int __builtin_xtensa_rur_ae_tablesize()
+BUILTIN(__builtin_xtensa_rur_ae_tablesize, "i", "n")
+
+// int __builtin_xtensa_rur_ae_ts_fts_bu_bp()
+BUILTIN(__builtin_xtensa_rur_ae_ts_fts_bu_bp, "i", "n")
+
+// void __builtin_xtensa_wur_ae_bithead(int art)
+BUILTIN(__builtin_xtensa_wur_ae_bithead, "vi", "n")
+
+// void __builtin_xtensa_wur_ae_bitptr(int art)
+BUILTIN(__builtin_xtensa_wur_ae_bitptr, "vi", "n")
+
+// void __builtin_xtensa_wur_ae_bitsused(int art)
+BUILTIN(__builtin_xtensa_wur_ae_bitsused, "vi", "n")
+
+// void __builtin_xtensa_wur_ae_cbegin0(int art)
+BUILTIN(__builtin_xtensa_wur_ae_cbegin0, "vi", "n")
+
+// void __builtin_xtensa_wur_ae_cend0(int art)
+BUILTIN(__builtin_xtensa_wur_ae_cend0, "vi", "n")
+
+// void __builtin_xtensa_wur_ae_cw_sd_no(int art)
+BUILTIN(__builtin_xtensa_wur_ae_cw_sd_no, "vi", "n")
+
+// void __builtin_xtensa_wur_ae_cwrap(int art)
+BUILTIN(__builtin_xtensa_wur_ae_cwrap, "vi", "n")
+
+// void __builtin_xtensa_wur_ae_first_ts(int art)
+BUILTIN(__builtin_xtensa_wur_ae_first_ts, "vi", "n")
+
+// void __builtin_xtensa_wur_ae_nextoffset(int art)
+BUILTIN(__builtin_xtensa_wur_ae_nextoffset, "vi", "n")
+
+// void __builtin_xtensa_wur_ae_overflow(int art)
+BUILTIN(__builtin_xtensa_wur_ae_overflow, "vi", "n")
+
+// void __builtin_xtensa_wur_ae_ovf_sar(int art)
+BUILTIN(__builtin_xtensa_wur_ae_ovf_sar, "vi", "n")
+
+// void __builtin_xtensa_wur_ae_sar(int art)
+BUILTIN(__builtin_xtensa_wur_ae_sar, "vi", "n")
+
+// void __builtin_xtensa_wur_ae_searchdone(int art)
+BUILTIN(__builtin_xtensa_wur_ae_searchdone, "vi", "n")
+
+// void __builtin_xtensa_wur_ae_tablesize(int art)
+BUILTIN(__builtin_xtensa_wur_ae_tablesize, "vi", "n")
+
+// void __builtin_xtensa_wur_ae_ts_fts_bu_bp(int art)
+BUILTIN(__builtin_xtensa_wur_ae_ts_fts_bu_bp, "vi", "n")
+
+#undef BUILTIN
