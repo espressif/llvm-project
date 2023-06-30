@@ -16,7 +16,9 @@
 #define LLVM_LIB_TARGET_XTENSA_MCTARGETDESC_XTENSAINSTPRINTER_H
 
 #include "llvm/MC/MCInstPrinter.h"
+#include "llvm/MC/MCInst.h"
 #include "llvm/Support/Compiler.h"
+#include "llvm/Support/raw_ostream.h"
 
 namespace llvm {
 class MCOperand;
@@ -71,6 +73,18 @@ private:
   void printB4constu_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
   void printSeimm7_22_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
   void printSelect_256_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
+
+  template <int lo, int hi, int step>
+  void printImmOperand(const MCInst *MI, int OpNum, raw_ostream &O) {
+    if (MI->getOperand(OpNum).isImm()) {
+      int64_t Value = MI->getOperand(OpNum).getImm();
+      assert((Value >= lo && Value <= hi && ((Value % step) == 0)) &&
+             "Invalid argument");
+      O << Value;
+    } else {
+      printOperand(MI, OpNum, O);
+    }
+  }
 };
 } // end namespace llvm
 

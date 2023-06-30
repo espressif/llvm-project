@@ -1950,3 +1950,9 @@ let Predicates = [HasSingleFloat] in {
 // DSP Instructions
 //===----------------------------------------------------------------------===//
 include "XtensaDSPInstrInfo.td"
+
+//===----------------------------------------------------------------------===//
+// HiFi3 Instructions
+//===----------------------------------------------------------------------===//
+include "XtensaHIFIInstrFormats.td"
+include "XtensaHIFIInstrInfo.td"

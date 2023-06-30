@@ -256,6 +256,10 @@ public:
   bool isImm() const override { return Kind == Immediate; }
   bool isMem() const override { return false; }
 
+  template <int Lo, int Hi, int Step> bool isImmInRange() const {
+    return Kind == Immediate && inRange(getImm(), Lo, Hi);
+  }
+
   bool isImm(int64_t MinValue, int64_t MaxValue) const {
     return Kind == Immediate && inRange(getImm(), MinValue, MaxValue);
   }
