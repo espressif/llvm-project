@@ -92,7 +92,9 @@ enum {
   SRC,
   SSL,
   SSR,
-  TRUNC
+
+  BUILD_VEC,
+  TRUNC,
 };
 }
 
@@ -179,6 +181,8 @@ public:
                       const SmallVectorImpl<SDValue> &OutVals, const SDLoc &DL,
                       SelectionDAG &DAG) const override;
 
+  SDValue LowerVectorShift(SDValue Op, SelectionDAG &DAG) const;
+
   bool shouldInsertFencesForAtomic(const Instruction *I) const override {
     return true;
   }
@@ -227,6 +231,9 @@ private:
   SDValue LowerFunnelShift(SDValue Op, SelectionDAG &DAG) const;
 
   SDValue LowerATOMIC_FENCE(SDValue Op, SelectionDAG &DAG) const;
+
+  SDValue LowerBITCAST(SDValue Op, SelectionDAG &DAG) const;
+  SDValue LowerBitVecLOAD(SDValue Op, SelectionDAG &DAG) const;
 
   SDValue getAddrPCRel(SDValue Op, SelectionDAG &DAG) const;
 
