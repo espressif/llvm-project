@@ -59,7 +59,8 @@ private:
                    int FrameIndex, uint64_t StackSize, int64_t SPOffset,
                    RegScavenger *RS) const;
 
-  bool requiresFrameIndexReplacementScavenging(const MachineFunction &MF) const;
+  bool requiresFrameIndexReplacementScavenging(
+      const MachineFunction &MF) const override;
 };
 
 } // end namespace llvm

@@ -134,6 +134,46 @@ void XtensaRegisterInfo::eliminateFI(MachineBasicBlock::iterator II,
   case Xtensa::LEA_ADD:
     Valid = (Offset >= -128 && Offset <= 127);
     break;
+  case Xtensa::AE_L64_I:
+  case Xtensa::AE_S64_I:
+  case Xtensa::AE_S32X2_I:
+  case Xtensa::AE_L32X2_I:
+  case Xtensa::AE_S16X4_I:
+  case Xtensa::AE_L16X4_I:
+  case Xtensa::AE_LALIGN64_I:
+  case Xtensa::AE_SALIGN64_I:
+    Valid = (Offset >= -64 && Offset <= 56);
+    break;
+  case Xtensa::AE_S64_IP:
+  case Xtensa::AE_L64_IP:
+  case Xtensa::AE_S32X2_IP:
+  case Xtensa::AE_L32X2_IP:
+  case Xtensa::AE_S16X4_IP:
+  case Xtensa::AE_L16X4_IP:
+    Valid = (Offset >= 0 && Offset <= 56);
+    break;
+  case Xtensa::AE_L16X2M_I:
+  case Xtensa::AE_L16X2M_IU:
+  case Xtensa::AE_L32F24_I:
+  case Xtensa::AE_L32F24_IP:
+  case Xtensa::AE_L32M_I:
+  case Xtensa::AE_L32M_IU:
+  case Xtensa::AE_L32_I:
+  case Xtensa::AE_L32_IP:
+  case Xtensa::AE_S16X2M_I:
+  case Xtensa::AE_S16X2M_IU:
+  case Xtensa::AE_S24RA64S_I:
+  case Xtensa::AE_S24RA64S_IP:
+  case Xtensa::AE_S32F24_L_I:
+  case Xtensa::AE_S32F24_L_IP:
+  case Xtensa::AE_S32M_I:
+  case Xtensa::AE_S32M_IU:
+  case Xtensa::AE_S32RA64S_I:
+  case Xtensa::AE_S32RA64S_IP:
+  case Xtensa::AE_S32_L_I:
+  case Xtensa::AE_S32_L_IP:
+    Valid = (Offset >= -32 && Offset <= 28);
+    break;
   default:
     Valid = (Offset >= 0 && Offset <= 1020);
     break;

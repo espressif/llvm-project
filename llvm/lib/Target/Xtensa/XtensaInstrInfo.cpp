@@ -111,7 +111,18 @@ void XtensaInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
         .addReg(SrcReg, getKillRegState(KillSrc))
         .addReg(SrcReg, getKillRegState(KillSrc));
     return;
-  } else
+  } else if (STI.hasHIFI3() && Xtensa::AE_DRRegClass.contains(DestReg, SrcReg))
+    Opcode = Xtensa::AE_MOV;
+  else if (STI.hasHIFI3() && Xtensa::AE_DRRegClass.contains(DestReg) &&
+           Xtensa::ARRegClass.contains(SrcReg))
+    Opcode = Xtensa::AE_MOVDA32;
+  else if (STI.hasHIFI3() && Xtensa::AE_DRRegClass.contains(SrcReg) &&
+           Xtensa::ARRegClass.contains(DestReg))
+    Opcode = Xtensa::AE_MOVAD32_L;
+  else if (STI.hasHIFI3() &&
+           Xtensa::AE_VALIGNRegClass.contains(DestReg, SrcReg))
+    Opcode = Xtensa::AE_MOVALIGN;
+  else
     llvm_unreachable("Impossible reg-to-reg copy");
 
   BuildMI(MBB, MBBI, DL, get(Opcode), DestReg)
@@ -155,6 +166,12 @@ void XtensaInstrInfo::getLoadStoreOpcodes(const TargetRegisterClass *RC,
   } else if (RC == &Xtensa::BRRegClass) {
     LoadOpcode = Xtensa::RESTORE_BOOL;
     StoreOpcode = Xtensa::SPILL_BOOL;
+  } else if (RC == &Xtensa::AE_DRRegClass) {
+    LoadOpcode = Xtensa::AE_L64_I;
+    StoreOpcode = Xtensa::AE_S64_I;
+  } else if (RC == &Xtensa::AE_VALIGNRegClass) {
+    LoadOpcode = Xtensa::AE_LALIGN64_I;
+    StoreOpcode = Xtensa::AE_SALIGN64_I;
   } else
     llvm_unreachable("Unsupported regclass to load or store");
 }
