@@ -1936,8 +1936,8 @@ SDValue XtensaTargetLowering::LowerVACOPY(SDValue Op, SelectionDAG &DAG) const {
   // 2*sizeof(int*) + sizeof(int) = 12 Byte
   unsigned VAListSize = 12;
   return DAG.getMemcpy(Op.getOperand(0), Op, Op.getOperand(1), Op.getOperand(2),
-                       DAG.getConstant(VAListSize, SDLoc(Op), MVT::i32), Align(8),
-                       false, true, false, MachinePointerInfo(),
+                       DAG.getConstant(VAListSize, SDLoc(Op), MVT::i32),
+                       Align(4), false, true, false, MachinePointerInfo(),
                        MachinePointerInfo());
 }
 
