@@ -486,32 +486,37 @@ void XtensaTargetLowering::LowerAsmOperandForConstraint(
 
 static SDValue performMADD_MSUBCombine(SDNode *ROOTNode, SelectionDAG &CurDAG,
                                        const XtensaSubtarget &Subtarget) {
-  if (ROOTNode->getOperand(0).getValueType() != MVT::f32)
+  SDValue LHS = ROOTNode->getOperand(0);
+  SDValue RHS = ROOTNode->getOperand(1);
+
+  if (LHS.getValueType() != MVT::f32)
     return SDValue();
 
-  if (ROOTNode->getOperand(0).getOpcode() != ISD::FMUL &&
-      ROOTNode->getOperand(1).getOpcode() != ISD::FMUL)
+  bool IsAdd = ROOTNode->getOpcode() == ISD::FADD;
+
+  SDValue Mult = LHS, AddOperand = RHS;
+  bool NegRes = !IsAdd;
+
+  if (LHS.getOpcode() != ISD::FMUL && RHS.getOpcode() != ISD::FMUL)
     return SDValue();
-
-  SDValue Mult = ROOTNode->getOperand(0).getOpcode() == ISD::FMUL
-                     ? ROOTNode->getOperand(0)
-                     : ROOTNode->getOperand(1);
-
-  SDValue AddOperand = ROOTNode->getOperand(0).getOpcode() == ISD::FMUL
-                           ? ROOTNode->getOperand(1)
-                           : ROOTNode->getOperand(0);
+  else if (RHS.getOpcode() == ISD::FMUL) {
+    Mult = RHS;
+    AddOperand = LHS;
+    NegRes = false;
+  }
 
   if (!Mult.hasOneUse())
     return SDValue();
 
   SDLoc DL(ROOTNode);
 
-  bool IsAdd = ROOTNode->getOpcode() == ISD::FADD;
   unsigned Opcode = IsAdd ? XtensaISD::MADD : XtensaISD::MSUB;
   SDValue MAddOps[3] = {AddOperand, Mult->getOperand(0), Mult->getOperand(1)};
   EVT VTs[3] = {MVT::f32, MVT::f32, MVT::f32};
   SDValue MAdd = CurDAG.getNode(Opcode, DL, VTs, MAddOps);
 
+  if (NegRes)
+    return CurDAG.getNode(ISD::FNEG, DL, MVT::f32, MAdd);
   return MAdd;
 }
 
