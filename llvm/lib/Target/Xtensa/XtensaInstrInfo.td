@@ -1316,8 +1316,19 @@ let isBranch = 1, isTerminator = 1, isBarrier = 1, isIndirectBranch = 0, Size = 
 // SEXT Instructions
 //===----------------------------------------------------------------------===//
 
-def SEXT : RRR_Inst<0x00, 0x03, 0x02, (outs AR:$r), (ins AR:$s, seimm7_22:$imm),
+def SEXT : RRR_Inst<0x00, 0x03, 0x02, (outs AR:$r), (ins AR:$s, imm7_22:$imm),
                    "sext\t$r, $s, $imm", []>, Requires<[HasSEXT]> {
+  bits<4> imm;
+
+  let t = imm;
+}
+
+//===----------------------------------------------------------------------===//
+// CLAMPS Instructions
+//===----------------------------------------------------------------------===//
+
+def CLAMPS : RRR_Inst<0x00, 0x03, 0x03, (outs AR:$r), (ins AR:$s, imm7_22:$imm),
+                   "clamps\t$r, $s, $imm", []>, Requires<[HasSEXT]> {
   bits<4> imm;
 
   let t = imm;

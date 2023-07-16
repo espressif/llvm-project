@@ -54,6 +54,9 @@ private:
   // Enable Xtensa Sign Extend option
   bool HasSEXT;
 
+  // Enable Xtensa CLAMPS option
+  bool HasCLAMPS;
+
   // Enable Xtensa NSA option
   bool HasNSA;
 
@@ -165,6 +168,8 @@ public:
   bool hasLoop() const { return HasLoop; }
 
   bool hasSEXT() const { return HasSEXT; }
+
+  bool hasCLAMPS() const { return HasCLAMPS; }
 
   bool hasNSA() const { return HasNSA; }
 

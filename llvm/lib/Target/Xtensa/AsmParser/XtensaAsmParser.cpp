@@ -372,7 +372,7 @@ public:
     return false;
   }
 
-  bool isseimm7_22() const { return isImm(7, 22); }
+  bool isimm7_22() const { return isImm(7, 22); }
 
   bool isSelect_2() const { return isImm(0, 1); }
 
@@ -730,7 +730,7 @@ bool XtensaAsmParser::matchAndEmitInstruction(SMLoc IDLoc, unsigned &Opcode,
   case Match_Invalidentry_imm12:
     return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
                  "expected immediate in range [0, 32760]");
-  case Match_Invalidseimm7_22:
+  case Match_Invalidimm7_22:
     return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
                  "expected immediate in range [7, 22]");
   case Match_InvalidSelect_2:

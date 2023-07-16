@@ -168,11 +168,11 @@ def b4constu: Immediate<i32,
   let DecoderMethod = "decodeB4constuOperand";
 }
 
-// seimm7_22 predicate - Immediate in the range [7,22] for sign extend
-def Seimm7_22_AsmOperand: ImmAsmOperand<"seimm7_22">;
-def seimm7_22: Immediate<i32, [{ return Imm >= 7 && Imm <= 22; }], "Seimm7_22_AsmOperand"> {
-  let EncoderMethod = "getSeimm7_22OpValue";
-  let DecoderMethod = "decodeSeimm7_22Operand";
+// imm7_22 predicate - Immediate in the range [7,22] for sign extend and clamps
+def Imm7_22_AsmOperand: ImmAsmOperand<"imm7_22">;
+def imm7_22: Immediate<i32, [{ return Imm >= 7 && Imm <= 22; }], "Imm7_22_AsmOperand"> {
+  let EncoderMethod = "getImm7_22OpValue";
+  let DecoderMethod = "decodeImm7_22Operand";
 }
 
 // select_256 predicate - Immediate in the range [0,255]
