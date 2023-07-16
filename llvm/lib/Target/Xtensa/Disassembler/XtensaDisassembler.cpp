@@ -576,9 +576,9 @@ static DecodeStatus decodeShimm1_31Operand(MCInst &Inst, uint64_t Imm,
   return MCDisassembler::Success;
 }
 
-static DecodeStatus decodeSeimm7_22Operand(MCInst &Inst, uint64_t Imm,
-                                           int64_t Address,
-                                           const void *Decoder) {
+static DecodeStatus decodeImm7_22Operand(MCInst &Inst, uint64_t Imm,
+                                         int64_t Address,
+                                         const void *Decoder) {
   assert(isUInt<4>(Imm) && "Invalid immediate");
   Inst.addOperand(MCOperand::createImm(Imm + 7));
   return MCDisassembler::Success;
