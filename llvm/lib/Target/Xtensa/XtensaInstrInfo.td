@@ -1328,7 +1328,7 @@ def SEXT : RRR_Inst<0x00, 0x03, 0x02, (outs AR:$r), (ins AR:$s, imm7_22:$imm),
 //===----------------------------------------------------------------------===//
 
 def CLAMPS : RRR_Inst<0x00, 0x03, 0x03, (outs AR:$r), (ins AR:$s, imm7_22:$imm),
-                   "clamps\t$r, $s, $imm", []>, Requires<[HasSEXT]> {
+                   "clamps\t$r, $s, $imm", []>, Requires<[HasCLAMPS]> {
   bits<4> imm;
 
   let t = imm;
