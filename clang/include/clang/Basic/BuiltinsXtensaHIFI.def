@@ -2614,4 +2614,8 @@ BUILTIN(__builtin_xtensa_wur_ae_tablesize, "vi", "n")
 // void __builtin_xtensa_wur_ae_ts_fts_bu_bp(int art)
 BUILTIN(__builtin_xtensa_wur_ae_ts_fts_bu_bp, "vi", "n")
 
+// Type conversion builtins
+BUILTIN(__builtin_xtensa_ae_int32x2, "V2i.", "nct")
+BUILTIN(__builtin_xtensa_ae_int32, "V1i.", "nct")
+
 #undef BUILTIN
