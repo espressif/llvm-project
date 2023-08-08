@@ -716,7 +716,7 @@ XtensaMCCodeEmitter::getOffset_16_16OpValue(const MCInst &MI, unsigned OpNo,
   assert(((Res >= -128) && (Res <= 112) && ((Res & 0xf) == 0)) &&
          "Unexpected operand value!");
 
-  return Res;
+  return Res / 16;
 }
 
 int16_t
@@ -729,7 +729,7 @@ XtensaMCCodeEmitter::getOffset_256_8OpValue(const MCInst &MI, unsigned OpNo,
   assert(((Res >= -1024) && (Res <= 1016) && ((Res & 0x7) == 0)) &&
          "Unexpected operand value!");
 
-  return Res;
+  return Res / 8;
 }
 
 int16_t
@@ -741,8 +741,8 @@ XtensaMCCodeEmitter::getOffset_256_16OpValue(const MCInst &MI, unsigned OpNo,
 
   assert(((Res >= -2048) && (Res <= 2032) && ((Res & 0xf) == 0)) &&
          "Unexpected operand value!");
-
-  return Res;
+  
+  return Res / 16;
 }
 
 int16_t
@@ -755,7 +755,7 @@ XtensaMCCodeEmitter::getOffset_256_4OpValue(const MCInst &MI, unsigned OpNo,
   assert(((Res >= -512) && (Res <= 508) && ((Res & 0x3) == 0)) &&
          "Unexpected operand value!");
 
-  return Res;
+  return Res / 4;
 }
 
 uint8_t
@@ -768,7 +768,7 @@ XtensaMCCodeEmitter::getOffset_128_2OpValue(const MCInst &MI, unsigned OpNo,
   assert(((Res >= 0) && (Res <= 254) && ((Res & 0x1) == 0)) &&
          "Unexpected operand value!");
 
-  return Res;
+  return Res / 2;
 }
 
 uint8_t
@@ -793,7 +793,7 @@ XtensaMCCodeEmitter::getOffset_64_16OpValue(const MCInst &MI, unsigned OpNo,
   assert(((Res >= -512) && (Res <= 496) && ((Res & 0xf) == 0)) &&
          "Unexpected operand value!");
 
-  return Res;
+  return Res / 16;
 }
 
 #include "XtensaGenMCCodeEmitter.inc"
