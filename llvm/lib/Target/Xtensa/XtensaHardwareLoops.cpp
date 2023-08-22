@@ -360,7 +360,7 @@ bool XtensaHardwareLoops::processLoop(MachineLoop *L) {
 }
 
 bool XtensaHardwareLoops::checkLoopSize(MachineLoop *L) {
-  uint64_t LoopSize = 0;
+  uint64_t LoopSize = 3; //Reserve space for possible NOP
 
   for (auto *MBB : L->getBlocks()) {
     uint64_t BlockSize = 0;
