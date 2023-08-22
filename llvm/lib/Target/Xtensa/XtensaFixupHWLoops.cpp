@@ -302,10 +302,45 @@ bool XtensaFixupHwLoops::fixupLoopInstrs(MachineLoop *L) {
                   .addMBB(LoopEnd);
               LoopEnd->addSuccessor(LoopEnd);
             } else {
-              BuildMI(*PMBB, PII, DL, TII->get(Xtensa::LOOPEND)).addMBB(PMBB);
-              PMBB->addSuccessor(PMBB);
-              BuildMI(*PMBB, PII, DL, TII->get(Xtensa::NOP));
-              LoopEnd = PMBB;
+              bool NeedBlockForJump = false;
+              // Check for branches to the loop end basic block from
+              // predecessors
+              for (auto I = PMBB->pred_begin(), E = PMBB->pred_end(); I != E;
+                   ++I) {
+                MachineBasicBlock *PLEMBB = *I;
+                MachineBasicBlock *TBB = nullptr, *FBB = nullptr;
+                SmallVector<MachineOperand, 4> Cond;
+                if (!TII->analyzeBranch(*PLEMBB, TBB, FBB, Cond)) {
+                  if (TBB == PMBB) {
+                    NeedBlockForJump = true;
+                    break;
+                  }
+                } else {
+                  NeedBlockForJump = true;
+                  break;
+                }
+              }
+              // Create block and insert it before loop end address as
+              // target for jump/branch instruction to avoid premature exit from
+              // loop
+              if (NeedBlockForJump) {
+                LoopEnd = MF->CreateMachineBasicBlock();
+                MF->insert(++(PMBB->getIterator()), LoopEnd);
+                LoopEnd->transferSuccessors(PMBB);
+                LoopEnd->splice(LoopEnd->end(), PMBB, PII, PMBB->end());
+                PMBB->addSuccessor(LoopEnd);
+                BuildMI(*PMBB, PMBB->end(), DL, TII->get(Xtensa::NOP));
+
+                BuildMI(*LoopEnd, LoopEnd->begin(), DL,
+                        TII->get(Xtensa::LOOPEND))
+                    .addMBB(LoopEnd);
+                LoopEnd->addSuccessor(LoopEnd);
+              } else {
+                BuildMI(*PMBB, PII, DL, TII->get(Xtensa::LOOPEND)).addMBB(PMBB);
+                PMBB->addSuccessor(PMBB);
+                BuildMI(*PMBB, PII, DL, TII->get(Xtensa::NOP));
+                LoopEnd = PMBB;
+              }
             }
 
             Changed = true;
