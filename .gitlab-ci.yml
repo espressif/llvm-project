@@ -1,7 +1,7 @@
 stages:
   - build
   - pack
-  - sign
+  - macos_codesign
   - private_deploy
   - test
   - public_deploy
