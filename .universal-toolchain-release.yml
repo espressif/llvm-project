@@ -61,6 +61,8 @@
       - ${BUILD_DIR}/lld-tests.log
       - ${BUILD_DIR}/tests.log
       - ${BUILD_DIR}/build.log
+      - "${BUILD_DIR}/**/CMakeError.log"
+      - "${BUILD_DIR}/**/CMakeOutput.log"
     when: always
     expire_in: 1 day
   variables:
