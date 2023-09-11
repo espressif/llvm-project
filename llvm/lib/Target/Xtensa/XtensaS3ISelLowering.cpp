@@ -39,7 +39,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_andq first argument, it must "
                         "be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
 
@@ -56,8 +56,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     const TargetRegisterClass *RC = getRegClassFor(MVT::i32);
     unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QAVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AX.getReg());
 
     MI.eraseFromParent();
@@ -79,7 +79,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
                         "must be in range [0,7]");
     MachineOperand &SEL4 = MI.getOperand(3);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QZVal)
+        .addReg(Xtensa::Q0 + QZVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal)
         .addImm(SEL4.getImm());
@@ -110,9 +110,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
                         "argument, it must be in range [0,7]");
     MachineOperand &SEL4 = MI.getOperand(5);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QZVal)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QZVal, RegState::Define)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal)
@@ -144,8 +144,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
                         "argument, it must be in range [0,7]");
     MachineOperand &SEL4 = MI.getOperand(5);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QZVal)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QZVal, RegState::Define)
         .addReg(Xtensa::Q0 + QVVal)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
