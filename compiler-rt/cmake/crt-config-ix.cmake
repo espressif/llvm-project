@@ -31,10 +31,11 @@ set(PPC64 powerpc64 powerpc64le)
 set(RISCV32 riscv32)
 set(RISCV64 riscv64)
 set(VE ve)
+set(XTENSA xtensa)
 
 set(ALL_CRT_SUPPORTED_ARCH ${X86} ${X86_64} ${ARM32} ${ARM64} ${PPC32}
     ${PPC64} ${RISCV32} ${RISCV64} ${VE} ${HEXAGON} ${LOONGARCH64}
-    ${MIPS32} ${MIPS64} ${SPARC} ${SPARCV9})
+    ${MIPS32} ${MIPS64} ${SPARC} ${SPARCV9} ${XTENSA})
 
 include(CompilerRTUtils)
 
