@@ -81,6 +81,25 @@
 // CXX-RV32IMAC-BAREMETAL-MULTI-NOSYSROOT-ILP32: "-lstdc++" "-lm" "--start-group" "-lc" "-lgloss" "-lnosys" "--end-group" "-lgcc"
 // CXX-RV32IMAC-BAREMETAL-MULTI-NOSYSROOT-ILP32: "{{.*}}/Inputs/multilib_riscv_esp_elf_sdk/lib/gcc/riscv32-esp-elf/8.4.0/rv32imac/ilp32{{/|\\\\}}crtend.o"
 
+// RUN: %clangxx %s -### -no-canonical-prefixes -target riscv32-esp-elf \
+// RUN:   -ffreestanding -stdlib=libstdc++ --rtlib=libgcc --ld-path=riscv32-esp-elf-ld \
+// RUN:   --gcc-toolchain=%S/Inputs/multilib_riscv_esp_elf_sdk \
+// RUN:   --sysroot=%S/Inputs/multilib_riscv_esp_elf_sdk/riscv32-esp-elf \
+// RUN:   -fno-rtti 2>&1 \
+// RUN:   | FileCheck -check-prefix=CXX-RV32IMAC-BAREMETAL-MULTI-NORTTI-ILP32 %s
+
+// CXX-RV32IMAC-BAREMETAL-MULTI-NORTTI-ILP32: "-internal-isystem" "{{.*}}Inputs/multilib_riscv_esp_elf_sdk/riscv32-esp-elf/include/c++{{/|\\\\}}8.4.0"
+// CXX-RV32IMAC-BAREMETAL-MULTI-NORTTI-ILP32: "{{.*}}Inputs/multilib_riscv_esp_elf_sdk/lib/gcc/riscv32-esp-elf/8.4.0/../../..{{/|\\\\}}..{{/|\\\\}}bin{{/|\\\\}}riscv32-esp-elf-as"
+// CXX-RV32IMAC-BAREMETAL-MULTI-NORTTI-ILP32: "-mabi" "ilp32" "-march" "rv32imac"
+// CXX-RV32IMAC-BAREMETAL-MULTI-NORTTI-ILP32: "{{.*}}Inputs/multilib_riscv_esp_elf_sdk/lib/gcc/riscv32-esp-elf/8.4.0/../../..{{/|\\\\}}..{{/|\\\\}}bin{{/|\\\\}}riscv32-esp-elf-ld"
+// CXX-RV32IMAC-BAREMETAL-MULTI-NORTTI-ILP32: "--sysroot={{.*}}/Inputs/multilib_riscv_esp_elf_sdk/riscv32-esp-elf"
+// CXX-RV32IMAC-BAREMETAL-MULTI-NORTTI-ILP32: "-m" "elf32lriscv"
+// CXX-RV32IMAC-BAREMETAL-MULTI-NORTTI-ILP32: "{{.*}}/Inputs/multilib_riscv_esp_elf_sdk/lib/gcc/riscv32-esp-elf/8.4.0/rv32imac/ilp32/no-rtti{{/|\\\\}}crtbegin.o"
+// CXX-RV32IMAC-BAREMETAL-MULTI-NORTTI-ILP32: "-L{{.*}}/Inputs/multilib_riscv_esp_elf_sdk/lib/gcc/riscv32-esp-elf/8.4.0"
+// CXX-RV32IMAC-BAREMETAL-MULTI-NORTTI-ILP32: "-L{{.*}}/Inputs/multilib_riscv_esp_elf_sdk/riscv32-esp-elf/lib"
+// CXX-RV32IMAC-BAREMETAL-MULTI-NORTTI-ILP32: "-lstdc++" "-lm" "--start-group" "-lc" "-lgloss" "-lnosys" "--end-group" "-lgcc"
+// CXX-RV32IMAC-BAREMETAL-MULTI-NORTTI-ILP32: "{{.*}}/Inputs/multilib_riscv_esp_elf_sdk/lib/gcc/riscv32-esp-elf/8.4.0/rv32imac/ilp32/no-rtti{{/|\\\\}}crtend.o"
+
 // RUN: %clang %s -### -no-canonical-prefixes -target riscv32-esp-elf \
 // RUN:   -march=rv32i -mabi=ilp32 \
 // RUN:   -ffreestanding --rtlib=libgcc --ld-path=riscv32-esp-elf-ld --sysroot= \

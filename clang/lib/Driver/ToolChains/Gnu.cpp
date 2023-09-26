@@ -1818,14 +1818,37 @@ static void findRISCVBareMetalMultilibs(const Driver &D,
 
   if (TargetTriple.getVendor() == llvm::Triple::Espressif)
     Ms.emplace_back(MultilibBuilder());
+  if (TargetTriple.getVendor() == llvm::Triple::Espressif) {
+    Ms.emplace_back(MultilibBuilder());
+    Ms.emplace_back(MultilibBuilder("no-rtti")
+                    .flag("-fno-rtti")
+                    .flag("-frtti", /*Disallow=*/true));
+  }
 
   for (auto Element : RISCVMultilibSet) {
-    // multilib path rule is ${march}/${mabi}
-    Ms.emplace_back(
-        MultilibBuilder(
-            (Twine(Element.march) + "/" + Twine(Element.mabi)).str())
-            .flag(Twine("-march=", Element.march).str())
-            .flag(Twine("-mabi=", Element.mabi).str()));
+    if (TargetTriple.getVendor() == llvm::Triple::Espressif) {
+      // multilib path rule is ${march}/${mabi}
+      Ms.emplace_back(
+          MultilibBuilder(
+              (Twine(Element.march) + "/" + Twine(Element.mabi)).str())
+              .flag(Twine("-march=", Element.march).str())
+              .flag(Twine("-mabi=", Element.mabi).str()));
+      /* no-rtti version for every ${march}/${mabi} */
+      Ms.emplace_back(
+          MultilibBuilder(
+              (Twine(Element.march) + "/" + Twine(Element.mabi) + "/no-rtti").str())
+              .flag(Twine("-march=", Element.march).str())
+              .flag(Twine("-mabi=", Element.mabi).str())
+              .flag("-fno-rtti")
+              .flag("-frtti", /*Disallow=*/true));
+    } else {
+      // multilib path rule is ${march}/${mabi}
+      Ms.emplace_back(
+          MultilibBuilder(
+              (Twine(Element.march) + "/" + Twine(Element.mabi)).str())
+              .flag(Twine("-march=", Element.march).str())
+              .flag(Twine("-mabi=", Element.mabi).str()));
+    }
   }
   MultilibSet RISCVMultilibs =
       MultilibSetBuilder()
@@ -1859,6 +1882,18 @@ static void findRISCVBareMetalMultilibs(const Driver &D,
       addMultilibFlag(ABIName == Element.mabi,
                       Twine("-mabi=", Element.mabi).str().c_str(), Flags);
     }
+  }
+
+  if (TargetTriple.getVendor() == llvm::Triple::Espressif) {
+    addMultilibFlag(
+        Args.hasFlag(options::OPT_frtti, options::OPT_fno_rtti, true), "frtti",
+        Flags);
+  }
+
+  if (TargetTriple.getVendor() == llvm::Triple::Espressif) {
+    addMultilibFlag(
+        Args.hasFlag(options::OPT_frtti, options::OPT_fno_rtti, true), "frtti",
+        Flags);
   }
 
   if (selectRISCVMultilib(D, RISCVMultilibs, MArch, Flags,
