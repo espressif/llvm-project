@@ -91,3 +91,35 @@
 // C-XTENSA-ESP32S3-BAREMETAL-RTTI: "{{.*}}Inputs/multilib_xtensa_tree/lib/gcc/xtensa-esp32s3-elf/8.4.0/../../..{{/|\\\\}}..{{/|\\\\}}bin{{/|\\\\}}xtensa-esp32s3-elf-ld"
 // C-XTENSA-ESP32S3-BAREMETAL-RTTI: "-L{{.*}}/Inputs/multilib_xtensa_tree/lib/gcc/xtensa-esp32s3-elf/8.4.0/../../..{{/|\\\\}}..{{/|\\\\}}lib{{/|\\\\}}gcc{{/|\\\\}}xtensa-esp32s3-elf{{/|\\\\}}8.4.0"
 // C-XTENSA-ESP32S3-BAREMETAL-RTTI: "-L{{.*}}/Inputs/multilib_xtensa_tree/lib/gcc/xtensa-esp32s3-elf/8.4.0/../../..{{/|\\\\}}..{{/|\\\\}}xtensa-esp32s3-elf{{/|\\\\}}lib"
+
+// RUN: %clang %s -### -no-canonical-prefixes \
+// RUN:   -target xtensa-esp-elf -mcpu=esp32 --rtlib=platform \
+// RUN:   --gcc-toolchain=%S/Inputs/multilib_xtensa_tree \
+// RUN:   --sysroot=%S/Inputs/multilib_xtensa_tree/xtensa-esp32-elf 2>&1 \
+// RUN:   | FileCheck -check-prefix=C-XTENSA-ESP32-SYSROOT-BAREMETAL %s
+
+// C-XTENSA-ESP32-SYSROOT-BAREMETAL: "{{.*}}Inputs/multilib_xtensa_tree/lib/gcc/xtensa-esp32-elf/8.4.0/../../..{{/|\\\\}}..{{/|\\\\}}bin{{/|\\\\}}xtensa-esp32-elf-ld"
+// C-XTENSA-ESP32-SYSROOT-BAREMETAL: "--sysroot={{.*}}/Inputs/multilib_xtensa_tree/xtensa-esp32-elf"
+// C-XTENSA-ESP32-SYSROOT-BAREMETAL: "-L{{.*}}/Inputs/multilib_xtensa_tree/lib/gcc/xtensa-esp32-elf/8.4.0/../../..{{/|\\\\}}..{{/|\\\\}}lib{{/|\\\\}}gcc{{/|\\\\}}xtensa-esp32-elf{{/|\\\\}}8.4.0/no-rtti"
+// C-XTENSA-ESP32-SYSROOT-BAREMETAL: "-L{{.*}}/Inputs/multilib_xtensa_tree/lib/gcc/xtensa-esp32-elf/8.4.0/../../..{{/|\\\\}}..{{/|\\\\}}xtensa-esp32-elf{{/|\\\\}}lib/no-rtti"
+
+// RUN: %clang++ %s -### -no-canonical-prefixes \
+// RUN:   -target xtensa-esp-elf -mcpu=esp32 -stdlib=libstdc++ --rtlib=platform \
+// RUN:   --gcc-toolchain=%S/Inputs/multilib_xtensa_tree 2>&1 \
+// RUN:   | FileCheck -check-prefix=CXX-XTENSA-ESP32-BAREMETAL %s
+
+// CXX-XTENSA-ESP32-BAREMETAL: "-internal-isystem" "{{.*}}Inputs/multilib_xtensa_tree/lib/gcc/xtensa-esp32-elf/8.4.0/../../..{{/|\\\\}}..{{/|\\\\}}xtensa-esp32-elf/include/c++{{/|\\\\}}8.4.0"
+// CXX-XTENSA-ESP32-BAREMETAL: "{{.*}}Inputs/multilib_xtensa_tree/lib/gcc/xtensa-esp32-elf/8.4.0/../../..{{/|\\\\}}..{{/|\\\\}}bin{{/|\\\\}}xtensa-esp32-elf-ld"
+// CXX-XTENSA-ESP32-BAREMETAL: "-L{{.*}}/Inputs/multilib_xtensa_tree/lib/gcc/xtensa-esp32-elf/8.4.0/../../..{{/|\\\\}}..{{/|\\\\}}lib{{/|\\\\}}gcc{{/|\\\\}}xtensa-esp32-elf{{/|\\\\}}8.4.0/no-rtti"
+// CXX-XTENSA-ESP32-BAREMETAL: "-L{{.*}}/Inputs/multilib_xtensa_tree/lib/gcc/xtensa-esp32-elf/8.4.0/../../..{{/|\\\\}}..{{/|\\\\}}xtensa-esp32-elf{{/|\\\\}}lib/no-rtti"
+
+// RUN: %clang++ %s -### -no-canonical-prefixes \
+// RUN:   -target xtensa-esp-elf -mcpu=esp32 -stdlib=libstdc++ --rtlib=platform \
+// RUN:   --gcc-toolchain=%S/Inputs/multilib_xtensa_tree \
+// RUN:   --sysroot=%S/Inputs/multilib_xtensa_tree/xtensa-esp32-elf 2>&1 \
+// RUN:   | FileCheck -check-prefix=CXX-XTENSA-ESP32-SYSROOT-BAREMETAL %s
+
+// CXX-XTENSA-ESP32-SYSROOT-BAREMETAL: "-internal-isystem" "{{.*}}Inputs/multilib_xtensa_tree/xtensa-esp32-elf/include/c++/8.4.0"
+// CXX-XTENSA-ESP32-SYSROOT-BAREMETAL: "{{.*}}Inputs/multilib_xtensa_tree/lib/gcc/xtensa-esp32-elf/8.4.0/../../..{{/|\\\\}}..{{/|\\\\}}bin{{/|\\\\}}xtensa-esp32-elf-ld"
+// CXX-XTENSA-ESP32-SYSROOT-BAREMETAL: "-L{{.*}}/Inputs/multilib_xtensa_tree/lib/gcc/xtensa-esp32-elf/8.4.0/../../..{{/|\\\\}}..{{/|\\\\}}lib{{/|\\\\}}gcc{{/|\\\\}}xtensa-esp32-elf{{/|\\\\}}8.4.0/no-rtti"
+// CXX-XTENSA-ESP32-SYSROOT-BAREMETAL: "-L{{.*}}/Inputs/multilib_xtensa_tree/lib/gcc/xtensa-esp32-elf/8.4.0/../../..{{/|\\\\}}..{{/|\\\\}}xtensa-esp32-elf{{/|\\\\}}lib/no-rtti"
