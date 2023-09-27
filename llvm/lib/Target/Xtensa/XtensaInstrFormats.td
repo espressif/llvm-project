@@ -213,6 +213,7 @@ class RI6_Inst<bits<4> op0, bits<1> i,  bits<1> z, dag outs, dag ins,
 class EE_Inst24<dag outs, dag ins, string asmstr, list<dag> pattern, 
                     InstrItinClass itin = NoItinerary>
   : XtensaInst24<outs, ins, asmstr, pattern, itin> {
+  let DecoderNamespace = "ESP32S3";
 }
 
 class EE_Inst32<dag outs, dag ins, string asmstr, list<dag> pattern,
@@ -220,6 +221,7 @@ class EE_Inst32<dag outs, dag ins, string asmstr, list<dag> pattern,
   : XtensaInst<4, outs, ins, asmstr, pattern, itin> {
   field bits<32> Inst;
   field bits<32> SoftFail = 0;
+  let DecoderNamespace = "ESP32S3";
 }
 
 // Pseudo instructions

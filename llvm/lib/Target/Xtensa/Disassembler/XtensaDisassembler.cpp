@@ -38,7 +38,13 @@ public:
   XtensaDisassembler(const MCSubtargetInfo &STI, MCContext &Ctx, bool isLE)
       : MCDisassembler(STI, Ctx), IsLittleEndian(isLE) {}
 
-  bool hasDensity() const { return STI.hasFeature(Xtensa::FeatureDensity); }
+  bool hasDensity() const {
+    return STI.hasFeature(Xtensa::FeatureDensity);
+  }
+
+  bool hasESP32S3Ops() const {
+    return STI.getFeatureBits()[Xtensa::FeatureESP32S3Ops];
+  }
 
   DecodeStatus getInstruction(MCInst &Instr, uint64_t &Size,
                               ArrayRef<uint8_t> Bytes, uint64_t Address,
@@ -788,6 +794,25 @@ static DecodeStatus readInstruction24(ArrayRef<uint8_t> Bytes, uint64_t Address,
   return MCDisassembler::Success;
 }
 
+/// Read three bytes from the ArrayRef and return 32 bit data
+static DecodeStatus readInstruction32(ArrayRef<uint8_t> Bytes, uint64_t Address,
+                                      uint64_t &Size, uint64_t &Insn,
+                                      bool IsLittleEndian) {
+  // We want to read exactly 4 Bytes of data.
+  if (Bytes.size() < 4) {
+    Size = 0;
+    return MCDisassembler::Fail;
+  }
+
+  if (!IsLittleEndian) {
+    report_fatal_error("Big-endian mode currently is not supported!");
+  } else {
+    Insn = (Bytes[3] << 24) | (Bytes[2] << 16) | (Bytes[1] << 8) | (Bytes[0] << 0);
+  }
+
+  return MCDisassembler::Success;
+}
+
 #include "XtensaGenDisassemblerTables.inc"
 
 DecodeStatus XtensaDisassembler::getInstruction(MCInst &MI, uint64_t &Size,
@@ -817,8 +842,35 @@ DecodeStatus XtensaDisassembler::getInstruction(MCInst &MI, uint64_t &Size,
   LLVM_DEBUG(dbgs() << "Trying Xtensa 24-bit instruction table :\n");
   Result = decodeInstruction(DecoderTable24, MI, Insn, Address, this, STI);
   if (Result != MCDisassembler::Fail) {
-    Size = 3;
-    return Result;
+      Size = 3;
+      return Result;
   }
+
+  if (hasESP32S3Ops()) {
+    // Parse ESP32S3 24-bit instructions
+    Result = readInstruction24(Bytes, Address, Size, Insn, IsLittleEndian);
+    if (Result == MCDisassembler::Fail)
+      return MCDisassembler::Fail;
+    LLVM_DEBUG(dbgs() << "Trying ESP32S3 table (24-bit opcodes):\n");
+    Result = decodeInstruction(DecoderTableESP32S324, MI, Insn,
+                               Address, this, STI);
+    if (Result != MCDisassembler::Fail) {
+      Size = 3;
+      return Result;
+    }
+
+    // Parse ESP32S3 32-bit instructions
+    Result = readInstruction32(Bytes, Address, Size, Insn, IsLittleEndian);
+    if (Result == MCDisassembler::Fail)
+      return MCDisassembler::Fail;
+    LLVM_DEBUG(dbgs() << "Trying ESP32S3 table (32-bit opcodes):\n");
+    Result = decodeInstruction(DecoderTableESP32S332, MI, Insn,
+                               Address, this, STI);
+    if (Result != MCDisassembler::Fail) {
+      Size = 4;
+      return Result;
+    }
+  }
+
   return Result;
 }
