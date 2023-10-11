@@ -1230,7 +1230,15 @@ static void sortSection(Ctx &ctx, OutputSection &osec,
       if (auto *isd = dyn_cast<InputSectionDescription>(b))
         sortISDBySectionOrder(ctx, isd, order, osec.flags & SHF_EXECINSTR);
 
-  if (ctx.script->hasSectionsCommand)
+  if (config->emachine == EM_XTENSA) {
+    osec.sort([](InputSectionBase *s) { return s->name.contains(".literal") ? 0 : 1; });
+  }
+
+  if (config->emachine == EM_XTENSA) {
+    osec.sort([](InputSectionBase *s) { return s->name.contains(".literal") ? 0 : 1; });
+  }
+
+  if (script->hasSectionsCommand)
     return;
 
   if (name == ".init_array" || name == ".fini_array") {
