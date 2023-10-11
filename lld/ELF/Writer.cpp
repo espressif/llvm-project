@@ -1201,6 +1201,10 @@ static void sortSection(OutputSection &osec,
       if (auto *isd = dyn_cast<InputSectionDescription>(b))
         sortISDBySectionOrder(isd, order, osec.flags & SHF_EXECINSTR);
 
+  if (config->emachine == EM_XTENSA) {
+    osec.sort([](InputSectionBase *s) { return s->name.contains(".literal") ? 0 : 1; });
+  }
+
   if (script->hasSectionsCommand)
     return;
 
