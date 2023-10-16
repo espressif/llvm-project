@@ -44,6 +44,11 @@ public:
 
   bool hasESP32S3Ops() const {
     return STI.getFeatureBits()[Xtensa::FeatureESP32S3Ops];
+
+  }
+
+  bool hasHIFI3() const {
+    return STI.getFeatureBits()[Xtensa::FeatureHIFI3];
   }
 
   DecodeStatus getInstruction(MCInst &Instr, uint64_t &Size,
@@ -887,6 +892,30 @@ static DecodeStatus readInstruction32(ArrayRef<uint8_t> Bytes, uint64_t Address,
   return MCDisassembler::Success;
 }
 
+/// Read InstSize bytes from the ArrayRef and return 24 bit data
+static DecodeStatus readInstructionN(ArrayRef<uint8_t> Bytes, uint64_t Address,
+                                      unsigned InstSize,
+                                      uint64_t &Size, uint64_t &Insn,
+                                      bool IsLittleEndian) {
+  // We want to read exactly 3 Bytes of data.
+  if (Bytes.size() < InstSize) {
+    Size = 0;
+    return MCDisassembler::Fail;
+  }
+
+  if (!IsLittleEndian) {
+    report_fatal_error("Big-endian mode currently is not supported!");
+  } else {
+    Insn = 0;
+    for (unsigned i = 0; i < InstSize; i++)
+      Insn |= (Bytes[i] << 8*i);
+  }
+
+  Size = InstSize;
+  return MCDisassembler::Success;
+}
+
+
 #include "XtensaGenDisassemblerTables.inc"
 
 DecodeStatus XtensaDisassembler::getInstruction(MCInst &MI, uint64_t &Size,
@@ -946,5 +975,20 @@ DecodeStatus XtensaDisassembler::getInstruction(MCInst &MI, uint64_t &Size,
     }
   }
 
+  if (hasHIFI3()) {
+    LLVM_DEBUG(dbgs() << "Trying Xtensa HIFI3 24-bit instruction table :\n");
+    Result = decodeInstruction(DecoderTableHIFI324, MI, Insn, Address, this, STI);
+    if(Result != MCDisassembler::Fail)
+      return Result;
+    
+    Result = readInstructionN(Bytes, Address, 48, Size, Insn, IsLittleEndian);
+    if (Result == MCDisassembler::Fail)
+      return MCDisassembler::Fail;
+    
+    LLVM_DEBUG(dbgs() << "Trying Xtensa HIFI3 48-bit instruction table :\n");
+    Result = decodeInstruction(DecoderTableHIFI348, MI, Insn, Address, this, STI);
+    if(Result != MCDisassembler::Fail)
+      return Result;
+  }
   return Result;
 }
