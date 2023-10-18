@@ -127,10 +127,12 @@ void Xtensa::relocate(uint8_t *loc, const Relocation &rel, uint64_t val) const {
     // Look at the instruction to determine how to do the relocation.
     uint8_t opcode = loc[0] & 0x0f;
     if (opcode == 0b0001) { // RI16 format: l32r
-      uint64_t val = dest - ((p + 3) & (uint64_t)0xfffffffc);
-      checkInt(loc, static_cast<int64_t>(val) >> 2, 16, rel);
-      checkAlignment(loc, val, 4, rel);
-      write16le(loc + 1, static_cast<int64_t>(val) >> 2);
+      int64_t val = dest - ((p + 3) & (uint64_t)0xfffffffc);
+      if ((val < -262144 || val > -4))
+        reportRangeError(loc, rel, Twine(static_cast<int64_t>(val)), -262141,
+                         -4);
+      checkAlignment(loc, static_cast<uint64_t>(val), 4, rel);
+      write16le(loc + 1, val >> 2);
     } else if (opcode == 0b0101) { // call0, call4, call8, call12 (CALL format)
       uint64_t val = dest - ((p + 4) & (uint64_t)0xfffffffc);
       checkInt(loc, static_cast<int64_t>(val) >> 2, 18, rel);
