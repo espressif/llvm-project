@@ -447,7 +447,11 @@ def BBCI : RRI8_Inst<0x07, (outs),
   let imm8 = target;
 }
 
+def : InstAlias<"_bbci\t$s, $imm, $target", (BBCI AR:$s, uimm5:$imm, brtarget:$target)>;
+
 def : InstAlias<"bbci.l\t$s, $imm, $target", (BBCI AR:$s, uimm5:$imm, brtarget:$target)>;
+
+def : InstAlias<"_bbci.l\t$s, $imm, $target", (BBCI AR:$s, uimm5:$imm, brtarget:$target)>;
 
 def BBSI : RRI8_Inst<0x07, (outs),
                     (ins AR:$s, uimm5:$imm, brtarget:$target),
@@ -462,6 +466,8 @@ def BBSI : RRI8_Inst<0x07, (outs),
 }
 
 def : InstAlias<"bbsi.l\t$s, $imm, $target", (BBSI AR:$s, uimm5:$imm, brtarget:$target)>;
+
+def : InstAlias<"_bbsi.l\t$s, $imm, $target", (BBSI AR:$s, uimm5:$imm, brtarget:$target)>;
 
 def : Pat<(brcc SETGT, AR:$s, AR:$t, bb:$target),
           (BLT AR:$t, AR:$s, bb:$target)>;
@@ -738,6 +744,8 @@ def : InstAlias<"mov\t $t, $s", (OR AR:$t, AR:$s, AR:$s)>;
 def MOVI_N : RI7_Inst<0xc, 0x0, (outs AR:$s), (ins imm32n_95:$imm7),
                      "movi.n\t$s, $imm7",
                      [(set AR:$s, imm32n_95:$imm7)]>, Requires<[HasDensity]>;
+
+def : InstAlias<"_movi.n\t$s, $imm7", (MOVI_N AR:$s, imm32n_95:$imm7)>;
 
 // Load instruction
 let mayLoad = 1, usesCustomInserter = 1 in {
@@ -1703,6 +1711,17 @@ let isBarrier = 1, isTerminator = 1 in {
     let s = 0x0;
     let t = 0x6;
   }
+}
+
+//===----------------------------------------------------------------------===//
+// Simulator instructions
+//===----------------------------------------------------------------------===//
+
+def SIMCALL : RRR_Inst<0x00, 0x00, 0x00, (outs), (ins),
+                      "simcall", []> {
+  let r = 0x5;
+  let s = 0x1;
+  let t = 0x0;
 }
 
 //===----------------------------------------------------------------------===//

@@ -105,7 +105,7 @@ else:
         # Don't pass dosish path separator to msys bash.exe.
         base_lib = base_lib.replace("\\", "/")
     if config.target_triple in ['xtensa-esp-elf', 'riscv32-esp-elf']:
-      config.substitutions.append( ("%librt ", "-Wl,--start-group," + base_lib + ',-lm,-lc,--whole-archive,-lgloss,--no-whole-archive,-lc,--whole-archive,-lsys_qemu,--no-whole-archive,--end-group ') )
+      config.substitutions.append( ("%librt ", "-Wl,--start-group," + base_lib + ',-lc,-lm,--end-group ') )
     else:
       config.substitutions.append( ("%librt ", base_lib + ' -lc -lm ') )
 
