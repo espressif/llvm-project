@@ -323,6 +323,7 @@ def : SysReg<"tselect", 0x7A0>;
 def : SysReg<"tdata1", 0x7A1>;
 def : SysReg<"tdata2", 0x7A2>;
 def : SysReg<"tdata3", 0x7A3>;
+def : SysReg<"tcontrol", 0x7A5>;
 def : SysReg<"mcontext", 0x7A8>;
 
 //===----------------------------------------------------------------------===//
