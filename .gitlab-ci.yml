@@ -1,114 +1,491 @@
 stages:
+  - test_build
   - build
   - pack
-  - macos_codesign
+  - sign
   - private_deploy
   - test
   - public_deploy
+  - update_idf_tools
 
 image: ${CI_DOCKER_REGISTRY}/llvm-build:4
 
 variables:
-
-  # move all these to CI/CD settings
-  REL_SFX: "llvm"
-  CLANG_VER: "17"
-  GCC_REL_VER: "12.2.0_20230208"
-  NEWLIB_REF: "esp-4.1.0_20230425"
-  BINUTILS_REF: "esp-2.39.0_20230208"
-  XTENSA_OVERLAYS_REF: "master"
-  LLVM_GCC_TESTSUITE_REF: "esp-16.0.0-20230425"
-  XTENSA_CLANG_TOOLCHAIN_REF: "esp-16.0.0-20230516"
-
+  ESP_LLVM_EMBEDDED_TOOLCHAIN_REF: "master"
   CROSS_ARM_IMAGE: $CI_DOCKER_REGISTRY/llvm-build-cross-arm:1
-  PLATFORM_NAME_LINUX: "linux-amd64"
-  PLATFORM_NAME_LINUX_ARMHF: "linux-armhf"
-  PLATFORM_NAME_LINUX_ARM64: "linux-arm64"
-  PLATFORM_NAME_WIN: "win64"
-  PLATFORM_NAME_MACOS: "macos"
-  PLATFORM_NAME_MACOS_ARM64: "macos-arm64"
-
-  GCC_PLATFORM_NAME_LINUX: "i686-linux-gnu"
-  GCC_PLATFORM_NAME_LINUX_ARMHF: "arm-linux-gnueabihf"
-  GCC_PLATFORM_NAME_LINUX_ARM64: "aarch64-linux-gnu"
-  GCC_PLATFORM_NAME_WIN: "i686-w64-mingw32"
-  GCC_PLATFORM_NAME_MACOS: "x86_64-apple-darwin"
-  GCC_PLATFORM_NAME_MACOS_ARM64: "aarch64-apple-darwin"
-
-  ARCHIVE_TOOL_LINUX: "tar -cJf"
-  UNARCHIVE_TOOL_LINUX: "tar -xf"
-  ARCHIVE_EXT_LINUX: "tar.xz"
-
-  ARCHIVE_TOOL_WIN: "zip -9 -r"
-  UNARCHIVE_TOOL_WIN: "unzip"
-  ARCHIVE_EXT_WIN: "zip"
-
-  PACK_ARCHIVE_TOOL_WIN: "tar -h -cJf"
-  PACK_UNARCHIVE_TOOL_WIN: "${UNARCHIVE_TOOL_LINUX}"
-  PACK_ARCHIVE_EXT_WIN: "${ARCHIVE_EXT_LINUX}"
-
-  ARCHIVE_TOOL_MACOS: "tar -cJf"
-  UNARCHIVE_TOOL_MACOS: "tar -xf"
-  ARCHIVE_EXT_MACOS: "tar.xz"
-
-  ARCHIVE_TOOL_NEWLIB: ${ARCHIVE_TOOL_LINUX}
-  UNARCHIVE_TOOL_NEWLIB: ${UNARCHIVE_TOOL_LINUX}
-  ARCHIVE_EXT_NEWLIB: ${ARCHIVE_EXT_LINUX}
-
-  ARCHIVE_TOOL_COMPILER_RT: ${ARCHIVE_TOOL_LINUX}
-  UNARCHIVE_TOOL_COMPILER_RT: ${UNARCHIVE_TOOL_LINUX}
-  ARCHIVE_EXT_COMPILER_RT: ${ARCHIVE_EXT_LINUX}
-
-  LIBS_ARCHIVE_TOOL: "${ARCHIVE_TOOL_LINUX}"
-  LIBS_UNARCHIVE_TOOL: "${UNARCHIVE_TOOL_LINUX}"
-  LIBS_ARCHIVE_EXT: "${ARCHIVE_EXT_LINUX}"
-
+  CROSS_WIN_IMAGE: $CI_DOCKER_REGISTRY/llvm-build-cross-win:1
   DIST_DIR: "dist"
   BUILD_DIR: "build"
-  DOWNLOADS_DIR: "downloads"
 
-###########################################################################
-#################### START OF TEMPORARY LEGACY CODE #######################
-# TODO: the code below is to be removed after migration to new build script
-  CONF_TARGET: "xtensa-esp32-elf"
-  XTENSA_CLANG_TOOLCHAIN: "${CONF_TARGET}-clang"
-##################### END OF TEMPORARY LEGACY CODE ########################
-###########################################################################
-
-.use_ci_tools_snippet: &use_ci_tools_snippet |
+.use_ci_tools: &use_ci_tools |
   curl -sSL ${CIT_LOADER_URL} -o cit_loader.sh && sh cit_loader.sh
   source citools/import_functions
 
-.use_ci_tools:
-  script:
-    - *use_ci_tools_snippet
-
-.add_gitlab_key_snippet: &add_gitlab_key_snippet |
+.add_gitlab_key: &add_gitlab_key |
   cit_add_ssh_key "${GITLAB_KEY}"
 
-.add_gitlab_key:
-  script:
-    - *add_gitlab_key_snippet
+.get_toolchain_build_scripts: &get_toolchain_build_scripts |
+  git clone -b ${ESP_LLVM_EMBEDDED_TOOLCHAIN_REF} ${GITLAB_SSH_SERVER}/${ESP_LLVM_EMBEDDED_TOOLCHAIN_REPO}.git
 
-# LLVM Build System used the remote address to show detailed version info, we'll change it to the public repository
-.fix_origin_remote_for_public_snippet: &fix_origin_remote_for_public_snippet |
-  git remote set-url origin "${GH_REPO_HTTPS}"
-
-.fix_origin_remote_for_public:
-  script:
-    - *fix_origin_remote_for_public_snippet
-
-.get_clang_toolchain_build_scripts_snippet: &get_clang_toolchain_build_scripts_snippet |
-  git clone -b ${XTENSA_CLANG_TOOLCHAIN_REF} ${GITLAB_SSH_SERVER}/${XTENSA_CLANG_TOOLCHAIN_REPO}
-  cp -r xtensa-clang-toolchain/* .
-
-.get_clang_toolchain_build_scripts:
-  script:
-    - *get_clang_toolchain_build_scripts_snippet
 
 before_script:
-  - !reference [.use_ci_tools, script]
-  - !reference [.add_gitlab_key, script]
+  - *use_ci_tools
+  - *add_gitlab_key
 
-include:
-  - local: .universal-toolchain-release.yml
+.build_template:
+  tags: [ "amd64", "build" ]
+  artifacts:
+    paths:
+      - ${DIST_DIR}/
+      - ${BUILD_DIR}/*.log
+    when: always
+    expire_in: 1 day
+  variables:
+    USE_LINKER: "ld"
+    CROSS_BUILD_MINGW: "OFF"
+    SKIP_TESTS: "ON"
+    PACK_DISTRO: "ON"
+  after_script:
+    # help to identify that build failed due to OOM
+    - >
+      if [ $CI_JOB_STATUS == 'failed' ]; then
+        [ ! -f "${BUILD_DIR}/build.log" ] || grep -i "internal compiler error\|Killed" ${BUILD_DIR}/build.log || true
+        [ ! -f "${BUILD_DIR}/tests.log" ] || grep -i "internal compiler error\|Killed" ${BUILD_DIR}/tests.log || true
+        [ ! -f "${BUILD_DIR}/lld-tests.log" ] || grep -i "internal compiler error\|Killed" ${BUILD_DIR}/lld-tests.log || true
+      fi
+  script:
+    - *get_toolchain_build_scripts
+    - LLVM_PROJECT_PATH=$PWD
+    - BUILD_PATH=$PWD/${BUILD_DIR}
+    - INST_PATH=$PWD/_install_dir
+    - mkdir -p ${BUILD_PATH}
+    - BUILD_HOST=$(gcc -dumpmachine)
+    # Build target libraries once when doing native build
+    - >
+      if [ "${CONF_HOST}" == "${BUILD_HOST}" ]; then
+        echo "Enable target libraries build"
+        export USE_LIBC="newlib";
+        export USE_LIBCXX="libstdcxx";
+        export USE_RTLIB="compiler-rt;libgcc";
+      else
+        echo "Disable target libraries for cross-build"
+        export USE_LIBC=none;
+        export USE_LIBCXX="";
+        export USE_RTLIB="";
+      fi
+    # build toolchain core w/o any libs and GNU components
+    - cmake $PWD/esp-llvm-embedded-toolchain -GNinja
+      -DFETCHCONTENT_SOURCE_DIR_LLVMPROJECT=${LLVM_PROJECT_PATH}
+      -DNEWLIB_REPO_URL="${GITLAB_SSH_SERVER}/${NEWLIB_REPO_PATH}.git"
+      -DBINUTILS_REPO_URL="${GITLAB_SSH_SERVER}/${BINUTILS_REPO_PATH}.git"
+      -DXTENSA_OVERLAYS_REPO_URL="${GITLAB_SSH_SERVER}/${XTENSA_OVERLAYS_REPO_PATH}.git"
+      -DFETCHCONTENT_QUIET=OFF
+      -DESP_GNU_TOOLCHAIN_VER="13.2.0_20230928"
+      -DLLVM_TOOLCHAIN_CROSS_BUILD_MINGW=${CROSS_BUILD_MINGW}
+      -DUSE_LIBC=${USE_LIBC}
+      -DUSE_LIBCXX=${USE_LIBCXX}
+      -DUSE_RTLIB=${USE_RTLIB}
+      -DUSE_BINUTILS=ON
+      -DESP_TOOLCHAIN=ON
+      -DHOST_TRIPLE=${CONF_HOST}
+      -DLLVM_TOOLCHAIN_ENABLED_TARGETS="${TARGET}"
+      -DLLVM_USE_LINKER=${USE_LINKER}
+      -DLLVM_PARALLEL_LINK_JOBS=2
+      -DLLVM_PARALLEL_COMPILE_JOBS=2
+      -DCLANG_REPOSITORY_STRING="${GH_REPO_HTTPS}"
+      -DCPACK_ARCHIVE_THREADS=0
+      -B ${BUILD_PATH} 2>&1
+      --install-prefix=$INST_PATH > ${BUILD_PATH}/build.log
+    # Do not run unit tests for cross-builds.
+    # Run as non-root user because permission tests fail when run by root.
+    - >
+      if [[ "${CONF_HOST}" == "${BUILD_HOST}" && "${SKIP_TESTS}" != "ON" ]]; then
+        echo "Run LLVM/Clang unit tests";
+        export CUR_USER=$(whoami);
+        useradd -m test_runner;
+        chown -R test_runner ${BUILD_PATH};
+        touch ${BUILD_PATH}/tests.log;
+        chmod o+w ${BUILD_PATH}/tests.log;
+        runuser -u test_runner -- ninja -C ${BUILD_PATH} check-all 2>&1 > ${BUILD_PATH}/tests.log;
+        echo "Run Compiler-RT unit tests";
+        touch ${BUILD_PATH}/compiler-rt-tests.log;
+        chmod o+w ${BUILD_PATH}/compiler-rt-tests.log;
+        runuser -u test_runner -- ninja -C ${BUILD_PATH} check-compiler-rt 2>&1 > ${BUILD_PATH}/compiler-rt-tests.log;
+        echo "Run LLD unit tests";
+        touch ${BUILD_PATH}/lld-tests.log;
+        chmod o+w ${BUILD_PATH}/lld-tests.log;
+        runuser -u test_runner -- ninja -C ${BUILD_PATH} check-lld 2>&1 > ${BUILD_PATH}/lld-tests.log;
+        chown -R ${CUR_USER} ${BUILD_PATH};
+      fi
+    - if [ "${PACK_DISTRO}" == "OFF" ]; then exit 0; fi
+    # pack distro
+    - mkdir -p ${PWD}/${DIST_DIR}
+    - ninja -C ${BUILD_PATH} package-llvm-toolchain 2>&1  >> ${BUILD_PATH}/build.log
+    - DISTRO_PACK_PATH=$(ninja -C ${BUILD_PATH} print-llvm-toolchain-package-path | tail -n 1)
+    - echo "DISTRO_PACK_PATH=${DISTRO_PACK_PATH}"
+    - mv ${DISTRO_PACK_PATH} ${PWD}/${DIST_DIR}/
+    - ARCHIVE_NAME=$(basename ${DISTRO_PACK_PATH})
+    - echo "${ARCHIVE_NAME}" > ${PWD}/${DIST_DIR}/dist_name_${CONF_HOST}_${TARGET}
+    # pack distro with standalone libs
+    - ninja -C ${BUILD_PATH} package-llvm-standalone-libs 2>&1  >> ${BUILD_PATH}/build.log
+    - DISTRO_PACK_PATH=$(ninja -C ${BUILD_PATH} print-llvm-standalone-libs-package-path | tail -n 1)
+    - echo "DISTRO_PACK_PATH=${DISTRO_PACK_PATH}"
+    - mv ${DISTRO_PACK_PATH} ${PWD}/${DIST_DIR}/
+    - ARCHIVE_NAME=$(basename ${DISTRO_PACK_PATH})
+    - echo "${ARCHIVE_NAME}" > ${PWD}/${DIST_DIR}/dist_name_libs_${CONF_HOST}_${TARGET}
+    # pack target libraries to be re-used in distros for other platforms
+    - >
+      if [ "${CONF_HOST}" == "${BUILD_HOST}" ]; then
+        ninja -C ${BUILD_PATH} package-llvm-toolchain-target-libs 2>&1  >> ${BUILD_PATH}/build.log
+        DISTRO_PACK_PATH=$(ninja -C ${BUILD_PATH} print-llvm-toolchain-target-libs-package-path | tail -n 1)
+        echo "DISTRO_PACK_PATH=${DISTRO_PACK_PATH}"
+        mv ${DISTRO_PACK_PATH} ${PWD}/${DIST_DIR}/
+        ARCHIVE_NAME=$(basename ${DISTRO_PACK_PATH})
+        echo "${ARCHIVE_NAME}" > ${PWD}/${DIST_DIR}/target_libs_arch_name
+      fi
+
+build_and_test:
+  extends: .build_template
+  stage: test_build
+  variables:
+    TARGET: "Xtensa;RISCV"
+    SKIP_TESTS: "OFF"
+    PACK_DISTRO: "OFF"
+    CONF_HOST: "x86_64-linux-gnu"
+    USE_LINKER: "gold"
+
+.build_toolchain_template:
+  extends: .build_template
+  stage: build
+  parallel:
+    matrix:
+      - TARGET:
+          - Xtensa
+          - RISCV
+
+.build_linux-gnu_template:
+  extends: .build_toolchain_template
+  variables:
+    USE_LINKER: "gold"
+
+build_x86_64-linux-gnu:
+  extends: .build_linux-gnu_template
+  variables:
+    CONF_HOST: "x86_64-linux-gnu"
+
+build_x86_64-w64-mingw32:
+  extends: .build_toolchain_template
+  image: ${CROSS_WIN_IMAGE}
+  variables:
+    USE_LINKER: ""
+    CONF_HOST: "x86_64-w64-mingw32"
+    CROSS_BUILD_MINGW: "ON"
+
+build_arm-linux-gnueabihf:
+  extends: .build_linux-gnu_template
+  image: ${CROSS_ARM_IMAGE}
+  variables:
+    CONF_HOST: "arm-linux-gnueabihf"
+
+build_aarch64-linux-gnu:
+  extends: .build_linux-gnu_template
+  image: ${CROSS_ARM_IMAGE}
+  variables:
+    CONF_HOST: "aarch64-linux-gnu"
+
+build_x86_64-apple-darwin:
+  extends: .build_toolchain_template
+  variables:
+    CONF_HOST: "x86_64-apple-darwin21.1"
+
+build_aarch64-apple-darwin:
+  extends: .build_toolchain_template
+  variables:
+    CONF_HOST: "aarch64-apple-darwin21.1"
+
+.pack_x86_64-linux-gnu_template:
+  stage: pack
+  tags: [ "amd64", "build" ]
+  artifacts:
+    paths:
+      - ${DIST_DIR}/
+    when: always
+    expire_in: 1 day
+  script:
+    - pushd ${DIST_DIR}
+    - ls -l
+    - TARGET_LIBS_PACK_FILE=$(cat target_libs_arch_name)
+    - rm -f target_libs_arch_name ${TARGET_LIBS_PACK_FILE}
+    - ls -l
+
+pack_x86_64-linux-gnu_riscv:
+  extends: .pack_x86_64-linux-gnu_template
+  needs:
+    - job: "build_x86_64-linux-gnu: [RISCV]"
+
+pack_x86_64-linux-gnu_xtensa:
+  extends: .pack_x86_64-linux-gnu_template
+  needs:
+    - job: "build_x86_64-linux-gnu: [Xtensa]"
+
+.pack_template:
+  stage: pack
+  tags: [ "amd64", "build" ]
+  artifacts:
+    paths:
+      - ${DIST_DIR}/
+    when: always
+    expire_in: 1 day
+  variables:
+    PACK_TOOL: "tar cJf"
+    UNPACK_TOOL: "tar xJf"
+  script:
+    - *get_toolchain_build_scripts
+    # update distro
+    - pushd ${DIST_DIR}
+    - ls -l
+    - DISTRO_PACK_FILE=$(cat dist_name_${CONF_HOST}_${TARGET})
+    - echo "DISTRO_PACK_FILE=${DISTRO_PACK_FILE}"
+    - ${UNPACK_TOOL} ${DISTRO_PACK_FILE}
+    - DISTRO_PACK_DIR=$(tar tJf ${DISTRO_PACK_FILE} | sed -e 's@/.*@@' | uniq)
+    - ls -l $PWD/${DISTRO_PACK_DIR}/lib/clang-runtimes/
+    - echo "DISTRO_PACK_DIR=${DISTRO_PACK_DIR}"
+    - rm -f ${DISTRO_PACK_FILE}
+    - TARGET_LIBS_PACK_FILE=$(cat target_libs_arch_name)
+    - rm -f target_libs_arch_name
+    - echo "TARGET_LIBS_PACK_FILE=${TARGET_LIBS_PACK_FILE}"
+    - tar xJfv ${TARGET_LIBS_PACK_FILE}
+    - rm -f ${TARGET_LIBS_PACK_FILE}
+    - ls -l $PWD
+    - ls -l $PWD/${DISTRO_PACK_DIR}
+    - ls -l $PWD/${DISTRO_PACK_DIR}/lib/clang-runtimes/
+    # both distro and target libs archives have the same root dir name,
+    # so that dir contains everything we need to re-pack after unpacking steps above
+    - ${PACK_TOOL} ${DISTRO_PACK_FILE} ${DISTRO_PACK_DIR}
+    - rm -rf ${DISTRO_PACK_DIR}
+    # remove x86_64-linux-gnu artifacts
+    - >
+      if [ "${CONF_HOST}" != "x86_64-linux-gnu" ]; then
+        DISTRO_PACK_FILE=$(cat dist_name_x86_64-linux-gnu_${TARGET})
+        rm -f ${DISTRO_PACK_FILE} dist_name_x86_64-linux-gnu_${TARGET}
+        DISTRO_PACK_FILE=$(cat dist_name_libs_x86_64-linux-gnu_${TARGET})
+        rm -f ${DISTRO_PACK_FILE} dist_name_libs_x86_64-linux-gnu_${TARGET}
+      fi
+    - ls -l
+
+pack_x86_64-w64-mingw32_riscv:
+  extends: .pack_template
+  needs:
+    # needs target libs archive from native build job
+    - job: "build_x86_64-linux-gnu: [RISCV]"
+    - job: "build_x86_64-w64-mingw32: [RISCV]"
+  variables:
+    CONF_HOST: "x86_64-w64-mingw32"
+    TARGET: "RISCV"
+
+pack_x86_64-w64-mingw32_xtensa:
+  extends: .pack_template
+  needs:
+    # needs target libs archive from native build job
+    - job: "build_x86_64-linux-gnu: [Xtensa]"
+    - job: "build_x86_64-w64-mingw32: [Xtensa]"
+  variables:
+    CONF_HOST: "x86_64-w64-mingw32"
+    TARGET: "Xtensa"
+
+pack_arm-linux-gnueabihf_riscv:
+  extends: .pack_template
+  needs:
+    # needs target libs archive from native build job
+    - job: "build_x86_64-linux-gnu: [RISCV]"
+    - job: "build_arm-linux-gnueabihf: [RISCV]"
+  variables:
+    CONF_HOST: "arm-linux-gnueabihf"
+    TARGET: "RISCV"
+
+pack_arm-linux-gnueabihf_xtensa:
+  extends: .pack_template
+  needs:
+    # needs target libs archive from native build job
+    - job: "build_x86_64-linux-gnu: [Xtensa]"
+    - job: "build_arm-linux-gnueabihf: [Xtensa]"
+  variables:
+    CONF_HOST: "arm-linux-gnueabihf"
+    TARGET: "Xtensa"
+
+pack_aarch64-linux-gnu_riscv:
+  extends: .pack_template
+  needs:
+    # needs target libs archive from native build job
+    - job: "build_x86_64-linux-gnu: [RISCV]"
+    - job: "build_aarch64-linux-gnu: [RISCV]"
+  variables:
+    CONF_HOST: "aarch64-linux-gnu"
+    TARGET: "RISCV"
+
+pack_aarch64-linux-gnu_xtensa:
+  extends: .pack_template
+  needs:
+    # needs target libs archive from native build job
+    - job: "build_x86_64-linux-gnu: [Xtensa]"
+    - job: "build_aarch64-linux-gnu: [Xtensa]"
+  variables:
+    CONF_HOST: "aarch64-linux-gnu"
+    TARGET: "Xtensa"
+
+pack_x86_64-apple-darwin_riscv:
+  extends: .pack_template
+  needs:
+    # needs target libs archive from native build job
+    - job: "build_x86_64-linux-gnu: [RISCV]"
+    - job: "build_x86_64-apple-darwin: [RISCV]"
+  variables:
+    CONF_HOST: "x86_64-apple-darwin21.1"
+    TARGET: "RISCV"
+
+pack_x86_64-apple-darwin_xtensa:
+  extends: .pack_template
+  needs:
+    # needs target libs archive from native build job
+    - job: "build_x86_64-linux-gnu: [Xtensa]"
+    - job: "build_x86_64-apple-darwin: [Xtensa]"
+  variables:
+    CONF_HOST: "x86_64-apple-darwin21.1"
+    TARGET: "Xtensa"
+
+pack_aarch64-apple-darwin_riscv:
+  extends: .pack_template
+  needs:
+    # needs target libs archive from native build job
+    - job: "build_x86_64-linux-gnu: [RISCV]"
+    - job: "build_aarch64-apple-darwin: [RISCV]"
+  variables:
+    CONF_HOST: "aarch64-apple-darwin21.1"
+    TARGET: "RISCV"
+
+pack_aarch64-apple-darwin_xtensa:
+  extends: .pack_template
+  needs:
+    # needs target libs archive from native build job
+    - job: "build_x86_64-linux-gnu: [Xtensa]"
+    - job: "build_aarch64-apple-darwin: [Xtensa]"
+  variables:
+    CONF_HOST: "aarch64-apple-darwin21.1"
+    TARGET: "Xtensa"
+
+.macos_codesign_template:
+  stage: sign
+  when: on_success
+  resource_group: macos_codesign
+  tags: [ "darwin", "codesign" ]
+  artifacts:
+    paths:
+      - ${DIST_ART_DIR}
+  variables:
+    # directory with distro archives
+    DIST_ART_DIR: ${DIST_DIR}
+    # command to archive distro
+    ARCHIVE_TOOL: "tar cJf"
+    # command to unarchive distro
+    UNARCHIVE_TOOL: "tar xJf"
+    # URL to macos codesign repo
+    NOTARIZATION_SCRIPTS_GIT: "${CI_SERVER_PROTOCOL}://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}:${CI_SERVER_PORT}/espressif/macos_codesign_notarization.git"
+  script:
+    - git clone -q --depth=1 ${NOTARIZATION_SCRIPTS_GIT} -b ${CI_COMMIT_REF_NAME} ||
+      git clone -q --depth=1 ${NOTARIZATION_SCRIPTS_GIT}
+    - ./macos_codesign_notarization/run.sh
+
+sign_x86_64-apple-darwin_riscv:
+  extends: .macos_codesign_template
+  needs:
+    - pack_x86_64-apple-darwin_riscv
+
+sign_x86_64-apple-darwin_xtensa:
+  extends: .macos_codesign_template
+  needs:
+    - pack_x86_64-apple-darwin_xtensa
+
+sign_aarch64-apple-darwin_riscv:
+  extends: .macos_codesign_template
+  needs:
+    - pack_aarch64-apple-darwin_riscv
+
+sign_aarch64-apple-darwin_xtensa:
+  extends: .macos_codesign_template
+  needs:
+    - pack_aarch64-apple-darwin_xtensa
+
+upload_to_http:
+  stage: private_deploy
+  when: manual
+  allow_failure: true
+  tags: [ "deploy", "shiny" ]
+  variables:
+    # force the fetch strategy to clean old archives up in dist/ dir
+    GIT_STRATEGY: fetch
+  needs:
+    - job: pack_x86_64-linux-gnu_riscv
+    - job: pack_x86_64-linux-gnu_xtensa
+  script:
+    - cit_add_ssh_key "${HTTP_UPLOAD_KEY}"
+    # List of archives
+    - FILES=$(find ${DIST_DIR} -name dist_name_\* -exec cat {} \+)
+    - cd ${DIST_DIR}
+    - ls -l $FILES
+    - scp ${FILES} ${HTTP_UPLOAD_DIR}/ct-ng/llvm-builds
+    # Show info
+    - echo -e "\nArchives were published there:\n\n$(for n in ${FILES}; do echo "${HTTP_PUBLIC_DIR}/ct-ng/llvm-builds/${n}"; done)\n"
+
+upload_to_github:
+  stage: public_deploy
+  when: manual
+  allow_failure: true
+  only:
+    - tags
+  tags: [ "amd64", "internet" ]
+  image: espressif/github-hub:2
+  variables:
+    GIT_STRATEGY: fetch
+    GITHUB_TOKEN: "${GH_TOKEN}"
+    GITHUB_REPO: "${GH_REPO_HTTPS}"
+    TAG: "${CI_COMMIT_TAG}"
+  needs:
+    - job: pack_x86_64-linux-gnu_riscv
+    - job: pack_x86_64-linux-gnu_xtensa
+    - job: pack_arm-linux-gnueabihf_riscv
+    - job: pack_arm-linux-gnueabihf_xtensa
+    - job: pack_aarch64-linux-gnu_riscv
+    - job: pack_aarch64-linux-gnu_xtensa
+    - job: pack_x86_64-w64-mingw32_riscv
+    - job: pack_x86_64-w64-mingw32_xtensa
+    - job: sign_x86_64-apple-darwin_riscv
+    - job: sign_x86_64-apple-darwin_xtensa
+    - job: sign_aarch64-apple-darwin_riscv
+    - job: sign_aarch64-apple-darwin_xtensa
+  before_script: []
+  script:
+    - ls -l dist*/
+    - git remote add github ${GH_REPO_HTTPS}
+    - hub release show ${TAG} || { echo "Please create a release on GitHub with ${TAG} tag at first"; exit 1; }
+    # List of archives
+    - FILES=$(find ${DIST_DIR} -name dist_name_\* -exec cat {} \+)
+    - cd ${DIST_DIR}
+    - ls -l $FILES
+    # Upload archives
+    - for n in ${FILES}; do hub release edit -m "" -a "${n}" "${TAG}"; done
+
+update_idf_tools:
+  stage: update_idf_tools
+  when: manual
+  allow_failure: true
+  only:
+    - tags
+  variables:
+    TOOL_NAME: openocd
+    TOOL_MEMBERS: openocd-esp32
+    TOOL_VERSION: ${CI_COMMIT_TAG}
+    TOOL_SHA256_URL: https://github.com/espressif/openocd-esp32/releases/download/${CI_COMMIT_TAG}/openocd-esp32-${CI_COMMIT_TAG}-checksum.sha256
+    RN_SECTION: Toolchain
+  trigger:
+    project: idf/idf-tools-updater
+    strategy: depend
