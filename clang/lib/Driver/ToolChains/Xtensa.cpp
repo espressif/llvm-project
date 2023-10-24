@@ -132,28 +132,33 @@ Tool *XtensaToolChain::buildAssembler() const {
 
 void XtensaToolChain::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
                                                 ArgStringList &CC1Args) const {
-  if (DriverArgs.hasArg(clang::driver::options::OPT_nostdinc) ||
-      DriverArgs.hasArg(options::OPT_nostdlibinc))
+  if (DriverArgs.hasArg(clang::driver::options::OPT_nostdinc))
     return;
 
-  if (!getDriver().SysRoot.empty()) {
-    SmallString<128> Dir(getDriver().SysRoot);
+  if (!DriverArgs.hasArg(options::OPT_nobuiltininc)) {
+    SmallString<128> Dir(getDriver().ResourceDir);
     llvm::sys::path::append(Dir, "include");
     addSystemInclude(DriverArgs, CC1Args, Dir.str());
-  } else if (GCCInstallation.isValid()) {
-    SmallString<128> Path1(getDriver().ResourceDir);
-    llvm::sys::path::append(Path1, "include");
-    SmallString<128> Path2(GCCToolchainDir);
-    llvm::sys::path::append(Path2, GCCToolchainName, "sys-include");
-    SmallString<128> Path3(GCCToolchainDir);
-    llvm::sys::path::append(Path3, GCCToolchainName, "include");
+  }
 
-    const StringRef Paths[] = {Path1, Path2, Path3};
-    addSystemIncludes(DriverArgs, CC1Args, Paths);
-  } else {
-    SmallString<128> Dir(computeSysRoot());
-    llvm::sys::path::append(Dir, "include");
-    addSystemInclude(DriverArgs, CC1Args, Dir.str());
+  if (!DriverArgs.hasArg(options::OPT_nostdlibinc)) {
+    if (!getDriver().SysRoot.empty()) {
+      SmallString<128> Dir(getDriver().SysRoot);
+      llvm::sys::path::append(Dir, "include");
+      addSystemInclude(DriverArgs, CC1Args, Dir.str());
+    } else if (GCCInstallation.isValid()) {
+      SmallString<128> Path1(GCCToolchainDir);
+      llvm::sys::path::append(Path1, GCCToolchainName, "sys-include");
+      SmallString<128> Path2(GCCToolchainDir);
+      llvm::sys::path::append(Path2, GCCToolchainName, "include");
+
+      const StringRef Paths[] = {Path1, Path2};
+      addSystemIncludes(DriverArgs, CC1Args, Paths);
+    } else {
+      SmallString<128> Dir(computeSysRoot());
+      llvm::sys::path::append(Dir, "include");
+      addSystemInclude(DriverArgs, CC1Args, Dir.str());
+    }
   }
 }
 
