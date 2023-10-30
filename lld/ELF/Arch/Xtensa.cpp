@@ -105,9 +105,31 @@ static inline bool isRRI8Branch(uint8_t *loc) {
   // instructions: bgeui, bltui
   if ((loc[0] & 0b1011'1111) == 0b1011'0110)
     return true;
-  // instruction: bt
-  if ((loc[0] & 0b0111'1111) == 0b0111'0110)
-    return true;
+  if ((loc[0] & 0b0111'1111) == 0b0111'0110) {
+    // instruction: bf
+    if ((loc[1] & 0b1111'0000) == 0b0000'0000)
+      return true;
+    // instruction: bt
+    if ((loc[1] & 0b1111'0000) == 0b0001'0000)
+      return true;
+  }
+  // some other instruction
+  return false;
+}
+
+static inline bool isLoop(uint8_t *loc) {
+  // instructions: loop, loopgtz, loopnez
+  if ((loc[0] & 0b1111'1111) == 0b0111'0110) {
+    // instruction: loop
+    if ((loc[1] & 0b1111'0000) == 0b1000'0000)
+      return true;
+    // instruction: loopgtz
+    if ((loc[1] & 0b1111'0000) == 0b1010'0000)
+      return true;
+    // instruction: loopnez
+    if ((loc[1] & 0b1111'0000) == 0b1001'0000)
+      return true;
+  }
   // some other instruction
   return false;
 }
@@ -150,6 +172,10 @@ void Xtensa::relocate(uint8_t *loc, const Relocation &rel, uint64_t val) const {
     } else if (isRRI8Branch(loc)) { // RRI8 format (various branch instructions)
       uint64_t v = val - 4;
       checkInt(loc, static_cast<int64_t>(v), 8, rel);
+      loc[2] = v & 0xff;
+    } else if (isLoop(loc)) { // loop instructions
+      uint64_t v = val - 4;
+      checkUInt(loc, v, 8, rel);
       loc[2] = v & 0xff;
     } else if ((loc[0] & 0b1000'1111) == 0b1000'1100) { // RI16 format: beqz.n, bnez.n
       uint64_t v = val - 4;
