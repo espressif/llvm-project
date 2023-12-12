@@ -112,8 +112,3 @@ before_script:
 
 include:
   - local: .universal-toolchain-release.yml
-    rules:
-      - if: $ESP_CLANG_LEGACY_RELEASE != "true"
-  - local: .legacy-release.yml
-    rules:
-      - if: $ESP_CLANG_LEGACY_RELEASE == "true"
