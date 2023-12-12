@@ -16,10 +16,7 @@ variables:
   GCC_REL_NAME: "esp-2022r1"
   GCC_REL_VER: "gcc11_2_0"
   NEWLIB_REF: "esp-4.1.0_20230425"
-  # TODO: LLVM-248. Upgrade binutils above 2.36 when Clang will be upgraded to >=17.x 
-  # which supports 'zicsr' or 'zifencei' RISCV extensions via '-march='
-  # https://www.spinics.net/lists/stable/msg645015.html
-  BINUTILS_REF: "esp-2022r1-binutils"
+  BINUTILS_REF: "esp-2.39.0_20230208"
   XTENSA_OVERLAYS_REF: "master"
   LLVM_GCC_TESTSUITE_REF: "esp-16.0.0-20230425"
   XTENSA_CLANG_TOOLCHAIN_REF: "esp-16.0.0-20230516"
