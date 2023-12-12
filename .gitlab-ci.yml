@@ -13,8 +13,7 @@ variables:
   # move all these to CI/CD settings
   REL_SFX: "llvm"
   CLANG_VER: "17"
-  GCC_REL_NAME: "esp-2022r1"
-  GCC_REL_VER: "gcc11_2_0"
+  GCC_REL_VER: "12.2.0_20230208"
   NEWLIB_REF: "esp-4.1.0_20230425"
   BINUTILS_REF: "esp-2.39.0_20230208"
   XTENSA_OVERLAYS_REF: "master"
@@ -28,6 +27,13 @@ variables:
   PLATFORM_NAME_WIN: "win64"
   PLATFORM_NAME_MACOS: "macos"
   PLATFORM_NAME_MACOS_ARM64: "macos-arm64"
+
+  GCC_PLATFORM_NAME_LINUX: "i686-linux-gnu"
+  GCC_PLATFORM_NAME_LINUX_ARMHF: "arm-linux-gnueabihf"
+  GCC_PLATFORM_NAME_LINUX_ARM64: "aarch64-linux-gnu"
+  GCC_PLATFORM_NAME_WIN: "i686-w64-mingw32"
+  GCC_PLATFORM_NAME_MACOS: "x86_64-apple-darwin"
+  GCC_PLATFORM_NAME_MACOS_ARM64: "aarch64-apple-darwin"
 
   ARCHIVE_TOOL_LINUX: "tar -cJf"
   UNARCHIVE_TOOL_LINUX: "tar -xf"

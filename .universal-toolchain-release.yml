@@ -18,12 +18,12 @@
                          "esp32s3")
   for ((i = 0; i < ${#XTENSA_CPUS[@]}; i++)); do
     XTENSA_CPU=${XTENSA_CPUS[$i]}
-    GCC_TOOLCHAIN_ARCH=xtensa-${XTENSA_CPU}-elf-${GCC_REL_VER}-${GCC_REL_NAME}-${PLATFORM_NAME}.${GCC_ARCHIVE_EXT}
-    wget --no-verbose https://dl.espressif.com/github_assets/espressif/crosstool-NG/releases/download/${GCC_REL_NAME}/${GCC_TOOLCHAIN_ARCH}
+    GCC_TOOLCHAIN_ARCH=xtensa-${XTENSA_CPU}-elf-${GCC_REL_VER}-${GCC_PLATFORM_NAME}.${GCC_ARCHIVE_EXT}
+    wget --no-verbose https://dl.espressif.com/github_assets/espressif/crosstool-NG/releases/download/esp-${GCC_REL_VER}/${GCC_TOOLCHAIN_ARCH}
     ${GCC_UNARCHIVE_TOOL} ${GCC_TOOLCHAIN_ARCH}
   done;
-  GCC_TOOLCHAIN_ARCH=riscv32-esp-elf-${GCC_REL_VER}-${GCC_REL_NAME}-${PLATFORM_NAME}.${GCC_ARCHIVE_EXT}
-  wget --no-verbose https://dl.espressif.com/github_assets/espressif/crosstool-NG/releases/download/${GCC_REL_NAME}/${GCC_TOOLCHAIN_ARCH}
+  GCC_TOOLCHAIN_ARCH=riscv32-esp-elf-${GCC_REL_VER}-${GCC_PLATFORM_NAME}.${GCC_ARCHIVE_EXT}
+  wget --no-verbose https://dl.espressif.com/github_assets/espressif/crosstool-NG/releases/download/esp-${GCC_REL_VER}/${GCC_TOOLCHAIN_ARCH}
   ${GCC_UNARCHIVE_TOOL} ${GCC_TOOLCHAIN_ARCH}
 
 # Pack the toolchain
@@ -130,6 +130,7 @@ build_x86_64-linux-gnu:
   variables:
     CONF_HOST: "x86_64-linux-gnu"
     PLATFORM_NAME: "${PLATFORM_NAME_LINUX}"
+    GCC_PLATFORM_NAME: "${GCC_PLATFORM_NAME_LINUX}"
 
 build_arm-linux-gnueabihf:
   extends: .build_linux-gnu_template
@@ -137,6 +138,7 @@ build_arm-linux-gnueabihf:
   variables:
     CONF_HOST: "arm-linux-gnueabihf"
     PLATFORM_NAME: "${PLATFORM_NAME_LINUX_ARMHF}"
+    GCC_PLATFORM_NAME: "${GCC_PLATFORM_NAME_LINUX_ARMHF}"
 
 build_aarch64-linux-gnu:
   extends: .build_linux-gnu_template
@@ -144,6 +146,7 @@ build_aarch64-linux-gnu:
   variables:
     CONF_HOST: "aarch64-linux-gnu"
     PLATFORM_NAME: "${PLATFORM_NAME_LINUX_ARM64}"
+    GCC_PLATFORM_NAME: "${GCC_PLATFORM_NAME_LINUX_ARM64}"
 
 build_x86_64-w64-mingw32:
   extends: .build_template
@@ -166,6 +169,7 @@ build_x86_64-w64-mingw32:
   variables:
     CONF_HOST: "x86_64-w64-mingw32"
     PLATFORM_NAME: "${PLATFORM_NAME_WIN}"
+    GCC_PLATFORM_NAME: "${GCC_PLATFORM_NAME_WIN}"
     ARCHIVE_TOOL: "${ARCHIVE_TOOL_LINUX}"
     ARCHIVE_EXT: "${ARCHIVE_EXT_LINUX}"
     GCC_UNARCHIVE_TOOL: "${UNARCHIVE_TOOL_WIN}"
@@ -186,12 +190,14 @@ build_x86_64-apple-darwin:
   variables:
     CONF_HOST: "x86_64-apple-darwin21.1"
     PLATFORM_NAME: "${PLATFORM_NAME_MACOS}"
+    GCC_PLATFORM_NAME: "${GCC_PLATFORM_NAME_MACOS}"
 
 build_aarch64-apple-darwin:
   extends: .build_apple-darwin_template
   variables:
     CONF_HOST: "aarch64-apple-darwin21.1"
     PLATFORM_NAME: "${PLATFORM_NAME_MACOS_ARM64}"
+    GCC_PLATFORM_NAME: "${GCC_PLATFORM_NAME_MACOS_ARM64}"
 
 build_newlib:
   stage: build
