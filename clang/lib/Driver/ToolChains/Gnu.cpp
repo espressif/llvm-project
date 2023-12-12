@@ -1809,10 +1809,13 @@ static void findRISCVBareMetalMultilibs(const Driver &D,
   // currently only support the set of multilibs like riscv-gnu-toolchain does.
   // TODO: support MULTILIB_REUSE
   constexpr RiscvMultilib RISCVMultilibSet[] = {
-      {"rv32i", "ilp32"},     {"rv32im", "ilp32"},     {"rv32iac", "ilp32"},
-      {"rv32imc", "ilp32"},
-      {"rv32imac", "ilp32"},  {"rv32imafc", "ilp32f"}, {"rv64imac", "lp64"},
-      {"rv64imafdc", "lp64d"}};
+      {"rv32i", "ilp32"},   {"rv32im", "ilp32"},    {"rv32iac", "ilp32"},
+      {"rv32imc", "ilp32"}, {"rv32imac", "ilp32"},  {"rv32imafc", "ilp32f"},
+      {"rv64imac", "lp64"}, {"rv64imafdc", "lp64d"},
+      // Add ISA 2.1 naming variants to support more modern GCC installations
+      {"rv32i_zicsr_zifencei", "ilp32"},   {"rv32im_zicsr_zifencei", "ilp32"},    {"rv32iac_zicsr_zifencei", "ilp32"},
+      {"rv32imc_zicsr_zifencei", "ilp32"}, {"rv32imac_zicsr_zifencei", "ilp32"},  {"rv32imafc_zicsr_zifencei", "ilp32f"},
+      {"rv64imac_zicsr_zifencei", "lp64"}, {"rv64imafdc_zicsr_zifencei", "lp64d"}};
 
   std::vector<MultilibBuilder> Ms;
 
