@@ -12,7 +12,7 @@ variables:
 
   # move all these to CI/CD settings
   REL_SFX: "llvm"
-  CLANG_VER: "16"
+  CLANG_VER: "17"
   GCC_REL_NAME: "esp-2022r1"
   GCC_REL_VER: "gcc11_2_0"
   NEWLIB_REF: "esp-4.1.0_20230425"
