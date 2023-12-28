@@ -424,13 +424,39 @@ test_x86_64-linux-gnu:
     # run testsuite for esp32
     - ./run_esp32_tests.sh 2>&1 > ${BUILD_PATH}/tests.log
 
-macos_codesign:
+sign_pack_x86_64-apple-darwin:
   stage: macos_codesign
   when: on_success
   resource_group: macos_codesign
   tags: [ "darwin", "codesign" ]
   # list all jobs that produces macos distros
-  needs: [ pack_x86_64-apple-darwin, pack_aarch64-apple-darwin ]
+  needs:
+    - job: pack_x86_64-apple-darwin
+  artifacts:
+    paths:
+      - ${DIST_DIR}
+  variables:
+    # directory with distro archives
+    DIST_ART_DIR: ${DIST_DIR}
+    # command to unarchive distro
+    ARCHIVE_TOOL: ${ARCHIVE_TOOL_MACOS}
+    # command to unarchive distro
+    UNARCHIVE_TOOL: ${UNARCHIVE_TOOL_MACOS}
+    # URL to macos codesign repo
+    NOTARIZATION_SCRIPTS_GIT: "${CI_SERVER_PROTOCOL}://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}:${CI_SERVER_PORT}/espressif/macos_codesign_notarization.git"
+  script:
+    - git clone -q --depth=1 ${NOTARIZATION_SCRIPTS_GIT} -b ${CI_COMMIT_REF_NAME} ||
+      git clone -q --depth=1 ${NOTARIZATION_SCRIPTS_GIT}
+    - ./macos_codesign_notarization/run.sh
+
+sign_aarch64-apple-darwin:
+  stage: macos_codesign
+  when: on_success
+  resource_group: macos_codesign
+  tags: [ "darwin", "codesign" ]
+  # list all jobs that produces macos distros
+  needs:
+    - job: pack_aarch64-apple-darwin
   artifacts:
     paths:
       - ${DIST_DIR}
@@ -488,7 +514,8 @@ upload_to_github:
     - job: pack_arm-linux-gnueabihf
     - job: pack_aarch64-linux-gnu
     - job: pack_x86_64-w64-mingw32
-    - job: macos_codesign
+    - job: sign_pack_x86_64-apple-darwin
+    - job: sign_aarch64-apple-darwin
   before_script: []
   script:
     - ls -l dist*/
