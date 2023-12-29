@@ -103,7 +103,7 @@
 // C-XTENSA-ESP32-SYSROOT-BAREMETAL: "-L{{.*}}/Inputs/multilib_xtensa_tree/lib/gcc/xtensa-esp32-elf/8.4.0/../../..{{/|\\\\}}..{{/|\\\\}}lib{{/|\\\\}}gcc{{/|\\\\}}xtensa-esp32-elf{{/|\\\\}}8.4.0"
 // C-XTENSA-ESP32-SYSROOT-BAREMETAL: "-L{{.*}}/Inputs/multilib_xtensa_tree/lib/gcc/xtensa-esp32-elf/8.4.0/../../..{{/|\\\\}}..{{/|\\\\}}xtensa-esp32-elf{{/|\\\\}}lib"
 
-// RUN: %clang++ %s -### -no-canonical-prefixes \
+// RUN: %clangxx %s -### -no-canonical-prefixes \
 // RUN:   -target xtensa-esp-elf -mcpu=esp32 -stdlib=libstdc++ --rtlib=platform \
 // RUN:   --gcc-toolchain=%S/Inputs/multilib_xtensa_tree 2>&1 \
 // RUN:   | FileCheck -check-prefix=CXX-XTENSA-ESP32-BAREMETAL %s
@@ -113,7 +113,7 @@
 // CXX-XTENSA-ESP32-BAREMETAL: "-L{{.*}}/Inputs/multilib_xtensa_tree/lib/gcc/xtensa-esp32-elf/8.4.0/../../..{{/|\\\\}}..{{/|\\\\}}lib{{/|\\\\}}gcc{{/|\\\\}}xtensa-esp32-elf{{/|\\\\}}8.4.0"
 // CXX-XTENSA-ESP32-BAREMETAL: "-L{{.*}}/Inputs/multilib_xtensa_tree/lib/gcc/xtensa-esp32-elf/8.4.0/../../..{{/|\\\\}}..{{/|\\\\}}xtensa-esp32-elf{{/|\\\\}}lib"
 
-// RUN: %clang++ %s -### -no-canonical-prefixes \
+// RUN: %clangxx %s -### -no-canonical-prefixes \
 // RUN:   -target xtensa-esp-elf -mcpu=esp32 -stdlib=libstdc++ --rtlib=platform \
 // RUN:   --gcc-toolchain=%S/Inputs/multilib_xtensa_tree \
 // RUN:   --sysroot=%S/Inputs/multilib_xtensa_tree/xtensa-esp32-elf 2>&1 \
