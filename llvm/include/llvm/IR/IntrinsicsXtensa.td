@@ -421,10 +421,10 @@ include "llvm/IR/IntrinsicsXtensaESP32S3.td"
 
 //Extended Access
 def int_xtensa_xt_l32ex: ClangBuiltin<"__builtin_xtensa_xt_l32ex">,
-  Intrinsic<[llvm_i32_ty], [LLVMPointerType<llvm_i32_ty>],[]>;
+  Intrinsic<[llvm_i32_ty], [LLVMQualPointerType<0>],[]>;
 
 def int_xtensa_xt_s32ex:
-  Intrinsic<[llvm_i32_ty], [llvm_i32_ty, LLVMPointerType<llvm_i32_ty>],[]>;
+  Intrinsic<[llvm_i32_ty], [llvm_i32_ty, LLVMQualPointerType<0>],[]>;
 
 def int_xtensa_xt_getex:
   Intrinsic<[llvm_i32_ty], [llvm_i32_ty],[]>;
