@@ -5746,40 +5746,6 @@ bool Sema::CheckXtensaBuiltinFunctionCall(unsigned BuiltinID,
   return SemaBuiltinConstantArgRange(TheCall, i, l, u);
 }
 
-void Sema::checkRVVTypeSupport(QualType Ty, SourceLocation Loc, ValueDecl *D) {
-  const TargetInfo &TI = Context.getTargetInfo();
-  // (ELEN, LMUL) pairs of (8, mf8), (16, mf4), (32, mf2), (64, m1) requires at
-  // least zve64x
-  if ((Ty->isRVVType(/* Bitwidth */ 64, /* IsFloat */ false) ||
-       Ty->isRVVType(/* ElementCount */ 1)) &&
-      !TI.hasFeature("zve64x"))
-    Diag(Loc, diag::err_riscv_type_requires_extension, D) << Ty << "zve64x";
-  if (Ty->isRVVType(/* Bitwidth */ 16, /* IsFloat */ true) &&
-      !TI.hasFeature("zvfh"))
-    Diag(Loc, diag::err_riscv_type_requires_extension, D) << Ty << "zvfh";
-  if (Ty->isRVVType(/* Bitwidth */ 32, /* IsFloat */ true) &&
-      !TI.hasFeature("zve32f"))
-    Diag(Loc, diag::err_riscv_type_requires_extension, D) << Ty << "zve32f";
-  if (Ty->isRVVType(/* Bitwidth */ 64, /* IsFloat */ true) &&
-      !TI.hasFeature("zve64d"))
-    Diag(Loc, diag::err_riscv_type_requires_extension, D) << Ty << "zve64d";
-  // Given that caller already checked isRVVType() before calling this function,
-  // if we don't have at least zve32x supported, then we need to emit error.
-  if (!TI.hasFeature("zve32x"))
-    Diag(Loc, diag::err_riscv_type_requires_extension, D) << Ty << "zve32x";
-}
-
-bool Sema::CheckNVPTXBuiltinFunctionCall(const TargetInfo &TI,
-                                         unsigned BuiltinID,
-                                         CallExpr *TheCall) {
-  switch (BuiltinID) {
-  case NVPTX::BI__nvvm_cp_async_ca_shared_global_4:
-  case NVPTX::BI__nvvm_cp_async_ca_shared_global_8:
-  case NVPTX::BI__nvvm_cp_async_ca_shared_global_16:
-  case NVPTX::BI__nvvm_cp_async_cg_shared_global_16:
-    return checkArgCountAtMost(*this, TheCall, 3);
-  }
-
 bool Sema::SemaBuiltinXtensaConversion(unsigned BuiltinID, CallExpr *TheCall) {
   unsigned MaxElems;
   switch (BuiltinID) {
@@ -5814,6 +5780,42 @@ bool Sema::SemaBuiltinXtensaConversion(unsigned BuiltinID, CallExpr *TheCall) {
              << QT << Context.IntTy << 1 << 0 << 0;
 
     return false;
+  }
+  return false;
+}
+
+void Sema::checkRVVTypeSupport(QualType Ty, SourceLocation Loc, ValueDecl *D) {
+  const TargetInfo &TI = Context.getTargetInfo();
+  // (ELEN, LMUL) pairs of (8, mf8), (16, mf4), (32, mf2), (64, m1) requires at
+  // least zve64x
+  if ((Ty->isRVVType(/* Bitwidth */ 64, /* IsFloat */ false) ||
+       Ty->isRVVType(/* ElementCount */ 1)) &&
+      !TI.hasFeature("zve64x"))
+    Diag(Loc, diag::err_riscv_type_requires_extension, D) << Ty << "zve64x";
+  if (Ty->isRVVType(/* Bitwidth */ 16, /* IsFloat */ true) &&
+      !TI.hasFeature("zvfh"))
+    Diag(Loc, diag::err_riscv_type_requires_extension, D) << Ty << "zvfh";
+  if (Ty->isRVVType(/* Bitwidth */ 32, /* IsFloat */ true) &&
+      !TI.hasFeature("zve32f"))
+    Diag(Loc, diag::err_riscv_type_requires_extension, D) << Ty << "zve32f";
+  if (Ty->isRVVType(/* Bitwidth */ 64, /* IsFloat */ true) &&
+      !TI.hasFeature("zve64d"))
+    Diag(Loc, diag::err_riscv_type_requires_extension, D) << Ty << "zve64d";
+  // Given that caller already checked isRVVType() before calling this function,
+  // if we don't have at least zve32x supported, then we need to emit error.
+  if (!TI.hasFeature("zve32x"))
+    Diag(Loc, diag::err_riscv_type_requires_extension, D) << Ty << "zve32x";
+}
+
+bool Sema::CheckNVPTXBuiltinFunctionCall(const TargetInfo &TI,
+                                         unsigned BuiltinID,
+                                         CallExpr *TheCall) {
+  switch (BuiltinID) {
+  case NVPTX::BI__nvvm_cp_async_ca_shared_global_4:
+  case NVPTX::BI__nvvm_cp_async_ca_shared_global_8:
+  case NVPTX::BI__nvvm_cp_async_ca_shared_global_16:
+  case NVPTX::BI__nvvm_cp_async_cg_shared_global_16:
+    return checkArgCountAtMost(*this, TheCall, 3);
   }
   return false;
 }
