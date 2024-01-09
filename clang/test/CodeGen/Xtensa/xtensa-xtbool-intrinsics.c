@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -no-opaque-pointers -triple xtensa -O0 -emit-llvm %s -o - | FileCheck %s
+// RUN: %clang_cc1 -triple xtensa -O0 -emit-llvm %s -o - | FileCheck %s
 
 typedef __attribute__((ext_vector_type(1))) _Bool xtbool;
 
