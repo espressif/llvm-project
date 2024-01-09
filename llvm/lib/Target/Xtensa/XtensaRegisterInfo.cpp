@@ -212,7 +212,7 @@ bool XtensaRegisterInfo::eliminateFI(MachineBasicBlock::iterator II,
   unsigned BRegBase = Xtensa::B0;
   switch (MI.getOpcode()) {
   case Xtensa::SPILL_BOOL: {
-    Register TempAR = RS->scavengeRegister(&Xtensa::ARRegClass, II, 0);
+    Register TempAR = RS->scavengeRegisterBackwards(Xtensa::ARRegClass, II, false, 0);
     RS->setRegUsed(TempAR);
 
     BuildMI(MBB, II, DL, TII.get(Xtensa::RSR), TempAR).addReg(Xtensa::BREG);
@@ -234,11 +234,11 @@ bool XtensaRegisterInfo::eliminateFI(MachineBasicBlock::iterator II,
   }
   case Xtensa::RESTORE_BOOL: {
 
-    Register SrcAR = RS->scavengeRegister(&Xtensa::ARRegClass, II, 0);
+    Register SrcAR = RS->scavengeRegisterBackwards(Xtensa::ARRegClass, II, false, 0);
     RS->setRegUsed(SrcAR);
-    Register MaskAR = RS->scavengeRegister(&Xtensa::ARRegClass, II, 0);
+    Register MaskAR = RS->scavengeRegisterBackwards(Xtensa::ARRegClass, II, false, 0);
     RS->setRegUsed(MaskAR);
-    Register BRegAR = RS->scavengeRegister(&Xtensa::ARRegClass, II, 0);
+    Register BRegAR = RS->scavengeRegisterBackwards(Xtensa::ARRegClass, II, false, 0);
     RS->setRegUsed(BRegAR);
 
     MachineOperand &Breg = MI.getOperand(0);
