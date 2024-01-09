@@ -206,7 +206,7 @@ Address XtensaABIInfo::EmitVAArg(CodeGenFunction &CGF, Address VAListAddr,
         Address(Builder.CreateInBoundsGEP(CGF.Int32Ty, RegSaveArea.getPointer(),
                                           ARIndex),
                 CGF.Int32Ty, RegSaveArea.getAlignment().alignmentOfArrayElement(RegSize));
-    RegAddr = Builder.CreateElementBitCast(RegSaveArea, DirectTy);
+    RegAddr = RegSaveArea.withElementType(DirectTy);
     CGF.EmitBranch(Cont);
   }
 
@@ -231,7 +231,7 @@ Address XtensaABIInfo::EmitVAArg(CodeGenFunction &CGF, Address VAListAddr,
         Address(Builder.CreateInBoundsGEP(
                     CGF.Int32Ty, OverflowArea.getPointer(), ARIndexCorr),
                 CGF.Int32Ty, OverflowArea.getAlignment().alignmentOfArrayElement(RegSize));
-    MemAddr = Builder.CreateElementBitCast(OverflowArea, DirectTy);
+    MemAddr = OverflowArea.withElementType(DirectTy);
     CGF.EmitBranch(Cont);
   }
 
