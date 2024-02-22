@@ -84,6 +84,10 @@ public:
                     const char *LinkingOutput) const override;
 };
 
+void getXtensaTargetFeatures(const Driver &D, const llvm::Triple &Triple,
+                             const llvm::opt::ArgList &Args,
+                             std::vector<llvm::StringRef> &Features);
+
 } // namespace esp
 } // namespace baremetal
 } // namespace tools

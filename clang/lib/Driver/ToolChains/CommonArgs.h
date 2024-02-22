@@ -223,12 +223,6 @@ void addMachineOutlinerArgs(const Driver &D, const llvm::opt::ArgList &Args,
 void addOpenMPDeviceRTL(const Driver &D, const llvm::opt::ArgList &DriverArgs,
                         llvm::opt::ArgStringList &CC1Args,
                         StringRef BitcodeSuffix, const llvm::Triple &Triple);
-
-void addEspMultilibsPaths(const Driver &D, const MultilibSet &Multilibs,
-                                const Multilib &Multilib,
-                                StringRef CPU,
-                                StringRef InstallPath,
-                                ToolChain::path_list &Paths);
 } // end namespace tools
 } // end namespace driver
 } // end namespace clang
