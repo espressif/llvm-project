@@ -562,8 +562,8 @@ static DecodeStatus decodeImm8Operand(MCInst &Inst, uint64_t Imm,
 static DecodeStatus decodeImm8_sh8Operand(MCInst &Inst, uint64_t Imm,
                                           int64_t Address,
                                           const void *Decoder) {
-  assert(isUInt<8>(Imm) && "Invalid immediate");
-  Inst.addOperand(MCOperand::createImm(SignExtend64<16>(Imm << 8)));
+  assert(isUInt<16>(Imm) && ((Imm & 0xff) == 0) && "Invalid immediate");
+  Inst.addOperand(MCOperand::createImm(SignExtend64<16>(Imm)));
   return MCDisassembler::Success;
 }
 
@@ -630,24 +630,24 @@ static DecodeStatus decodeImm8n_7Operand(MCInst &Inst, uint64_t Imm,
 static DecodeStatus decodeImm64n_4nOperand(MCInst &Inst, uint64_t Imm,
                                            int64_t Address,
                                            const void *Decoder) {
-  assert(isUInt<4>(Imm) && "Invalid immediate");
-  Inst.addOperand(MCOperand::createImm((~0x3f) | (Imm << 2)));
+  assert(isUInt<6>(Imm) && ((Imm & 0x3) == 0) && "Invalid immediate");
+  Inst.addOperand(MCOperand::createImm((~0x3f) | (Imm)));
   return MCDisassembler::Success;
 }
 
 static DecodeStatus decodeOffset8m32Operand(MCInst &Inst, uint64_t Imm,
                                             int64_t Address,
                                             const void *Decoder) {
-  assert(isUInt<8>(Imm) && "Invalid immediate");
-  Inst.addOperand(MCOperand::createImm(Imm << 2));
+  assert(isUInt<10>(Imm) && ((Imm & 0x3) == 0) && "Invalid immediate");
+  Inst.addOperand(MCOperand::createImm(Imm));
   return MCDisassembler::Success;
 }
 
 static DecodeStatus decodeEntry_Imm12OpValue(MCInst &Inst, uint64_t Imm,
                                            int64_t Address,
                                            const void *Decoder) {
-  assert(isUInt<12>(Imm) && "Invalid immediate");
-  Inst.addOperand(MCOperand::createImm(Imm << 3));
+  assert(isUInt<15>(Imm) && ((Imm & 0x7) == 0) && "Invalid immediate");
+  Inst.addOperand(MCOperand::createImm(Imm));
   return MCDisassembler::Success;
 }
 
