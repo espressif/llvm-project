@@ -1499,6 +1499,7 @@
 // XCORE:UINTMAX_C_(0) 0ULL
 //
 // RUN: %clang_cc1 -E -ffreestanding -triple=xtensa %s | FileCheck -check-prefix XTENSA %s
+// RUN: %clang_cc1 -E -ffreestanding -triple=xtensa-esp-unknown-elf %s | FileCheck -check-prefix XTENSA %s
 //
 // XTENSA:typedef long long int int64_t;
 // XTENSA:typedef long long unsigned int uint64_t;

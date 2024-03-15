@@ -2834,6 +2834,8 @@
 // RISCV64-LINUX: #define linux 1
 // RISCV64-LINUX: #define unix 1
 
+// RUN: %clang_cc1 -E -dM -ffreestanding -triple=xtensa  < /dev/null \
+// RUN:   | FileCheck -match-full-lines -check-prefix=XTENSA %s
 // RUN: %clang_cc1 -E -dM -ffreestanding -triple=xtensa-esp-unknown-elf  < /dev/null \
 // RUN:   | FileCheck -match-full-lines -check-prefix=XTENSA %s
 // XTENSA: #define _ILP32 1
