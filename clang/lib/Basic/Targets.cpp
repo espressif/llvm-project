@@ -758,7 +758,9 @@ std::unique_ptr<TargetInfo> AllocateTarget(const llvm::Triple &Triple,
       return std::make_unique<LoongArch64TargetInfo>(Triple, Opts);
     }
 
-  case llvm::Triple::xtensa:
+  case llvm::Triple::xtensa :
+    if (Triple.getVendor() == llvm::Triple::Espressif)
+      return std::make_unique<EspXtensaTargetInfo>(Triple, Opts);
     return std::make_unique<XtensaTargetInfo>(Triple, Opts);
   }
 }
