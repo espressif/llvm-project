@@ -3133,11 +3133,9 @@
 // XTENSA: #define __WINT_TYPE__ unsigned int
 // XTENSA: #define __WINT_UNSIGNED__ 1
 // XTENSA: #define __WINT_WIDTH__ 32
-// XTENSA: #define __XTENSA_EL__ 1
-// XTENSA: #define __XTENSA_WINDOWED_ABI__ 1
-// XTENSA: #define __XTENSA__ 1
-// XTENSA: #define __xtensa__ 1
 
+// RUN: %clang_cc1 -E -dM -ffreestanding -triple=xtensa -mfast-int-min32 < /dev/null \
+// RUN:   | FileCheck -match-full-lines -check-prefix=XTENSA_FAST32 %s
 // RUN: %clang_cc1 -E -dM -ffreestanding -triple=xtensa-esp-unknown-elf -mfast-int-min32 < /dev/null \
 // RUN:   | FileCheck -match-full-lines -check-prefix=XTENSA_FAST32 %s
 // XTENSA_FAST32: #define _ILP32 1
@@ -3435,7 +3433,3 @@
 // XTENSA_FAST32: #define __WINT_TYPE__ unsigned int
 // XTENSA_FAST32: #define __WINT_UNSIGNED__ 1
 // XTENSA_FAST32: #define __WINT_WIDTH__ 32
-// XTENSA_FAST32: #define __XTENSA_EL__ 1
-// XTENSA_FAST32: #define __XTENSA_WINDOWED_ABI__ 1
-// XTENSA_FAST32: #define __XTENSA__ 1
-// XTENSA_FAST32: #define __xtensa__ 1
