@@ -32,7 +32,7 @@
 // MCPU-ESP32S3: "-target-feature" "+density" "-target-feature" "+fp" "-target-feature" "+windowed" "-target-feature" "+bool"
 // MCPU-ESP32S3: "-target-feature" "+loop" "-target-feature" "+sext" "-target-feature" "+nsa" "-target-feature" "+clamps"
 // MCPU-ESP32S3: "-target-feature" "+minmax" "-target-feature" "+mul32" "-target-feature" "+mul32high" "-target-feature" "+div32"
-// MCPU-ESP32S3: "-target-feature" "+mac16" "-target-feature" "+dfpaccel" "-target-feature" "+s32c1i"
+// MCPU-ESP32S3: "-target-feature" "+mac16" "-target-feature" "+s32c1i"
 // MCPU-ESP32S3: "-target-feature" "+threadptr" "-target-feature" "+atomctl" "-target-feature" "+memctl"
 // MCPU-ESP32S3: "-target-feature" "+debug" "-target-feature" "+exception" "-target-feature" "+highpriinterrupts"
 // MCPU-ESP32S3: "-target-feature" "+coprocessor" "-target-feature" "+interrupt" "-target-feature" "+rvector" "-target-feature" "+timerint"
