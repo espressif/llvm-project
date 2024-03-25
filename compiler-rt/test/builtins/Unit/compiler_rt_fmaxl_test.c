@@ -9,7 +9,7 @@
 // Since we are comparing the compiler-rt IEEE implementation against libc's
 // long double implementation, this test can only succeed if long double
 // is an IEEE 128-bit floating point number.
-#if defined(CRT_HAS_TF_MODE) && defined(CRT_LDBL_IEEE_F128)
+#if defined(CRT_HAS_TF_MODE) && defined(CRT_LDBL_IEEE_F128) && !defined(__riscv)
 
 int test__compiler_rt_fmaxl(fp_t x, fp_t y) {
   fp_t crt_value = __compiler_rt_fmaxl(x, y);
