@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include "fp_lib.h"
 
+#if !defined(__xtensa__) && !defined(__riscv)
+
 int test__compiler_rt_scalbnf(const char *mode, fp_t x, int y) {
 #if defined(__ve__)
   if (fpclassify(x) == FP_SUBNORMAL)
@@ -52,8 +54,10 @@ int iterate_cases(const char *mode) {
   }
   return 0;
 }
+#endif
 
 int main() {
+#if !defined(__xtensa__) && !defined(__riscv)
   if (iterate_cases("default")) return 1;
 
   // Rounding mode tests on supported architectures. __compiler_rt_scalbnf
@@ -79,6 +83,9 @@ int main() {
 
   fesetround(FE_TONEAREST);
   if (iterate_cases("FE_TONEAREST")) return 1;
+#endif
+#else
+  printf("skipped\n");
 #endif
 
   return 0;

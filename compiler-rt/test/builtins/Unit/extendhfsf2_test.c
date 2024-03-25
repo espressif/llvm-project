@@ -5,6 +5,8 @@
 
 #include "fp_test.h"
 
+#if !defined(__riscv_float_abi_single)
+
 float __extendhfsf2(TYPE_FP16 a);
 
 int test__extendhfsf2(TYPE_FP16 a, uint32_t expected)
@@ -20,9 +22,11 @@ int test__extendhfsf2(TYPE_FP16 a, uint32_t expected)
 }
 
 char assumption_1[sizeof(TYPE_FP16) * CHAR_BIT == 16] = {0};
+#endif
 
 int main()
 {
+#if !defined(__riscv_float_abi_single)
     // qNaN
     if (test__extendhfsf2(fromRep16(0x7e00),
                           UINT32_C(0x7fc00000)))
@@ -83,5 +87,9 @@ int main()
     if (test__extendhfsf2(fromRep16(0x7bff),
                           UINT32_C(0x477fe000)))
         return 1;
+#else
+    printf("skipped\n");
+#endif
+
     return 0;
 }
