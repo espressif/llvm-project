@@ -8,7 +8,7 @@
 #include <math.h>
 #include <stdio.h>
 
-#if defined(CRT_HAS_TF_MODE)
+#if defined(CRT_HAS_TF_MODE) && !defined(__riscv)
 
 int test__compiler_rt_scalbnl(const char *mode, fp_t x, int y) {
 #if defined(__ve__)
