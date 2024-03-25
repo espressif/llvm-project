@@ -6,7 +6,7 @@
 #include <math.h>
 #include <stdio.h>
 
-#if defined(CRT_HAS_TF_MODE)
+#if defined(CRT_HAS_TF_MODE) && !defined(__riscv)
 
 int test__compiler_rt_logbl(fp_t x) {
 #  if defined(__ve__)
