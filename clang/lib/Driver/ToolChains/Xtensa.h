@@ -41,7 +41,7 @@ public:
     return (IsIntegratedAsm || (GCCToolchainName == ""));
   }
 
-  static const StringRef GetTargetCPUVersion(const llvm::opt::ArgList &Args);
+  static const StringRef GetTargetCPUVersion(const llvm::opt::ArgList &Args, const llvm::Triple &Triple);
 
   bool IsIntegratedAsm = true;
   std::string GCCLibAndIncVersion = "";

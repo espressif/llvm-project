@@ -30,8 +30,6 @@ using namespace clang::driver::toolchains;
 using namespace clang;
 using namespace llvm::opt;
 
-using tools::addMultilibFlag;
-
 /// Xtensa Toolchain
 XtensaToolChain::XtensaToolChain(const Driver &D, const llvm::Triple &Triple,
                                  const ArgList &Args)
@@ -125,6 +123,16 @@ XtensaToolChain::XtensaToolChain(const Driver &D, const llvm::Triple &Triple,
     llvm::sys::path::append(SysRoot, "lib");
     getFilePaths().push_back(SysRoot.c_str());
   }
+
+  if (getTriple().getVendor() == llvm::Triple::Espressif) {
+    StringRef CpuName = GetTargetCPUVersion(Args, Triple);
+
+    // TODO: need to detect multilibs when GCC installation is not available
+    addEspMultilibsPaths(D, Multilibs, SelectedMultilibs.back(), CpuName,
+                          D.Dir, getLibraryPaths());
+    addEspMultilibsPaths(D, Multilibs, SelectedMultilibs.back(), CpuName,
+                          D.Dir, getFilePaths());
+  }
 }
 
 
@@ -215,12 +223,17 @@ XtensaToolChain::GetUnwindLibType(const llvm::opt::ArgList &Args) const {
   return ToolChain::UNW_None;
 }
 
-const StringRef XtensaToolChain::GetTargetCPUVersion(const ArgList &Args) {
+const StringRef XtensaToolChain::GetTargetCPUVersion(const ArgList &Args, const llvm::Triple &Triple) {
+  StringRef CPUName;
   if (Arg *A = Args.getLastArg(clang::driver::options::OPT_mcpu_EQ)) {
-    StringRef CPUName = A->getValue();
-    return CPUName;
+    CPUName = A->getValue();
+  } else if (Triple.getVendor() == llvm::Triple::Espressif) {
+      // 'esp32' is default for 'xtensa-esp-xxx' targets,
+      // for generic 'xtensa' target CPU should be always specified explicitly with '-mcpu'
+      CPUName = "esp32";
+
   }
-  return "esp32";
+  return CPUName;
 }
 
 void tools::xtensa::Assembler::ConstructJob(Compilation &C, const JobAction &JA,
@@ -282,11 +295,17 @@ void xtensa::Linker::ConstructJob(Compilation &C, const JobAction &JA,
 
   bool LinkerIsLLD;
   std::string LinkerPath = ToolChain.GetLinkerPath(&LinkerIsLLD);
-  if (ToolChain.GCCToolchainName != "") {
-    if (!LinkerIsLLD) {
+  if (!LinkerIsLLD) {
+    if (ToolChain.GCCToolchainName != "") {
       Linker.assign(ToolChain.GCCToolchainDir);
       llvm::sys::path::append(
           Linker, "bin", ToolChain.GCCToolchainName + "-" + getShortName());
+    } else if (ToolChain.getTriple().getVendor() == llvm::Triple::Espressif) {
+      // ESP workaround, if there is no GCC installation we need to use xtensa-espXX-elf prefix for ld.
+      // so guess it basing on selected mcpu
+      Linker.assign(ToolChain.getDriver().Dir);
+      llvm::sys::path::append(
+          Linker, "xtensa-" + ToolChain.GetTargetCPUVersion(Args, ToolChain.getTriple()) + "-elf-" + getShortName());
     } else {
       Linker.assign(LinkerPath);
     }
