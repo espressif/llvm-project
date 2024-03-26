@@ -23,12 +23,11 @@ XtensaMCAsmInfo::XtensaMCAsmInfo(const Triple &TT) {
   PrivateGlobalPrefix = ".L";
   CommentString = "#";
   ZeroDirective = "\t.space\t";
-  Data16bitsDirective = "\t.half\t";
+  Data16bitsDirective = "\t.2byte\t";
   Data32bitsDirective = "\t.word\t";
   Data64bitsDirective = "\t.quad\t";
   GlobalDirective = "\t.global\t";
   UsesELFSectionDirectiveForBSS = true;
   SupportsDebugInformation = true;
-  ExceptionsType = ExceptionHandling::DwarfCFI;
   AlignmentIsInBytes = true;
 }
