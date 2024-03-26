@@ -1,6 +1,6 @@
-; RUN: llc -mtriple=xtensa -mcpu=esp32 -O1 -verify-machineinstrs < %s \
+; RUN: llc -mtriple=xtensa -mcpu=esp32 -verify-machineinstrs --exception-model=dwarf < %s \
 ; RUN:   | FileCheck -check-prefix=XTENSA-STRUCT16 %s
-; RUN: llc -mtriple=xtensa -mcpu=esp32 -O1 -verify-machineinstrs < %s \
+; RUN: llc -mtriple=xtensa -mcpu=esp32 -verify-machineinstrs --exception-model=dwarf < %s \
 ; RUN:   | FileCheck -check-prefix=XTENSA-I128 %s
 
 %struct.S = type { [4 x i32] }
