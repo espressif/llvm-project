@@ -8,8 +8,8 @@
 // RUN: mkdir -p %t/basic_riscv32_esp_tree/bin
 // RUN: ln -s %clang %t/basic_riscv32_esp_tree/bin/clang
 // RUN: ln -s %S/Inputs/basic_riscv32_esp_tree/bin/ld.lld %t/basic_riscv32_esp_tree/bin/ld.lld
-// RUN: ln -s %S/Inputs/basic_riscv32_esp_tree/bin/riscv32-esp-elf-as %t/basic_riscv32_esp_tree/bin/riscv32-esp-elf-as
-// RUN: ln -s %S/Inputs/basic_riscv32_esp_tree/bin/riscv32-esp-elf-ld %t/basic_riscv32_esp_tree/bin/riscv32-esp-elf-ld
+// RUN: ln -s %S/Inputs/basic_riscv32_esp_tree/bin/riscv32-esp-elf-clang-as %t/basic_riscv32_esp_tree/bin/riscv32-esp-elf-clang-as
+// RUN: ln -s %S/Inputs/basic_riscv32_esp_tree/bin/riscv32-esp-elf-clang-ld %t/basic_riscv32_esp_tree/bin/riscv32-esp-elf-clang-ld
 // RUN: ln -s %S/Inputs/basic_riscv32_esp_tree/lib %t/basic_riscv32_esp_tree/lib
 
 // RUN: %t/basic_riscv32_esp_tree/bin/clang %s -### 2>&1 --target=riscv32-esp-elf \
@@ -56,7 +56,7 @@
 // CHECK-ESP-RV32IMAC-FORCEAS-SAME: "-internal-isystem" "[[RESOURCE_DIR]]{{[/\\]+}}include"
 // CHECK-ESP-RV32IMAC-FORCEAS-SAME: "-internal-isystem" "[[SYSROOT]]{{[/\\]+}}riscv32-esp-unknown-elf{{[/\\]+}}rv32imac-zicsr-zifencei_ilp32{{[/\\]+}}include"
 // CHECK-ESP-RV32IMAC-FORCEAS-SAME: "-x" "c++" "{{.*}}baremetal-esp.cpp"
-// CHECK-ESP-RV32IMAC-FORCEAS-NEXT: riscv32-esp-elf-as{{(.exe)?}}" "-o" "{{.*}}.o" "-c" "{{.*}}.s" "-march=rv32imac" "-mabi=ilp32"
+// CHECK-ESP-RV32IMAC-FORCEAS-NEXT: riscv32-esp-elf-clang-as{{(.exe)?}}" "-o" "{{.*}}.o" "-c" "{{.*}}.s" "-march=rv32imac" "-mabi=ilp32"
 // CHECK-ESP-RV32IMAC-FORCEAS-NEXT: ld.lld{{(.exe)?}}"
 // CHECK-ESP-RV32IMAC-FORCEAS-SAME: "--sysroot=[[SYSROOT]]"
 // CHECK-ESP-RV32IMAC-FORCEAS-SAME: "-m" "elf32lriscv"
@@ -67,12 +67,12 @@
 // CHECK-ESP-RV32IMAC-FORCEAS-SAME: "-lm" "--start-group" "-lc" "-lgloss" "-lnosys" "--end-group"
 // CHECK-ESP-RV32IMAC-FORCEAS-SAME: "-lclang_rt.builtins"
 
-// RUN: %t/basic_riscv32_esp_tree/bin/clang %s -### 2>&1 --target=riscv32-esp-elf --ld-path=riscv32-esp-elf-ld \
+// RUN: %t/basic_riscv32_esp_tree/bin/clang %s -### 2>&1 --target=riscv32-esp-elf --ld-path=riscv32-esp-elf-clang-ld \
 // RUN:     -L some/directory/user/asked/for \
 // RUN:     --sysroot=%t/basic_riscv32_esp_tree/lib/clang-runtimes \
 // RUN:   | FileCheck --check-prefix=CHECK-ESP-RV32IMAC-FORCELD %s
 // CHECK-ESP-RV32IMAC-FORCELD: "-isysroot" "[[SYSROOT:[^"]*]]"
-// CHECK-ESP-RV32IMAC-FORCELD: riscv32-esp-elf-ld{{(.exe)?}}"
+// CHECK-ESP-RV32IMAC-FORCELD: riscv32-esp-elf-clang-ld{{(.exe)?}}"
 // CHECK-ESP-RV32IMAC-FORCELD-SAME: "--sysroot=[[SYSROOT]]"
 // CHECK-ESP-RV32IMAC-FORCELD-SAME: "-m" "elf32lriscv"
 // CHECK-ESP-RV32IMAC-FORCELD-SAME: "-o" "a.out"
@@ -175,7 +175,7 @@
 // RUN:     -march=rv32i -mabi=ilp32 \
 // RUN:     --sysroot=%t/basic_riscv32_esp_tree/lib/clang-runtimes \
 // RUN:   | FileCheck --check-prefix=CHECK-ESP-RV32I-FORCEAS %s
-// CHECK-ESP-RV32I-FORCEAS: riscv32-esp-elf-as{{(.exe)?}}" "-o" "{{.*}}.o" "-c" "{{.*}}.s" "-march=rv32i" "-mabi=ilp32"
+// CHECK-ESP-RV32I-FORCEAS: riscv32-esp-elf-clang-as{{(.exe)?}}" "-o" "{{.*}}.o" "-c" "{{.*}}.s" "-march=rv32i" "-mabi=ilp32"
 
 // RUN: %t/basic_riscv32_esp_tree/bin/clang %s -### 2>&1 --target=riscv32-esp-elf \
 // RUN:     -march=rv32i -mabi=ilp32 \
@@ -229,19 +229,19 @@
 // RUN:     -march=rv32im -mabi=ilp32 \
 // RUN:     --sysroot=%t/basic_riscv32_esp_tree/lib/clang-runtimes \
 // RUN:   | FileCheck --check-prefix=CHECK-ESP-RV32IM-FORCEAS %s
-// CHECK-ESP-RV32IM-FORCEAS: riscv32-esp-elf-as{{(.exe)?}}" "-o" "{{.*}}.o" "-c" "{{.*}}.s" "-march=rv32im" "-mabi=ilp32"
+// CHECK-ESP-RV32IM-FORCEAS: riscv32-esp-elf-clang-as{{(.exe)?}}" "-o" "{{.*}}.o" "-c" "{{.*}}.s" "-march=rv32im" "-mabi=ilp32"
 
 // RUN: %t/basic_riscv32_esp_tree/bin/clang %s -### 2>&1 --target=riscv32-esp-elf -fno-integrated-as \
 // RUN:     -march=rv32imc -mabi=ilp32 \
 // RUN:     --sysroot=%t/basic_riscv32_esp_tree/lib/clang-runtimes \
 // RUN:   | FileCheck --check-prefix=CHECK-ESP-RV32IMC-FORCEAS %s
-// CHECK-ESP-RV32IMC-FORCEAS: riscv32-esp-elf-as{{(.exe)?}}" "-o" "{{.*}}.o" "-c" "{{.*}}.s" "-march=rv32imc" "-mabi=ilp32"
+// CHECK-ESP-RV32IMC-FORCEAS: riscv32-esp-elf-clang-as{{(.exe)?}}" "-o" "{{.*}}.o" "-c" "{{.*}}.s" "-march=rv32imc" "-mabi=ilp32"
 
 // RUN: %t/basic_riscv32_esp_tree/bin/clang %s -### 2>&1 --target=riscv32-esp-elf -fno-integrated-as \
 // RUN:     -march=rv32imac -mabi=ilp32 \
 // RUN:     --sysroot=%t/basic_riscv32_esp_tree/lib/clang-runtimes \
 // RUN:   | FileCheck --check-prefix=CHECK-ESP-RV32IMAC-FORCEAS2 %s
-// CHECK-ESP-RV32IMAC-FORCEAS2: riscv32-esp-elf-as{{(.exe)?}}" "-o" "{{.*}}.o" "-c" "{{.*}}.s" "-march=rv32imac" "-mabi=ilp32"
+// CHECK-ESP-RV32IMAC-FORCEAS2: riscv32-esp-elf-clang-as{{(.exe)?}}" "-o" "{{.*}}.o" "-c" "{{.*}}.s" "-march=rv32imac" "-mabi=ilp32"
 
 // RUN: %t/basic_riscv32_esp_tree/bin/clang %s -### 2>&1 --target=riscv32-esp-elf -march=rv32imafc -mabi=ilp32f \
 // RUN:     --sysroot=%t/basic_riscv32_esp_tree/lib/clang-runtimes \
@@ -280,7 +280,7 @@
 // RUN:     -march=rv32imafc -mabi=ilp32f \
 // RUN:     --sysroot=%t/basic_riscv32_esp_tree/lib/clang-runtimes \
 // RUN:   | FileCheck --check-prefix=CHECK-ESP-RV32IMAFC-FORCEAS %s
-// CHECK-ESP-RV32IMAFC-FORCEAS: riscv32-esp-elf-as{{(.exe)?}}" "-o" "{{.*}}.o" "-c" "{{.*}}.s" "-march=rv32imafc" "-mabi=ilp32f"
+// CHECK-ESP-RV32IMAFC-FORCEAS: riscv32-esp-elf-clang-as{{(.exe)?}}" "-o" "{{.*}}.o" "-c" "{{.*}}.s" "-march=rv32imafc" "-mabi=ilp32f"
 
 // Check that compiler-rt library without the arch filename suffix will
 // be used if present.
@@ -310,12 +310,12 @@
 // RUN: mkdir -p %t/basic_xtensa_esp_tree/bin
 // RUN: ln -s %clang %t/basic_xtensa_esp_tree/bin/clang
 // RUN: ln -s %S/Inputs/basic_xtensa_esp_tree/bin/ld.lld %t/basic_xtensa_esp_tree/bin/ld.lld
-// RUN: ln -s %S/Inputs/basic_xtensa_esp_tree/bin/xtensa-esp32-elf-as %t/basic_xtensa_esp_tree/bin/xtensa-esp32-elf-as
-// RUN: ln -s %S/Inputs/basic_xtensa_esp_tree/bin/xtensa-esp32-elf-ld %t/basic_xtensa_esp_tree/bin/xtensa-esp32-elf-ld
-// RUN: ln -s %S/Inputs/basic_xtensa_esp_tree/bin/xtensa-esp32s2-elf-as %t/basic_xtensa_esp_tree/bin/xtensa-esp32s2-elf-as
-// RUN: ln -s %S/Inputs/basic_xtensa_esp_tree/bin/xtensa-esp32s2-elf-ld %t/basic_xtensa_esp_tree/bin/xtensa-esp32s2-elf-ld
-// RUN: ln -s %S/Inputs/basic_xtensa_esp_tree/bin/xtensa-esp32s3-elf-as %t/basic_xtensa_esp_tree/bin/xtensa-esp32s3-elf-as
-// RUN: ln -s %S/Inputs/basic_xtensa_esp_tree/bin/xtensa-esp32s3-elf-ld %t/basic_xtensa_esp_tree/bin/xtensa-esp32s3-elf-ld
+// RUN: ln -s %S/Inputs/basic_xtensa_esp_tree/bin/xtensa-esp32-elf-clang-as %t/basic_xtensa_esp_tree/bin/xtensa-esp32-elf-clang-as
+// RUN: ln -s %S/Inputs/basic_xtensa_esp_tree/bin/xtensa-esp32-elf-clang-ld %t/basic_xtensa_esp_tree/bin/xtensa-esp32-elf-clang-ld
+// RUN: ln -s %S/Inputs/basic_xtensa_esp_tree/bin/xtensa-esp32s2-elf-clang-as %t/basic_xtensa_esp_tree/bin/xtensa-esp32s2-elf-clang-as
+// RUN: ln -s %S/Inputs/basic_xtensa_esp_tree/bin/xtensa-esp32s2-elf-clang-ld %t/basic_xtensa_esp_tree/bin/xtensa-esp32s2-elf-clang-ld
+// RUN: ln -s %S/Inputs/basic_xtensa_esp_tree/bin/xtensa-esp32s3-elf-clang-as %t/basic_xtensa_esp_tree/bin/xtensa-esp32s3-elf-clang-as
+// RUN: ln -s %S/Inputs/basic_xtensa_esp_tree/bin/xtensa-esp32s3-elf-clang-ld %t/basic_xtensa_esp_tree/bin/xtensa-esp32s3-elf-clang-ld
 // RUN: ln -s %S/Inputs/basic_xtensa_esp_tree/lib %t/basic_xtensa_esp_tree/lib
 
 // ESP32 is default
@@ -362,7 +362,7 @@
 // CHECK-ESP-ESP32-FORCEAS-SAME: "-internal-isystem" "[[RESOURCE_DIR]]{{[/\\]+}}include"
 // CHECK-ESP-ESP32-FORCEAS-SAME: "-internal-isystem" "[[SYSROOT]]{{[/\\]+}}xtensa-esp-unknown-elf{{[/\\]+}}esp32{{[/\\]+}}include"
 // CHECK-ESP-ESP32-FORCEAS-SAME: "-x" "c++" "{{.*}}baremetal-esp.cpp"
-// CHECK-ESP-ESP32-FORCEAS-NEXT: xtensa-esp32-elf-as{{(.exe)?}}" "-o" "{{.*}}.o" "-c" "{{.*}}.s"
+// CHECK-ESP-ESP32-FORCEAS-NEXT: xtensa-esp32-elf-clang-as{{(.exe)?}}" "-o" "{{.*}}.o" "-c" "{{.*}}.s"
 // CHECK-ESP-ESP32-FORCEAS-NEXT: ld.lld{{(.exe)?}}"
 // CHECK-ESP-ESP32-FORCEAS-SAME: "--sysroot=[[SYSROOT]]"
 // CHECK-ESP-ESP32-FORCEAS-SAME: "-o" "a.out"
@@ -372,12 +372,12 @@
 // CHECK-ESP-ESP32-FORCEAS-SAME: "-lm" "--start-group" "-lc" "-lgloss" "-lnosys" "--end-group"
 // CHECK-ESP-ESP32-FORCEAS-SAME: "-lclang_rt.builtins"
 
-// RUN: %t/basic_xtensa_esp_tree/bin/clang %s -### 2>&1 --target=xtensa-esp-elf --ld-path=xtensa-esp32-elf-ld    \
+// RUN: %t/basic_xtensa_esp_tree/bin/clang %s -### 2>&1 --target=xtensa-esp-elf --ld-path=xtensa-esp32-elf-clang-ld    \
 // RUN:     -L some/directory/user/asked/for \
 // RUN:     --sysroot=%t/basic_xtensa_esp_tree/lib/clang-runtimes \
 // RUN:   | FileCheck --check-prefix=CHECK-ESP-ESP32-FORCELD %s
 // CHECK-ESP-ESP32-FORCELD: "-isysroot" "[[SYSROOT:[^"]*]]"
-// CHECK-ESP-ESP32-FORCELD-NEXT: xtensa-esp32-elf-ld{{(.exe)?}}"
+// CHECK-ESP-ESP32-FORCELD-NEXT: xtensa-esp32-elf-clang-ld{{(.exe)?}}"
 // CHECK-ESP-ESP32-FORCELD-SAME: "--sysroot=[[SYSROOT]]"
 // CHECK-ESP-ESP32-FORCELD-SAME: "-o" "a.out"
 // CHECK-ESP-ESP32-FORCELD-SAME: "-X" "{{.*}}.o"
@@ -529,7 +529,7 @@
 // CHECK-ESP-ESP32S2-FORCEAS-SAME: "-internal-isystem" "[[SYSROOT]]{{[/\\]+}}xtensa-esp-unknown-elf{{[/\\]+}}include{{[/\\]+}}c++{{[/\\]+}}11.2.0"
 // CHECK-ESP-ESP32S2-FORCEAS-SAME: "-internal-isystem" "[[RESOURCE_DIR]]{{[/\\]+}}include"
 // CHECK-ESP-ESP32S2-FORCEAS-SAME: "-internal-isystem" "[[SYSROOT]]{{[/\\]+}}xtensa-esp-unknown-elf{{[/\\]+}}esp32s2{{[/\\]+}}include"
-// CHECK-ESP-ESP32S2-FORCEAS: xtensa-esp32s2-elf-as{{(.exe)?}}" "-o" "{{.*}}.o" "-c" "{{.*}}.s"
+// CHECK-ESP-ESP32S2-FORCEAS: xtensa-esp32s2-elf-clang-as{{(.exe)?}}" "-o" "{{.*}}.o" "-c" "{{.*}}.s"
 // CHECK-ESP-ESP32S2-FORCEAS-NEXT: ld.lld{{(.exe)?}}"
 // CHECK-ESP-ESP32S2-FORCEAS-SAME: "--sysroot=[[SYSROOT]]"
 // CHECK-ESP-ESP32S2-FORCEAS-SAME: "-L[[SYSROOT]]{{[/\\]+}}xtensa-esp-unknown-elf{{[/\\]+}}esp32s2{{[/\\]+}}lib"
@@ -575,7 +575,7 @@
 // CHECK-ESP-ESP32S3-FORCEAS-SAME: "-internal-isystem" "[[SYSROOT]]{{[/\\]+}}xtensa-esp-unknown-elf{{[/\\]+}}include{{[/\\]+}}c++{{[/\\]+}}11.2.0"
 // CHECK-ESP-ESP32S3-FORCEAS-SAME: "-internal-isystem" "[[RESOURCE_DIR]]{{[/\\]+}}include"
 // CHECK-ESP-ESP32S3-FORCEAS-SAME: "-internal-isystem" "[[SYSROOT]]{{[/\\]+}}xtensa-esp-unknown-elf{{[/\\]+}}esp32s3{{[/\\]+}}include"
-// CHECK-ESP-ESP32S3-FORCEAS: xtensa-esp32s3-elf-as{{(.exe)?}}" "-o" "{{.*}}.o" "-c" "{{.*}}.s"
+// CHECK-ESP-ESP32S3-FORCEAS: xtensa-esp32s3-elf-clang-as{{(.exe)?}}" "-o" "{{.*}}.o" "-c" "{{.*}}.s"
 // CHECK-ESP-ESP32S3-FORCEAS-NEXT: ld.lld{{(.exe)?}}"
 // CHECK-ESP-ESP32S3-FORCEAS-SAME: "--sysroot=[[SYSROOT]]"
 // CHECK-ESP-ESP32S3-FORCEAS-SAME: "-L[[SYSROOT]]{{[/\\]+}}xtensa-esp-unknown-elf{{[/\\]+}}esp32s3{{[/\\]+}}lib"

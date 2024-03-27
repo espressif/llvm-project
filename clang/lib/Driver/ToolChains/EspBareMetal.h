@@ -75,7 +75,7 @@ public:
 class LLVM_LIBRARY_VISIBILITY Assembler : public Tool {
 public:
   Assembler(const ToolChain &TC)
-      : Tool("baremetal::esp::Assembler", "as", TC) {}
+      : Tool("baremetal::esp::Assembler", "clang-as", TC) {}
 
   bool hasIntegratedCPP() const override { return false; }
   void ConstructJob(Compilation &C, const JobAction &JA,
