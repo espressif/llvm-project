@@ -12,6 +12,7 @@ image: ${CI_DOCKER_REGISTRY}/llvm-build:4
 
 variables:
   ESP_LLVM_EMBEDDED_TOOLCHAIN_REF: "master"
+  ESP_GNU_TOOLCHAIN_VER: "13.2.0_20240305"
   CROSS_ARM_IMAGE: $CI_DOCKER_REGISTRY/llvm-build-cross-arm:1
   CROSS_WIN_IMAGE: $CI_DOCKER_REGISTRY/llvm-build-cross-win:1
   DIST_DIR: "dist"
@@ -32,7 +33,7 @@ before_script:
   - *use_ci_tools
   - *add_gitlab_key
 
-.build_template:
+.build_toolchain_template:
   tags: [ "amd64", "build" ]
   artifacts:
     paths:
@@ -40,17 +41,23 @@ before_script:
       - ${BUILD_DIR}/*.log
     when: always
     expire_in: 1 day
+  dependencies: []
   variables:
+    TARGET: "Xtensa;RISCV"
     USE_LINKER: "ld"
     CROSS_BUILD_MINGW: "OFF"
-    SKIP_TESTS: "ON"
-    PACK_DISTRO: "ON"
+    RUN_CORE_TESTS: "OFF"
+    RUN_TARGET_LIB_TESTS: "OFF"
+    PACK_TOOLCHAIN: "ON"
+    PACK_STANDALONE_LIBS: "ON"
+    PACK_TARGET_LIBS: "OFF"
   after_script:
     # help to identify that build failed due to OOM
     - >
       if [ $CI_JOB_STATUS == 'failed' ]; then
         [ ! -f "${BUILD_DIR}/build.log" ] || grep -i "internal compiler error\|Killed" ${BUILD_DIR}/build.log || true
         [ ! -f "${BUILD_DIR}/tests.log" ] || grep -i "internal compiler error\|Killed" ${BUILD_DIR}/tests.log || true
+        [ ! -f "${BUILD_DIR}/compiler-rt-tests.log" ] || grep -i "internal compiler error\|Killed" ${BUILD_DIR}/compiler-rt-tests.log || true
         [ ! -f "${BUILD_DIR}/lld-tests.log" ] || grep -i "internal compiler error\|Killed" ${BUILD_DIR}/lld-tests.log || true
       fi
   script:
@@ -60,18 +67,28 @@ before_script:
     - INST_PATH=$PWD/_install_dir
     - mkdir -p ${BUILD_PATH}
     - BUILD_HOST=$(gcc -dumpmachine)
-    # Build target libraries once when doing native build
+    # Config to build target libraries
+    # TODO: do not build core tools (clang, lld, binutils  etc)
+    # when PACK_TOOLCHAIN is OFF and PACK_TARGET_LIBS is ON.
+    # Re-use core tools built in another job.
+    # LLVM-xxx
     - >
-      if [ "${CONF_HOST}" == "${BUILD_HOST}" ]; then
+      if [ "${PACK_TARGET_LIBS}" == "ON" ]; then
         echo "Enable target libraries build"
         export USE_LIBC="newlib";
         export USE_LIBCXX="libstdcxx";
         export USE_RTLIB="compiler-rt;libgcc";
       else
-        echo "Disable target libraries for cross-build"
+        echo "Disable target libraries"
         export USE_LIBC=none;
         export USE_LIBCXX="";
-        export USE_RTLIB="";
+        if [ "${RUN_CORE_TESTS}" == "ON" ]; then
+          # Need to have multilib dir structure to avoid test failures due to '-Wmissing-multilib'.
+          # So enable copying of libgcc from GNU toolchain. It is fast and not heavy.
+          export USE_RTLIB="libgcc";
+        else
+          export USE_RTLIB="";
+        fi
       fi
     # build toolchain core w/o any libs and GNU components
     - cmake $PWD/esp-llvm-embedded-toolchain -GNinja
@@ -80,7 +97,7 @@ before_script:
       -DBINUTILS_REPO_URL="${GITLAB_SSH_SERVER}/${BINUTILS_REPO_PATH}.git"
       -DXTENSA_OVERLAYS_REPO_URL="${GITLAB_SSH_SERVER}/${XTENSA_OVERLAYS_REPO_PATH}.git"
       -DFETCHCONTENT_QUIET=OFF
-      -DESP_GNU_TOOLCHAIN_VER="13.2.0_20240305"
+      -DESP_GNU_TOOLCHAIN_VER=${ESP_GNU_TOOLCHAIN_VER}
       -DLLVM_TOOLCHAIN_CROSS_BUILD_MINGW=${CROSS_BUILD_MINGW}
       -DUSE_LIBC=${USE_LIBC}
       -DUSE_LIBCXX=${USE_LIBCXX}
@@ -99,43 +116,52 @@ before_script:
     # Do not run unit tests for cross-builds.
     # Run as non-root user because permission tests fail when run by root.
     - >
-      if [[ "${CONF_HOST}" == "${BUILD_HOST}" && "${SKIP_TESTS}" != "ON" ]]; then
-        echo "Run LLVM/Clang unit tests";
+      if [[ "${CONF_HOST}" == "${BUILD_HOST}" ]]; then
         export CUR_USER=$(whoami);
         useradd -m test_runner;
         chown -R test_runner ${BUILD_PATH};
-        touch ${BUILD_PATH}/tests.log;
-        chmod o+w ${BUILD_PATH}/tests.log;
-        runuser -u test_runner -- ninja -C ${BUILD_PATH} check-all 2>&1 > ${BUILD_PATH}/tests.log;
-        echo "Run Compiler-RT unit tests";
-        touch ${BUILD_PATH}/compiler-rt-tests.log;
-        chmod o+w ${BUILD_PATH}/compiler-rt-tests.log;
-        runuser -u test_runner -- ninja -C ${BUILD_PATH} check-compiler-rt 2>&1 > ${BUILD_PATH}/compiler-rt-tests.log;
-        echo "Run LLD unit tests";
-        touch ${BUILD_PATH}/lld-tests.log;
-        chmod o+w ${BUILD_PATH}/lld-tests.log;
-        runuser -u test_runner -- ninja -C ${BUILD_PATH} check-lld 2>&1 > ${BUILD_PATH}/lld-tests.log;
+        if [[ "${RUN_CORE_TESTS}" == "ON" ]]; then
+          echo "Run LLVM/Clang unit tests";
+          touch ${BUILD_PATH}/tests.log;
+          chmod o+w ${BUILD_PATH}/tests.log;
+          runuser -u test_runner -- ninja -C ${BUILD_PATH} check-all 2>&1 > ${BUILD_PATH}/tests.log;
+          echo "Run LLD unit tests";
+          touch ${BUILD_PATH}/lld-tests.log;
+          chmod o+w ${BUILD_PATH}/lld-tests.log;
+          runuser -u test_runner -- ninja -C ${BUILD_PATH} check-lld 2>&1 > ${BUILD_PATH}/lld-tests.log;
+        fi
+        if [[ "${RUN_TARGET_LIB_TESTS}" == "ON" ]]; then
+          echo "Run Compiler-RT unit tests";
+          touch ${BUILD_PATH}/compiler-rt-tests.log;
+          chmod o+w ${BUILD_PATH}/compiler-rt-tests.log;
+          runuser -u test_runner -- ninja -C ${BUILD_PATH} check-compiler-rt 2>&1 > ${BUILD_PATH}/compiler-rt-tests.log;
+        fi
         chown -R ${CUR_USER} ${BUILD_PATH};
       fi
-    - if [ "${PACK_DISTRO}" == "OFF" ]; then exit 0; fi
     # pack distro
     - mkdir -p ${PWD}/${DIST_DIR}
-    - ninja -C ${BUILD_PATH} package-llvm-toolchain 2>&1  >> ${BUILD_PATH}/build.log
-    - DISTRO_PACK_PATH=$(ninja -C ${BUILD_PATH} print-llvm-toolchain-package-path | tail -n 1)
-    - echo "DISTRO_PACK_PATH=${DISTRO_PACK_PATH}"
-    - mv ${DISTRO_PACK_PATH} ${PWD}/${DIST_DIR}/
-    - ARCHIVE_NAME=$(basename ${DISTRO_PACK_PATH})
-    - echo "${ARCHIVE_NAME}" > ${PWD}/${DIST_DIR}/dist_name_${CONF_HOST}_${TARGET}
+    - >
+      if [[ "${PACK_TOOLCHAIN}" == "ON" ]]; then
+        ninja -C ${BUILD_PATH} package-llvm-toolchain 2>&1  >> ${BUILD_PATH}/build.log
+        DISTRO_PACK_PATH=$(ninja -C ${BUILD_PATH} print-llvm-toolchain-package-path | tail -n 1)
+        echo "DISTRO_PACK_PATH=${DISTRO_PACK_PATH}"
+        mv ${DISTRO_PACK_PATH} ${PWD}/${DIST_DIR}/
+        ARCHIVE_NAME=$(basename ${DISTRO_PACK_PATH})
+        echo "${ARCHIVE_NAME}" > ${PWD}/${DIST_DIR}/dist_name_${CONF_HOST}
+      fi
     # pack distro with standalone libs
-    - ninja -C ${BUILD_PATH} package-llvm-standalone-libs 2>&1  >> ${BUILD_PATH}/build.log
-    - DISTRO_PACK_PATH=$(ninja -C ${BUILD_PATH} print-llvm-standalone-libs-package-path | tail -n 1)
-    - echo "DISTRO_PACK_PATH=${DISTRO_PACK_PATH}"
-    - mv ${DISTRO_PACK_PATH} ${PWD}/${DIST_DIR}/
-    - ARCHIVE_NAME=$(basename ${DISTRO_PACK_PATH})
-    - echo "${ARCHIVE_NAME}" > ${PWD}/${DIST_DIR}/dist_name_libs_${CONF_HOST}_${TARGET}
+    - >
+      if [[ "${PACK_STANDALONE_LIBS}" == "ON" ]]; then
+        ninja -C ${BUILD_PATH} package-llvm-standalone-libs 2>&1  >> ${BUILD_PATH}/build.log
+        DISTRO_PACK_PATH=$(ninja -C ${BUILD_PATH} print-llvm-standalone-libs-package-path | tail -n 1)
+        echo "DISTRO_PACK_PATH=${DISTRO_PACK_PATH}"
+        mv ${DISTRO_PACK_PATH} ${PWD}/${DIST_DIR}/
+        ARCHIVE_NAME=$(basename ${DISTRO_PACK_PATH})
+        echo "${ARCHIVE_NAME}" > ${PWD}/${DIST_DIR}/dist_name_libs_${CONF_HOST}
+      fi
     # pack target libraries to be re-used in distros for other platforms
     - >
-      if [ "${CONF_HOST}" == "${BUILD_HOST}" ]; then
+      if [[ "${PACK_TARGET_LIBS}" == "ON" ]]; then
         ninja -C ${BUILD_PATH} package-llvm-toolchain-target-libs 2>&1  >> ${BUILD_PATH}/build.log
         DISTRO_PACK_PATH=$(ninja -C ${BUILD_PATH} print-llvm-toolchain-target-libs-package-path | tail -n 1)
         echo "DISTRO_PACK_PATH=${DISTRO_PACK_PATH}"
@@ -144,25 +170,6 @@ before_script:
         echo "${ARCHIVE_NAME}" > ${PWD}/${DIST_DIR}/target_libs_arch_name
       fi
 
-build_and_test:
-  extends: .build_template
-  stage: test_build
-  variables:
-    TARGET: "Xtensa;RISCV"
-    SKIP_TESTS: "OFF"
-    PACK_DISTRO: "OFF"
-    CONF_HOST: "x86_64-linux-gnu"
-    USE_LINKER: "gold"
-
-.build_toolchain_template:
-  extends: .build_template
-  stage: build
-  parallel:
-    matrix:
-      - TARGET:
-          - Xtensa
-          - RISCV
-
 .build_linux-gnu_template:
   extends: .build_toolchain_template
   variables:
@@ -170,11 +177,24 @@ build_and_test:
 
 build_x86_64-linux-gnu:
   extends: .build_linux-gnu_template
+  stage: test_build
   variables:
     CONF_HOST: "x86_64-linux-gnu"
+    RUN_CORE_TESTS: "ON"
+
+build_target_libs:
+  extends: .build_linux-gnu_template
+  stage: build
+  variables:
+    CONF_HOST: "x86_64-linux-gnu"
+    RUN_TARGET_LIB_TESTS: "ON"
+    PACK_TARGET_LIBS: "ON"
+    PACK_TOOLCHAIN: "OFF"
+    PACK_STANDALONE_LIBS: "OFF"
 
 build_x86_64-w64-mingw32:
   extends: .build_toolchain_template
+  stage: build
   image: ${CROSS_WIN_IMAGE}
   variables:
     USE_LINKER: ""
@@ -183,50 +203,29 @@ build_x86_64-w64-mingw32:
 
 build_arm-linux-gnueabihf:
   extends: .build_linux-gnu_template
+  stage: build
   image: ${CROSS_ARM_IMAGE}
   variables:
     CONF_HOST: "arm-linux-gnueabihf"
 
 build_aarch64-linux-gnu:
   extends: .build_linux-gnu_template
+  stage: build
   image: ${CROSS_ARM_IMAGE}
   variables:
     CONF_HOST: "aarch64-linux-gnu"
 
 build_x86_64-apple-darwin:
   extends: .build_toolchain_template
+  stage: build
   variables:
     CONF_HOST: "x86_64-apple-darwin21.1"
 
 build_aarch64-apple-darwin:
   extends: .build_toolchain_template
+  stage: build
   variables:
     CONF_HOST: "aarch64-apple-darwin21.1"
-
-.pack_x86_64-linux-gnu_template:
-  stage: pack
-  tags: [ "amd64", "build" ]
-  artifacts:
-    paths:
-      - ${DIST_DIR}/
-    when: always
-    expire_in: 1 day
-  script:
-    - pushd ${DIST_DIR}
-    - ls -l
-    - TARGET_LIBS_PACK_FILE=$(cat target_libs_arch_name)
-    - rm -f target_libs_arch_name ${TARGET_LIBS_PACK_FILE}
-    - ls -l
-
-pack_x86_64-linux-gnu_riscv:
-  extends: .pack_x86_64-linux-gnu_template
-  needs:
-    - job: "build_x86_64-linux-gnu: [RISCV]"
-
-pack_x86_64-linux-gnu_xtensa:
-  extends: .pack_x86_64-linux-gnu_template
-  needs:
-    - job: "build_x86_64-linux-gnu: [Xtensa]"
 
 .pack_template:
   stage: pack
@@ -244,7 +243,7 @@ pack_x86_64-linux-gnu_xtensa:
     # update distro
     - pushd ${DIST_DIR}
     - ls -l
-    - DISTRO_PACK_FILE=$(cat dist_name_${CONF_HOST}_${TARGET})
+    - DISTRO_PACK_FILE=$(cat dist_name_${CONF_HOST})
     - echo "DISTRO_PACK_FILE=${DISTRO_PACK_FILE}"
     - ${UNPACK_TOOL} ${DISTRO_PACK_FILE}
     - DISTRO_PACK_DIR=$(tar tJf ${DISTRO_PACK_FILE} | sed -e 's@/.*@@' | uniq)
@@ -263,115 +262,61 @@ pack_x86_64-linux-gnu_xtensa:
     # so that dir contains everything we need to re-pack after unpacking steps above
     - ${PACK_TOOL} ${DISTRO_PACK_FILE} ${DISTRO_PACK_DIR}
     - rm -rf ${DISTRO_PACK_DIR}
-    # remove x86_64-linux-gnu artifacts
-    - >
-      if [ "${CONF_HOST}" != "x86_64-linux-gnu" ]; then
-        DISTRO_PACK_FILE=$(cat dist_name_x86_64-linux-gnu_${TARGET})
-        rm -f ${DISTRO_PACK_FILE} dist_name_x86_64-linux-gnu_${TARGET}
-        DISTRO_PACK_FILE=$(cat dist_name_libs_x86_64-linux-gnu_${TARGET})
-        rm -f ${DISTRO_PACK_FILE} dist_name_libs_x86_64-linux-gnu_${TARGET}
-      fi
     - ls -l
 
-pack_x86_64-w64-mingw32_riscv:
+pack_x86_64-linux-gnu:
   extends: .pack_template
   needs:
     # needs target libs archive from native build job
-    - job: "build_x86_64-linux-gnu: [RISCV]"
-    - job: "build_x86_64-w64-mingw32: [RISCV]"
+    - job: "build_target_libs"
+    - job: "build_x86_64-linux-gnu"
+  variables:
+    CONF_HOST: "x86_64-linux-gnu"
+
+pack_x86_64-w64-mingw32:
+  extends: .pack_template
+  needs:
+    # needs target libs archive from native build job
+    - job: "build_target_libs"
+    - job: "build_x86_64-w64-mingw32"
   variables:
     CONF_HOST: "x86_64-w64-mingw32"
-    TARGET: "RISCV"
 
-pack_x86_64-w64-mingw32_xtensa:
+pack_arm-linux-gnueabihf:
   extends: .pack_template
   needs:
     # needs target libs archive from native build job
-    - job: "build_x86_64-linux-gnu: [Xtensa]"
-    - job: "build_x86_64-w64-mingw32: [Xtensa]"
-  variables:
-    CONF_HOST: "x86_64-w64-mingw32"
-    TARGET: "Xtensa"
-
-pack_arm-linux-gnueabihf_riscv:
-  extends: .pack_template
-  needs:
-    # needs target libs archive from native build job
-    - job: "build_x86_64-linux-gnu: [RISCV]"
-    - job: "build_arm-linux-gnueabihf: [RISCV]"
+    - job: "build_target_libs"
+    - job: "build_arm-linux-gnueabihf"
   variables:
     CONF_HOST: "arm-linux-gnueabihf"
-    TARGET: "RISCV"
 
-pack_arm-linux-gnueabihf_xtensa:
+pack_aarch64-linux-gnu:
   extends: .pack_template
   needs:
     # needs target libs archive from native build job
-    - job: "build_x86_64-linux-gnu: [Xtensa]"
-    - job: "build_arm-linux-gnueabihf: [Xtensa]"
-  variables:
-    CONF_HOST: "arm-linux-gnueabihf"
-    TARGET: "Xtensa"
-
-pack_aarch64-linux-gnu_riscv:
-  extends: .pack_template
-  needs:
-    # needs target libs archive from native build job
-    - job: "build_x86_64-linux-gnu: [RISCV]"
-    - job: "build_aarch64-linux-gnu: [RISCV]"
+    - job: "build_target_libs"
+    - job: "build_aarch64-linux-gnu"
   variables:
     CONF_HOST: "aarch64-linux-gnu"
-    TARGET: "RISCV"
 
-pack_aarch64-linux-gnu_xtensa:
+pack_x86_64-apple-darwin:
   extends: .pack_template
   needs:
     # needs target libs archive from native build job
-    - job: "build_x86_64-linux-gnu: [Xtensa]"
-    - job: "build_aarch64-linux-gnu: [Xtensa]"
-  variables:
-    CONF_HOST: "aarch64-linux-gnu"
-    TARGET: "Xtensa"
-
-pack_x86_64-apple-darwin_riscv:
-  extends: .pack_template
-  needs:
-    # needs target libs archive from native build job
-    - job: "build_x86_64-linux-gnu: [RISCV]"
-    - job: "build_x86_64-apple-darwin: [RISCV]"
+    - job: "build_target_libs"
+    - job: "build_x86_64-apple-darwin"
   variables:
     CONF_HOST: "x86_64-apple-darwin21.1"
-    TARGET: "RISCV"
 
-pack_x86_64-apple-darwin_xtensa:
+pack_aarch64-apple-darwin:
   extends: .pack_template
   needs:
     # needs target libs archive from native build job
-    - job: "build_x86_64-linux-gnu: [Xtensa]"
-    - job: "build_x86_64-apple-darwin: [Xtensa]"
-  variables:
-    CONF_HOST: "x86_64-apple-darwin21.1"
-    TARGET: "Xtensa"
-
-pack_aarch64-apple-darwin_riscv:
-  extends: .pack_template
-  needs:
-    # needs target libs archive from native build job
-    - job: "build_x86_64-linux-gnu: [RISCV]"
-    - job: "build_aarch64-apple-darwin: [RISCV]"
+    - job: "build_target_libs"
+    - job: "build_aarch64-apple-darwin"
   variables:
     CONF_HOST: "aarch64-apple-darwin21.1"
-    TARGET: "RISCV"
-
-pack_aarch64-apple-darwin_xtensa:
-  extends: .pack_template
-  needs:
-    # needs target libs archive from native build job
-    - job: "build_x86_64-linux-gnu: [Xtensa]"
-    - job: "build_aarch64-apple-darwin: [Xtensa]"
-  variables:
-    CONF_HOST: "aarch64-apple-darwin21.1"
-    TARGET: "Xtensa"
 
 .macos_codesign_template:
   stage: sign
@@ -395,25 +340,15 @@ pack_aarch64-apple-darwin_xtensa:
       git clone -q --depth=1 ${NOTARIZATION_SCRIPTS_GIT}
     - ./macos_codesign_notarization/run.sh
 
-sign_x86_64-apple-darwin_riscv:
+sign_x86_64-apple-darwin:
   extends: .macos_codesign_template
   needs:
-    - pack_x86_64-apple-darwin_riscv
+    - pack_x86_64-apple-darwin
 
-sign_x86_64-apple-darwin_xtensa:
+sign_aarch64-apple-darwin:
   extends: .macos_codesign_template
   needs:
-    - pack_x86_64-apple-darwin_xtensa
-
-sign_aarch64-apple-darwin_riscv:
-  extends: .macos_codesign_template
-  needs:
-    - pack_aarch64-apple-darwin_riscv
-
-sign_aarch64-apple-darwin_xtensa:
-  extends: .macos_codesign_template
-  needs:
-    - pack_aarch64-apple-darwin_xtensa
+    - pack_aarch64-apple-darwin
 
 upload_to_http:
   stage: private_deploy
@@ -424,8 +359,7 @@ upload_to_http:
     # force the fetch strategy to clean old archives up in dist/ dir
     GIT_STRATEGY: fetch
   needs:
-    - job: pack_x86_64-linux-gnu_riscv
-    - job: pack_x86_64-linux-gnu_xtensa
+    - job: pack_x86_64-linux-gnu
   script:
     - cit_add_ssh_key "${HTTP_UPLOAD_KEY}"
     # List of archives
@@ -449,19 +383,14 @@ upload_to_github:
     GITHUB_TOKEN: "${GH_TOKEN}"
     GITHUB_REPO: "${GH_REPO_HTTPS}"
     TAG: "${CI_COMMIT_TAG}"
+    SHA256_FILE: esp-clang-${CI_COMMIT_TAG}-checksum.sha256
   needs:
-    - job: pack_x86_64-linux-gnu_riscv
-    - job: pack_x86_64-linux-gnu_xtensa
-    - job: pack_arm-linux-gnueabihf_riscv
-    - job: pack_arm-linux-gnueabihf_xtensa
-    - job: pack_aarch64-linux-gnu_riscv
-    - job: pack_aarch64-linux-gnu_xtensa
-    - job: pack_x86_64-w64-mingw32_riscv
-    - job: pack_x86_64-w64-mingw32_xtensa
-    - job: sign_x86_64-apple-darwin_riscv
-    - job: sign_x86_64-apple-darwin_xtensa
-    - job: sign_aarch64-apple-darwin_riscv
-    - job: sign_aarch64-apple-darwin_xtensa
+    - job: pack_x86_64-linux-gnu
+    - job: pack_arm-linux-gnueabihf
+    - job: pack_aarch64-linux-gnu
+    - job: pack_x86_64-w64-mingw32
+    - job: sign_x86_64-apple-darwin
+    - job: sign_aarch64-apple-darwin
   before_script: []
   script:
     - ls -l dist*/
@@ -470,6 +399,16 @@ upload_to_github:
     # List of archives
     - FILES=$(find ${DIST_DIR} -name dist_name_\* -exec cat {} \+)
     - cd ${DIST_DIR}
+    - ls -l $FILES
+    # Generate checksum file
+    - >
+      for n in $FILES; do
+        sz=$(stat -c%s "${n}") >> ${SHA256_FILE};
+        printf "# %s: %s bytes\n" "${n}" "${sz}" >> ${SHA256_FILE};
+        sha256sum -b "${n}" >> ${SHA256_FILE};
+      done
+    # Append FILES with checksum file
+    - FILES=$(echo -e "${FILES}\n${SHA256_FILE}")
     - ls -l $FILES
     # Upload archives
     - for n in ${FILES}; do hub release edit -m "" -a "${n}" "${TAG}"; done
@@ -481,10 +420,10 @@ update_idf_tools:
   only:
     - tags
   variables:
-    TOOL_NAME: openocd
-    TOOL_MEMBERS: openocd-esp32
+    TOOL_NAME: esp-clang
+    TOOL_MEMBERS: esp-clang
     TOOL_VERSION: ${CI_COMMIT_TAG}
-    TOOL_SHA256_URL: https://github.com/espressif/openocd-esp32/releases/download/${CI_COMMIT_TAG}/openocd-esp32-${CI_COMMIT_TAG}-checksum.sha256
+    TOOL_SHA256_URL: https://github.com/espressif/openocd-esp32/releases/download/esp-clang-${CI_COMMIT_TAG}/esp-clang-${CI_COMMIT_TAG}-checksum.sha256
     RN_SECTION: Toolchain
   trigger:
     project: idf/idf-tools-updater
