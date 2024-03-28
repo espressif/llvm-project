@@ -289,8 +289,10 @@
 // RUN: touch %T/baremetal_clang_rt_noarch/lib/libclang_rt.builtins.a
 // RUN: %t/basic_riscv32_esp_tree/bin/clang %s -### 2>&1 \
 // RUN:     --target=riscv32-esp-elf \
-// RUN:     --sysroot=%T/baremetal_clang_rt_noarch \clang-runtimes/riscv32-esp-unknown-elf
-// used if present.
+// RUN:     --sysroot=%T/baremetal_clang_rt_noarch \
+// RUN:   | FileCheck --check-prefix=CHECK-ESP-RV32_CLANGRT-NOARCH %s
+// CHECK-ESP-RV32_CLANGRT-NOARCH: "-lclang_rt.builtins"
+// CHECK-ESP-RV32_CLANGRT-NOARCH-NOT: "-lclang_rt.builtins-riscv32"
 // RUN: rm -rf %T/baremetal_clang_rt_arch
 // RUN: mkdir -p %T/baremetal_clang_rt_arch/lib
 // RUN: touch %T/baremetal_clang_rt_arch/lib/libclang_rt.builtins-riscv32.a
