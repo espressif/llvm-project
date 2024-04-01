@@ -137,11 +137,11 @@ void Xtensa::relocate(uint8_t *loc, const Relocation &rel, uint64_t val) const {
       loc[1] = target >> 2;
       loc[2] = target >> 10;
     } else if ((loc[0] & 0x3f) == 0b00'0110) { // j (CALL format)
-      uint64_t val = dest - p + 4;
-      checkInt(loc, static_cast<int64_t>(val), 18, rel);
-      loc[0] = (loc[0] & 0b0011'1111) | ((val & 0b0000'0011) << 6);
-      loc[1] = val >> 2;
-      loc[2] = val >> 10;
+      uint64_t valJ = val - 4;
+      checkInt(loc, static_cast<int64_t>(valJ), 18, rel);
+      loc[0] = (loc[0] & 0b0011'1111) | ((valJ & 0b0000'0011) << 6);
+      loc[1] = valJ >> 2;
+      loc[2] = valJ >> 10;
     } else if (isRRI8Branch(loc)) { // RRI8 format (various branch instructions)
       uint64_t v = val - 4;
       checkInt(loc, static_cast<int64_t>(v), 8, rel);
