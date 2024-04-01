@@ -20,11 +20,11 @@
 # CHECK-NEXT: call0 . +4096
 # CHECK-NEXT: call0 . +4092
 # CHECK-NEXT: call0 . +4088
-# CHECK-NEXT: j     . +4092
-# CHECK-NEXT: j     . +4089
-# CHECK-NEXT: j     . +4086
-# CHECK-NEXT: j     . -4045
-# CHECK-NEXT: j     . -3792
+# CHECK-NEXT: j     . +4084
+# CHECK-NEXT: j     . +4081
+# CHECK-NEXT: j     . +4078
+# CHECK-NEXT: j     . -4053
+# CHECK-NEXT: j     . -3800
 # CHECK-NEXT: call0 . -4056
 # CHECK-NEXT: call0 . -3804
 # CHECK-NEXT: l32r a3, . -4065
