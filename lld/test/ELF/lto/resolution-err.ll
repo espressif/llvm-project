@@ -1,4 +1,5 @@
 ; UNSUPPORTED: system-windows
+; REQUIRES: target=x86_64-unknown-linux-gnu
 ; REQUIRES: shell, non-root-user
 ; RUN: llvm-as %s -o %t.bc
 ; RUN: touch %t.resolution.txt
