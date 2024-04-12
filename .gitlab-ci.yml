@@ -64,7 +64,6 @@ before_script:
     - *get_toolchain_build_scripts
     - LLVM_PROJECT_PATH=$PWD
     - BUILD_PATH=$PWD/${BUILD_DIR}
-    - INST_PATH=$PWD/_install_dir
     - mkdir -p ${BUILD_PATH}
     - BUILD_HOST=$(gcc -dumpmachine)
     # Config to build target libraries
@@ -111,8 +110,7 @@ before_script:
       -DLLVM_PARALLEL_COMPILE_JOBS=2
       -DCLANG_REPOSITORY_STRING="${GH_REPO_HTTPS}"
       -DCPACK_ARCHIVE_THREADS=0
-      -B ${BUILD_PATH} 2>&1
-      --install-prefix=$INST_PATH > ${BUILD_PATH}/build.log
+      -B ${BUILD_PATH} 2>&1 > ${BUILD_PATH}/build.log
     # Do not run unit tests for cross-builds.
     # Run as non-root user because permission tests fail when run by root.
     - >
@@ -170,6 +168,47 @@ before_script:
         echo "${ARCHIVE_NAME}" > ${PWD}/${DIST_DIR}/target_libs_arch_name
       fi
 
+build_and_test:
+  tags: [ "amd64", "build" ]
+  stage: test_build
+  artifacts:
+    paths:
+      - ${BUILD_DIR}/*.log
+    when: always
+    expire_in: 1 day
+  variables:
+  after_script:
+    # help to identify that build failed due to OOM
+    - >
+      if [ $CI_JOB_STATUS == 'failed' ]; then
+        [ ! -f "${BUILD_DIR}/build.log" ] || grep -i "internal compiler error\|Killed" ${BUILD_DIR}/build.log || true
+        [ ! -f "${BUILD_DIR}/tests.log" ] || grep -i "internal compiler error\|Killed" ${BUILD_DIR}/tests.log || true
+        [ ! -f "${BUILD_DIR}/lld-tests.log" ] || grep -i "internal compiler error\|Killed" ${BUILD_DIR}/lld-tests.log || true
+      fi
+  script:
+    - BUILD_PATH=$PWD/${BUILD_DIR}
+    - mkdir -p ${BUILD_PATH}
+    - cmake -G Ninja
+      -S llvm
+      -DLLVM_ENABLE_PROJECTS="clang;lld;clang-tools-extra"
+      -DCMAKE_BUILD_TYPE=Release
+      -DLLVM_ENABLE_ASSERTIONS=ON
+      -DLLDB_INCLUDE_TESTS=OFF
+      -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=Xtensa
+      -B ${BUILD_PATH} 2>&1 > ${BUILD_PATH}/build.log
+    - export CUR_USER=$(whoami);
+    - useradd -m test_runner;
+    - chown -R test_runner ${BUILD_PATH};
+    - echo "Run LLVM/Clang unit tests";
+    - touch ${BUILD_PATH}/tests.log;
+    - chmod o+w ${BUILD_PATH}/tests.log;
+    - runuser -u test_runner -- ninja -C ${BUILD_PATH} check-all 2>&1 > ${BUILD_PATH}/tests.log;
+    - echo "Run LLD unit tests";
+    - touch ${BUILD_PATH}/lld-tests.log;
+    - chmod o+w ${BUILD_PATH}/lld-tests.log;
+    - runuser -u test_runner -- ninja -C ${BUILD_PATH} check-lld 2>&1 > ${BUILD_PATH}/lld-tests.log;
+    - chown -R ${CUR_USER} ${BUILD_PATH};
+
 .build_linux-gnu_template:
   extends: .build_toolchain_template
   variables:
@@ -177,10 +216,9 @@ before_script:
 
 build_x86_64-linux-gnu:
   extends: .build_linux-gnu_template
-  stage: test_build
+  stage: build
   variables:
     CONF_HOST: "x86_64-linux-gnu"
-    RUN_CORE_TESTS: "ON"
 
 build_target_libs:
   extends: .build_linux-gnu_template
