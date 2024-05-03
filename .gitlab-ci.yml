@@ -14,7 +14,7 @@ variables:
   ESP_LLVM_EMBEDDED_TOOLCHAIN_REF: "master"
   ESP_GNU_TOOLCHAIN_VER: "13.2.0_20240305"
   CROSS_ARM_IMAGE: $CI_DOCKER_REGISTRY/llvm-build-cross-arm:1
-  CROSS_WIN_IMAGE: $CI_DOCKER_REGISTRY/llvm-build-cross-win:1
+  CROSS_WIN_IMAGE: $CI_DOCKER_REGISTRY/llvm-build-cross-win:2
   DIST_DIR: "dist"
   BUILD_DIR: "build"
 
