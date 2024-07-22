@@ -136,6 +136,8 @@ private:
 
   SDValue LowerConstantPool(SDValue Op, SelectionDAG &DAG) const;
 
+  SDValue LowerMUL(SDValue Op, SelectionDAG &DAG) const;
+
   SDValue LowerCTPOP(SDValue Op, SelectionDAG &DAG) const;
 
   SDValue LowerSELECT_CC(SDValue Op, SelectionDAG &DAG) const;
