@@ -838,24 +838,23 @@ SDValue XtensaTargetLowering::getAddrPCRel(SDValue Op,
 
 SDValue XtensaTargetLowering::LowerConstantPool(SDValue Op,
                                                 SelectionDAG &DAG) const {
-  EVT PtrVT = getPointerTy(DAG.getDataLayout());
+  EVT PtrVT = Op.getValueType();
   ConstantPoolSDNode *CP = cast<ConstantPoolSDNode>(Op);
-  auto C = const_cast<Constant *>(CP->getConstVal());
-  auto T = const_cast<Type *>(CP->getType());
+  auto C = const_cast<Constant*>(CP->getConstVal());
+  auto T = CP->getType();
   SDValue Result;
 
+  auto &MF = DAG.getMachineFunction();
   // Do not use constant pool for aggregate or vector constant types,
   // in such cases create global variable, for example to store tabel
   // when we lower CTTZ operation.
   if (T->isAggregateType() || T->isVectorTy()) {
     auto AFI = DAG.getMachineFunction().getInfo<XtensaMachineFunctionInfo>();
-    auto M = const_cast<Module *>(
-        DAG.getMachineFunction().getFunction().getParent());
+    auto M = const_cast<Module *>(MF.getFunction().getParent());
     auto GV = new GlobalVariable(
         *M, T, /*isConstant=*/true, GlobalVariable::InternalLinkage, C,
         Twine(DAG.getDataLayout().getPrivateGlobalPrefix()) + "CP" +
-            Twine(DAG.getMachineFunction().getFunctionNumber()) + "_" +
-            Twine(AFI->createLabelUId()));
+            Twine(MF.getFunctionNumber()) + "_" + Twine(AFI->createLabelUId()));
     Result = DAG.getTargetConstantPool(GV, PtrVT, Align(4));
   } else {
     if (!CP->isMachineConstantPoolEntry()) {
