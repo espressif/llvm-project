@@ -284,9 +284,6 @@ define i16 @test_ctlz_i16(i16 %a) nounwind {
 define i32 @test_ctlz_i32(i32 %a) nounwind {
 ; XTENSA-LABEL: test_ctlz_i32:
 ; XTENSA:       # %bb.0:
-; XTENSA-NEXT:    addi a8, a1, -16
-; XTENSA-NEXT:    or a1, a8, a8
-; XTENSA-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
 ; XTENSA-NEXT:    beqz a2, .LBB8_2
 ; XTENSA-NEXT:  # %bb.1: # %cond.false
 ; XTENSA-NEXT:    srli a8, a2, 1
@@ -313,18 +310,15 @@ define i32 @test_ctlz_i32(i32 %a) nounwind {
 ; XTENSA-NEXT:    srli a9, a8, 4
 ; XTENSA-NEXT:    add a8, a8, a9
 ; XTENSA-NEXT:    l32r a9, .LCPI8_2
-; XTENSA-NEXT:    and a2, a8, a9
-; XTENSA-NEXT:    l32r a3, .LCPI8_3
-; XTENSA-NEXT:    l32r a8, .LCPI8_4
-; XTENSA-NEXT:    callx0 a8
-; XTENSA-NEXT:    extui a2, a2, 24, 8
-; XTENSA-NEXT:    j .LBB8_3
+; XTENSA-NEXT:    and a8, a8, a9
+; XTENSA-NEXT:    slli a9, a8, 8
+; XTENSA-NEXT:    add a8, a8, a9
+; XTENSA-NEXT:    slli a9, a8, 16
+; XTENSA-NEXT:    add a8, a8, a9
+; XTENSA-NEXT:    extui a2, a8, 24, 8
+; XTENSA-NEXT:    ret
 ; XTENSA-NEXT:  .LBB8_2:
 ; XTENSA-NEXT:    movi a2, 32
-; XTENSA-NEXT:  .LBB8_3: # %cond.end
-; XTENSA-NEXT:    l32i a0, a1, 0 # 4-byte Folded Reload
-; XTENSA-NEXT:    addi a8, a1, 16
-; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    ret
   %tmp = call i32 @llvm.ctlz.i32(i32 %a, i1 false)
   ret i32 %tmp
@@ -411,9 +405,6 @@ define i16 @test_ctlz_i16_zero_undef(i16 %a) nounwind {
 define i32 @test_ctlz_i32_zero_undef(i32 %a) nounwind {
 ; XTENSA-LABEL: test_ctlz_i32_zero_undef:
 ; XTENSA:       # %bb.0:
-; XTENSA-NEXT:    addi a8, a1, -16
-; XTENSA-NEXT:    or a1, a8, a8
-; XTENSA-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
 ; XTENSA-NEXT:    srli a8, a2, 1
 ; XTENSA-NEXT:    or a8, a2, a8
 ; XTENSA-NEXT:    srli a9, a8, 2
@@ -438,14 +429,12 @@ define i32 @test_ctlz_i32_zero_undef(i32 %a) nounwind {
 ; XTENSA-NEXT:    srli a9, a8, 4
 ; XTENSA-NEXT:    add a8, a8, a9
 ; XTENSA-NEXT:    l32r a9, .LCPI11_2
-; XTENSA-NEXT:    and a2, a8, a9
-; XTENSA-NEXT:    l32r a3, .LCPI11_3
-; XTENSA-NEXT:    l32r a8, .LCPI11_4
-; XTENSA-NEXT:    callx0 a8
-; XTENSA-NEXT:    extui a2, a2, 24, 8
-; XTENSA-NEXT:    l32i a0, a1, 0 # 4-byte Folded Reload
-; XTENSA-NEXT:    addi a8, a1, 16
-; XTENSA-NEXT:    or a1, a8, a8
+; XTENSA-NEXT:    and a8, a8, a9
+; XTENSA-NEXT:    slli a9, a8, 8
+; XTENSA-NEXT:    add a8, a8, a9
+; XTENSA-NEXT:    slli a9, a8, 16
+; XTENSA-NEXT:    add a8, a8, a9
+; XTENSA-NEXT:    extui a2, a8, 24, 8
 ; XTENSA-NEXT:    ret
   %tmp = call i32 @llvm.ctlz.i32(i32 %a, i1 true)
   ret i32 %tmp
@@ -500,9 +489,6 @@ define i16 @test_ctpop_i16(i16 %a) nounwind {
 define i32 @test_ctpop_i32(i32 %a) nounwind {
 ; XTENSA-LABEL: test_ctpop_i32:
 ; XTENSA:       # %bb.0:
-; XTENSA-NEXT:    addi a8, a1, -16
-; XTENSA-NEXT:    or a1, a8, a8
-; XTENSA-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
 ; XTENSA-NEXT:    srli a8, a2, 1
 ; XTENSA-NEXT:    l32r a9, .LCPI14_0
 ; XTENSA-NEXT:    and a8, a8, a9
@@ -515,14 +501,12 @@ define i32 @test_ctpop_i32(i32 %a) nounwind {
 ; XTENSA-NEXT:    srli a9, a8, 4
 ; XTENSA-NEXT:    add a8, a8, a9
 ; XTENSA-NEXT:    l32r a9, .LCPI14_2
-; XTENSA-NEXT:    and a2, a8, a9
-; XTENSA-NEXT:    l32r a3, .LCPI14_3
-; XTENSA-NEXT:    l32r a8, .LCPI14_4
-; XTENSA-NEXT:    callx0 a8
-; XTENSA-NEXT:    extui a2, a2, 24, 8
-; XTENSA-NEXT:    l32i a0, a1, 0 # 4-byte Folded Reload
-; XTENSA-NEXT:    addi a8, a1, 16
-; XTENSA-NEXT:    or a1, a8, a8
+; XTENSA-NEXT:    and a8, a8, a9
+; XTENSA-NEXT:    slli a9, a8, 8
+; XTENSA-NEXT:    add a8, a8, a9
+; XTENSA-NEXT:    slli a9, a8, 16
+; XTENSA-NEXT:    add a8, a8, a9
+; XTENSA-NEXT:    extui a2, a8, 24, 8
 ; XTENSA-NEXT:    ret
   %1 = call i32 @llvm.ctpop.i32(i32 %a)
   ret i32 %1
