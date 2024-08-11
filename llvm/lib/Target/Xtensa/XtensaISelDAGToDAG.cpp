@@ -188,9 +188,9 @@ void XtensaDAGToDAGISel::Select(SDNode *Node) {
     SDValue N0 = Node->getOperand(0);
     SDValue N1 = Node->getOperand(1);
     auto *C = dyn_cast<ConstantSDNode>(N1);
-    // If C is constant then we can generate SRAI
-    // instruction using pattern matching, otherwise generate SRA.
-    if (!C) {
+    // If C is constant in range [0..31] then we can generate SRAI
+    // instruction using pattern matching, otherwise generate SRA
+    if (!C || !isUInt<5>(C->getZExtValue())) {
       SDNode *SSR = CurDAG->getMachineNode(Xtensa::SSR, DL, MVT::Glue, N1);
       SDNode *SRA =
           CurDAG->getMachineNode(Xtensa::SRA, DL, VT, N0, SDValue(SSR, 0));
