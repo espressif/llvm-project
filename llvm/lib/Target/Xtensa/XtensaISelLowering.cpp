@@ -18,7 +18,6 @@
 #include "XtensaSubtarget.h"
 #include "XtensaTargetMachine.h"
 #include "llvm/CodeGen/CallingConvLower.h"
-#include "llvm/CodeGen/MachineFrameInfo.h"
 #include "llvm/CodeGen/MachineInstrBuilder.h"
 #include "llvm/CodeGen/MachineJumpTableInfo.h"
 #include "llvm/CodeGen/MachineRegisterInfo.h"
@@ -33,6 +32,9 @@
 using namespace llvm;
 
 #define DEBUG_TYPE "xtensa-lower"
+
+static const MCPhysReg XtensaArgRegs[6] = {Xtensa::A2, Xtensa::A3, Xtensa::A4,
+                                           Xtensa::A5, Xtensa::A6, Xtensa::A7};
 
 // Return true if we must use long (in fact, indirect) function call.
 // It's simplified version, production implimentation must
@@ -149,6 +151,11 @@ bool XtensaTargetLowering::isOffsetFoldingLegal(
     const GlobalAddressSDNode *GA) const {
   // The Xtensa target isn't yet aware of offsets.
   return false;
+}
+
+unsigned XtensaTargetLowering::getVaListSizeInBits(const DataLayout &DL) const {
+  // 2 * sizeof(int*) + sizeof(int)
+  return 3 * 4;
 }
 
 //===----------------------------------------------------------------------===//
@@ -313,6 +320,9 @@ SDValue XtensaTargetLowering::LowerFormalArguments(
   MachineFunction &MF = DAG.getMachineFunction();
   MachineFrameInfo &MFI = MF.getFrameInfo();
   XtensaMachineFunctionInfo *XtensaFI = MF.getInfo<XtensaMachineFunctionInfo>();
+  EVT PtrVT = getPointerTy(MF.getDataLayout());
+
+  XtensaFI->setVarArgsInRegsFrameIndex(0);
 
   // Used with vargs to acumulate store chains.
   std::vector<SDValue> OutChains;
@@ -382,19 +392,18 @@ SDValue XtensaTargetLowering::LowerFormalArguments(
   }
 
   if (IsVarArg) {
-    unsigned Idx = CCInfo.getFirstUnallocated(IntRegs);
-    unsigned ArgRegsNum = std::size(IntRegs);
+    ArrayRef<MCPhysReg> ArgRegs = ArrayRef(XtensaArgRegs);
+    unsigned Idx = CCInfo.getFirstUnallocated(ArgRegs);
     const TargetRegisterClass *RC = &Xtensa::ARRegClass;
     MachineFrameInfo &MFI = MF.getFrameInfo();
     MachineRegisterInfo &RegInfo = MF.getRegInfo();
     unsigned RegSize = 4;
-    MVT RegTy = MVT::i32;
-    MVT FITy = getFrameIndexTy(DAG.getDataLayout());
+    MVT RegTy = MVT::getIntegerVT(RegSize * 8);
 
     XtensaFI->setVarArgsFirstGPR(Idx + 2); // 2 - number of a2 register
 
-    XtensaFI->setVarArgsOnStackFrameIndex(
-        MFI.CreateFixedObject(4, CCInfo.getStackSize(), true));
+    XtensaFI->setVarArgsOnStackFrameIndex(MFI.CreateFixedObject(
+        PtrVT.getSizeInBits() / 8, CCInfo.getStackSize(), true));
 
     // Offset of the first variable argument from stack pointer, and size of
     // the vararg save area. For now, the varargs save area is either zero or
@@ -403,31 +412,42 @@ SDValue XtensaTargetLowering::LowerFormalArguments(
 
     // If all registers are allocated, then all varargs must be passed on the
     // stack and we don't need to save any argregs.
-    if (ArgRegsNum == Idx) {
+    if (ArgRegs.size() == Idx) {
       VaArgOffset = CCInfo.getStackSize();
       VarArgsSaveSize = 0;
     } else {
-      VarArgsSaveSize = RegSize * (ArgRegsNum - Idx);
+      VarArgsSaveSize = RegSize * (ArgRegs.size() - Idx);
       VaArgOffset = -VarArgsSaveSize;
+    }
 
-      // Record the frame index of the first variable argument
-      // which is a value necessary to VASTART.
-      int FI = MFI.CreateFixedObject(RegSize, VaArgOffset, true);
-      XtensaFI->setVarArgsInRegsFrameIndex(FI);
+    // Record the frame index of the first variable argument
+    // which is a value necessary to VASTART.
+    int FI = MFI.CreateFixedObject(RegSize, VaArgOffset, true);
+    XtensaFI->setVarArgsInRegsFrameIndex(FI);
 
-      // Copy the integer registers that may have been used for passing varargs
-      // to the vararg save area.
-      for (unsigned I = Idx; I < ArgRegsNum; ++I, VaArgOffset += RegSize) {
-        const Register Reg = RegInfo.createVirtualRegister(RC);
-        RegInfo.addLiveIn(IntRegs[I], Reg);
+    // Copy the integer registers that may have been used for passing varargs
+    // to the vararg save area.
+    for (unsigned I = Idx; I < ArgRegs.size(); ++I, VaArgOffset += RegSize) {
+      const unsigned Reg = RegInfo.createVirtualRegister(RC);
+      unsigned FrameReg = Subtarget.getRegisterInfo()->getFrameRegister(MF);
 
-        SDValue ArgValue = DAG.getCopyFromReg(Chain, DL, Reg, RegTy);
-        FI = MFI.CreateFixedObject(RegSize, VaArgOffset, true);
-        SDValue PtrOff = DAG.getFrameIndex(FI, FITy);
-        SDValue Store = DAG.getStore(Chain, DL, ArgValue, PtrOff,
-                                     MachinePointerInfo::getFixedStack(MF, FI));
-        OutChains.push_back(Store);
+      // Argument passed in FrameReg we save in A8 (in emitPrologue),
+      // so load argument from A8
+      if (ArgRegs[I] == FrameReg) {
+        RegInfo.addLiveIn(Xtensa::A8, Reg);
+      } else {
+        RegInfo.addLiveIn(ArgRegs[I], Reg);
       }
+
+      SDValue ArgValue = DAG.getCopyFromReg(Chain, DL, Reg, RegTy);
+      FI = MFI.CreateFixedObject(RegSize, VaArgOffset, true);
+      SDValue PtrOff = DAG.getFrameIndex(FI, getPointerTy(DAG.getDataLayout()));
+      SDValue Store = DAG.getStore(Chain, DL, ArgValue, PtrOff,
+                                   MachinePointerInfo::getFixedStack(MF, FI));
+      cast<StoreSDNode>(Store.getNode())
+          ->getMemOperand()
+          ->setValue((Value *)nullptr);
+      OutChains.push_back(Store);
     }
   }
 

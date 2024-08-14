@@ -76,6 +76,9 @@ public:
 
   const char *getTargetNodeName(unsigned Opcode) const override;
 
+  /// Returns the size of the platform's va_list object.
+  unsigned getVaListSizeInBits(const DataLayout &DL) const override;
+
   std::pair<unsigned, const TargetRegisterClass *>
   getRegForInlineAsmConstraint(const TargetRegisterInfo *TRI,
                                StringRef Constraint, MVT VT) const override;

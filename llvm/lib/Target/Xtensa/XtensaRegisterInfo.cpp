@@ -13,6 +13,7 @@
 #include "XtensaRegisterInfo.h"
 #include "MCTargetDesc/XtensaMCTargetDesc.h"
 #include "XtensaInstrInfo.h"
+#include "XtensaMachineFunctionInfo.h"
 #include "XtensaSubtarget.h"
 #include "llvm/CodeGen/MachineFrameInfo.h"
 #include "llvm/CodeGen/MachineFunction.h"

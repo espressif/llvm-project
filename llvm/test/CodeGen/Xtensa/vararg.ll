@@ -374,7 +374,7 @@ define void @vararg_fixed_6(i32 %a1, i32 %a2, i32 %a3, i32 %a4, i32 %a5, i32 %a6
 ; CHECK-NEXT:    or a1, a8, a8
 ; CHECK-NEXT:    s32i a0, a1, 8 # 4-byte Folded Spill
 ; CHECK-NEXT:    s32i a12, a1, 4 # 4-byte Folded Spill
-; CHECK-NEXT:    addi a10, a1, 0
+; CHECK-NEXT:    addi a10, a1, 16
 ; CHECK-NEXT:    s32i a10, a1, 4
 ; CHECK-NEXT:    addi a8, a1, 16
 ; CHECK-NEXT:    addi a8, a8, -32
@@ -456,7 +456,7 @@ define void @vararg_fixed_7(i32 %a1, i32 %a2, i32 %a3, i32 %a4, i32 %a5, i32 %a6
 ; CHECK-NEXT:    or a1, a8, a8
 ; CHECK-NEXT:    s32i a0, a1, 8 # 4-byte Folded Spill
 ; CHECK-NEXT:    s32i a12, a1, 4 # 4-byte Folded Spill
-; CHECK-NEXT:    addi a10, a1, 0
+; CHECK-NEXT:    addi a10, a1, 20
 ; CHECK-NEXT:    s32i a10, a1, 4
 ; CHECK-NEXT:    addi a8, a1, 20
 ; CHECK-NEXT:    addi a8, a8, -32

@@ -12,6 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "XtensaMachineFunctionInfo.h"
 #include "XtensaTargetMachine.h"
 #include "TargetInfo/XtensaTargetInfo.h"
 #include "XtensaMachineFunctionInfo.h"
