@@ -44,6 +44,9 @@ public:
   TargetLoweringObjectFile *getObjFileLowering() const override {
     return TLOF.get();
   }
+  MachineFunctionInfo *
+  createMachineFunctionInfo(BumpPtrAllocator &Allocator, const Function &F,
+                            const TargetSubtargetInfo *STI) const override;
 
 protected:
   mutable StringMap<std::unique_ptr<XtensaSubtarget>> SubtargetMap;

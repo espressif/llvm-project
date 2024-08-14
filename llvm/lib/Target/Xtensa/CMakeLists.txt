@@ -21,6 +21,7 @@ add_llvm_target(XtensaCodeGen
   XtensaInstrInfo.cpp
   XtensaISelDAGToDAG.cpp
   XtensaISelLowering.cpp
+  XtensaMachineFunctionInfo.cpp
   XtensaRegisterInfo.cpp
   XtensaSubtarget.cpp
   XtensaTargetMachine.cpp
