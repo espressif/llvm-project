@@ -1421,6 +1421,11 @@ MachineBasicBlock *XtensaTargetLowering::EmitInstrWithCustomInserter(
     const TargetRegisterClass *RC = getRegClassFor(MVT::i32);
     unsigned R1 = MRI.createVirtualRegister(RC);
 
+    const MachineMemOperand &MMO = **MI.memoperands_begin();
+    if (MMO.isVolatile()) {
+      BuildMI(*MBB, MI, DL, TII.get(Xtensa::MEMW));
+    }
+
     BuildMI(*MBB, MI, DL, TII.get(Xtensa::L8UI), R1).add(Op1).add(Op2);
 
     unsigned R2 = MRI.createVirtualRegister(RC);
