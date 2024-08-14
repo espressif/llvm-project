@@ -609,6 +609,7 @@ unsigned XtensaInstrInfo::insertBranchAtInst(MachineBasicBlock &MBB,
   case Xtensa::BGE:
   case Xtensa::BGEU:
     MI = BuildMI(MBB, I, DL, get(BR_C))
+            //  .addImm(offset)
              .addReg(Cond[1].getReg())
              .addReg(Cond[2].getReg())
              .addMBB(TBB);
@@ -620,6 +621,7 @@ unsigned XtensaInstrInfo::insertBranchAtInst(MachineBasicBlock &MBB,
   case Xtensa::BGEI:
   case Xtensa::BGEUI:
     MI = BuildMI(MBB, I, DL, get(BR_C))
+            //  .addImm(offset)
              .addReg(Cond[1].getReg())
              .addImm(Cond[2].getImm())
              .addMBB(TBB);
