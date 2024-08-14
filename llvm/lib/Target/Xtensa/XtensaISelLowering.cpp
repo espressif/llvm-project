@@ -1314,10 +1314,12 @@ MachineBasicBlock *XtensaTargetLowering::EmitInstrWithCustomInserter(
   case Xtensa::S8I:
   case Xtensa::S16I:
   case Xtensa::S32I:
+  case Xtensa::S32I_N:
   case Xtensa::L8UI:
   case Xtensa::L16SI:
   case Xtensa::L16UI:
-  case Xtensa::L32I: {
+  case Xtensa::L32I:
+  case Xtensa::L32I_N: {
     const MachineMemOperand &MMO = **MI.memoperands_begin();
     if (MMO.isVolatile()) {
       BuildMI(*MBB, MI, DL, TII.get(Xtensa::MEMW));
