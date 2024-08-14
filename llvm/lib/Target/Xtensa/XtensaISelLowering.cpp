@@ -158,6 +158,82 @@ unsigned XtensaTargetLowering::getVaListSizeInBits(const DataLayout &DL) const {
 }
 
 //===----------------------------------------------------------------------===//
+// Inline asm support
+//===----------------------------------------------------------------------===//
+TargetLowering::ConstraintType
+XtensaTargetLowering::getConstraintType(StringRef Constraint) const {
+  if (Constraint.size() == 1) {
+    switch (Constraint[0]) {
+    case 'a':
+    case 'd':
+    case 'r':
+      return C_RegisterClass;
+
+    default:
+      break;
+    }
+  }
+  return TargetLowering::getConstraintType(Constraint);
+}
+
+TargetLowering::ConstraintWeight
+XtensaTargetLowering::getSingleConstraintMatchWeight(
+    AsmOperandInfo &info, const char *constraint) const {
+  ConstraintWeight weight = CW_Invalid;
+  Value *CallOperandVal = info.CallOperandVal;
+  // If we don't have a value, we can't do a match,
+  // but allow it at the lowest weight.
+  if (CallOperandVal == NULL)
+    return CW_Default;
+
+  // Look at the constraint type.
+  switch (*constraint) {
+  default:
+    weight = TargetLowering::getSingleConstraintMatchWeight(info, constraint);
+    break;
+
+  case 'a':
+  case 'd':
+  case 'r':
+    if (CallOperandVal->getType()->isIntegerTy())
+      weight = CW_Register;
+    break;
+  }
+  return weight;
+}
+
+std::pair<unsigned, const TargetRegisterClass *>
+XtensaTargetLowering::getRegForInlineAsmConstraint(
+    const TargetRegisterInfo *TRI, StringRef Constraint, MVT VT) const {
+  if (Constraint.size() == 1) {
+    // GCC Constraint Letters
+    switch (Constraint[0]) {
+    default:
+      break;
+    case 'a': // Address register
+    case 'd': // Data register (equivalent to 'r')
+    case 'r': // General-purpose register
+      return std::make_pair(0U, &Xtensa::ARRegClass);
+    }
+  }
+  return TargetLowering::getRegForInlineAsmConstraint(TRI, Constraint, VT);
+}
+
+/// LowerAsmOperandForConstraint - Lower the specified operand into the Ops
+/// vector.  If it is invalid, don't add anything to Ops.
+void XtensaTargetLowering::LowerAsmOperandForConstraint(
+    SDValue Op, StringRef Constraint, std::vector<SDValue> &Ops,
+    SelectionDAG &DAG) const {
+  SDLoc DL(Op);
+
+  // Only support length 1 constraints for now.
+  if (Constraint.size() > 1)
+    return;
+
+  TargetLowering::LowerAsmOperandForConstraint(Op, Constraint, Ops, DAG);
+}
+
+//===----------------------------------------------------------------------===//
 // Calling conventions
 //===----------------------------------------------------------------------===//
 
