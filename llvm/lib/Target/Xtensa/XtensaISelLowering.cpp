@@ -987,11 +987,32 @@ XtensaTargetLowering::emitSelectCC(MachineInstr &MI,
 
 MachineBasicBlock *XtensaTargetLowering::EmitInstrWithCustomInserter(
     MachineInstr &MI, MachineBasicBlock *MBB) const {
+  const TargetInstrInfo &TII = *Subtarget.getInstrInfo();
+  MachineFunction *MF = MBB->getParent();
+  MachineRegisterInfo &MRI = MF->getRegInfo();
   DebugLoc DL = MI.getDebugLoc();
 
   switch (MI.getOpcode()) {
   case Xtensa::SELECT:
     return emitSelectCC(MI, MBB);
+  case Xtensa::L8I_P: {
+    MachineOperand &R = MI.getOperand(0);
+    MachineOperand &Op1 = MI.getOperand(1);
+    MachineOperand &Op2 = MI.getOperand(2);
+
+    const TargetRegisterClass *RC = getRegClassFor(MVT::i32);
+    unsigned R1 = MRI.createVirtualRegister(RC);
+
+    BuildMI(*MBB, MI, DL, TII.get(Xtensa::L8UI), R1).add(Op1).add(Op2);
+
+    unsigned R2 = MRI.createVirtualRegister(RC);
+    BuildMI(*MBB, MI, DL, TII.get(Xtensa::SLLI), R2).addReg(R1).addImm(24);
+    BuildMI(*MBB, MI, DL, TII.get(Xtensa::SRAI), R.getReg())
+        .addReg(R2)
+        .addImm(24);
+    MI.eraseFromParent();
+    return MBB;
+  }
   default:
     llvm_unreachable("Unexpected instr type to insert");
   }

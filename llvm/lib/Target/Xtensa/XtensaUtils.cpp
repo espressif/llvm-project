@@ -37,6 +37,7 @@ bool isValidAddrOffset(MachineInstr &MI, int64_t Offset) {
   int Scale = 0;
 
   switch (MI.getOpcode()) {
+  case Xtensa::L8I_P:
   case Xtensa::L8UI:
   case Xtensa::S8I:
     Scale = 1;
