@@ -171,6 +171,15 @@ private:
 
   MachineBasicBlock *emitSelectCC(MachineInstr &MI,
                                   MachineBasicBlock *BB) const;
+
+  InlineAsm::ConstraintCode
+  getInlineAsmMemConstraint(StringRef ConstraintCode) const override {
+    if (ConstraintCode == "R")
+      return InlineAsm::ConstraintCode::R;
+    else if (ConstraintCode == "ZC")
+      return InlineAsm::ConstraintCode::ZC;
+    return TargetLowering::getInlineAsmMemConstraint(ConstraintCode);
+  }
 };
 
 } // end namespace llvm

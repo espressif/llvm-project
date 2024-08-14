@@ -232,13 +232,17 @@ bool XtensaDAGToDAGISel::SelectInlineAsmMemoryOperand(
     llvm_unreachable("Unexpected asm memory constraint");
   case InlineAsm::ConstraintCode::m: {
     SDValue Base, Offset;
-
+    // TODO
     selectMemRegAddr(Op, Base, Offset, 4);
     OutOps.push_back(Base);
     OutOps.push_back(Offset);
-
     return false;
   }
+  case InlineAsm::ConstraintCode::i:
+  case InlineAsm::ConstraintCode::R:
+  case InlineAsm::ConstraintCode::ZC:
+    OutOps.push_back(Op);
+    return false;
   }
   return false;
 }

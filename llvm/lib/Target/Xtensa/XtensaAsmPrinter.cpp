@@ -172,6 +172,9 @@ void XtensaAsmPrinter::printOperand(const MachineInstr *MI, int OpNo,
     XtensaInstPrinter::printOperand(MC, O);
     break;
   }
+  case MachineOperand::MO_GlobalAddress:
+    O << *getSymbol(MO.getGlobal());
+    break;
   default:
     llvm_unreachable("unknown operand type");
   }

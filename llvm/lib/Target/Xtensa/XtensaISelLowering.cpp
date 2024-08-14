@@ -165,8 +165,11 @@ TargetLowering::ConstraintType
 XtensaTargetLowering::getConstraintType(StringRef Constraint) const {
   if (Constraint.size() == 1) {
     switch (Constraint[0]) {
+    case 'a':
+    case 'd':
     case 'r':
       return C_RegisterClass;
+
     default:
       break;
     }
@@ -176,27 +179,28 @@ XtensaTargetLowering::getConstraintType(StringRef Constraint) const {
 
 TargetLowering::ConstraintWeight
 XtensaTargetLowering::getSingleConstraintMatchWeight(
-    AsmOperandInfo &Info, const char *Constraint) const {
-  ConstraintWeight Weight = CW_Invalid;
-  Value *CallOperandVal = Info.CallOperandVal;
+    AsmOperandInfo &info, const char *constraint) const {
+  ConstraintWeight weight = CW_Invalid;
+  Value *CallOperandVal = info.CallOperandVal;
   // If we don't have a value, we can't do a match,
   // but allow it at the lowest weight.
-  if (!CallOperandVal)
+  if (CallOperandVal == NULL)
     return CW_Default;
 
-  Type *Ty = CallOperandVal->getType();
-
   // Look at the constraint type.
-  switch (*Constraint) {
+  switch (*constraint) {
   default:
-    Weight = TargetLowering::getSingleConstraintMatchWeight(Info, Constraint);
+    weight = TargetLowering::getSingleConstraintMatchWeight(info, constraint);
     break;
+
+  case 'a':
+  case 'd':
   case 'r':
-    if (Ty->isIntegerTy())
-      Weight = CW_Register;
+    if (CallOperandVal->getType()->isIntegerTy())
+      weight = CW_Register;
     break;
   }
-  return Weight;
+  return weight;
 }
 
 std::pair<unsigned, const TargetRegisterClass *>
@@ -207,6 +211,8 @@ XtensaTargetLowering::getRegForInlineAsmConstraint(
     switch (Constraint[0]) {
     default:
       break;
+    case 'a': // Address register
+    case 'd': // Data register (equivalent to 'r')
     case 'r': // General-purpose register
       return std::make_pair(0U, &Xtensa::ARRegClass);
     }
@@ -214,6 +220,8 @@ XtensaTargetLowering::getRegForInlineAsmConstraint(
   return TargetLowering::getRegForInlineAsmConstraint(TRI, Constraint, VT);
 }
 
+/// LowerAsmOperandForConstraint - Lower the specified operand into the Ops
+/// vector.  If it is invalid, don't add anything to Ops.
 void XtensaTargetLowering::LowerAsmOperandForConstraint(
     SDValue Op, StringRef Constraint, std::vector<SDValue> &Ops,
     SelectionDAG &DAG) const {
