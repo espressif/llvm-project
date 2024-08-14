@@ -75,6 +75,13 @@ public:
   void loadImmediate(MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI,
                      unsigned *Reg, int64_t Value) const;
 
+
+  unsigned InsertBranchAtInst(MachineBasicBlock &MBB,
+                              MachineBasicBlock::iterator I,
+                              MachineBasicBlock *TBB,
+                              ArrayRef<MachineOperand> Cond, const DebugLoc &DL,
+                              int *BytesAdded) const;
+
   bool
   reverseBranchCondition(SmallVectorImpl<MachineOperand> &Cond) const override;
 
