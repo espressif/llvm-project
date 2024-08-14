@@ -263,6 +263,13 @@ let isCodeGenOnly = 1, mayLoad = 1 in {
   }
 }
 
+// Xtensa missed L8I load operation, use pseudo operation
+let usesCustomInserter = 1 in
+def L8I_P: Pseudo<(outs AR:$t), (ins mem8:$addr),
+               "!L8I_P $t, $addr",
+                [(set AR:$t, (sextloadi8
+				addr_ish1:$addr))]>;
+
 //extending loads
 def : Pat<(i32 (extloadi1  addr_ish1:$addr)), (L8UI addr_ish1:$addr)>;
 def : Pat<(i32 (extloadi8  addr_ish1:$addr)), (L8UI addr_ish1:$addr)>;
