@@ -31,6 +31,7 @@ XtensaSubtarget::initializeSubtargetDependencies(StringRef CPU, StringRef FS) {
   }
 
   HasDensity = false;
+  HasWindowed = false;
 
   // Parse features string.
   ParseSubtargetFeatures(CPUName, CPUName, FS);
