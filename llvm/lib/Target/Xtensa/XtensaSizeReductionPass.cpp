@@ -173,7 +173,7 @@ bool XtensaSizeReduce::ReduceMI(const MachineBasicBlock::instr_iterator &MII) {
     MachineOperand Op1 = MI->getOperand(1);
     MachineOperand Op2 = MI->getOperand(2);
 
-	if (Op1.getReg() != Op2.getReg())
+    if (Op1.getReg() != Op2.getReg())
       break;
 
     // Replace OR R1, R2, R2 to MOV.N R1, R2
@@ -194,6 +194,19 @@ bool XtensaSizeReduce::ReduceMI(const MachineBasicBlock::instr_iterator &MII) {
     // Replace RET to RET.N
     DebugLoc dl = MI->getDebugLoc();
     const MCInstrDesc &NewMCID = XtensaII->get(Xtensa::RET_N);
+    MachineInstrBuilder MIB = BuildMI(MBB, MI, dl, NewMCID);
+    // Transfer MI flags.
+    MIB.setMIFlags(MI->getFlags());
+    LLVM_DEBUG(dbgs() << "       to 16-bit: " << *MIB);
+    NumReduced++;
+    MBB.erase_instr(MI);
+    return true;
+  } break;
+
+  case Xtensa::RETW: {
+    // Replace RETW to RETW.N
+    DebugLoc dl = MI->getDebugLoc();
+    const MCInstrDesc &NewMCID = XtensaII->get(Xtensa::RETW_N);
     MachineInstrBuilder MIB = BuildMI(MBB, MI, dl, NewMCID);
     // Transfer MI flags.
     MIB.setMIFlags(MI->getFlags());

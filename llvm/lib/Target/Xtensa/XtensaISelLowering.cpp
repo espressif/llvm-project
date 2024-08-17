@@ -1302,12 +1302,18 @@ const char *XtensaTargetLowering::getTargetNodeName(unsigned Opcode) const {
     return "XtensaISD::BR_JT";
   case XtensaISD::CALL:
     return "XtensaISD::CALL";
+  case XtensaISD::CALLW:
+    return "XtensaISD::CALLW";
   case XtensaISD::EXTUI:
     return "XtensaISD::EXTUI";
+  case XtensaISD::MOVSP:
+    return "XtensaISD::MOVSP";
   case XtensaISD::PCREL_WRAPPER:
     return "XtensaISD::PCREL_WRAPPER";
   case XtensaISD::RET:
     return "XtensaISD::RET";
+  case XtensaISD::RETW:
+    return "XtensaISD::RETW";
   case XtensaISD::SELECT_CC:
     return "XtensaISD::SELECT_CC";
   case XtensaISD::SRCL:
