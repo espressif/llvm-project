@@ -75,8 +75,25 @@ class SRReg<bits<8> num, string n, list<string> alt = []> : XtensaReg<n> {
 // Shift Amount Register
 def SAR : SRReg<3, "sar", ["SAR","3"]>;
 
+def BREG : SRReg<4, "br", ["BR", "4"]>;
+
 def WINDOWBASE : SRReg<72, "windowbase", ["WINDOWBASE", "72"]>;
 def WINDOWSTART : SRReg<73, "windowstart", ["WINDOWSTART", "73"]>;
 
 def SR :  RegisterClass<"Xtensa", [i32], 32, (add SAR,
- WINDOWBASE, WINDOWSTART)>;
+ BREG, WINDOWBASE, WINDOWSTART)>;
+
+//===----------------------------------------------------------------------===//
+// Boolean registers
+//===----------------------------------------------------------------------===//
+class BReg<bits<4> num, string n> : XtensaReg<n> {
+  let HWEncoding{3-0} = num;
+}
+
+foreach i = 0-15 in {
+  def B#i  : BReg<i, "b"#i>,  DwarfRegNum<[i]>;
+}
+
+// Boolean register class
+def BR : RegisterClass<"Xtensa", [i1], 0, (add B0, B1,
+B2, B3, B4, B5, B6, B7, B8, B9, B10, B11, B12, B13, B14, B15)>;

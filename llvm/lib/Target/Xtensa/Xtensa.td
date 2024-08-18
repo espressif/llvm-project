@@ -26,6 +26,12 @@ def FeatureWindowed         : SubtargetFeature<"windowed", "HasWindowed", "true"
                                                "Enable Xtensa Windowed Register option">;
 def HasWindowed             : Predicate<"Subtarget->hasWindowed()">,
                                          AssemblerPredicate<(all_of FeatureWindowed)>;
+
+def FeatureBoolean          : SubtargetFeature<"bool", "HasBoolean", "true",
+                                               "Enable Xtensa Boolean extension">;
+def HasBoolean              : Predicate<"Subtarget->hasBoolean()">,
+                                         AssemblerPredicate<(all_of FeatureBoolean)>;
+
 //===----------------------------------------------------------------------===//
 // Xtensa supported processors.
 //===----------------------------------------------------------------------===//
