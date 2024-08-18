@@ -44,6 +44,15 @@ static bool isLongCall(const char *str) {
   return true;
 }
 
+// The calling conventions in XtensaCallingConv.td are described in terms of the
+// callee's register window. This function translates registers to the
+// corresponding caller window %o register.
+static unsigned toCallerWindow(unsigned Reg) {
+  if (Reg >= Xtensa::A2 && Reg <= Xtensa::A7)
+    return Reg - Xtensa::A2 + Xtensa::A10;
+  return Reg;
+}
+
 XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
                                            const XtensaSubtarget &STI)
     : TargetLowering(TM), Subtarget(STI) {
@@ -347,14 +356,25 @@ SDValue XtensaTargetLowering::LowerFormalArguments(
     // Arguments stored on registers
     if (VA.isRegLoc()) {
       EVT RegVT = VA.getLocVT();
+      const TargetRegisterClass *RC = &Xtensa::ARRegClass;
 
       if (RegVT != MVT::i32)
         report_fatal_error("RegVT not supported by FormalArguments Lowering");
 
       // Transform the arguments stored on
       // physical registers into virtual ones
-      Register Reg = MF.addLiveIn(VA.getLocReg(), &Xtensa::ARRegClass);
-      SDValue ArgValue = DAG.getCopyFromReg(Chain, DL, Reg, RegVT);
+      unsigned Register = 0;
+      unsigned FrameReg = Subtarget.getRegisterInfo()->getFrameRegister(MF);
+
+      // Argument passed in FrameReg in WinABI we save in A8 (in emitPrologue),
+      // so load argument from A8
+      if (Subtarget.isWinABI() && (VA.getLocReg() == FrameReg)) {
+        Register = MF.addLiveIn(Xtensa::A8, RC);
+      } else {
+        Register = MF.addLiveIn(VA.getLocReg(), RC);
+      }
+
+      SDValue ArgValue = DAG.getCopyFromReg(Chain, DL, Register, RegVT);
 
       // If this is an 8 or 16-bit value, it has been passed promoted
       // to 32 bits.  Insert an assert[sz]ext to capture this, then
@@ -562,6 +582,8 @@ XtensaTargetLowering::LowerCall(CallLoweringInfo &CLI,
   SDValue Glue;
   for (unsigned I = 0, E = RegsToPass.size(); I != E; ++I) {
     unsigned Reg = RegsToPass[I].first;
+    if (Subtarget.isWinABI())
+      Reg = toCallerWindow(Reg);
     Chain = DAG.getCopyToReg(Chain, DL, Reg, RegsToPass[I].second, Glue);
     Glue = Chain.getValue(1);
   }
@@ -611,6 +633,8 @@ XtensaTargetLowering::LowerCall(CallLoweringInfo &CLI,
   // known live into the call.
   for (unsigned I = 0, E = RegsToPass.size(); I != E; ++I) {
     unsigned Reg = RegsToPass[I].first;
+    if (Subtarget.isWinABI())
+      Reg = toCallerWindow(Reg);
     Ops.push_back(DAG.getRegister(Reg, RegsToPass[I].second.getValueType()));
   }
 
@@ -619,7 +643,8 @@ XtensaTargetLowering::LowerCall(CallLoweringInfo &CLI,
     Ops.push_back(Glue);
 
   SDVTList NodeTys = DAG.getVTList(MVT::Other, MVT::Glue);
-  Chain = DAG.getNode(XtensaISD::CALL, DL, NodeTys, Ops);
+  Chain = DAG.getNode(Subtarget.isWinABI() ? XtensaISD::CALLW : XtensaISD::CALL,
+                      DL, NodeTys, Ops);
   Glue = Chain.getValue(1);
 
   // Mark the end of the call, which is glued to the call itself.
@@ -630,7 +655,8 @@ XtensaTargetLowering::LowerCall(CallLoweringInfo &CLI,
   // Assign locations to each value returned by this call.
   SmallVector<CCValAssign, 16> RetLocs;
   CCState RetCCInfo(CallConv, IsVarArg, MF, RetLocs, *DAG.getContext());
-  RetCCInfo.AnalyzeCallResult(Ins, RetCC_Xtensa);
+  RetCCInfo.AnalyzeCallResult(Ins, Subtarget.isWinABI() ? RetCCW_Xtensa
+                                                        : RetCC_Xtensa);
 
   // Copy all of the result registers out of their specified physreg.
   for (unsigned I = 0, E = RetLocs.size(); I != E; ++I) {
@@ -672,7 +698,9 @@ XtensaTargetLowering::LowerReturn(SDValue Chain, CallingConv::ID CallConv,
   SDValue Glue;
   // Quick exit for void returns
   if (RetLocs.empty())
-    return DAG.getNode(XtensaISD::RET, DL, MVT::Other, Chain);
+    return DAG.getNode(Subtarget.isWinABI() ? XtensaISD::RETW
+                                            : XtensaISD::RET,
+                       DL, MVT::Other, Chain);
 
   // Copy the result values into the output registers.
   SmallVector<SDValue, 4> RetOps;
@@ -696,7 +724,9 @@ XtensaTargetLowering::LowerReturn(SDValue Chain, CallingConv::ID CallConv,
   if (Glue.getNode())
     RetOps.push_back(Glue);
 
-  return DAG.getNode(XtensaISD::RET, DL, MVT::Other, RetOps);
+  return DAG.getNode(Subtarget.isWinABI() ? XtensaISD::RETW
+                                          : XtensaISD::RET,
+                     DL, MVT::Other, RetOps);
 }
 
 static unsigned getBranchOpcode(ISD::CondCode Cond) {
@@ -904,8 +934,13 @@ SDValue XtensaTargetLowering::LowerSTACKSAVE(SDValue Op,
 
 SDValue XtensaTargetLowering::LowerSTACKRESTORE(SDValue Op,
                                                 SelectionDAG &DAG) const {
-  return DAG.getCopyToReg(Op.getOperand(0), SDLoc(Op), Xtensa::SP,
-                          Op.getOperand(1));
+  if (Subtarget.isWinABI()) {
+    SDValue NewSP =
+        DAG.getNode(XtensaISD::MOVSP, SDLoc(Op), MVT::i32, Op.getOperand(1));
+    return DAG.getCopyToReg(Op.getOperand(0), SDLoc(Op), Xtensa::SP, NewSP);
+  } else {
+    return DAG.getCopyToReg(Op.getOperand(0), SDLoc(Op), Xtensa::SP, Op.getOperand(1));
+  }
 }
 
 SDValue XtensaTargetLowering::LowerFRAMEADDR(SDValue Op,
@@ -946,7 +981,12 @@ SDValue XtensaTargetLowering::LowerDYNAMIC_STACKALLOC(SDValue Op,
   unsigned SPReg = Xtensa::SP;
   SDValue SP = DAG.getCopyFromReg(Chain, DL, SPReg, VT);
   SDValue NewSP = DAG.getNode(ISD::SUB, DL, VT, SP, SizeRoundUp); // Value
-  Chain = DAG.getCopyToReg(SP.getValue(1), DL, SPReg, NewSP); // Output chain
+  if (Subtarget.isWinABI()) {
+    SDValue NewSP1 = DAG.getNode(XtensaISD::MOVSP, DL, MVT::i32, NewSP);
+    Chain = DAG.getCopyToReg(SP.getValue(1), DL, SPReg, NewSP1); // Output chain
+  } else {
+    Chain = DAG.getCopyToReg(SP.getValue(1), DL, SPReg, NewSP); // Output chain
+  }
 
   SDValue NewVal = DAG.getCopyFromReg(Chain, DL, SPReg, MVT::i32);
   Chain = NewVal.getValue(1);
