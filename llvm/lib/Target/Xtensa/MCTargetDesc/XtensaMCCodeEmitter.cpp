@@ -134,6 +134,10 @@ private:
   uint32_t getB4constuOpValue(const MCInst &MI, unsigned OpNo,
                               SmallVectorImpl<MCFixup> &Fixups,
                               const MCSubtargetInfo &STI) const;
+
+  uint32_t getSeimm7_22OpValue(const MCInst &MI, unsigned OpNo,
+                               SmallVectorImpl<MCFixup> &Fixups,
+                               const MCSubtargetInfo &STI) const;
 };
 } // namespace
 
@@ -556,4 +560,18 @@ XtensaMCCodeEmitter::getB4constuOpValue(const MCInst &MI, unsigned OpNo,
 
   return Res;
 }
+
+uint32_t
+XtensaMCCodeEmitter::getSeimm7_22OpValue(const MCInst &MI, unsigned OpNo,
+                                         SmallVectorImpl<MCFixup> &Fixups,
+                                         const MCSubtargetInfo &STI) const {
+  const MCOperand &MO = MI.getOperand(OpNo);
+  uint32_t res = static_cast<uint32_t>(MO.getImm());
+
+  res -= 7;
+  assert(((res & 0xf) == res) && "Unexpected operand value!");
+
+  return res;
+}
+
 #include "XtensaGenMCCodeEmitter.inc"

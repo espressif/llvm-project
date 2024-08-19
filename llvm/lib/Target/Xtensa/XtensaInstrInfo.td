@@ -1099,3 +1099,59 @@ let usesCustomInserter = 1 in {
                               "!select_cc_fp_fp $dst, $lhs, $rhs, $t, $f, $cond",
                               [(set FPR:$dst, (Xtensa_select_cc_fp FPR:$lhs, FPR:$rhs, FPR:$t, FPR:$f, imm:$cond))]>;
 }
+
+//===----------------------------------------------------------------------===//
+// Loop Instructions
+//===----------------------------------------------------------------------===//
+
+def LOOP : RRI8_Inst<0x06, (outs), (ins AR:$s, mem8:$uimm8),
+                    "loop\t$$s, $uimm8", []>, Requires<[HasLoop]> {
+  bits<8> uimm8;
+
+  let r = 0x08;
+  let t = 0x07;
+  let imm8 = uimm8;
+}
+
+def LOOPGTZ : RRI8_Inst<0x06, (outs), (ins AR:$s, mem8:$uimm8),
+                       "loopgtz\t$$s, $uimm8", []>, Requires<[HasLoop]> {
+  bits<8> uimm8;
+
+  let r = 0x0A;
+  let t = 0x07;
+  let imm8 = uimm8;
+}
+
+def LOOPNEZ : RRI8_Inst<0x06, (outs), (ins AR:$s, mem8:$uimm8),
+                       "loopnez\t$$s, $uimm8", []>, Requires<[HasLoop]> {
+  bits<8> uimm8;
+
+  let r = 0x09;
+  let t = 0x07;
+  let imm8 = uimm8;
+}
+
+//===----------------------------------------------------------------------===//
+// SEXT Instructions
+//===----------------------------------------------------------------------===//
+
+def SEXT : RRR_Inst<0x00, 0x03, 0x02, (outs AR:$r), (ins AR:$s, seimm7_22:$imm),
+                   "sext\t$r, $s, $imm", []>, Requires<[HasSEXT]> {
+  bits<4> imm;
+
+  let t = imm;
+}
+
+//===----------------------------------------------------------------------===//
+// NSA Instructions
+//===----------------------------------------------------------------------===//
+
+def NSA : RRR_Inst<0x00, 0x00, 0x04, (outs AR:$t), (ins AR:$s),
+                  "nsa\t$t, $s", []>, Requires<[HasNSA]> {
+  let r = 0xE;
+}
+
+def NSAU : RRR_Inst<0x00, 0x00, 0x04, (outs AR:$t), (ins AR:$s),
+                   "nsau\t$t, $s", []>, Requires<[HasNSA]> {
+  let r = 0xF;
+}

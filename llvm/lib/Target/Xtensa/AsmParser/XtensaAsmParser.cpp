@@ -265,6 +265,8 @@ public:
     return false;
   }
 
+  bool isseimm7_22() const { return isImm(7, 22); }
+
   /// getStartLoc - Gets location of the first token of this operand
   SMLoc getStartLoc() const override { return StartLoc; }
   /// getEndLoc - Gets location of the last token of this operand
@@ -531,6 +533,9 @@ bool XtensaAsmParser::matchAndEmitInstruction(SMLoc IDLoc, unsigned &Opcode,
   case Match_Invalidentry_imm12:
     return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
                  "expected immediate in range [0, 32760]");
+  case Match_Invalidseimm7_22:
+    return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+                 "expected immediate in range [7, 22]");
   }
 
   report_fatal_error("Unknown match type detected!");

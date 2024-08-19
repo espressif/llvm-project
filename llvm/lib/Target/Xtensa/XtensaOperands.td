@@ -167,6 +167,14 @@ def b4constu: Immediate<i32,
   let EncoderMethod = "getB4constuOpValue";
   let DecoderMethod = "decodeB4constuOperand";
 }
+
+// seimm7_22 predicate - Immediate in the range [7,22] for sign extend
+def Seimm7_22_AsmOperand: ImmAsmOperand<"seimm7_22">;
+def seimm7_22: Immediate<i32, [{ return Imm >= 7 && Imm <= 22; }], "Seimm7_22_AsmOperand"> {
+  let EncoderMethod = "getSeimm7_22OpValue";
+  let DecoderMethod = "decodeSeimm7_22Operand";
+}
+
 //===----------------------------------------------------------------------===//
 // Memory address operands
 //===----------------------------------------------------------------------===//

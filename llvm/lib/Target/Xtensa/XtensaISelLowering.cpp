@@ -1976,11 +1976,18 @@ MachineBasicBlock *XtensaTargetLowering::EmitInstrWithCustomInserter(
 
     BuildMI(*MBB, MI, DL, TII.get(Xtensa::L8UI), R1).add(Op1).add(Op2);
 
-    unsigned R2 = MRI.createVirtualRegister(RC);
-    BuildMI(*MBB, MI, DL, TII.get(Xtensa::SLLI), R2).addReg(R1).addImm(24);
-    BuildMI(*MBB, MI, DL, TII.get(Xtensa::SRAI), R.getReg())
-        .addReg(R2)
-        .addImm(24);
+    if (Subtarget.hasSEXT()) {
+      BuildMI(*MBB, MI, DL, TII.get(Xtensa::SEXT), R.getReg())
+          .addReg(R1)
+          .addImm(7);
+    } else {
+      unsigned R2 = MRI.createVirtualRegister(RC);
+      BuildMI(*MBB, MI, DL, TII.get(Xtensa::SLLI), R2).addReg(R1).addImm(24);
+      BuildMI(*MBB, MI, DL, TII.get(Xtensa::SRAI), R.getReg())
+          .addReg(R2)
+          .addImm(24);
+    }
+
     MI.eraseFromParent();
     return MBB;
   }

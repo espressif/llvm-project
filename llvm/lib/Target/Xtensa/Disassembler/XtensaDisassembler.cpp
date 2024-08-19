@@ -106,7 +106,9 @@ static DecodeStatus DecodeBRRegisterClass(MCInst &Inst, uint64_t RegNo,
 }
 
 static const unsigned SRDecoderTable[] = {
-    Xtensa::SAR, 3, Xtensa::WINDOWBASE, 72, Xtensa::WINDOWSTART, 73};
+    Xtensa::LBEG,        0, Xtensa::LEND, 1, Xtensa::LCOUNT,      2,
+    Xtensa::SAR,         3, Xtensa::BREG, 4, Xtensa ::WINDOWBASE, 72,
+    Xtensa::WINDOWSTART, 73};
 
 static DecodeStatus DecodeSRRegisterClass(MCInst &Inst, uint64_t RegNo,
                                           uint64_t Address,
@@ -296,6 +298,14 @@ static DecodeStatus decodeShimm1_31Operand(MCInst &Inst, uint64_t Imm,
                                            const void *Decoder) {
   assert(isUInt<5>(Imm) && "Invalid immediate");
   Inst.addOperand(MCOperand::createImm(32 - Imm));
+  return MCDisassembler::Success;
+}
+
+static DecodeStatus decodeSeimm7_22Operand(MCInst &Inst, uint64_t Imm,
+                                           int64_t Address,
+                                           const void *Decoder) {
+  assert(isUInt<4>(Imm) && "Invalid immediate");
+  Inst.addOperand(MCOperand::createImm(Imm + 7));
   return MCDisassembler::Success;
 }
 

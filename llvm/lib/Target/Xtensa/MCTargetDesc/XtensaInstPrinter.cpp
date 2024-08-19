@@ -413,3 +413,14 @@ void XtensaInstPrinter::printB4constu_AsmOperand(const MCInst *MI, int OpNum,
   } else
     printOperand(MI, OpNum, O);
 }
+
+void XtensaInstPrinter::printSeimm7_22_AsmOperand(const MCInst *MI, int OpNum,
+                                                  raw_ostream &O) {
+  if (MI->getOperand(OpNum).isImm()) {
+    int64_t Value = MI->getOperand(OpNum).getImm();
+    assert((Value >= 7 && Value <= 22) &&
+           "Invalid argument, value must be in range <7,22>");
+    O << Value;
+  } else
+    printOperand(MI, OpNum, O);
+}
