@@ -1,4 +1,4 @@
-; RUN: llc -mtriple=xtensa -verify-machineinstrs < %s \
+; RUN: llc -mtriple=xtensa --mcpu=generic -verify-machineinstrs < %s \
 ; RUN:   | FileCheck %s
 
 define void @switch_4_xtensa(i32 %in, ptr %out) nounwind {

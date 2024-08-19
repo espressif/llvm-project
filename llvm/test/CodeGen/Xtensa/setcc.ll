@@ -1,4 +1,4 @@
-; RUN: llc < %s -mtriple=xtensa -O0 | FileCheck %s
+; RUN: llc < %s -mtriple=xtensa --mcpu=generic -O0 | FileCheck %s
 
 define i32 @f_eq(i32 %a, i32 %b) nounwind {
 ; CHECK-LABEL: f_eq:

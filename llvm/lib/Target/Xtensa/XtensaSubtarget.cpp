@@ -27,7 +27,7 @@ XtensaSubtarget::initializeSubtargetDependencies(StringRef CPU, StringRef FS) {
   StringRef CPUName = CPU;
   if (CPUName.empty()) {
     // set default cpu name
-    CPUName = "generic";
+    CPUName = "esp32";
   }
 
   HasDensity = false;

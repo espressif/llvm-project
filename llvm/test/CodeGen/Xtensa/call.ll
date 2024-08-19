@@ -1,4 +1,4 @@
-; RUN: llc --mtriple=xtensa < %s | FileCheck %s
+; RUN: llc --mtriple=xtensa --mcpu=generic < %s | FileCheck %s
 
 declare i32 @external_function(i32)
 

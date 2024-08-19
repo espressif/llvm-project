@@ -1,4 +1,4 @@
-; RUN: llc --mtriple=xtensa < %s | FileCheck %s
+; RUN: llc --mtriple=xtensa --mcpu=generic < %s | FileCheck %s
 
 @addr = global ptr null
 
