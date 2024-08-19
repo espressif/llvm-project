@@ -53,6 +53,7 @@
 #include "ToolChains/VEToolchain.h"
 #include "ToolChains/WebAssembly.h"
 #include "ToolChains/XCore.h"
+#include "ToolChains/Xtensa.h"
 #include "ToolChains/ZOS.h"
 #include "clang/Basic/DiagnosticDriver.h"
 #include "clang/Basic/TargetID.h"
@@ -7205,6 +7206,9 @@ const ToolChain &Driver::getToolChain(const ArgList &Args,
       case llvm::Triple::amdgcn:
       case llvm::Triple::r600:
         TC = std::make_unique<toolchains::AMDGPUToolChain>(*this, Target, Args);
+        break;
+      case llvm::Triple::xtensa:
+        TC = std::make_unique<toolchains::XtensaToolChain>(*this, Target, Args);
         break;
       default:
         if (toolchains::BareMetal::handlesTarget(Target))
