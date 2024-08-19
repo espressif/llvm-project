@@ -107,6 +107,52 @@ def FeatureDebug             : SubtargetFeature<"debug", "HasDebug", "true",
 def HasDebug                 : Predicate<"Subtarget->hasDebug()">,
                                           AssemblerPredicate<(all_of FeatureDebug)>;
 
+def FeatureException         : SubtargetFeature<"exception", "HasException", "true",
+                                                "Enable Xtensa Exception option">;
+def HasException             : Predicate<"Subtarget->hasException()">,
+                                          AssemblerPredicate<(all_of FeatureException)>;
+
+def FeatureHighPriInterrupts : SubtargetFeature<"highpriinterrupts",
+                                                "HasHighPriInterrupts", "true",
+                                                "Enable Xtensa HighPriInterrupts option">;
+def HasHighPriInterrupts     : Predicate<"Subtarget->hasHighPriInterrupts()">,
+                                          AssemblerPredicate<(all_of FeatureHighPriInterrupts)>;
+
+def FeatureCoprocessor       : SubtargetFeature<"coprocessor", "HasCoprocessor", "true",
+                                                "Enable Xtensa Coprocessor option">;
+def HasCoprocessor           : Predicate<"Subtarget->hasCoprocessor()">,
+                                          AssemblerPredicate<(all_of FeatureCoprocessor)>;
+
+def FeatureInterrupt         : SubtargetFeature<"interrupt", "HasInterrupt", "true",
+                                                "Enable Xtensa Interrupt option">;
+def HasInterrupt             : Predicate<"Subtarget->hasInterrupt()">,
+                                          AssemblerPredicate<(all_of FeatureInterrupt)>;
+
+def FeatureRelocatableVector : SubtargetFeature<"rvector", "HasRelocatableVector", "true",
+                                                "Enable Xtensa Relocatable Vector option">;
+def HasRelocatableVector     : Predicate<"Subtarget->hasRelocatableVector()">,
+                                          AssemblerPredicate<(all_of FeatureRelocatableVector)>;
+
+def FeatureTimerInt          : SubtargetFeature<"timerint", "HasTimerInt", "true",
+                                                "Enable Xtensa Timer Interrupt option">;
+def HasTimerInt              : Predicate<"Subtarget->hasTimerInt()">,
+                                          AssemblerPredicate<(all_of FeatureTimerInt)>;
+
+def FeaturePRID              : SubtargetFeature<"prid", "HasPRID", "true",
+                                                "Enable Xtensa Processor ID option">;
+def HasPRID                  : Predicate<"Subtarget->hasPRID()">,
+                                          AssemblerPredicate<(all_of FeaturePRID)>;
+
+def FeatureRegionProtection  : SubtargetFeature<"regprotect", "HasRegionProtection", "true",
+                                                "Enable Xtensa Region Protection option">;
+def HasRegionProtection      : Predicate<"Subtarget->hasRegionProtection()">,
+                                          AssemblerPredicate<(all_of FeatureRegionProtection)>;
+
+def FeatureMiscSR            : SubtargetFeature<"miscsr", "HasMiscSR", "true",
+                                                "Enable Xtensa Miscellaneous SR option">;
+def HasMiscSR                : Predicate<"Subtarget->hasMiscSR()">,
+                                          AssemblerPredicate<(all_of FeatureMiscSR)>;
+
 //===----------------------------------------------------------------------===//
 // Xtensa supported processors.
 //===----------------------------------------------------------------------===//
