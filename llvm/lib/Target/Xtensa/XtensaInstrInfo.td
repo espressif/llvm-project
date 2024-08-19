@@ -1348,6 +1348,16 @@ let usesCustomInserter = 1, Predicates = [HasS32C1I] in {
   def ATOMIC_CMP_SWAP_32_P : Pseudo<(outs AR:$dst), (ins AR:$ptr, AR:$cmp, AR:$swap),
                                    "!atomic_cmp_swap_32_p, $dst, $ptr, $cmp, $swap",
                                    [(set AR:$dst, (atomic_cmp_swap_i32 AR:$ptr, AR:$cmp, AR:$swap))]>;
+
+  def ATOMIC_SWAP_8_P  : Pseudo<(outs AR:$dst), (ins AR:$ptr, AR:$swap),
+                               "!atomic_swap_8_p, $dst, $ptr, $swap",
+                               [(set AR:$dst, (atomic_swap_i8 AR:$ptr, AR:$swap))]>;
+  def ATOMIC_SWAP_16_P : Pseudo<(outs AR:$dst), (ins AR:$ptr, AR:$swap),
+                               "!atomic_swap_16_p, $dst, $ptr, $swap",
+                               [(set AR:$dst, (atomic_swap_i16 AR:$ptr, AR:$swap))]>;
+  def ATOMIC_SWAP_32_P : Pseudo<(outs AR:$dst), (ins AR:$ptr, AR:$swap),
+                               "!atomic_swap_32_p, $dst, $ptr, $swap",
+                               [(set AR:$dst, (atomic_swap_i32 AR:$ptr, AR:$swap))]>;
 }
 
 //===----------------------------------------------------------------------===//
