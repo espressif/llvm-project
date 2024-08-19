@@ -6,12 +6,17 @@
 
 define i32 @constraint_r(i32 %a) {
 ; XTENSA-LABEL: constraint_r:
-; XTENSA:         l32r a8, .LCPI0_0
-; XTENSA-NEXT:    l32i a8, a8, 0
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0:
+; XTENSA-NEXT:    entry a1, 32
+; XTENSA-NEXT:    mov.n a8, a1
+; XTENSA-NEXT:    .cfi_def_cfa_offset 32
+; XTENSA-NEXT:    l32r a8, .LCPI0_0
+; XTENSA-NEXT:    l32i.n a8, a8, 0
 ; XTENSA-NEXT:    #APP
 ; XTENSA-NEXT:    add a2, a2, a8
 ; XTENSA-NEXT:    #NO_APP
-; XTENSA-NEXT:    ret
+; XTENSA-NEXT:    retw.n
   %1 = load i32, ptr @gi
   %2 = tail call i32 asm "add $0, $1, $2", "=r,r,r"(i32 %a, i32 %1)
   ret i32 %2
@@ -19,10 +24,15 @@ define i32 @constraint_r(i32 %a) {
 
 define i32 @constraint_i(i32 %a) {
 ; XTENSA-LABEL: constraint_i:
-; XTENSA:         #APP
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0:
+; XTENSA-NEXT:    entry a1, 32
+; XTENSA-NEXT:    mov.n a8, a1
+; XTENSA-NEXT:    .cfi_def_cfa_offset 32
+; XTENSA-NEXT:    #APP
 ; XTENSA-NEXT:    addi a2, a2, 113
 ; XTENSA-NEXT:    #NO_APP
-; XTENSA-NEXT:    ret
+; XTENSA-NEXT:    retw.n
   %1 = load i32, ptr @gi
   %2 = tail call i32 asm "addi $0, $1, $2", "=r,r,i"(i32 %a, i32 113)
   ret i32 %2
@@ -30,11 +40,14 @@ define i32 @constraint_i(i32 %a) {
 
 define i32 @explicit_register_a3(i32 %a) nounwind {
 ; XTENSA-LABEL: explicit_register_a3:
-; XTENSA:         or a3, a2, a2
+; XTENSA:       # %bb.0:
+; XTENSA-NEXT:    entry a1, 32
+; XTENSA-NEXT:    mov.n a8, a1
+; XTENSA-NEXT:    mov.n a3, a2
 ; XTENSA-NEXT:    #APP
 ; XTENSA-NEXT:    addi a2, a3, 1
 ; XTENSA-NEXT:    #NO_APP
-; XTENSA-NEXT:    ret
+; XTENSA-NEXT:    retw.n
   %1 = tail call i32 asm "addi $0, $1, 1", "=r,{a3}"(i32 %a)
   ret i32 %1
 }

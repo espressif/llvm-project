@@ -6,7 +6,10 @@ define i32 @jump(i1 %a) {
 ; XTENSA-LABEL: jump:
 ; XTENSA:         .cfi_startproc
 ; XTENSA-NEXT:  # %bb.0:
-; XTENSA-NEXT:    movi a8, 1
+; XTENSA-NEXT:    entry a1, 32
+; XTENSA-NEXT:    mov.n a8, a1
+; XTENSA-NEXT:    .cfi_def_cfa_offset 32
+; XTENSA-NEXT:    movi.n a8, 1
 ; XTENSA-NEXT:    and a8, a2, a8
 ; XTENSA-NEXT:    beqz a8, .LBB0_2
 ; XTENSA-NEXT:  # %bb.1: # %iftrue
@@ -15,13 +18,13 @@ define i32 @jump(i1 %a) {
 ; XTENSA-NEXT:    #APP
 ; XTENSA-NEXT:    .space 1024
 ; XTENSA-NEXT:    #NO_APP
-; XTENSA-NEXT:    movi a2, 1
-; XTENSA-NEXT:    ret
+; XTENSA-NEXT:    movi.n a2, 1
+; XTENSA-NEXT:    retw.n
 ; XTENSA-NEXT:  .LBB0_2: # %jmp
 ; XTENSA-NEXT:    #APP
 ; XTENSA-NEXT:    #NO_APP
-; XTENSA-NEXT:    movi a2, 1
-; XTENSA-NEXT:    ret
+; XTENSA-NEXT:    movi.n a2, 1
+; XTENSA-NEXT:    retw.n
   br i1 %a, label %iftrue, label %jmp
 
 jmp:
@@ -44,13 +47,13 @@ define i32 @jx(i1 %a) {
 ; XTENSA-LABEL: jx:
 ; XTENSA:         .cfi_startproc
 ; XTENSA-NEXT:  # %bb.0:
-; XTENSA-NEXT:    addi a8, a1, -16
-; XTENSA-NEXT:    or a1, a8, a8
-; XTENSA-NEXT:    .cfi_def_cfa_offset 16
-; XTENSA-NEXT:    movi a8, 1
+; XTENSA-NEXT:    entry a1, 48
+; XTENSA-NEXT:    mov.n a8, a1
+; XTENSA-NEXT:    .cfi_def_cfa_offset 48
+; XTENSA-NEXT:    movi.n a8, 1
 ; XTENSA-NEXT:    and a8, a2, a8
 ; XTENSA-NEXT:    bnez a8, .LBB1_1
-; XTENSA-NEXT:  # %bb.4:
+; XTENSA-NEXT:  # %bb.3:
 ; XTENSA-NEXT:    l32r a8, .LCPI1_0
 ; XTENSA-NEXT:    jx a8
 ; XTENSA-NEXT:  .LBB1_1: # %iftrue
@@ -59,15 +62,13 @@ define i32 @jx(i1 %a) {
 ; XTENSA-NEXT:    #APP
 ; XTENSA-NEXT:    .space 1048576
 ; XTENSA-NEXT:    #NO_APP
-; XTENSA-NEXT:    j .LBB1_3
+; XTENSA-NEXT:    movi.n a2, 1
+; XTENSA-NEXT:    retw.n
 ; XTENSA-NEXT:  .LBB1_2: # %jmp
 ; XTENSA-NEXT:    #APP
 ; XTENSA-NEXT:    #NO_APP
-; XTENSA-NEXT:  .LBB1_3: # %tail
-; XTENSA-NEXT:    movi a2, 1
-; XTENSA-NEXT:    addi a8, a1, 16
-; XTENSA-NEXT:    or a1, a8, a8
-; XTENSA-NEXT:    ret
+; XTENSA-NEXT:    movi.n a2, 1
+; XTENSA-NEXT:    retw.n
   br i1 %a, label %iftrue, label %jmp
 
 jmp:
@@ -90,17 +91,9 @@ define void @relax_spill() {
 ; XTENSA-LABEL: relax_spill:
 ; XTENSA:         .cfi_startproc
 ; XTENSA-NEXT:  # %bb.0:
-; XTENSA-NEXT:    addi a8, a1, -32
-; XTENSA-NEXT:    or a1, a8, a8
-; XTENSA-NEXT:    .cfi_def_cfa_offset 32
-; XTENSA-NEXT:    s32i a12, a1, 16 # 4-byte Folded Spill
-; XTENSA-NEXT:    s32i a13, a1, 12 # 4-byte Folded Spill
-; XTENSA-NEXT:    s32i a14, a1, 8 # 4-byte Folded Spill
-; XTENSA-NEXT:    s32i a15, a1, 4 # 4-byte Folded Spill
-; XTENSA-NEXT:    .cfi_offset b12, -4
-; XTENSA-NEXT:    .cfi_offset b13, -8
-; XTENSA-NEXT:    .cfi_offset b14, -12
-; XTENSA-NEXT:    .cfi_offset b15, -16
+; XTENSA-NEXT:    entry a1, 48
+; XTENSA-NEXT:    mov.n a8, a1
+; XTENSA-NEXT:    .cfi_def_cfa_offset 48
 ; XTENSA-NEXT:    #APP
 ; XTENSA-NEXT:    #NO_APP
 ; XTENSA-NEXT:    #APP
@@ -202,13 +195,7 @@ define void @relax_spill() {
 ; XTENSA-NEXT:    #APP
 ; XTENSA-NEXT:    # reg use a15
 ; XTENSA-NEXT:    #NO_APP
-; XTENSA-NEXT:    l32i a15, a1, 4 # 4-byte Folded Reload
-; XTENSA-NEXT:    l32i a14, a1, 8 # 4-byte Folded Reload
-; XTENSA-NEXT:    l32i a13, a1, 12 # 4-byte Folded Reload
-; XTENSA-NEXT:    l32i a12, a1, 16 # 4-byte Folded Reload
-; XTENSA-NEXT:    addi a8, a1, 32
-; XTENSA-NEXT:    or a1, a8, a8
-; XTENSA-NEXT:    ret
+; XTENSA-NEXT:    retw.n
   call void asm sideeffect "", ""()
   %a2 = call i32 asm sideeffect "addi a2, a3, 1", "={a2}"()
   %a3 = call i32 asm sideeffect "addi a3, a3, 1", "={a3}"()

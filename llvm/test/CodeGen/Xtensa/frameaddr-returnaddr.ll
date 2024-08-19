@@ -7,32 +7,44 @@ declare ptr @llvm.returnaddress(i32)
 
 define ptr @test_frameaddress_0() nounwind {
 ; CHECK-LABEL: test_frameaddress_0:
-; CHECK:         or a2, a1, a1
-; CHECK-NEXT:    ret
+; CHECK:       # %bb.0:
+; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    mov.n a8, a1
+; CHECK-NEXT:    mov.n a2, a1
+; CHECK-NEXT:    retw.n
   %frameaddr = call ptr @llvm.frameaddress(i32 0)
   ret ptr %frameaddr
 }
 
 define ptr @test_returnaddress_0() nounwind {
 ; CHECK-LABEL: test_returnaddress_0:
-; CHECK:         or a2, a0, a0
-; CHECK-NEXT:    ret
+; CHECK:       # %bb.0:
+; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    mov.n a8, a1
+; CHECK-NEXT:    mov.n a2, a0
+; CHECK-NEXT:    retw.n
   %retaddr = call ptr @llvm.returnaddress(i32 0)
   ret ptr %retaddr
 }
 
 define ptr @test_frameaddress_1() nounwind {
 ; CHECK-LABEL: test_frameaddress_1:
-; CHECK:         movi a2, 0
-; CHECK-NEXT:    ret
+; CHECK:       # %bb.0:
+; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    mov.n a8, a1
+; CHECK-NEXT:    movi.n a2, 0
+; CHECK-NEXT:    retw.n
   %frameaddr = call ptr @llvm.frameaddress(i32 1)
   ret ptr %frameaddr
 }
 
 define ptr @test_returnaddress_1() nounwind {
 ; CHECK-LABEL: test_returnaddress_1:
-; CHECK:         movi a2, 0
-; CHECK-NEXT:    ret
+; CHECK:       # %bb.0:
+; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    mov.n a8, a1
+; CHECK-NEXT:    movi.n a2, 0
+; CHECK-NEXT:    retw.n
   %retaddr = call ptr @llvm.returnaddress(i32 1)
   ret ptr %retaddr
 }

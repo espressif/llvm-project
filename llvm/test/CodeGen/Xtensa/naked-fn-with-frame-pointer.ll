@@ -8,7 +8,7 @@ define dso_local void @naked() naked "frame-pointer"="all" {
 ; CHECK:         .cfi_startproc
 ; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    l32r a8, .LCPI0_0
-; CHECK-NEXT:    callx0 a8
+; CHECK-NEXT:    callx8 a8
   call void @main()
   unreachable
 }
@@ -17,17 +17,12 @@ define dso_local void @normal() "frame-pointer"="all" {
 ; CHECK-LABEL: normal:
 ; CHECK:         .cfi_startproc
 ; CHECK-NEXT:  # %bb.0:
-; CHECK-NEXT:    addi a8, a1, -16
-; CHECK-NEXT:    or a1, a8, a8
-; CHECK-NEXT:    .cfi_def_cfa_offset 16
-; CHECK-NEXT:    s32i a0, a1, 4 # 4-byte Folded Spill
-; CHECK-NEXT:    s32i a15, a1, 0 # 4-byte Folded Spill
-; CHECK-NEXT:    .cfi_offset b0, -4
-; CHECK-NEXT:    .cfi_offset b15, -8
-; CHECK-NEXT:    or a15, a1, a1
-; CHECK-NEXT:    .cfi_def_cfa_register b15
+; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    mov.n a8, a7
+; CHECK-NEXT:    mov.n a7, a1
+; CHECK-NEXT:    .cfi_def_cfa b7, 32
 ; CHECK-NEXT:    l32r a8, .LCPI1_0
-; CHECK-NEXT:    callx0 a8
+; CHECK-NEXT:    callx8 a8
   call void @main()
   unreachable
 }

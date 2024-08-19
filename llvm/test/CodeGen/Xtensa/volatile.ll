@@ -19,7 +19,12 @@
 
 define void @test() {
 ; CHECK-LABEL: test:
-; CHECK:         l32r a8, .LCPI0_0
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0: # %entry
+; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    mov.n a8, a1
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
+; CHECK-NEXT:    l32r a8, .LCPI0_0
 ; CHECK-NEXT:    memw
 ; CHECK-NEXT:    l8ui a8, a8, 0
 ; CHECK-NEXT:    l32r a9, .LCPI0_1
@@ -33,11 +38,11 @@ define void @test() {
 ; CHECK-NEXT:    s16i a8, a9, 0
 ; CHECK-NEXT:    l32r a8, .LCPI0_4
 ; CHECK-NEXT:    memw
-; CHECK-NEXT:    l32i a8, a8, 0
+; CHECK-NEXT:    l32i.n a8, a8, 0
 ; CHECK-NEXT:    l32r a9, .LCPI0_5
 ; CHECK-NEXT:    memw
-; CHECK-NEXT:    s32i a8, a9, 0
-; CHECK-NEXT:    ret
+; CHECK-NEXT:    s32i.n a8, a9, 0
+; CHECK-NEXT:    retw.n
 
 entry:
   %a = load volatile i8, ptr @x_i8, align 4
@@ -52,13 +57,18 @@ entry:
 
 define void @test_i8() {
 ; CHECK-LABEL: test_i8:
-; CHECK:         l32r a8, .LCPI1_0
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0: # %entry
+; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    mov.n a8, a1
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
+; CHECK-NEXT:    l32r a8, .LCPI1_0
 ; CHECK-NEXT:    memw
 ; CHECK-NEXT:    l8ui a8, a8, 0
 ; CHECK-NEXT:    l32r a9, .LCPI1_1
 ; CHECK-NEXT:    memw
 ; CHECK-NEXT:    s8i a8, a9, 0
-; CHECK-NEXT:    ret
+; CHECK-NEXT:    retw.n
 entry:
   %a = load volatile i8, ptr @x_i8, align 4
   store volatile i8 %a, ptr @y_i8, align 4
@@ -67,13 +77,18 @@ entry:
 
 define void @test_i16() {
 ; CHECK-LABEL: test_i16:
-; CHECK:         l32r a8, .LCPI2_0
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0: # %entry
+; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    mov.n a8, a1
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
+; CHECK-NEXT:    l32r a8, .LCPI2_0
 ; CHECK-NEXT:    memw
 ; CHECK-NEXT:    l16ui a8, a8, 0
 ; CHECK-NEXT:    l32r a9, .LCPI2_1
 ; CHECK-NEXT:    memw
 ; CHECK-NEXT:    s16i a8, a9, 0
-; CHECK-NEXT:    ret
+; CHECK-NEXT:    retw.n
 entry:
   %a = load volatile i16, ptr @x_i16, align 4
   store volatile i16 %a, ptr @y_i16, align 4
@@ -82,13 +97,18 @@ entry:
 
 define void @test_i32() {
 ; CHECK-LABEL: test_i32:
-; CHECK:         l32r a8, .LCPI3_0
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0: # %entry
+; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    mov.n a8, a1
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
+; CHECK-NEXT:    l32r a8, .LCPI3_0
 ; CHECK-NEXT:    memw
-; CHECK-NEXT:    l32i a8, a8, 0
+; CHECK-NEXT:    l32i.n a8, a8, 0
 ; CHECK-NEXT:    l32r a9, .LCPI3_1
 ; CHECK-NEXT:    memw
-; CHECK-NEXT:    s32i a8, a9, 0
-; CHECK-NEXT:    ret
+; CHECK-NEXT:    s32i.n a8, a9, 0
+; CHECK-NEXT:    retw.n
 entry:
   %a = load volatile i32, ptr @x_i32, align 4
   store volatile i32 %a, ptr @y_i32, align 4
@@ -97,17 +117,22 @@ entry:
 
 define void @test_i64() {
 ; CHECK-LABEL: test_i64:
-; CHECK:         l32r a8, .LCPI4_0
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0: # %entry
+; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    mov.n a8, a1
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
+; CHECK-NEXT:    l32r a8, .LCPI4_0
 ; CHECK-NEXT:    memw
-; CHECK-NEXT:    l32i a9, a8, 0
+; CHECK-NEXT:    l32i.n a9, a8, 0
 ; CHECK-NEXT:    memw
-; CHECK-NEXT:    l32i a8, a8, 4
+; CHECK-NEXT:    l32i.n a8, a8, 4
 ; CHECK-NEXT:    l32r a10, .LCPI4_1
 ; CHECK-NEXT:    memw
-; CHECK-NEXT:    s32i a8, a10, 4
+; CHECK-NEXT:    s32i.n a8, a10, 4
 ; CHECK-NEXT:    memw
-; CHECK-NEXT:    s32i a9, a10, 0
-; CHECK-NEXT:    ret
+; CHECK-NEXT:    s32i.n a9, a10, 0
+; CHECK-NEXT:    retw.n
 entry:
   %a = load volatile i64, ptr @x_i64, align 4
   store volatile i64 %a, ptr @y_i64, align 4
@@ -116,13 +141,18 @@ entry:
 
 define void @test_float() {
 ; CHECK-LABEL: test_float:
-; CHECK:         l32r a8, .LCPI5_0
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0: # %entry
+; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    mov.n a8, a1
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
+; CHECK-NEXT:    l32r a8, .LCPI5_0
 ; CHECK-NEXT:    memw
-; CHECK-NEXT:    l32i a8, a8, 0
-; CHECK-NEXT:    l32r a9, .LCPI5_1
+; CHECK-NEXT:    lsi f8, a8, 0
+; CHECK-NEXT:    l32r a8, .LCPI5_1
 ; CHECK-NEXT:    memw
-; CHECK-NEXT:    s32i a8, a9, 0
-; CHECK-NEXT:    ret
+; CHECK-NEXT:    ssi f8, a8, 0
+; CHECK-NEXT:    retw.n
 entry:
   %a = load volatile float, ptr @x_float, align 4
   store volatile float %a, ptr @y_float, align 4
@@ -131,17 +161,22 @@ entry:
 
 define void @test_double() {
 ; CHECK-LABEL: test_double:
-; CHECK:         l32r a8, .LCPI6_0
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0: # %entry
+; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    mov.n a8, a1
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
+; CHECK-NEXT:    l32r a8, .LCPI6_0
 ; CHECK-NEXT:    memw
-; CHECK-NEXT:    l32i a9, a8, 0
+; CHECK-NEXT:    l32i.n a9, a8, 0
 ; CHECK-NEXT:    memw
-; CHECK-NEXT:    l32i a8, a8, 4
+; CHECK-NEXT:    l32i.n a8, a8, 4
 ; CHECK-NEXT:    l32r a10, .LCPI6_1
 ; CHECK-NEXT:    memw
-; CHECK-NEXT:    s32i a8, a10, 4
+; CHECK-NEXT:    s32i.n a8, a10, 4
 ; CHECK-NEXT:    memw
-; CHECK-NEXT:    s32i a9, a10, 0
-; CHECK-NEXT:    ret
+; CHECK-NEXT:    s32i.n a9, a10, 0
+; CHECK-NEXT:    retw.n
 entry:
   %a = load volatile double, ptr @x_double, align 4
   store volatile double %a, ptr @y_double, align 4
@@ -150,25 +185,30 @@ entry:
 
 define void @test_vec() {
 ; CHECK-LABEL: test_vec:
-; CHECK:         l32r a8, .LCPI7_0
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0: # %entry
+; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    mov.n a8, a1
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
+; CHECK-NEXT:    l32r a8, .LCPI7_0
 ; CHECK-NEXT:    memw
-; CHECK-NEXT:    l32i a9, a8, 0
+; CHECK-NEXT:    l32i.n a9, a8, 0
 ; CHECK-NEXT:    memw
-; CHECK-NEXT:    l32i a10, a8, 4
+; CHECK-NEXT:    l32i.n a10, a8, 4
 ; CHECK-NEXT:    memw
-; CHECK-NEXT:    l32i a11, a8, 8
+; CHECK-NEXT:    l32i.n a11, a8, 8
 ; CHECK-NEXT:    memw
-; CHECK-NEXT:    l32i a8, a8, 12
-; CHECK-NEXT:    l32r a7, .LCPI7_1
+; CHECK-NEXT:    l32i.n a8, a8, 12
+; CHECK-NEXT:    l32r a12, .LCPI7_1
 ; CHECK-NEXT:    memw
-; CHECK-NEXT:    s32i a8, a7, 12
+; CHECK-NEXT:    s32i.n a8, a12, 12
 ; CHECK-NEXT:    memw
-; CHECK-NEXT:    s32i a11, a7, 8
+; CHECK-NEXT:    s32i.n a11, a12, 8
 ; CHECK-NEXT:    memw
-; CHECK-NEXT:    s32i a10, a7, 4
+; CHECK-NEXT:    s32i.n a10, a12, 4
 ; CHECK-NEXT:    memw
-; CHECK-NEXT:    s32i a9, a7, 0
-; CHECK-NEXT:    ret
+; CHECK-NEXT:    s32i.n a9, a12, 0
+; CHECK-NEXT:    retw.n
 entry:
   %a = load volatile <4 x i32>, ptr @x_vec, align 4
   store volatile <4 x i32> %a, ptr @y_vec, align 4
