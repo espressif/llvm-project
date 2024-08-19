@@ -65,6 +65,8 @@ enum {
   // WinABI Return
   RETW,
 
+  RUR,
+
   // Select with condition operator - This selects between a true value and
   // a false value (ops #2 and #3) based on the boolean result of comparing
   // the lhs and rhs (ops #0 and #1) of a conditional expression with the
@@ -177,6 +179,8 @@ private:
   SDValue LowerImmediateFP(SDValue Op, SelectionDAG &DAG) const;
 
   SDValue LowerGlobalAddress(SDValue Op, SelectionDAG &DAG) const;
+  SDValue LowerGlobalTLSAddress(GlobalAddressSDNode *Node,
+                                SelectionDAG &DAG) const;
 
   SDValue LowerBR_CC(SDValue Op, SelectionDAG &DAG) const;
 
