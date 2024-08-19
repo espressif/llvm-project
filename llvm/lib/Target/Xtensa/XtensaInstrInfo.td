@@ -923,8 +923,8 @@ def ORBC : RRR_Inst<0x00, 0x02, 0x03, (outs BR:$r), (ins BR:$s, BR:$t),
 def XORB : RRR_Inst<0x00, 0x02, 0x04, (outs BR:$r), (ins BR:$s, BR:$t),
                    "xorb\t$r, $s, $t", []>, Requires<[HasBoolean]>;
 
-def : Pat<(Xtensa_brcc_t BR:$b, bb:$target), (BT BR:$b, bb:$target)>;
-def : Pat<(Xtensa_brcc_f BR:$b, bb:$target), (BF BR:$b, bb:$target)>;
+def : Pat<(Xtensa_br_t BR:$b, bb:$target), (BT BR:$b, bb:$target)>;
+def : Pat<(Xtensa_br_f BR:$b, bb:$target), (BF BR:$b, bb:$target)>;
 
 //===----------------------------------------------------------------------===//
 // Floating-Point Instructions
@@ -1222,6 +1222,14 @@ let usesCustomInserter = 1 in {
                               "!select_cc_fp_fp $dst, $lhs, $rhs, $t, $f, $cond",
                               [(set FPR:$dst, (Xtensa_select_cc_fp FPR:$lhs, FPR:$rhs, FPR:$t, FPR:$f, imm:$cond))]>;
 }
+
+// FP brcc pesudo operation
+let usesCustomInserter = 1, isBranch = 1, isTerminator = 1, isBarrier = 1 in {
+  def BRCC_FP : Pseudo<(outs), (ins i32imm:$cond, FPR:$lhs, FPR:$rhs, brtarget:$target),
+                      "!brcc_fp $cond, $lhs, $rhs, $target",
+                      [(Xtensa_brcc_fp imm:$cond, FPR:$lhs, FPR:$rhs, bb:$target)]>;
+}
+
 //===----------------------------------------------------------------------===//
 // Loop Instructions
 //===----------------------------------------------------------------------===//

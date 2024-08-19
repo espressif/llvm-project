@@ -23,8 +23,11 @@ namespace llvm {
 namespace XtensaISD {
 enum {
   FIRST_NUMBER = ISD::BUILTIN_OP_END,
-  BR_CC_T,
-  BR_CC_F,
+  BR_T,
+  BR_F,
+
+  //Conditional branch with FP operands
+  BR_CC_FP,
 
   BR_JT,
 
@@ -164,6 +167,11 @@ public:
 
   bool shouldInsertFencesForAtomic(const Instruction *I) const override {
     return true;
+  }
+
+  bool shouldReduceLoadWidth(SDNode *Load, ISD::LoadExtType ExtTy,
+                             EVT NewVT) const override {
+    return false;
   }
 
   bool decomposeMulByConstant(LLVMContext &Context, EVT VT,

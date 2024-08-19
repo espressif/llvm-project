@@ -335,10 +335,6 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
 
   // Compute derived properties from the register classes
   computeRegisterProperties(STI.getRegisterInfo());
-
-  if (Subtarget.hasBoolean()) {
-    addRegisterClass(MVT::i1, &Xtensa::BRRegClass);
-  }
 }
 
 bool XtensaTargetLowering::isFMAFasterThanFMulAndFAdd(const MachineFunction &MF,
@@ -1047,73 +1043,6 @@ XtensaTargetLowering::LowerReturn(SDValue Chain, CallingConv::ID CallConv,
                      DL, MVT::Other, RetOps);
 }
  
-static SDValue EmitCMP(SDValue &LHS, SDValue &RHS, ISD::CondCode CC, SDLoc dl,
-                       SelectionDAG &DAG, int &br_code) {
-  // Minor optimization: if LHS is a constant, swap operands, then the
-  // constant can be folded into comparison.
-  if (LHS.getOpcode() == ISD::Constant)
-    std::swap(LHS, RHS);
-  int cmp_code = 0;
-
-  switch (CC) {
-  default:
-    llvm_unreachable("Invalid condition!");
-    break;
-  case ISD::SETUNE:
-    br_code = XtensaISD::BR_CC_F;
-    cmp_code = XtensaISD::CMPOEQ;
-    break;
-  case ISD::SETUO:
-    br_code = XtensaISD::BR_CC_T;
-    cmp_code = XtensaISD::CMPUO;
-    break;
-  case ISD::SETO:
-    br_code = XtensaISD::BR_CC_F;
-    cmp_code = XtensaISD::CMPUO;
-    break;
-  case ISD::SETUEQ:
-    br_code = XtensaISD::BR_CC_T;
-    cmp_code = XtensaISD::CMPUEQ;
-    break;
-  case ISD::SETULE:
-    br_code = XtensaISD::BR_CC_T;
-    cmp_code = XtensaISD::CMPULE;
-    break;
-  case ISD::SETULT:
-    br_code = XtensaISD::BR_CC_T;
-    cmp_code = XtensaISD::CMPULT;
-    break;
-  case ISD::SETEQ:
-  case ISD::SETOEQ:
-    br_code = XtensaISD::BR_CC_T;
-    cmp_code = XtensaISD::CMPOEQ;
-    break;
-  case ISD::SETNE:
-    br_code = XtensaISD::BR_CC_F;
-    cmp_code = XtensaISD::CMPOEQ;
-    break;
-  case ISD::SETLE:
-  case ISD::SETOLE:
-    br_code = XtensaISD::BR_CC_T;
-    cmp_code = XtensaISD::CMPOLE;
-    break;
-  case ISD::SETLT:
-  case ISD::SETOLT:
-    br_code = XtensaISD::BR_CC_T;
-    cmp_code = XtensaISD::CMPOLT;
-    break;
-  case ISD::SETGE:
-    br_code = XtensaISD::BR_CC_F;
-    cmp_code = XtensaISD::CMPOLT;
-    break;
-  case ISD::SETGT:
-    br_code = XtensaISD::BR_CC_F;
-    cmp_code = XtensaISD::CMPOLE;
-    break;
-  }
-  return DAG.getNode(cmp_code, dl, MVT::i1, LHS, RHS);
-}
-
 SDValue XtensaTargetLowering::LowerBR_CC(SDValue Op, SelectionDAG &DAG) const {
   SDValue Chain = Op.getOperand(0);
   ISD::CondCode CC = cast<CondCodeSDNode>(Op.getOperand(1))->get();
@@ -1123,9 +1052,9 @@ SDValue XtensaTargetLowering::LowerBR_CC(SDValue Op, SelectionDAG &DAG) const {
   SDLoc DL(Op);
 
   if (LHS.getValueType() == MVT::f32) {
-    int br_code;
-    SDValue Flag = EmitCMP(LHS, RHS, CC, DL, DAG, br_code);
-    return DAG.getNode(br_code, DL, Op.getValueType(), Chain, Flag, Dest);
+    SDValue TargetCC = DAG.getConstant(CC, DL, MVT::i32);
+    return DAG.getNode(XtensaISD::BR_CC_FP, DL, Op.getValueType(), Chain,
+                       TargetCC, LHS, RHS, Dest);
   } else {
     llvm_unreachable("invalid BR_CC to lower");
   }
@@ -1896,10 +1825,12 @@ const char *XtensaTargetLowering::getTargetNodeName(unsigned Opcode) const {
     return "XtensaISD::SELECT_CC";
   case XtensaISD::SELECT_CC_FP:
     return "XtensaISD::SELECT_CC_FP";
-  case XtensaISD::BR_CC_T:
-    return "XtensaISD::BR_CC_T";
-  case XtensaISD::BR_CC_F:
-    return "XtensaISD::BR_CC_F";
+  case XtensaISD::BR_T:
+    return "XtensaISD::BR_T";
+  case XtensaISD::BR_F:
+    return "XtensaISD::BR_F";
+  case XtensaISD::BR_CC_FP:
+    return "XtensaISD::BR_CC_FP";
   case XtensaISD::SRCL:
     return "XtensaISD::SRCL";
   case XtensaISD::SRCR:
@@ -2039,11 +1970,12 @@ XtensaTargetLowering::emitSelectCC(MachineInstr &MI,
       (MI.getOpcode() == Xtensa::SELECT_CC_FP_INT)) {
     int BrKind = 0;
     int CmpKind = 0;
-    unsigned b = Xtensa::B0;
+    MachineRegisterInfo &RegInfo = F->getRegInfo();
+    const TargetRegisterClass *RC = &Xtensa::BRRegClass;
+    unsigned b = RegInfo.createVirtualRegister(RC);
 
     GetFPBranchKind(Cond, BrKind, CmpKind);
-    BuildMI(MBB, DL, TII.get(CmpKind), b)
-        .addReg(LHS.getReg())
+    BuildMI(MBB, DL, TII.get(CmpKind), b)        .addReg(LHS.getReg())
         .addReg(RHS.getReg());
     BuildMI(MBB, DL, TII.get(BrKind)).addReg(b, RegState::Kill).addMBB(SinkMBB);
   } else {
@@ -3073,6 +3005,28 @@ MachineBasicBlock *XtensaTargetLowering::EmitInstrWithCustomInserter(
         .addReg(Reg2)
         .addReg(S.getReg())
         .addImm(0);
+
+    MI.eraseFromParent();
+    return MBB;
+  }
+
+  case Xtensa::BRCC_FP: {
+    MachineOperand &Cond = MI.getOperand(0);
+    MachineOperand &LHS = MI.getOperand(1);
+    MachineOperand &RHS = MI.getOperand(2);
+    MachineBasicBlock *TargetBB = MI.getOperand(3).getMBB();
+    int BrKind = 0;
+    int CmpKind = 0;
+    MachineFunction *MF = MBB->getParent();
+    MachineRegisterInfo &RegInfo = MF->getRegInfo();
+    const TargetRegisterClass *RC = &Xtensa::BRRegClass;
+
+    unsigned RegB = RegInfo.createVirtualRegister(RC);
+    GetFPBranchKind(Cond.getImm(), BrKind, CmpKind);
+    BuildMI(*MBB, MI, DL, TII.get(CmpKind), RegB)
+        .addReg(LHS.getReg())
+        .addReg(RHS.getReg());
+    BuildMI(*MBB, MI, DL, TII.get(BrKind)).addReg(RegB).addMBB(TargetBB);
 
     MI.eraseFromParent();
     return MBB;
