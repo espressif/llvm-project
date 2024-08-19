@@ -119,10 +119,16 @@ ABIArgInfo XtensaABIInfo::classifyArgumentType(QualType Ty,
 ABIArgInfo XtensaABIInfo::classifyReturnType(QualType RetTy) const {
   if (RetTy->isVoidType())
     return ABIArgInfo::getIgnore();
+
   int ArgGPRsLeft = MaxNumRetGPRs;
-  // The rules for return and argument types are the same, so defer to
-  // classifyArgumentType.
-  return classifyArgumentType(RetTy, ArgGPRsLeft);
+  auto RetSize = llvm::alignTo(getContext().getTypeSize(RetTy), 32) / 32;
+
+  // The rules for return and argument with type size more then 4 bytes
+  // are the same, so defer to classifyArgumentType.
+  if (RetSize > 1)
+    return classifyArgumentType(RetTy, ArgGPRsLeft);
+
+  return DefaultABIInfo::classifyReturnType(RetTy);
 }
 
 RValue XtensaABIInfo::EmitVAArg(CodeGenFunction &CGF, Address VAListAddr,
