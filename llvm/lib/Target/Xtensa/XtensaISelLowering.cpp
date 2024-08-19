@@ -248,6 +248,8 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
     setCondCodeAction(ISD::SETUGE, MVT::f32, Expand);
     setCondCodeAction(ISD::SETUGT, MVT::f32, Expand);
 
+    setTargetDAGCombine(ISD::FADD);
+    setTargetDAGCombine(ISD::FSUB);
     setTargetDAGCombine(ISD::BRCOND);
   }
 
@@ -279,6 +281,21 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
   if (Subtarget.hasBoolean()) {
     addRegisterClass(MVT::i1, &Xtensa::BRRegClass);
   }
+}
+
+bool XtensaTargetLowering::isFMAFasterThanFMulAndFAdd(const MachineFunction &MF,
+                                                      EVT VT) const {
+  if (!VT.isSimple())
+    return false;
+
+  switch (VT.getSimpleVT().SimpleTy) {
+  case MVT::f32:
+    return Subtarget.hasSingleFloat();
+  default:
+    break;
+  }
+
+ return false;
 }
 
 bool XtensaTargetLowering::isOffsetFoldingLegal(
@@ -377,6 +394,57 @@ void XtensaTargetLowering::LowerAsmOperandForConstraint(
 //  DAG Combine functions
 //===----------------------------------------------------------------------===//
 
+static SDValue performMADD_MSUBCombine(SDNode *ROOTNode, SelectionDAG &CurDAG,
+                                       const XtensaSubtarget &Subtarget) {
+  if (ROOTNode->getOperand(0).getValueType() != MVT::f32)
+    return SDValue();
+
+  if (ROOTNode->getOperand(0).getOpcode() != ISD::FMUL &&
+      ROOTNode->getOperand(1).getOpcode() != ISD::FMUL)
+    return SDValue();
+
+  SDValue Mult = ROOTNode->getOperand(0).getOpcode() == ISD::FMUL
+                     ? ROOTNode->getOperand(0)
+                     : ROOTNode->getOperand(1);
+
+  SDValue AddOperand = ROOTNode->getOperand(0).getOpcode() == ISD::FMUL
+                           ? ROOTNode->getOperand(1)
+                           : ROOTNode->getOperand(0);
+
+  if (!Mult.hasOneUse())
+    return SDValue();
+
+  SDLoc DL(ROOTNode);
+
+  bool IsAdd = ROOTNode->getOpcode() == ISD::FADD;
+  unsigned Opcode = IsAdd ? XtensaISD::MADD : XtensaISD::MSUB;
+  SDValue MAddOps[3] = {AddOperand, Mult->getOperand(0), Mult->getOperand(1)};
+  EVT VTs[3] = {MVT::f32, MVT::f32, MVT::f32};
+  SDValue MAdd = CurDAG.getNode(Opcode, DL, VTs, MAddOps);
+
+  return MAdd;
+}
+
+static SDValue performSUBCombine(SDNode *N, SelectionDAG &DAG,
+                                 TargetLowering::DAGCombinerInfo &DCI,
+                                 const XtensaSubtarget &Subtarget) {
+  if (DCI.isBeforeLegalizeOps()) {
+    if (Subtarget.hasSingleFloat() && N->getValueType(0) == MVT::f32)
+      return performMADD_MSUBCombine(N, DAG, Subtarget);
+  }
+  return SDValue();
+}
+
+static SDValue performADDCombine(SDNode *N, SelectionDAG &DAG,
+                                 TargetLowering::DAGCombinerInfo &DCI,
+                                 const XtensaSubtarget &Subtarget) {
+  if (DCI.isBeforeLegalizeOps()) {
+    if (Subtarget.hasSingleFloat() && N->getValueType(0) == MVT::f32)
+      return performMADD_MSUBCombine(N, DAG, Subtarget);
+  }
+  return SDValue();
+}
+
 static SDValue PerformBRCONDCombine(SDNode *N, SelectionDAG &DAG,
                                     TargetLowering::DAGCombinerInfo &DCI,
                                     const XtensaSubtarget &Subtarget) {
@@ -410,6 +478,10 @@ SDValue XtensaTargetLowering::PerformDAGCombine(SDNode *N,
   switch (Opc) {
   default:
     break;
+  case ISD::FADD:
+    return performADDCombine(N, DAG, DCI, Subtarget);
+  case ISD::FSUB:
+    return performSUBCombine(N, DAG, DCI, Subtarget);
   case ISD::BRCOND:
     return PerformBRCONDCombine(N, DAG, DCI, Subtarget);
   }
