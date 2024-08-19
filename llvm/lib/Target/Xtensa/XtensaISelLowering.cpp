@@ -167,6 +167,11 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
   setOperationAction(ISD::SRA_PARTS, MVT::i32, Custom);
   setOperationAction(ISD::SRL_PARTS, MVT::i32, Custom);
 
+  // Funnel shifts
+  setOperationAction(ISD::FSHR, MVT::i32, Custom);
+  setOperationAction(ISD::FSHL, MVT::i32, Custom);
+
+  // Bit Manipulation
   setOperationAction(ISD::BSWAP, MVT::i32, Expand);
   setOperationAction(ISD::ROTL, MVT::i32, Expand);
   setOperationAction(ISD::ROTR, MVT::i32, Expand);
@@ -1788,6 +1793,21 @@ SDValue XtensaTargetLowering::LowerMUL(SDValue Op, SelectionDAG &DAG) const {
                      DAG.getConstant(ShiftAmt, DL, VT));
 }
 
+SDValue XtensaTargetLowering::LowerFunnelShift(SDValue Op,
+                                               SelectionDAG &DAG) const {
+  SDLoc DL(Op);
+  SDValue Op0 = Op.getOperand(0);
+  SDValue Op1 = Op.getOperand(1);
+  SDValue Shamt = Op.getOperand(2);
+  MVT VT = Op.getSimpleValueType();
+
+  bool IsFSHR = Op.getOpcode() == ISD::FSHR;
+  assert((VT == MVT::i32) && "Unexpected funnel shift type!");
+
+  return DAG.getNode(IsFSHR ? XtensaISD::SRCR : XtensaISD::SRCL, DL, VT, Op0,
+                     Op1, Shamt);
+}
+
 SDValue XtensaTargetLowering::LowerATOMIC_FENCE(SDValue Op,
                                                 SelectionDAG &DAG) const {
   SDLoc DL(Op);
@@ -1846,6 +1866,9 @@ SDValue XtensaTargetLowering::LowerOperation(SDValue Op,
     return LowerShiftRightParts(Op, DAG, true);
   case ISD::SRL_PARTS:
     return LowerShiftRightParts(Op, DAG, false);
+  case ISD::FSHL:
+  case ISD::FSHR:
+    return LowerFunnelShift(Op, DAG);
   default:
     report_fatal_error("Unexpected node to lower");
   }
@@ -3055,11 +3078,6 @@ MachineBasicBlock *XtensaTargetLowering::EmitInstrWithCustomInserter(
     return MBB;
   }
 
-  case Xtensa::SELECT_CC_FP_FP:
-  case Xtensa::SELECT_CC_FP_INT:
-  case Xtensa::SELECT_CC_INT_FP:
-  case Xtensa::SELECT:
-    return emitSelectCC(MI, MBB);
   case Xtensa::L8I_P: {
     MachineOperand &R = MI.getOperand(0);
     MachineOperand &Op1 = MI.getOperand(1);

@@ -223,6 +223,7 @@ private:
   SDValue LowerShiftLeftParts(SDValue Op, SelectionDAG &DAG) const;
 
   SDValue LowerShiftRightParts(SDValue Op, SelectionDAG &DAG, bool IsSRA) const;
+  SDValue LowerFunnelShift(SDValue Op, SelectionDAG &DAG) const;
 
   SDValue LowerATOMIC_FENCE(SDValue Op, SelectionDAG &DAG) const;
 
