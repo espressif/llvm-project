@@ -296,6 +296,10 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
 
   setOperationAction(ISD::TRAP, MVT::Other, Legal);
 
+  // to have the best chance and doing something good with fences custom lower
+  // them
+  setOperationAction(ISD::ATOMIC_FENCE, MVT::Other, Custom);
+
   // Compute derived properties from the register classes
   computeRegisterProperties(STI.getRegisterInfo());
 
@@ -1756,6 +1760,13 @@ SDValue XtensaTargetLowering::LowerMUL(SDValue Op, SelectionDAG &DAG) const {
                      DAG.getConstant(ShiftAmt, DL, VT));
 }
 
+SDValue XtensaTargetLowering::LowerATOMIC_FENCE(SDValue Op,
+                                                SelectionDAG &DAG) const {
+  SDLoc DL(Op);
+  SDValue Chain = Op.getOperand(0);
+  return DAG.getNode(XtensaISD::MEMW, DL, MVT::Other, Chain);
+}
+
 SDValue XtensaTargetLowering::LowerOperation(SDValue Op,
                                              SelectionDAG &DAG) const {
   switch (Op.getOpcode()) {
@@ -1799,6 +1810,8 @@ SDValue XtensaTargetLowering::LowerOperation(SDValue Op,
     return LowerVAARG(Op, DAG);
   case ISD::VACOPY:
     return LowerVACOPY(Op, DAG);
+  case ISD::ATOMIC_FENCE:
+    return LowerATOMIC_FENCE(Op, DAG);
   case ISD::SHL_PARTS:
     return LowerShiftLeftParts(Op, DAG);
   case ISD::SRA_PARTS:
@@ -1860,6 +1873,8 @@ const char *XtensaTargetLowering::getTargetNodeName(unsigned Opcode) const {
     return "XtensaISD::MSUB";
   case XtensaISD::MOVS:
     return "XtensaISD::MOVS";
+  case XtensaISD::MEMW:
+    return "XtensaISD::MEMW";
   }
   return nullptr;
 }
