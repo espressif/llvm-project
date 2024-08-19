@@ -77,6 +77,7 @@
 #include "clang/Sema/SemaSystemZ.h"
 #include "clang/Sema/SemaWasm.h"
 #include "clang/Sema/SemaX86.h"
+#include "clang/Sema/SemaXtensa.h"
 #include "llvm/ADT/APFloat.h"
 #include "llvm/ADT/APInt.h"
 #include "llvm/ADT/APSInt.h"
@@ -1915,6 +1916,8 @@ bool Sema::CheckTSBuiltinFunctionCall(const TargetInfo &TI, unsigned BuiltinID,
   case llvm::Triple::nvptx:
   case llvm::Triple::nvptx64:
     return NVPTX().CheckNVPTXBuiltinFunctionCall(TI, BuiltinID, TheCall);
+  case llvm::Triple::xtensa:
+    return Xtensa().CheckXtensaBuiltinFunctionCall(TI, BuiltinID, TheCall);
   }
 }
 
