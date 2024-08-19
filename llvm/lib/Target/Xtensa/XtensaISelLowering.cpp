@@ -291,6 +291,8 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
   setOperationAction(ISD::VACOPY, MVT::Other, Custom);
   setOperationAction(ISD::VAEND, MVT::Other, Expand);
 
+  setOperationAction(ISD::TRAP, MVT::Other, Legal);
+
   // Compute derived properties from the register classes
   computeRegisterProperties(STI.getRegisterInfo());
 

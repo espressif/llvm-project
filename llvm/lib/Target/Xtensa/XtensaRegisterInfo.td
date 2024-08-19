@@ -80,6 +80,10 @@ def LCOUNT : SRReg<2, "lcount", ["LCOUNT", "2"]>;
 def SAR : SRReg<3, "sar", ["SAR","3"]>;
 
 def BREG : SRReg<4, "br", ["BR", "4"]>;
+def LITBASE : SRReg<5, "litbase", ["LITBASE", "5"]>;
+
+// Expected data value for S32C1I operation
+def SCOMPARE1 : SRReg<12, "scompare1", ["SCOMPARE1", "12"]>;
 
 def ACCLO : SRReg<16, "acclo", ["ACCLO", "16"]>;
 def ACCHI : SRReg<17, "acchi", ["ACCHI", "17"]>;
@@ -90,12 +94,46 @@ def M3 : SRReg<35, "m3", ["M3", "35"]>;
 def WINDOWBASE : SRReg<72, "windowbase", ["WINDOWBASE", "72"]>;
 def WINDOWSTART : SRReg<73, "windowstart", ["WINDOWSTART", "73"]>;
 
+// Instuction breakpoint enable register
+def IBREAKENABLE : SRReg<96, "ibreakenable", ["IBREAKENABLE", "96"]>;
+
+// Memory Control Register
+def MEMCTL : SRReg<97, "memctl", ["MEMCTL", "97"]>;
+
+def ATOMCTL : SRReg<99, "atomctl", ["ATOMCTL", "99"]>;
+
+// Instuction break address register 0
+def IBREAKA0 : SRReg<128, "ibreaka0", ["IBREAKA0", "128"]>;
+
+// Instuction break address register 1
+def IBREAKA1 : SRReg<129, "ibreaka1", ["IBREAKA1", "129"]>;
+
+// Data break address register 0
+def DBREAKA0 : SRReg<144, "dbreaka0", ["DBREAKA0", "144"]>;
+
+// Data break address register 1
+def DBREAKA1 : SRReg<145, "dbreaka1", ["DBREAKA1", "145"]>;
+
+// Data breakpoint control register 0
+def DBREAKC0 : SRReg<160, "dbreakc0", ["DBREAKC0", "160"]>;
+
+// Data breakpoint control register 1
+def DBREAKC1 : SRReg<161, "dbreakc1", ["DBREAKC1", "161"]>;
+
+// Cause of last debug exception register
+def DEBUGCAUSE : SRReg<233, "debugcause", ["DEBUGCAUSE", "233"]>;
+
+def ICOUNT : SRReg<236, "icount", ["ICOUNT", "236"]>;
+def ICOUNTLEVEL : SRReg<237, "icountlevel", ["ICOUNTLEVEL", "237"]>;
+
 def MR01 :  RegisterClass<"Xtensa", [i32], 32, (add M0, M1)>;
 def MR23 :  RegisterClass<"Xtensa", [i32], 32, (add M2, M3)>;
 def MR :  RegisterClass<"Xtensa", [i32], 32, (add MR01, MR23)>;
 
 def SR :  RegisterClass<"Xtensa", [i32], 32, (add LBEG, LEND, LCOUNT,
-  SAR, BREG, MR, WINDOWBASE, WINDOWSTART)>;
+  SAR, BREG, LITBASE, SCOMPARE1, ACCLO, ACCHI, MR, WINDOWBASE, WINDOWSTART,
+  IBREAKENABLE, MEMCTL, ATOMCTL, IBREAKA0, IBREAKA1, DBREAKA0, DBREAKA1,
+  DBREAKC0, DBREAKC1, DEBUGCAUSE, ICOUNT, ICOUNTLEVEL)>;
 
 //===----------------------------------------------------------------------===//
 // USER registers
@@ -105,10 +143,17 @@ class URReg<bits<8> num, string n, list<string> alt = []> : XtensaReg<n> {
   let AltNames = alt;
 }
 
+// Thread Pointer register
+def THREADPTR : URReg<231, "threadptr", ["THREADPTR"]>;
+
 def FCR : URReg<232, "fcr", ["FCR"]>;
 def FSR : URReg<233, "fsr", ["FSR"]>;
+def F64R_LO : URReg<234, "f64r_lo", ["F64R_LO"]>;
+def F64R_HI : URReg<235, "f64r_hi", ["F64R_HI"]>;
+def F64S : URReg<236, "f64s", ["F64S"]>;
 
-def UR :  RegisterClass<"Xtensa", [i32], 32, (add FCR, FSR)>;
+def UR :  RegisterClass<"Xtensa", [i32], 32, (add THREADPTR, FCR,
+  FSR, F64R_LO, F64R_HI, F64S)>; 
 
 //===----------------------------------------------------------------------===//
 // Floating-Point registers

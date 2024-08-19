@@ -1174,6 +1174,45 @@ def REMS : ArithLogic_RRR<0x0F, 0x02, "rems", srem>, Requires<[HasDiv32]>;
 def REMU : ArithLogic_RRR<0x0E, 0x02, "remu", urem>, Requires<[HasDiv32]>;
 
 //===----------------------------------------------------------------------===//
+// S32C1I
+//===----------------------------------------------------------------------===//
+
+let mayStore = 1, mayLoad = 1, Predicates = [HasS32C1I] in {
+  def S32C1I : RRI8_Inst<0x02, (outs AR:$a), (ins AR:$t, mem32:$addr),
+                        "s32c1i\t$t, $addr", []> {
+    bits<12> addr;
+
+    let r = 0x0e;
+    let Uses = [SCOMPARE1];
+    let Constraints = "$a = $t";
+    let imm8{7-0} = addr{11-4};
+    let s{3-0} = addr{3-0};
+  }
+}
+
+//===----------------------------------------------------------------------===//
+// Debug instructions
+//===----------------------------------------------------------------------===//
+
+let isBarrier = 1, isTerminator = 1 in {
+  def BREAK : RRR_Inst<0x00, 0x00, 0x00, (outs), (ins uimm4:$s, uimm4:$t),
+                      "break\t$s, $t", []>, Requires<[HasDebug]> {
+    let r = 0x04;
+  }
+
+  def BREAK_N : RRRN_Inst<0x0C, (outs), (ins uimm4:$imm),
+                         "break.n\t$imm", []>, Requires<[HasDensity, HasDebug]> {
+    bits<4> imm;
+
+    let r = 0xf;
+    let s = imm;
+    let t = 0x2;
+  }
+}
+
+def : Pat<(trap), (BREAK (i32 1), (i32 15))>;
+
+//===----------------------------------------------------------------------===//
 // DSP Instructions
 //===----------------------------------------------------------------------===//
 include "XtensaDSPInstrInfo.td"
