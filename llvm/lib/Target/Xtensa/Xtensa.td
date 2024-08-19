@@ -67,6 +67,11 @@ def FeatureDiv32            : SubtargetFeature<"div32", "HasDiv32", "true",
 def HasDiv32                : Predicate<"Subtarget->hasDiv32()">,
                                          AssemblerPredicate<(all_of FeatureDiv32)>;
 
+def FeatureMAC16            : SubtargetFeature<"mac16", "HasMAC16", "true",
+                                               "Enable Xtensa MAC16 instructions">;
+def HasMAC16                : Predicate<"Subtarget->hasMAC16()">,
+                                         AssemblerPredicate<(all_of FeatureMAC16)>;
+
 //===----------------------------------------------------------------------===//
 // Xtensa supported processors.
 //===----------------------------------------------------------------------===//
