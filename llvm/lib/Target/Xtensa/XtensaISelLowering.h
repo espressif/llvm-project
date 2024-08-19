@@ -23,6 +23,9 @@ namespace llvm {
 namespace XtensaISD {
 enum {
   FIRST_NUMBER = ISD::BUILTIN_OP_END,
+  BR_CC_T,
+  BR_CC_F,
+
   BR_JT,
 
   // Calls a function.  Operand 0 is the chain operand and operand 1
@@ -67,6 +70,7 @@ enum {
   // the lhs and rhs (ops #0 and #1) of a conditional expression with the
   // condition code in op #4
   SELECT_CC,
+  SELECT_CC_FP,
 
   // SRCL(R) performs shift left(right) of the concatenation of 2 registers
   // and returns high(low) 32-bit part of 64-bit result
@@ -119,6 +123,8 @@ public:
                                     std::vector<SDValue> &Ops,
                                     SelectionDAG &DAG) const override;
 
+  SDValue PerformDAGCombine(SDNode *N, DAGCombinerInfo &DCI) const override;
+
   SDValue LowerOperation(SDValue Op, SelectionDAG &DAG) const override;
 
   SDValue LowerFormalArguments(SDValue Chain, CallingConv::ID CallConv,
@@ -160,6 +166,8 @@ private:
 
   SDValue LowerGlobalAddress(SDValue Op, SelectionDAG &DAG) const;
 
+  SDValue LowerBR_CC(SDValue Op, SelectionDAG &DAG) const;
+
   SDValue LowerBlockAddress(SDValue Op, SelectionDAG &DAG) const;
 
   SDValue LowerJumpTable(SDValue Op, SelectionDAG &DAG) const;
@@ -171,6 +179,8 @@ private:
   SDValue LowerCTPOP(SDValue Op, SelectionDAG &DAG) const;
 
   SDValue LowerSELECT_CC(SDValue Op, SelectionDAG &DAG) const;
+
+  SDValue LowerSETCC(SDValue Op, SelectionDAG &DAG) const;
 
   SDValue LowerRETURNADDR(SDValue Op, SelectionDAG &DAG) const;
 

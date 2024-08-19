@@ -886,6 +886,9 @@ def ORBC : RRR_Inst<0x00, 0x02, 0x03, (outs BR:$r), (ins BR:$s, BR:$t),
 def XORB : RRR_Inst<0x00, 0x02, 0x04, (outs BR:$r), (ins BR:$s, BR:$t),
                    "xorb\t$r, $s, $t", []>, Requires<[HasBoolean]>;
 
+def : Pat<(Xtensa_brcc_t BR:$b, bb:$target), (BT BR:$b, bb:$target)>;
+def : Pat<(Xtensa_brcc_f BR:$b, bb:$target), (BF BR:$b, bb:$target)>;
+
 //===----------------------------------------------------------------------===//
 // Floating-Point Instructions
 //===----------------------------------------------------------------------===//
@@ -1082,4 +1085,17 @@ def NEXP01_S : RRR_Inst<0x00, 0x0A, 0x0F, (outs FPR:$r), (ins FPR:$s),
 def SQRT0_S : RRR_Inst<0x00, 0x0A, 0x0F, (outs FPR:$r), (ins FPR:$s),
                       "sqrt0.s\t$r, $s", []>, Requires<[HasSingleFloat]> {
   let t = 0x09;
+}
+
+// FP select operations
+let usesCustomInserter = 1 in {
+  def SELECT_CC_FP_INT : Pseudo<(outs AR:$dst), (ins FPR:$lhs, FPR:$rhs, AR:$t, AR:$f, i32imm:$cond),
+                               "!select_cc_fp_int $dst, $lhs, $rhs, $t, $f, $cond",
+                               [(set AR:$dst, (Xtensa_select_cc_fp FPR:$lhs, FPR:$rhs, AR:$t, AR:$f, imm:$cond))]>;
+  def SELECT_CC_INT_FP : Pseudo<(outs FPR:$dst), (ins AR:$lhs, AR:$rhs, FPR:$t, FPR:$f, i32imm:$cond),
+                               "!select_cc_int_fp $dst, $lhs, $rhs, $t, $f, $cond",
+                               [(set FPR:$dst, (Xtensa_select_cc_fp AR:$lhs, AR:$rhs, FPR:$t, FPR:$f, imm:$cond))]>;
+  def SELECT_CC_FP_FP : Pseudo<(outs FPR:$dst), (ins FPR:$lhs, FPR:$rhs, FPR:$t, FPR:$f, i32imm:$cond),
+                              "!select_cc_fp_fp $dst, $lhs, $rhs, $t, $f, $cond",
+                              [(set FPR:$dst, (Xtensa_select_cc_fp FPR:$lhs, FPR:$rhs, FPR:$t, FPR:$f, imm:$cond))]>;
 }

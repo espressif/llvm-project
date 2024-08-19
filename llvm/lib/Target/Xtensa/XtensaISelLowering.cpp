@@ -108,11 +108,23 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
 
   setOperationAction(ISD::BR_CC, MVT::i32, Legal);
   setOperationAction(ISD::BR_CC, MVT::i64, Expand);
-  setOperationAction(ISD::BR_CC, MVT::f32, Expand);
+  if (Subtarget.hasSingleFloat())
+    setOperationAction(ISD::BR_CC, MVT::f32, Custom);
+  else
+    setOperationAction(ISD::BR_CC, MVT::f32, Expand);
 
   setOperationAction(ISD::SELECT, MVT::i32, Expand);
   setOperationAction(ISD::SELECT_CC, MVT::i32, Custom);
   setOperationAction(ISD::SETCC, MVT::i32, Expand);
+  
+  setOperationAction(ISD::SELECT, MVT::f32, Expand);
+  if (Subtarget.hasSingleFloat()) {
+    setOperationAction(ISD::SELECT_CC, MVT::f32, Custom);
+    setOperationAction(ISD::SETCC, MVT::f32, Custom);
+  } else {
+    setOperationAction(ISD::SELECT_CC, MVT::f32, Expand);
+    setOperationAction(ISD::SETCC, MVT::f32, Expand);
+  }
 
   setCondCodeAction(ISD::SETGT, MVT::i32, Expand);
   setCondCodeAction(ISD::SETLE, MVT::i32, Expand);
@@ -144,6 +156,109 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
   setOperationAction(ISD::CTLZ, MVT::i32, Expand);
   setOperationAction(ISD::CTTZ_ZERO_UNDEF, MVT::i32, Expand);
   setOperationAction(ISD::CTLZ_ZERO_UNDEF, MVT::i32, Expand);
+
+  // Handle floating-point types.
+  for (unsigned I = MVT::FIRST_FP_VALUETYPE; I <= MVT::LAST_FP_VALUETYPE; ++I) {
+    MVT VT = MVT::SimpleValueType(I);
+    if (isTypeLegal(VT)) {
+      // We can use FI for FRINT.
+      // setOperationAction(ISD::FRINT, VT, Legal);
+      if (VT.getSizeInBits() == 32 && Subtarget.hasSingleFloat()) {
+        setOperationAction(ISD::FABS, VT, Legal);
+        setOperationAction(ISD::FADD, VT, Legal);
+        setOperationAction(ISD::FMA, VT, Legal);
+        setOperationAction(ISD::FMUL, VT, Legal);
+        setOperationAction(ISD::FNEG, VT, Legal);
+        setOperationAction(ISD::FSUB, VT, Legal);
+      } else {
+        setOperationAction(ISD::FABS, VT, Expand);
+        setOperationAction(ISD::FADD, VT, Expand);
+        setOperationAction(ISD::FMA, VT, Expand);
+        setOperationAction(ISD::FMUL, VT, Expand);
+        setOperationAction(ISD::FNEG, VT, Expand);
+        setOperationAction(ISD::FSUB, VT, Expand);
+      }
+
+      // TODO: once implemented in InstrInfo uncomment
+      setOperationAction(ISD::FSQRT, VT, Expand);
+
+      // No special instructions for these.
+      setOperationAction(ISD::FCBRT, VT, Expand);
+      setOperationAction(ISD::FCEIL, VT, Expand);
+      setOperationAction(ISD::FCOPYSIGN, VT, Expand);
+      setOperationAction(ISD::FSIN, VT, Expand);
+      setOperationAction(ISD::FCOS, VT, Expand);
+      setOperationAction(ISD::FDIV, VT, Expand);
+      setOperationAction(ISD::FEXP, VT, Expand);
+      setOperationAction(ISD::FEXP2, VT, Expand);
+      setOperationAction(ISD::FFLOOR, VT, Expand);
+      setOperationAction(ISD::FLOG, VT, Expand);
+      setOperationAction(ISD::FLOG2, VT, Expand);
+      setOperationAction(ISD::FLOG10, VT, Expand);
+      setOperationAction(ISD::FMAXIMUM, VT, Expand);
+      setOperationAction(ISD::FMINIMUM, VT, Expand);
+      setOperationAction(ISD::FMAXNUM, VT, Expand);
+      setOperationAction(ISD::FMINNUM, VT, Expand);
+      setOperationAction(ISD::FNEARBYINT, VT, Expand);
+      setOperationAction(ISD::FPOW, VT, Expand);
+      setOperationAction(ISD::FPOWI, VT, Expand);
+      setOperationAction(ISD::FREM, VT, Expand);
+      setOperationAction(ISD::FRINT, VT, Expand);
+      setOperationAction(ISD::FROUND, VT, Expand);
+      setOperationAction(ISD::FSIN, VT, Expand);
+      setOperationAction(ISD::FSINCOS, VT, Expand);
+      setOperationAction(ISD::FSQRT, VT, Expand);
+      setOperationAction(ISD::FTRUNC, VT, Expand);
+      setOperationAction(ISD::LLRINT, VT, Expand);
+      setOperationAction(ISD::LLROUND, VT, Expand);
+      setOperationAction(ISD::LRINT, VT, Expand);
+      setOperationAction(ISD::LROUND, VT, Expand);
+    }
+  }
+
+  if (Subtarget.hasSingleFloat()) {
+    setOperationAction(ISD::BITCAST, MVT::i32, Legal);
+    setOperationAction(ISD::BITCAST, MVT::f32, Legal);
+    setOperationAction(ISD::UINT_TO_FP, MVT::i32, Legal);
+    setOperationAction(ISD::SINT_TO_FP, MVT::i32, Legal);
+    setOperationAction(ISD::FP_TO_UINT, MVT::i32, Legal);
+    setOperationAction(ISD::FP_TO_SINT, MVT::i32, Legal);
+  } else {
+    setOperationAction(ISD::BITCAST, MVT::i32, Expand);
+    setOperationAction(ISD::BITCAST, MVT::f32, Expand);
+    setOperationAction(ISD::UINT_TO_FP, MVT::i32, Expand);
+    setOperationAction(ISD::SINT_TO_FP, MVT::i32, Expand);
+    setOperationAction(ISD::FP_TO_UINT, MVT::i32, Expand);
+    setOperationAction(ISD::FP_TO_SINT, MVT::i32, Expand);
+  }
+
+  setOperationAction(ISD::UINT_TO_FP, MVT::i64, Expand);
+  setOperationAction(ISD::SINT_TO_FP, MVT::i64, Expand);
+  setOperationAction(ISD::FP_TO_UINT, MVT::i64, Expand);
+  setOperationAction(ISD::FP_TO_SINT, MVT::i64, Expand);
+
+  setOperationAction(ISD::SETCC, MVT::f64, Expand);
+  setOperationAction(ISD::BITCAST, MVT::i64, Expand);
+  setOperationAction(ISD::BITCAST, MVT::f64, Expand);
+
+  if (Subtarget.hasSingleFloat()) {
+    setCondCodeAction(ISD::SETOGT, MVT::f32, Expand);
+    setCondCodeAction(ISD::SETOGE, MVT::f32, Expand);
+    setCondCodeAction(ISD::SETONE, MVT::f32, Expand);
+    setCondCodeAction(ISD::SETUGE, MVT::f32, Expand);
+    setCondCodeAction(ISD::SETUGT, MVT::f32, Expand);
+
+    setTargetDAGCombine(ISD::BRCOND);
+  }
+
+  // Needed so that we don't try to implement f128 constant loads using
+  // a load-and-extend of a f80 constant (in cases where the constant
+  // would fit in an f80).
+  for (MVT VT : MVT::fp_valuetypes())
+    setLoadExtAction(ISD::EXTLOAD, VT, MVT::f80, Expand);
+
+  // Floating-point truncation and stores need to be done separately.
+  setTruncStoreAction(MVT::f64, MVT::f32, Expand);
 
   // Implement custom stack allocations
   setOperationAction(ISD::DYNAMIC_STACKALLOC, PtrVT, Custom);
@@ -256,6 +371,50 @@ void XtensaTargetLowering::LowerAsmOperandForConstraint(
     return;
 
   TargetLowering::LowerAsmOperandForConstraint(Op, Constraint, Ops, DAG);
+}
+
+//===----------------------------------------------------------------------===//
+//  DAG Combine functions
+//===----------------------------------------------------------------------===//
+
+static SDValue PerformBRCONDCombine(SDNode *N, SelectionDAG &DAG,
+                                    TargetLowering::DAGCombinerInfo &DCI,
+                                    const XtensaSubtarget &Subtarget) {
+  if (DCI.isBeforeLegalizeOps()) {
+    SDValue Chain = N->getOperand(0);
+
+    if (N->getOperand(1).getOpcode() != ISD::SETCC)
+      return SDValue();
+
+    SDLoc DL(N);
+    SDValue SetCC = N->getOperand(1);
+    SDValue Dest = N->getOperand(2);
+    ISD::CondCode CC = cast<CondCodeSDNode>(SetCC->getOperand(2))->get();
+    SDValue LHS = SetCC->getOperand(0);
+    SDValue RHS = SetCC->getOperand(1);
+
+    if (LHS.getValueType() != MVT::i32)
+      return SDValue();
+
+    return DAG.getNode(ISD::BR_CC, DL, MVT::isVoid, Chain, DAG.getCondCode(CC),
+                       LHS, RHS, Dest);
+  }
+  return SDValue();
+}
+
+SDValue XtensaTargetLowering::PerformDAGCombine(SDNode *N,
+                                                DAGCombinerInfo &DCI) const {
+  SelectionDAG &DAG = DCI.DAG;
+  unsigned Opc = N->getOpcode();
+
+  switch (Opc) {
+  default:
+    break;
+  case ISD::BRCOND:
+    return PerformBRCONDCombine(N, DAG, DCI, Subtarget);
+  }
+
+  return SDValue();
 }
 
 //===----------------------------------------------------------------------===//
@@ -743,6 +902,90 @@ XtensaTargetLowering::LowerReturn(SDValue Chain, CallingConv::ID CallConv,
                                           : XtensaISD::RET,
                      DL, MVT::Other, RetOps);
 }
+ 
+static SDValue EmitCMP(SDValue &LHS, SDValue &RHS, ISD::CondCode CC, SDLoc dl,
+                       SelectionDAG &DAG, int &br_code) {
+  // Minor optimization: if LHS is a constant, swap operands, then the
+  // constant can be folded into comparison.
+  if (LHS.getOpcode() == ISD::Constant)
+    std::swap(LHS, RHS);
+  int cmp_code = 0;
+
+  switch (CC) {
+  default:
+    llvm_unreachable("Invalid condition!");
+    break;
+  case ISD::SETUNE:
+    br_code = XtensaISD::BR_CC_F;
+    cmp_code = XtensaISD::CMPOEQ;
+    break;
+  case ISD::SETUO:
+    br_code = XtensaISD::BR_CC_T;
+    cmp_code = XtensaISD::CMPUO;
+    break;
+  case ISD::SETO:
+    br_code = XtensaISD::BR_CC_F;
+    cmp_code = XtensaISD::CMPUO;
+    break;
+  case ISD::SETUEQ:
+    br_code = XtensaISD::BR_CC_T;
+    cmp_code = XtensaISD::CMPUEQ;
+    break;
+  case ISD::SETULE:
+    br_code = XtensaISD::BR_CC_T;
+    cmp_code = XtensaISD::CMPULE;
+    break;
+  case ISD::SETULT:
+    br_code = XtensaISD::BR_CC_T;
+    cmp_code = XtensaISD::CMPULT;
+    break;
+  case ISD::SETEQ:
+  case ISD::SETOEQ:
+    br_code = XtensaISD::BR_CC_T;
+    cmp_code = XtensaISD::CMPOEQ;
+    break;
+  case ISD::SETNE:
+    br_code = XtensaISD::BR_CC_F;
+    cmp_code = XtensaISD::CMPOEQ;
+    break;
+  case ISD::SETLE:
+  case ISD::SETOLE:
+    br_code = XtensaISD::BR_CC_T;
+    cmp_code = XtensaISD::CMPOLE;
+    break;
+  case ISD::SETLT:
+  case ISD::SETOLT:
+    br_code = XtensaISD::BR_CC_T;
+    cmp_code = XtensaISD::CMPOLT;
+    break;
+  case ISD::SETGE:
+    br_code = XtensaISD::BR_CC_F;
+    cmp_code = XtensaISD::CMPOLT;
+    break;
+  case ISD::SETGT:
+    br_code = XtensaISD::BR_CC_F;
+    cmp_code = XtensaISD::CMPOLE;
+    break;
+  }
+  return DAG.getNode(cmp_code, dl, MVT::i1, LHS, RHS);
+}
+
+SDValue XtensaTargetLowering::LowerBR_CC(SDValue Op, SelectionDAG &DAG) const {
+  SDValue Chain = Op.getOperand(0);
+  ISD::CondCode CC = cast<CondCodeSDNode>(Op.getOperand(1))->get();
+  SDValue LHS = Op.getOperand(2);
+  SDValue RHS = Op.getOperand(3);
+  SDValue Dest = Op.getOperand(4);
+  SDLoc DL(Op);
+
+  if (LHS.getValueType() == MVT::f32) {
+    int br_code;
+    SDValue Flag = EmitCMP(LHS, RHS, CC, DL, DAG, br_code);
+    return DAG.getNode(br_code, DL, Op.getValueType(), Chain, Flag, Dest);
+  } else {
+    llvm_unreachable("invalid BR_CC to lower");
+  }
+}
 
 static unsigned getBranchOpcode(ISD::CondCode Cond) {
   switch (Cond) {
@@ -783,9 +1026,57 @@ SDValue XtensaTargetLowering::LowerSELECT_CC(SDValue Op,
 
   unsigned BrOpcode = getBranchOpcode(CC);
   SDValue TargetCC = DAG.getConstant(BrOpcode, DL, MVT::i32);
+  SDValue TargetCC_FP = DAG.getConstant(CC, DL, MVT::i32);
 
+  if (LHS.getValueType() == MVT::f32 || TrueValue.getValueType() == MVT::f32)
+     return DAG.getNode(XtensaISD::SELECT_CC_FP, DL, TrueValue.getValueType(),
+                       LHS, RHS, TrueValue, FalseValue,
+                       (LHS.getValueType() == MVT::f32) ? TargetCC_FP
+                                                        : TargetCC);
   return DAG.getNode(XtensaISD::SELECT_CC, DL, Ty, LHS, RHS, TrueValue,
                      FalseValue, TargetCC);
+}
+
+SDValue XtensaTargetLowering::LowerSETCC(SDValue Op, SelectionDAG &DAG) const {
+  SDLoc DL(Op);
+  SDValue LHS = Op.getOperand(0);
+  SDValue RHS = Op.getOperand(1);
+  ISD::CondCode CC = cast<CondCodeSDNode>(Op.getOperand(2))->get();
+
+  unsigned BrOpcode = getBranchOpcode(CC);
+  SDValue TargetCC = DAG.getConstant(BrOpcode, DL, MVT::i32);
+  SDValue TargetCC_FP = DAG.getConstant(CC, DL, MVT::i32);
+
+  // Check Op SDNode users
+  // If there are only CALL/CALLW nodes, don't expand Global Address
+  SDNode &OpNode = *Op.getNode();
+  bool Val = false;
+  for (SDNode::use_iterator UI = OpNode.use_begin(); UI != OpNode.use_end();
+       ++UI) {
+    SDNode *User = UI->getUser();
+    unsigned OpCode = User->getOpcode();
+    if (OpCode == ISD::BRCOND) {
+      Val = true;
+      break;
+    }
+  }
+
+  // SETCC has BRCOND predecessor, return original operation
+  if (Val)
+    return SDValue();
+
+  // Expand to target SELECT_CC
+  SDValue TrueV = DAG.getConstant(1, DL, Op.getValueType());
+  SDValue FalseV = DAG.getConstant(0, DL, Op.getValueType());
+
+  if (LHS.getValueType() == MVT::f32 || TrueV.getValueType() == MVT::f32)
+    return DAG.getNode(
+        XtensaISD::SELECT_CC_FP, DL, TrueV.getValueType(), LHS, RHS, TrueV,
+        FalseV, (LHS.getValueType() == MVT::f32) ? TargetCC_FP : TargetCC);
+  else if (TrueV.getValueType().isVector())
+    return SDValue();
+  else
+    llvm_unreachable("Unknown SETCC operand type");
 }
 
 SDValue XtensaTargetLowering::LowerRETURNADDR(SDValue Op,
@@ -1323,6 +1614,8 @@ SDValue XtensaTargetLowering::LowerMUL(SDValue Op, SelectionDAG &DAG) const {
 SDValue XtensaTargetLowering::LowerOperation(SDValue Op,
                                              SelectionDAG &DAG) const {
   switch (Op.getOpcode()) {
+  case ISD::BR_CC:
+    return LowerBR_CC(Op, DAG);
   case ISD::BR_JT:
     return LowerBR_JT(Op, DAG);
   case ISD::Constant:
@@ -1343,6 +1636,8 @@ SDValue XtensaTargetLowering::LowerOperation(SDValue Op,
     return LowerConstantPool(Op, DAG);
   case ISD::SELECT_CC:
     return LowerSELECT_CC(Op, DAG);
+  case ISD::SETCC:
+    return LowerSETCC(Op, DAG);
   case ISD::STACKSAVE:
     return LowerSTACKSAVE(Op, DAG);
   case ISD::STACKRESTORE:
@@ -1388,6 +1683,12 @@ const char *XtensaTargetLowering::getTargetNodeName(unsigned Opcode) const {
     return "XtensaISD::RETW";
   case XtensaISD::SELECT_CC:
     return "XtensaISD::SELECT_CC";
+  case XtensaISD::SELECT_CC_FP:
+    return "XtensaISD::SELECT_CC_FP";
+  case XtensaISD::BR_CC_T:
+    return "XtensaISD::BR_CC_T";
+  case XtensaISD::BR_CC_F:
+    return "XtensaISD::BR_CC_F";
   case XtensaISD::SRCL:
     return "XtensaISD::SRCL";
   case XtensaISD::SRCR:
@@ -1420,6 +1721,65 @@ const char *XtensaTargetLowering::getTargetNodeName(unsigned Opcode) const {
 // Custom insertion
 //===----------------------------------------------------------------------===//
 
+static void GetFPBranchKind(int Cond, int &BrKind, int &CmpKind) {
+  switch (Cond) {
+  default:
+    llvm_unreachable("Invalid condition!");
+    break;
+  case ISD::SETUNE:
+    BrKind = Xtensa::BF;
+    CmpKind = Xtensa::OEQ_S;
+    break;
+  case ISD::SETUO:
+    BrKind = Xtensa::BT;
+    CmpKind = Xtensa::UN_S;
+    break;
+  case ISD::SETO:
+    BrKind = Xtensa::BF;
+    CmpKind = Xtensa::UN_S;
+    break;
+  case ISD::SETUEQ:
+    BrKind = Xtensa::BT;
+    CmpKind = Xtensa::UEQ_S;
+    break;
+  case ISD::SETULE:
+    BrKind = Xtensa::BT;
+    CmpKind = Xtensa::ULE_S;
+    break;
+  case ISD::SETULT:
+    BrKind = Xtensa::BT;
+    CmpKind = Xtensa::ULT_S;
+    break;
+  case ISD::SETEQ:
+  case ISD::SETOEQ:
+    BrKind = Xtensa::BT;
+    CmpKind = Xtensa::OEQ_S;
+    break;
+  case ISD::SETNE:
+    BrKind = Xtensa::BF;
+    CmpKind = Xtensa::OEQ_S;
+    break;
+  case ISD::SETLE:
+  case ISD::SETOLE:
+    BrKind = Xtensa::BT;
+    CmpKind = Xtensa::OLE_S;
+    break;
+  case ISD::SETLT:
+  case ISD::SETOLT:
+    BrKind = Xtensa::BT;
+    CmpKind = Xtensa::OLT_S;
+    break;
+  case ISD::SETGE:
+    BrKind = Xtensa::BF;
+    CmpKind = Xtensa::OLT_S;
+    break;
+  case ISD::SETGT:
+    BrKind = Xtensa::BF;
+    CmpKind = Xtensa::OLE_S;
+    break;
+  }
+}
+
 MachineBasicBlock *
 XtensaTargetLowering::emitSelectCC(MachineInstr &MI,
                                    MachineBasicBlock *MBB) const {
@@ -1430,7 +1790,7 @@ XtensaTargetLowering::emitSelectCC(MachineInstr &MI,
   MachineOperand &RHS = MI.getOperand(2);
   MachineOperand &TrueValue = MI.getOperand(3);
   MachineOperand &FalseValue = MI.getOperand(4);
-  unsigned BrKind = MI.getOperand(5).getImm();
+  unsigned Cond = MI.getOperand(5).getImm();
 
   // To "insert" a SELECT_CC instruction, we actually have to insert
   // CopyMBB and SinkMBB  blocks and add branch to MBB. We build phi
@@ -1462,10 +1822,23 @@ XtensaTargetLowering::emitSelectCC(MachineInstr &MI,
   MBB->addSuccessor(CopyMBB);
   MBB->addSuccessor(SinkMBB);
 
-  BuildMI(MBB, DL, TII.get(BrKind))
-      .addReg(LHS.getReg())
-      .addReg(RHS.getReg())
-      .addMBB(SinkMBB);
+  if ((MI.getOpcode() == Xtensa::SELECT_CC_FP_FP) ||
+      (MI.getOpcode() == Xtensa::SELECT_CC_FP_INT)) {
+    int BrKind = 0;
+    int CmpKind = 0;
+    unsigned b = Xtensa::B0;
+
+    GetFPBranchKind(Cond, BrKind, CmpKind);
+    BuildMI(MBB, DL, TII.get(CmpKind), b)
+        .addReg(LHS.getReg())
+        .addReg(RHS.getReg());
+    BuildMI(MBB, DL, TII.get(BrKind)).addReg(b, RegState::Kill).addMBB(SinkMBB);
+  } else {
+    BuildMI(MBB, DL, TII.get(Cond))
+        .addReg(LHS.getReg())
+        .addReg(RHS.getReg())
+        .addMBB(SinkMBB);
+  }
 
   CopyMBB->addSuccessor(SinkMBB);
 
@@ -1492,17 +1865,22 @@ MachineBasicBlock *XtensaTargetLowering::EmitInstrWithCustomInserter(
   DebugLoc DL = MI.getDebugLoc();
 
   switch (MI.getOpcode()) {
+  case Xtensa::SELECT_CC_FP_FP:
+  case Xtensa::SELECT_CC_FP_INT:
+  case Xtensa::SELECT_CC_INT_FP:
   case Xtensa::SELECT:
     return emitSelectCC(MI, MBB);
   case Xtensa::S8I:
   case Xtensa::S16I:
   case Xtensa::S32I:
   case Xtensa::S32I_N:
+  case Xtensa::S32F:
   case Xtensa::L8UI:
   case Xtensa::L16SI:
   case Xtensa::L16UI:
   case Xtensa::L32I:
-  case Xtensa::L32I_N: {
+  case Xtensa::L32I_N:
+  case Xtensa::L32F: {
     // Insert memory wait instruction "memw" before volatile load/store as it is
     // implemented in gcc. If memoperands is empty then assume that it aslo
     // maybe volatile load/store and insert "memw".
