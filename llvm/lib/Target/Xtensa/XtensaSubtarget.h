@@ -39,6 +39,9 @@ private:
   // Enabled Xtensa Density extension
   bool HasDensity;
 
+  // Enabled Xtensa Single FP instructions
+  bool HasSingleFloat;
+
   // Enabled Xtensa Windowed Register option
   bool HasWindowed;
 
@@ -71,6 +74,8 @@ public:
   bool isWinABI() const { return hasWindowed(); }
 
   bool hasDensity() const { return HasDensity; }
+
+  bool hasSingleFloat() const { return HasSingleFloat; }
 
   bool hasWindowed() const { return HasWindowed; }
 
