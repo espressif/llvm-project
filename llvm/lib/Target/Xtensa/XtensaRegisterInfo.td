@@ -72,6 +72,10 @@ class SRReg<bits<8> num, string n, list<string> alt = []> : XtensaReg<n> {
   let AltNames = alt;
 }
 
+def LBEG : SRReg<0, "lbeg", ["LBEG", "0"]>;
+def LEND : SRReg<1, "lend", ["LEND", "1"]>;
+def LCOUNT : SRReg<2, "lcount", ["LCOUNT", "2"]>;
+
 // Shift Amount Register
 def SAR : SRReg<3, "sar", ["SAR","3"]>;
 
@@ -80,8 +84,8 @@ def BREG : SRReg<4, "br", ["BR", "4"]>;
 def WINDOWBASE : SRReg<72, "windowbase", ["WINDOWBASE", "72"]>;
 def WINDOWSTART : SRReg<73, "windowstart", ["WINDOWSTART", "73"]>;
 
-def SR :  RegisterClass<"Xtensa", [i32], 32, (add SAR,
- BREG, WINDOWBASE, WINDOWSTART)>;
+def SR :  RegisterClass<"Xtensa", [i32], 32, (add LBEG, LEND, LCOUNT,
+  SAR, BREG, WINDOWBASE, WINDOWSTART)>;
 
 //===----------------------------------------------------------------------===//
 // USER registers
