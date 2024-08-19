@@ -168,8 +168,8 @@ void XtensaInstrInfo::getLoadStoreOpcodes(const TargetRegisterClass *RC,
     LoadOpcode = Xtensa::L32I;
     StoreOpcode = Xtensa::S32I;
   } else if (RC == &Xtensa::FPRRegClass) {
-    LoadOpcode = Xtensa::L32F;
-    StoreOpcode = Xtensa::S32F;
+    LoadOpcode = Xtensa::LSI;
+    StoreOpcode = Xtensa::SSI;
   } else
     llvm_unreachable("Unsupported regclass to load or store");
 }
