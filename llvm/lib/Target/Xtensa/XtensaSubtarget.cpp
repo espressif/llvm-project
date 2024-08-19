@@ -48,6 +48,15 @@ XtensaSubtarget::initializeSubtargetDependencies(StringRef CPU, StringRef FS) {
   HasATOMCTL = false;
   HasMEMCTL = false;
   HasDebug = false;
+  HasException = false;
+  HasHighPriInterrupts = false;
+  HasCoprocessor = false;
+  HasInterrupt = false;
+  HasRelocatableVector = false;
+  HasTimerInt = false;
+  HasPRID = false;
+  HasRegionProtection = false;
+  HasMiscSR = false;
 
   // Parse features string.
   ParseSubtargetFeatures(CPUName, CPUName, FS);

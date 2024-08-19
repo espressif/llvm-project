@@ -1213,6 +1213,83 @@ let isBarrier = 1, isTerminator = 1 in {
 def : Pat<(trap), (BREAK (i32 1), (i32 15))>;
 
 //===----------------------------------------------------------------------===//
+// Exception feature instructions
+//===----------------------------------------------------------------------===//
+
+def EXCW : RRR_Inst<0x00, 0x00, 0x00, (outs), (ins),
+                   "excw", []>, Requires<[HasException]> {
+  let r = 0x2;
+  let s = 0x0;
+  let t = 0x8;
+}
+
+def RFDE : RRR_Inst<0x00, 0x00, 0x00, (outs), (ins),
+                   "rfde", []>, Requires<[HasException]> {
+  let r = 0x3;
+  let s = 0x2;
+  let t = 0x0;
+}
+
+
+def RFE : RRR_Inst<0x00, 0x00, 0x00, (outs), (ins),
+                  "rfe", []>, Requires<[HasException]> {
+  let r = 0x3;
+  let s = 0x0;
+  let t = 0x0;
+}
+
+def SYSCALL : RRR_Inst<0x00, 0x00, 0x00, (outs), (ins),
+                      "syscall", []>, Requires<[HasException]> {
+  let r = 0x5;
+  let s = 0x0;
+  let t = 0x0;
+}
+
+//===----------------------------------------------------------------------===//
+// Interrupt feature instructions
+//===----------------------------------------------------------------------===//
+
+def RSIL : RRR_Inst<0x00, 0x00, 0x00, (outs AR:$t), (ins uimm4:$imm),
+                   "rsil\t$t, $imm", []>, Requires<[HasInterrupt]> {
+  bits<4> imm;
+
+  let r = 0x6;
+  let s = imm{3-0};
+}
+
+def WAITI : RRR_Inst<0x00, 0x00, 0x00, (outs), (ins uimm4:$imm),
+                   "waiti\t$imm", []>, Requires<[HasInterrupt]> {
+  bits<4> imm;
+
+  let r = 0x7;
+  let s = imm{3-0};
+  let t = 0;
+}
+
+def RFI : RRR_Inst<0x00, 0x00, 0x00, (outs), (ins uimm4:$imm),
+                  "rfi\t$imm", []>, Requires<[HasInterrupt]> {
+  bits<4> imm;
+
+  let r = 0x3;
+  let s = imm{3-0};
+  let t = 0x1;
+}
+
+//===----------------------------------------------------------------------===//
+// Region Protection feature instructions
+//===----------------------------------------------------------------------===//
+
+def WDTLB : RRR_Inst<0x00, 0x00, 0x05, (outs AR:$t), (ins AR:$s),
+                   "wdtlb\t$t, $s", []>, Requires<[HasRegionProtection]> {
+  let r = 0xE;
+}
+
+def WITLB : RRR_Inst<0x00, 0x00, 0x05, (outs AR:$t), (ins AR:$s),
+                    "witlb\t$t, $s", []>, Requires<[HasRegionProtection]> {
+  let r = 0x6;
+}
+
+//===----------------------------------------------------------------------===//
 // DSP Instructions
 //===----------------------------------------------------------------------===//
 include "XtensaDSPInstrInfo.td"
