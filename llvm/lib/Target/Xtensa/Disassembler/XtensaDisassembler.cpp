@@ -147,6 +147,169 @@ static DecodeStatus DecodeMR23RegisterClass(MCInst &Inst, uint64_t RegNo,
   return MCDisassembler::Success;
 }
 
+// Verify SR and UR
+bool CheckRegister(unsigned RegNo, MCSubtargetInfo STI) {
+  StringRef CPU = STI.getCPU();
+  unsigned NumIntLevels = 0;
+  unsigned NumTimers = 0;
+  unsigned NumMiscSR = 0;
+  bool IsESP32 = false;
+  bool IsESP32_S2 = false;
+  bool Res = true;
+
+  // Assume that CPU is esp32 by default
+  if ((CPU == "esp32") || (CPU == "")) {
+    NumIntLevels = 6;
+    NumTimers = 3;
+    NumMiscSR = 4;
+    IsESP32 = true;
+  } else if (CPU == "esp32-s2") {
+    NumIntLevels = 6;
+    NumTimers = 3;
+    NumMiscSR = 4;
+    IsESP32_S2 = true;
+  } else if (CPU == "esp8266") {
+    NumIntLevels = 2;
+    NumTimers = 1;
+  }
+
+  switch (RegNo) {
+  case Xtensa::LBEG:
+  case Xtensa::LEND:
+  case Xtensa::LCOUNT:
+    Res = STI.getFeatureBits()[Xtensa::FeatureLoop];
+    break;
+  case Xtensa::BREG:
+    Res = STI.getFeatureBits()[Xtensa::FeatureBoolean];
+    break;
+  case Xtensa::LITBASE:
+    Res = STI.getFeatureBits()[Xtensa::FeatureExtendedL32R];
+    break;
+  case Xtensa::SCOMPARE1:
+    Res = STI.getFeatureBits()[Xtensa::FeatureS32C1I];
+    break;
+  case Xtensa::ACCLO:
+  case Xtensa::ACCHI:
+  case Xtensa::M0:
+  case Xtensa::M1:
+  case Xtensa::M2:
+  case Xtensa::M3:
+    Res = STI.getFeatureBits()[Xtensa::FeatureMAC16];
+    break;
+  case Xtensa::WINDOWBASE:
+  case Xtensa::WINDOWSTART:
+    Res = STI.getFeatureBits()[Xtensa::FeatureWindowed];
+    break;
+  case Xtensa::IBREAKENABLE:
+  case Xtensa::IBREAKA0:
+  case Xtensa::IBREAKA1:
+  case Xtensa::DBREAKA0:
+  case Xtensa::DBREAKA1:
+  case Xtensa::DBREAKC0:
+  case Xtensa::DBREAKC1:
+  case Xtensa::DEBUGCAUSE:
+  case Xtensa::ICOUNT:
+  case Xtensa::ICOUNTLEVEL:
+    Res = STI.getFeatureBits()[Xtensa::FeatureDebug];
+    break;
+  case Xtensa::ATOMCTL:
+    Res = STI.getFeatureBits()[Xtensa::FeatureATOMCTL];
+    break;
+  case Xtensa::MEMCTL:
+    Res = STI.getFeatureBits()[Xtensa::FeatureMEMCTL];
+    break;
+  case Xtensa::EPC1:
+    Res = STI.getFeatureBits()[Xtensa::FeatureException];
+    break;
+  case Xtensa::EPC2:
+  case Xtensa::EPC3:
+  case Xtensa::EPC4:
+  case Xtensa::EPC5:
+  case Xtensa::EPC6:
+  case Xtensa::EPC7:
+    Res = STI.getFeatureBits()[Xtensa::FeatureHighPriInterrupts];
+    Res = Res & (NumIntLevels >= (RegNo - Xtensa::EPC1));
+    break;
+  case Xtensa::EPS2:
+  case Xtensa::EPS3:
+  case Xtensa::EPS4:
+  case Xtensa::EPS5:
+  case Xtensa::EPS6:
+  case Xtensa::EPS7:
+    Res = STI.getFeatureBits()[Xtensa::FeatureHighPriInterrupts];
+    Res = Res & (NumIntLevels > (RegNo - Xtensa::EPS2));
+    break;
+  case Xtensa::EXCSAVE1:
+    Res = STI.getFeatureBits()[Xtensa::FeatureException];
+    break;
+  case Xtensa::EXCSAVE2:
+  case Xtensa::EXCSAVE3:
+  case Xtensa::EXCSAVE4:
+  case Xtensa::EXCSAVE5:
+  case Xtensa::EXCSAVE6:
+  case Xtensa::EXCSAVE7:
+    Res = STI.getFeatureBits()[Xtensa::FeatureHighPriInterrupts];
+    Res = Res & (NumIntLevels >= (RegNo - Xtensa::EXCSAVE1));
+    break;
+  case Xtensa::DEPC:
+  case Xtensa::EXCCAUSE:
+  case Xtensa::EXCVADDR:
+    Res = STI.getFeatureBits()[Xtensa::FeatureException];
+    break;
+  case Xtensa::CPENABLE:
+    Res = STI.getFeatureBits()[Xtensa::FeatureCoprocessor];
+    break;
+  case Xtensa::VECBASE:
+    Res = STI.getFeatureBits()[Xtensa::FeatureRelocatableVector];
+    break;
+  case Xtensa::CCOUNT:
+    Res = STI.getFeatureBits()[Xtensa::FeatureTimerInt];
+    Res &= (NumTimers > 0);
+    break;
+  case Xtensa::CCOMPARE0:
+  case Xtensa::CCOMPARE1:
+  case Xtensa::CCOMPARE2:
+    Res = STI.getFeatureBits()[Xtensa::FeatureTimerInt];
+    Res &= (NumTimers > (RegNo - Xtensa::CCOMPARE0));
+    break;
+  case Xtensa::PRID:
+    Res = STI.getFeatureBits()[Xtensa::FeaturePRID];
+    break;
+  case Xtensa::INTSET:
+  case Xtensa::INTCLEAR:
+  case Xtensa::INTENABLE:
+    Res = STI.getFeatureBits()[Xtensa::FeatureInterrupt];
+    break;
+  case Xtensa::MISC0:
+  case Xtensa::MISC1:
+  case Xtensa::MISC2:
+  case Xtensa::MISC3:
+    Res = STI.getFeatureBits()[Xtensa::FeatureMiscSR];
+    Res &= (NumMiscSR > (RegNo - Xtensa::MISC0));
+    break;
+  case Xtensa::THREADPTR:
+    Res = STI.getFeatureBits()[Xtensa::FeatureTHREADPTR];
+    break;
+  case Xtensa::GPIO_OUT:
+    Res = IsESP32_S2;
+    break;
+  case Xtensa::EXPSTATE:
+    Res = IsESP32;
+    break;
+  case Xtensa::FCR:
+  case Xtensa::FSR:
+    Res = STI.getFeatureBits()[Xtensa::FeatureSingleFloat];
+    break;
+  case Xtensa::F64R_LO:
+  case Xtensa::F64R_HI:
+  case Xtensa::F64S:
+    Res = STI.getFeatureBits()[Xtensa::FeatureDFPAccel];
+    break;
+  }
+
+  return Res;
+}
+
 static const unsigned SRDecoderTable[] = {
     Xtensa::LBEG,        0,   Xtensa::LEND,         1,
     Xtensa::LCOUNT,      2,   Xtensa::SAR,          3,
@@ -186,12 +349,19 @@ static const unsigned SRDecoderTable[] = {
 static DecodeStatus DecodeSRRegisterClass(MCInst &Inst, uint64_t RegNo,
                                           uint64_t Address,
                                           const void *Decoder) {
+  const llvm::MCSubtargetInfo STI =
+      ((const MCDisassembler *)Decoder)->getSubtargetInfo();
+
   if (RegNo > 255)
     return MCDisassembler::Fail;
 
   for (unsigned i = 0; i < std::size(SRDecoderTable); i += 2) {
     if (SRDecoderTable[i + 1] == RegNo) {
       unsigned Reg = SRDecoderTable[i];
+
+      if (!CheckRegister(Reg, STI))
+        return MCDisassembler::Fail;
+
       Inst.addOperand(MCOperand::createReg(Reg));
       return MCDisassembler::Success;
     }
@@ -201,9 +371,9 @@ static DecodeStatus DecodeSRRegisterClass(MCInst &Inst, uint64_t RegNo,
 }
 
 static const unsigned URDecoderTable[] = {
-    Xtensa::EXPSTATE, 230, Xtensa::THREADPTR, 231, Xtensa::FCR,     232,
-    Xtensa::FSR,      233, Xtensa::F64R_LO,   234, Xtensa::F64R_HI, 235,
-    Xtensa::F64S,     236};
+    Xtensa::GPIO_OUT, 0,   Xtensa::EXPSTATE, 230, Xtensa::THREADPTR, 231,
+    Xtensa::FCR,      232, Xtensa::FSR,      233, Xtensa::F64R_LO,   234,
+    Xtensa::F64R_HI,  235, Xtensa::F64S,     236};
 
 static DecodeStatus DecodeURRegisterClass(MCInst &Inst, uint64_t RegNo,
                                           uint64_t Address,
@@ -217,6 +387,10 @@ static DecodeStatus DecodeURRegisterClass(MCInst &Inst, uint64_t RegNo,
   for (unsigned i = 0; i < std::size(URDecoderTable); i += 2) {
     if (URDecoderTable[i + 1] == RegNo) {
       unsigned Reg = URDecoderTable[i];
+
+      if (!CheckRegister(Reg, STI))
+        return MCDisassembler::Fail;
+
       Inst.addOperand(MCOperand::createReg(Reg));
       return MCDisassembler::Success;
     }
