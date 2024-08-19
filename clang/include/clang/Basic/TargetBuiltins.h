@@ -366,6 +366,16 @@ namespace clang {
     };
   }
 
+  /// Xtensa builtins
+  namespace Xtensa {
+    enum {
+      LastTIBuiltin = clang::Builtin::FirstTSBuiltin - 1,
+#define BUILTIN(ID, TYPE, ATTRS) BI##ID,
+#include "clang/Basic/BuiltinsXtensa.def"
+      LastTSBuiltin
+    };
+  } // namespace Xtensa
+
   static constexpr uint64_t LargestBuiltinID = std::max<uint64_t>(
       {ARM::LastTSBuiltin, AArch64::LastTSBuiltin, BPF::LastTSBuiltin,
        PPC::LastTSBuiltin, NVPTX::LastTSBuiltin, AMDGPU::LastTSBuiltin,

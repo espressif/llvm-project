@@ -29,7 +29,6 @@ namespace clang {
 namespace targets {
 
 class LLVM_LIBRARY_VISIBILITY XtensaTargetInfo : public TargetInfo {
-  static const Builtin::Info BuiltinInfo[];
   std::string CPU;
 
 public:
@@ -53,9 +52,7 @@ public:
   void getTargetDefines(const LangOptions &Opts,
                         MacroBuilder &Builder) const override;
 
-  ArrayRef<Builtin::Info> getTargetBuiltins() const override {
-    return std::nullopt;
-  }
+  ArrayRef<Builtin::Info> getTargetBuiltins() const override;
 
   BuiltinVaListKind getBuiltinVaListKind() const override {
 
