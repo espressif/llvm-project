@@ -226,8 +226,12 @@ private:
 
   MachineBasicBlock *emitSelectCC(MachineInstr &MI,
                                   MachineBasicBlock *BB) const;
+  MachineBasicBlock *emitAtomicSwap(MachineInstr &MI, MachineBasicBlock *BB,
+                                    int isByteOperand) const;
   MachineBasicBlock *emitAtomicCmpSwap(MachineInstr &MI, MachineBasicBlock *BB,
                                        int isByteOperand) const;
+  MachineBasicBlock *emitAtomicSwap(MachineInstr &MI,
+                                    MachineBasicBlock *BB) const;
 
   InlineAsm::ConstraintCode
   getInlineAsmMemConstraint(StringRef ConstraintCode) const override {
