@@ -1338,6 +1338,18 @@ def : Pat<(atomic_store_8  addr_ish1:$addr, AR:$t), (S8I AR:$t, addr_ish1:$addr)
 def : Pat<(atomic_store_16 addr_ish2:$addr, AR:$t), (S16I AR:$t, addr_ish2:$addr)>;
 def : Pat<(atomic_store_32 addr_ish4:$addr, AR:$t), (S32I AR:$t, addr_ish4:$addr)>;
 
+let usesCustomInserter = 1, Predicates = [HasS32C1I] in {
+  def ATOMIC_CMP_SWAP_8_P : Pseudo<(outs AR:$dst), (ins AR:$ptr, AR:$cmp, AR:$swap),
+                                  "!atomic_cmp_swap_8_p, $dst, $ptr, $cmp, $swap",
+                                  [(set AR:$dst, (atomic_cmp_swap_i8 AR:$ptr, AR:$cmp, AR:$swap))]>;
+  def ATOMIC_CMP_SWAP_16_P : Pseudo<(outs AR:$dst), (ins AR:$ptr, AR:$cmp, AR:$swap),
+                                   "!atomic_cmp_swap_16_p, $dst, $ptr, $cmp, $swap",
+                                   [(set AR:$dst, (atomic_cmp_swap_i16 AR:$ptr, AR:$cmp, AR:$swap))]>;
+  def ATOMIC_CMP_SWAP_32_P : Pseudo<(outs AR:$dst), (ins AR:$ptr, AR:$cmp, AR:$swap),
+                                   "!atomic_cmp_swap_32_p, $dst, $ptr, $cmp, $swap",
+                                   [(set AR:$dst, (atomic_cmp_swap_i32 AR:$ptr, AR:$cmp, AR:$swap))]>;
+}
+
 //===----------------------------------------------------------------------===//
 // DSP Instructions
 //===----------------------------------------------------------------------===//
