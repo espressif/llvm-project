@@ -37,6 +37,21 @@ enum {
   // of the field [1..16]
   EXTUI,
 
+  // Floating point unordered compare conditions
+  CMPUEQ,
+  CMPULE,
+  CMPULT,
+  CMPUO,
+  // Floating point compare conditions
+  CMPOEQ,
+  CMPOLE,
+  CMPOLT,
+  // FP multipy-add/sub
+  MADD,
+  MSUB,
+  // FP move
+  MOVS,
+
   MOVSP,
 
   // Wraps a TargetGlobalAddress that should be loaded using PC-relative
@@ -82,6 +97,9 @@ public:
   bool isOffsetFoldingLegal(const GlobalAddressSDNode *GA) const override;
 
   const char *getTargetNodeName(unsigned Opcode) const override;
+
+  bool isFPImmLegal(const APFloat &Imm, EVT VT,
+                    bool ForCodeSize) const override;
 
   /// Returns the size of the platform's va_list object.
   unsigned getVaListSizeInBits(const DataLayout &DL) const override;
@@ -137,6 +155,8 @@ private:
   SDValue LowerBR_JT(SDValue Op, SelectionDAG &DAG) const;
 
   SDValue LowerImmediate(SDValue Op, SelectionDAG &DAG) const;
+
+  SDValue LowerImmediateFP(SDValue Op, SelectionDAG &DAG) const;
 
   SDValue LowerGlobalAddress(SDValue Op, SelectionDAG &DAG) const;
 

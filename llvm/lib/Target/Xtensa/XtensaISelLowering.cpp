@@ -60,6 +60,10 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
   // Set up the register classes.
   addRegisterClass(MVT::i32, &Xtensa::ARRegClass);
 
+  if (Subtarget.hasSingleFloat()) {
+    addRegisterClass(MVT::f32, &Xtensa::FPRRegClass);
+  }
+
   // Set up special registers.
   setStackPointerRegisterToSaveRestore(Xtensa::SP);
 
@@ -69,6 +73,8 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
 
   setOperationAction(ISD::Constant, MVT::i32, Custom);
   setOperationAction(ISD::Constant, MVT::i64, Expand);
+  setOperationAction(ISD::ConstantFP, MVT::f32, Custom);
+  setOperationAction(ISD::ConstantFP, MVT::f64, Expand);
 
   setBooleanContents(ZeroOrOneBooleanContent);
 
@@ -163,6 +169,11 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
 bool XtensaTargetLowering::isOffsetFoldingLegal(
     const GlobalAddressSDNode *GA) const {
   // The Xtensa target isn't yet aware of offsets.
+  return false;
+}
+
+bool XtensaTargetLowering::isFPImmLegal(const APFloat &Imm, EVT VT,
+                                        bool ForCodeSize) const {
   return false;
 }
 
@@ -294,7 +305,7 @@ static bool CC_Xtensa_Custom(unsigned ValNo, MVT ValVT, MVT LocVT,
   bool needs64BitAlign = (ValVT == MVT::i32 && OrigAlign == Align(8));
   bool needs128BitAlign = (ValVT == MVT::i32 && OrigAlign == Align(16));
 
-  if (ValVT == MVT::i32) {
+  if (ValVT == MVT::i32 || ValVT == MVT::f32) {
     Register = State.AllocateReg(IntRegs);
     // If this is the first part of an i64 arg,
     // the allocated register must be either A2, A4 or A6.
@@ -821,6 +832,21 @@ SDValue XtensaTargetLowering::LowerImmediate(SDValue Op,
   return Op;
 }
 
+SDValue XtensaTargetLowering::LowerImmediateFP(SDValue Op,
+                                               SelectionDAG &DAG) const {
+  const ConstantFPSDNode *CN = cast<ConstantFPSDNode>(Op);
+  SDLoc DL(CN);
+  APFloat apval = CN->getValueAPF();
+  int64_t value = llvm::bit_cast<uint32_t>(CN->getValueAPF().convertToFloat());
+  if (Op.getValueType() == MVT::f32) {
+    Type *Ty = Type::getInt32Ty(*DAG.getContext());
+    Constant *CV = ConstantInt::get(Ty, value);
+    SDValue CP = DAG.getConstantPool(CV, MVT::i32);
+    return DAG.getNode(ISD::BITCAST, DL, MVT::f32, CP);
+  }
+  return Op;
+}
+
 SDValue XtensaTargetLowering::LowerGlobalAddress(SDValue Op,
                                                  SelectionDAG &DAG) const {
   const GlobalAddressSDNode *G = cast<GlobalAddressSDNode>(Op);
@@ -1301,6 +1327,8 @@ SDValue XtensaTargetLowering::LowerOperation(SDValue Op,
     return LowerBR_JT(Op, DAG);
   case ISD::Constant:
     return LowerImmediate(Op, DAG);
+  case ISD::ConstantFP:
+    return LowerImmediateFP(Op, DAG);
   case ISD::RETURNADDR:
     return LowerRETURNADDR(Op, DAG);
   case ISD::GlobalAddress:
@@ -1364,6 +1392,26 @@ const char *XtensaTargetLowering::getTargetNodeName(unsigned Opcode) const {
     return "XtensaISD::SRCL";
   case XtensaISD::SRCR:
     return "XtensaISD::SRCR";
+  case XtensaISD::CMPUO:
+    return "XtensaISD::CMPUO";
+  case XtensaISD::CMPUEQ:
+    return "XtensaISD::CMPUEQ";
+  case XtensaISD::CMPULE:
+    return "XtensaISD::CMPULE";
+  case XtensaISD::CMPULT:
+    return "XtensaISD::CMPULT";
+  case XtensaISD::CMPOEQ:
+    return "XtensaISD::CMPOEQ";
+  case XtensaISD::CMPOLE:
+    return "XtensaISD::CMPOLE";
+  case XtensaISD::CMPOLT:
+    return "XtensaISD::CMPOLT";
+  case XtensaISD::MADD:
+    return "XtensaISD::MADD";
+  case XtensaISD::MSUB:
+    return "XtensaISD::MSUB";
+  case XtensaISD::MOVS:
+    return "XtensaISD::MOVS";
   }
   return nullptr;
 }

@@ -885,3 +885,201 @@ def ORBC : RRR_Inst<0x00, 0x02, 0x03, (outs BR:$r), (ins BR:$s, BR:$t),
                    "orbc\t$r, $s, $t", []>, Requires<[HasBoolean]>;
 def XORB : RRR_Inst<0x00, 0x02, 0x04, (outs BR:$r), (ins BR:$s, BR:$t),
                    "xorb\t$r, $s, $t", []>, Requires<[HasBoolean]>;
+
+//===----------------------------------------------------------------------===//
+// Floating-Point Instructions
+//===----------------------------------------------------------------------===//
+
+class FPArith_RRR<bits<4> oper2, bits<4> oper1, string instrAsm,
+                 SDPatternOperator opNode, bit isComm = 0>
+  : RRR_Inst<0x00, oper1, oper2, (outs FPR:$r), (ins FPR:$s, FPR:$t),
+             instrAsm#"\t$r, $s, $t",
+            [(set FPR:$r, (opNode FPR:$s, FPR:$t))]> {
+  let isCommutable = isComm;
+  let isReMaterializable = 0;
+  let Predicates = [HasSingleFloat];
+}
+
+def ADD_S : FPArith_RRR<0x00, 0x0A, "add.s", fadd, 1>;
+def SUB_S : FPArith_RRR<0x01, 0x0A, "sub.s", fsub>;
+def MUL_S : FPArith_RRR<0x02, 0x0A, "mul.s", fmul, 1>;
+
+def ABS_S : RRR_Inst<0x00, 0x0A, 0x0F, (outs FPR:$r), (ins FPR:$s),
+                    "abs.s\t$r, $s",
+                    [(set FPR:$r, (fabs FPR:$s))]> {
+  let t = 0x01;
+}
+
+def NEG_S : RRR_Inst<0x00, 0x0A, 0x0F, (outs FPR:$r), (ins FPR:$s),
+                    "neg.s\t$r, $s",
+                    [(set FPR:$r, (fneg FPR:$s))]> {
+  let t = 0x06;
+}
+
+def TRUNC_S : RRR_Inst<0x00, 0x0A, 0x09, (outs AR:$r), (ins FPR:$s),
+                      "trunc.s\t$r, $s, 0",
+                      [(set AR:$r, (fp_to_sint FPR:$s))]> {
+  let t = 0x00;
+}
+
+def UTRUNC_S : RRR_Inst<0x00, 0x0A, 0x0e, (outs AR:$r), (ins FPR:$s),
+                       "utrunc.s\t$r, $s, 0",
+                       [(set AR:$r, (fp_to_uint FPR:$s))]> {
+  let t = 0x00;
+}
+
+def FLOAT_S : RRR_Inst<0x00, 0x0A, 0x0c, (outs FPR:$r), (ins AR:$s),
+                      "float.s\t$r, $s, 0",
+                      [(set FPR:$r, (sint_to_fp AR:$s))]> {
+  let t = 0x00;
+}
+
+def UFLOAT_S : RRR_Inst<0x00, 0x0A, 0x0D, (outs FPR:$r), (ins AR:$s),
+                       "ufloat.s\t$r, $s, 0",
+                       [(set FPR:$r, (uint_to_fp AR:$s))]> {
+  let t = 0x00;
+}
+
+def RFR : RRR_Inst<0x00, 0x0A, 0x0f, (outs AR:$r), (ins FPR:$s),
+                  "rfr\t$r, $s",
+                  [(set AR:$r, (bitconvert FPR:$s))]> {
+  let t = 0x04;
+}
+
+def WFR : RRR_Inst<0x00, 0x0A, 0x0f, (outs FPR:$r), (ins AR:$s),
+                  "wfr\t$r, $s",
+                  [(set FPR:$r, (bitconvert AR:$s))]> {
+  let t = 0x05;
+}
+
+// FP load instructions
+let mayLoad = 1, usesCustomInserter = 1, Predicates = [HasSingleFloat] in {
+  class LoadF_RRI8<bits<4> oper, string instrAsm, SDPatternOperator opNode,
+                  ComplexPattern addrOp,Operand memOp>: RRI8_Inst<0x03, (outs FPR:$t), (ins memOp:$addr),
+                   instrAsm#"\t$t, $addr",
+                  [(set FPR:$t, (opNode addrOp:$addr))]> {
+    bits<12> addr;
+
+    let r = oper;
+    let imm8{7-0} = addr{11-4};
+    let s{3-0} = addr{3-0};
+  }
+}
+
+def L32F : LoadF_RRI8<0x00, "lsi", load, addr_ish4, mem32>, Requires<[]>;
+
+// FP store instructions
+let mayStore = 1, usesCustomInserter = 1, Predicates = [HasSingleFloat] in {
+  class StoreF_RRI8<bits<4> oper, string instrAsm, SDPatternOperator opNode,
+                   ComplexPattern addrOp, Operand memOp>: RRI8_Inst<0x03, (outs), (ins FPR:$t, memOp:$addr),
+                    instrAsm#"\t$t, $addr",
+                   [(opNode FPR:$t, addrOp:$addr)]> {
+    bits<12> addr;
+
+    let r = oper;
+    let imm8{7-0} = addr{11-4};
+    let s{3-0} = addr{3-0};
+  }
+}
+
+def S32F : StoreF_RRI8<0x04, "ssi", store, addr_ish4, mem32>;
+
+// FP compare instructions
+let isCompare = 1, Predicates = [HasSingleFloat] in {
+  class FCompare <bits<4> oper2, bits<4> oper1, string instrAsm,
+                 SDPatternOperator opNode, bit isComm = 0>
+    : RRR_Inst<0x00, oper1, oper2, (outs BR:$r), (ins FPR:$s, FPR:$t),
+               instrAsm#"\t$r, $s, $t",
+              [(set BR:$r, (opNode FPR:$s, FPR:$t))]> {
+    let isCommutable = isComm;
+    let isReMaterializable = 0;
+    let Predicates = [HasSingleFloat];
+  }
+}
+
+def OEQ_S :  FCompare<0x02, 0x0b, "oeq.s", Xtensa_cmpoeq, 1>;
+def OLT_S :  FCompare<0x04, 0x0b, "olt.s", Xtensa_cmpolt, 0>;
+def OLE_S :  FCompare<0x06, 0x0b, "ole.s", Xtensa_cmpole, 0>;
+
+def UEQ_S :  FCompare<0x03, 0x0b, "ueq.s", Xtensa_cmpueq, 1>;
+def ULT_S :  FCompare<0x05, 0x0b, "ult.s", Xtensa_cmpult, 0>;
+def ULE_S :  FCompare<0x07, 0x0b, "ule.s", Xtensa_cmpule, 0>;
+def UN_S  :  FCompare<0x01, 0x0b, "un.s",  Xtensa_cmpuo, 1>;
+
+//FP complex operations
+def MADD_S : RRR_Inst<0x00, 0x0A, 0x04, (outs FPR:$r), (ins FPR:$a, FPR:$s, FPR:$t),
+                     "madd.s\t$r, $s, $t",
+                     [(set FPR:$r, (Xtensa_madd FPR:$a, FPR:$s, FPR:$t))]>,
+                     Requires<[HasSingleFloat]> {
+  let isCommutable = 0;
+  let isReMaterializable = 0;
+  let Constraints = "$r = $a";
+}
+
+def MSUB_S : RRR_Inst<0x00, 0x0A, 0x05, (outs FPR:$r), (ins FPR:$a, FPR:$s, FPR:$t),
+                     "msub.s\t$r, $s, $t",
+                     [(set FPR:$r, (Xtensa_msub FPR:$a, FPR:$s, FPR:$t))]>,
+                     Requires<[HasSingleFloat]> {
+  let isCommutable = 0;
+  let isReMaterializable = 0;
+  let Constraints = "$r = $a";
+}
+
+//FP move operations
+def MOV_S : RRR_Inst<0x00, 0x0A, 0x0f, (outs FPR:$r), (ins FPR:$s),
+                    "mov.s\t$r, $s",
+                    [(set FPR:$r, (Xtensa_movs FPR:$s))]>, Requires<[HasSingleFloat]>
+{
+  let t = 0x00;
+}
+
+def CONST_S : RRR_Inst<0x00, 0x0a, 0x0f, (outs FPR:$r), (ins uimm4:$imm),
+                      "const.s\t$r, $imm", []>, Requires<[HasSingleFloat]> {
+  bits<4> imm;
+
+  let t = 0x03;
+  let s = imm{3-0};
+}
+
+def DIV0_S : RRR_Inst<0x00, 0x0A, 0x0F, (outs FPR:$r), (ins FPR:$s),
+                     "div0.s\t$r, $s", []>, Requires<[HasSingleFloat]> {
+  let t = 0x7;
+}
+
+def MADDN_S : RRR_Inst<0x00, 0x0A, 0x06, (outs FPR:$r), (ins FPR:$s, FPR:$t),
+                      "maddn.s\t$r, $s, $t", []>, Requires<[HasSingleFloat]> {
+  let isCommutable = 0;
+}
+
+def MKDADJ_S : RRR_Inst<0x00, 0x0A, 0x0F, (outs FPR:$r), (ins FPR:$s),
+                       "mkdadj.s\t$r, $s", []>, Requires<[HasSingleFloat]> {
+  let t = 0x0D;
+}
+
+def MKSADJ_S : RRR_Inst<0x00, 0x0A, 0x0F, (outs FPR:$r), (ins FPR:$s),
+                       "mksadj.s\t$r, $s", []>, Requires<[HasSingleFloat]> {
+  let t = 0x0C;
+}
+
+def ADDEXP_S : RRR_Inst<0x00, 0x0A, 0x0F, (outs FPR:$r), (ins FPR:$s),
+                       "addexp.s\t$r, $s", []>, Requires<[HasSingleFloat]> {
+  let t = 0x0E;
+}
+
+def ADDEXPM_S : RRR_Inst<0x00, 0x0A, 0x0F, (outs FPR:$r), (ins FPR:$s),
+                        "addexpm.s\t$r, $s", []>, Requires<[HasSingleFloat]> {
+  let t = 0x0F;
+}
+
+def DIVN_S : RRR_Inst<0x00, 0x0A, 0x07, (outs FPR:$r), (ins FPR:$s, FPR:$t),
+                     "divn.s\t$r, $s, $t", []>, Requires<[HasSingleFloat]>;
+
+def NEXP01_S : RRR_Inst<0x00, 0x0A, 0x0F, (outs FPR:$r), (ins FPR:$s),
+                       "nexp01.s\t$r, $s", []>, Requires<[HasSingleFloat]> {
+  let t = 0x0B;
+}
+
+def SQRT0_S : RRR_Inst<0x00, 0x0A, 0x0F, (outs FPR:$r), (ins FPR:$s),
+                      "sqrt0.s\t$r, $s", []>, Requires<[HasSingleFloat]> {
+  let t = 0x09;
+}
