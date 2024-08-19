@@ -84,6 +84,7 @@ add_clang_library(clangDriver
   ToolChains/VEToolchain.cpp
   ToolChains/WebAssembly.cpp
   ToolChains/XCore.cpp
+  ToolChains/Xtensa.cpp
   ToolChains/PPCLinux.cpp
   ToolChains/PPCFreeBSD.cpp
   ToolChains/InterfaceStubs.cpp
