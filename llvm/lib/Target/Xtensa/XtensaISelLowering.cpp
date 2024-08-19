@@ -2793,6 +2793,273 @@ MachineBasicBlock *XtensaTargetLowering::EmitInstrWithCustomInserter(
   DebugLoc DL = MI.getDebugLoc();
 
   switch (MI.getOpcode()) {
+  case Xtensa::MULA_DA_LL_LDDEC_P:
+  case Xtensa::MULA_DA_LH_LDDEC_P:
+  case Xtensa::MULA_DA_HL_LDDEC_P:
+  case Xtensa::MULA_DA_HH_LDDEC_P:
+  case Xtensa::MULA_DA_LL_LDINC_P:
+  case Xtensa::MULA_DA_LH_LDINC_P:
+  case Xtensa::MULA_DA_HL_LDINC_P:
+  case Xtensa::MULA_DA_HH_LDINC_P: {
+    MachineOperand &MW = MI.getOperand(0);
+    MachineOperand &S = MI.getOperand(1);
+    MachineOperand &MX = MI.getOperand(2);
+    MachineOperand &T = MI.getOperand(3);
+    const TargetRegisterClass *RC = getRegClassFor(MVT::i32);
+    unsigned Reg1 = MRI.createVirtualRegister(RC);
+    unsigned Reg2 = MRI.createVirtualRegister(RC);
+
+    BuildMI(*MBB, MI, DL, TII.get(Xtensa::L32I), Reg1)
+        .addReg(S.getReg())
+        .addImm(0);
+
+    unsigned Opc;
+    switch (MI.getOpcode()) {
+    case Xtensa::MULA_DA_LL_LDDEC_P:
+      Opc = Xtensa::MULA_DA_LL_LDDEC;
+      break;
+    case Xtensa::MULA_DA_LH_LDDEC_P:
+      Opc = Xtensa::MULA_DA_LH_LDDEC;
+      break;
+    case Xtensa::MULA_DA_HL_LDDEC_P:
+      Opc = Xtensa::MULA_DA_HL_LDDEC;
+      break;
+    case Xtensa::MULA_DA_HH_LDDEC_P:
+      Opc = Xtensa::MULA_DA_HH_LDDEC;
+      break;
+    case Xtensa::MULA_DA_LL_LDINC_P:
+      Opc = Xtensa::MULA_DA_LL_LDINC;
+      break;
+    case Xtensa::MULA_DA_LH_LDINC_P:
+      Opc = Xtensa::MULA_DA_LH_LDINC;
+      break;
+    case Xtensa::MULA_DA_HL_LDINC_P:
+      Opc = Xtensa::MULA_DA_HL_LDINC;
+      break;
+    case Xtensa::MULA_DA_HH_LDINC_P:
+      Opc = Xtensa::MULA_DA_HH_LDINC;
+      break;
+    }
+
+    unsigned MWVal = MW.getImm();
+    assert((MWVal < 4) && "Unexpected value of mula_da*ld* first argument, it "
+                          "must be from m0..m3");
+    unsigned MXVal = MX.getImm();
+    assert((MXVal < 2) && "Unexpected value of mula_da*ld* third "
+                          "argument, it must be m0 or m1");
+
+    BuildMI(*MBB, MI, DL, TII.get(Opc))
+        .addReg(Xtensa::M0 + MWVal, RegState::Define)
+        .addReg(Reg2, RegState::Define)
+        .addReg(Reg1)
+        .addReg(Xtensa::M0 + MXVal)
+        .addReg(T.getReg());
+
+    BuildMI(*MBB, MI, DL, TII.get(Xtensa::S32I))
+        .addReg(Reg2)
+        .addReg(S.getReg())
+        .addImm(0);
+
+    MI.eraseFromParent();
+    return MBB;
+  }
+  case Xtensa::MULA_DD_LL_LDDEC_P:
+  case Xtensa::MULA_DD_LH_LDDEC_P:
+  case Xtensa::MULA_DD_HL_LDDEC_P:
+  case Xtensa::MULA_DD_HH_LDDEC_P:
+  case Xtensa::MULA_DD_LL_LDINC_P:
+  case Xtensa::MULA_DD_LH_LDINC_P:
+  case Xtensa::MULA_DD_HL_LDINC_P:
+  case Xtensa::MULA_DD_HH_LDINC_P: {
+    MachineOperand &MW = MI.getOperand(0);
+    MachineOperand &S = MI.getOperand(1);
+    MachineOperand &MX = MI.getOperand(2);
+    MachineOperand &MY = MI.getOperand(3);
+    const TargetRegisterClass *RC = getRegClassFor(MVT::i32);
+    unsigned Reg1 = MRI.createVirtualRegister(RC);
+    unsigned Reg2 = MRI.createVirtualRegister(RC);
+
+    BuildMI(*MBB, MI, DL, TII.get(Xtensa::L32I), Reg1)
+        .addReg(S.getReg())
+        .addImm(0);
+
+    unsigned Opc;
+    switch (MI.getOpcode()) {
+    case Xtensa::MULA_DD_LL_LDDEC_P:
+      Opc = Xtensa::MULA_DD_LL_LDDEC;
+      break;
+    case Xtensa::MULA_DD_LH_LDDEC_P:
+      Opc = Xtensa::MULA_DD_LH_LDDEC;
+      break;
+    case Xtensa::MULA_DD_HL_LDDEC_P:
+      Opc = Xtensa::MULA_DD_HL_LDDEC;
+      break;
+    case Xtensa::MULA_DD_HH_LDDEC_P:
+      Opc = Xtensa::MULA_DD_HH_LDDEC;
+      break;
+    case Xtensa::MULA_DD_LL_LDINC_P:
+      Opc = Xtensa::MULA_DD_LL_LDINC;
+      break;
+    case Xtensa::MULA_DD_LH_LDINC_P:
+      Opc = Xtensa::MULA_DD_LH_LDINC;
+      break;
+    case Xtensa::MULA_DD_HL_LDINC_P:
+      Opc = Xtensa::MULA_DD_HL_LDINC;
+      break;
+    case Xtensa::MULA_DD_HH_LDINC_P:
+      Opc = Xtensa::MULA_DD_HH_LDINC;
+      break;
+    }
+
+    unsigned MWVal = MW.getImm();
+    assert((MWVal < 4) && "Unexpected value of mula_dd*ld* first argument, "
+                          "it must be from m0..m3");
+    unsigned MXVal = MX.getImm();
+    assert((MXVal < 2) && "Unexpected value of mula_dd*ld* third "
+                          "argument, it must be m0 or m1");
+    unsigned MYVal = MY.getImm();
+    assert(((MYVal > 1) && (MYVal < 4)) &&
+           "Unexpected value of mula_dd*ld* fourth "
+           "argument, it must be m2 or m3");
+
+    BuildMI(*MBB, MI, DL, TII.get(Opc))
+        .addReg(Xtensa::M0 + MWVal, RegState::Define)
+        .addReg(Reg2, RegState::Define)
+        .addReg(Reg1)
+        .addReg(Xtensa::M0 + MXVal)
+        .addReg(Xtensa::M0 + MYVal);
+
+    BuildMI(*MBB, MI, DL, TII.get(Xtensa::S32I))
+        .addReg(Reg2)
+        .addReg(S.getReg())
+        .addImm(0);
+
+    MI.eraseFromParent();
+    return MBB;
+  }
+  case Xtensa::XSR_ACCLO_P:
+  case Xtensa::XSR_ACCHI_P:
+  case Xtensa::XSR_M0_P:
+  case Xtensa::XSR_M1_P:
+  case Xtensa::XSR_M2_P:
+  case Xtensa::XSR_M3_P: {
+    MachineOperand &T = MI.getOperand(0);
+    const TargetRegisterClass *RC = getRegClassFor(MVT::i32);
+    unsigned Reg1 = MRI.createVirtualRegister(RC);
+    unsigned Reg2 = MRI.createVirtualRegister(RC);
+
+    BuildMI(*MBB, MI, DL, TII.get(Xtensa::L32I), Reg1)
+        .addReg(T.getReg())
+        .addImm(0);
+
+    unsigned SReg;
+    switch (MI.getOpcode()) {
+    case Xtensa::XSR_ACCLO_P:
+      SReg = Xtensa::ACCLO;
+      break;
+    case Xtensa::XSR_ACCHI_P:
+      SReg = Xtensa::ACCHI;
+      break;
+    case Xtensa::XSR_M0_P:
+      SReg = Xtensa::M0;
+      break;
+    case Xtensa::XSR_M1_P:
+      SReg = Xtensa::M1;
+      break;
+    case Xtensa::XSR_M2_P:
+      SReg = Xtensa::M2;
+      break;
+    case Xtensa::XSR_M3_P:
+      SReg = Xtensa::M3;
+      break;
+    }
+
+    BuildMI(*MBB, MI, DL, TII.get(Xtensa::XSR))
+        .addReg(Reg2, RegState::Define)
+        .addReg(SReg, RegState::Define)
+        .addReg(Reg1)
+        .addReg(SReg);
+
+    BuildMI(*MBB, MI, DL, TII.get(Xtensa::S32I))
+        .addReg(Reg2)
+        .addReg(T.getReg())
+        .addImm(0);
+
+    MI.eraseFromParent();
+    return MBB;
+  }
+  case Xtensa::WSR_ACCLO_P:
+  case Xtensa::WSR_ACCHI_P:
+  case Xtensa::WSR_M0_P:
+  case Xtensa::WSR_M1_P:
+  case Xtensa::WSR_M2_P:
+  case Xtensa::WSR_M3_P: {
+    MachineOperand &T = MI.getOperand(0);
+
+    unsigned SReg;
+    switch (MI.getOpcode()) {
+    case Xtensa::WSR_ACCLO_P:
+      SReg = Xtensa::ACCLO;
+      break;
+    case Xtensa::WSR_ACCHI_P:
+      SReg = Xtensa::ACCHI;
+      break;
+    case Xtensa::WSR_M0_P:
+      SReg = Xtensa::M0;
+      break;
+    case Xtensa::WSR_M1_P:
+      SReg = Xtensa::M1;
+      break;
+    case Xtensa::WSR_M2_P:
+      SReg = Xtensa::M2;
+      break;
+    case Xtensa::WSR_M3_P:
+      SReg = Xtensa::M3;
+      break;
+    }
+
+    BuildMI(*MBB, MI, DL, TII.get(Xtensa::WSR))
+        .addReg(SReg, RegState::Define)
+        .addReg(T.getReg());
+    MI.eraseFromParent();
+    return MBB;
+  }
+  case Xtensa::LDDEC_P:
+  case Xtensa::LDINC_P: {
+    MachineOperand &MW = MI.getOperand(0);
+    MachineOperand &S = MI.getOperand(1);
+    const TargetRegisterClass *RC = getRegClassFor(MVT::i32);
+    unsigned Reg1 = MRI.createVirtualRegister(RC);
+    unsigned Reg2 = MRI.createVirtualRegister(RC);
+
+    BuildMI(*MBB, MI, DL, TII.get(Xtensa::L32I), Reg1)
+        .addReg(S.getReg())
+        .addImm(0);
+
+    unsigned Opc = Xtensa::LDDEC;
+
+    if (MI.getOpcode() == Xtensa::LDINC_P)
+      Opc = Xtensa::LDINC;
+
+    BuildMI(*MBB, MI, DL, TII.get(Opc))
+        .addReg(Xtensa::M0 + MW.getImm(), RegState::Define)
+        .addReg(Reg2, RegState::Define)
+        .addReg(Reg1);
+
+    BuildMI(*MBB, MI, DL, TII.get(Xtensa::S32I))
+        .addReg(Reg2)
+        .addReg(S.getReg())
+        .addImm(0);
+
+    MI.eraseFromParent();
+    return MBB;
+  }
+
+  case Xtensa::SELECT_CC_FP_FP:
+  case Xtensa::SELECT_CC_FP_INT:
+  case Xtensa::SELECT_CC_INT_FP:
+  case Xtensa::SELECT:
+    return emitSelectCC(MI, MBB);
   case Xtensa::L8I_P: {
     MachineOperand &R = MI.getOperand(0);
     MachineOperand &Op1 = MI.getOperand(1);
