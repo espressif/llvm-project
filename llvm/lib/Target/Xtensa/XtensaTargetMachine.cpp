@@ -14,6 +14,7 @@
 
 #include "XtensaMachineFunctionInfo.h"
 #include "XtensaTargetMachine.h"
+#include "XtensaTargetObjectFile.h"
 #include "TargetInfo/XtensaTargetInfo.h"
 #include "XtensaMachineFunctionInfo.h"
 #include "llvm/CodeGen/Passes.h"
@@ -42,6 +43,10 @@ static Reloc::Model getEffectiveRelocModel(bool JIT,
   if (!RM || JIT)
      return Reloc::Static;
   return *RM;
+}
+
+static std::unique_ptr<TargetLoweringObjectFile> createTLOF() {
+  return std::make_unique<XtensaElfTargetObjectFile>();
 }
 
 XtensaTargetMachine::XtensaTargetMachine(const Target &T, const Triple &TT,
