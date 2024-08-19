@@ -148,10 +148,19 @@ static DecodeStatus DecodeMR23RegisterClass(MCInst &Inst, uint64_t RegNo,
 }
 
 static const unsigned SRDecoderTable[] = {
-    Xtensa::LEND, 1,  Xtensa::LCOUNT,      2,  Xtensa::SAR,         3,
-    Xtensa::BREG, 4,  Xtensa::ACCLO,       16, Xtensa::ACCHI,       17,
-    Xtensa::M0,   32, Xtensa::M1,          33, Xtensa::M2,          34,
-    Xtensa::M3,   35, Xtensa ::WINDOWBASE, 72, Xtensa::WINDOWSTART, 73};
+    Xtensa::LBEG,         0,   Xtensa::LEND,        1,
+    Xtensa::LCOUNT,       2,   Xtensa::SAR,         3,
+    Xtensa::BREG,         4,   Xtensa::LITBASE,     5,
+    Xtensa::ACCLO,        16,  Xtensa::ACCHI,       17,
+    Xtensa::M0,           32,  Xtensa::M1,          33,
+    Xtensa::M2,           34,  Xtensa::M3,          35,
+    Xtensa::WINDOWBASE,   72,  Xtensa::WINDOWSTART, 73,
+    Xtensa::IBREAKENABLE, 96,  Xtensa::MEMCTL,      97,
+    Xtensa::ATOMCTL,      99,  Xtensa::IBREAKA0,    128,
+    Xtensa::IBREAKA1,     129, Xtensa::DBREAKA0,    144,
+    Xtensa::DBREAKA1,     145, Xtensa::DBREAKC0,    160,
+    Xtensa::DBREAKC1,     161, Xtensa::DEBUGCAUSE,  233,
+    Xtensa::ICOUNT,       236, Xtensa::ICOUNTLEVEL, 237};
 
 static DecodeStatus DecodeSRRegisterClass(MCInst &Inst, uint64_t RegNo,
                                           uint64_t Address,
@@ -170,7 +179,9 @@ static DecodeStatus DecodeSRRegisterClass(MCInst &Inst, uint64_t RegNo,
   return MCDisassembler::Fail;
 }
 
-static const unsigned URDecoderTable[] = {Xtensa::FCR, 232, Xtensa::FSR, 233};
+static const unsigned URDecoderTable[] = {
+    Xtensa::THREADPTR, 231, Xtensa::FCR,     232, Xtensa::FSR,  233,
+    Xtensa::F64R_LO,   234, Xtensa::F64R_HI, 235, Xtensa::F64S, 236};
 
 static DecodeStatus DecodeURRegisterClass(MCInst &Inst, uint64_t RegNo,
                                           uint64_t Address,

@@ -41,6 +41,13 @@ XtensaSubtarget::initializeSubtargetDependencies(StringRef CPU, StringRef FS) {
   HasMul32High = false;
   HasDiv32 = false;
   HasMAC16 = false;
+  HasDFPAccel = false;
+  HasS32C1I = false;
+  HasTHREADPTR = false;
+  HasExtendedL32R = false;
+  HasATOMCTL = false;
+  HasMEMCTL = false;
+  HasDebug = false;
 
   // Parse features string.
   ParseSubtargetFeatures(CPUName, CPUName, FS);
