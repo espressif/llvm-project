@@ -180,6 +180,7 @@ class SemaSwift;
 class SemaSystemZ;
 class SemaWasm;
 class SemaX86;
+class SemaXtensa;
 class StandardConversionSequence;
 class TemplateArgument;
 class TemplateArgumentLoc;
@@ -1174,6 +1175,11 @@ public:
     return *X86Ptr;
   }
 
+  SemaXtensa &Xtensa() {
+    assert(XtensaPtr);
+    return *XtensaPtr;
+  }
+
   /// Source of additional semantic information.
   IntrusiveRefCntPtr<ExternalSemaSource> ExternalSource;
 
@@ -1232,6 +1238,7 @@ private:
   std::unique_ptr<SemaSystemZ> SystemZPtr;
   std::unique_ptr<SemaWasm> WasmPtr;
   std::unique_ptr<SemaX86> X86Ptr;
+  std::unique_ptr<SemaXtensa> XtensaPtr;
 
   ///@}
 
