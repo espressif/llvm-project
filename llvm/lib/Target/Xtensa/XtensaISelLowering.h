@@ -238,6 +238,12 @@ private:
                                        int isByteOperand) const;
   MachineBasicBlock *emitAtomicSwap(MachineInstr &MI,
                                     MachineBasicBlock *BB) const;
+  MachineBasicBlock *emitAtomicRMW(MachineInstr &MI, MachineBasicBlock *BB,
+                                   bool isByteOperand, unsigned Opcode,
+                                   bool inv, bool minmax) const;
+  MachineBasicBlock *emitAtomicRMW(MachineInstr &MI, MachineBasicBlock *BB,
+                                   unsigned Opcode, bool inv,
+                                   bool minmax) const;
 
   InlineAsm::ConstraintCode
   getInlineAsmMemConstraint(StringRef ConstraintCode) const override {
