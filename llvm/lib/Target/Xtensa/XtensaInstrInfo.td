@@ -1155,3 +1155,20 @@ def NSAU : RRR_Inst<0x00, 0x00, 0x04, (outs AR:$t), (ins AR:$s),
                    "nsau\t$t, $s", []>, Requires<[HasNSA]> {
   let r = 0xF;
 }
+
+//===----------------------------------------------------------------------===//
+// Mul32 Instructions
+//===----------------------------------------------------------------------===//
+
+def MULL  : ArithLogic_RRR<0x08, 0x02, "mull", mul, 1>, Requires<[HasMul32]>;
+def MULUH : ArithLogic_RRR<0x0A, 0x02, "muluh", mulhu, 1>, Requires<[HasMul32High]>;
+def MULSH : ArithLogic_RRR<0x0B, 0x02, "mulsh", mulhs, 1>, Requires<[HasMul32High]>;
+
+//===----------------------------------------------------------------------===//
+// Div32 Instructions
+//===----------------------------------------------------------------------===//
+
+def QUOS : ArithLogic_RRR<0x0D, 0x02, "quos", sdiv>, Requires<[HasDiv32]>;
+def QUOU : ArithLogic_RRR<0x0C, 0x02, "quou", udiv>, Requires<[HasDiv32]>;
+def REMS : ArithLogic_RRR<0x0F, 0x02, "rems", srem>, Requires<[HasDiv32]>;
+def REMU : ArithLogic_RRR<0x0E, 0x02, "remu", urem>, Requires<[HasDiv32]>;
