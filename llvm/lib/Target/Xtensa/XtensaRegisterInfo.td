@@ -225,6 +225,7 @@ class URReg<bits<8> num, string n, list<string> alt = []> : XtensaReg<n> {
   let AltNames = alt;
 }
 
+def GPIO_OUT : URReg<0, "gpio_out", ["GPIO_OUT"]>;
 def EXPSTATE : URReg<230, "expstate", ["EXPSTATE"]>;
 
 // Thread Pointer register
@@ -236,7 +237,7 @@ def F64R_LO : URReg<234, "f64r_lo", ["F64R_LO"]>;
 def F64R_HI : URReg<235, "f64r_hi", ["F64R_HI"]>;
 def F64S : URReg<236, "f64s", ["F64S"]>;
 
-def UR :  RegisterClass<"Xtensa", [i32], 32, (add EXPSTATE, THREADPTR, FCR,
+def UR :  RegisterClass<"Xtensa", [i32], 32, (add GPIO_OUT, EXPSTATE, THREADPTR, FCR,
   FSR, F64R_LO, F64R_HI, F64S)>; 
 
 //===----------------------------------------------------------------------===//

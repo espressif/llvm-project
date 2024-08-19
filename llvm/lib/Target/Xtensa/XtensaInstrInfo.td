@@ -561,6 +561,41 @@ def XSR : RSR_Inst<0x00, 0x01, 0x06, (outs AR:$ard, SR:$srd), (ins AR:$t, SR:$sr
 }
 
 //===----------------------------------------------------------------------===//
+// User Registers read/write instructions
+//===----------------------------------------------------------------------===//
+
+def WUR : RRR_Inst<0x00, 0x03, 0x0F, (outs UR:$ur), (ins AR:$t),
+                  "wur\t$t, $ur", []> {
+  bits<8> ur;
+
+  let r = ur{7-4};
+  let s = ur{3-0};
+}
+
+def RUR : RRR_Inst<0x00, 0x03, 0x0E, (outs AR:$r), (ins UR:$ur),
+                  "rur\t$r, $ur", []> {
+  bits<8> ur;
+
+  let s = ur{7-4};
+  let t = ur{3-0};
+}
+
+//===----------------------------------------------------------------------===//
+// External Registers read/write instructions
+//===----------------------------------------------------------------------===//
+
+def RER : RRR_Inst<0x00, 0x00, 0x04, (outs AR:$t), (ins AR:$s),
+                  "rer\t$t, $s", []> {
+  let r = 0x6;
+}
+
+def WER : RRR_Inst<0x00, 0x00, 0x04, (outs), (ins AR:$t, AR:$s),
+                  "wer\t$t, $s", []> {
+  let r = 0x7;
+  let hasSideEffects = 1;
+}
+
+//===----------------------------------------------------------------------===//
 // Stack allocation
 //===----------------------------------------------------------------------===//
 
