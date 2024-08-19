@@ -17,6 +17,7 @@
 #include "clang/Driver/Distro.h"
 #include "clang/Driver/Driver.h"
 #include "clang/Driver/DriverDiagnostic.h"
+#include "clang/Driver/MultilibBuilder.h"
 #include "clang/Driver/Options.h"
 #include "llvm/Option/ArgList.h"
 #include "llvm/Support/Path.h"
@@ -28,6 +29,8 @@ using namespace clang::driver::tools;
 using namespace clang::driver::toolchains;
 using namespace clang;
 using namespace llvm::opt;
+
+using tools::addMultilibFlag;
 
 XtensaGCCToolchainDetector::XtensaGCCToolchainDetector(
     const Driver &D, const llvm::Triple &HostTriple,
@@ -105,15 +108,30 @@ XtensaToolChain::XtensaToolChain(const Driver &D, const llvm::Triple &Triple,
       IsIntegratedAsm = false;
   }
 
+  Multilibs.push_back(Multilib());
+
+  Multilibs.push_back(MultilibBuilder("no-rtti", {}, {})
+                          .flag("-frtti", /*Disallow=*/true)
+                          .flag("-fno-rtti")
+                          .makeMultilib());
+
+  Multilib::flags_list Flags;
+  addMultilibFlag(
+      Args.hasFlag(options::OPT_frtti, options::OPT_fno_rtti, false), "frtti",
+      Flags);
+
+  Multilibs.select(Flags, SelectedMultilibs);
+
   const std::string Slash = XtensaGCCToolchain.Slash;
   std::string Libs =
       XtensaGCCToolchain.GCCToolchainDir + Slash + "lib" + Slash + "gcc" +
       Slash + XtensaGCCToolchain.GCCToolchainName + Slash +
-      XtensaGCCToolchain.GCCLibAndIncVersion;
+      XtensaGCCToolchain.GCCLibAndIncVersion + SelectedMultilibs.back().gccSuffix();
   getFilePaths().push_back(Libs);
 
   Libs = XtensaGCCToolchain.GCCToolchainDir + Slash +
-         XtensaGCCToolchain.GCCToolchainName + Slash + "lib";
+         XtensaGCCToolchain.GCCToolchainName + Slash + "lib" +
+         SelectedMultilibs.back().gccSuffix();
   getFilePaths().push_back(Libs);
 }
 
