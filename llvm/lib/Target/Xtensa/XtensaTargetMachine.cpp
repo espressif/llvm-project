@@ -101,6 +101,7 @@ public:
     return getTM<XtensaTargetMachine>();
   }
 
+  void addIRPasses() override;
   bool addInstSelector() override;
   void addPreEmitPass() override;
 };
@@ -110,6 +111,8 @@ bool XtensaPassConfig::addInstSelector() {
   addPass(createXtensaISelDag(getXtensaTargetMachine(), getOptLevel()));
   return false;
 }
+
+void XtensaPassConfig::addIRPasses() { addPass(createAtomicExpandLegacyPass()); }
 
 void XtensaPassConfig::addPreEmitPass() {
   addPass(createXtensaSizeReductionPass());
