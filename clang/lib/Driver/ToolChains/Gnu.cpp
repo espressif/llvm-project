@@ -1895,6 +1895,46 @@ static void findRISCVMultilibs(const Driver &D,
     Result.Multilibs = RISCVMultilibs;
 }
 
+static void findXtensaMultilibs(const Driver &D,
+                               const llvm::Triple &TargetTriple, StringRef Path,
+                               const ArgList &Args, DetectedMultilibs &Result) {
+
+  MultilibSet XtensaMultilibs = MultilibSet();
+  bool IsESP32 = Args.getLastArgValue(options::OPT_mcpu_EQ, "esp32") == "esp32";
+
+  XtensaMultilibs.push_back(Multilib());
+  if (IsESP32)
+    XtensaMultilibs.push_back(MultilibBuilder("esp32-psram", {}, {})
+                            .flag("-mfix-esp32-psram-cache-issue")
+                            .makeMultilib());
+
+  XtensaMultilibs.push_back(MultilibBuilder("no-rtti", {}, {})
+                          .flag("-frtti", /*Disallow=*/true)
+                          .flag("-fno-rtti")
+                          .makeMultilib());
+
+  if (IsESP32)
+    XtensaMultilibs.push_back(MultilibBuilder("esp32-psram/no-rtti", {}, {})
+                            .flag("-fno-rtti")
+                            .flag("-frtti", /*Disallow=*/true)
+                            .flag("-mfix-esp32-psram-cache-issue")
+                            .makeMultilib());
+
+  Multilib::flags_list Flags;
+  addMultilibFlag(
+      Args.hasFlag(options::OPT_frtti, options::OPT_fno_rtti, false), "frtti",
+      Flags);
+
+  if (IsESP32)
+    addMultilibFlag(Args.hasFlag(options::OPT_mfix_esp32_psram_cache_issue,
+                                 options::OPT_mfix_esp32_psram_cache_issue,
+                                 false),
+                    "mfix-esp32-psram-cache-issue", Flags);
+
+  if (XtensaMultilibs.select(D, Flags, Result.SelectedMultilibs))
+    Result.Multilibs = XtensaMultilibs;
+}
+
 static bool findBiarchMultilibs(const Driver &D,
                                 const llvm::Triple &TargetTriple,
                                 StringRef Path, const ArgList &Args,
@@ -2530,7 +2570,9 @@ void Generic_GCC::GCCInstallationDetector::AddDefaultGCCPrefixes(
       "s390x-redhat-linux"};
 
   static const char *const XtensaLibDirs[] = {"/lib"};
-  static const char *const XtensaTriples[] = {"xtensa-unknown-elf"};
+  static const char *const XtensaTriples[] = {
+      "xtensa-unknown-elf", "xtensa-esp32-elf", "xtensa-esp32s2-elf",
+      "xtensa-esp32s3-elf"};
 
   using std::begin;
   using std::end;
@@ -2843,6 +2885,8 @@ bool Generic_GCC::GCCInstallationDetector::ScanGCCForMultilibs(
     findMSP430Multilibs(D, TargetTriple, Path, Args, Detected);
   } else if (TargetArch == llvm::Triple::avr) {
     // AVR has no multilibs.
+  } else if (TargetArch == llvm::Triple::xtensa) {
+    findXtensaMultilibs(D, TargetTriple, Path, Args, Detected);
   } else if (!findBiarchMultilibs(D, TargetTriple, Path, Args,
                                   NeedsBiarchSuffix, Detected)) {
     return false;
