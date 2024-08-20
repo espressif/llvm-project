@@ -275,7 +275,7 @@ bool CheckRegister(unsigned RegNo, MCSubtargetInfo STI) {
   case Xtensa::PRID:
     Res = STI.getFeatureBits()[Xtensa::FeaturePRID];
     break;
-  case Xtensa::INTSET:
+  case Xtensa::INTERRUPT:
   case Xtensa::INTCLEAR:
   case Xtensa::INTENABLE:
     Res = STI.getFeatureBits()[Xtensa::FeatureInterrupt];
@@ -335,7 +335,7 @@ static const unsigned SRDecoderTable[] = {
     Xtensa::EXCSAVE2,    210, Xtensa::EXCSAVE3,     211,
     Xtensa::EXCSAVE4,    212, Xtensa::EXCSAVE5,     213,
     Xtensa::EXCSAVE6,    214, Xtensa::EXCSAVE7,     215,
-    Xtensa::CPENABLE,    224, Xtensa::INTSET,       226,
+    Xtensa::CPENABLE,    224, Xtensa::INTERRUPT,    226,
     Xtensa::INTCLEAR,    227, Xtensa::INTENABLE,    228,
     Xtensa::PS,          230, Xtensa::VECBASE,      231,
     Xtensa::EXCCAUSE,    232, Xtensa::DEBUGCAUSE,   233,

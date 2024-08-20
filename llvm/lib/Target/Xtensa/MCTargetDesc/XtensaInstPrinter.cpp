@@ -12,6 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "XtensaInstrInfo.h"
 #include "XtensaInstPrinter.h"
 #include "llvm/CodeGen/MachineOperand.h"
 #include "llvm/MC/MCExpr.h"
@@ -70,6 +71,23 @@ void XtensaInstPrinter::printOperand(const MCOperand &MC, raw_ostream &O) {
 void XtensaInstPrinter::printInst(const MCInst *MI, uint64_t Address,
                                   StringRef Annot, const MCSubtargetInfo &STI,
                                   raw_ostream &O) {
+  unsigned Opcode = MI->getOpcode();
+
+  switch (Opcode) {
+  case Xtensa::WSR: {
+    // INTERRUPT mnemonic is read-only, so use INTSET mnemonic instead
+    Register SR = MI->getOperand(0).getReg();
+    if (SR == Xtensa::INTERRUPT) {
+      Register Reg = MI->getOperand(1).getReg();
+      O << '\t' << "wsr" << '\t';
+      printRegName(O, Reg);
+      O << ", "
+        << "intset";
+      printAnnotation(O, Annot);
+      return;
+    }
+  }
+  }
   printInstruction(MI, Address, O);
   printAnnotation(O, Annot);
 }
