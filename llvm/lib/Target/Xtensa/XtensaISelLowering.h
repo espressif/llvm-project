@@ -53,6 +53,10 @@ enum {
   CMPOLE,
   CMPOLT,
 
+  // Branch at the end of the loop, uses result of the LOOPDEC
+  LOOPBR,
+  // Decrement loop counter
+  LOOPDEC,
   LOOPEND,
 
   // FP multipy-add/sub

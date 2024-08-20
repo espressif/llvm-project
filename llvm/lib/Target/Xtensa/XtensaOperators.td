@@ -43,6 +43,8 @@ def SDT_XtensaEXTUI               : SDTypeProfile<1, 3, [SDTCisVT<0, i32>, SDTCi
                                                          SDTCisVT<2, i32>, SDTCisVT<3, i32>]>;
 
 def SDT_XtensaLoopEnd             : SDTypeProfile<0, 1, [SDTCisVT<0, OtherVT>]>;
+def SDT_XtensaLoopDec             : SDTypeProfile<1, 1, [SDTCisSameAs<0, 1>, SDTCisVT<0, i32>]>;
+def SDT_XtensaLoopBr              : SDTypeProfile<0, 2, [SDTCisVT<0, i32>, SDTCisVT<1, OtherVT>]>;
 
 //===----------------------------------------------------------------------===//
 // Node definitions
@@ -112,4 +114,7 @@ def Xtensa_rur: SDNode<"XtensaISD::RUR", SDT_XtensaRUR,
 
 def Xtensa_loopend: SDNode<"XtensaISD::LOOPEND", SDT_XtensaLoopEnd,
                           [SDNPHasChain, SDNPInGlue]>;
-
+def Xtensa_loopdec: SDNode<"XtensaISD::LOOPDEC", SDT_XtensaLoopDec,
+                          [SDNPHasChain, SDNPInGlue]>;
+def Xtensa_loopbr:  SDNode<"XtensaISD::LOOPBR", SDT_XtensaLoopBr,
+                          [SDNPHasChain, SDNPInGlue]>;
