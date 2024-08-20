@@ -5,12 +5,12 @@ LBL0:
 # Out of range immediates
 
 # imm8
-addi a1, a2, 300
-# CHECK: :[[#@LINE-1]]:14: error: expected immediate in range [-128, 127]
+addi a1, a2, -33000
+# CHECK: :[[#@LINE-1]]:14: error: expected immediate in range [-32896, 32639]
 
 # imm8
-addi a1, a2, -129
-# CHECK: :[[#@LINE-1]]:14: error: expected immediate in range [-128, 127]
+addi a1, a2, 34000
+# CHECK: :[[#@LINE-1]]:14: error: expected immediate in range [-32896, 32639]
 
 # imm8_sh8
 addmi a1, a2, 33
@@ -66,7 +66,7 @@ aaa a10, a12
 and sp, a2, 10
 # CHECK: :[[#@LINE-1]]:13: error: invalid operand for instruction
 addi sp, a1, a2
-# CHECK: :[[#@LINE-1]]:14: error: expected immediate in range [-128, 127]
+# CHECK: :[[#@LINE-1]]:14: error: expected immediate in range [-32896, 32639]
 
 # Check invalid register names for different formats
 # Instruction format RRR
