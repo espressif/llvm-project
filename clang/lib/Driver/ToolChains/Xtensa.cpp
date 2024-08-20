@@ -108,17 +108,36 @@ XtensaToolChain::XtensaToolChain(const Driver &D, const llvm::Triple &Triple,
       IsIntegratedAsm = false;
   }
 
+  bool IsESP32 = XtensaToolChain::GetTargetCPUVersion(Args) == "esp32";
   Multilibs.push_back(Multilib());
+
+  if (IsESP32)
+    Multilibs.push_back(MultilibBuilder("esp32-psram", {}, {})
+                            .flag("-mfix-esp32-psram-cache-issue")
+                            .makeMultilib());
 
   Multilibs.push_back(MultilibBuilder("no-rtti", {}, {})
                           .flag("-frtti", /*Disallow=*/true)
                           .flag("-fno-rtti")
                           .makeMultilib());
 
+  if (IsESP32)
+    Multilibs.push_back(MultilibBuilder("esp32-psram/no-rtti", {}, {})
+                            .flag("-fno-rtti")
+                            .flag("-frtti", /*Disallow=*/true)
+                            .flag("-mfix-esp32-psram-cache-issue")
+                            .makeMultilib());
+
   Multilib::flags_list Flags;
   addMultilibFlag(
       Args.hasFlag(options::OPT_frtti, options::OPT_fno_rtti, false), "frtti",
       Flags);
+
+  if (IsESP32)
+    addMultilibFlag(Args.hasFlag(options::OPT_mfix_esp32_psram_cache_issue,
+                                 options::OPT_mfix_esp32_psram_cache_issue,
+                                 false),
+                    "mfix-esp32-psram-cache-issue", Flags);
 
   Multilibs.select(Flags, SelectedMultilibs);
 
