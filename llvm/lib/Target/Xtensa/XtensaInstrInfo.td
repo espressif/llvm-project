@@ -1616,6 +1616,26 @@ let usesCustomInserter = 1, Predicates = [HasS32C1I] in {
 }
 
 //===----------------------------------------------------------------------===//
+// Xtensa CONSTPOOL_ENTRY
+//===----------------------------------------------------------------------===//
+
+// An operand for the CONSTPOOL_ENTRY pseudo-instruction.
+def cpinst_operand : Operand<i32> {
+  // let PrintMethod = "printCPInstOperand";
+}
+
+// CONSTPOOL_ENTRY - This instruction represents a floating constant pool in
+// the function.  The first operand is the ID# for this instruction, the second
+// is the index into the MachineConstantPool that this is, the third is the
+// size in bytes of this constant pool entry.
+//
+let hasSideEffects = 0, isNotDuplicable = 1 in
+def CONSTPOOL_ENTRY :
+Pseudo<(outs), (ins cpinst_operand:$instid, cpinst_operand:$cpidx,
+                      i32imm:$size), "foo", []>;
+
+
+//===----------------------------------------------------------------------===//
 // Xtensa ESP32S2 Instructions
 //===----------------------------------------------------------------------===//
 let Predicates = [HasESP32S2Ops] in {

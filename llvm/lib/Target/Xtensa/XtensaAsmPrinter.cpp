@@ -45,6 +45,38 @@ getModifierVariantKind(XtensaCP::XtensaCPModifier Modifier) {
 
 void XtensaAsmPrinter::emitInstruction(const MachineInstr *MI) {
   unsigned Opc = MI->getOpcode();
+  const MachineConstantPool *MCP = MF->getConstantPool();
+
+  // If we just ended a constant pool, mark it as such.
+  if (InConstantPool && Opc != Xtensa::CONSTPOOL_ENTRY) {
+    OutStreamer->emitDataRegion(MCDR_DataRegionEnd);
+    InConstantPool = false;
+  }
+
+  if (Opc == Xtensa::CONSTPOOL_ENTRY) {
+    // CONSTPOOL_ENTRY - This instruction represents a floating
+    // constant pool in the function.  The first operand is the ID#
+    // for this instruction, the second is the index into the
+    // MachineConstantPool that this is, the third is the size in
+    // bytes of this constant pool entry.
+    // The required alignment is specified on the basic block holding this MI.
+    //
+    unsigned LabelId = (unsigned)MI->getOperand(0).getImm();
+    unsigned CPIdx = (unsigned)MI->getOperand(1).getIndex();
+
+    // If this is the first entry of the pool, mark it.
+    if (!InConstantPool) {
+      if (OutStreamer->hasRawTextSupport()) {
+        OutStreamer->emitRawText(StringRef("\t.literal_position\n"));
+      }
+      OutStreamer->emitDataRegion(MCDR_DataRegion);
+      InConstantPool = true;
+    }
+    const MachineConstantPoolEntry &MCPE = MCP->getConstants()[CPIdx];
+
+    emitMachineConstantPoolEntry(MCPE, LabelId);
+    return;
+  }
 
   switch (Opc) {
   case Xtensa::BR_JT:
