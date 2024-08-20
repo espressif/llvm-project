@@ -158,6 +158,11 @@ def FeatureESP32S2Ops        : SubtargetFeature<"esp32s2", "HasESP32S2Ops", "tru
 def HasESP32S2Ops            : Predicate<"Subtarget->hasESP32S2Ops()">,
                                           AssemblerPredicate<(all_of FeatureESP32S2Ops)>;
 
+def FeatureESP32S3Ops        : SubtargetFeature<"esp32s3", "HasESP32S3Ops", "true",
+                                                "Support Xtensa esp32-s3 ISA extension">;
+def HasESP32S3Ops            : Predicate<"Subtarget->hasESP32S3Ops()">,
+                                          AssemblerPredicate<(all_of FeatureESP32S3Ops)>;
+
 //===----------------------------------------------------------------------===//
 // Xtensa supported processors.
 //===----------------------------------------------------------------------===//
@@ -177,6 +182,12 @@ def : Proc<"esp8266", [FeatureDensity, FeatureNSA, FeatureMul32, FeatureExtended
 def : Proc<"esp32-s2", [FeatureDensity, FeatureWindowed, FeatureSEXT, FeatureNSA, FeatureMul32, FeatureMul32High, FeatureTHREADPTR, FeatureDiv32,
                         FeatureMEMCTL, FeatureDebug, FeatureException, FeatureHighPriInterrupts, FeatureCoprocessor, FeatureInterrupt,
                         FeatureRelocatableVector,	FeatureTimerInt, FeaturePRID, FeatureRegionProtection, FeatureMiscSR, FeatureESP32S2Ops]>;
+
+def : Proc<"esp32-s3", [FeatureDensity, FeatureSingleFloat, FeatureLoop, FeatureMAC16, FeatureWindowed, FeatureBoolean, 
+                        FeatureSEXT, FeatureNSA, FeatureMul32, FeatureMul32High, FeatureDFPAccel, FeatureS32C1I, FeatureTHREADPTR, FeatureDiv32,
+                        FeatureATOMCTL, FeatureMEMCTL, FeatureDebug, FeatureException, FeatureHighPriInterrupts, FeatureCoprocessor,
+                        FeatureInterrupt, FeatureRelocatableVector, FeatureTimerInt, FeaturePRID, FeatureRegionProtection, FeatureMiscSR,
+                        FeatureESP32S3Ops]>;
 
 //===----------------------------------------------------------------------===//
 // Register File Description
