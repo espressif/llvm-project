@@ -280,6 +280,10 @@ bool XtensaInstrInfo::reverseBranchCondition(
   case Xtensa::BT:
     Cond[0].setImm(Xtensa::BF);
     return false;
+
+  case Xtensa::LOOPEND:
+    return true;
+
   default:
     report_fatal_error("Invalid branch condition!");
   }
@@ -293,6 +297,7 @@ XtensaInstrInfo::getBranchDestBlock(const MachineInstr &MI) const {
   case Xtensa::JX:
     return nullptr;
   case Xtensa::J:
+  case Xtensa::LOOPEND:
     return MI.getOperand(0).getMBB();
   case Xtensa::BEQ:
   case Xtensa::BNE:
@@ -330,6 +335,10 @@ bool XtensaInstrInfo::isBranchOffsetInRange(unsigned BranchOp,
     BrOffset -= 4;
     return isIntN(18, BrOffset);
   case Xtensa::JX:
+    return true;
+  case Xtensa::LOOPEND:
+    BrOffset += 4;
+    BrOffset += 3 * 3;   // 2*NOP + LOOP instrucions
     return true;
   case Xtensa::BR_JT:
     return true;
@@ -677,6 +686,9 @@ unsigned XtensaInstrInfo::insertBranchAtInst(MachineBasicBlock &MBB,
   case Xtensa::BF:
     MI = BuildMI(MBB, I, DL, get(BR_C)).addReg(Cond[1].getReg()).addMBB(TBB);
     break;
+  case Xtensa::LOOPEND:
+    MI = BuildMI(MBB, I, DL, get(BR_C)).addMBB(TBB);
+    break;
   default:
     report_fatal_error("Invalid branch type!");
   }
@@ -684,6 +696,48 @@ unsigned XtensaInstrInfo::insertBranchAtInst(MachineBasicBlock &MBB,
     *BytesAdded += getInstSizeInBytes(*MI);
   ++Count;
   return Count;
+}
+
+bool XtensaInstrInfo::analyzeCompare(const MachineInstr &MI, Register &SrcReg,
+                                     Register &SrcReg2, int64_t &Mask,
+                                     int64_t &Value) const {
+  unsigned Opc = MI.getOpcode();
+
+  switch (Opc) {
+  case Xtensa::BEQ:
+  case Xtensa::BNE:
+  case Xtensa::BLT:
+  case Xtensa::BLTU:
+  case Xtensa::BGE:
+  case Xtensa::BGEU:
+    SrcReg = MI.getOperand(0).getReg();
+    SrcReg2 = MI.getOperand(1).getReg();
+    Value = 0;
+    Mask = 0;
+    return true;
+
+  case Xtensa::BEQI:
+  case Xtensa::BNEI:
+  case Xtensa::BLTI:
+  case Xtensa::BLTUI:
+  case Xtensa::BGEI:
+  case Xtensa::BGEUI:
+    SrcReg = MI.getOperand(0).getReg();
+    Value = MI.getOperand(1).getImm();
+    Mask = ~0;
+    return true;
+
+  case Xtensa::BEQZ:
+  case Xtensa::BNEZ:
+  case Xtensa::BLTZ:
+  case Xtensa::BGEZ:
+    SrcReg = MI.getOperand(0).getReg();
+    Value = 0;
+    Mask = ~0;
+    return true;
+  }
+
+  return false;
 }
 
 bool XtensaInstrInfo::isBranch(const MachineBasicBlock::iterator &MI,
@@ -694,6 +748,7 @@ bool XtensaInstrInfo::isBranch(const MachineBasicBlock::iterator &MI,
   case Xtensa::J:
   case Xtensa::JX:
   case Xtensa::BR_JT:
+  case Xtensa::LOOPEND:
     Cond[0].setImm(OpCode);
     Target = &MI->getOperand(0);
     return true;

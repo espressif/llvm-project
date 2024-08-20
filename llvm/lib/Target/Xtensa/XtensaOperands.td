@@ -238,7 +238,14 @@ def jumptarget : Operand<OtherVT> {
   let ParserMatchClass = XtensaPCRelTargetAsmOperand;
 }
 
-def L32Rtarget : Operand<i32> {
+def ltarget : Operand<OtherVT> {
+  let PrintMethod = "printLoopTarget";
+  let EncoderMethod = "getLoopTargetEncoding";
+  let DecoderMethod = "decodeLoopOperand";
+  let ParserMatchClass = XtensaPCRelTargetAsmOperand;
+}
+
+def L32Rtarget: Operand<i32> {
   let PrintMethod = "printL32RTarget";
   let EncoderMethod = "getL32RTargetEncoding";
   let DecoderMethod = "decodeL32ROperand";

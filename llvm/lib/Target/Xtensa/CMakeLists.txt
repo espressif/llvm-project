@@ -17,7 +17,9 @@ add_public_tablegen_target(XtensaCommonTableGen)
 add_llvm_target(XtensaCodeGen
   XtensaAsmPrinter.cpp
   XtensaConstantPoolValue.cpp
+  XtensaFixupHWLoops.cpp
   XtensaFrameLowering.cpp
+  XtensaHardwareLoops.cpp
   XtensaInstrInfo.cpp
   XtensaISelDAGToDAG.cpp
   XtensaISelLowering.cpp
@@ -27,6 +29,7 @@ add_llvm_target(XtensaCodeGen
   XtensaSubtarget.cpp
   XtensaTargetMachine.cpp
   XtensaTargetObjectFile.cpp
+  XtensaTargetTransformInfo.cpp
 
   LINK_COMPONENTS
   AsmPrinter

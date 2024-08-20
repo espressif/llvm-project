@@ -37,6 +37,8 @@ public:
                       std::optional<CodeModel::Model> CM, CodeGenOptLevel OL,
                       bool JIT);
 
+  TargetTransformInfo getTargetTransformInfo(const Function &F) const override;
+
   const XtensaSubtarget *getSubtargetImpl(const Function &F) const override;
 
   TargetPassConfig *createPassConfig(PassManagerBase &PM) override;

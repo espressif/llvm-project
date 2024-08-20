@@ -513,29 +513,106 @@ static SDValue performADDCombine(SDNode *N, SelectionDAG &DAG,
   return SDValue();
 }
 
+static SDValue SearchLoopIntrinsic(SDValue N, ISD::CondCode &CC, int &Imm,
+                                   bool &Negate) {
+  switch (N->getOpcode()) {
+  default:
+    break;
+  case ISD::XOR: {
+    if (!isa<ConstantSDNode>(N.getOperand(1)))
+      return SDValue();
+    if (!cast<ConstantSDNode>(N.getOperand(1))->isOne())
+      return SDValue();
+    Negate = !Negate;
+    return SearchLoopIntrinsic(N.getOperand(0), CC, Imm, Negate);
+  }
+  case ISD::SETCC: {
+    auto *Const = dyn_cast<ConstantSDNode>(N.getOperand(1));
+    if (!Const)
+      return SDValue();
+    if (Const->isZero())
+      Imm = 0;
+    else if (Const->isOne())
+      Imm = 1;
+    else
+      return SDValue();
+    CC = cast<CondCodeSDNode>(N.getOperand(2))->get();
+    return SearchLoopIntrinsic(N->getOperand(0), CC, Imm, Negate);
+  }
+  case ISD::INTRINSIC_W_CHAIN: {
+    unsigned IntOp = cast<ConstantSDNode>(N.getOperand(1))->getZExtValue();
+    if (IntOp != Intrinsic::loop_decrement)
+      return SDValue();
+    return N;
+  }
+  }
+  return SDValue();
+}
+
 static SDValue PerformBRCONDCombine(SDNode *N, SelectionDAG &DAG,
                                     TargetLowering::DAGCombinerInfo &DCI,
                                     const XtensaSubtarget &Subtarget) {
-  if (DCI.isBeforeLegalizeOps()) {
-    SDValue Chain = N->getOperand(0);
+  SDValue Chain = N->getOperand(0);
+  SDLoc DL(N);
+  SDValue Cond = N->getOperand(1);
+  SDValue Dest = N->getOperand(2);
+  ISD::CondCode CC = ISD::SETEQ;
+  int Imm = 1;
+  bool Negate = false;
 
-    if (N->getOperand(1).getOpcode() != ISD::SETCC)
-      return SDValue();
+  SDValue Int = SearchLoopIntrinsic(Cond, CC, Imm, Negate);
+  if (Int) {
+    assert((N->hasOneUse() && N->use_begin()->getUser()->getOpcode() == ISD::BR) &&
+           "expected single br user");
+    SDNode *Br = (*N->use_begin()).getUser();
+    SDValue OtherTarget = Br->getOperand(1);
 
-    SDLoc DL(N);
-    SDValue SetCC = N->getOperand(1);
-    SDValue Dest = N->getOperand(2);
-    ISD::CondCode CC = cast<CondCodeSDNode>(SetCC->getOperand(2))->get();
-    SDValue LHS = SetCC->getOperand(0);
-    SDValue RHS = SetCC->getOperand(1);
+    if (Negate)
+      CC = ISD::getSetCCInverse(CC, /* Integer inverse */ MVT::i32);
 
-    if (LHS.getValueType() != MVT::i32)
-      return SDValue();
+    auto IsTrueIfZero = [](ISD::CondCode CC, int Imm) {
+      return (CC == ISD::SETEQ && Imm == 0) || (CC == ISD::SETNE && Imm == 1) ||
+             (CC == ISD::SETLT && Imm == 1) || (CC == ISD::SETULT && Imm == 1);
+    };
 
-    return DAG.getNode(ISD::BR_CC, DL, MVT::isVoid, Chain, DAG.getCondCode(CC),
-                       LHS, RHS, Dest);
+    auto IsFalseIfZero = [](ISD::CondCode CC, int Imm) {
+      return (CC == ISD::SETEQ && Imm == 1) || (CC == ISD::SETNE && Imm == 0) ||
+             (CC == ISD::SETGT && Imm == 0) ||
+             (CC == ISD::SETUGT && Imm == 0) ||
+             (CC == ISD::SETGE && Imm == 1) || (CC == ISD::SETUGE && Imm == 1);
+    };
+
+    if (IsTrueIfZero(CC, Imm)) {
+      SDValue NewBrOps[] = {Br->getOperand(0), Dest};
+      SDValue NewBr = DAG.getNode(ISD::BR, SDLoc(Br), MVT::Other, NewBrOps);
+      DAG.ReplaceAllUsesOfValueWith(SDValue(Br, 0), NewBr);
+      Dest = OtherTarget;
+    } else if (!IsFalseIfZero(CC, Imm)) {
+      llvm_unreachable("unsupported condition");
+    }
+
+    // We now need to make the intrinsic dead (it cannot be instruction
+    // selected).
+    DAG.ReplaceAllUsesOfValueWith(Int.getValue(1), Int.getOperand(0));
+    assert(Int.getNode()->hasOneUse() &&
+           "Counter decrement has more than one use");
+
+    return DAG.getNode(XtensaISD::LOOPEND, DL, MVT::Other, N->getOperand(0),
+                       Dest);
   }
-  return SDValue();
+
+  if (Cond.getOpcode() != ISD::SETCC)
+    return SDValue();
+
+  CC = cast<CondCodeSDNode>(Cond->getOperand(2))->get();
+  SDValue LHS = Cond->getOperand(0);
+  SDValue RHS = Cond->getOperand(1);
+
+  if (LHS.getValueType() != MVT::i32)
+    return SDValue();
+
+  return DAG.getNode(ISD::BR_CC, DL, MVT::isVoid, Chain, DAG.getCondCode(CC),
+                     LHS, RHS, Dest);
 }
 
 SDValue XtensaTargetLowering::PerformDAGCombine(SDNode *N,
@@ -1849,6 +1926,8 @@ const char *XtensaTargetLowering::getTargetNodeName(unsigned Opcode) const {
     return "XtensaISD::CMPOLE";
   case XtensaISD::CMPOLT:
     return "XtensaISD::CMPOLT";
+  case XtensaISD::LOOPEND:
+    return "XtensaISD::LOOPEND";
   case XtensaISD::MADD:
     return "XtensaISD::MADD";
   case XtensaISD::MSUB:

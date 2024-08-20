@@ -1234,31 +1234,48 @@ let usesCustomInserter = 1, isBranch = 1, isTerminator = 1, isBarrier = 1 in {
 // Loop Instructions
 //===----------------------------------------------------------------------===//
 
-def LOOP : RRI8_Inst<0x06, (outs), (ins AR:$s, mem8:$uimm8),
-                    "loop\t$$s, $uimm8", []>, Requires<[HasLoop]> {
-  bits<8> uimm8;
+def LOOP : RRI8_Inst<0x06, (outs), (ins AR:$s, ltarget:$target),
+                    "loop\t$s, $target", []>, Requires<[HasLoop]> {
+  bits<8> target;
 
   let r = 0x08;
   let t = 0x07;
-  let imm8 = uimm8;
+  let imm8 = target;
 }
 
-def LOOPGTZ : RRI8_Inst<0x06, (outs), (ins AR:$s, mem8:$uimm8),
-                       "loopgtz\t$$s, $uimm8", []>, Requires<[HasLoop]> {
-  bits<8> uimm8;
+def LOOPGTZ : RRI8_Inst<0x06, (outs), (ins AR:$s, ltarget:$target),
+                       "loopgtz\t$s, $target", []>, Requires<[HasLoop]> {
+  bits<8> target;
 
   let r = 0x0A;
   let t = 0x07;
-  let imm8 = uimm8;
+  let imm8 = target;
 }
 
-def LOOPNEZ : RRI8_Inst<0x06, (outs), (ins AR:$s, mem8:$uimm8),
-                       "loopnez\t$$s, $uimm8", []>, Requires<[HasLoop]> {
-  bits<8> uimm8;
+def LOOPNEZ : RRI8_Inst<0x06, (outs), (ins AR:$s, ltarget:$target),
+                       "loopnez\t$s, $target", []>, Requires<[HasLoop]> {
+  bits<8> target;
 
   let r = 0x09;
   let t = 0x07;
-  let imm8 = uimm8;
+  let imm8 = target;
+}
+
+let isTerminator = 1, isBarrier = 1, hasSideEffects = 1, Size = 3 in {
+  def LOOPINIT : Pseudo<(outs), (ins AR:$elts),
+                       "!loopinit $elts", [(int_set_loop_iterations AR:$elts)]>;
+}
+
+// LOOPSTART pseudo instruction reserves 9 bytes for LOOP operation and NOP operations for possible alignment.
+let isTerminator = 1, isBarrier = 1, hasSideEffects = 1, Size = 9 in {
+  def LOOPSTART : Pseudo<(outs), (ins AR:$s, brtarget:$target),
+                        "!loopstart $s, $target", []>;
+}
+
+// LOOPEND pseudo instruction reserves 6 bytes for Jump and NOP operations.
+let isBranch = 1, isTerminator = 1, isBarrier = 1, isIndirectBranch = 0, Size = 6 in {
+  def LOOPEND : Pseudo<(outs), (ins brtarget:$target),
+                      "!loopend $target", [(Xtensa_loopend bb:$target)]>;
 }
 
 //===----------------------------------------------------------------------===//
