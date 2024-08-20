@@ -983,8 +983,8 @@ bool XtensaAsmParser::checkRegister(unsigned RegNo) {
   unsigned NumTimers = 0;
   unsigned NumMiscSR = 0;
   bool IsESP32 = false;
-  bool IsESP32_S2 = false;
-  bool IsESP32_S3 = false;
+  bool IsESP32S2 = false;
+  bool IsESP32S3 = false;
   bool Res = true;
 
   // Assume that CPU is esp32 by default
@@ -993,16 +993,16 @@ bool XtensaAsmParser::checkRegister(unsigned RegNo) {
     NumTimers = 3;
     NumMiscSR = 4;
     IsESP32 = true;
-  } else if (CPU == "esp32-s2") {
+  } else if (CPU == "esp32s2") {
     NumIntLevels = 6;
     NumTimers = 3;
     NumMiscSR = 4;
-    IsESP32_S2 = true;
-  } else if (CPU == "esp32-s3") {
+    IsESP32S2 = true;
+  } else if (CPU == "esp32s3") {
     NumIntLevels = 6;
     NumTimers = 3;
     NumMiscSR = 4;
-    IsESP32_S3 = true;
+    IsESP32S3 = true;
   } else if (CPU == "esp8266") {
     NumIntLevels = 2;
     NumTimers = 1;
@@ -1126,7 +1126,7 @@ bool XtensaAsmParser::checkRegister(unsigned RegNo) {
     Res = hasTHREADPTR();
     break;
   case Xtensa::GPIO_OUT:
-    Res = IsESP32_S2 || IsESP32_S3;
+    Res = IsESP32S2 || IsESP32S3;
     break;
   case Xtensa::EXPSTATE:
     Res = IsESP32;

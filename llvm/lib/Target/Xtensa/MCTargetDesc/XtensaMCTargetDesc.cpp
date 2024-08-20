@@ -109,6 +109,10 @@ static MCSubtargetInfo *
 createXtensaMCSubtargetInfo(const Triple &TT, StringRef CPU, StringRef FS) {
   if (CPU.empty())
     CPU = "esp32";
+  else if (CPU == "esp32-s2")
+    CPU = "esp32s2";
+  else if (CPU == "esp32-s3")
+    CPU = "esp32s3";
   return createXtensaMCSubtargetInfoImpl(TT, CPU, CPU, FS);
 }
 

@@ -1467,21 +1467,13 @@ def WITLB : RRR_Inst<0x00, 0x00, 0x05, (outs AR:$t), (ins AR:$s),
 // Illegal instructions
 //===----------------------------------------------------------------------===//
 
-let isBarrier = 1, isTerminator = 1 in {
-  def ILL : CALLX_Inst<0x00, 0x00, 0x00, (outs), (ins),
-                      "ill", []> {
-    let m = 0x0;
-    let n = 0x0;
-    let r = 0;
-    let s = 0;
-  }
-
-  def ILL_N : RRRN_Inst<0x0C, (outs), (ins),
-                       "ill.n", []>, Requires<[HasDensity]> {
-    let r = 0xf;
-    let s = 0x0;
-    let t = 0x6;
-  }
+let isTerminator = 1 in
+def ILL : CALLX_Inst<0x00, 0x00, 0x00, (outs), (ins),
+                    "ill", []> {
+  let m = 0x0;
+  let n = 0x0;
+  let r = 0;
+  let s = 0;
 }
 
 //===----------------------------------------------------------------------===//

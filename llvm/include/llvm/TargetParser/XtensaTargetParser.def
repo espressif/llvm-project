@@ -1,0 +1,83 @@
+//===- XtensaTargetParser.def - Xtensa target parsing defines ---*- C++ -*-===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+//
+// This file provides defines to build up the Xtensa target parser's logic.
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef XTENSA_FEATURE
+#define XTENSA_FEATURE(ID, STR)
+#endif
+
+XTENSA_FEATURE(FK_DENSITY,           "density")
+XTENSA_FEATURE(FK_FP,                "fp")
+XTENSA_FEATURE(FK_WINDOWED,          "windowed")
+XTENSA_FEATURE(FK_BOOLEAN,           "bool")
+XTENSA_FEATURE(FK_LOOP,              "loop")
+XTENSA_FEATURE(FK_SEXT,              "sext")
+XTENSA_FEATURE(FK_NSA,               "nsa")
+XTENSA_FEATURE(FK_MUL32,             "mul32")
+XTENSA_FEATURE(FK_MUL32HIGH,         "mul32high")
+XTENSA_FEATURE(FK_DIV32,             "div32")
+XTENSA_FEATURE(FK_MAC16,             "mac16")
+XTENSA_FEATURE(FK_DFPACCEL,          "dfpaccel")
+XTENSA_FEATURE(FK_S32C1I,            "s32c1i")
+XTENSA_FEATURE(FK_THREADPTR,         "threadptr")
+XTENSA_FEATURE(FK_EXTENDEDL32R,      "extendedl32r")
+XTENSA_FEATURE(FK_ATOMCTL,           "atomctl")
+XTENSA_FEATURE(FK_MEMCTL,            "memctl")
+XTENSA_FEATURE(FK_DEBUG,             "debug")
+XTENSA_FEATURE(FK_EXCEPTION,         "exception")
+XTENSA_FEATURE(FK_HIGHPRIINTERRUPTS, "highpriinterrupts")
+XTENSA_FEATURE(FK_COPROCESSOR,       "coprocessor")
+XTENSA_FEATURE(FK_INTERRUPT,         "interrupt")
+XTENSA_FEATURE(FK_RVECTOR,           "rvector")
+XTENSA_FEATURE(FK_TIMERINT,          "timerint")
+XTENSA_FEATURE(FK_PRID,              "prid")
+XTENSA_FEATURE(FK_REGPROTECT,        "regprotect")
+XTENSA_FEATURE(FK_MISCSR,            "miscsr")
+XTENSA_FEATURE(FK_ESP32S2OPS,        "esp32s2")
+XTENSA_FEATURE(FK_ESP32S3OPS,        "esp32s3")
+
+#undef XTENSA_FEATURE
+
+#ifndef XTENSA_CPU
+#define XTENSA_CPU(ENUM, NAME, FEATURES)
+#endif
+
+XTENSA_CPU(INVALID, {"invalid"}, FK_INVALID)
+XTENSA_CPU(GENERIC, {"generic"}, FK_NONE)
+XTENSA_CPU(ESP8266, {"esp8266"},
+               (FK_DENSITY | FK_NSA | FK_MUL32 | FK_EXTENDEDL32R | FK_DEBUG | FK_EXCEPTION | FK_HIGHPRIINTERRUPTS |
+                FK_INTERRUPT | FK_RVECTOR | FK_TIMERINT | FK_REGPROTECT | FK_PRID))
+XTENSA_CPU(ESP32,   {"esp32"},
+               (FK_DENSITY | FK_FP | FK_LOOP | FK_MAC16 | FK_WINDOWED | FK_BOOLEAN |
+                FK_SEXT | FK_NSA | FK_MUL32 | FK_MUL32HIGH | FK_DFPACCEL | FK_S32C1I | FK_THREADPTR | FK_DIV32 |
+                FK_ATOMCTL | FK_MEMCTL | FK_DEBUG | FK_EXCEPTION | FK_HIGHPRIINTERRUPTS | FK_COPROCESSOR |
+                FK_INTERRUPT | FK_RVECTOR | FK_TIMERINT | FK_PRID | FK_REGPROTECT | FK_MISCSR))
+XTENSA_CPU(ESP32S2, {"esp32s2"},
+               (FK_DENSITY | FK_WINDOWED | FK_SEXT | FK_NSA | FK_MUL32 | FK_MUL32HIGH | FK_THREADPTR | FK_DIV32 |
+                FK_MEMCTL | FK_DEBUG | FK_EXCEPTION | FK_HIGHPRIINTERRUPTS | FK_COPROCESSOR | FK_INTERRUPT |
+                FK_RVECTOR | FK_TIMERINT | FK_PRID | FK_REGPROTECT | FK_MISCSR | FK_ESP32S2OPS))
+XTENSA_CPU(ESP32S3, {"esp32s3"},
+               (FK_DENSITY | FK_FP | FK_LOOP | FK_MAC16 | FK_WINDOWED | FK_BOOLEAN |
+                FK_SEXT | FK_NSA | FK_MUL32 | FK_MUL32HIGH | FK_DFPACCEL | FK_S32C1I | FK_THREADPTR | FK_DIV32 |
+                FK_ATOMCTL | FK_MEMCTL | FK_DEBUG | FK_EXCEPTION | FK_HIGHPRIINTERRUPTS | FK_COPROCESSOR |
+                FK_INTERRUPT | FK_RVECTOR | FK_TIMERINT | FK_PRID | FK_REGPROTECT | FK_MISCSR |
+                FK_ESP32S3OPS))
+
+#undef XTENSA_CPU
+
+#ifndef XTENSA_CPU_ALIAS
+#define XTENSA_CPU_ALIAS(NAME, ALTNMAME)
+#endif
+
+XTENSA_CPU_ALIAS("esp32s2", "esp32-s2")
+XTENSA_CPU_ALIAS("esp32s3", "esp32-s3")
+
+#undef XTENSA_CPU_ALIAS
