@@ -114,6 +114,21 @@ void XtensaInstPrinter::printBranchTarget(const MCInst *MI, int OpNum,
     llvm_unreachable("Invalid operand");
 }
 
+void XtensaInstPrinter::printLoopTarget(const MCInst *MI, int OpNum,
+                                        raw_ostream &OS) {
+  const MCOperand &MC = MI->getOperand(OpNum);
+  if (MI->getOperand(OpNum).isImm()) {
+    int64_t Val = MC.getImm() + 4;
+    OS << ". ";
+    if (Val > 0)
+      OS << '+';
+    OS << Val;
+  } else if (MC.isExpr())
+    MC.getExpr()->print(OS, &MAI, true);
+  else
+    llvm_unreachable("Invalid operand");
+}
+
 void XtensaInstPrinter::printJumpTarget(const MCInst *MI, int OpNum,
                                         raw_ostream &OS) {
   const MCOperand &MC = MI->getOperand(OpNum);

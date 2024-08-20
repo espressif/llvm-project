@@ -67,6 +67,10 @@ private:
                                    SmallVectorImpl<MCFixup> &Fixups,
                                    const MCSubtargetInfo &STI) const;
 
+  uint32_t getLoopTargetEncoding(const MCInst &MI, unsigned int OpNum,
+                                 SmallVectorImpl<MCFixup> &Fixups,
+                                 const MCSubtargetInfo &STI) const;
+
   uint32_t getCallEncoding(const MCInst &MI, unsigned int OpNum,
                            SmallVectorImpl<MCFixup> &Fixups,
                            const MCSubtargetInfo &STI) const;
@@ -217,6 +221,23 @@ uint32_t XtensaMCCodeEmitter::getBranchTargetEncoding(
         0, Expr, MCFixupKind(Xtensa::fixup_xtensa_branch_8), MI.getLoc()));
     return 0;
   }
+}
+
+uint32_t
+XtensaMCCodeEmitter::getLoopTargetEncoding(const MCInst &MI, unsigned int OpNum,
+                                           SmallVectorImpl<MCFixup> &Fixups,
+                                           const MCSubtargetInfo &STI) const {
+  const MCOperand &MO = MI.getOperand(OpNum);
+  if (MO.isImm())
+    return static_cast<uint32_t>(MO.getImm());
+
+  assert((MO.isExpr()) && "Unexpected operand value!");
+
+  const MCExpr *Expr = MO.getExpr();
+
+  Fixups.push_back(MCFixup::create(
+      0, Expr, MCFixupKind(Xtensa::fixup_xtensa_loop_8), MI.getLoc()));
+  return 0;
 }
 
 uint32_t
