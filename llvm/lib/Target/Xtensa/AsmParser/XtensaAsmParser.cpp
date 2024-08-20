@@ -575,6 +575,20 @@ bool XtensaAsmParser::processInstruction(MCInst &Inst, SMLoc IDLoc,
     }
     break;
   }
+  case Xtensa::SRLI: {
+    uint32_t ImmOp32 = static_cast<uint32_t>(Inst.getOperand(2).getImm());
+    int64_t Imm = ImmOp32;
+    if (Imm >= 16 && Imm <= 31) {
+      MCInst TmpInst;
+      TmpInst.setLoc(IDLoc);
+      TmpInst.setOpcode(Xtensa::EXTUI);
+      TmpInst.addOperand(Inst.getOperand(0));
+      TmpInst.addOperand(Inst.getOperand(1));
+      TmpInst.addOperand(MCOperand::createImm(Imm));
+      TmpInst.addOperand(MCOperand::createImm(32 - Imm));
+      Inst = TmpInst;
+    }
+  } break;
   default:
     break;
   }
