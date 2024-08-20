@@ -340,6 +340,16 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
   computeRegisterProperties(STI.getRegisterInfo());
 }
 
+/// Return the register type for a given MVT
+MVT XtensaTargetLowering::getRegisterTypeForCallingConv(LLVMContext &Context,
+                                                      CallingConv::ID CC,
+                                                      EVT VT) const {
+  if (VT.isFloatingPoint())
+    return MVT::i32;
+
+  return TargetLowering::getRegisterTypeForCallingConv(Context, CC, VT);
+}
+
 bool XtensaTargetLowering::isFMAFasterThanFMulAndFAdd(const MachineFunction &MF,
                                                       EVT VT) const {
   if (!VT.isSimple())
