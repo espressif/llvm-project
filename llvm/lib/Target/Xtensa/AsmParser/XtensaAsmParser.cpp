@@ -374,7 +374,47 @@ public:
 
   bool isseimm7_22() const { return isImm(7, 22); }
 
+  bool isSelect_2() const { return isImm(0, 1); }
+
+  bool isSelect_4() const { return isImm(0, 3); }
+
+  bool isSelect_8() const { return isImm(0, 7); }
+
+  bool isSelect_16() const { return isImm(0, 16); }
+
   bool isSelect_256() const { return isImm(0, 255); }
+
+  bool isOffset_16_16() const {
+    return isImm(-128, 112) &&
+           ((cast<MCConstantExpr>(getImm())->getValue() & 0xf) == 0);
+  }
+
+  bool isOffset_256_8() const {
+    return isImm(-1024, 1016) &&
+           ((cast<MCConstantExpr>(getImm())->getValue() & 0x7) == 0);
+  }
+
+  bool isOffset_256_16() const {
+    return isImm(-2048, 2032) &&
+           ((cast<MCConstantExpr>(getImm())->getValue() & 0xf) == 0);
+  }
+
+  bool isOffset_256_4() const {
+    return isImm(-512, 508) &&
+           ((cast<MCConstantExpr>(getImm())->getValue() & 0x3) == 0);
+  }
+
+  bool isOffset_128_2() const {
+    return isImm(0, 254) &&
+           ((cast<MCConstantExpr>(getImm())->getValue() & 0x1) == 0);
+  }
+
+  bool isOffset_128_1() const { return isImm(0, 127); }
+
+  bool isOffset_64_16() const {
+    return isImm(-512, 496) &&
+           ((cast<MCConstantExpr>(getImm())->getValue() & 0xf) == 0);
+  }
 
   /// getStartLoc - Gets location of the first token of this operand
   SMLoc getStartLoc() const override { return StartLoc; }
@@ -693,9 +733,48 @@ bool XtensaAsmParser::matchAndEmitInstruction(SMLoc IDLoc, unsigned &Opcode,
   case Match_Invalidseimm7_22:
     return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
                  "expected immediate in range [7, 22]");
+  case Match_InvalidSelect_2:
+    return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+                 "expected immediate in range [0, 1]");
+  case Match_InvalidSelect_4:
+    return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+                 "expected immediate in range [0, 3]");
+  case Match_InvalidSelect_8:
+    return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+                 "expected immediate in range [0, 7]");
+  case Match_InvalidSelect_16:
+    return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+                 "expected immediate in range [0, 15]");
   case Match_InvalidSelect_256:
     return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
                  "expected immediate in range [0, 255]");
+  case Match_InvalidOffset_16_16:
+    return Error(
+        RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+        "expected immediate in range [-128, 112], first 4 bits should be zero");
+  case Match_InvalidOffset_256_8:
+    return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+                 "expected immediate in range [-1024, 1016], first 3 bits "
+                 "should be zero");
+  case Match_InvalidOffset_256_16:
+    return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+                 "expected immediate in range [-2048, 2032], first 4 bits "
+                 "should be zero");
+  case Match_InvalidOffset_256_4:
+    return Error(
+        RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+        "expected immediate in range [-512, 508], first 2 bits should be zero");
+  case Match_InvalidOffset_128_2:
+    return Error(
+        RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+        "expected immediate in range [0, 254], first bit should be zero");
+  case Match_InvalidOffset_128_1:
+    return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+                 "expected immediate in range [0, 127]");
+  case Match_InvalidOffset_64_16:
+    return Error(
+        RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+        "expected immediate in range [-512, 496], first 4 bits should be zero");
   }
 
   report_fatal_error("Unknown match type detected!");
@@ -837,9 +916,9 @@ ParseStatus XtensaAsmParser::parseRegister(OperandVector &Operands,
     return ParseStatus::NoMatch;
   }
 
-  if (!checkRegister(Mnemonic.lower(), RegName, RegNo)) {
+  if (!checkRegister(Mnemonic.lower(), RegName, RegNo))
     return ParseStatus::NoMatch;
-  }
+
 
   if (HadParens)
     Operands.push_back(XtensaOperand::createToken("(", FirstS));

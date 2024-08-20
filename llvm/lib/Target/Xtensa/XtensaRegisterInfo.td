@@ -64,6 +64,25 @@ def A15 : ARReg<15, "a15">, DwarfRegNum<[15]>;
 def AR : RegisterClass<"Xtensa", [i32], 32, (add
   A8, A9, A10, A11, A12, A13, A14, A15,
   A7, A6, A5, A4, A3, A2, A0, SP)>;
+
+
+// 128-bit general-purpose registers
+class QRReg<bits<16> num, string n, list<string>alt = []> : XtensaReg<n>{
+  let HWEncoding{15-0} = num;
+  let AltNames = alt;
+}
+
+def Q0 : QRReg<0, "q0">, DwarfRegNum<[0]>;
+def Q1 : QRReg<1, "q1">, DwarfRegNum<[1]>;
+def Q2 : QRReg<2, "q2">, DwarfRegNum<[2]>;
+def Q3 : QRReg<3, "q3">, DwarfRegNum<[3]>;
+def Q4 : QRReg<4, "q4">, DwarfRegNum<[4]>;
+def Q5 : QRReg<5, "q5">, DwarfRegNum<[5]>;
+def Q6 : QRReg<6, "q6">, DwarfRegNum<[6]>;
+def Q7 : QRReg<7, "q7">, DwarfRegNum<[7]>;
+
+def QR : RegisterClass<"Xtensa", [v16i8, v4i32], 128, (sequence "Q%u", 0, 7)>;
+
 //===----------------------------------------------------------------------===//
 // Special-purpose registers
 //===----------------------------------------------------------------------===//
@@ -237,8 +256,14 @@ def F64R_LO : URReg<234, "f64r_lo", ["F64R_LO"]>;
 def F64R_HI : URReg<235, "f64r_hi", ["F64R_HI"]>;
 def F64S : URReg<236, "f64s", ["F64S"]>;
 
+def ACCX : URReg<237, "accx", ["accx_0", "accx_1"]>;
+def QACC : URReg<238, "qacc", ["qacc_h_0", "qacc_h_1", "qacc_h_2", "qacc_h_3", "qacc_h_4", "qacc_l_0", "qacc_l_1", "qacc_l_2", "qacc_l_3", "qacc_l_4"]>;
+def FFT_BIT_WIDTH : URReg<239, "fft_bit_width", ["fft_bit_width"]>;
+def SAR_BYTE : URReg<240, "sar_byte", ["sar_byte"]>;
+def UA_STATE : URReg<241, "ua_state", ["ua_state_0", "ua_state_1", "ua_state_2", "ua_state_3"]>;
+
 def UR :  RegisterClass<"Xtensa", [i32], 32, (add GPIO_OUT, EXPSTATE, THREADPTR, FCR,
-  FSR, F64R_LO, F64R_HI, F64S)>; 
+  FSR, F64R_LO, F64R_HI, F64S, ACCX, QACC, FFT_BIT_WIDTH, SAR_BYTE, UA_STATE)>; 
 
 //===----------------------------------------------------------------------===//
 // Floating-Point registers

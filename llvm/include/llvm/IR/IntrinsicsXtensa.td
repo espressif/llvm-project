@@ -248,4 +248,8 @@ def int_xtensa_rsr_m3: ClangBuiltin<"__builtin_xtensa_rsr_m3">,
 def int_xtensa_xsr_m3: ClangBuiltin<"__builtin_xtensa_xsr_m3">,
   Intrinsic<[], [llvm_ptr_ty], []>;
 
+
+// Generated code
+// ---------------
+include "llvm/IR/IntrinsicsXtensaESP32S3.td"
 }
