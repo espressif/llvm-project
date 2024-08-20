@@ -78,6 +78,7 @@ class XtensaAsmParser : public MCTargetAsmParser {
 
   ParseStatus parseImmediate(OperandVector &Operands);
   ParseStatus parseRegister(OperandVector &Operands,
+                            StringRef Mnemonic,
                             bool AllowParens = false, bool SR = false,
                             bool UR = false);
   ParseStatus parseOperandWithModifier(OperandVector &Operands);
@@ -86,10 +87,9 @@ class XtensaAsmParser : public MCTargetAsmParser {
   bool ParseInstructionWithSR(ParseInstructionInfo &Info, StringRef Name,
                               SMLoc NameLoc, OperandVector &Operands);
   ParseStatus tryParseRegister(MCRegister &Reg, SMLoc &StartLoc,
-                               SMLoc &EndLoc) override {
-    return ParseStatus::NoMatch;
-  }
+                               SMLoc &EndLoc) override;
   ParseStatus parsePCRelTarget(OperandVector &Operands);
+  bool checkRegister(StringRef Mnemonic, StringRef RegName, MCRegister RegNo);
   bool parseLiteralDirective(SMLoc L);
   bool parseBeginDirective(SMLoc L);
   bool parseEndDirective(SMLoc L);
@@ -722,6 +722,29 @@ ParseStatus XtensaAsmParser::parsePCRelTarget(OperandVector &Operands) {
   return ParseStatus::Success;
 }
 
+// Attempts to match Name as a register (either using the default name or
+// alternative ABI names), setting RegNo to the matching register. Upon
+// failure, returns true and sets RegNo to 0
+static bool matchRegisterNameHelper(MCRegister &RegNo, StringRef Name) {
+  RegNo = MatchRegisterName(Name);
+
+  if (RegNo == Xtensa::NoRegister)
+    RegNo = MatchRegisterAltName(Name.lower());
+
+  if (RegNo == Xtensa::NoRegister)
+    RegNo = MatchRegisterAltName(Name.upper());
+
+  return RegNo == Xtensa::NoRegister;
+}
+
+ParseStatus XtensaAsmParser::tryParseRegister(MCRegister &RegNo,
+                                              SMLoc &StartLoc,
+                                              SMLoc &EndLoc) {
+  if (parseRegister(RegNo, StartLoc, EndLoc))
+    return ParseStatus::NoMatch;
+  return ParseStatus::Success;
+}
+
 bool XtensaAsmParser::parseRegister(MCRegister &Reg, SMLoc &StartLoc,
                                     SMLoc &EndLoc) {
   const AsmToken &Tok = getParser().getTok();
@@ -739,12 +762,14 @@ bool XtensaAsmParser::parseRegister(MCRegister &Reg, SMLoc &StartLoc,
 }
 
 ParseStatus XtensaAsmParser::parseRegister(OperandVector &Operands,
+                                           StringRef Mnemonic,
                                            bool AllowParens, bool SR,
                                            bool UR) {
   SMLoc FirstS = getLoc();
   bool HadParens = false;
   AsmToken Buf[2];
   std::string RegName = "";
+  MCRegister RegNo = 0;
   int64_t Num;
   bool IsIdentifier = false;
 
@@ -758,8 +783,6 @@ ParseStatus XtensaAsmParser::parseRegister(OperandVector &Operands,
       getParser().Lex(); // Eat '('
     }
   }
-
-  unsigned RegNo = 0;
 
   switch (getLexer().getKind()) {
   default:
@@ -798,16 +821,13 @@ ParseStatus XtensaAsmParser::parseRegister(OperandVector &Operands,
         RegName = "F64S";
     } else
       RegName = std::to_string(Num);
-    RegNo = MatchRegisterName(RegName);
-    if (RegNo == 0)
-      RegNo = MatchRegisterAltName(RegName);
+
+    matchRegisterNameHelper(RegNo, RegName);
     break;
   case AsmToken::Identifier:
     IsIdentifier = true;
     RegName = getLexer().getTok().getIdentifier().str();
-    RegNo = MatchRegisterName(RegName);
-    if (RegNo == 0)
-      RegNo = MatchRegisterAltName(RegName);
+    matchRegisterNameHelper(RegNo, RegName);
     break;
   }
 
@@ -817,7 +837,7 @@ ParseStatus XtensaAsmParser::parseRegister(OperandVector &Operands,
     return ParseStatus::NoMatch;
   }
 
-  if (!checkRegister(RegNo)) {
+  if (!checkRegister(Mnemonic.lower(), RegName, RegNo)) {
     return ParseStatus::NoMatch;
   }
 
@@ -892,7 +912,7 @@ bool XtensaAsmParser::parseOperand(OperandVector &Operands, StringRef Mnemonic,
     return true;
 
   // Attempt to parse token as register
-  if (parseRegister(Operands, true, SR, UR).isSuccess())
+  if (parseRegister(Operands, Mnemonic, true, SR, UR) == MatchOperand_Success)
     return false;
 
   // Attempt to parse token as an immediate
@@ -921,15 +941,11 @@ bool XtensaAsmParser::ParseInstructionWithSR(ParseInstructionInfo &Info,
     Operands.push_back(XtensaOperand::createToken(Name.take_front(3), NameLoc));
 
     StringRef RegName = Name.drop_front(4);
-    unsigned RegNo = MatchRegisterName(RegName);
+    MCRegister RegNo = 0;
 
-    if (RegNo == 0)
-      RegNo = MatchRegisterAltName(RegName);
+    matchRegisterNameHelper(RegNo, RegName);
 
-    if (RegNo == 0)
-      return Error(NameLoc, "invalid register name");
-
-    if (!checkRegister(RegNo)) {
+    if (!checkRegister(Name.lower(), RegName, RegNo)) {
       Error(NameLoc, "invalid register name");
       return true;
     }
@@ -1145,7 +1161,8 @@ ParseStatus XtensaAsmParser::parseDirective(AsmToken DirectiveID) {
 }
  
 // Verify SR and UR
-bool XtensaAsmParser::checkRegister(unsigned RegNo) {
+bool XtensaAsmParser::checkRegister(StringRef Mnemonic, StringRef RegName,
+                                    MCRegister RegNo) {
   StringRef CPU = getSTI().getCPU();
   unsigned NumIntLevels = 0;
   unsigned NumTimers = 0;
@@ -1154,6 +1171,8 @@ bool XtensaAsmParser::checkRegister(unsigned RegNo) {
   bool IsESP32S2 = false;
   bool IsESP32S3 = false;
   bool Res = true;
+  bool IsWSR = Mnemonic.starts_with("wsr");
+  bool IsRSR = Mnemonic.starts_with("rsr");
 
   // Assume that CPU is esp32 by default
   if ((CPU == "esp32") || (CPU == "")) {
@@ -1210,10 +1229,13 @@ bool XtensaAsmParser::checkRegister(unsigned RegNo) {
   case Xtensa::DBREAKA1:
   case Xtensa::DBREAKC0:
   case Xtensa::DBREAKC1:
-  case Xtensa::DEBUGCAUSE:
   case Xtensa::ICOUNT:
   case Xtensa::ICOUNTLEVEL:
     Res = hasDebug();
+    break;
+  case Xtensa::DEBUGCAUSE:
+    Res = hasDebug();
+    Res = Res & IsRSR;
     break;
   case Xtensa::ATOMCTL:
     Res = hasATOMCTL();
@@ -1277,9 +1299,23 @@ bool XtensaAsmParser::checkRegister(unsigned RegNo) {
     break;
   case Xtensa::PRID:
     Res = hasPRID();
+    Res = Res & IsRSR;
     break;
-  case Xtensa::INTSET:
+  case Xtensa::INTERRUPT:
+    // INTSET mnemonic is wrtite-only
+    // INTERRUPT mnemonic is read-only
+    if (RegName.starts_with("intset")) {
+      if (!IsWSR)
+        Res = false;
+    } else if (!IsRSR) {
+      Res = false;
+    }
+    Res = Res & hasInterrupt();
+    break;
   case Xtensa::INTCLEAR:
+    Res = hasInterrupt();
+    Res = Res & IsWSR;
+    break;
   case Xtensa::INTENABLE:
     Res = hasInterrupt();
     break;
@@ -1308,6 +1344,8 @@ bool XtensaAsmParser::checkRegister(unsigned RegNo) {
   case Xtensa::F64S:
     Res = hasDFPAccel();
     break;
+  case Xtensa::NoRegister:
+    Res = false;
   }
 
   return Res;
