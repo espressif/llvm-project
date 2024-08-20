@@ -107,6 +107,8 @@ static MCRegisterInfo *createXtensaMCRegisterInfo(const Triple &TT) {
 
 static MCSubtargetInfo *
 createXtensaMCSubtargetInfo(const Triple &TT, StringRef CPU, StringRef FS) {
+  if (CPU.empty())
+    CPU = "esp32";
   return createXtensaMCSubtargetInfoImpl(TT, CPU, CPU, FS);
 }
 
