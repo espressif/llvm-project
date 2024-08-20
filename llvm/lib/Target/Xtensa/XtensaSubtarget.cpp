@@ -50,6 +50,7 @@ XtensaSubtarget::initializeSubtargetDependencies(StringRef CPU, StringRef FS) {
   HasLoop = false;
   HasSEXT = false;
   HasNSA = false;
+  HasMINMAX = false;
   HasMul16 = false;
   HasMul32 = false;
   HasMul32High = false;

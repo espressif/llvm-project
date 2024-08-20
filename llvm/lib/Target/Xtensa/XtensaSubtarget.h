@@ -57,6 +57,9 @@ private:
   // Enable Xtensa NSA option
   bool HasNSA;
 
+  // Enable Xtensa MINMAX option
+  bool HasMINMAX;
+
   // Enable Xtensa Mul16 option
   bool HasMul16;
 
@@ -164,6 +167,8 @@ public:
   bool hasSEXT() const { return HasSEXT; }
 
   bool hasNSA() const { return HasNSA; }
+
+  bool hasMINMAX() const { return HasMINMAX; }
 
   bool hasMul16() const { return HasMul16; }
 
