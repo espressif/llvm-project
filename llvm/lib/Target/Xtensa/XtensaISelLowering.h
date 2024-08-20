@@ -26,7 +26,7 @@ enum {
   BR_T,
   BR_F,
 
-  //Conditional branch with FP operands
+  // Conditional branch with FP operands
   BR_CC_FP,
 
   BR_JT,
@@ -193,6 +193,10 @@ public:
   MachineBasicBlock *
   EmitInstrWithCustomInserter(MachineInstr &MI,
                               MachineBasicBlock *BB) const override;
+
+  MachineBasicBlock *EmitDSPInstrWithCustomInserter(
+      MachineInstr &MI, MachineBasicBlock *MBB, const TargetInstrInfo &TII,
+      MachineFunction *MF, MachineRegisterInfo &MRI, DebugLoc DL) const;
 
 private:
   const XtensaSubtarget &Subtarget;

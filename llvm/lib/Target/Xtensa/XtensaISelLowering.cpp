@@ -339,8 +339,8 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
 
 /// Return the register type for a given MVT
 MVT XtensaTargetLowering::getRegisterTypeForCallingConv(LLVMContext &Context,
-                                                      CallingConv::ID CC,
-                                                      EVT VT) const {
+                                                        CallingConv::ID CC,
+                                                        EVT VT) const {
   if (VT.isFloatingPoint())
     return MVT::i32;
 
@@ -632,7 +632,7 @@ static SDValue PerformHWLoopCombine(SDNode *N, SelectionDAG &DAG,
         Size,
     };
     SDValue LoopDec = DAG.getNode(XtensaISD::LOOPDEC, dl,
-                                     DAG.getVTList(MVT::i32, MVT::Other), Args);
+                                  DAG.getVTList(MVT::i32, MVT::Other), Args);
 
     // We now need to make the intrinsic dead (it cannot be instruction
     // selected).
@@ -3229,6 +3229,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitInstrWithCustomInserter(
     return MBB;
   }
   default:
-    llvm_unreachable("Unexpected instr type to insert");
+    return EmitDSPInstrWithCustomInserter(MI, MBB, TII, MF, MRI, DL);
+    // llvm_unreachable("Unexpected instr type to insert");
   }
 }
