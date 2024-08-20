@@ -101,6 +101,10 @@ public:
     return LHSTy.getSizeInBits() <= 32 ? MVT::i32 : MVT::i64;
   }
 
+  /// Return the register type for a given MVT
+  MVT getRegisterTypeForCallingConv(LLVMContext &Context, CallingConv::ID CC,
+                                    EVT VT) const override;
+
   EVT getSetCCResultType(const DataLayout &, LLVMContext &,
                          EVT VT) const override {
     if (!VT.isVector())
