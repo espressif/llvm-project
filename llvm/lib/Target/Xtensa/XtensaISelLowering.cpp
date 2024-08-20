@@ -2417,7 +2417,7 @@ XtensaTargetLowering::emitAtomicSwap(MachineInstr &MI, MachineBasicBlock *BB,
   unsigned R8 = MRI.createVirtualRegister(RC);
 
   BuildMI(*BB, St, DL, TII.get(Xtensa::SSR)).addReg(BitOffs);
-  BuildMI(*BB, St, DL, TII.get(Xtensa::SLL), R8).addReg(AtomValLoop);
+  BuildMI(*BB, St, DL, TII.get(Xtensa::SRL), R8).addReg(AtomValLoop);
 
   if (isByteOperand) {
     BuildMI(*BB, St, DL, TII.get(Xtensa::SEXT), Res.getReg())
