@@ -17,6 +17,7 @@ namespace llvm {
 class formatted_raw_ostream;
 
 class XtensaTargetStreamer : public MCTargetStreamer {
+  StringRef LiteralSectionPrefix = "";
 public:
   XtensaTargetStreamer(MCStreamer &S);
 
@@ -31,6 +32,10 @@ public:
   // Switch to the literal section. The BaseSection name is used to construct
   // literal section name.
   virtual void startLiteralSection(MCSection *BaseSection) = 0;
+
+  void setLiteralSectionPrefix(StringRef Name) { LiteralSectionPrefix = Name; }
+
+  StringRef getLiteralSectionPrefix() { return LiteralSectionPrefix; }
 };
 
 class XtensaTargetAsmStreamer : public XtensaTargetStreamer {
