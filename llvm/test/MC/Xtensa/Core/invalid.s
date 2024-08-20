@@ -21,8 +21,12 @@ slli a1, a2, 0
 # CHECK: :[[#@LINE-1]]:14: error: expected immediate in range [1, 31]
 
 # uimm4
-srli a1, a2, 16
-# CHECK: :[[#@LINE-1]]:14: error: expected immediate in range [0, 15]
+_srli a1, a2, 16
+# CHECK: :[[#@LINE-1]]:15: error: expected immediate in range [0, 15]
+
+# uimm5
+srli a1, a2, 32
+# CHECK: :[[#@LINE-1]]:14: error: expected immediate in range [0, 31]
 
 # uimm5
 srai a2, a3, 32
