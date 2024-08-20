@@ -1437,6 +1437,27 @@ def WITLB : RRR_Inst<0x00, 0x00, 0x05, (outs AR:$t), (ins AR:$s),
 }
 
 //===----------------------------------------------------------------------===//
+// Illegal instructions
+//===----------------------------------------------------------------------===//
+
+let isBarrier = 1, isTerminator = 1 in {
+  def ILL : CALLX_Inst<0x00, 0x00, 0x00, (outs), (ins),
+                      "ill", []> {
+    let m = 0x0;
+    let n = 0x0;
+    let r = 0;
+    let s = 0;
+  }
+
+  def ILL_N : RRRN_Inst<0x0C, (outs), (ins),
+                       "ill.n", []>, Requires<[HasDensity]> {
+    let r = 0xf;
+    let s = 0x0;
+    let t = 0x6;
+  }
+}
+
+//===----------------------------------------------------------------------===//
 // Atomic patterns
 //===----------------------------------------------------------------------===//
 
@@ -1568,6 +1589,40 @@ let usesCustomInserter = 1, Predicates = [HasS32C1I] in {
   def ATOMIC_LOAD_UMAX_32_P : Pseudo<(outs AR:$dst), (ins AR:$ptr, AR:$arg),
                                     "!atomic_load_umax_32_p, $dst, $ptr, $arg",
                                     [(set AR:$dst, (atomic_load_umax_i32 AR:$ptr, AR:$arg))]>;	
+}
+
+//===----------------------------------------------------------------------===//
+// Xtensa ESP32S2 Instructions
+//===----------------------------------------------------------------------===//
+let Predicates = [HasESP32S2Ops] in {
+  def WR_MASK_GPIO_OUT : RRR_Inst<0x0, 0x06, 0x0, (outs), (ins AR:$s, AR:$t),
+                                 "wr_mask_gpio_out\t$s, $t", []> {
+    let r = 0x2;
+  }
+
+  def SET_BIT_GPIO_OUT : RRR_Inst<0x0, 0x06, 0x0, (outs), (ins select_256:$imm),
+                                 "set_bit_gpio_out\t$imm", []> {
+    bits<8> imm;
+
+    let r = 0x1;
+    let s = imm{7-4};
+    let t = imm{3-0};
+  }
+
+  def CLR_BIT_GPIO_OUT : RRR_Inst<0x0, 0x06, 0x0, (outs), (ins select_256:$imm),
+                                 "clr_bit_gpio_out\t$imm", []> {
+    bits<8> imm;
+
+    let r = 0x0;
+    let s = imm{7-4};
+    let t = imm{3-0};
+  }
+
+  def GET_GPIO_IN : RRR_Inst<0x0, 0x06, 0x0, (outs AR:$t), (ins),
+                            "get_gpio_in\t$t", []> {
+    let r = 0x3;
+    let s = 0x0;
+  }
 }
 
 //===----------------------------------------------------------------------===//
