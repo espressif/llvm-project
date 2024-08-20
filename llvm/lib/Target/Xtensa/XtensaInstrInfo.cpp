@@ -338,7 +338,6 @@ bool XtensaInstrInfo::isBranchOffsetInRange(unsigned BranchOp,
     return true;
   case Xtensa::LOOPEND:
     BrOffset += 4;
-    BrOffset += 3 * 3;   // 2*NOP + LOOP instrucions
     return true;
   case Xtensa::BR_JT:
     return true;
