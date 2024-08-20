@@ -8,7 +8,6 @@
 
 #include "RISCVToolchain.h"
 #include "CommonArgs.h"
-#include "Arch/RISCV.h"
 #include "clang/Driver/Compilation.h"
 #include "clang/Driver/InputInfo.h"
 #include "clang/Driver/Options.h"
@@ -217,6 +216,9 @@ void RISCV::Linker::ConstructJob(Compilation &C, const JobAction &JA,
     CmdArgs.push_back("--start-group");
     CmdArgs.push_back("-lc");
     CmdArgs.push_back("-lgloss");
+    if (ToolChain.getTriple().getVendor() == llvm::Triple::Espressif) {
+      CmdArgs.push_back("-lnosys");
+    }
     CmdArgs.push_back("--end-group");
     AddRunTimeLibs(ToolChain, ToolChain.getDriver(), CmdArgs, Args);
   }
