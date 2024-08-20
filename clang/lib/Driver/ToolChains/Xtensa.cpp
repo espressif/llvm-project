@@ -37,20 +37,7 @@ XtensaToolChain::XtensaToolChain(const Driver &D, const llvm::Triple &Triple,
                                  const ArgList &Args)
     : Generic_ELF(D, Triple, Args) {
 
-  std::vector<std::string> ExtraAliases;
-
-  if (Triple.getVendor() == llvm::Triple::Espressif) {
-    std::string ESPCpuName = "esp32";
-    if (Arg *A = Args.getLastArg(options::OPT_mcpu_EQ)) {
-      ESPCpuName = A->getValue();
-    }
-    ExtraAliases = {std::string("xtensa-") + ESPCpuName + "-elf"};
-    if (Args.hasArg(options::OPT_v)) {
-      llvm::errs() << "Use GCC target extra alias: " << ExtraAliases[0] << "\n";
-    }
-  }
-
-  GCCInstallation.init(Triple, Args, ExtraAliases);
+  GCCInstallation.init(Triple, Args);
   if (!GCCInstallation.isValid()) {
     llvm_unreachable("Unexpected Xtensa GCC toolchain version");
   }
