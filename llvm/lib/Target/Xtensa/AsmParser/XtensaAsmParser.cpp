@@ -35,6 +35,21 @@ using namespace llvm;
 struct XtensaOperand;
 
 class XtensaAsmParser : public MCTargetAsmParser {
+  // Xtensa GNU assembler supports region definitions using
+  // .begin and .end directives. Currently only .literal_prefix regions are
+  // supported.
+  struct RegionInfo {
+  public:
+    SMLoc Loc;
+    StringRef RegionDirectiveName;
+    StringRef LiteralPrefixName;
+    RegionInfo() = default;
+    RegionInfo( SMLoc L, StringRef DirectiveName, StringRef Name = "")
+     : Loc(L), RegionDirectiveName(DirectiveName), LiteralPrefixName(Name) {}
+  };
+
+  // Stack of active region definitions.
+  SmallVector<RegionInfo, 1> RegionInProgress;
 
   SMLoc getLoc() const { return getParser().getTok().getLoc(); }
 
@@ -76,6 +91,8 @@ class XtensaAsmParser : public MCTargetAsmParser {
   }
   ParseStatus parsePCRelTarget(OperandVector &Operands);
   bool parseLiteralDirective(SMLoc L);
+  bool parseBeginDirective(SMLoc L);
+  bool parseEndDirective(SMLoc L);
 
   bool checkRegister(unsigned RegNo);
 
@@ -959,6 +976,79 @@ bool XtensaAsmParser::parseLiteralDirective(SMLoc L) {
   return false;
 }
 
+bool XtensaAsmParser::parseBeginDirective(SMLoc L) {
+  MCAsmParser &Parser = getParser();
+  const MCExpr *Value;
+  SMLoc BeginLoc = getLexer().getLoc();
+  XtensaTargetStreamer &TS = this->getTargetStreamer();
+
+  if (Parser.parseExpression(Value))
+    return true;
+
+  const MCSymbolRefExpr *SE = dyn_cast<MCSymbolRefExpr>(Value);
+  if (!SE)
+    return Error(BeginLoc, "region option must be a symbol");
+
+  StringRef RegionDirectiveName = SE->getSymbol().getName();
+
+  if (RegionDirectiveName == "literal_prefix") {
+
+    SMLoc OpcodeLoc = getLexer().getLoc();
+    if (parseOptionalToken(AsmToken::EndOfStatement))
+      return Error(OpcodeLoc, "expected literal section name");
+
+    if (Parser.parseExpression(Value))
+      return true;
+
+    OpcodeLoc = getLexer().getLoc();
+    SE = dyn_cast<MCSymbolRefExpr>(Value);
+    if (!SE)
+      return Error(OpcodeLoc, "literal_prefix name must be a symbol");
+
+    StringRef LiteralPrefixName = SE->getSymbol().getName();
+    TS.setLiteralSectionPrefix(LiteralPrefixName);
+    RegionInProgress.emplace_back(BeginLoc, RegionDirectiveName, LiteralPrefixName);
+  } else {
+    return Error(BeginLoc, "unsupported region directive");
+  }
+
+  return false;
+}
+
+bool XtensaAsmParser::parseEndDirective(SMLoc L) {
+  MCAsmParser &Parser = getParser();
+  const MCExpr *Value;
+  SMLoc EndLoc = getLexer().getLoc();
+  XtensaTargetStreamer &TS = this->getTargetStreamer();
+
+  if (Parser.parseExpression(Value))
+    return true;
+
+  const MCSymbolRefExpr *SE = dyn_cast<MCSymbolRefExpr>(Value);
+  if (!SE)
+    return Error(EndLoc, "region option must be a symbol");
+
+  StringRef RegionDirectiveName = SE->getSymbol().getName();
+
+  if (RegionInProgress.empty())
+    return Error(EndLoc, ".end of the region without .begin");
+  else {
+    RegionInfo Region = RegionInProgress.pop_back_val();
+
+    if (RegionInProgress.empty())
+      TS.setLiteralSectionPrefix("");
+    else
+      TS.setLiteralSectionPrefix(Region.LiteralPrefixName);
+
+    if (RegionDirectiveName != Region.RegionDirectiveName) {
+      return Error(EndLoc, ".end directive differs from .begin directive");
+    }
+  }
+
+  // Error: does not match begin literal_prefix
+  return false;
+}
+
 ParseStatus XtensaAsmParser::parseDirective(AsmToken DirectiveID) {
   StringRef IDVal = DirectiveID.getString();
   SMLoc Loc = getLexer().getLoc();
@@ -971,6 +1061,21 @@ ParseStatus XtensaAsmParser::parseDirective(AsmToken DirectiveID) {
 
   if (IDVal == ".literal") {
     return parseLiteralDirective(Loc);
+  }
+
+  if (IDVal == ".literal") {
+    parseLiteralDirective(Loc);
+    return false;
+  }
+
+  if (IDVal == ".begin") {
+    parseBeginDirective(Loc);
+    return false;
+  }
+
+  if (IDVal == ".end") {
+    parseEndDirective(Loc);
+    return false;
   }
 
   return ParseStatus::NoMatch;
