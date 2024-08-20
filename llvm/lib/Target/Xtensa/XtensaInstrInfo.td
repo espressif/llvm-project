@@ -157,9 +157,18 @@ def SRAI : RRR_Inst<0x00, 0x01, 0x02, (outs AR:$r), (ins AR:$t, uimm5:$sa),
   let s = sa{3-0};
 }
 
-def SRLI : RRR_Inst<0x00, 0x01, 0x04, (outs AR:$r), (ins AR:$t, uimm4:$sa),
+def SRLI : RRR_Inst<0x00, 0x01, 0x04, (outs AR:$r), (ins AR:$t, uimm5:$sa),
                    "srli\t$r, $t, $sa",
                    [(set AR:$r, (srl AR:$t, uimm4:$sa))]> {
+  bits<4> sa;
+
+  let s = sa;
+}
+
+def _SRLI : RRR_Inst<0x00, 0x01, 0x04, (outs AR:$r), (ins AR:$t, uimm4:$sa),
+                   "_srli\t$r, $t, $sa",
+                   [(set AR:$r, (srl AR:$t, uimm4:$sa))]> {
+  let DecoderNamespace = "Fallback";
   bits<4> sa;
 
   let s = sa;
