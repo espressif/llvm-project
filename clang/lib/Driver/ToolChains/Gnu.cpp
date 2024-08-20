@@ -1948,7 +1948,8 @@ static void findXtensaMultilibs(const Driver &D,
                                const ArgList &Args, DetectedMultilibs &Result) {
 
   MultilibSet XtensaMultilibs = MultilibSet();
-  bool IsESP32 = Args.getLastArgValue(options::OPT_mcpu_EQ, "esp32") == "esp32";
+  StringRef cpu = Args.getLastArgValue(options::OPT_mcpu_EQ, "esp32");
+  bool IsESP32 = cpu == "esp32";
 
   XtensaMultilibs.push_back(Multilib());
   if (IsESP32)
@@ -1967,6 +1968,14 @@ static void findXtensaMultilibs(const Driver &D,
                             .flag("-frtti", /*Disallow=*/true)
                             .flag("-mfix-esp32-psram-cache-issue")
                             .makeMultilib());
+
+  std::string cpu_name = cpu.str();
+  XtensaMultilibs
+        .setFilePathsCallback([cpu_name](const Multilib &M) {
+          return std::vector<std::string>(
+              {M.gccSuffix(),
+                "/../../../../xtensa-" + cpu_name + "-elf/lib" + M.gccSuffix()});
+        });
 
   Multilib::flags_list Flags;
   addMultilibFlag(
