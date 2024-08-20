@@ -68,6 +68,10 @@ wsr.sar a8
 # CHECK: encoding: [0x80,0x03,0x13]
 wsr a8, 3
 
+# CHECK-INST: wsr     a8, sar
+# CHECK: encoding: [0x80,0x03,0x13]
+wsr a8, (2 + 1)
+
 # Instruction format RRR
 # CHECK-INST: xsr a8, sar
 # CHECK: encoding: [0x80,0x03,0x61]
