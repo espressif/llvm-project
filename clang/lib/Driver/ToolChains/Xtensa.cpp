@@ -215,6 +215,7 @@ void xtensa::Linker::ConstructJob(Compilation &C, const JobAction &JA,
                                   const ArgList &Args,
                                   const char *LinkingOutput) const {
   ArgStringList CmdArgs;
+  SmallString<128> Linker;
   bool WantCRTs =
       !Args.hasArg(options::OPT_nostdlib, options::OPT_nostartfiles);
   const auto &ToolChain =
@@ -223,9 +224,13 @@ void xtensa::Linker::ConstructJob(Compilation &C, const JobAction &JA,
   if (ToolChain.GCCToolchainName == "")
     llvm_unreachable("Unable to find Xtensa GCC linker");
 
-  SmallString<128> Linker(ToolChain.GCCToolchainDir);
-  llvm::sys::path::append(Linker, "bin",
-                          ToolChain.GCCToolchainName + "-" + getShortName());
+  if (Args.hasArg(options::OPT_fuse_ld_EQ)) {
+    Linker.assign(ToolChain.GetLinkerPath());
+  } else {
+    Linker.assign(ToolChain.GCCToolchainDir);
+    llvm::sys::path::append(Linker, "bin",
+                            ToolChain.GCCToolchainName + "-" + getShortName());
+  }
 
   const char *crtbegin, *crtend;
   auto RuntimeLib = ToolChain.GetRuntimeLibType(Args);
