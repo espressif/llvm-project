@@ -81,6 +81,7 @@ public:
     default:
       return false;
     case 'a':
+    case 'f':
       Info.setAllowsRegister();
       return true;
     }
