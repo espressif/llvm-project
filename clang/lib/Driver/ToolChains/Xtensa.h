@@ -61,7 +61,7 @@ public:
 } // end namespace toolchains
 
 namespace tools {
-namespace Xtensa {
+namespace xtensa {
 class LLVM_LIBRARY_VISIBILITY Linker : public Tool {
 public:
   Linker(const ToolChain &TC)
@@ -86,7 +86,10 @@ public:
                     const char *LinkingOutput) const override;
 };
 
-} // end namespace Xtensa
+void getXtensaTargetFeatures(const Driver &D, const llvm::Triple &Triple,
+                             const llvm::opt::ArgList &Args,
+                             std::vector<llvm::StringRef> &Features);
+} // end namespace xtensa
 } // end namespace tools
 } // end namespace driver
 } // end namespace clang
