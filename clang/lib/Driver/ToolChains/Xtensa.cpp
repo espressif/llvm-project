@@ -224,7 +224,7 @@ void xtensa::Linker::ConstructJob(Compilation &C, const JobAction &JA,
   if (ToolChain.GCCToolchainName == "")
     llvm_unreachable("Unable to find Xtensa GCC linker");
 
-  if (Args.hasArg(options::OPT_fuse_ld_EQ)) {
+  if (!Args.getLastArgValue(options::OPT_fuse_ld_EQ).empty()) {
     Linker.assign(ToolChain.GetLinkerPath());
   } else {
     Linker.assign(ToolChain.GCCToolchainDir);
