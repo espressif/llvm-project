@@ -1814,6 +1814,10 @@ static void findRISCVBareMetalMultilibs(const Driver &D,
       {"rv64imafdc", "lp64d"}};
 
   std::vector<MultilibBuilder> Ms;
+
+  if (TargetTriple.getVendor() == llvm::Triple::Espressif)
+    Ms.emplace_back(MultilibBuilder());
+
   for (auto Element : RISCVMultilibSet) {
     // multilib path rule is ${march}/${mabi}
     Ms.emplace_back(
