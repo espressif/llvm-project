@@ -2930,3 +2930,16 @@ void tools::addMCModel(const Driver &D, const llvm::opt::ArgList &Args,
     }
   }
 }
+
+void tools::addEspMultilibsPaths(const Driver &D, const MultilibSet &Multilibs,
+                                const Multilib &Multilib,
+                                StringRef CPU,
+                                StringRef InstallPath,
+                                ToolChain::path_list &Paths) {
+    if (const auto &PathsCallback = Multilibs.filePathsCallback())
+        for (const auto &Path : PathsCallback(Multilib)) {
+            SmallString<256> LibPath(D.ResourceDir);
+            llvm::sys::path::append(LibPath, D.getTargetTriple(), CPU, Path, "lib");
+            addPathIfExists(D, LibPath, Paths);
+        }
+}

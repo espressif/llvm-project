@@ -228,6 +228,12 @@ void addMCModel(const Driver &D, const llvm::opt::ArgList &Args,
                 const llvm::Reloc::Model &RelocationModel,
                 llvm::opt::ArgStringList &CmdArgs);
 
+
+void addEspMultilibsPaths(const Driver &D, const MultilibSet &Multilibs,
+                                const Multilib &Multilib,
+                                StringRef CPU,
+                                StringRef InstallPath,
+                                ToolChain::path_list &Paths);
 } // end namespace tools
 } // end namespace driver
 } // end namespace clang

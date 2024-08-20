@@ -22,6 +22,7 @@ using namespace clang::driver::tools;
 using namespace clang;
 using namespace llvm::opt;
 
+
 static void addMultilibsFilePaths(const Driver &D, const MultilibSet &Multilibs,
                                   const Multilib &Multilib,
                                   StringRef InstallPath,
@@ -69,6 +70,17 @@ RISCVToolChain::RISCVToolChain(const Driver &D, const llvm::Triple &Triple,
   } else {
     getProgramPaths().push_back(D.Dir);
   }
+
+  if (getTriple().getVendor() == llvm::Triple::Espressif) {
+    // TODO: need to detect multilibs when GCC installation is not available
+    addEspMultilibsPaths(D, Multilibs, SelectedMultilibs.back(),
+                          Args.getLastArgValue(options::OPT_mcpu_EQ, "generic-rv32"),
+                          D.Dir, getLibraryPaths());
+    addEspMultilibsPaths(D, Multilibs, SelectedMultilibs.back(),
+                          Args.getLastArgValue(options::OPT_mcpu_EQ, "generic-rv32"),
+                          D.Dir, getFilePaths());
+  }
+
   getFilePaths().push_back(computeSysRoot() + "/lib");
 }
 
