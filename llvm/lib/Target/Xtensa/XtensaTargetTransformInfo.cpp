@@ -27,7 +27,7 @@ bool XtensaTTIImpl::isHardwareLoopProfitable(Loop *L, ScalarEvolution &SE,
     return false;
 
   LLVMContext &C = L->getHeader()->getContext();
-  HWLoopInfo.CounterInReg = false;
+  HWLoopInfo.CounterInReg = true;
   HWLoopInfo.IsNestingLegal = false;
   HWLoopInfo.CountType = Type::getInt32Ty(C);
   HWLoopInfo.LoopDecrement = ConstantInt::get(HWLoopInfo.CountType, 1);

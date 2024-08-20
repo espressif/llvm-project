@@ -1268,8 +1268,8 @@ def LOOPNEZ : RRI8_Inst<0x06, (outs), (ins AR:$s, ltarget:$target),
 }
 
 let isTerminator = 1, isBarrier = 1, hasSideEffects = 1, Size = 3 in {
-  def LOOPINIT : Pseudo<(outs), (ins AR:$elts),
-                       "!loopinit $elts", [(int_set_loop_iterations AR:$elts)]>;
+  def LOOPINIT : Pseudo<(outs AR:$elts), (ins AR:$eltsin),
+                       "!loopinit $elts, $eltsin", [(set AR:$elts, (int_start_loop_iterations AR:$eltsin))]>;
 }
 
 // LOOPSTART pseudo instruction reserves 9 bytes for LOOP operation and NOP operations for possible alignment.
@@ -1282,6 +1282,16 @@ let isTerminator = 1, isBarrier = 1, hasSideEffects = 1, Size = 9 in {
 let isBranch = 1, isTerminator = 1, isBarrier = 1, isIndirectBranch = 0, Size = 6 in {
   def LOOPEND : Pseudo<(outs), (ins brtarget:$target),
                       "!loopend $target", [(Xtensa_loopend bb:$target)]>;
+}
+
+let isTerminator = 1, isBarrier = 1, hasSideEffects = 1, Size = 3 in {
+  def LOOPDEC : Pseudo<(outs AR:$eltsout), (ins AR:$eltsin),
+                      "!loopdec $eltsout, $eltsin", [(set AR:$eltsout, (Xtensa_loopdec AR:$eltsin))]>;
+}
+
+let isBranch = 1, isTerminator = 1, isBarrier = 1, isIndirectBranch = 0, Size = 3 in {
+  def LOOPBR : Pseudo<(outs), (ins AR:$elts, brtarget:$target),
+                     "!loopbr $elts, $target", [(Xtensa_loopbr AR:$elts, bb:$target)]>;
 }
 
 //===----------------------------------------------------------------------===//

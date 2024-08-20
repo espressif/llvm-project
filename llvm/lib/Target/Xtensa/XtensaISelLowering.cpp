@@ -270,8 +270,12 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
     setTargetDAGCombine(ISD::FSUB);
   }
 
-  if (Subtarget.hasSingleFloat() || Subtarget.hasLoop()) {
+  if (Subtarget.hasSingleFloat()) {
     setTargetDAGCombine(ISD::BRCOND);
+  }
+
+  if (Subtarget.hasLoop()) {
+    setTargetDAGCombine(ISD::BR_CC);
   }
 
   // Needed so that we don't try to implement f128 constant loads using
@@ -559,7 +563,7 @@ static SDValue SearchLoopIntrinsic(SDValue N, ISD::CondCode &CC, int &Imm,
   }
   case ISD::INTRINSIC_W_CHAIN: {
     unsigned IntOp = cast<ConstantSDNode>(N.getOperand(1))->getZExtValue();
-    if (IntOp != Intrinsic::loop_decrement)
+    if (IntOp != Intrinsic::loop_decrement_reg)
       return SDValue();
     return N;
   }
@@ -567,16 +571,27 @@ static SDValue SearchLoopIntrinsic(SDValue N, ISD::CondCode &CC, int &Imm,
   return SDValue();
 }
 
-static SDValue PerformBRCONDCombine(SDNode *N, SelectionDAG &DAG,
+static SDValue PerformHWLoopCombine(SDNode *N, SelectionDAG &DAG,
                                     TargetLowering::DAGCombinerInfo &DCI,
                                     const XtensaSubtarget &Subtarget) {
   SDValue Chain = N->getOperand(0);
   SDLoc DL(N);
-  SDValue Cond = N->getOperand(1);
-  SDValue Dest = N->getOperand(2);
+  SDValue Cond;
+  SDValue Dest;
   ISD::CondCode CC = ISD::SETEQ;
   int Imm = 1;
   bool Negate = false;
+
+  assert(N->getOpcode() == ISD::BR_CC && "Expected BR_CC!");
+  CC = cast<CondCodeSDNode>(N->getOperand(1))->get();
+  Cond = N->getOperand(2);
+  Dest = N->getOperand(4);
+  if (auto *Const = dyn_cast<ConstantSDNode>(N->getOperand(3))) {
+    if (!Const->isOne() && !Const->isZero())
+      return SDValue();
+    Imm = Const->getZExtValue();
+  } else
+    return SDValue();
 
   SDValue Int = SearchLoopIntrinsic(Cond, CC, Imm, Negate);
   if (Int) {
@@ -608,16 +623,39 @@ static SDValue PerformBRCONDCombine(SDNode *N, SelectionDAG &DAG,
     } else if (!IsFalseIfZero(CC, Imm)) {
       llvm_unreachable("unsupported condition");
     }
+    SDLoc dl(Int);
+    SDValue Elements = Int.getOperand(2);
+    SDValue Size = DAG.getTargetConstant(
+        cast<ConstantSDNode>(Int.getOperand(3))->getZExtValue(), dl, MVT::i32);
+    SDValue Args[] = {
+        Int.getOperand(0),
+        Elements,
+        Size,
+    };
+    SDValue LoopDec = DAG.getNode(XtensaISD::LOOPDEC, dl,
+                                     DAG.getVTList(MVT::i32, MVT::Other), Args);
 
     // We now need to make the intrinsic dead (it cannot be instruction
     // selected).
-    DAG.ReplaceAllUsesOfValueWith(Int.getValue(1), Int.getOperand(0));
-    assert(Int.getNode()->hasOneUse() &&
-           "Counter decrement has more than one use");
+    DAG.ReplaceAllUsesWith(Int.getNode(), LoopDec.getNode());
 
-    return DAG.getNode(XtensaISD::LOOPEND, DL, MVT::Other, N->getOperand(0),
-                       Dest);
+    Chain = DAG.getNode(ISD::TokenFactor, dl, MVT::Other,
+                        SDValue(LoopDec.getNode(), 1), Chain);
+
+    SDValue EndArgs[] = {Chain, SDValue(LoopDec.getNode(), 0), Dest};
+    return DAG.getNode(XtensaISD::LOOPBR, dl, MVT::Other, EndArgs);
   }
+  return SDValue();
+}
+
+static SDValue PerformBRCONDCombine(SDNode *N, SelectionDAG &DAG,
+                                    TargetLowering::DAGCombinerInfo &DCI,
+                                    const XtensaSubtarget &Subtarget) {
+  SDValue Chain = N->getOperand(0);
+  SDLoc DL(N);
+  SDValue Cond = N->getOperand(1);
+  SDValue Dest = N->getOperand(2);
+  ISD::CondCode CC = ISD::SETEQ;
 
   if (Cond.getOpcode() != ISD::SETCC)
     return SDValue();
@@ -645,6 +683,8 @@ SDValue XtensaTargetLowering::PerformDAGCombine(SDNode *N,
     return performADDCombine(N, DAG, DCI, Subtarget);
   case ISD::FSUB:
     return performSUBCombine(N, DAG, DCI, Subtarget);
+  case ISD::BR_CC:
+    return PerformHWLoopCombine(N, DAG, DCI, Subtarget);
   case ISD::BRCOND:
     return PerformBRCONDCombine(N, DAG, DCI, Subtarget);
   }
@@ -1946,6 +1986,10 @@ const char *XtensaTargetLowering::getTargetNodeName(unsigned Opcode) const {
     return "XtensaISD::CMPOLE";
   case XtensaISD::CMPOLT:
     return "XtensaISD::CMPOLT";
+  case XtensaISD::LOOPBR:
+    return "XtensaISD::LOOPBR";
+  case XtensaISD::LOOPDEC:
+    return "XtensaISD::LOOPDEC";
   case XtensaISD::LOOPEND:
     return "XtensaISD::LOOPEND";
   case XtensaISD::MADD:
