@@ -23,6 +23,7 @@
 #include "llvm/CodeGen/MachineRegisterInfo.h"
 #include "llvm/CodeGen/TargetLoweringObjectFileImpl.h"
 #include "llvm/IR/GlobalVariable.h"
+#include "llvm/IR/DiagnosticInfo.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/MathExtras.h"
@@ -990,6 +991,12 @@ SDValue XtensaTargetLowering::LowerFormalArguments(
   return Chain;
 }
 
+static void fail(const SDLoc &DL, SelectionDAG &DAG, const char *Msg) {
+  MachineFunction &MF = DAG.getMachineFunction();
+  DAG.getContext()->diagnose(
+      DiagnosticInfoUnsupported(MF.getFunction(), Msg, DL.getDebugLoc()));
+}
+
 SDValue
 XtensaTargetLowering::LowerCall(CallLoweringInfo &CLI,
                                 SmallVectorImpl<SDValue> &InVals) const {
@@ -1009,7 +1016,11 @@ XtensaTargetLowering::LowerCall(CallLoweringInfo &CLI,
   const TargetFrameLowering *TFL = Subtarget.getFrameLowering();
 
   // TODO: Support tail call optimization.
-  IsTailCall = false;
+  if (IsTailCall) {
+    if (CLI.CB && CLI.CB->isMustTailCall())
+      fail(DL, DAG, "tail call is not implemented");
+    IsTailCall = false;
+  }
 
   // Analyze the operands of the call, assigning locations to each operand.
   SmallVector<CCValAssign, 16> ArgLocs;
