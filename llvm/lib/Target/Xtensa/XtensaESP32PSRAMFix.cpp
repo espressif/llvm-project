@@ -223,14 +223,16 @@ bool createXtensaPSRAMCacheFix::xtensaPSRAMCacheFixMemwReorg(
       case Xtensa::L16UI:
       case Xtensa::L8UI:
         if (StoreInsn) {
-          MachineMemOperand *MMO = *MII->memoperands_begin();
-          if (!MMO->isVolatile()) {
-            DebugLoc dl = MII->getDebugLoc();
-            const MCInstrDesc &NewMCID = XtensaII->get(Xtensa::MEMW);
-            BuildMI(MBB, MII, dl, NewMCID);
-            Modified = true;
-            StoreInsn = nullptr;
-            NumAdded++;
+          if (!MII->memoperands_empty()) {
+            MachineMemOperand *MMO = *MII->memoperands_begin();
+            if (!MMO->isVolatile()) {
+              DebugLoc dl = MII->getDebugLoc();
+              const MCInstrDesc &NewMCID = XtensaII->get(Xtensa::MEMW);
+              BuildMI(MBB, MII, dl, NewMCID);
+              Modified = true;
+              StoreInsn = nullptr;
+              NumAdded++;
+            }
           }
         }
         if (LastHIQIStore) {
@@ -251,9 +253,11 @@ bool createXtensaPSRAMCacheFix::xtensaPSRAMCacheFixMemwReorg(
       } break;
       case Xtensa::S16I:
       case Xtensa::S8I: {
-        MachineMemOperand *MMO = *MII->memoperands_begin();
-        if (!MMO->isVolatile()) {
-          LastHIQIStore = MI;
+        if (!MII->memoperands_empty()) {
+          MachineMemOperand *MMO = *MII->memoperands_begin();
+          if (!MMO->isVolatile()) {
+            LastHIQIStore = MI;
+          }
         }
         StoreInsn = MI;
       } break;
@@ -292,13 +296,15 @@ bool createXtensaPSRAMCacheFix::xtensaInsertMemwReorg(MachineFunction &MF) {
       case Xtensa::L16SI:
       case Xtensa::L16UI:
       case Xtensa::L8UI: {
-        MachineMemOperand *MMO = *MII->memoperands_begin();
-        if (!MMO->isVolatile() && (!HadMemw)) {
-          DebugLoc dl = MII->getDebugLoc();
-          const MCInstrDesc &NewMCID = XtensaII->get(Xtensa::MEMW);
-          BuildMI(MBB, MII, dl, NewMCID);
-          Modified = true;
-          NumAdded++;
+        if (!MII->memoperands_empty()) {
+          MachineMemOperand *MMO = *MII->memoperands_begin();
+          if (!MMO->isVolatile() && (!HadMemw)) {
+            DebugLoc dl = MII->getDebugLoc();
+            const MCInstrDesc &NewMCID = XtensaII->get(Xtensa::MEMW);
+            BuildMI(MBB, MII, dl, NewMCID);
+            Modified = true;
+            NumAdded++;
+          }
         }
         HadMemw = false;
       } break;
@@ -307,13 +313,15 @@ bool createXtensaPSRAMCacheFix::xtensaInsertMemwReorg(MachineFunction &MF) {
       case Xtensa::S32I:
       case Xtensa::S16I:
       case Xtensa::S8I: {
-        MachineMemOperand *MMO = *MII->memoperands_begin();
-        if (!MMO->isVolatile()) {
-          DebugLoc dl = MII->getDebugLoc();
-          const MCInstrDesc &NewMCID = XtensaII->get(Xtensa::MEMW);
-          BuildMI(MBB, NextMII, dl, NewMCID);
-          Modified = true;
-          NumAdded++;
+        if (!MII->memoperands_empty()) {
+          MachineMemOperand *MMO = *MII->memoperands_begin();
+          if (!MMO->isVolatile()) {
+            DebugLoc dl = MII->getDebugLoc();
+            const MCInstrDesc &NewMCID = XtensaII->get(Xtensa::MEMW);
+            BuildMI(MBB, NextMII, dl, NewMCID);
+            Modified = true;
+            NumAdded++;
+          }
         }
         HadMemw = true;
       } break;
