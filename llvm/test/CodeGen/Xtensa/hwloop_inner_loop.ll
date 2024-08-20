@@ -6,7 +6,6 @@
 define i32 @test_hwloop(i32 %a, i32 %b, i32 %n) local_unnamed_addr #0 {
 ; CHECK-LABEL: test_hwloop:
 ; CHECK:         entry a1, 32
-; CHECK-NEXT:    mov.n a8, a1
 ; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    blti a4, 1, .LBB0_7
 ; CHECK-NEXT:  # %bb.1: # %for.body.preheader
@@ -19,6 +18,8 @@ define i32 @test_hwloop(i32 %a, i32 %b, i32 %n) local_unnamed_addr #0 {
 ; CHECK-NEXT:  .LBB0_3: # %for.body
 ; CHECK-NEXT:    # =>This Loop Header: Depth=1
 ; CHECK-NEXT:    # Child Loop BB0_6 Depth 2
+; CHECK-NEXT:    nop
+; CHECK-NEXT:    nop
 ; CHECK-NEXT:    loop a4, .LBB0_6
 ; CHECK-NEXT:    mov.n a9, a8
 ; CHECK-NEXT:    bge a8, a2, .LBB0_2
