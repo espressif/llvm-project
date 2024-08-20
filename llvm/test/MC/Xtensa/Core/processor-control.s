@@ -15,6 +15,10 @@ dsync
 # CHECK: encoding: [0x20,0x20,0x00]
 esync
 
+# CHECK-INST: ill
+# CHECK: encoding: [0x00,0x00,0x00]
+ill
+
 # Instruction format RRR
 # CHECK-INST: isync
 # CHECK: encoding: [0x00,0x20,0x00]

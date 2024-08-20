@@ -73,6 +73,7 @@ private:
   void printB4const_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
   void printB4constu_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
   void printSeimm7_22_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
+  void printSelect_256_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
 };
 } // end namespace llvm
 
