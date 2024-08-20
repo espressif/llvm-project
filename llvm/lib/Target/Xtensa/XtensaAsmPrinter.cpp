@@ -150,6 +150,7 @@ void XtensaAsmPrinter::emitConstantPool() {
   auto *TS =
       static_cast<XtensaTargetStreamer *>(OutStreamer->getTargetStreamer());
   MCSection *CS = getObjFileLowering().SectionForGlobal(&F, TM);
+  TS->setTextSectionLiterals();
   TS->startLiteralSection(CS);
 
   int CPIdx = 0;
