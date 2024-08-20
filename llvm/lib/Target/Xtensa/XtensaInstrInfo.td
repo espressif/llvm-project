@@ -1344,7 +1344,8 @@ def NSA : RRR_Inst<0x00, 0x00, 0x04, (outs AR:$t), (ins AR:$s),
 }
 
 def NSAU : RRR_Inst<0x00, 0x00, 0x04, (outs AR:$t), (ins AR:$s),
-                   "nsau\t$t, $s", []>, Requires<[HasNSA]> {
+                   "nsau\t$t, $s",
+                   [(set AR:$t, (ctlz AR:$s))]>, Requires<[HasNSA]> {
   let r = 0xF;
 }
 

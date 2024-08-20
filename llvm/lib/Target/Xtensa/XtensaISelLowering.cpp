@@ -194,10 +194,12 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
   setOperationAction(ISD::ROTL, MVT::i32, Expand);
   setOperationAction(ISD::ROTR, MVT::i32, Expand);
   setOperationAction(ISD::CTPOP, MVT::i32, Custom);
-  setOperationAction(ISD::CTTZ, MVT::i32, Expand);
-  setOperationAction(ISD::CTLZ, MVT::i32, Expand);
-  setOperationAction(ISD::CTTZ_ZERO_UNDEF, MVT::i32, Expand);
-  setOperationAction(ISD::CTLZ_ZERO_UNDEF, MVT::i32, Expand);
+  setOperationAction({ISD::CTTZ, ISD::CTTZ_ZERO_UNDEF}, MVT::i32, Expand);
+  if (Subtarget.hasNSA())
+    setOperationAction(ISD::CTLZ, MVT::i32, Legal);
+  else
+    setOperationAction({ISD::CTLZ, ISD::CTLZ_ZERO_UNDEF}, MVT::i32, Expand);
+
 
   setOperationAction({ISD::SMIN, ISD::SMAX, ISD::UMIN, ISD::UMAX},
                      MVT::i32, Subtarget.hasMINMAX() ? Legal : Expand);
@@ -406,6 +408,18 @@ bool XtensaTargetLowering::isFMAFasterThanFMulAndFAdd(const MachineFunction &MF,
   }
 
  return false;
+}
+
+bool XtensaTargetLowering::isCheapToSpeculateCtlz(Type *) const {
+  return Subtarget.hasNSA();
+}
+
+bool XtensaTargetLowering::isCheapToSpeculateCttz(Type *) const {
+  return Subtarget.hasNSA();
+}
+
+bool XtensaTargetLowering::isCtlzFast() const {
+  return Subtarget.hasNSA();
 }
 
 /// If a physical register, this returns the register that receives the

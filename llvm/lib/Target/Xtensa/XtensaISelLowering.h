@@ -120,6 +120,11 @@ public:
                                   EVT VT) const override;
 
   bool isFNegFree(EVT VT) const override;
+  bool isCheapToSpeculateCtlz(Type *Ty) const override;
+
+  bool isCheapToSpeculateCttz(Type *Ty) const override;
+
+  bool isCtlzFast() const override;
 
   /// If a physical register, this returns the register that receives the
   /// exception address on entry to an EH pad.
