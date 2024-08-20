@@ -193,6 +193,7 @@ public:
     Mesa,
     SUSE,
     OpenEmbedded,
+    Espressif,
     Intel,
     LastVendorType = Intel
   };

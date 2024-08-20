@@ -2571,8 +2571,7 @@ void Generic_GCC::GCCInstallationDetector::AddDefaultGCCPrefixes(
 
   static const char *const XtensaLibDirs[] = {"/lib"};
   static const char *const XtensaTriples[] = {
-      "xtensa-unknown-elf", "xtensa-esp32-elf", "xtensa-esp32s2-elf",
-      "xtensa-esp32s3-elf"};
+      "xtensa-esp-elf", "xtensa-esp-unknown-elf"};
 
   using std::begin;
   using std::end;
