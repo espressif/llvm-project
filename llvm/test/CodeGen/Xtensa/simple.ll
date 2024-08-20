@@ -7,7 +7,6 @@ define void @f() {
 ; CHECK:         .cfi_startproc
 ; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
-; CHECK-NEXT:    mov.n a8, a1
 ; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    retw.n
   ret void

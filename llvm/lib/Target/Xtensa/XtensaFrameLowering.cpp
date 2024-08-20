@@ -49,6 +49,7 @@ void XtensaFrameLowering::emitPrologue(MachineFunction &MF,
   MCRegister SP = Xtensa::SP;
   MCRegister FP = TRI->getFrameRegister(MF);
   const MCRegisterInfo *MRI = MF.getContext().getRegisterInfo();
+  XtensaMachineFunctionInfo *XtensaFI = MF.getInfo<XtensaMachineFunctionInfo>();
 
   // First, compute final stack size.
   uint64_t StackSize = MFI.getStackSize();
@@ -82,9 +83,11 @@ void XtensaFrameLowering::emitPrologue(MachineFunction &MF,
 
     // Store FP register in A8, because FP may be used to pass function
     // arguments
-    BuildMI(MBB, MBBI, DL, TII.get(Xtensa::OR), Xtensa::A8)
-        .addReg(FP)
-        .addReg(FP);
+    if (XtensaFI->isSaveFrameRegister()) {
+      BuildMI(MBB, MBBI, DL, TII.get(Xtensa::OR), Xtensa::A8)
+          .addReg(FP)
+          .addReg(FP);
+    }
 
     // if framepointer enabled, set it to point to the stack pointer.
     if (hasFP(MF)) {

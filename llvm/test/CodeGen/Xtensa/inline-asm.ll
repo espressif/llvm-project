@@ -9,7 +9,6 @@ define i32 @constraint_r(i32 %a) {
 ; XTENSA:         .cfi_startproc
 ; XTENSA-NEXT:  # %bb.0:
 ; XTENSA-NEXT:    entry a1, 32
-; XTENSA-NEXT:    mov.n a8, a1
 ; XTENSA-NEXT:    .cfi_def_cfa_offset 32
 ; XTENSA-NEXT:    l32r a8, .LCPI0_0
 ; XTENSA-NEXT:    l32i.n a8, a8, 0
@@ -27,7 +26,6 @@ define i32 @constraint_i(i32 %a) {
 ; XTENSA:         .cfi_startproc
 ; XTENSA-NEXT:  # %bb.0:
 ; XTENSA-NEXT:    entry a1, 32
-; XTENSA-NEXT:    mov.n a8, a1
 ; XTENSA-NEXT:    .cfi_def_cfa_offset 32
 ; XTENSA-NEXT:    #APP
 ; XTENSA-NEXT:    addi a2, a2, 113
@@ -42,7 +40,6 @@ define i32 @explicit_register_a3(i32 %a) nounwind {
 ; XTENSA-LABEL: explicit_register_a3:
 ; XTENSA:       # %bb.0:
 ; XTENSA-NEXT:    entry a1, 32
-; XTENSA-NEXT:    mov.n a8, a1
 ; XTENSA-NEXT:    mov.n a3, a2
 ; XTENSA-NEXT:    #APP
 ; XTENSA-NEXT:    addi a2, a3, 1

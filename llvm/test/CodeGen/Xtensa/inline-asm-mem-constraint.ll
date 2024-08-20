@@ -5,7 +5,6 @@ define i32 @m_offset_0(ptr %p) nounwind {
 ; XTENSA-LABEL: m_offset_0:
 ; XTENSA:       # %bb.0:
 ; XTENSA-NEXT:    entry a1, 32
-; XTENSA-NEXT:    mov.n a8, a1
 ; XTENSA-NEXT:    #APP
 ; XTENSA-NEXT:    l32i a2, a2, 0
 ; XTENSA-NEXT:    #NO_APP
@@ -18,7 +17,6 @@ define i32 @m_offset_1020(ptr %p) nounwind {
 ; XTENSA-LABEL: m_offset_1020:
 ; XTENSA:       # %bb.0:
 ; XTENSA-NEXT:    entry a1, 32
-; XTENSA-NEXT:    mov.n a8, a1
 ; XTENSA-NEXT:    #APP
 ; XTENSA-NEXT:    l32i a2, a2, 1020
 ; XTENSA-NEXT:    #NO_APP
@@ -32,7 +30,6 @@ define i8 @m_i8_offset_7(ptr %p) nounwind {
 ; XTENSA-LABEL: m_i8_offset_7:
 ; XTENSA:       # %bb.0:
 ; XTENSA-NEXT:    entry a1, 32
-; XTENSA-NEXT:    mov.n a8, a1
 ; XTENSA-NEXT:    addi.n a8, a2, 7
 ; XTENSA-NEXT:    #APP
 ; XTENSA-NEXT:    l8ui a2, a8, 0
@@ -47,7 +44,6 @@ define i16 @m_i16_offset_10(ptr %p) nounwind {
 ; XTENSA-LABEL: m_i16_offset_10:
 ; XTENSA:       # %bb.0:
 ; XTENSA-NEXT:    entry a1, 32
-; XTENSA-NEXT:    mov.n a8, a1
 ; XTENSA-NEXT:    #APP
 ; XTENSA-NEXT:    l16si a2, a2, 20
 ; XTENSA-NEXT:    #NO_APP

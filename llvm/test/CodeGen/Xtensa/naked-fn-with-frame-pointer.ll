@@ -18,7 +18,6 @@ define dso_local void @normal() "frame-pointer"="all" {
 ; CHECK:         .cfi_startproc
 ; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
-; CHECK-NEXT:    mov.n a8, a7
 ; CHECK-NEXT:    mov.n a7, a1
 ; CHECK-NEXT:    .cfi_def_cfa b7, 32
 ; CHECK-NEXT:    l32r a8, .LCPI1_0

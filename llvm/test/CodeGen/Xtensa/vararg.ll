@@ -6,7 +6,6 @@ define void @vararg(...) {
 ; CHECK:         .cfi_startproc
 ; CHECK-NEXT:  # %bb.0: # %entry
 ; CHECK-NEXT:    entry a1, 64
-; CHECK-NEXT:    mov.n a8, a1
 ; CHECK-NEXT:    .cfi_def_cfa_offset 64
 ; CHECK-NEXT:    s32i.n a7, a1, 20
 ; CHECK-NEXT:    s32i.n a6, a1, 16
@@ -28,7 +27,6 @@ define void @vararg_fixed_0(...) nounwind {
 ; CHECK-LABEL: vararg_fixed_0:
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    entry a1, 64
-; CHECK-NEXT:    mov.n a8, a1
 ; CHECK-NEXT:    s32i.n a7, a1, 24
 ; CHECK-NEXT:    s32i.n a6, a1, 20
 ; CHECK-NEXT:    s32i.n a5, a1, 16
@@ -107,7 +105,6 @@ define void @vararg_fixed_1(i32 %a1, ...) nounwind {
 ; CHECK-LABEL: vararg_fixed_1:
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    entry a1, 64
-; CHECK-NEXT:    mov.n a8, a1
 ; CHECK-NEXT:    s32i.n a7, a1, 20
 ; CHECK-NEXT:    s32i.n a6, a1, 16
 ; CHECK-NEXT:    s32i.n a5, a1, 12
@@ -188,7 +185,6 @@ define void @vararg_fixed_4(i32 %a1, i32 %a2, i32 %a3, i32 %a4, ...) nounwind {
 ; CHECK-LABEL: vararg_fixed_4:
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    entry a1, 48
-; CHECK-NEXT:    mov.n a8, a1
 ; CHECK-NEXT:    s32i.n a7, a1, 8
 ; CHECK-NEXT:    s32i.n a6, a1, 4
 ; CHECK-NEXT:    addi a10, a1, 4
@@ -266,7 +262,6 @@ define void @vararg_fixed_5(i32 %a1, i32 %a2, i32 %a3, i32 %a4, i32 %a5, ...) no
 ; CHECK-LABEL: vararg_fixed_5:
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    entry a1, 48
-; CHECK-NEXT:    mov.n a8, a1
 ; CHECK-NEXT:    s32i.n a7, a1, 4
 ; CHECK-NEXT:    addi a9, a1, 4
 ; CHECK-NEXT:    s32i.n a9, a1, 4
@@ -345,7 +340,6 @@ define void @vararg_fixed_6(i32 %a1, i32 %a2, i32 %a3, i32 %a4, i32 %a5, i32 %a6
 ; CHECK-LABEL: vararg_fixed_6:
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    entry a1, 48
-; CHECK-NEXT:    mov.n a8, a1
 ; CHECK-NEXT:    addi a10, a1, 48
 ; CHECK-NEXT:    s32i.n a10, a1, 4
 ; CHECK-NEXT:    addi a8, a1, 48
@@ -421,7 +415,6 @@ define void @vararg_fixed_7(i32 %a1, i32 %a2, i32 %a3, i32 %a4, i32 %a5, i32 %a6
 ; CHECK-LABEL: vararg_fixed_7:
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    entry a1, 48
-; CHECK-NEXT:    mov.n a8, a1
 ; CHECK-NEXT:    addi a10, a1, 52
 ; CHECK-NEXT:    s32i.n a10, a1, 4
 ; CHECK-NEXT:    addi a8, a1, 52

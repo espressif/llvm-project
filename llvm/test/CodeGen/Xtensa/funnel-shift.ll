@@ -5,7 +5,6 @@ define dso_local i32 @test_fshr(i32 %value1, i32 %value2, i32 %shift) nounwind {
 ; CHECK-LABEL: test_fshr:
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    entry a1, 32
-; CHECK-NEXT:    mov.n a8, a1
 ; CHECK-NEXT:    ssr a4
 ; CHECK-NEXT:    src a2, a2, a3
 ; CHECK-NEXT:    retw.n
@@ -18,7 +17,6 @@ define dso_local i32 @test_fshl(i32 %value1, i32 %value2, i32 %shift) nounwind {
 ; CHECK-LABEL: test_fshl:
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    entry a1, 32
-; CHECK-NEXT:    mov.n a8, a1
 ; CHECK-NEXT:    ssl a4
 ; CHECK-NEXT:    src a2, a2, a3
 ; CHECK-NEXT:    retw.n

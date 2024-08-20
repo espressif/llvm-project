@@ -106,6 +106,7 @@ static bool useFramePointerForTargetByDefault(const llvm::opt::ArgList &Args,
   case llvm::Triple::loongarch32:
   case llvm::Triple::loongarch64:
   case llvm::Triple::m68k:
+  case llvm::Triple::xtensa:
     return !clang::driver::tools::areOptimizationsEnabled(Args);
   default:
     break;

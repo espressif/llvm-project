@@ -22,7 +22,6 @@ define void @test() {
 ; CHECK:         .cfi_startproc
 ; CHECK-NEXT:  # %bb.0: # %entry
 ; CHECK-NEXT:    entry a1, 32
-; CHECK-NEXT:    mov.n a8, a1
 ; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    l32r a8, .LCPI0_0
 ; CHECK-NEXT:    memw
@@ -60,7 +59,6 @@ define void @test_i8() {
 ; CHECK:         .cfi_startproc
 ; CHECK-NEXT:  # %bb.0: # %entry
 ; CHECK-NEXT:    entry a1, 32
-; CHECK-NEXT:    mov.n a8, a1
 ; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    l32r a8, .LCPI1_0
 ; CHECK-NEXT:    memw
@@ -80,7 +78,6 @@ define void @test_i16() {
 ; CHECK:         .cfi_startproc
 ; CHECK-NEXT:  # %bb.0: # %entry
 ; CHECK-NEXT:    entry a1, 32
-; CHECK-NEXT:    mov.n a8, a1
 ; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    l32r a8, .LCPI2_0
 ; CHECK-NEXT:    memw
@@ -100,7 +97,6 @@ define void @test_i32() {
 ; CHECK:         .cfi_startproc
 ; CHECK-NEXT:  # %bb.0: # %entry
 ; CHECK-NEXT:    entry a1, 32
-; CHECK-NEXT:    mov.n a8, a1
 ; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    l32r a8, .LCPI3_0
 ; CHECK-NEXT:    memw
@@ -120,7 +116,6 @@ define void @test_i64() {
 ; CHECK:         .cfi_startproc
 ; CHECK-NEXT:  # %bb.0: # %entry
 ; CHECK-NEXT:    entry a1, 32
-; CHECK-NEXT:    mov.n a8, a1
 ; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    l32r a8, .LCPI4_0
 ; CHECK-NEXT:    memw
@@ -144,7 +139,6 @@ define void @test_float() {
 ; CHECK:         .cfi_startproc
 ; CHECK-NEXT:  # %bb.0: # %entry
 ; CHECK-NEXT:    entry a1, 32
-; CHECK-NEXT:    mov.n a8, a1
 ; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    l32r a8, .LCPI5_0
 ; CHECK-NEXT:    memw
@@ -164,7 +158,6 @@ define void @test_double() {
 ; CHECK:         .cfi_startproc
 ; CHECK-NEXT:  # %bb.0: # %entry
 ; CHECK-NEXT:    entry a1, 32
-; CHECK-NEXT:    mov.n a8, a1
 ; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    l32r a8, .LCPI6_0
 ; CHECK-NEXT:    memw
@@ -188,7 +181,6 @@ define void @test_vec() {
 ; CHECK:         .cfi_startproc
 ; CHECK-NEXT:  # %bb.0: # %entry
 ; CHECK-NEXT:    entry a1, 32
-; CHECK-NEXT:    mov.n a8, a1
 ; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    l32r a8, .LCPI7_0
 ; CHECK-NEXT:    memw
