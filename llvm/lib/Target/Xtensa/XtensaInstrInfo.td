@@ -1094,9 +1094,10 @@ def FLOOR_S : RRR_Inst<0x00, 0x0A, 0x0A, (outs AR:$r), (ins FPR:$s, uimm4:$imm),
   let t = imm;
 }
 
-def MADDN_S : RRR_Inst<0x00, 0x0A, 0x06, (outs FPR:$r), (ins FPR:$s, FPR:$t),
+def MADDN_S : RRR_Inst<0x00, 0x0A, 0x06, (outs FPR:$r), (ins FPR:$a, FPR:$s, FPR:$t),
                       "maddn.s\t$r, $s, $t", []>, Requires<[HasSingleFloat]> {
   let isCommutable = 0;
+  let Constraints = "$r = $a";
 }
 
 // FP multipy-add
@@ -1156,6 +1157,10 @@ def MSUB_S : RRR_Inst<0x00, 0x0A, 0x05, (outs FPR:$r), (ins FPR:$a, FPR:$s, FPR:
   let isReMaterializable = 0;
   let Constraints = "$r = $a";
 }
+
+// fmsub: -r1 * r2 + r3
+def : Pat<(fma (fneg FPR:$r1), FPR:$r2, FPR:$r3),
+          (MSUB_S $r3, $r1, $r2)>;
 
 def NEXP01_S : RRR_Inst<0x00, 0x0A, 0x0F, (outs FPR:$r), (ins FPR:$s),
                        "nexp01.s\t$r, $s", []>, Requires<[HasSingleFloat]> {

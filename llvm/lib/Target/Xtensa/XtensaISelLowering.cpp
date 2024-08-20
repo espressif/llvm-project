@@ -348,6 +348,20 @@ MVT XtensaTargetLowering::getRegisterTypeForCallingConv(LLVMContext &Context,
   return TargetLowering::getRegisterTypeForCallingConv(Context, CC, VT);
 }
 
+bool XtensaTargetLowering::isFNegFree(EVT VT) const {
+  if (!VT.isSimple())
+    return false;
+
+  switch (VT.getSimpleVT().SimpleTy) {
+    case MVT::f32:
+      return Subtarget.hasSingleFloat();
+    default:
+      break;
+  }
+
+  return false;
+}
+
 bool XtensaTargetLowering::isFMAFasterThanFMulAndFAdd(const MachineFunction &MF,
                                                       EVT VT) const {
   if (!VT.isSimple())
@@ -489,35 +503,36 @@ static SDValue performMADD_MSUBCombine(SDNode *ROOTNode, SelectionDAG &CurDAG,
   SDValue LHS = ROOTNode->getOperand(0);
   SDValue RHS = ROOTNode->getOperand(1);
 
-  if (LHS.getValueType() != MVT::f32)
+  if (LHS.getValueType() != MVT::f32 || (LHS.getOpcode() != ISD::FMUL && RHS.getOpcode() != ISD::FMUL))
     return SDValue();
 
+  SDLoc DL(ROOTNode);
   bool IsAdd = ROOTNode->getOpcode() == ISD::FADD;
 
-  SDValue Mult = LHS, AddOperand = RHS;
-  bool NegRes = !IsAdd;
+  SDValue Mult, AddOperand;
+  bool Inverted;
 
-  if (LHS.getOpcode() != ISD::FMUL && RHS.getOpcode() != ISD::FMUL)
-    return SDValue();
-  else if (RHS.getOpcode() == ISD::FMUL) {
-    Mult = RHS;
-    AddOperand = LHS;
-    NegRes = false;
-  }
+  if (LHS.getOpcode() == ISD::FMUL)
+    Mult = LHS, AddOperand = RHS, Inverted = false;
+  else
+    Mult = RHS, AddOperand = LHS, Inverted = true;
 
   if (!Mult.hasOneUse())
     return SDValue();
 
-  SDLoc DL(ROOTNode);
+  SDValue MultOperand0 = Mult->getOperand(0), MultOperand1 = Mult->getOperand(1);
 
-  unsigned Opcode = IsAdd ? XtensaISD::MADD : XtensaISD::MSUB;
-  SDValue MAddOps[3] = {AddOperand, Mult->getOperand(0), Mult->getOperand(1)};
+  if (!IsAdd) {
+    if (Inverted)
+      MultOperand0 = CurDAG.getNode(ISD::FNEG, DL, MVT::f32, MultOperand0);
+    else
+      AddOperand = CurDAG.getNode(ISD::FNEG, DL, MVT::f32, AddOperand);
+  }
+
+  SDValue FMAOps[3] = {MultOperand0, MultOperand1, AddOperand};
   EVT VTs[3] = {MVT::f32, MVT::f32, MVT::f32};
-  SDValue MAdd = CurDAG.getNode(Opcode, DL, VTs, MAddOps);
 
-  if (NegRes)
-    return CurDAG.getNode(ISD::FNEG, DL, MVT::f32, MAdd);
-  return MAdd;
+  return CurDAG.getNode(ISD::FMA, DL, VTs, FMAOps);
 }
 
 static SDValue performSUBCombine(SDNode *N, SelectionDAG &DAG,
