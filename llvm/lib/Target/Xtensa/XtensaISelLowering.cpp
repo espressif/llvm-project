@@ -274,6 +274,9 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
 
     setTargetDAGCombine(ISD::FADD);
     setTargetDAGCombine(ISD::FSUB);
+  }
+
+  if (Subtarget.hasSingleFloat() || Subtarget.hasLoop()) {
     setTargetDAGCombine(ISD::BRCOND);
   }
 
