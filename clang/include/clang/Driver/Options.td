@@ -6656,6 +6656,7 @@ def mfix_esp32_psram_cache_strategy_EQ : Joined<["-"], "mfix-esp32-psram-cache-s
     HelpText<" Psram cache fix strategies : memw, nops">,
     Values<"memw, nops">;
 def mlongcalls : Flag<["-"], "mlongcalls">, Group<m_xtensa_Features_Group>;
+def mtext_section_literals : Flag<["-"], "mtext-section-literals">, Group<m_xtensa_Features_Group>;
 
 // These are legacy user-facing driver-level option spellings. They are always
 // aliases for options that are spelled using the more common Unix / GNU flag
