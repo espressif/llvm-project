@@ -52,7 +52,7 @@ def SUBX4 : SUBX<0x0E, "subx4", [(set AR:$r, (sub (shl AR:$s, (i32 2)), AR:$t))]
 def SUBX8 : SUBX<0x0F, "subx8", [(set AR:$r, (sub (shl AR:$s, (i32 3)), AR:$t))]>;
 
 def ABS : RRR_Inst<0x00, 0x00, 0x06, (outs AR:$r), (ins AR:$t),
-                  "abs\t$r, $t", []> {
+                  "abs\t$r, $t", [(set AR:$r, (abs AR:$t))]> {
   let s = 0x1;
 }
 

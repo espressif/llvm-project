@@ -163,6 +163,23 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
   setOperationAction(ISD::SDIVREM, MVT::i32, Expand);
   setOperationAction(ISD::UDIVREM, MVT::i32, Expand);
 
+  setOperationAction(ISD::SDIV, MVT::i64, Expand);
+  setOperationAction(ISD::UDIV, MVT::i64, Expand);
+  setOperationAction(ISD::SREM, MVT::i64, Expand);
+  setOperationAction(ISD::UREM, MVT::i64, Expand);
+
+  // Xtensa doesn't support  [ADD,SUB][E,C]
+  setOperationAction(ISD::ADDC, MVT::i32, Expand);
+  setOperationAction(ISD::ADDE, MVT::i32, Expand);
+  setOperationAction(ISD::SUBC, MVT::i32, Expand);
+  setOperationAction(ISD::SUBE, MVT::i32, Expand);
+
+  setOperationAction(ISD::ABS, MVT::i32, Legal);
+
+  setOperationAction(ISD::ADD, MVT::i64, Expand);
+  setOperationAction(ISD::SUB, MVT::i64, Expand);
+
+  // Xtensa doesn't support s[hl,rl,ra]_parts
   setOperationAction(ISD::SHL_PARTS, MVT::i32, Custom);
   setOperationAction(ISD::SRA_PARTS, MVT::i32, Custom);
   setOperationAction(ISD::SRL_PARTS, MVT::i32, Custom);
