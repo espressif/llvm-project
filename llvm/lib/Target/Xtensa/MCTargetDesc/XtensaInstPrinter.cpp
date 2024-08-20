@@ -27,15 +27,6 @@ using namespace llvm;
 
 #include "XtensaGenAsmWriter.inc"
 
-void XtensaInstPrinter::printAddress(unsigned Base, int64_t Disp,
-                                     raw_ostream &O) {
-  O << Disp;
-  if (Base) {
-    O << '(';
-    O << getRegisterName(Base) << ')';
-  }
-}
-
 static void printExpr(const MCExpr *Expr, raw_ostream &OS) {
   int Offset = 0;
   const MCSymbolRefExpr *SRE;

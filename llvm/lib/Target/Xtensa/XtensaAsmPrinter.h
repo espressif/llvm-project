@@ -50,8 +50,6 @@ public:
   bool PrintAsmMemoryOperand(const MachineInstr *MI, unsigned OpNo,
                              const char *ExtraCode, raw_ostream &OS) override;
 
-  void printMemOperand(const MachineInstr *MI, int opNum, raw_ostream &OS);
-
   MCSymbol *GetConstantPoolIndexSymbol(const MachineOperand &MO) const;
 
   MCSymbol *GetJumpTableSymbol(const MachineOperand &MO) const;

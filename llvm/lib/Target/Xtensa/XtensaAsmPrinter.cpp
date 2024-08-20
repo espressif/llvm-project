@@ -199,18 +199,23 @@ bool XtensaAsmPrinter::PrintAsmMemoryOperand(const MachineInstr *MI,
                                              unsigned OpNo,
                                              const char *ExtraCode,
                                              raw_ostream &OS) {
-  XtensaInstPrinter::printAddress(MI->getOperand(OpNo).getReg(),
-                                  MI->getOperand(OpNo + 1).getImm(), OS);
-  return false;
-}
+  if (ExtraCode && ExtraCode[0])
+    return true; // Unknown modifier.
 
-void XtensaAsmPrinter::printMemOperand(const MachineInstr *MI, int opNum,
-                                       raw_ostream &OS) {
-  OS << '%'
-     << XtensaInstPrinter::getRegisterName(MI->getOperand(opNum).getReg());
-  OS << "(";
-  OS << MI->getOperand(opNum + 1).getImm();
-  OS << ")";
+  assert(OpNo + 1 < MI->getNumOperands() && "Insufficient operands");
+
+  const MachineOperand &Base = MI->getOperand(OpNo);
+  const MachineOperand &Offset = MI->getOperand(OpNo + 1);
+
+  assert(Base.isReg() &&
+         "Unexpected base pointer for inline asm memory operand.");
+  assert(Offset.isImm() && "Unexpected offset for inline asm memory operand.");
+
+  OS << XtensaInstPrinter::getRegisterName(Base.getReg());
+  OS << ", ";
+  OS << Offset.getImm();
+
+  return false;
 }
 
 MCSymbol *
