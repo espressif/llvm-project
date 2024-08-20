@@ -57,6 +57,9 @@ private:
   // Enable Xtensa NSA option
   bool HasNSA;
 
+  // Enable Xtensa Mul16 option
+  bool HasMul16;
+
   // Enable Xtensa Mul32 option
   bool HasMul32;
 
@@ -161,6 +164,8 @@ public:
   bool hasSEXT() const { return HasSEXT; }
 
   bool hasNSA() const { return HasNSA; }
+
+  bool hasMul16() const { return HasMul16; }
 
   bool hasMul32() const { return HasMul32; }
 
