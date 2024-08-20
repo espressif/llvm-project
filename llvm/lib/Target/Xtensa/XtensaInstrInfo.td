@@ -1338,6 +1338,15 @@ def NSAU : RRR_Inst<0x00, 0x00, 0x04, (outs AR:$t), (ins AR:$s),
 }
 
 //===----------------------------------------------------------------------===//
+// MINMAX Instructions
+//===----------------------------------------------------------------------===//
+
+def MIN   : ArithLogic_RRR<0x04, 0x03, "min", smin, 1>, Requires<[HasMINMAX]>;
+def MAX   : ArithLogic_RRR<0x05, 0x03, "max", smax, 1>, Requires<[HasMINMAX]>;
+def MINU  : ArithLogic_RRR<0x06, 0x03, "minu", umin, 1>, Requires<[HasMINMAX]>;
+def MAXU  : ArithLogic_RRR<0x07, 0x03, "maxu", umax, 1>, Requires<[HasMINMAX]>;
+
+//===----------------------------------------------------------------------===//
 // Mul16 Instructions
 //===----------------------------------------------------------------------===//
 

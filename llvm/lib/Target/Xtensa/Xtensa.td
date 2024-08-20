@@ -52,6 +52,11 @@ def FeatureNSA              : SubtargetFeature<"nsa", "HasNSA", "true",
 def HasNSA                  : Predicate<"Subtarget->hasNSA()">,
                                          AssemblerPredicate<(all_of FeatureNSA)>;
 
+def FeatureMINMAX           : SubtargetFeature<"minmax", "HasMINMAX", "true",
+                                               "Enable Xtensa MINMAX option">;
+def HasMINMAX               : Predicate<"Subtarget->hasMINMAX()">,
+                                         AssemblerPredicate<(all_of FeatureMINMAX)>;
+
 def FeatureMul16            : SubtargetFeature<"mul16", "HasMul16", "true",
                                                "Enable Xtensa Mul16 option">;
 def HasMul16                : Predicate<"Subtarget->hasMul16()">,
@@ -179,20 +184,22 @@ def : Proc<"generic", []>;
 def : Proc<"esp32", [FeatureDensity, FeatureSingleFloat, FeatureLoop, FeatureMAC16, FeatureWindowed, FeatureBoolean, FeatureSEXT,
                      FeatureNSA, FeatureMul16, FeatureMul32, FeatureMul32High, FeatureDFPAccel, FeatureS32C1I, FeatureTHREADPTR, FeatureDiv32,
                      FeatureATOMCTL, FeatureMEMCTL, FeatureDebug, FeatureException, FeatureHighPriInterrupts, FeatureCoprocessor,
-                     FeatureInterrupt, FeatureRelocatableVector, FeatureTimerInt, FeaturePRID, FeatureRegionProtection, FeatureMiscSR]>;
+                     FeatureInterrupt, FeatureRelocatableVector, FeatureTimerInt, FeaturePRID, FeatureRegionProtection, FeatureMiscSR,
+                     FeatureMINMAX]>;
 
 def : Proc<"esp8266", [FeatureDensity, FeatureNSA, FeatureMul16, FeatureMul32, FeatureExtendedL32R, FeatureDebug, FeatureException,
                        FeatureHighPriInterrupts, FeatureInterrupt, FeatureRelocatableVector, FeatureTimerInt, FeatureRegionProtection, FeaturePRID]>;
 
 def : Proc<"esp32s2", [FeatureDensity, FeatureWindowed, FeatureSEXT, FeatureNSA,  FeatureMul16, FeatureMul32, FeatureMul32High, FeatureTHREADPTR,
                        FeatureDiv32, FeatureMEMCTL, FeatureDebug, FeatureException, FeatureHighPriInterrupts, FeatureCoprocessor, FeatureInterrupt,
-                       FeatureRelocatableVector,	FeatureTimerInt, FeaturePRID, FeatureRegionProtection, FeatureMiscSR, FeatureESP32S2Ops]>;
+                       FeatureRelocatableVector,	FeatureTimerInt, FeaturePRID, FeatureRegionProtection, FeatureMiscSR, FeatureMINMAX,
+                       FeatureESP32S2Ops]>;
 
 def : Proc<"esp32s3", [FeatureDensity, FeatureSingleFloat, FeatureLoop, FeatureMAC16, FeatureWindowed, FeatureBoolean, FeatureSEXT,
                        FeatureNSA, FeatureMul16, FeatureMul32, FeatureMul32High, FeatureDFPAccel, FeatureS32C1I, FeatureTHREADPTR, FeatureDiv32,
                        FeatureATOMCTL, FeatureMEMCTL, FeatureDebug, FeatureException, FeatureHighPriInterrupts, FeatureCoprocessor,
                        FeatureInterrupt, FeatureRelocatableVector, FeatureTimerInt, FeaturePRID, FeatureRegionProtection, FeatureMiscSR,
-                       FeatureESP32S3Ops]>;
+                       FeatureMINMAX, FeatureESP32S3Ops]>;
 
 //===----------------------------------------------------------------------===//
 // Register File Description
