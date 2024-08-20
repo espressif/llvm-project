@@ -20,6 +20,8 @@
 #include "llvm/CodeGen/RegisterScavenging.h"
 #include "llvm/IR/Function.h"
 
+#define STACK_SIZE_THRESHOLD 100
+
 using namespace llvm;
 
 XtensaFrameLowering::XtensaFrameLowering(const XtensaSubtarget &STI)
@@ -352,7 +354,8 @@ void XtensaFrameLowering::processFunctionBeforeFrameFinalized(
 
   // In WinABI mode add register scavenging slot
   // FIXME: It may be posssible to add spill slot by more optimal way
-  if (STI.isWinABI() && (MF.getFrameInfo().estimateStackSize(MF) > 256)) {
+  if (STI.isWinABI() &&
+      (MF.getFrameInfo().estimateStackSize(MF) > STACK_SIZE_THRESHOLD)) {
     MachineFrameInfo &MFI = MF.getFrameInfo();
     const TargetRegisterClass &RC = Xtensa::ARRegClass;
     const TargetRegisterInfo &TRI = *MF.getSubtarget().getRegisterInfo();
