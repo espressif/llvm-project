@@ -41,9 +41,14 @@ src a3, a4, a5
 srl a6, a7
 
 # Instruction format RRR
-# CHECK-INST: srli a3, a4, 8
-# CHECK: encoding: [0x40,0x38,0x41]
-srli a3, a4, 8
+# CHECK-INST: extui a3, a4, 18, 14
+# CHECK: encoding: [0x40,0x32,0xd5]
+srli a3, a4, 18
+
+# Instruction format RRR
+# CHECK-INST: srli a3, a4, 14
+# CHECK: encoding: [0x40,0x3e,0x41]
+_srli a3, a4, 14
 
 # Instruction format RRR
 # CHECK-INST: ssa8l a14
