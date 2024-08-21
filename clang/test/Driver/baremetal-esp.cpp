@@ -253,6 +253,12 @@
 // RUN: %t/basic_riscv32_esp_tree/bin/clang %s -### 2>&1 --target=riscv32-esp-elf -march=rv32gc -mabi=ilp32f \
 // RUN:     --sysroot=%t/basic_riscv32_esp_tree/lib/clang-runtimes \
 // RUN:   | FileCheck --check-prefix=CHECK-ESP-RV32IMAFC %s
+// RUN: %t/basic_riscv32_esp_tree/bin/clang %s -### 2>&1 --target=riscv32-esp-elf -march=rv32imafc_zicsr_zifencei_xesppie -mabi=ilp32f \
+// RUN:     --sysroot=%t/basic_riscv32_esp_tree/lib/clang-runtimes \
+// RUN:   | FileCheck --check-prefix=CHECK-ESP-RV32IMAFC %s
+// RUN: %t/basic_riscv32_esp_tree/bin/clang %s -### 2>&1 --target=riscv32-esp-elf -march=rv32imafc_xesppie -mabi=ilp32f \
+// RUN:     --sysroot=%t/basic_riscv32_esp_tree/lib/clang-runtimes \
+// RUN:   | FileCheck --check-prefix=CHECK-ESP-RV32IMAFC %s
 // CHECK-ESP-RV32IMAFC:      "-cc1" "-triple" "riscv32-esp-unknown-elf"
 // CHECK-ESP-RV32IMAFC-SAME: "-resource-dir" "[[RESOURCE_DIR:[^"]+]]"
 // CHECK-ESP-RV32IMAFC-SAME: "-isysroot" "[[SYSROOT:[^"]*]]"
