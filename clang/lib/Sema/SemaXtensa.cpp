@@ -93,6 +93,14 @@ bool SemaXtensa::CheckXtensaBuiltinFunctionCall(const TargetInfo &TI,
     return SemaRef.BuiltinConstantArgRange(TheCall, 0, 0, 3) ||
            SemaRef.BuiltinConstantArgRange(TheCall, 2, 0, 1) ||
            SemaRef.BuiltinConstantArgRange(TheCall, 3, 2, 3);
+  case Xtensa::BI__builtin_xtensa_xt_trunc_s:
+  case Xtensa::BI__builtin_xtensa_xt_utrunc_s:
+  case Xtensa::BI__builtin_xtensa_xt_float_s:
+  case Xtensa::BI__builtin_xtensa_xt_ufloat_s:
+    i = 1;
+    l = 0;
+    u = 15;
+    break;
   case Xtensa::BI__builtin_xtensa_ee_andq:
   case Xtensa::BI__builtin_xtensa_ee_cmul_s16:
   case Xtensa::BI__builtin_xtensa_ee_fft_cmul_s16_st_xp:
