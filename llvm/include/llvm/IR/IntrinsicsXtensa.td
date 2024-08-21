@@ -249,6 +249,15 @@ def int_xtensa_xsr_m3: ClangBuiltin<"__builtin_xtensa_xsr_m3">,
   Intrinsic<[], [llvm_ptr_ty], []>;
 
 
+//===----------------------------------------------------------------------===//
+// Float operations
+
+def int_xtensa_xt_movt_s: ClangBuiltin<"__builtin_xtensa_xt_movt_s">,
+  Intrinsic<[llvm_float_ty], [llvm_float_ty, llvm_float_ty, llvm_v1i1_ty], [IntrNoMem]>;
+
+def int_xtensa_xt_movf_s: ClangBuiltin<"__builtin_xtensa_xt_movf_s">,
+  Intrinsic<[llvm_float_ty], [llvm_float_ty, llvm_float_ty, llvm_v1i1_ty], [IntrNoMem]>;
+
 // Generated code
 // ---------------
 include "llvm/IR/IntrinsicsXtensaESP32S3.td"
