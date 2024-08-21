@@ -33,6 +33,7 @@ add_llvm_target(XtensaCodeGen
   XtensaTargetMachine.cpp
   XtensaTargetObjectFile.cpp
   XtensaTargetTransformInfo.cpp
+  XtensaBRegFixupPass.cpp
 
   LINK_COMPONENTS
   AsmPrinter
