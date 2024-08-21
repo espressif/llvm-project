@@ -123,6 +123,10 @@ private:
                                SmallVectorImpl<MCFixup> &Fixups,
                                const MCSubtargetInfo &STI) const;
 
+  uint32_t getOffset8m32OpValue(const MCInst &MI, unsigned OpNo,
+                                SmallVectorImpl<MCFixup> &Fixups,
+                                const MCSubtargetInfo &STI) const;
+
   uint32_t getEntry_Imm12OpValue(const MCInst &MI, unsigned OpNo,
                                  SmallVectorImpl<MCFixup> &Fixups,
                                  const MCSubtargetInfo &STI) const;
@@ -516,6 +520,18 @@ XtensaMCCodeEmitter::getImm64n_4nOpValue(const MCInst &MI, unsigned OpNo,
          "Unexpected operand value!");
 
   return Res & 0x3f;
+}
+
+uint32_t
+XtensaMCCodeEmitter::getOffset8m32OpValue(const MCInst &MI, unsigned OpNo,
+                                           SmallVectorImpl<MCFixup> &Fixups,
+                                           const MCSubtargetInfo &STI) const {
+  const MCOperand &MO = MI.getOperand(OpNo);
+  uint32_t Res = static_cast<uint32_t>(MO.getImm());
+
+  assert(((Res & 0x3) == 0) && "Unexpected operand value!");
+
+  return Res;
 }
 
 uint32_t
