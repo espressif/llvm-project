@@ -3424,9 +3424,11 @@ MachineBasicBlock *XtensaTargetLowering::EmitInstrWithCustomInserter(
   case Xtensa::LSIP:
   case Xtensa::LSX:
   case Xtensa::LSXP: {
-    const MachineMemOperand &MMO = **MI.memoperands_begin();
-    if (MMO.isVolatile()) {
-      BuildMI(*MBB, MI, DL, TII.get(Xtensa::MEMW));
+    if (MI.memoperands().size() > 0) {
+      const MachineMemOperand &MMO = **MI.memoperands_begin();
+      if (MMO.isVolatile()) {
+        BuildMI(*MBB, MI, DL, TII.get(Xtensa::MEMW));
+      }
     }
     return MBB;
   }
