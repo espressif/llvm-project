@@ -1819,45 +1819,28 @@ static void findRISCVBareMetalMultilibs(const Driver &D,
 
   std::vector<MultilibBuilder> Ms;
 
-  if (TargetTriple.getVendor() == llvm::Triple::Espressif)
-    Ms.emplace_back(MultilibBuilder());
-  if (TargetTriple.getVendor() == llvm::Triple::Espressif) {
-    Ms.emplace_back(MultilibBuilder());
-    Ms.emplace_back(MultilibBuilder("no-rtti")
-                    .flag("-fno-rtti")
-                    .flag("-frtti", /*Disallow=*/true));
+  for (auto Element : RISCVMultilibSet) {
+    // multilib path rule is ${march}/${mabi}
+    Ms.emplace_back(
+        MultilibBuilder(
+            (Twine(Element.march) + "/" + Twine(Element.mabi)).str())
+            .flag(Twine("-march=", Element.march).str())
+            .flag(Twine("-mabi=", Element.mabi).str()));
   }
 
-  for (auto Element : RISCVMultilibSet) {
-    if (TargetTriple.getVendor() == llvm::Triple::Espressif) {
-      // multilib path rule is ${march}/${mabi}
-      Ms.emplace_back(
-          MultilibBuilder(
-              (Twine(Element.march) + "/" + Twine(Element.mabi)).str())
-              .flag(Twine("-march=", Element.march).str())
-              .flag(Twine("-mabi=", Element.mabi).str()));
-      /* no-rtti version for every ${march}/${mabi} */
-      Ms.emplace_back(
-          MultilibBuilder(
-              (Twine(Element.march) + "/" + Twine(Element.mabi) + "/no-rtti").str())
-              .flag(Twine("-march=", Element.march).str())
-              .flag(Twine("-mabi=", Element.mabi).str())
-              .flag("-fno-rtti")
-              .flag("-frtti", /*Disallow=*/true));
-    } else {
-      // multilib path rule is ${march}/${mabi}
-      Ms.emplace_back(
-          MultilibBuilder(
-              (Twine(Element.march) + "/" + Twine(Element.mabi)).str())
-              .flag(Twine("-march=", Element.march).str())
-              .flag(Twine("-mabi=", Element.mabi).str()));
-    }
+  MultilibSet RISCVMultilibs;
+  if (TargetTriple.getVendor() == llvm::Triple::Espressif) {
+    MultilibBuilder NoRTTI = MultilibBuilder("/no-rtti").flag("-fno-rtti");
+    RISCVMultilibs = MultilibSetBuilder()
+                         .Either(Ms)
+                         .Maybe(NoRTTI)
+                         .makeMultilibSet()
+                         .FilterOut(NonExistent);
+  } else {
+    RISCVMultilibs =
+        MultilibSetBuilder().Either(Ms).makeMultilibSet().FilterOut(
+            NonExistent);
   }
-  MultilibSet RISCVMultilibs =
-      MultilibSetBuilder()
-          .Either(Ms)
-          .makeMultilibSet()
-          .FilterOut(NonExistent);
 
   if (TargetTriple.getVendor() == llvm::Triple::Espressif) {
     RISCVMultilibs.setFilePathsCallback([](const Multilib &M) {
@@ -1889,8 +1872,8 @@ static void findRISCVBareMetalMultilibs(const Driver &D,
 
   if (TargetTriple.getVendor() == llvm::Triple::Espressif) {
     addMultilibFlag(
-        Args.hasFlag(options::OPT_frtti, options::OPT_fno_rtti, true), "frtti",
-        Flags);
+        Args.hasFlag(options::OPT_fno_rtti, options::OPT_frtti, false),
+        "-fno-rtti", Flags);
   }
 
   if (TargetTriple.getVendor() == llvm::Triple::Espressif) {
@@ -1947,49 +1930,41 @@ static void findRISCVMultilibs(const Driver &D,
 }
 
 static void findXtensaMultilibs(const Driver &D,
-                               const llvm::Triple &TargetTriple, StringRef Path,
-                               const ArgList &Args, DetectedMultilibs &Result) {
+                                const llvm::Triple &TargetTriple,
+                                StringRef Path, const ArgList &Args,
+                                DetectedMultilibs &Result) {
+  FilterNonExistent NonExistent(Path, "/crtbegin.o", D.getVFS());
 
-  MultilibSet XtensaMultilibs = MultilibSet();
   StringRef cpu = Args.getLastArgValue(options::OPT_mcpu_EQ, "esp32");
   bool IsESP32 = cpu == "esp32";
 
-  XtensaMultilibs.push_back(Multilib());
-  XtensaMultilibs.push_back(MultilibBuilder("no-rtti", {}, {})
-                          .flag("-fno-rtti")
-                          .flag("-frtti", /*Disallow=*/true)
-                          .makeMultilib());
+  Multilib::flags_list Flags;
 
-  if (IsESP32) {
-    XtensaMultilibs.push_back(MultilibBuilder("esp32-psram", {}, {})
-                            .flag("-mfix-esp32-psram-cache-issue")
-                            .makeMultilib());
+  addMultilibFlag(
+      Args.hasFlag(options::OPT_fno_rtti, options::OPT_frtti, false),
+      "-fno-rtti", Flags);
 
-    XtensaMultilibs.push_back(MultilibBuilder("esp32-psram/no-rtti", {}, {})
-                            .flag("-mfix-esp32-psram-cache-issue")
-                            .flag("-fno-rtti")
-                            .flag("-frtti", /*Disallow=*/true)
-                            .makeMultilib());
-  }
+  addMultilibFlag(
+      IsESP32 && Args.hasFlag(options::OPT_mfix_esp32_psram_cache_issue,
+                              options::OPT_mfix_esp32_psram_cache_issue, false),
+      "-mfix-esp32-psram-cache-issue", Flags);
+
+  MultilibBuilder NoRTTI = MultilibBuilder("/no-rtti").flag("-fno-rtti");
+  MultilibBuilder FixPSRAM =
+      MultilibBuilder("/esp32-psram").flag("-mfix-esp32-psram-cache-issue");
+
+  MultilibSet XtensaMultilibs = MultilibSetBuilder()
+                                    .Maybe(FixPSRAM)
+                                    .Maybe(NoRTTI)
+                                    .makeMultilibSet()
+                                    .FilterOut(NonExistent);
 
   std::string cpu_name = cpu.str();
-  XtensaMultilibs
-        .setFilePathsCallback([cpu_name](const Multilib &M) {
-          return std::vector<std::string>(
-              {M.gccSuffix(),
-                "/../../../../xtensa-" + cpu_name + "-elf/lib" + M.gccSuffix()});
-        });
-
-  Multilib::flags_list Flags;
-  addMultilibFlag(
-      Args.hasFlag(options::OPT_frtti, options::OPT_fno_rtti, true), "frtti",
-      Flags);
-
-  if (IsESP32)
-    addMultilibFlag(Args.hasFlag(options::OPT_mfix_esp32_psram_cache_issue,
-                                 options::OPT_mfix_esp32_psram_cache_issue,
-                                 false),
-                    "mfix-esp32-psram-cache-issue", Flags);
+  XtensaMultilibs.setFilePathsCallback([cpu_name](const Multilib &M) {
+    return std::vector<std::string>(
+        {M.gccSuffix(),
+         "/../../../../xtensa-" + cpu_name + "-elf/lib" + M.gccSuffix()});
+  });
 
   if (XtensaMultilibs.select(D, Flags, Result.SelectedMultilibs))
     Result.Multilibs = XtensaMultilibs;
