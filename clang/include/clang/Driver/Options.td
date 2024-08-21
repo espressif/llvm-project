@@ -6657,6 +6657,11 @@ def mfix_esp32_psram_cache_strategy_EQ : Joined<["-"], "mfix-esp32-psram-cache-s
     Values<"memw, nops">;
 def mlongcalls : Flag<["-"], "mlongcalls">, Group<m_xtensa_Features_Group>;
 def mtext_section_literals : Flag<["-"], "mtext-section-literals">, Group<m_xtensa_Features_Group>;
+def mfast_int_min32 : Flag<["-"], "mfast-int-min32">, Group<m_xtensa_Features_Group>,
+  Flags<[NoXarchOption]>,
+  Visibility<[ClangOption, CC1Option]>,
+  HelpText<"Set bit width of the _FAST_ int type to 32">,
+  MarshallingInfoFlag<LangOpts<"FastIntMin32">>;
 
 // These are legacy user-facing driver-level option spellings. They are always
 // aliases for options that are spelled using the more common Unix / GNU flag

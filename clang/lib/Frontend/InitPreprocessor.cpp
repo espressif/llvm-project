@@ -295,10 +295,13 @@ static void DefineLeastWidthIntType(const LangOptions &LangOpts,
 
 static void DefineFastIntType(const LangOptions &LangOpts, unsigned TypeWidth,
                               bool IsSigned, const TargetInfo &TI,
-                              MacroBuilder &Builder) {
+                              MacroBuilder &Builder, unsigned MinFastTypeWidth) {
+  if (MinFastTypeWidth < TypeWidth)
+    MinFastTypeWidth = TypeWidth;
   // stdint.h currently defines the fast int types as equivalent to the least
   // types.
-  TargetInfo::IntType Ty = TI.getLeastIntTypeByWidth(TypeWidth, IsSigned);
+  TargetInfo::IntType Ty =
+      TI.getLeastIntTypeByWidth(MinFastTypeWidth, IsSigned);
   if (Ty == TargetInfo::NoInt)
     return;
 
@@ -1320,14 +1323,17 @@ static void InitializePredefinedMacros(const TargetInfo &TI,
   DefineLeastWidthIntType(LangOpts, 64, true, TI, Builder);
   DefineLeastWidthIntType(LangOpts, 64, false, TI, Builder);
 
-  DefineFastIntType(LangOpts, 8, true, TI, Builder);
-  DefineFastIntType(LangOpts, 8, false, TI, Builder);
-  DefineFastIntType(LangOpts, 16, true, TI, Builder);
-  DefineFastIntType(LangOpts, 16, false, TI, Builder);
-  DefineFastIntType(LangOpts, 32, true, TI, Builder);
-  DefineFastIntType(LangOpts, 32, false, TI, Builder);
-  DefineFastIntType(LangOpts, 64, true, TI, Builder);
-  DefineFastIntType(LangOpts, 64, false, TI, Builder);
+  unsigned MinFastTypeWidth = 8;
+  if (LangOpts.FastIntMin32)
+    MinFastTypeWidth = 32;
+  DefineFastIntType(LangOpts, 8, true, TI, Builder, MinFastTypeWidth);
+  DefineFastIntType(LangOpts, 8, false, TI, Builder, MinFastTypeWidth);
+  DefineFastIntType(LangOpts, 16, true, TI, Builder, MinFastTypeWidth);
+  DefineFastIntType(LangOpts, 16, false, TI, Builder, MinFastTypeWidth);
+  DefineFastIntType(LangOpts, 32, true, TI, Builder, MinFastTypeWidth);
+  DefineFastIntType(LangOpts, 32, false, TI, Builder, MinFastTypeWidth);
+  DefineFastIntType(LangOpts, 64, true, TI, Builder, MinFastTypeWidth);
+  DefineFastIntType(LangOpts, 64, false, TI, Builder, MinFastTypeWidth);
 
   Builder.defineMacro("__USER_LABEL_PREFIX__", TI.getUserLabelPrefix());
 

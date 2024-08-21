@@ -2468,6 +2468,9 @@ void Clang::AddXtensaTargetArgs(const ArgList &Args,
     CmdArgs.push_back("-mllvm");
     CmdArgs.push_back("-mtext-section-literals");
   }
+
+  if (Args.getLastArg(options::OPT_mfast_int_min32))
+    CmdArgs.push_back("-mfast-int-min32");
 }
 
 void Clang::DumpCompilationDatabase(Compilation &C, StringRef Filename,
