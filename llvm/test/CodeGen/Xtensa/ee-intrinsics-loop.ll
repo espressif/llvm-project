@@ -69,7 +69,7 @@ for.body:                                         ; preds = %entry, %for.body
 ; CHECK-NEXT:	ee.stf.128.ip	 f11, f10, f9, f8, a8, 16
 ; CHECK-NEXT:	ee.stf.128.ip	 f8, f8, f8, f8, a8, 16
 ; CHECK-NEXT:	ee.stf.128.xp	 f8, f8, f8, f8, a9, a8
-; CHECK-NEXT:	movi.n	a10, 0
+; CHECK-NEXT:	movi.n	a10, 32
 ; CHECK-NEXT:	movi.n	a11, 10
 ; CHECK-NEXT: .LBB0_1:                                # %for.body
 ; CHECK-NEXT:                                       # =>This Inner Loop Header: Depth=1
@@ -79,8 +79,8 @@ for.body:                                         ; preds = %entry, %for.body
 ; CHECK-NEXT:  ee.vmulas.s16.accx.ld.xp.qup     q4, a8, a9, q0, q4, q2, q3
 ; CHECK-NEXT:  ee.ld.128.usar.xp        q4, a8, a9
 ; CHECK-NEXT:  ee.vmulas.s16.accx.ld.ip.qup     q3, a8, 16, q0, q3, q4, q2
-; CHECK-NEXT:  addi.n  a10, a10, 1
-; CHECK-NEXT:  bnei    a10, 32, .LBB0_1
+; CHECK-NEXT:  addi.n  a10, a10, -1
+; CHECK-NEXT:  bnez    a10, .LBB0_1
 ; CHECK-NEXT: # %bb.2:                                # %for.cond.cleanup
 ; CHECK-NEXT:  movi.n  a8, 0
 ; CHECK-NEXT:  wur.sar_byte     a8

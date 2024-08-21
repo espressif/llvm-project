@@ -3019,7 +3019,7 @@
 // XTENSA: #define __SIZEOF_PTRDIFF_T__ 4
 // XTENSA: #define __SIZEOF_SHORT__ 2
 // XTENSA: #define __SIZEOF_SIZE_T__ 4
-// XTENSA: #define __SIZEOF_WCHAR_T__ 1
+// XTENSA: #define __SIZEOF_WCHAR_T__ 4
 // XTENSA: #define __SIZEOF_WINT_T__ 4
 // XTENSA: #define __SIZE_FMTX__ "X"
 // XTENSA: #define __SIZE_FMTo__ "o"
@@ -3124,10 +3124,9 @@
 // XTENSA: #define __UINT_LEAST8_FMTx__ "hhx"
 // XTENSA: #define __UINT_LEAST8_MAX__ 255
 // XTENSA: #define __UINT_LEAST8_TYPE__ unsigned char
-// XTENSA: #define __WCHAR_MAX__ 255
-// XTENSA: #define __WCHAR_TYPE__ unsigned char
-// XTENSA: #define __WCHAR_UNSIGNED__ 1
-// XTENSA: #define __WCHAR_WIDTH__ 8
+// XTENSA: #define __WCHAR_MAX__ 2147483647
+// XTENSA: #define __WCHAR_TYPE__ int
+// XTENSA: #define __WCHAR_WIDTH__ 32
 // XTENSA: #define __WINT_MAX__ 4294967295U
 // XTENSA: #define __WINT_TYPE__ unsigned int
 // XTENSA: #define __WINT_UNSIGNED__ 1
@@ -3322,7 +3321,7 @@
 // XTENSA_FAST32: #define __SIZEOF_PTRDIFF_T__ 4
 // XTENSA_FAST32: #define __SIZEOF_SHORT__ 2
 // XTENSA_FAST32: #define __SIZEOF_SIZE_T__ 4
-// XTENSA_FAST32: #define __SIZEOF_WCHAR_T__ 1
+// XTENSA_FAST32: #define __SIZEOF_WCHAR_T__ 4
 // XTENSA_FAST32: #define __SIZEOF_WINT_T__ 4
 // XTENSA_FAST32: #define __SIZE_FMTX__ "X"
 // XTENSA_FAST32: #define __SIZE_FMTo__ "o"
@@ -3427,10 +3426,9 @@
 // XTENSA_FAST32: #define __UINT_LEAST8_FMTx__ "hhx"
 // XTENSA_FAST32: #define __UINT_LEAST8_MAX__ 255
 // XTENSA_FAST32: #define __UINT_LEAST8_TYPE__ unsigned char
-// XTENSA_FAST32: #define __WCHAR_MAX__ 255
-// XTENSA_FAST32: #define __WCHAR_TYPE__ unsigned char
-// XTENSA_FAST32: #define __WCHAR_UNSIGNED__ 1
-// XTENSA_FAST32: #define __WCHAR_WIDTH__ 8
+// XTENSA_FAST32: #define __WCHAR_MAX__ 2147483647
+// XTENSA_FAST32: #define __WCHAR_TYPE__ int
+// XTENSA_FAST32: #define __WCHAR_WIDTH__ 32
 // XTENSA_FAST32: #define __WINT_MAX__ 4294967295U
 // XTENSA_FAST32: #define __WINT_TYPE__ unsigned int
 // XTENSA_FAST32: #define __WINT_UNSIGNED__ 1
