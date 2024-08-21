@@ -124,6 +124,12 @@ BUILTIN(__builtin_xtensa_wsr_m3, "vUi", "n")
 BUILTIN(__builtin_xtensa_rsr_m3, "Ui", "n")
 BUILTIN(__builtin_xtensa_xsr_m3, "vUi*", "n")
 
+// Float intrinsics
+
+// float __builtin_xtensa_xt_movt_s(float frr, float frs, xtbool bt)
+BUILTIN(__builtin_xtensa_xt_movt_s, "fffE1b", "n")
+BUILTIN(__builtin_xtensa_xt_movf_s, "fffE1b", "n")
+
 // generated code
 #include "clang/Basic/BuiltinsXtensaESP32S3.def"
 
