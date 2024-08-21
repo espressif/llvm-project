@@ -75,6 +75,9 @@ public:
   void loadImmediate(MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI,
                      unsigned *Reg, int64_t Value) const;
 
+  MachineInstrBuilder buildLoadImmediate(MachineBasicBlock &MBB,
+                                         MachineBasicBlock::iterator MBBI,
+                                         unsigned Reg, int64_t Value) const;
 
   unsigned InsertBranchAtInst(MachineBasicBlock &MBB,
                               MachineBasicBlock::iterator I,
