@@ -45,7 +45,7 @@ public:
     SizeType = UnsignedInt;
     PtrDiffType = SignedInt;
     IntPtrType = SignedInt;
-    WCharType = UnsignedChar;
+    WCharType = SignedInt;
     WIntType = UnsignedInt;
     UseZeroLengthBitfieldAlignment = true;
     MaxAtomicPromoteWidth = MaxAtomicInlineWidth = 32;
