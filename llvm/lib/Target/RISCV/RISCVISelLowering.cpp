@@ -120,12 +120,6 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
   // Set up the register classes.
   addRegisterClass(XLenVT, &RISCV::GPRRegClass);
 
-  if (Subtarget.hasVendorESP32P4()) {
-    static const MVT::SimpleValueType QRVec[] = {MVT::v16i8, MVT::v4i32};
-    for (auto st : QRVec)
-      addRegisterClass(st, &RISCV::QRRegClass);
-  }
-
   if (Subtarget.is64Bit() && RV64LegalI32)
     addRegisterClass(MVT::i32, &RISCV::GPRRegClass);
 
