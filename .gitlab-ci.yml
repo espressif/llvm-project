@@ -395,16 +395,9 @@ sign_aarch64-apple-darwin:
     - pack_aarch64-apple-darwin
 
 .prepare_test_app_build: &prepare_test_app_build |
-  if  [ -z "${TEST_APP_IDF_CUSTOM_BRANCH:-}" ]; then
-    # Use the same idf branch name if exists
-    git ls-remote https://gitlab-ci-token:${BOT_TOKEN}@${CI_SERVER_HOST}:${CI_SERVER_PORT}/espressif/esp-idf.git | grep "refs/heads/$CI_COMMIT_REF_NAME"
-    test $? -eq 0 && echo "Use IDF branch \"$CI_COMMIT_REF_NAME\"" && TEST_APP_IDF_CUSTOM_BRANCH=$CI_COMMIT_REF_NAME
-  fi
-
   # Use custom idf in case custom branch is present
   if [ -n "${TEST_APP_IDF_CUSTOM_BRANCH:-}" ]; then
     echo "TEST_APP_IDF_CUSTOM_BRANCH=$TEST_APP_IDF_CUSTOM_BRANCH"
-    #pushd $BUILD_TEST_APP_DIR
     # Clone esp-idf
     git clone --shallow-submodules --recursive --single-branch --branch $TEST_APP_IDF_CUSTOM_BRANCH -- https://gitlab-ci-token:${BOT_TOKEN}@${CI_SERVER_HOST}:${CI_SERVER_PORT}/espressif/esp-idf.git esp-idf
     export IDF_PATH=$PWD/esp-idf
@@ -417,7 +410,6 @@ sign_aarch64-apple-darwin:
     # in the image and `export.sh` fails w/o adding tools to $PATH
     idf_exports=$(${IDF_PATH}/tools/idf_tools.py export) || true
     eval "${idf_exports}"
-    #popd
   fi
   idf.py --version || true
   pushd $IDF_PATH/components
@@ -439,7 +431,8 @@ test_esp_dsp:
   needs:
     - job: "pack_x86_64-linux-gnu"
   variables:
-    TEST_APP_IDF_CUSTOM_BRANCH: "master"
+    # use IDF 'master' from docker image
+    TEST_APP_IDF_CUSTOM_BRANCH: ""
     TEST_APP_ESP_DSP_CUSTOM_BRANCH: "master"
     CONF_HOST: "x86_64-linux-gnu"
     UNPACK_TOOL: "tar xJf"
