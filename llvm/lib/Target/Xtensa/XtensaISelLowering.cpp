@@ -185,8 +185,6 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
   for (unsigned I = MVT::FIRST_FP_VALUETYPE; I <= MVT::LAST_FP_VALUETYPE; ++I) {
     MVT VT = MVT::SimpleValueType(I);
     if (isTypeLegal(VT)) {
-      // We can use FI for FRINT.
-      // setOperationAction(ISD::FRINT, VT, Legal);
       if (VT.getSizeInBits() == 32 && Subtarget.hasSingleFloat()) {
         setOperationAction(ISD::FABS, VT, Legal);
         setOperationAction(ISD::FADD, VT, Legal);
@@ -203,14 +201,10 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
         setOperationAction(ISD::FSUB, VT, Expand);
       }
 
-      // TODO: once implemented in InstrInfo uncomment
-      setOperationAction(ISD::FSQRT, VT, Expand);
-
       // No special instructions for these.
       setOperationAction(ISD::FCBRT, VT, Expand);
       setOperationAction(ISD::FCEIL, VT, Expand);
       setOperationAction(ISD::FCOPYSIGN, VT, Expand);
-      setOperationAction(ISD::FSIN, VT, Expand);
       setOperationAction(ISD::FCOS, VT, Expand);
       setOperationAction(ISD::FDIV, VT, Expand);
       setOperationAction(ISD::FEXP, VT, Expand);
