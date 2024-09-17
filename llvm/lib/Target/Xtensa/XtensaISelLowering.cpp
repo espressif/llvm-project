@@ -1204,7 +1204,7 @@ SDValue XtensaTargetLowering::LowerSELECT_CC(SDValue Op,
   SDValue TargetCC_FP = DAG.getConstant(CC, DL, MVT::i32);
 
   if (LHS.getValueType() == MVT::f32 || TrueValue.getValueType() == MVT::f32)
-     return DAG.getNode(XtensaISD::SELECT_CC_FP, DL, TrueValue.getValueType(),
+    return DAG.getNode(XtensaISD::SELECT_CC_FP, DL, TrueValue.getValueType(),
                        LHS, RHS, TrueValue, FalseValue,
                        (LHS.getValueType() == MVT::f32) ? TargetCC_FP
                                                         : TargetCC);
@@ -1214,7 +1214,6 @@ SDValue XtensaTargetLowering::LowerSELECT_CC(SDValue Op,
 
 SDValue XtensaTargetLowering::LowerSETCC(SDValue Op, SelectionDAG &DAG) const {
   SDLoc DL(Op);
-  EVT Ty = Op.getOperand(0).getValueType();
   SDValue LHS = Op.getOperand(0);
   SDValue RHS = Op.getOperand(1);
   ISD::CondCode CC = cast<CondCodeSDNode>(Op.getOperand(2))->get();
