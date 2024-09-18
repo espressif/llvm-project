@@ -186,10 +186,10 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
                         "argument, it must be in range [0,7]");
     MachineOperand &SEL2 = MI.getOperand(7);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QZVal)
-        .addReg(Xtensa::Q0 + QZ1Val)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QZVal, RegState::Define)
+        .addReg(Xtensa::Q0 + QZ1Val, RegState::Define)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal)
@@ -230,10 +230,10 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
                         "argument, it must be in range [0,7]");
     MachineOperand &SEL2 = MI.getOperand(7);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QZVal)
-        .addReg(Xtensa::Q0 + QZ1Val)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QZVal, RegState::Define)
+        .addReg(Xtensa::Q0 + QZ1Val, RegState::Define)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal)
@@ -274,10 +274,10 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
                         "argument, it must be in range [0,7]");
     MachineOperand &SEL2 = MI.getOperand(7);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QZVal)
-        .addReg(Xtensa::Q0 + QZ1Val)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QZVal, RegState::Define)
+        .addReg(Xtensa::Q0 + QZ1Val, RegState::Define)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal)
@@ -316,9 +316,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
                         "argument, it must be in range [0,7]");
     MachineOperand &SEL2 = MI.getOperand(7);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QZ1Val)
-        .addReg(R1, RegState::Undef)
-        .addReg(R2, RegState::Undef)
+        .addReg(Xtensa::Q0 + QZ1Val, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(R2, RegState::Define)
         .addReg(Xtensa::Q0 + QVVal)
         .addReg(AS0.getReg())
         .addReg(AS.getReg())
@@ -354,9 +354,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
                         "argument, it must be in range [0,7]");
     MachineOperand &SEL8 = MI.getOperand(6);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QZVal)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QZVal, RegState::Define)
         .addReg(AS.getReg())
         .addReg(AD.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -388,7 +388,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     MachineOperand &UPD4 = MI.getOperand(6);
     MachineOperand &SAR4 = MI.getOperand(7);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal)
         .addReg(Xtensa::Q0 + QVVal)
@@ -421,8 +421,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
                         "it must be in range [0,7]");
     MachineOperand &SEL2 = MI.getOperand(4);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QA0Val)
-        .addReg(Xtensa::Q0 + QA1Val)
+        .addReg(Xtensa::Q0 + QA0Val, RegState::Define)
+        .addReg(Xtensa::Q0 + QA1Val, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal)
         .addImm(SEL2.getImm());
@@ -449,8 +449,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &SAR4 = MI.getOperand(4);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QA0Val)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QA0Val, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal)
         .addReg(AS.getReg())
@@ -470,7 +470,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &SAR2 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(Xtensa::Q0 + QVVal)
         .addReg(AS.getReg())
         .addImm(SAR2.getImm());
@@ -480,20 +480,21 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
   }
   case Xtensa::EE_LDF_128_IP_P: {
     unsigned Opc = Xtensa::EE_LDF_128_IP;
-    MachineOperand &FU3 = MI.getOperand(0);
-    MachineOperand &FU2 = MI.getOperand(1);
-    MachineOperand &FU1 = MI.getOperand(2);
-    MachineOperand &FU0 = MI.getOperand(3);
-    MachineOperand &AS = MI.getOperand(4);
     const TargetRegisterClass *RC = getRegClassFor(MVT::i32);
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    const TargetRegisterClass *RCFR = &Xtensa::FPRRegClass;
+    unsigned R1 = MRI.createVirtualRegister(RCFR);
+    unsigned R2 = MRI.createVirtualRegister(RCFR);
+    unsigned R3 = MRI.createVirtualRegister(RCFR);
+    unsigned R4 = MRI.createVirtualRegister(RCFR);
+    MachineOperand &AS = MI.getOperand(4);
+    unsigned R5 = MRI.createVirtualRegister(RC);
     MachineOperand &IMM16F = MI.getOperand(5);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(FU3.getReg())
-        .addReg(FU2.getReg())
-        .addReg(FU1.getReg())
-        .addReg(FU0.getReg())
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
+        .addReg(R2, RegState::Define)
+        .addReg(R3, RegState::Define)
+        .addReg(R4, RegState::Define)
+        .addReg(R5, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM16F.getImm());
 
@@ -502,20 +503,21 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
   }
   case Xtensa::EE_LDF_128_XP_P: {
     unsigned Opc = Xtensa::EE_LDF_128_XP;
-    MachineOperand &FU3 = MI.getOperand(0);
-    MachineOperand &FU2 = MI.getOperand(1);
-    MachineOperand &FU1 = MI.getOperand(2);
-    MachineOperand &FU0 = MI.getOperand(3);
-    MachineOperand &AS = MI.getOperand(4);
     const TargetRegisterClass *RC = getRegClassFor(MVT::i32);
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    const TargetRegisterClass *RCFR = &Xtensa::FPRRegClass;
+    unsigned R1 = MRI.createVirtualRegister(RCFR);
+    unsigned R2 = MRI.createVirtualRegister(RCFR);
+    unsigned R3 = MRI.createVirtualRegister(RCFR);
+    unsigned R4 = MRI.createVirtualRegister(RCFR);
+    MachineOperand &AS = MI.getOperand(4);
+    unsigned R5 = MRI.createVirtualRegister(RC);
     MachineOperand &AD = MI.getOperand(5);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(FU3.getReg())
-        .addReg(FU2.getReg())
-        .addReg(FU1.getReg())
-        .addReg(FU0.getReg())
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
+        .addReg(R2, RegState::Define)
+        .addReg(R3, RegState::Define)
+        .addReg(R4, RegState::Define)
+        .addReg(R5, RegState::Define)
         .addReg(AS.getReg())
         .addReg(AD.getReg());
 
@@ -524,16 +526,17 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
   }
   case Xtensa::EE_LDF_64_IP_P: {
     unsigned Opc = Xtensa::EE_LDF_64_IP;
-    MachineOperand &FU1 = MI.getOperand(0);
-    MachineOperand &FU0 = MI.getOperand(1);
-    MachineOperand &AS = MI.getOperand(2);
     const TargetRegisterClass *RC = getRegClassFor(MVT::i32);
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    const TargetRegisterClass *RCFR = getRegClassFor(MVT::f32);
+    unsigned R1 = MRI.createVirtualRegister(RCFR);
+    unsigned R2 = MRI.createVirtualRegister(RCFR);
+    MachineOperand &AS = MI.getOperand(2);
+    unsigned R3 = MRI.createVirtualRegister(RC);
     MachineOperand &IMM8 = MI.getOperand(3);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(FU1.getReg())
-        .addReg(FU0.getReg())
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
+        .addReg(R2, RegState::Define)
+        .addReg(R3, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM8.getImm());
 
@@ -542,16 +545,17 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
   }
   case Xtensa::EE_LDF_64_XP_P: {
     unsigned Opc = Xtensa::EE_LDF_64_XP;
-    MachineOperand &FU1 = MI.getOperand(0);
-    MachineOperand &FU0 = MI.getOperand(1);
-    MachineOperand &AS = MI.getOperand(2);
     const TargetRegisterClass *RC = getRegClassFor(MVT::i32);
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    const TargetRegisterClass *RCFR = &Xtensa::FPRRegClass;
+    unsigned R1 = MRI.createVirtualRegister(RCFR);
+    unsigned R2 = MRI.createVirtualRegister(RCFR);
+    MachineOperand &AS = MI.getOperand(2);
+    unsigned R3 = MRI.createVirtualRegister(RC);
     MachineOperand &AD = MI.getOperand(3);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(FU1.getReg())
-        .addReg(FU0.getReg())
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
+        .addReg(R2, RegState::Define)
+        .addReg(R3, RegState::Define)
         .addReg(AS.getReg())
         .addReg(AD.getReg());
 
@@ -565,7 +569,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &IMM16 = MI.getOperand(1);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM16.getImm());
 
@@ -579,7 +583,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &AD = MI.getOperand(1);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addReg(AD.getReg());
 
@@ -593,7 +597,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &IMM16 = MI.getOperand(1);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM16.getImm());
 
@@ -607,7 +611,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &AD = MI.getOperand(1);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addReg(AD.getReg());
 
@@ -621,7 +625,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &IMM16 = MI.getOperand(1);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM16.getImm());
 
@@ -635,7 +639,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &AD = MI.getOperand(1);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addReg(AD.getReg());
 
@@ -649,7 +653,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &IMM16 = MI.getOperand(1);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM16.getImm());
 
@@ -663,7 +667,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &AD = MI.getOperand(1);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addReg(AD.getReg());
 
@@ -684,7 +688,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     MachineOperand &SEL4 = MI.getOperand(3);
     MachineOperand &SEL8 = MI.getOperand(4);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
         .addReg(Xtensa::Q0 + QSVal)
         .addReg(AS.getReg())
         .addImm(SEL4.getImm())
@@ -704,8 +708,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &IMM16 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM16.getImm());
 
@@ -723,8 +727,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &AD = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addReg(AD.getReg());
 
@@ -738,7 +742,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &IMM8 = MI.getOperand(1);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM8.getImm());
 
@@ -752,7 +756,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &IMM4 = MI.getOperand(1);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM4.getImm());
 
@@ -766,7 +770,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &IMM16 = MI.getOperand(1);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM16.getImm());
 
@@ -780,7 +784,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &IMM4 = MI.getOperand(1);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM4.getImm());
 
@@ -794,7 +798,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &IMM16 = MI.getOperand(1);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM16.getImm());
 
@@ -808,7 +812,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &IMM16 = MI.getOperand(1);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM16.getImm());
 
@@ -821,10 +825,11 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned QSVal = QS.getImm();
     assert(QSVal < 8 && "Unexpected value of ee_movi_32_a first argument, it "
                         "must be in range [0,7]");
-    MachineOperand &AU = MI.getOperand(1);
+    const TargetRegisterClass *RC = getRegClassFor(MVT::i32);
+    unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &SEL4 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(AU.getReg())
+        .addReg(R1, RegState::Define)
         .addReg(Xtensa::Q0 + QSVal)
         .addImm(SEL4.getImm());
 
@@ -840,7 +845,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     MachineOperand &AS = MI.getOperand(1);
     MachineOperand &SEL4 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
         .addReg(AS.getReg())
         .addImm(SEL4.getImm());
 
@@ -902,7 +907,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QXVal < 8 && "Unexpected value of ee_notq first argument, it must "
                         "be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal);
 
     MI.eraseFromParent();
@@ -926,7 +931,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
         QYVal < 8 &&
         "Unexpected value of ee_orq first argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
 
@@ -945,8 +950,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
                          "must be in range [0,7]");
     MachineOperand &SAR16 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QS1Val)
-        .addReg(Xtensa::Q0 + QS0Val)
+        .addReg(Xtensa::Q0 + QS1Val, RegState::Define)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
         .addReg(Xtensa::Q0 + QS1Val)
         .addReg(Xtensa::Q0 + QS0Val)
         .addImm(SAR16.getImm());
@@ -969,9 +974,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &AD = MI.getOperand(3);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QS1Val)
-        .addReg(Xtensa::Q0 + QS0Val)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QS1Val, RegState::Define)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(Xtensa::Q0 + QS1Val)
         .addReg(Xtensa::Q0 + QS0Val)
         .addReg(AS.getReg())
@@ -992,8 +997,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
                          "must be in range [0,7]");
     MachineOperand &SAR16 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QS1Val)
-        .addReg(Xtensa::Q0 + QS0Val)
+        .addReg(Xtensa::Q0 + QS1Val, RegState::Define)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
         .addReg(Xtensa::Q0 + QS1Val)
         .addReg(Xtensa::Q0 + QS0Val)
         .addImm(SAR16.getImm());
@@ -1010,7 +1015,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     MachineOperand &AS = MI.getOperand(1);
     MachineOperand &SEL2 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
         .addReg(AS.getReg())
         .addImm(SEL2.getImm());
 
@@ -1026,7 +1031,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     MachineOperand &AS = MI.getOperand(1);
     MachineOperand &SEL2 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
         .addReg(AS.getReg())
         .addImm(SEL2.getImm());
 
@@ -1047,7 +1052,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     const TargetRegisterClass *RC = getRegClassFor(MVT::i32);
     unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(Xtensa::Q0 + QS0Val)
         .addReg(Xtensa::Q0 + QS1Val)
         .addReg(AS.getReg());
@@ -1070,9 +1075,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &AD = MI.getOperand(3);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QS1Val)
-        .addReg(Xtensa::Q0 + QS0Val)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QS1Val, RegState::Define)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(Xtensa::Q0 + QS1Val)
         .addReg(Xtensa::Q0 + QS0Val)
         .addReg(AS.getReg())
@@ -1096,7 +1101,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QS1Val < 8 && "Unexpected value of ee_src_q first argument, it must "
                          "be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QS0Val)
         .addReg(Xtensa::Q0 + QS1Val);
 
@@ -1122,9 +1127,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QS1Val < 8 && "Unexpected value of ee_src_q_ld_ip first argument, "
                          "it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QS0Val)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM16.getImm())
         .addReg(Xtensa::Q0 + QS0Val)
@@ -1152,9 +1157,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QS1Val < 8 && "Unexpected value of ee_src_q_ld_xp first argument, "
                          "it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QS0Val)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
         .addReg(AS.getReg())
         .addReg(AD.getReg())
         .addReg(Xtensa::Q0 + QS0Val)
@@ -1178,8 +1183,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QS1Val < 8 && "Unexpected value of ee_src_q_qup first argument, it "
                          "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QAVal)
-        .addReg(Xtensa::Q0 + QS0Val)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
         .addReg(Xtensa::Q0 + QS0Val)
         .addReg(Xtensa::Q0 + QS1Val);
 
@@ -1188,11 +1193,12 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
   }
   case Xtensa::EE_SRS_ACCX_P: {
     unsigned Opc = Xtensa::EE_SRS_ACCX;
-    MachineOperand &AU = MI.getOperand(0);
+    const TargetRegisterClass *RC = getRegClassFor(MVT::i32);
+    unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &AS = MI.getOperand(1);
     MachineOperand &SEL2 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(AU.getReg())
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(SEL2.getImm());
 
@@ -1210,7 +1216,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &IMM16F = MI.getOperand(5);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(FV3.getReg())
         .addReg(FV2.getReg())
         .addReg(FV1.getReg())
@@ -1232,7 +1238,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &AD = MI.getOperand(5);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(FV3.getReg())
         .addReg(FV2.getReg())
         .addReg(FV1.getReg())
@@ -1252,7 +1258,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &IMM8 = MI.getOperand(3);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(FV1.getReg())
         .addReg(FV0.getReg())
         .addReg(AS.getReg())
@@ -1270,7 +1276,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &AD = MI.getOperand(3);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(FV1.getReg())
         .addReg(FV0.getReg())
         .addReg(AS.getReg())
@@ -1309,7 +1315,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &IMM8 = MI.getOperand(1);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM8.getImm());
 
@@ -1323,7 +1329,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &IMM4 = MI.getOperand(1);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM4.getImm());
 
@@ -1337,7 +1343,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &IMM16 = MI.getOperand(1);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM16.getImm());
 
@@ -1351,7 +1357,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &IMM4 = MI.getOperand(1);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM4.getImm());
 
@@ -1365,7 +1371,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &IMM16 = MI.getOperand(1);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM16.getImm());
 
@@ -1379,7 +1385,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &IMM16 = MI.getOperand(1);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM16.getImm());
 
@@ -1401,7 +1407,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vadds_s16 first argument, it "
                         "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
 
@@ -1430,9 +1436,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vadds_s16_ld_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
@@ -1462,8 +1468,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vadds_s16_st_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QVVal)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -1487,7 +1493,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vadds_s32 first argument, it "
                         "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
 
@@ -1516,9 +1522,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vadds_s32_ld_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
@@ -1548,8 +1554,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vadds_s32_st_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QVVal)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -1573,7 +1579,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vadds_s8 first argument, it "
                         "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
 
@@ -1602,9 +1608,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vadds_s8_ld_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
@@ -1634,8 +1640,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vadds_s8_st_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QVVal)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -1659,7 +1665,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vcmp_eq_s16 first argument, it "
                         "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
 
@@ -1681,7 +1687,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vcmp_eq_s32 first argument, it "
                         "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
 
@@ -1703,7 +1709,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vcmp_eq_s8 first argument, it "
                         "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
 
@@ -1725,7 +1731,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vcmp_gt_s16 first argument, it "
                         "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
 
@@ -1747,7 +1753,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vcmp_gt_s32 first argument, it "
                         "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
 
@@ -1769,7 +1775,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vcmp_gt_s8 first argument, it "
                         "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
 
@@ -1791,7 +1797,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vcmp_lt_s16 first argument, it "
                         "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
 
@@ -1813,7 +1819,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vcmp_lt_s32 first argument, it "
                         "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
 
@@ -1835,7 +1841,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vcmp_lt_s8 first argument, it "
                         "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
 
@@ -1850,7 +1856,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
                         "must be in range [0,7]");
     MachineOperand &AS = MI.getOperand(1);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
         .addReg(AS.getReg());
 
     MI.eraseFromParent();
@@ -1867,8 +1873,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &IMM2 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM2.getImm());
 
@@ -1886,8 +1892,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &AD = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addReg(AD.getReg());
 
@@ -1902,7 +1908,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
                         "must be in range [0,7]");
     MachineOperand &AS = MI.getOperand(1);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
         .addReg(AS.getReg());
 
     MI.eraseFromParent();
@@ -1919,8 +1925,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &IMM4 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM4.getImm());
 
@@ -1938,8 +1944,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &AD = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addReg(AD.getReg());
 
@@ -1954,7 +1960,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
                         "must be in range [0,7]");
     MachineOperand &AS = MI.getOperand(1);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
         .addReg(AS.getReg());
 
     MI.eraseFromParent();
@@ -1971,8 +1977,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &IMM1 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM1.getImm());
 
@@ -1990,8 +1996,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &AD = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addReg(AD.getReg());
 
@@ -2012,9 +2018,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     const TargetRegisterClass *RC = getRegClassFor(MVT::i32);
     unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(Xtensa::Q0 + QU1Val)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(Xtensa::Q0 + QU1Val, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg());
 
     MI.eraseFromParent();
@@ -2031,8 +2037,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &IMM16 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM16.getImm());
 
@@ -2050,8 +2056,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &AD = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addReg(AD.getReg());
 
@@ -2069,8 +2075,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &IMM8 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM8.getImm());
 
@@ -2088,8 +2094,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &AD = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addReg(AD.getReg());
 
@@ -2107,8 +2113,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &IMM8 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM8.getImm());
 
@@ -2126,8 +2132,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &AD = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addReg(AD.getReg());
 
@@ -2149,7 +2155,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmax_s16 first argument, it "
                         "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
 
@@ -2178,9 +2184,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmax_s16_ld_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
@@ -2210,8 +2216,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmax_s16_st_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QVVal)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -2235,7 +2241,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmax_s32 first argument, it "
                         "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
 
@@ -2264,9 +2270,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmax_s32_ld_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
@@ -2296,8 +2302,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmax_s32_st_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QVVal)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -2321,7 +2327,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmax_s8 first argument, it "
                         "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
 
@@ -2350,9 +2356,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmax_s8_ld_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
@@ -2382,8 +2388,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmax_s8_st_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QVVal)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -2407,7 +2413,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmin_s16 first argument, it "
                         "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
 
@@ -2436,9 +2442,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmin_s16_ld_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
@@ -2468,8 +2474,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmin_s16_st_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QVVal)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -2493,7 +2499,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmin_s32 first argument, it "
                         "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
 
@@ -2522,9 +2528,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmin_s32_ld_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
@@ -2554,8 +2560,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmin_s32_st_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QVVal)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -2579,7 +2585,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmin_s8 first argument, it "
                         "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
 
@@ -2608,9 +2614,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmin_s8_ld_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
@@ -2640,8 +2646,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmin_s8_st_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QVVal)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -2686,8 +2692,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmulas_s16_accx_ld_ip first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM16.getImm())
         .addReg(Xtensa::Q0 + QXVal)
@@ -2723,9 +2729,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QS1Val < 8 && "Unexpected value of ee_vmulas_s16_accx_ld_ip_qup "
                          "first argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QS0Val)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM16.getImm())
         .addReg(Xtensa::Q0 + QXVal)
@@ -2755,8 +2761,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmulas_s16_accx_ld_xp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addReg(AD.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -2792,9 +2798,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QS1Val < 8 && "Unexpected value of ee_vmulas_s16_accx_ld_xp_qup "
                          "first argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QS0Val)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
         .addReg(AS.getReg())
         .addReg(AD.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -2840,8 +2846,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmulas_s16_qacc_ldbc_incp "
                         "first argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
@@ -2875,9 +2881,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QS1Val < 8 && "Unexpected value of ee_vmulas_s16_qacc_ldbc_incp_qup "
                          "first argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QS0Val)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal)
@@ -2906,8 +2912,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmulas_s16_qacc_ld_ip first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM16.getImm())
         .addReg(Xtensa::Q0 + QXVal)
@@ -2943,9 +2949,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QS1Val < 8 && "Unexpected value of ee_vmulas_s16_qacc_ld_ip_qup "
                          "first argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QS0Val)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM16.getImm())
         .addReg(Xtensa::Q0 + QXVal)
@@ -2975,8 +2981,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmulas_s16_qacc_ld_xp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addReg(AD.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -3012,9 +3018,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QS1Val < 8 && "Unexpected value of ee_vmulas_s16_qacc_ld_xp_qup "
                          "first argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QS0Val)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
         .addReg(AS.getReg())
         .addReg(AD.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -3061,8 +3067,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmulas_s8_accx_ld_ip first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM16.getImm())
         .addReg(Xtensa::Q0 + QXVal)
@@ -3098,9 +3104,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QS1Val < 8 && "Unexpected value of ee_vmulas_s8_accx_ld_ip_qup "
                          "first argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QS0Val)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM16.getImm())
         .addReg(Xtensa::Q0 + QXVal)
@@ -3130,8 +3136,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmulas_s8_accx_ld_xp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addReg(AD.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -3167,9 +3173,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QS1Val < 8 && "Unexpected value of ee_vmulas_s8_accx_ld_xp_qup "
                          "first argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QS0Val)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
         .addReg(AS.getReg())
         .addReg(AD.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -3215,8 +3221,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmulas_s8_qacc_ldbc_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
@@ -3250,9 +3256,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QS1Val < 8 && "Unexpected value of ee_vmulas_s8_qacc_ldbc_incp_qup "
                          "first argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QS0Val)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal)
@@ -3281,8 +3287,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmulas_s8_qacc_ld_ip first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM16.getImm())
         .addReg(Xtensa::Q0 + QXVal)
@@ -3318,9 +3324,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QS1Val < 8 && "Unexpected value of ee_vmulas_s8_qacc_ld_ip_qup "
                          "first argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QS0Val)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM16.getImm())
         .addReg(Xtensa::Q0 + QXVal)
@@ -3350,8 +3356,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmulas_s8_qacc_ld_xp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addReg(AD.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -3387,9 +3393,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QS1Val < 8 && "Unexpected value of ee_vmulas_s8_qacc_ld_xp_qup "
                          "first argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QS0Val)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
         .addReg(AS.getReg())
         .addReg(AD.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -3436,8 +3442,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmulas_u16_accx_ld_ip first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM16.getImm())
         .addReg(Xtensa::Q0 + QXVal)
@@ -3473,9 +3479,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QS1Val < 8 && "Unexpected value of ee_vmulas_u16_accx_ld_ip_qup "
                          "first argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QS0Val)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM16.getImm())
         .addReg(Xtensa::Q0 + QXVal)
@@ -3505,8 +3511,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmulas_u16_accx_ld_xp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addReg(AD.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -3542,9 +3548,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QS1Val < 8 && "Unexpected value of ee_vmulas_u16_accx_ld_xp_qup "
                          "first argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QS0Val)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
         .addReg(AS.getReg())
         .addReg(AD.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -3590,8 +3596,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmulas_u16_qacc_ldbc_incp "
                         "first argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
@@ -3625,9 +3631,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QS1Val < 8 && "Unexpected value of ee_vmulas_u16_qacc_ldbc_incp_qup "
                          "first argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QS0Val)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal)
@@ -3656,8 +3662,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmulas_u16_qacc_ld_ip first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM16.getImm())
         .addReg(Xtensa::Q0 + QXVal)
@@ -3693,9 +3699,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QS1Val < 8 && "Unexpected value of ee_vmulas_u16_qacc_ld_ip_qup "
                          "first argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QS0Val)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM16.getImm())
         .addReg(Xtensa::Q0 + QXVal)
@@ -3725,8 +3731,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmulas_u16_qacc_ld_xp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addReg(AD.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -3762,9 +3768,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QS1Val < 8 && "Unexpected value of ee_vmulas_u16_qacc_ld_xp_qup "
                          "first argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QS0Val)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
         .addReg(AS.getReg())
         .addReg(AD.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -3811,8 +3817,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmulas_u8_accx_ld_ip first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM16.getImm())
         .addReg(Xtensa::Q0 + QXVal)
@@ -3848,9 +3854,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QS1Val < 8 && "Unexpected value of ee_vmulas_u8_accx_ld_ip_qup "
                          "first argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QS0Val)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM16.getImm())
         .addReg(Xtensa::Q0 + QXVal)
@@ -3880,8 +3886,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmulas_u8_accx_ld_xp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addReg(AD.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -3917,9 +3923,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QS1Val < 8 && "Unexpected value of ee_vmulas_u8_accx_ld_xp_qup "
                          "first argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QS0Val)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
         .addReg(AS.getReg())
         .addReg(AD.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -3965,8 +3971,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmulas_u8_qacc_ldbc_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
@@ -4000,9 +4006,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QS1Val < 8 && "Unexpected value of ee_vmulas_u8_qacc_ldbc_incp_qup "
                          "first argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QS0Val)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal)
@@ -4031,8 +4037,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmulas_u8_qacc_ld_ip first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM16.getImm())
         .addReg(Xtensa::Q0 + QXVal)
@@ -4068,9 +4074,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QS1Val < 8 && "Unexpected value of ee_vmulas_u8_qacc_ld_ip_qup "
                          "first argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QS0Val)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
         .addReg(AS.getReg())
         .addImm(IMM16.getImm())
         .addReg(Xtensa::Q0 + QXVal)
@@ -4100,8 +4106,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmulas_u8_qacc_ld_xp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addReg(AD.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -4137,9 +4143,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QS1Val < 8 && "Unexpected value of ee_vmulas_u8_qacc_ld_xp_qup "
                          "first argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QS0Val)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
         .addReg(AS.getReg())
         .addReg(AD.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -4165,7 +4171,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmul_s16 first argument, it "
                         "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QZVal)
+        .addReg(Xtensa::Q0 + QZVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
 
@@ -4194,9 +4200,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmul_s16_ld_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QZVal)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QZVal, RegState::Define)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
@@ -4226,8 +4232,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmul_s16_st_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QZVal)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QZVal, RegState::Define)
         .addReg(Xtensa::Q0 + QVVal)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -4251,7 +4257,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmul_s8 first argument, it "
                         "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QZVal)
+        .addReg(Xtensa::Q0 + QZVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
 
@@ -4280,9 +4286,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmul_s8_ld_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QZVal)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QZVal, RegState::Define)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
@@ -4312,8 +4318,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmul_s8_st_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QZVal)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QZVal, RegState::Define)
         .addReg(Xtensa::Q0 + QVVal)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -4337,7 +4343,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmul_u16 first argument, it "
                         "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QZVal)
+        .addReg(Xtensa::Q0 + QZVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
 
@@ -4366,9 +4372,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmul_u16_ld_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QZVal)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QZVal, RegState::Define)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
@@ -4398,8 +4404,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmul_u16_st_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QZVal)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QZVal, RegState::Define)
         .addReg(Xtensa::Q0 + QVVal)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -4423,7 +4429,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmul_u8 first argument, it "
                         "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QZVal)
+        .addReg(Xtensa::Q0 + QZVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
 
@@ -4452,9 +4458,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmul_u8_ld_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QZVal)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QZVal, RegState::Define)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
@@ -4484,8 +4490,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vmul_u8_st_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QZVal)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QZVal, RegState::Define)
         .addReg(Xtensa::Q0 + QVVal)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -4510,7 +4516,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
                         "must be in range [0,7]");
     MachineOperand &AY = MI.getOperand(3);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QZVal)
+        .addReg(Xtensa::Q0 + QZVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal)
         .addReg(AY.getReg());
@@ -4534,7 +4540,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
                         "must be in range [0,7]");
     MachineOperand &AY = MI.getOperand(3);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QZVal)
+        .addReg(Xtensa::Q0 + QZVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal)
         .addReg(AY.getReg());
@@ -4551,7 +4557,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     MachineOperand &AX = MI.getOperand(1);
     MachineOperand &AY = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QSVal)
+        .addReg(Xtensa::Q0 + QSVal, RegState::Define)
         .addReg(Xtensa::Q0 + QSVal)
         .addReg(AX.getReg())
         .addReg(AY.getReg());
@@ -4568,7 +4574,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     MachineOperand &AX = MI.getOperand(1);
     MachineOperand &AY = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QSVal)
+        .addReg(Xtensa::Q0 + QSVal, RegState::Define)
         .addReg(Xtensa::Q0 + QSVal)
         .addReg(AX.getReg())
         .addReg(AY.getReg());
@@ -4587,7 +4593,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QSVal < 8 && "Unexpected value of ee_vsl_32 first argument, it must "
                         "be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QSVal);
 
     MI.eraseFromParent();
@@ -4631,8 +4637,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
                         "argument, it must be in range [0,7]");
     MachineOperand &SEL8 = MI.getOperand(4);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal)
@@ -4679,8 +4685,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
                         "argument, it must be in range [0,7]");
     MachineOperand &SEL16 = MI.getOperand(4);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal)
@@ -4700,7 +4706,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QSVal < 8 && "Unexpected value of ee_vsr_32 first argument, it must "
                         "be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QSVal);
 
     MI.eraseFromParent();
@@ -4717,7 +4723,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &IMM16 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(Xtensa::Q0 + QVVal)
         .addReg(AS.getReg())
         .addImm(IMM16.getImm());
@@ -4736,7 +4742,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &AD = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(Xtensa::Q0 + QVVal)
         .addReg(AS.getReg())
         .addReg(AD.getReg());
@@ -4755,7 +4761,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &IMM8 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(Xtensa::Q0 + QVVal)
         .addReg(AS.getReg())
         .addImm(IMM8.getImm());
@@ -4774,7 +4780,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &AD = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(Xtensa::Q0 + QVVal)
         .addReg(AS.getReg())
         .addReg(AD.getReg());
@@ -4793,7 +4799,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &IMM8 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(Xtensa::Q0 + QVVal)
         .addReg(AS.getReg())
         .addImm(IMM8.getImm());
@@ -4812,7 +4818,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned R1 = MRI.createVirtualRegister(RC);
     MachineOperand &AD = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
+        .addReg(R1, RegState::Define)
         .addReg(Xtensa::Q0 + QVVal)
         .addReg(AS.getReg())
         .addReg(AD.getReg());
@@ -4835,7 +4841,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vsubs_s16 first argument, it "
                         "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
 
@@ -4864,9 +4870,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vsubs_s16_ld_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
@@ -4896,8 +4902,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vsubs_s16_st_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QVVal)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -4921,7 +4927,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vsubs_s32 first argument, it "
                         "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
 
@@ -4950,9 +4956,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vsubs_s32_ld_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
@@ -4982,8 +4988,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vsubs_s32_st_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QVVal)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -5007,7 +5013,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vsubs_s8 first argument, it "
                         "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
 
@@ -5036,9 +5042,9 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vsubs_s8_ld_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QUVal)
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
@@ -5068,8 +5074,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_vsubs_s8_st_incp first "
                         "argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Undef)
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(R1, RegState::Define)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QVVal)
         .addReg(AS.getReg())
         .addReg(Xtensa::Q0 + QXVal)
@@ -5089,8 +5095,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QS1Val < 8 && "Unexpected value of ee_vunzip_16 first argument, it "
                          "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QS0Val)
-        .addReg(Xtensa::Q0 + QS1Val)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
+        .addReg(Xtensa::Q0 + QS1Val, RegState::Define)
         .addReg(Xtensa::Q0 + QS0Val)
         .addReg(Xtensa::Q0 + QS1Val);
 
@@ -5108,8 +5114,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QS1Val < 8 && "Unexpected value of ee_vunzip_32 first argument, it "
                          "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QS0Val)
-        .addReg(Xtensa::Q0 + QS1Val)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
+        .addReg(Xtensa::Q0 + QS1Val, RegState::Define)
         .addReg(Xtensa::Q0 + QS0Val)
         .addReg(Xtensa::Q0 + QS1Val);
 
@@ -5127,8 +5133,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QS1Val < 8 && "Unexpected value of ee_vunzip_8 first argument, it "
                          "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QS0Val)
-        .addReg(Xtensa::Q0 + QS1Val)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
+        .addReg(Xtensa::Q0 + QS1Val, RegState::Define)
         .addReg(Xtensa::Q0 + QS0Val)
         .addReg(Xtensa::Q0 + QS1Val);
 
@@ -5146,8 +5152,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QS1Val < 8 && "Unexpected value of ee_vzip_16 first argument, it "
                          "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QS0Val)
-        .addReg(Xtensa::Q0 + QS1Val)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
+        .addReg(Xtensa::Q0 + QS1Val, RegState::Define)
         .addReg(Xtensa::Q0 + QS0Val)
         .addReg(Xtensa::Q0 + QS1Val);
 
@@ -5165,8 +5171,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QS1Val < 8 && "Unexpected value of ee_vzip_32 first argument, it "
                          "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QS0Val)
-        .addReg(Xtensa::Q0 + QS1Val)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
+        .addReg(Xtensa::Q0 + QS1Val, RegState::Define)
         .addReg(Xtensa::Q0 + QS0Val)
         .addReg(Xtensa::Q0 + QS1Val);
 
@@ -5184,8 +5190,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QS1Val < 8 && "Unexpected value of ee_vzip_8 first argument, it "
                          "must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QS0Val)
-        .addReg(Xtensa::Q0 + QS1Val)
+        .addReg(Xtensa::Q0 + QS0Val, RegState::Define)
+        .addReg(Xtensa::Q0 + QS1Val, RegState::Define)
         .addReg(Xtensa::Q0 + QS0Val)
         .addReg(Xtensa::Q0 + QS1Val);
 
@@ -5207,7 +5213,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     assert(QYVal < 8 && "Unexpected value of ee_xorq first argument, it must "
                         "be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + QAVal)
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define)
         .addReg(Xtensa::Q0 + QXVal)
         .addReg(Xtensa::Q0 + QYVal);
 
@@ -5227,7 +5233,8 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     unsigned QAVal = QA.getImm();
     assert(QAVal < 8 && "Unexpected value of ee_zero_q first argument, it must "
                         "be in range [0,7]");
-    BuildMI(*MBB, MI, DL, TII.get(Opc)).addReg(Xtensa::Q0 + QAVal);
+    BuildMI(*MBB, MI, DL, TII.get(Opc))
+        .addReg(Xtensa::Q0 + QAVal, RegState::Define);
 
     MI.eraseFromParent();
     return MBB;
@@ -5252,7 +5259,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
         BVal < 8 &&
         "Unexpected value of mv_qr first argument, it must be in range [0,7]");
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(Xtensa::Q0 + AVal)
+        .addReg(Xtensa::Q0 + AVal, RegState::Define)
         .addReg(Xtensa::Q0 + BVal);
 
     MI.eraseFromParent();
