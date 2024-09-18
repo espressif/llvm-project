@@ -522,17 +522,19 @@ define i64 @muli64_m3840(i64 %a) nounwind {
 
 define i128 @muli128_m3840(i128 %a) nounwind {
 ; XTENSA-LABEL: muli128_m3840:
-; XTENSA:         addi a8, a1, -16
+; XTENSA:         addi a8, a1, -32
 ; XTENSA-NEXT:    or a1, a8, a8
-; XTENSA-NEXT:    s32i a0, a1, 8 # 4-byte Folded Spill
-; XTENSA-NEXT:    movi a7, -1
-; XTENSA-NEXT:    s32i a7, a1, 4
-; XTENSA-NEXT:    s32i a7, a1, 0
-; XTENSA-NEXT:    l32r a6, .LCPI30_0
+; XTENSA-NEXT:    s32i a0, a1, 28 # 4-byte Folded Spill
+; XTENSA-NEXT:    movi a8, -1
+; XTENSA-NEXT:    s32i a8, a1, 12
+; XTENSA-NEXT:    s32i a8, a1, 8
+; XTENSA-NEXT:    s32i a8, a1, 4
+; XTENSA-NEXT:    l32r a8, .LCPI30_0
+; XTENSA-NEXT:    s32i a8, a1, 0
 ; XTENSA-NEXT:    l32r a8, .LCPI30_1
 ; XTENSA-NEXT:    callx0 a8
-; XTENSA-NEXT:    l32i a0, a1, 8 # 4-byte Folded Reload
-; XTENSA-NEXT:    addi a8, a1, 16
+; XTENSA-NEXT:    l32i a0, a1, 28 # 4-byte Folded Reload
+; XTENSA-NEXT:    addi a8, a1, 32
 ; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    ret
   %1 = mul i128 %a, -3840
@@ -541,17 +543,19 @@ define i128 @muli128_m3840(i128 %a) nounwind {
 
 define i128 @muli128_m63(i128 %a) nounwind {
 ; XTENSA-LABEL: muli128_m63:
-; XTENSA:         addi a8, a1, -16
+; XTENSA:         addi a8, a1, -32
 ; XTENSA-NEXT:    or a1, a8, a8
-; XTENSA-NEXT:    s32i a0, a1, 8 # 4-byte Folded Spill
-; XTENSA-NEXT:    movi a7, -1
-; XTENSA-NEXT:    s32i a7, a1, 4
-; XTENSA-NEXT:    s32i a7, a1, 0
-; XTENSA-NEXT:    movi a6, -63
+; XTENSA-NEXT:    s32i a0, a1, 28 # 4-byte Folded Spill
+; XTENSA-NEXT:    movi a8, -1
+; XTENSA-NEXT:    s32i a8, a1, 12
+; XTENSA-NEXT:    s32i a8, a1, 8
+; XTENSA-NEXT:    s32i a8, a1, 4
+; XTENSA-NEXT:    movi a8, -63
+; XTENSA-NEXT:    s32i a8, a1, 0
 ; XTENSA-NEXT:    l32r a8, .LCPI31_0
 ; XTENSA-NEXT:    callx0 a8
-; XTENSA-NEXT:    l32i a0, a1, 8 # 4-byte Folded Reload
-; XTENSA-NEXT:    addi a8, a1, 16
+; XTENSA-NEXT:    l32i a0, a1, 28 # 4-byte Folded Reload
+; XTENSA-NEXT:    addi a8, a1, 32
 ; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    ret
   %1 = mul i128 %a, -63
@@ -560,22 +564,22 @@ define i128 @muli128_m63(i128 %a) nounwind {
 
 define i64 @mulhsu_i64(i64 %a, i64 %b) nounwind {
 ; XTENSA-LABEL: mulhsu_i64:
-; XTENSA:         addi a8, a1, -16
+; XTENSA:         addi a8, a1, -32
 ; XTENSA-NEXT:    or a1, a8, a8
-; XTENSA-NEXT:    s32i a0, a1, 8 # 4-byte Folded Spill
-; XTENSA-NEXT:    or a7, a5, a5
-; XTENSA-NEXT:    or a6, a4, a4
-; XTENSA-NEXT:    srai a8, a7, 31
-; XTENSA-NEXT:    s32i a8, a1, 4
-; XTENSA-NEXT:    s32i a8, a1, 0
+; XTENSA-NEXT:    s32i a0, a1, 28 # 4-byte Folded Spill
+; XTENSA-NEXT:    srai a8, a5, 31
+; XTENSA-NEXT:    s32i a8, a1, 12
+; XTENSA-NEXT:    s32i a8, a1, 8
+; XTENSA-NEXT:    s32i a5, a1, 4
+; XTENSA-NEXT:    s32i a4, a1, 0
 ; XTENSA-NEXT:    movi a4, 0
 ; XTENSA-NEXT:    l32r a8, .LCPI32_0
 ; XTENSA-NEXT:    or a5, a4, a4
 ; XTENSA-NEXT:    callx0 a8
 ; XTENSA-NEXT:    or a2, a4, a4
 ; XTENSA-NEXT:    or a3, a5, a5
-; XTENSA-NEXT:    l32i a0, a1, 8 # 4-byte Folded Reload
-; XTENSA-NEXT:    addi a8, a1, 16
+; XTENSA-NEXT:    l32i a0, a1, 28 # 4-byte Folded Reload
+; XTENSA-NEXT:    addi a8, a1, 32
 ; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    ret
   %1 = zext i64 %a to i128
