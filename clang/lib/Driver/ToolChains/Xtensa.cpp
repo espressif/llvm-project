@@ -51,57 +51,80 @@ XtensaToolChain::XtensaToolChain(const Driver &D, const llvm::Triple &Triple,
   }
 
   GCCInstallation.init(Triple, Args);
-  if (!GCCInstallation.isValid()) {
-    llvm_unreachable("Unexpected Xtensa GCC toolchain version");
-  }
+  if (GCCInstallation.isValid()) {
+    for (auto *A : Args) {
+      std::string Str = A->getAsString(Args);
+      if (!Str.compare("-mlongcalls"))
+        A->claim();
+      if (!Str.compare("-fno-tree-switch-conversion"))
+        A->claim();
 
-  Multilibs = GCCInstallation.getMultilibs();
-  SelectedMultilibs.assign({GCCInstallation.getMultilib()});
-
-  GCCLibAndIncVersion = GCCInstallation.getVersion().Text;
-  GCCToolchainName = GCCInstallation.getTriple().str();
-  SmallString<128> Path(GCCInstallation.getParentLibPath());
-  llvm::sys::path::append(Path, "..");
-  GCCToolchainDir = Path.c_str();
-
-  for (auto *A : Args) {
-    std::string Str = A->getAsString(Args);
-    if (!Str.compare("-mlongcalls"))
-      A->claim();
-    if (!Str.compare("-fno-tree-switch-conversion"))
-      A->claim();
+      // Currently don't use integrated assembler for assembler input files
+      if ((IsIntegratedAsm) && (Str.length() > 2)) {
+        std::string ExtSubStr = Str.substr(Str.length() - 2);
+        if (!ExtSubStr.compare(".s"))
+          IsIntegratedAsm = false;
+        if (!ExtSubStr.compare(".S"))
+          IsIntegratedAsm = false;
+      }
+    }
 
     // Currently don't use integrated assembler for assembler input files
-    if ((IsIntegratedAsm) && (Str.length() > 2)) {
-      std::string ExtSubStr = Str.substr(Str.length() - 2);
-      if (!ExtSubStr.compare(".s"))
+    if (IsIntegratedAsm) {
+      if (Args.getLastArgValue(options::OPT_x) == "assembler")
         IsIntegratedAsm = false;
-      if (!ExtSubStr.compare(".S"))
+
+      if (Args.getLastArgValue(options::OPT_x) == "assembler-with-cpp")
         IsIntegratedAsm = false;
     }
+
+    Multilibs = GCCInstallation.getMultilibs();
+    SelectedMultilibs.assign({GCCInstallation.getMultilib()});
+
+    GCCLibAndIncVersion = GCCInstallation.getVersion().Text;
+    GCCToolchainName = GCCInstallation.getTriple().str();
+    SmallString<128> Path(GCCInstallation.getParentLibPath());
+    llvm::sys::path::append(Path, "..");
+    GCCToolchainDir = Path.c_str();
+
+    SmallString<128> Libs1(GCCToolchainDir);
+    llvm::sys::path::append(Libs1, "lib", "gcc", GCCToolchainName,
+                            GCCLibAndIncVersion);
+    if (!SelectedMultilibs.back().gccSuffix().empty())
+      llvm::sys::path::append(Libs1, SelectedMultilibs.back().gccSuffix());
+    getFilePaths().push_back(Libs1.c_str());
+
+    SmallString<128> Libs2(GCCToolchainDir);
+    llvm::sys::path::append(Libs2, GCCToolchainName, "lib");
+    if (!SelectedMultilibs.back().gccSuffix().empty())
+      llvm::sys::path::append(Libs2, SelectedMultilibs.back().gccSuffix());
+    getFilePaths().push_back(Libs2.c_str());
+
+    ToolChain::path_list &PPaths = getProgramPaths();
+    // Multilib cross-compiler GCC installations put ld in a triple-prefixed
+    // directory of the GCC installation parent dir.
+    StringRef ParentDir = llvm::sys::path::parent_path(GCCInstallation.getParentLibPath());
+
+    SmallString<128> PathTripleBin(ParentDir);
+    llvm::sys::path::append(PathTripleBin, GCCInstallation.getTriple().str());
+    llvm::sys::path::append(PathTripleBin, "bin");
+    PPaths.push_back(PathTripleBin.c_str());
+
+    SmallString<128> PathBin(ParentDir);
+    llvm::sys::path::append(PathBin, "bin");
+    PPaths.push_back(PathBin.c_str());
+
+    if (!getDriver().SysRoot.empty()) {
+      SmallString<128> SysRoot(computeSysRoot());
+      llvm::sys::path::append(SysRoot, "lib");
+      getFilePaths().push_back(SysRoot.c_str());
+    }
+  } else {
+    getProgramPaths().push_back(D.Dir);
+    SmallString<128> SysRoot(computeSysRoot());
+    llvm::sys::path::append(SysRoot, "lib");
+    getFilePaths().push_back(SysRoot.c_str());
   }
-
-  // Currently don't use integrated assembler for assembler input files
-  if (IsIntegratedAsm) {
-    if (Args.getLastArgValue(options::OPT_x) == "assembler")
-      IsIntegratedAsm = false;
-
-    if (Args.getLastArgValue(options::OPT_x) == "assembler-with-cpp")
-      IsIntegratedAsm = false;
-  }
-
-  SmallString<128> Libs1(GCCToolchainDir);
-  llvm::sys::path::append(Libs1, "lib", "gcc", GCCToolchainName,
-                          GCCLibAndIncVersion);
-  if (!SelectedMultilibs.back().gccSuffix().empty())
-    llvm::sys::path::append(Libs1, SelectedMultilibs.back().gccSuffix());
-  getFilePaths().push_back(Libs1.c_str());
-
-  SmallString<128> Libs2(GCCToolchainDir);
-  llvm::sys::path::append(Libs2, GCCToolchainName, "lib");
-  if (!SelectedMultilibs.back().gccSuffix().empty())
-    llvm::sys::path::append(Libs2, SelectedMultilibs.back().gccSuffix());
-  getFilePaths().push_back(Libs2.c_str());
 }
 
 
@@ -119,18 +142,25 @@ void XtensaToolChain::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
       DriverArgs.hasArg(options::OPT_nostdlibinc))
     return;
 
-  if (!GCCInstallation.isValid())
-    return;
+  if (!getDriver().SysRoot.empty()) {
+    SmallString<128> Dir(getDriver().SysRoot);
+    llvm::sys::path::append(Dir, "include");
+    addSystemInclude(DriverArgs, CC1Args, Dir.str());
+  } else if (GCCInstallation.isValid()) {
+    SmallString<128> Path1(getDriver().ResourceDir);
+    llvm::sys::path::append(Path1, "include");
+    SmallString<128> Path2(GCCToolchainDir);
+    llvm::sys::path::append(Path2, GCCToolchainName, "sys-include");
+    SmallString<128> Path3(GCCToolchainDir);
+    llvm::sys::path::append(Path3, GCCToolchainName, "include");
 
-  SmallString<128> Path1(getDriver().ResourceDir);
-  llvm::sys::path::append(Path1, "include");
-  SmallString<128> Path2(GCCToolchainDir);
-  llvm::sys::path::append(Path2, GCCToolchainName, "sys-include");
-  SmallString<128> Path3(GCCToolchainDir);
-  llvm::sys::path::append(Path3, GCCToolchainName, "include");
-
-  const StringRef Paths[] = {Path1, Path2, Path3};
-  addSystemIncludes(DriverArgs, CC1Args, Paths);
+    const StringRef Paths[] = {Path1, Path2, Path3};
+    addSystemIncludes(DriverArgs, CC1Args, Paths);
+  } else {
+    SmallString<128> Dir(computeSysRoot());
+    llvm::sys::path::append(Dir, "include");
+    addSystemInclude(DriverArgs, CC1Args, Dir.str());
+  }
 }
 
 void XtensaToolChain::addLibStdCxxIncludePaths(
@@ -139,17 +169,32 @@ void XtensaToolChain::addLibStdCxxIncludePaths(
   if (!GCCInstallation.isValid())
     return;
 
-  SmallString<128> BaseDir(GCCToolchainDir);
-  llvm::sys::path::append(BaseDir, GCCToolchainName, "include", "c++",
-                          GCCLibAndIncVersion);
-  SmallString<128> TargetDir(BaseDir);
-  llvm::sys::path::append(TargetDir, GCCToolchainName);
-  SmallString<128> TargetDirBackward(BaseDir);
-  llvm::sys::path::append(TargetDirBackward, "backward");
+  const GCCVersion &Version = GCCInstallation.getVersion();
+  StringRef TripleStr = GCCInstallation.getTriple().str();
+  addLibStdCXXIncludePaths(computeSysRoot() + "/include/c++/" + Version.Text,
+                           TripleStr, "", DriverArgs, CC1Args);
+}
 
-  addLibStdCXXIncludePaths(BaseDir, "", "", DriverArgs, CC1Args);
-  addLibStdCXXIncludePaths(TargetDir, "", "", DriverArgs, CC1Args);
-  addLibStdCXXIncludePaths(TargetDirBackward, "", "", DriverArgs, CC1Args);
+std::string XtensaToolChain::computeSysRoot() const {
+  if (!getDriver().SysRoot.empty())
+    return getDriver().SysRoot;
+
+  SmallString<128> SysRootDir;
+  if (GCCInstallation.isValid()) {
+    StringRef LibDir = GCCInstallation.getParentLibPath();
+    StringRef TripleStr = GCCInstallation.getTriple().str();
+    llvm::sys::path::append(SysRootDir, LibDir, "..", TripleStr);
+  } else {
+    // Use the triple as provided to the driver. Unlike the parsed triple
+    // this has not been normalized to always contain every field.
+    llvm::sys::path::append(SysRootDir, getDriver().Dir, "..",
+                            getDriver().getTargetTriple());
+  }
+
+  if (!llvm::sys::fs::exists(SysRootDir))
+    return std::string();
+
+  return std::string(SysRootDir.str());
 }
 
 ToolChain::CXXStdlibType
@@ -185,9 +230,6 @@ void tools::xtensa::Assembler::ConstructJob(Compilation &C, const JobAction &JA,
                                             const char *LinkingOutput) const {
   const auto &TC =
       static_cast<const toolchains::XtensaToolChain &>(getToolChain());
-
-  if (TC.GCCToolchainName == "")
-    llvm_unreachable("Unable to find Xtensa GCC assembler");
 
   claimNoWarnArgs(Args);
   ArgStringList CmdArgs;
@@ -232,17 +274,24 @@ void xtensa::Linker::ConstructJob(Compilation &C, const JobAction &JA,
   bool WantCRTs =
       !Args.hasArg(options::OPT_nostdlib, options::OPT_nostartfiles);
   const auto &ToolChain =
-      static_cast<const toolchains::XtensaToolChain &>(getToolChain());  
+      static_cast<const toolchains::XtensaToolChain &>(getToolChain());
+  const Driver &D = ToolChain.getDriver();
 
-  if (ToolChain.GCCToolchainName == "")
-    llvm_unreachable("Unable to find Xtensa GCC linker");
+  if (!D.SysRoot.empty())
+    CmdArgs.push_back(Args.MakeArgString("--sysroot=" + D.SysRoot));
 
-  if (!Args.getLastArgValue(options::OPT_fuse_ld_EQ).empty()) {
-    Linker.assign(ToolChain.GetLinkerPath());
+  bool LinkerIsLLD;
+  std::string LinkerPath = ToolChain.GetLinkerPath(&LinkerIsLLD);
+  if (ToolChain.GCCToolchainName != "") {
+    if (!LinkerIsLLD) {
+      Linker.assign(ToolChain.GCCToolchainDir);
+      llvm::sys::path::append(
+          Linker, "bin", ToolChain.GCCToolchainName + "-" + getShortName());
+    } else {
+      Linker.assign(LinkerPath);
+    }
   } else {
-    Linker.assign(ToolChain.GCCToolchainDir);
-    llvm::sys::path::append(Linker, "bin",
-                            ToolChain.GCCToolchainName + "-" + getShortName());
+    Linker.assign(LinkerPath);
   }
 
   const char *crtbegin, *crtend;
@@ -251,17 +300,17 @@ void xtensa::Linker::ConstructJob(Compilation &C, const JobAction &JA,
     crtbegin = "crtbegin.o";
     crtend = "crtend.o";
   } else {
-    assert (RuntimeLib == ToolChain::RLT_CompilerRT);
+    assert(RuntimeLib == ToolChain::RLT_CompilerRT);
     crtbegin = ToolChain.getCompilerRTArgString(Args, "crtbegin",
                                                 ToolChain::FT_Object);
-    crtend = ToolChain.getCompilerRTArgString(Args, "crtend",
-                                              ToolChain::FT_Object);
+    crtend =
+        ToolChain.getCompilerRTArgString(Args, "crtend", ToolChain::FT_Object);
   }
 
   if (WantCRTs) {
     // TODO: The crt0.o is not used for esp targets, but maybe used in
     // future for other vendors
-    //CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("crt0.o")));
+    // CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("crt0.o")));
     CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath(crtbegin)));
   }
 
@@ -272,7 +321,7 @@ void xtensa::Linker::ConstructJob(Compilation &C, const JobAction &JA,
   Args.addAllArgs(CmdArgs,
                   {options::OPT_T_Group, options::OPT_e, options::OPT_s,
                    options::OPT_t, options::OPT_u_Group});
-  
+
   if (!Args.hasArg(options::OPT_nostdlib) &&
       !Args.hasArg(options::OPT_nodefaultlibs)) {
     if (ToolChain.ShouldLinkCXXStdlib(Args))
@@ -285,9 +334,9 @@ void xtensa::Linker::ConstructJob(Compilation &C, const JobAction &JA,
 
   CmdArgs.push_back("-o");
   CmdArgs.push_back(Output.getFilename());
-  C.addCommand(std::make_unique<Command>(
-      JA, *this, ResponseFileSupport::AtFileCurCP(), Args.MakeArgString(Linker), 
-      CmdArgs, Inputs));
+  C.addCommand(
+      std::make_unique<Command>(JA, *this, ResponseFileSupport::AtFileCurCP(),
+                                Args.MakeArgString(Linker), CmdArgs, Inputs));
 }
 
 // Get features by CPU name

@@ -47,6 +47,9 @@ public:
   std::string GCCLibAndIncVersion = "";
   std::string GCCToolchainName = "";
   std::string GCCToolchainDir = "";
+
+private:
+  std::string computeSysRoot() const override;
 };
 
 } // end namespace toolchains
