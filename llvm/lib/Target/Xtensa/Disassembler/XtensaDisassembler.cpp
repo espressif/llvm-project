@@ -865,7 +865,7 @@ static DecodeStatus readInstruction16(ArrayRef<uint8_t> Bytes, uint64_t Address,
 /// Read three bytes from the ArrayRef and return 24 bit data
 static DecodeStatus readInstruction24(ArrayRef<uint8_t> Bytes, uint64_t Address,
                                       uint64_t &Size, uint64_t &Insn,
-                                      bool IsLittleEndian) {
+                                      bool IsLittleEndian, bool CheckTIE = false) {
   // We want to read exactly 3 Bytes of data.
   if (Bytes.size() < 3) {
     Size = 0;
@@ -875,6 +875,8 @@ static DecodeStatus readInstruction24(ArrayRef<uint8_t> Bytes, uint64_t Address,
   if (!IsLittleEndian) {
     report_fatal_error("Big-endian mode currently is not supported!");
   } else {
+    if (CheckTIE && (Bytes[0] & 0x8) != 0)
+      return MCDisassembler::Fail;
     Insn = (Bytes[2] << 16) | (Bytes[1] << 8) | (Bytes[0] << 0);
   }
 
@@ -894,6 +896,8 @@ static DecodeStatus readInstruction32(ArrayRef<uint8_t> Bytes, uint64_t Address,
   if (!IsLittleEndian) {
     report_fatal_error("Big-endian mode currently is not supported!");
   } else {
+    if ((Bytes[0] & 0x8) == 0)
+      return MCDisassembler::Fail;
     Insn = (Bytes[3] << 24) | (Bytes[2] << 16) | (Bytes[1] << 8) | (Bytes[0] << 0);
   }
 
@@ -959,15 +963,15 @@ DecodeStatus XtensaDisassembler::getInstruction(MCInst &MI, uint64_t &Size,
 
   if (hasESP32S3Ops()) {
     // Parse ESP32S3 24-bit instructions
-    Result = readInstruction24(Bytes, Address, Size, Insn, IsLittleEndian);
-    if (Result == MCDisassembler::Fail)
-      return MCDisassembler::Fail;
-    LLVM_DEBUG(dbgs() << "Trying ESP32S3 table (24-bit opcodes):\n");
-    Result = decodeInstruction(DecoderTableESP32S324, MI, Insn,
-                               Address, this, STI);
+    Result = readInstruction24(Bytes, Address, Size, Insn, IsLittleEndian, true);
     if (Result != MCDisassembler::Fail) {
-      Size = 3;
-      return Result;
+      LLVM_DEBUG(dbgs() << "Trying ESP32S3 table (24-bit opcodes):\n");
+      Result = decodeInstruction(DecoderTableESP32S324, MI, Insn, Address, this,
+                                 STI);
+      if (Result != MCDisassembler::Fail) {
+        Size = 3;
+        return Result;
+      }
     }
 
     // Parse ESP32S3 32-bit instructions
