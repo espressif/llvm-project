@@ -23503,8 +23503,8 @@ CodeGenFunction::EmitXtensaBuiltinExpr(unsigned BuiltinID, const CallExpr *E,
                                            *a = p'
   */
   auto InoutPtrTy = F->getArg(0)->getType()->getPointerTo();
-  Address InoutPtrAddr = Builder.CreateElementBitCast(
-      EmitPointerWithAlignment(E->getArg(0)), InoutPtrTy);
+  Address InoutPtrAddr = EmitPointerWithAlignment(E->getArg(0))
+    .withElementType(InoutPtrTy);
 
   unsigned NumArgs = E->getNumArgs();
   Value *InoutVal = Builder.CreateLoad(InoutPtrAddr);

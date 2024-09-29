@@ -19,10 +19,8 @@
 
 define void @test() {
 ; CHECK-LABEL: test:
-; CHECK:         .cfi_startproc
-; CHECK-NEXT:  # %bb.0: # %entry
+; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    entry a1, 32
-; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    l32r a8, .LCPI0_0
 ; CHECK-NEXT:    memw
 ; CHECK-NEXT:    l8ui a8, a8, 0
@@ -56,10 +54,8 @@ entry:
 
 define void @test_i8() {
 ; CHECK-LABEL: test_i8:
-; CHECK:         .cfi_startproc
-; CHECK-NEXT:  # %bb.0: # %entry
+; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    entry a1, 32
-; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    l32r a8, .LCPI1_0
 ; CHECK-NEXT:    memw
 ; CHECK-NEXT:    l8ui a8, a8, 0
@@ -75,10 +71,8 @@ entry:
 
 define void @test_i16() {
 ; CHECK-LABEL: test_i16:
-; CHECK:         .cfi_startproc
-; CHECK-NEXT:  # %bb.0: # %entry
+; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    entry a1, 32
-; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    l32r a8, .LCPI2_0
 ; CHECK-NEXT:    memw
 ; CHECK-NEXT:    l16ui a8, a8, 0
@@ -94,10 +88,8 @@ entry:
 
 define void @test_i32() {
 ; CHECK-LABEL: test_i32:
-; CHECK:         .cfi_startproc
-; CHECK-NEXT:  # %bb.0: # %entry
+; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    entry a1, 32
-; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    l32r a8, .LCPI3_0
 ; CHECK-NEXT:    memw
 ; CHECK-NEXT:    l32i.n a8, a8, 0
@@ -113,10 +105,8 @@ entry:
 
 define void @test_i64() {
 ; CHECK-LABEL: test_i64:
-; CHECK:         .cfi_startproc
-; CHECK-NEXT:  # %bb.0: # %entry
+; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    entry a1, 32
-; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    l32r a8, .LCPI4_0
 ; CHECK-NEXT:    memw
 ; CHECK-NEXT:    l32i.n a9, a8, 0
@@ -136,10 +126,8 @@ entry:
 
 define void @test_float() {
 ; CHECK-LABEL: test_float:
-; CHECK:         .cfi_startproc
-; CHECK-NEXT:  # %bb.0: # %entry
+; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    entry a1, 32
-; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    l32r a8, .LCPI5_0
 ; CHECK-NEXT:    memw
 ; CHECK-NEXT:    lsi f8, a8, 0
@@ -155,10 +143,8 @@ entry:
 
 define void @test_double() {
 ; CHECK-LABEL: test_double:
-; CHECK:         .cfi_startproc
-; CHECK-NEXT:  # %bb.0: # %entry
+; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    entry a1, 32
-; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    l32r a8, .LCPI6_0
 ; CHECK-NEXT:    memw
 ; CHECK-NEXT:    l32i.n a9, a8, 0
@@ -178,10 +164,8 @@ entry:
 
 define void @test_vec() {
 ; CHECK-LABEL: test_vec:
-; CHECK:         .cfi_startproc
-; CHECK-NEXT:  # %bb.0: # %entry
+; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    entry a1, 32
-; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    l32r a8, .LCPI7_0
 ; CHECK-NEXT:    memw
 ; CHECK-NEXT:    l32i.n a9, a8, 0

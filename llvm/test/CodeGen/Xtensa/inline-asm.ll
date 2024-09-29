@@ -6,10 +6,8 @@
 
 define i32 @constraint_r(i32 %a) {
 ; XTENSA-LABEL: constraint_r:
-; XTENSA:         .cfi_startproc
-; XTENSA-NEXT:  # %bb.0:
+; XTENSA:       # %bb.0:
 ; XTENSA-NEXT:    entry a1, 32
-; XTENSA-NEXT:    .cfi_def_cfa_offset 32
 ; XTENSA-NEXT:    l32r a8, .LCPI0_0
 ; XTENSA-NEXT:    l32i.n a8, a8, 0
 ; XTENSA-NEXT:    #APP
@@ -23,10 +21,8 @@ define i32 @constraint_r(i32 %a) {
 
 define i32 @constraint_i(i32 %a) {
 ; XTENSA-LABEL: constraint_i:
-; XTENSA:         .cfi_startproc
-; XTENSA-NEXT:  # %bb.0:
+; XTENSA:       # %bb.0:
 ; XTENSA-NEXT:    entry a1, 32
-; XTENSA-NEXT:    .cfi_def_cfa_offset 32
 ; XTENSA-NEXT:    #APP
 ; XTENSA-NEXT:    addi a2, a2, 113
 ; XTENSA-NEXT:    #NO_APP

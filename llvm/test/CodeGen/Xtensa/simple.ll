@@ -4,10 +4,8 @@
 ; CHECK:  .text
 define void @f() {
 ; CHECK-LABEL: f:
-; CHECK:         .cfi_startproc
-; CHECK-NEXT:  # %bb.0:
+; CHECK:       # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
-; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    retw.n
   ret void
 }

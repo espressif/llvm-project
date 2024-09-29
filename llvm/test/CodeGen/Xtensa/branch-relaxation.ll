@@ -4,10 +4,8 @@
 
 define i32 @jump(i1 %a) {
 ; XTENSA-LABEL: jump:
-; XTENSA:         .cfi_startproc
-; XTENSA-NEXT:  # %bb.0:
+; XTENSA:       # %bb.0:
 ; XTENSA-NEXT:    entry a1, 32
-; XTENSA-NEXT:    .cfi_def_cfa_offset 32
 ; XTENSA-NEXT:    movi.n a8, 1
 ; XTENSA-NEXT:    and a8, a2, a8
 ; XTENSA-NEXT:    beqz a8, .LBB0_2
@@ -44,10 +42,8 @@ tail:
 
 define i32 @jx(i1 %a) {
 ; XTENSA-LABEL: jx:
-; XTENSA:         .cfi_startproc
-; XTENSA-NEXT:  # %bb.0:
+; XTENSA:       # %bb.0:
 ; XTENSA-NEXT:    entry a1, 48
-; XTENSA-NEXT:    .cfi_def_cfa_offset 48
 ; XTENSA-NEXT:    movi.n a8, 1
 ; XTENSA-NEXT:    and a8, a2, a8
 ; XTENSA-NEXT:    bnez a8, .LBB1_1
@@ -87,10 +83,8 @@ tail:
 
 define void @relax_spill() {
 ; XTENSA-LABEL: relax_spill:
-; XTENSA:         .cfi_startproc
-; XTENSA-NEXT:  # %bb.0:
+; XTENSA:       # %bb.0:
 ; XTENSA-NEXT:    entry a1, 48
-; XTENSA-NEXT:    .cfi_def_cfa_offset 48
 ; XTENSA-NEXT:    #APP
 ; XTENSA-NEXT:    #NO_APP
 ; XTENSA-NEXT:    #APP

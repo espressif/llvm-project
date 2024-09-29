@@ -4,10 +4,7 @@
 ; Function Attrs: nounwind optsize
 define i32 @test_hwloop(i32 %a, i32 %b, i32 %n) local_unnamed_addr #1 {
 ; CHECK-LABEL: test_hwloop:
-; CHECK:         .cfi_startproc
-; CHECK-NEXT:  # %bb.0: # %entry
-; CHECK-NEXT:    entry a1, 32
-; CHECK-NEXT:    .cfi_def_cfa_offset 32
+; CHECK:         entry a1, 32
 ; CHECK-NEXT:    blti a4, 1, .LBB0_5
 ; CHECK-NEXT:  # %bb.1: # %for.body.preheader
 ; CHECK-NEXT:    movi.n a8, 0

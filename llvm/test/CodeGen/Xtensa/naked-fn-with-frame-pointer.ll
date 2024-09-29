@@ -5,8 +5,7 @@ declare dso_local void @main()
 
 define dso_local void @naked() naked "frame-pointer"="all" {
 ; CHECK-LABEL: naked:
-; CHECK:         .cfi_startproc
-; CHECK-NEXT:  # %bb.0:
+; CHECK:       # %bb.0:
 ; CHECK-NEXT:    l32r a8, .LCPI0_0
 ; CHECK-NEXT:    callx8 a8
   call void @main()
@@ -15,11 +14,9 @@ define dso_local void @naked() naked "frame-pointer"="all" {
 
 define dso_local void @normal() "frame-pointer"="all" {
 ; CHECK-LABEL: normal:
-; CHECK:         .cfi_startproc
-; CHECK-NEXT:  # %bb.0:
+; CHECK:       # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
 ; CHECK-NEXT:    mov.n a7, a1
-; CHECK-NEXT:    .cfi_def_cfa q7, 32
 ; CHECK-NEXT:    l32r a8, .LCPI1_0
 ; CHECK-NEXT:    callx8 a8
   call void @main()

@@ -3,10 +3,8 @@
 
 define void @vararg(...) {
 ; CHECK-LABEL: vararg:
-; CHECK:         .cfi_startproc
-; CHECK-NEXT:  # %bb.0: # %entry
+; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    entry a1, 64
-; CHECK-NEXT:    .cfi_def_cfa_offset 64
 ; CHECK-NEXT:    s32i.n a7, a1, 20
 ; CHECK-NEXT:    s32i.n a6, a1, 16
 ; CHECK-NEXT:    s32i.n a5, a1, 12

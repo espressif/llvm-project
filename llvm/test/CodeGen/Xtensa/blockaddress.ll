@@ -5,8 +5,7 @@
 
 define void @test_blockaddress() {
 ; CHECK-LABEL: test_blockaddress:
-; CHECK:         .cfi_startproc
-; CHECK-NEXT:  # %bb.0:
+; CHECK:       # %bb.0:
 ; CHECK-NEXT:    l32r a8, .LCPI0_0
 ; CHECK-NEXT:    l32r a9, .LCPI0_1
 ; CHECK-NEXT:    memw
