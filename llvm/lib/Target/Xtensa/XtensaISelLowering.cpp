@@ -65,6 +65,16 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
     addRegisterClass(MVT::f32, &Xtensa::FPRRegClass);
   }
 
+  if (Subtarget.hasBoolean()) {
+    addRegisterClass(MVT::v1i1, &Xtensa::BRRegClass);
+    setOperationAction(ISD::Constant, MVT::v1i1, Expand);
+    for (MVT VT : MVT::integer_valuetypes()) {
+      setLoadExtAction(ISD::SEXTLOAD, VT, MVT::v1i1, Promote);
+      setLoadExtAction(ISD::ZEXTLOAD, VT, MVT::v1i1, Promote);
+      setLoadExtAction(ISD::EXTLOAD, VT, MVT::v1i1, Promote);
+    }
+  }
+
   // Set up special registers.
   setStackPointerRegisterToSaveRestore(Xtensa::SP);
 
@@ -763,12 +773,17 @@ SDValue XtensaTargetLowering::PerformDAGCombine(SDNode *N,
 
 #include "XtensaGenCallingConv.inc"
 
-static const MCPhysReg IntRegs[] = {Xtensa::A2, Xtensa::A3, Xtensa::A4,
-                                    Xtensa::A5, Xtensa::A6, Xtensa::A7};
-
 static bool CC_Xtensa_Custom(unsigned ValNo, MVT ValVT, MVT LocVT,
                              CCValAssign::LocInfo LocInfo,
                              ISD::ArgFlagsTy ArgFlags, CCState &State) {
+  static const MCPhysReg IntRegs[] = {Xtensa::A2, Xtensa::A3, Xtensa::A4,
+                                      Xtensa::A5, Xtensa::A6, Xtensa::A7};
+  static const MCPhysReg BoolRegs[] = {
+      Xtensa::B0,  Xtensa::B1,  Xtensa::B2,  Xtensa::B3,
+      Xtensa::B4,  Xtensa::B5,  Xtensa::B6,  Xtensa::B7,
+      Xtensa::B8,  Xtensa::B9,  Xtensa::B10, Xtensa::B11,
+      Xtensa::B12, Xtensa::B13, Xtensa::B14, Xtensa::B15};
+
   if (ArgFlags.isByVal()) {
     Align ByValAlign = ArgFlags.getNonZeroByValAlign();
     unsigned ByValSize = ArgFlags.getByValSize();
@@ -825,9 +840,11 @@ static bool CC_Xtensa_Custom(unsigned ValNo, MVT ValVT, MVT LocVT,
       Register = State.AllocateReg(IntRegs);
     State.AllocateReg(IntRegs);
     LocVT = MVT::i32;
-  } else {
-    report_fatal_error("Cannot handle this ValVT.");
-  }
+  } else if (ValVT == MVT::v1i1) {
+    Register = State.AllocateReg(BoolRegs);
+    LocVT = ValVT;
+  } else
+    llvm_unreachable("Cannot handle this ValVT.");
 
   if (!Register) {
     unsigned Offset = State.AllocateStack(ValVT.getStoreSize(), OrigAlign);
@@ -872,8 +889,12 @@ SDValue XtensaTargetLowering::LowerFormalArguments(
       EVT RegVT = VA.getLocVT();
       const TargetRegisterClass *RC = &Xtensa::ARRegClass;
 
-      if (RegVT != MVT::i32)
-        report_fatal_error("RegVT not supported by FormalArguments Lowering");
+      if (RegVT == MVT::i32) {
+        RC = &Xtensa::ARRegClass;
+      } else if (RegVT == MVT::v1i1) {
+        RC = &Xtensa::BRRegClass;
+      } else
+        llvm_unreachable("RegVT not supported by FormalArguments Lowering");
 
       // Transform the arguments stored on
       // physical registers into virtual ones
@@ -3407,6 +3428,27 @@ MachineBasicBlock *XtensaTargetLowering::EmitInstrWithCustomInserter(
     if (MMO.isVolatile()) {
       BuildMI(*MBB, MI, DL, TII.get(Xtensa::MEMW));
     }
+    return MBB;
+  }
+  case Xtensa::MOVBA_P: {
+    const TargetRegisterClass *AR = getRegClassFor(MVT::i32);
+
+    Register Dst1 = MRI.createVirtualRegister(AR);
+    Register Dst2 = MRI.createVirtualRegister(AR);
+    MachineOperand Breg = MI.getOperand(0);
+    MachineOperand Src = MI.getOperand(1);
+
+    /*
+      MOVBA_P2 Breg, Dst1, Dest2, Src
+    */
+
+    BuildMI(*MBB, MI, DL, TII.get(Xtensa::MOVBA_P2), Breg.getReg())
+        .addReg(Dst1, RegState::Define | RegState::EarlyClobber)
+        .addReg(Dst2, RegState::Define | RegState::EarlyClobber)
+        .addReg(Src.getReg());
+
+    MI.eraseFromParent();
+
     return MBB;
   }
   default:
