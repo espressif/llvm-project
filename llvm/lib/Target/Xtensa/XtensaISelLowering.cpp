@@ -37,6 +37,25 @@ using namespace llvm;
 static const MCPhysReg XtensaArgRegs[6] = {Xtensa::A2, Xtensa::A3, Xtensa::A4,
                                            Xtensa::A5, Xtensa::A6, Xtensa::A7};
 
+static const MCPhysReg VecRegs[] = {Xtensa::AED0, Xtensa::AED1, Xtensa::AED2,
+                                    Xtensa::AED3};
+
+static const MVT VectorIntTypes[] = {
+    MVT::v2i32,
+    MVT::v1i32,
+    MVT::v4i16,
+    MVT::v1i64,
+};
+
+template <typename VT> static bool isVecVT(VT ValVT) {
+  for (const auto &V : VectorIntTypes) {
+    auto VV = VT(V);
+    if (VV == ValVT)
+      return true;
+  }
+  return false;
+}
+
 // Return true if we must use long (in fact, indirect) function call.
 // It's simplified version, production implimentation must
 // resolve a functions in ROM (usually glibc functions)
@@ -82,6 +101,27 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
     setOperationAction(ISD::LOAD, MVT::v2i1, Legal);
     setOperationAction(ISD::LOAD, MVT::v4i1, Legal);
   }
+
+  if (Subtarget.hasHIFI3()) {
+    for (MVT VT : VectorIntTypes) {
+      addRegisterClass(VT, &Xtensa::AE_DRRegClass);
+      setOperationAction(ISD::VECTOR_SHUFFLE, VT, Expand);
+      // handle bicast v8i8 to VEC_VT
+      setOperationAction(ISD::BITCAST, VT, Custom);
+    }
+    addRegisterClass(MVT::v8i8, &Xtensa::AE_VALIGNRegClass);
+    // handle bicast VEC_VT to v8i8
+    setOperationAction(ISD::BITCAST, MVT::v8i8, Expand);
+
+    setOperationAction(ISD::SIGN_EXTEND, MVT::v1i32, Expand);
+    setOperationAction(ISD::ZERO_EXTEND, MVT::v1i32, Expand);
+    setOperationAction(ISD::ANY_EXTEND, MVT::v1i32, Expand);
+    setOperationAction(ISD::BUILD_VECTOR, MVT::v1i64, Legal);
+
+    setTargetDAGCombine(ISD::BUILD_VECTOR);
+    setOperationAction(ISD::MUL, MVT::v1i64, Expand);
+  }
+
   // Set up special registers.
   setStackPointerRegisterToSaveRestore(Xtensa::SP);
 
@@ -387,6 +427,34 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
     setMinCmpXchgSizeInBits(32);
   } else {
     setMaxAtomicSizeInBitsSupported(0);
+  }
+
+  for (MVT VT : MVT::fixedlen_vector_valuetypes()) {
+    if (isTypeLegal(VT)) {
+      setOperationAction(ISD::CTPOP, VT, Expand);
+      setOperationAction(ISD::SRL, VT, Expand);
+      setOperationAction(ISD::SRA, VT, Expand);
+      setOperationAction(ISD::SHL, VT, Expand);
+
+      // Expand all divisions and remainders for vectors
+      setOperationAction(ISD::SDIV, VT, Expand);
+      setOperationAction(ISD::UDIV, VT, Expand);
+      setOperationAction(ISD::SREM, VT, Expand);
+      setOperationAction(ISD::UREM, VT, Expand);
+    }
+    setOperationAction(ISD::SDIVREM, VT, Expand);
+    setOperationAction(ISD::UDIVREM, VT, Expand);
+
+    setOperationAction(ISD::SELECT_CC, VT, Custom);
+    setOperationAction(ISD::SETCC, VT, Custom);
+
+    // Disable all narrowing stores and extending loads for vectors
+    for (MVT InnerVT : MVT::fixedlen_vector_valuetypes()) {
+      setTruncStoreAction(VT, InnerVT, Expand);
+      setLoadExtAction(ISD::SEXTLOAD, VT, InnerVT, Expand);
+      setLoadExtAction(ISD::ZEXTLOAD, VT, InnerVT, Expand);
+      setLoadExtAction(ISD::EXTLOAD, VT, InnerVT, Expand);
+    }
   }
 
   // Compute derived properties from the register classes
@@ -758,6 +826,22 @@ static SDValue PerformBRCONDCombine(SDNode *N, SelectionDAG &DAG,
                      LHS, RHS, Dest);
 }
 
+static SDValue PerformBUILD_VECTORCombine(SDNode *N, SelectionDAG &DAG,
+                                          TargetLowering::DAGCombinerInfo &DCI,
+                                          const XtensaSubtarget &Subtarget) {
+  SDLoc DL(N);
+  EVT VT = N->getValueType(0);
+  SDValue Op0 = N->getOperand(0);
+  ConstantSDNode *Const = dyn_cast<ConstantSDNode>(Op0);
+  if (VT == MVT::v1i64 && Const) {
+    int64_t Val = Const->getSExtValue();
+    if (Val <= std::numeric_limits<uint32_t>::max())
+      return DAG.getNode(XtensaISD::BUILD_VEC, DL, MVT::v1i64,
+                         DAG.getConstant(Val, DL, MVT::i32));
+  }
+  return SDValue();
+}
+
 static SDValue PerformBITCASTCombine(SDNode *N, SelectionDAG &DAG,
                                      TargetLowering::DAGCombinerInfo &DCI,
                                      const XtensaSubtarget &Subtarget) {
@@ -859,6 +943,8 @@ SDValue XtensaTargetLowering::PerformDAGCombine(SDNode *N,
     return PerformHWLoopCombine(N, DAG, DCI, Subtarget);
   case ISD::BRCOND:
     return PerformBRCONDCombine(N, DAG, DCI, Subtarget);
+  case ISD::BUILD_VECTOR:
+    return PerformBUILD_VECTORCombine(N, DAG, DCI, Subtarget);
   case ISD::BITCAST:
     return PerformBITCASTCombine(N, DAG, DCI, Subtarget);
   case ISD::EXTRACT_SUBVECTOR:
@@ -957,6 +1043,9 @@ static bool CC_Xtensa_Custom(unsigned ValNo, MVT ValVT, MVT LocVT,
   } else if (ValVT == MVT::v4i1) {
     Register = State.AllocateReg(BR4Regs);
     LocVT = ValVT;
+  } else if (isVecVT(ValVT)) {
+    Register = State.AllocateReg(VecRegs);
+    LocVT = ValVT;
   } else
     llvm_unreachable("Cannot handle this ValVT.");
 
@@ -1011,6 +1100,8 @@ SDValue XtensaTargetLowering::LowerFormalArguments(
         RC = &Xtensa::BR2RegClass;
       } else if (RegVT == MVT::v4i1) {
         RC = &Xtensa::BR4RegClass;
+      } else if (isVecVT(RegVT)) {
+        RC = &Xtensa::AE_DRRegClass;
       } else
         llvm_unreachable("RegVT not supported by FormalArguments Lowering");
 
@@ -1457,6 +1548,9 @@ SDValue XtensaTargetLowering::LowerSELECT_CC(SDValue Op,
                        LHS, RHS, TrueValue, FalseValue,
                        (LHS.getValueType() == MVT::f32) ? TargetCC_FP
                                                         : TargetCC);
+  else if (TrueValue.getValueType().isVector())
+    return Op;
+
   return DAG.getNode(XtensaISD::SELECT_CC, DL, Ty, LHS, RHS, TrueValue,
                      FalseValue, TargetCC);
 }
@@ -2095,6 +2189,14 @@ SDValue XtensaTargetLowering::LowerATOMIC_FENCE(SDValue Op,
   return DAG.getNode(XtensaISD::MEMW, DL, MVT::Other, Chain);
 }
 
+SDValue XtensaTargetLowering::LowerBitVecLOAD(SDValue Op,
+                                              SelectionDAG &DAG) const {
+  SDLoc DL(Op);
+  EVT VT = Op.getValueType();
+  assert(VT.isVector() && VT.getSizeInBits() <= 8);
+  return SDValue(); // Expand
+}
+
 SDValue XtensaTargetLowering::LowerOperation(SDValue Op,
                                              SelectionDAG &DAG) const {
   switch (Op.getOpcode()) {
@@ -2149,6 +2251,8 @@ SDValue XtensaTargetLowering::LowerOperation(SDValue Op,
   case ISD::FSHL:
   case ISD::FSHR:
     return LowerFunnelShift(Op, DAG);
+  case ISD::BITCAST:
+    return LowerBITCAST(Op, DAG);
   default:
     report_fatal_error("Unexpected node to lower");
   }
@@ -2216,6 +2320,8 @@ const char *XtensaTargetLowering::getTargetNodeName(unsigned Opcode) const {
     return "XtensaISD::MEMW";
   case XtensaISD::TRUNC:
     return "XtensaISD::TRUNC";
+  case XtensaISD::BUILD_VEC:
+    return "XtensaISD::BUILD_VEC";
   }
   return nullptr;
 }
@@ -3591,4 +3697,12 @@ MachineBasicBlock *XtensaTargetLowering::EmitInstrWithCustomInserter(
     return EmitDSPInstrWithCustomInserter(MI, MBB, TII, MF, MRI, DL);
     // llvm_unreachable("Unexpected instr type to insert");
   }
+}
+
+SDValue XtensaTargetLowering::LowerBITCAST(SDValue Op,
+                                           SelectionDAG &DAG) const {
+  assert(Op.getValueType().isVector());
+  if (Op.getOperand(0).getValueType() == MVT::v8i8)
+    return SDValue(); // Expand
+  return Op;          // Legal
 }
