@@ -24,6 +24,7 @@ bool SemaXtensa::CheckXtensaBuiltinFunctionCall(const TargetInfo &TI,
   unsigned i = 0, l = 0, u = 0;
 
   switch (BuiltinID) {
+#include "clang/Basic/XtensaSemaCheck.inc"
   default:
     return false;
   case Xtensa::BI__builtin_xtensa_mul_ad_ll:

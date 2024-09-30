@@ -26,12 +26,14 @@ static constexpr llvm::StringTable BuiltinStrings =
     CLANG_BUILTIN_STR_TABLE_START
 #define BUILTIN CLANG_BUILTIN_STR_TABLE
 #include "clang/Basic/BuiltinsXtensa.def"
+#include "clang/Basic/BuiltinsXtensaHIFI.def"
     ;
 
 static constexpr auto BuiltinInfos = Builtin::MakeInfos<NumBuiltins>({
 #define BUILTIN CLANG_BUILTIN_ENTRY
 #define LIBBUILTIN CLANG_LIBBUILTIN_ENTRY
 #include "clang/Basic/BuiltinsXtensa.def"
+#include "clang/Basic/BuiltinsXtensaHIFI.def"
 });
 
 llvm::SmallVector<Builtin::InfosShard>
