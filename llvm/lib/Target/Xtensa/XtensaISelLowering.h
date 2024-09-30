@@ -168,6 +168,12 @@ private:
 
   SDValue LowerFunnelShift(SDValue Op, SelectionDAG &DAG) const;
 
+  SDValue LowerVectorShift(SDValue Op, SelectionDAG &DAG) const;
+
+  SDValue LowerBITCAST(SDValue Op, SelectionDAG &DAG) const;
+
+  SDValue LowerBitVecLOAD(SDValue Op, SelectionDAG &DAG) const;
+
   SDValue getAddrPCRel(SDValue Op, SelectionDAG &DAG) const;
 
   CCAssignFn *CCAssignFnForCall(CallingConv::ID CC, bool IsVarArg) const;
