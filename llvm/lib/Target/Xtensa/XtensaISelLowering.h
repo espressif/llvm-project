@@ -85,7 +85,8 @@ enum {
   // FP move
   MOVS,
 
-  TRUNC
+  BUILD_VEC,
+  TRUNC,
 };
 }
 
@@ -237,6 +238,12 @@ private:
   SDValue LowerShiftRightParts(SDValue Op, SelectionDAG &DAG, bool IsSRA) const;
 
   SDValue LowerFunnelShift(SDValue Op, SelectionDAG &DAG) const;
+
+  SDValue LowerVectorShift(SDValue Op, SelectionDAG &DAG) const;
+
+  SDValue LowerBITCAST(SDValue Op, SelectionDAG &DAG) const;
+
+  SDValue LowerBitVecLOAD(SDValue Op, SelectionDAG &DAG) const;
 
   SDValue getAddrPCRel(SDValue Op, SelectionDAG &DAG) const;
 
