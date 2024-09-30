@@ -72,14 +72,14 @@ define {vtype} @test_sel_{fun}({ctype} %a, {ctype} %b, {vtype} %t, {vtype} %f) {
 CMP_FIXTURES = [
   ('eq','ae_eq64', 'ae_movt64'),
   ('ne','ae_eq64', 'ae_movf64'),
-  ('ugt','ae_le64', 'ae_movf64'),
+  ('ugt','ae_lt64', 'ae_movf64'),
   ('uge','ae_lt64', 'ae_movf64'),
   ('ult','ae_lt64', 'ae_movt64'),
-  ('ule','ae_le64', 'ae_movt64'),
-  ('sgt','ae_le64', 'ae_movf64'),
+  ('ule','ae_lt64', 'ae_movt64'),
+  ('sgt','ae_lt64', 'ae_movf64'),
   ('sge','ae_lt64', 'ae_movf64'),
   ('slt','ae_lt64', 'ae_movt64'),
-  ('sle','ae_le64', 'ae_movt64'),
+  ('sle','ae_lt64', 'ae_movt64'),
 ]
 
 SCALARS = "i32 i16 i8".split()
