@@ -91,6 +91,8 @@ enum {
   SRCL,
   // Shift Right Combined
   SRCR,
+
+  TRUNC
 };
 }
 
