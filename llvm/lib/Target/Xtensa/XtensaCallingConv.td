@@ -16,6 +16,8 @@ class CCIfFeature<string Feature, CCAction A>:
 //===----------------------------------------------------------------------===//
 def RetCC_Xtensa : CallingConv<[
   CCIfFeature<"Boolean",CCIfType<[v1i1], CCAssignToReg<[B0]>>>,
+  CCIfFeature<"Boolean",CCIfType<[v2i1], CCAssignToReg<[B0_B1]>>>,
+  CCIfFeature<"Boolean",CCIfType<[v4i1], CCAssignToReg<[B0_B1_B2_B3]>>>,
 
   // First two return values go in a2, a3, a4, a5
   CCIfType<[i32], CCAssignToReg<[A2, A3, A4, A5]>>,

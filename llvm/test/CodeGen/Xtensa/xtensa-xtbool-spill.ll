@@ -52,9 +52,7 @@ define <1 x i1> @test_xtbool_load(i32 %addr)  {
 ; CHECK-LABEL: test_xtbool_load:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
-; CHECK-NEXT:    l8ui a8, a2, 0
-; CHECK-NEXT:    movi.n a9, 1
-; CHECK-NEXT:    and a10, a8, a9
+; CHECK-NEXT:    l8ui a10, a2, 0
 ; CHECK-NEXT:    rsr a8, br
 ; CHECK-NEXT:    l32r a9, .LCPI1_0
 ; CHECK-NEXT:    and a9, a9, a8
@@ -73,8 +71,6 @@ define void @test_xtbool_store(i32 %addr, <1 x i1> %b) {
 ; CHECK-NEXT:    entry a1, 32
 ; CHECK-NEXT:    rsr a8, br
 ; CHECK-NEXT:    extui a8, a8, 0, 1
-; CHECK-NEXT:    movi.n a9, 1
-; CHECK-NEXT:    and a8, a8, a9
 ; CHECK-NEXT:    s8i a8, a2, 0
 ; CHECK-NEXT:    retw.n
 entry:
