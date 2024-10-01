@@ -1461,13 +1461,13 @@ let isTerminator = 1, isBarrier = 1, hasSideEffects = 1, Size = 3 in {
 }
 
 // LOOPSTART pseudo instruction reserves 9 bytes for LOOP operation and NOP operations for possible alignment.
-let isTerminator = 1, isBarrier = 1, hasSideEffects = 1, Size = 9 in {
+let hasSideEffects = 1, Size = 9 in {
   def LOOPSTART : Pseudo<(outs), (ins AR:$s, brtarget:$target),
                         "!loopstart $s, $target", []>;
 }
 
 // LOOPEND pseudo instruction reserves 6 bytes for Jump and NOP operations.
-let isBranch = 1, isTerminator = 1, isBarrier = 1, isIndirectBranch = 0, Size = 6 in {
+let isBranch = 1, isTerminator = 1, isBarrier = 1, isIndirectBranch = 0, isNotDuplicable = 1, Size = 6 in {
   def LOOPEND : Pseudo<(outs), (ins brtarget:$target),
                       "!loopend $target", [(Xtensa_loopend bb:$target)]>;
 }
