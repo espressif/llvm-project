@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -no-opaque-pointers -triple xtensa -S -emit-llvm -O0 -o - %s \
+// RUN: %clang_cc1 -triple xtensa -S -emit-llvm -O0 -o - %s \
 // RUN: | FileCheck %s
 
 #include <stdint.h>

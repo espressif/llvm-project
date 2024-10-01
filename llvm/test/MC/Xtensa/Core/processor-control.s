@@ -84,3 +84,7 @@ xsr.sar a8
 # CHECK-INST: xsr a8, sar
 # CHECK: encoding: [0x80,0x03,0x61]
 xsr a8, 3
+
+# CHECK-INST: simcall
+# CHECK: encoding: [0x00,0x51,0x00]
+simcall

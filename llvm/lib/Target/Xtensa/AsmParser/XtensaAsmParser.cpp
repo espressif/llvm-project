@@ -653,9 +653,10 @@ bool XtensaAsmParser::matchAndEmitInstruction(SMLoc IDLoc, unsigned &Opcode,
   default:
     break;
   case Match_Success:
-    processInstruction(Inst, IDLoc, Out, STI);
-    Inst.setLoc(IDLoc);
-    Out.emitInstruction(Inst, getSTI());
+    if(processInstruction(Inst, IDLoc, Out, STI)) {
+      Inst.setLoc(IDLoc);
+      Out.emitInstruction(Inst, getSTI());
+    }
     return false;
   case Match_MissingFeature:
     return Error(IDLoc, "instruction use requires an option to be enabled");
@@ -1170,6 +1171,11 @@ bool XtensaAsmParser::parseBeginDirective(SMLoc L) {
     StringRef LiteralPrefixName = SE->getSymbol().getName();
     TS.setLiteralSectionPrefix(LiteralPrefixName);
     RegionInProgress.emplace_back(BeginLoc, RegionDirectiveName, LiteralPrefixName);
+  } else if (RegionDirectiveName == "schedule" || RegionDirectiveName == "no-schedule") {
+    // Behave like GNU 'as'.
+    // The schedule directive is recognized only for compatibility with Tensilica’s assembler.
+    // This directive is ignored and has no effect on 'as'.
+    RegionInProgress.emplace_back(BeginLoc, RegionDirectiveName);
   } else {
     return Error(BeginLoc, "unsupported region directive");
   }

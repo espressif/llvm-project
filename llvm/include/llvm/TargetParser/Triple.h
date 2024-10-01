@@ -1094,6 +1094,9 @@ public:
     return getArch() == Triple::bpfel || getArch() == Triple::bpfeb;
   }
 
+  /// Tests whether the target is Xtensa.
+  bool isXtensa() const { return getArch() == Triple::xtensa; }
+
   /// Tests if the target forces 64-bit time_t on a 32-bit architecture.
   bool isTime64ABI() const {
     EnvironmentType Env = getEnvironment();

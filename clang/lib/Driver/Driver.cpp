@@ -19,6 +19,7 @@
 #include "ToolChains/Cuda.h"
 #include "ToolChains/Darwin.h"
 #include "ToolChains/DragonFly.h"
+#include "ToolChains/EspBareMetal.h"
 #include "ToolChains/FreeBSD.h"
 #include "ToolChains/Fuchsia.h"
 #include "ToolChains/Gnu.h"
@@ -6764,6 +6765,8 @@ const ToolChain &Driver::getToolChain(const ArgList &Args,
         if (toolchains::RISCVToolChain::hasGCCToolchain(*this, Args))
           TC =
               std::make_unique<toolchains::RISCVToolChain>(*this, Target, Args);
+        else if (Target.getVendor() == llvm::Triple::Espressif)
+          TC = std::make_unique<toolchains::EspBareMetal>(*this, Target, Args);
         else
           TC = std::make_unique<toolchains::BareMetal>(*this, Target, Args);
         break;
@@ -6778,7 +6781,10 @@ const ToolChain &Driver::getToolChain(const ArgList &Args,
         TC = std::make_unique<toolchains::CSKYToolChain>(*this, Target, Args);
         break;
       case llvm::Triple::xtensa:
-        TC = std::make_unique<toolchains::XtensaToolChain>(*this, Target, Args);
+        if (Target.getVendor() == llvm::Triple::Espressif)
+          TC = std::make_unique<toolchains::EspBareMetal>(*this, Target, Args);
+        else
+          TC = std::make_unique<toolchains::BareMetal>(*this, Target, Args);
         break;
       default:
         if (toolchains::BareMetal::handlesTarget(Target))

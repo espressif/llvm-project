@@ -426,7 +426,11 @@ def BBCI : RRI8_Inst<0x07, (outs),
   let imm8 = target;
 }
 
+def : InstAlias<"_bbci\t$s, $imm, $target", (BBCI AR:$s, uimm5:$imm, brtarget:$target)>;
+
 def : InstAlias<"bbci.l\t$s, $imm, $target", (BBCI AR:$s, uimm5:$imm, brtarget:$target)>;
+
+def : InstAlias<"_bbci.l\t$s, $imm, $target", (BBCI AR:$s, uimm5:$imm, brtarget:$target)>;
 
 def BBSI : RRI8_Inst<0x07, (outs),
                     (ins AR:$s, uimm5:$imm, brtarget:$target),
@@ -441,6 +445,8 @@ def BBSI : RRI8_Inst<0x07, (outs),
 }
 
 def : InstAlias<"bbsi.l\t$s, $imm, $target", (BBSI AR:$s, uimm5:$imm, brtarget:$target)>;
+
+def : InstAlias<"_bbsi.l\t$s, $imm, $target", (BBSI AR:$s, uimm5:$imm, brtarget:$target)>;
 
 def : Pat<(brcond AR:$s, bb:$target), (BNEZ AR:$s, bb:$target)>;
 
@@ -1678,6 +1684,17 @@ let isBarrier = 1, isTerminator = 1 in {
     let r = 0;
     let s = 0;
   }
+}
+
+//===----------------------------------------------------------------------===//
+// Simulator instructions
+//===----------------------------------------------------------------------===//
+
+def SIMCALL : RRR_Inst<0x00, 0x00, 0x00, (outs), (ins),
+                      "simcall", []> {
+  let r = 0x5;
+  let s = 0x1;
+  let t = 0x0;
 }
 
 //===----------------------------------------------------------------------===//
