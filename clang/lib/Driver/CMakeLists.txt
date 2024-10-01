@@ -41,6 +41,7 @@ add_clang_library(clangDriver
   ToolChains/Arch/SystemZ.cpp
   ToolChains/Arch/VE.cpp
   ToolChains/Arch/X86.cpp
+  ToolChains/Arch/Xtensa.cpp
   ToolChains/AIX.cpp
   ToolChains/AMDGPU.cpp
   ToolChains/AMDGPUOpenMP.cpp
@@ -82,7 +83,6 @@ add_clang_library(clangDriver
   ToolChains/VEToolchain.cpp
   ToolChains/WebAssembly.cpp
   ToolChains/XCore.cpp
-  ToolChains/Xtensa.cpp
   ToolChains/PPCLinux.cpp
   ToolChains/PPCFreeBSD.cpp
   ToolChains/InterfaceStubs.cpp

@@ -19,11 +19,11 @@
 #include "Arch/SystemZ.h"
 #include "Arch/VE.h"
 #include "Arch/X86.h"
+#include "Arch/Xtensa.h"
 #include "HIPAMD.h"
 #include "Hexagon.h"
 #include "MSP430.h"
 #include "Solaris.h"
-#include "Xtensa.h"
 #include "clang/Basic/CharInfo.h"
 #include "clang/Basic/CodeGenOptions.h"
 #include "clang/Basic/LangOptions.h"
@@ -2929,17 +2929,4 @@ void tools::addMCModel(const Driver &D, const llvm::opt::ArgList &Args,
       CmdArgs.push_back("-mlarge-data-threshold=0");
     }
   }
-}
-
-void tools::addEspMultilibsPaths(const Driver &D, const MultilibSet &Multilibs,
-                                const Multilib &Multilib,
-                                StringRef CPU,
-                                StringRef InstallPath,
-                                ToolChain::path_list &Paths) {
-    if (const auto &PathsCallback = Multilibs.filePathsCallback())
-        for (const auto &Path : PathsCallback(Multilib)) {
-            SmallString<256> LibPath(D.ResourceDir);
-            llvm::sys::path::append(LibPath, D.getTargetTriple(), CPU, Path, "lib");
-            addPathIfExists(D, LibPath, Paths);
-        }
 }
