@@ -257,6 +257,16 @@ class XtensaTargetCodeGenInfo : public TargetCodeGenInfo {
 public:
   XtensaTargetCodeGenInfo(CodeGen::CodeGenTypes &CGT)
       : TargetCodeGenInfo(std::make_unique<XtensaABIInfo>(CGT)) {}
+
+  void setTargetAttributes(const Decl *D, llvm::GlobalValue *GV,
+                           CodeGen::CodeGenModule &CGM) const override {
+    const FunctionDecl *FD = dyn_cast_or_null<FunctionDecl>(D);
+    if (!FD)
+      return;
+    llvm::Function *Fn = cast<llvm::Function>(GV);
+    if (FD->hasAttr<XtensaShortCallAttr>())
+      Fn->addFnAttr("short-call");
+  }
 };
 } // namespace
 
