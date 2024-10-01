@@ -23526,11 +23526,60 @@ llvm::Value *CodeGenFunction::ConvertXtensaToBc(const Expr *ArgExpr,
   }
   return ArgCast;
 }
+llvm::Value *
+CodeGenFunction::EmitXtensaConversionExpr(unsigned BuiltinID, const CallExpr *E,
+                                          ReturnValueSlot ReturnValue,
+                                          llvm::Triple::ArchType Arch) {
+  unsigned MaxElems;
+  switch (BuiltinID) {
+  case Xtensa::BI__builtin_xtensa_ae_int32x2:
+    MaxElems = 2;
+    break;
+  case Xtensa::BI__builtin_xtensa_ae_int32:
+    MaxElems = 1;
+    break;
+  default:
+    llvm_unreachable("Unknown intrinsic ID");
+  }
+
+  Value *ArgVal = EmitScalarExpr(E->getArg(0));
+  QualType QT = E->getArg(0)->getType();
+  if (auto *VecTy = QT->getAs<VectorType>()) {
+    unsigned NumEl = VecTy->getNumElements();
+    llvm::Type *ElType = ConvertType(VecTy->getElementType());
+    if (ElType != Int32Ty || NumEl > MaxElems) {
+      CGM.Error(E->getExprLoc(), "Expected int32x1 or int32x2");
+      return ArgVal;
+    }
+    if (NumEl == MaxElems)
+      return ArgVal; // no-op
+    int Mask[] = {0,0};
+    Value *Result =
+        Builder.CreateShuffleVector(ArgVal, ArgVal, ArrayRef(Mask, MaxElems));
+    return Result;
+  } else if (QT->isIntegerType()) {
+    Value *Int32Val = (QT->isSignedIntegerType())
+                          ? Builder.CreateSExtOrTrunc(ArgVal, Int32Ty, "cast")
+                          : Builder.CreateZExtOrTrunc(ArgVal, Int32Ty, "cast");
+    Value *VecOps[] = {Int32Val,Int32Val};
+    Value *Result = BuildVector(ArrayRef(VecOps, MaxElems));
+    return Result;
+  }
+  llvm_unreachable("Invalid Argument type");
+}
 
 llvm::Value *
 CodeGenFunction::EmitXtensaBuiltinExpr(unsigned BuiltinID, const CallExpr *E,
                                        ReturnValueSlot ReturnValue,
                                        llvm::Triple::ArchType Arch) {
+
+  switch (BuiltinID) {
+  case Xtensa::BI__builtin_xtensa_ae_int32x2:
+  case Xtensa::BI__builtin_xtensa_ae_int32:
+    return EmitXtensaConversionExpr(BuiltinID, E, ReturnValue, Arch);
+  default:
+    break;
+  };
 
   XtensaIntrinsicInfo Info = GetXtensaIntrinsic(BuiltinID);
   unsigned Intrinsic = Info.IntrinsicID;
