@@ -1929,47 +1929,6 @@ static void findRISCVMultilibs(const Driver &D,
     Result.Multilibs = RISCVMultilibs;
 }
 
-static void findXtensaMultilibs(const Driver &D,
-                                const llvm::Triple &TargetTriple,
-                                StringRef Path, const ArgList &Args,
-                                DetectedMultilibs &Result) {
-  FilterNonExistent NonExistent(Path, "/crtbegin.o", D.getVFS());
-
-  StringRef cpu = Args.getLastArgValue(options::OPT_mcpu_EQ, "esp32");
-  bool IsESP32 = cpu == "esp32";
-
-  Multilib::flags_list Flags;
-
-  addMultilibFlag(
-      Args.hasFlag(options::OPT_fno_rtti, options::OPT_frtti, false),
-      "-fno-rtti", Flags);
-
-  addMultilibFlag(
-      IsESP32 && Args.hasFlag(options::OPT_mfix_esp32_psram_cache_issue,
-                              options::OPT_mfix_esp32_psram_cache_issue, false),
-      "-mfix-esp32-psram-cache-issue", Flags);
-
-  MultilibBuilder NoRTTI = MultilibBuilder("/no-rtti").flag("-fno-rtti");
-  MultilibBuilder FixPSRAM =
-      MultilibBuilder("/esp32-psram").flag("-mfix-esp32-psram-cache-issue");
-
-  MultilibSet XtensaMultilibs = MultilibSetBuilder()
-                                    .Maybe(FixPSRAM)
-                                    .Maybe(NoRTTI)
-                                    .makeMultilibSet()
-                                    .FilterOut(NonExistent);
-
-  std::string cpu_name = cpu.str();
-  XtensaMultilibs.setFilePathsCallback([cpu_name](const Multilib &M) {
-    return std::vector<std::string>(
-        {M.gccSuffix(),
-         "/../../../../xtensa-" + cpu_name + "-elf/lib" + M.gccSuffix()});
-  });
-
-  if (XtensaMultilibs.select(D, Flags, Result.SelectedMultilibs))
-    Result.Multilibs = XtensaMultilibs;
-}
-
 static bool findBiarchMultilibs(const Driver &D,
                                 const llvm::Triple &TargetTriple,
                                 StringRef Path, const ArgList &Args,
@@ -2606,13 +2565,6 @@ void Generic_GCC::GCCInstallationDetector::AddDefaultGCCPrefixes(
       "s390x-unknown-linux-gnu", "s390x-ibm-linux-gnu", "s390x-suse-linux",
       "s390x-redhat-linux"};
 
-  static const char *const XtensaLibDirs[] = {"/lib"};
-  static const char *const XtensaTriples[] = {"xtensa-esp-elf",
-                                              "xtensa-esp-unknown-elf",
-                                              "xtensa-esp32-elf",
-                                              "xtensa-esp32s2-elf",
-                                              "xtensa-esp32s3-elf"};
-
   using std::begin;
   using std::end;
 
@@ -2886,10 +2838,6 @@ void Generic_GCC::GCCInstallationDetector::AddDefaultGCCPrefixes(
     LibDirs.append(begin(SystemZLibDirs), end(SystemZLibDirs));
     TripleAliases.append(begin(SystemZTriples), end(SystemZTriples));
     break;
-  case llvm::Triple::xtensa:
-    LibDirs.append(begin(XtensaLibDirs), end(XtensaLibDirs));
-    TripleAliases.append(begin(XtensaTriples), end(XtensaTriples));
-    break;
   default:
     // By default, just rely on the standard lib directories and the original
     // triple.
@@ -2924,8 +2872,6 @@ bool Generic_GCC::GCCInstallationDetector::ScanGCCForMultilibs(
     findMSP430Multilibs(D, TargetTriple, Path, Args, Detected);
   } else if (TargetArch == llvm::Triple::avr) {
     // AVR has no multilibs.
-  } else if (TargetArch == llvm::Triple::xtensa) {
-    findXtensaMultilibs(D, TargetTriple, Path, Args, Detected);
   } else if (!findBiarchMultilibs(D, TargetTriple, Path, Args,
                                   NeedsBiarchSuffix, Detected)) {
     return false;
