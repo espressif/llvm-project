@@ -298,6 +298,11 @@ set(gpu_files
   amdgpuintrin.h
   )
 
+set(xtensa_files
+  xtensa_defs.h
+  xtensa_protos.h
+)
+
 set(windows_only_files
   intrin0.h
   intrin.h
@@ -328,6 +333,7 @@ set(files
   ${ve_files}
   ${x86_files}
   ${gpu_files}
+  ${xtensa_files}
   ${webassembly_files}
   ${windows_only_files}
   ${utility_files}
@@ -566,6 +572,7 @@ add_header_target("ve-resource-headers" "${ve_files}")
 add_header_target("webassembly-resource-headers" "${webassembly_files}")
 add_header_target("x86-resource-headers" "${x86_files}")
 add_header_target("gpu-resource-headers" "${gpu_files}")
+add_header_target("xtensa-resource-headers" "${xtensa_files}")
 
 # Other header groupings
 add_header_target("hlsl-resource-headers" ${hlsl_files})
@@ -762,6 +769,12 @@ install(
 if(NOT CLANG_ENABLE_HLSL)
   set(EXCLUDE_HLSL EXCLUDE_FROM_ALL)
 endif()
+
+install(
+  FILES ${xtensa_files}
+  DESTINATION ${header_install_dir}
+  EXCLUDE_FROM_ALL
+  COMPONENT xtensa-resource-headers)
 
 install(
   FILES ${hlsl_h}
