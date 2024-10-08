@@ -5,13 +5,13 @@ define <1 x i1> @test_select(<1 x i1>  %cc, <1 x i1> %t, <1 x i1> %f) {
 ; CHECK-LABEL: test_select:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    entry a1, 64
-; CHECK-NEXT:    movi.n a9, 19
+; CHECK-NEXT:    movi.n a9, 23
 ; CHECK-NEXT:    add.n a9, a1, a9
 ; CHECK-NEXT:    rsr a8, br
 ; CHECK-NEXT:    extui a8, a8, 1, 1
 ; CHECK-NEXT:    s8i a8, a9, 0
 ; CHECK-NEXT:    orb b1, b0, b0
-; CHECK-NEXT:    movi.n a8, 19
+; CHECK-NEXT:    movi.n a8, 23
 ; CHECK-NEXT:    add.n a8, a1, a8
 ; CHECK-NEXT:    l8ui a8, a8, 0
 ; CHECK-NEXT:    extui a8, a8, 0, 1

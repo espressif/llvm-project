@@ -135,6 +135,10 @@ private:
                                SmallVectorImpl<MCFixup> &Fixups,
                                const MCSubtargetInfo &STI) const;
 
+  uint32_t getShimm0_31OpValue(const MCInst &MI, unsigned OpNo,
+                               SmallVectorImpl<MCFixup> &Fixups,
+                               const MCSubtargetInfo &STI) const;
+
   uint32_t getB4constOpValue(const MCInst &MI, unsigned OpNo,
                              SmallVectorImpl<MCFixup> &Fixups,
                              const MCSubtargetInfo &STI) const;
@@ -455,6 +459,18 @@ XtensaMCCodeEmitter::getShimm1_31OpValue(const MCInst &MI, unsigned OpNo,
   uint32_t Res = static_cast<uint32_t>(MO.getImm());
 
   assert(((Res >= 1) && (Res <= 31)) && "Unexpected operand value!");
+
+  return ((32 - Res) & 0x1f);
+}
+
+uint32_t
+XtensaMCCodeEmitter::getShimm0_31OpValue(const MCInst &MI, unsigned OpNo,
+                                         SmallVectorImpl<MCFixup> &Fixups,
+                                         const MCSubtargetInfo &STI) const {
+  const MCOperand &MO = MI.getOperand(OpNo);
+  uint32_t Res = static_cast<uint32_t>(MO.getImm());
+
+  assert(((Res >= 0) && (Res <= 31)) && "Unexpected operand value!");
 
   return ((32 - Res) & 0x1f);
 }

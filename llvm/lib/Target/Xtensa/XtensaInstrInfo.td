@@ -40,6 +40,8 @@ def AND : ArithLogic_RRR<0x01, 0x00, "and", and, 1>;
 def OR  : ArithLogic_RRR<0x02, 0x00, "or", or, 1>;
 def XOR : ArithLogic_RRR<0x03, 0x00, "xor", xor, 1>;
 
+def : InstAlias<"_add\t$r, $s, $t", (ADD AR:$r, AR:$s, AR:$t)>;
+
 class ADDX<bits<4> oper, string instrAsm, list<dag> pattern>
   : RRR_Inst<0x00, 0x00, oper, (outs AR:$r), (ins AR:$s, AR:$t),
              instrAsm#"\t$r, $s, $t", pattern>;
@@ -67,6 +69,8 @@ def ADDI : RRI8_Inst<0x02, (outs AR:$t), (ins AR:$s, imm8:$imm8),
   let r = 0x0C;
 }
 
+def : InstAlias<"_addi\t$r, $s, $imm8", (ADDI AR:$r, AR:$s, imm8:$imm8)>;
+
 def ADDMI : RRI8_Inst<0x02, (outs AR:$t), (ins AR:$s, imm8_sh8:$imm_sh8),
                      "addmi\t$t, $s, $imm_sh8",
                      [(set AR:$t, (add AR:$s, imm8_sh8:$imm_sh8))]> {
@@ -88,6 +92,17 @@ def NEG : RRR_Inst<0x00, 0x00, 0x06, (outs AR:$r), (ins AR:$t),
 def MOVI : RRI8_Inst<0x02, (outs AR:$t), (ins imm12m:$imm),
                     "movi\t$t, $imm",
                     [(set AR:$t, imm12m:$imm)]> {
+  bits<12> imm;
+
+  let imm8{7-0} = imm{7-0};
+  let s{3-0} = imm{11-8};
+  let r = 0xa;
+}
+
+def _MOVI : RRI8_Inst<0x02, (outs AR:$t), (ins imm12:$imm),
+                    "_movi\t$t, $imm",
+                    [(set AR:$t, imm12m:$imm)]> {
+  let DecoderNamespace = "Fallback";
   bits<12> imm;
 
   let imm8{7-0} = imm{7-0};
@@ -179,9 +194,18 @@ def _SRLI : RRR_Inst<0x00, 0x01, 0x04, (outs AR:$r), (ins AR:$t, uimm4:$sa),
   let s = sa;
 }
 
-def SLLI : RRR_Inst<0x00, 0x01, 0x00, (outs AR:$r), (ins AR:$s, shimm1_31:$sa),
-                   "slli\t$r, $s, $sa",
+def SLLI : RRR_Inst<0x00, 0x01, 0x00, (outs AR:$r), (ins AR:$s, shimm0_31:$sa),
+                   "slli\t$r, $s, $sa", []> {
+  bits<5> sa;
+
+  let Inst{20} = sa{4};
+  let t = sa{3-0};
+}
+
+def _SLLI : RRR_Inst<0x00, 0x01, 0x00, (outs AR:$r), (ins AR:$s, shimm1_31:$sa),
+                   "_slli\t$r, $s, $sa",
                    [(set AR:$r, (shl AR:$s, shimm1_31:$sa))]> {
+  let DecoderNamespace = "Fallback";
   bits<5> sa;
 
   let Inst{20} = sa{4};
@@ -228,6 +252,9 @@ def L8UI  : Load_RRI8<0x00, "l8ui", zextloadi8, addr_ish1, mem8>;
 def L16SI : Load_RRI8<0x09, "l16si", sextloadi16, addr_ish2, mem16>;
 def L16UI : Load_RRI8<0x01, "l16ui", zextloadi16, addr_ish2, mem16>;
 def L32I  : Load_RRI8<0x02, "l32i", load, addr_ish4, mem32>;
+def _L32I : Load_RRI8<0x02, "_l32i", load, addr_ish4, mem32> {
+  let DecoderNamespace = "Fallback";
+}
 
 // Store instructions
 let mayStore = 1, usesCustomInserter = 1 in {
@@ -247,6 +274,9 @@ let mayStore = 1, usesCustomInserter = 1 in {
 def S8I  : Store_II8<0x04, "s8i", truncstorei8, addr_ish1, mem8>;
 def S16I : Store_II8<0x05, "s16i", truncstorei16, addr_ish2, mem16>;
 def S32I : Store_II8<0x06, "s32i", store, addr_ish4, mem32>;
+def _S32I : Store_II8<0x06, "_s32i", store, addr_ish4, mem32> {
+  let DecoderNamespace = "Fallback";
+}
 
 def L32R : RI16_Inst<0x01, (outs AR:$t), (ins L32Rtarget:$label),
                     "l32r\t$t, $label", []> {
@@ -348,6 +378,14 @@ def BLT   : Branch_RR<0x02, "blt", SETLT>;
 def BGEU  : Branch_RR<0x0B, "bgeu", SETUGE>;
 def BLTU  : Branch_RR<0x03, "bltu", SETULT>;
 
+// RR aliases
+def : InstAlias<"_beq\t$s, $t, $target", (BEQ AR:$s, AR:$t, brtarget:$target)>;
+def : InstAlias<"_bne\t$s, $t, $target", (BNE AR:$s, AR:$t, brtarget:$target)>;
+def : InstAlias<"_bge\t$s, $t, $target", (BGE AR:$s, AR:$t, brtarget:$target)>;
+def : InstAlias<"_blt\t$s, $t, $target", (BLT AR:$s, AR:$t, brtarget:$target)>;
+def : InstAlias<"_bgeu\t$s, $t, $target", (BGEU AR:$s, AR:$t, brtarget:$target)>;
+def : InstAlias<"_bltu\t$s, $t, $target", (BLTU AR:$s, AR:$t, brtarget:$target)>;
+
 def BEQI  : Branch_RI<0x02, "beqi", SETEQ>;
 def BNEI  : Branch_RI<0x06, "bnei", SETNE>;
 def BGEI  : Branch_RI<0x0E, "bgei", SETGE>;
@@ -355,10 +393,24 @@ def BLTI  : Branch_RI<0x0A, "blti", SETLT>;
 def BGEUI : Branch_RIU<0x0F, "bgeui", SETUGE>;
 def BLTUI : Branch_RIU<0x0B, "bltui", SETULT>;
 
+// RI aliases
+def : InstAlias<"_beqi\t$s, $imm, $target", (BEQI AR:$s, b4const:$imm, brtarget:$target)>;
+def : InstAlias<"_bnei\t$s, $imm, $target", (BNEI AR:$s, b4const:$imm, brtarget:$target)>;
+def : InstAlias<"_bgei\t$s, $imm, $target", (BGEI AR:$s, b4const:$imm, brtarget:$target)>;
+def : InstAlias<"_blti\t$s, $imm, $target", (BLTI AR:$s, b4const:$imm, brtarget:$target)>;
+def : InstAlias<"_bgeui\t$s, $imm, $target", (BGEUI AR:$s, b4constu:$imm, brtarget:$target)>;
+def : InstAlias<"_bltui\t$s, $imm, $target", (BLTUI AR:$s, b4constu:$imm, brtarget:$target)>;
+
 def BEQZ  : Branch_RZ<0x01, 0x00, "beqz", SETEQ>;
 def BNEZ  : Branch_RZ<0x01, 0x01, "bnez", SETNE>;
 def BGEZ  : Branch_RZ<0x01, 0x03, "bgez", SETGE>;
 def BLTZ  : Branch_RZ<0x01, 0x02, "bltz", SETLT>;
+
+// RZ aliases
+def : InstAlias<"_beqz\t$s, $target", (BEQZ AR:$s, brtarget:$target)>;
+def : InstAlias<"_bnez\t$s, $target", (BNEZ AR:$s, brtarget:$target)>;
+def : InstAlias<"_bgez\t$s, $target", (BGEZ AR:$s, brtarget:$target)>;
+def : InstAlias<"_bltz\t$s, $target", (BLTZ AR:$s, brtarget:$target)>;
 
 def BALL : RRI8_Inst<0x07, (outs),
                     (ins AR:$s, AR:$t, brtarget:$target),
@@ -369,6 +421,8 @@ def BALL : RRI8_Inst<0x07, (outs),
   let imm8 = target;
 }
 
+def : InstAlias<"_ball\t$s, $t, $target", (BALL AR:$s, AR:$t, brtarget:$target)>;
+
 def BANY : RRI8_Inst<0x07, (outs),
                     (ins AR:$s, AR:$t, brtarget:$target),
                     "bany\t$s, $t, $target", []> {
@@ -377,6 +431,8 @@ def BANY : RRI8_Inst<0x07, (outs),
   let r = 0x08;
   let imm8 = target;
 }
+
+def : InstAlias<"_bany\t$s, $t, $target", (BANY AR:$s, AR:$t, brtarget:$target)>;
 
 def BBC : RRI8_Inst<0x07, (outs),
                    (ins AR:$s, AR:$t, brtarget:$target),
@@ -387,6 +443,8 @@ def BBC : RRI8_Inst<0x07, (outs),
   let imm8 = target;
 }
 
+def : InstAlias<"_bbc\t$s, $t, $target", (BBC AR:$s, AR:$t, brtarget:$target)>;
+
 def BBS : RRI8_Inst<0x07, (outs),
                    (ins AR:$s, AR:$t, brtarget:$target),
                    "bbs\t$s, $t, $target", []> {
@@ -395,6 +453,8 @@ def BBS : RRI8_Inst<0x07, (outs),
   let r = 0x0d;
   let imm8 = target;
 }
+
+def : InstAlias<"_bbs\t$s, $t, $target", (BBS AR:$s, AR:$t, brtarget:$target)>;
 
 def BNALL : RRI8_Inst<0x07, (outs),
                     (ins AR:$s, AR:$t, brtarget:$target),
@@ -405,6 +465,8 @@ def BNALL : RRI8_Inst<0x07, (outs),
   let imm8 = target;
 }
 
+def : InstAlias<"_bnall\t$s, $t, $target", (BNALL AR:$s, AR:$t, brtarget:$target)>;
+
 def BNONE : RRI8_Inst<0x07, (outs),
                      (ins AR:$s, AR:$t, brtarget:$target),
                      "bnone\t$s, $t, $target", []> {
@@ -413,6 +475,8 @@ def BNONE : RRI8_Inst<0x07, (outs),
   let r = 0x00;
   let imm8 = target;
 }
+
+def : InstAlias<"_bnone\t$s, $t, $target", (BNONE AR:$s, AR:$t, brtarget:$target)>;
 
 def BBCI : RRI8_Inst<0x07, (outs),
                     (ins AR:$s, uimm5:$imm, brtarget:$target),
@@ -443,6 +507,8 @@ def BBSI : RRI8_Inst<0x07, (outs),
   let t{3-0} = imm{3-0};
   let imm8 = target;
 }
+
+def : InstAlias<"_bbsi\t$s, $imm, $target", (BBSI AR:$s, uimm5:$imm, brtarget:$target)>;
 
 def : InstAlias<"bbsi.l\t$s, $imm, $target", (BBSI AR:$s, uimm5:$imm, brtarget:$target)>;
 
@@ -496,6 +562,8 @@ let isReturn = 1, isTerminator = 1,
     let r = 0;
   }
 }
+
+def : InstAlias<"_ret", (RET)>;
 
 // Call patterns
 def : Pat<(Xtensa_call (i32 tglobaladdr:$dst)),
@@ -574,6 +642,8 @@ def NOP : RRR_Inst<0x00, 0x00, 0x00, (outs), (ins),
   let s = 0x00;
   let t = 0x0f;
 }
+
+def : InstAlias<"_nop", (NOP)>;
 
 def WSR : RSR_Inst<0x00, 0x03, 0x01, (outs SR:$sr), (ins AR:$t),
                   "wsr\t$t, $sr", []>;
@@ -675,6 +745,8 @@ class ArithLogic_RRRN<bits<4> oper0, string instrAsm,
 
 def ADD_N : ArithLogic_RRRN<0x0a, "add.n", add, 1>;
 
+def : InstAlias<"_add.n\t$r, $s, $t", (ADD_N AR:$r, AR:$s, AR:$t)>;
+
 def ADDI_N : RRRN_Inst<0x0B, (outs AR:$r), (ins AR:$s, imm1n_15:$imm),
                       "addi.n\t$r, $s, $imm",
                       [(set AR:$r, (add AR:$s, imm1n_15:$imm))]>, Requires<[HasDensity]> {
@@ -682,6 +754,8 @@ def ADDI_N : RRRN_Inst<0x0B, (outs AR:$r), (ins AR:$s, imm1n_15:$imm),
 
   let t = imm;
 }
+
+def : InstAlias<"_addi.n\t$r, $s, $imm", (ADDI_N AR:$r, AR:$s, imm1n_15:$imm)>;
 
 // Conditional branch instructions.
 let isBranch = 1, isTerminator = 1 in {
@@ -712,6 +786,7 @@ def MOV_N : RRRN_Inst<0x0D, (outs AR:$t), (ins AR:$s),
   let r = 0;
 }
 
+def : InstAlias<"_mov.n\t $t, $s", (MOV_N AR:$t, AR:$s)>;
 def : InstAlias<"mov\t $t, $s", (OR AR:$t, AR:$s, AR:$s)>;
 
 def MOVI_N : RI7_Inst<0xc, 0x0, (outs AR:$s), (ins imm32n_95:$imm7),
@@ -738,11 +813,33 @@ let mayLoad = 1, usesCustomInserter = 1 in {
   }
 }
 
+let mayLoad = 1, usesCustomInserter = 1 in {
+  def _L32I_N : RRRN_Inst<0x8, (outs AR:$t), (ins mem32n:$addr),
+                        "_l32i.n\t$t, $addr", []>, Requires<[HasDensity]> {
+    bits<8> addr;
+    let DecoderNamespace = "Fallback";
+
+    let r{3-0} = addr{7-4};
+    let s{3-0} = addr{3-0};
+  }
+}
+
 // Store instruction
 let mayStore = 1, usesCustomInserter = 1 in {
   def S32I_N : RRRN_Inst<0x9, (outs), (ins  AR:$t, mem32n:$addr),
                         "s32i.n\t$t, $addr", []>, Requires<[HasDensity]> {
     bits<8> addr;
+
+    let r{3-0} = addr{7-4};
+    let s{3-0} = addr{3-0};
+  }
+}
+
+let mayStore = 1, usesCustomInserter = 1 in {
+  def _S32I_N : RRRN_Inst<0x9, (outs), (ins  AR:$t, mem32n:$addr),
+                        "_s32i.n\t$t, $addr", []>, Requires<[HasDensity]> {
+    bits<8> addr;
+    let DecoderNamespace = "Fallback";
 
     let r{3-0} = addr{7-4};
     let s{3-0} = addr{3-0};
@@ -760,6 +857,8 @@ let isReturn = 1, isTerminator = 1,
     let t = 0;
   }
 }
+
+def : InstAlias<"_ret.n", (RET_N)>;
 
 //===----------------------------------------------------------------------===//
 // Windowed instructions
@@ -847,6 +946,9 @@ let isReturn = 1, isTerminator = 1,
     let r = 0;
   }
 }
+
+def : InstAlias<"_retw", (RETW)>;
+def : InstAlias<"_retw.n", (RETW_N)>;
 
 //Store 32-bit for Window Exceptions
 def S32E : RRI4_Inst<0x00, 0x09, (outs), (ins AR:$t, AR:$s, imm64n_4n:$imm),
@@ -959,6 +1061,9 @@ let isBranch = 1, isTerminator = 1, Predicates = [HasBoolean] in {
     let imm8 = target;
   }
 }
+ 
+def : InstAlias<"_BT\t$b, $target", (BT BR:$b, brtarget:$target)>;
+def : InstAlias<"_BF\t$b, $target", (BF BR:$b, brtarget:$target)>;
 
 let Constraints = "$dr = $r,@earlyclobber $dr" in {
   def MOVF : RRR_Inst<0x00, 0x03, 0x0C, (outs AR:$dr), (ins AR:$r, AR:$s, BR:$t),
@@ -1437,6 +1542,8 @@ def LOOP : RRI8_Inst<0x06, (outs), (ins AR:$s, ltarget:$target),
   let imm8 = target;
 }
 
+def : InstAlias<"_loop\t$s, $target", (LOOP AR:$s, ltarget:$target)>;
+
 def LOOPGTZ : RRI8_Inst<0x06, (outs), (ins AR:$s, ltarget:$target),
                        "loopgtz\t$s, $target", []>, Requires<[HasLoop]> {
   bits<8> target;
@@ -1446,6 +1553,8 @@ def LOOPGTZ : RRI8_Inst<0x06, (outs), (ins AR:$s, ltarget:$target),
   let imm8 = target;
 }
 
+def : InstAlias<"_loopgtz\t$s, $target", (LOOPGTZ AR:$s, ltarget:$target)>;
+
 def LOOPNEZ : RRI8_Inst<0x06, (outs), (ins AR:$s, ltarget:$target),
                        "loopnez\t$s, $target", []>, Requires<[HasLoop]> {
   bits<8> target;
@@ -1454,6 +1563,8 @@ def LOOPNEZ : RRI8_Inst<0x06, (outs), (ins AR:$s, ltarget:$target),
   let t = 0x07;
   let imm8 = target;
 }
+
+def : InstAlias<"_loopnez\t$s, $target", (LOOPNEZ AR:$s, ltarget:$target)>;
 
 let isTerminator = 1, isBarrier = 1, hasSideEffects = 1, Size = 3 in {
   def LOOPINIT : Pseudo<(outs AR:$elts), (ins AR:$eltsin),
@@ -1592,6 +1703,8 @@ let isBarrier = 1, isTerminator = 1 in {
     let t = 0x2;
   }
 }
+
+def : InstAlias<"_break.n\t$imm", (BREAK_N uimm4:$imm)>;
 
 def : Pat<(trap), (BREAK (i32 1), (i32 15))>;
 

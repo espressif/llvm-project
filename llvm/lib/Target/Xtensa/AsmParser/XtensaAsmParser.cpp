@@ -301,6 +301,8 @@ public:
   bool isImm8n_7() const { return isImm(-8, 7); }
 
   bool isShimm1_31() const { return isImm(1, 31); }
+  
+  bool isShimm0_31() const { return isImm(0, 31); }
 
   bool isImm16_31() const { return isImm(16, 31); }
 
@@ -633,6 +635,19 @@ bool XtensaAsmParser::processInstruction(MCInst &Inst, SMLoc IDLoc,
       Inst = TmpInst;
     }
   } break;
+  case Xtensa::SLLI: {
+    uint32_t ImmOp32 = static_cast<uint32_t>(Inst.getOperand(2).getImm());
+    int64_t Imm = ImmOp32;
+    if (Imm == 0) {
+      MCInst TmpInst;
+      TmpInst.setLoc(IDLoc);
+      TmpInst.setOpcode(Xtensa::OR);
+      TmpInst.addOperand(Inst.getOperand(0));
+      TmpInst.addOperand(Inst.getOperand(1));
+      TmpInst.addOperand(Inst.getOperand(1));
+      Inst = TmpInst;
+    }
+  } break;
   default:
     break;
   }
@@ -711,6 +726,9 @@ bool XtensaAsmParser::matchAndEmitInstruction(SMLoc IDLoc, unsigned &Opcode,
   case Match_InvalidShimm1_31:
     return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
                  "expected immediate in range [1, 31]");
+  case Match_InvalidShimm0_31:
+    return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+                 "expected immediate in range [0, 31]");
   case Match_InvalidUimm4:
     return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
                  "expected immediate in range [0, 15]");

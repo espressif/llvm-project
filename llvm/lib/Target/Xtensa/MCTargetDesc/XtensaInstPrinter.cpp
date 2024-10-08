@@ -264,6 +264,17 @@ void XtensaInstPrinter::printShimm1_31_AsmOperand(const MCInst *MI, int OpNum,
     printOperand(MI, OpNum, O);
 }
 
+void XtensaInstPrinter::printShimm0_31_AsmOperand(const MCInst *MI, int OpNum,
+                                                  raw_ostream &O) {
+  if (MI->getOperand(OpNum).isImm()) {
+    int64_t Value = MI->getOperand(OpNum).getImm();
+    assert((Value >= 0 && Value <= 31) &&
+           "Invalid argument, value must be in range [0,31]");
+    O << Value;
+  } else
+    printOperand(MI, OpNum, O);
+}
+
 void XtensaInstPrinter::printImm1_16_AsmOperand(const MCInst *MI, int OpNum,
                                                 raw_ostream &O) {
   if (MI->getOperand(OpNum).isImm()) {
