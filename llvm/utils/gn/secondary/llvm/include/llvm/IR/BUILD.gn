@@ -101,6 +101,10 @@ gen_arch_intrinsics("IntrinsicsXCore") {
   intrinsic_prefix = "xcore"
 }
 
+gen_arch_intrinsics("IntrinsicsXtensa") {
+  intrinsic_prefix = "xtensa"
+}
+
 # Groups all tablegen() calls that create .inc files that are included in
 # IR's public headers.  //llvm/lib/IR has this as a public_dep, so targets
 # depending on //llvm/lib/IR don't need to depend on this.  This exists
@@ -132,5 +136,6 @@ group("public_tablegen") {
     ":IntrinsicsWebAssembly",
     ":IntrinsicsX86",
     ":IntrinsicsXCore",
+    ":IntrinsicsXtensa",
   ]
 }

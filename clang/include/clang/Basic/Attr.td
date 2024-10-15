@@ -449,6 +449,7 @@ def TargetX86 : TargetArch<["x86"]>;
 def TargetAnyX86 : TargetArch<["x86", "x86_64"]>;
 def TargetWebAssembly : TargetArch<["wasm32", "wasm64"]>;
 def TargetNVPTX : TargetArch<["nvptx", "nvptx64"]>;
+def TargetXtensa : TargetArch<["xtensa"]>;
 def TargetWindows : TargetSpec {
   let OSes = ["Win32"];
 }
@@ -1810,10 +1811,21 @@ def MipsLongCall : InheritableAttr, TargetSpecificAttr<TargetAnyMips> {
 def MipsShortCall : InheritableAttr, TargetSpecificAttr<TargetAnyMips> {
   let Spellings = [GCC<"short_call">, GCC<"near">];
   let Subjects = SubjectList<[Function]>;
-  let Documentation = [MipsShortCallStyleDocs];
-  let SimpleHandler = 1;
+  let Documentation = [ShortCallStyleDocs];
+  let ParseKind = "ShortCall";
+  let HasCustomParsing = 1;
+  let SemaHandler = 1;
 }
 def : MutualExclusions<[MipsLongCall, MipsShortCall]>;
+
+def XtensaShortCall : InheritableAttr, TargetSpecificAttr<TargetXtensa> {
+  let Spellings = [GCC<"short_call">, GCC<"near">];
+  let Subjects = SubjectList<[Function]>;
+  let Documentation = [ShortCallStyleDocs];
+  let ParseKind = "ShortCall";
+  let HasCustomParsing = 1;
+  let SemaHandler = 1;
+}
 
 def M68kInterrupt : InheritableAttr, TargetSpecificAttr<TargetM68k> {
   // NOTE: If you add any additional spellings, ARMInterrupt's, MipsInterrupt's

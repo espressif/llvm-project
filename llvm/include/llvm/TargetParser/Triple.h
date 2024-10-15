@@ -182,6 +182,7 @@ public:
     Mesa,
     SUSE,
     OpenEmbedded,
+    Espressif,
     LastVendorType = OpenEmbedded
   };
   enum OSType {
@@ -1018,6 +1019,9 @@ public:
   bool isBPF() const {
     return getArch() == Triple::bpfel || getArch() == Triple::bpfeb;
   }
+
+  /// Tests whether the target is Xtensa.
+  bool isXtensa() const { return getArch() == Triple::xtensa; }
 
   /// Tests whether the target supports comdat
   bool supportsCOMDAT() const {

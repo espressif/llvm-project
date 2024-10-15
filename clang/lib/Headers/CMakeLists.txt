@@ -252,6 +252,11 @@ set(x86_files
   cpuid.h
   )
 
+set(xtensa_files
+  xtensa_defs.h
+  xtensa_protos.h
+)
+
 set(windows_only_files
   intrin.h
   vadefs.h
@@ -278,6 +283,7 @@ set(files
   ${systemz_files}
   ${ve_files}
   ${x86_files}
+  ${xtensa_files}
   ${webassembly_files}
   ${windows_only_files}
   ${utility_files}
@@ -488,6 +494,7 @@ add_header_target("systemz-resource-headers" "${systemz_files}")
 add_header_target("ve-resource-headers" "${ve_files}")
 add_header_target("webassembly-resource-headers" "${webassembly_files}")
 add_header_target("x86-resource-headers" "${x86_files}")
+add_header_target("xtensa-resource-headers" "${xtensa_files}")
 
 # Other header groupings
 add_header_target("hlsl-resource-headers" ${hlsl_files})
@@ -658,7 +665,13 @@ if(NOT CLANG_ENABLE_HLSL)
 endif()
 
 install(
-  FILES ${hlsl_h}
+  FILES ${xtensa_files}
+  DESTINATION ${header_install_dir}
+  EXCLUDE_FROM_ALL
+  COMPONENT xtensa-resource-headers)
+
+install(
+  FILES ${hlsl_files}
   DESTINATION ${header_install_dir}
   ${EXCLUDE_HLSL}
   COMPONENT hlsl-resource-headers)

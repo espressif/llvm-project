@@ -350,7 +350,10 @@ public:
     //    void *__saved_reg_area_end_pointer;
     //    void *__overflow_area_pointer;
     //} va_list;
-    HexagonBuiltinVaList
+    HexagonBuiltinVaList,
+
+    // Tensilica Xtensa
+    XtensaABIBuiltinVaList
   };
 
 protected:
