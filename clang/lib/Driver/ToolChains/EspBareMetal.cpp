@@ -163,6 +163,11 @@ EspBareMetal::getMultilibFlags(const llvm::opt::ArgList &Args) const {
   return Result;
 }
 
+std::string EspBareMetal::getCompilerRTPath() const {
+  SmallString<128> Dir(getLibraryPaths().back());
+  return std::string(Dir);
+}
+
 Tool *EspBareMetal::buildLinker() const {
   return new tools::baremetal::esp::Linker(*this);
 }
