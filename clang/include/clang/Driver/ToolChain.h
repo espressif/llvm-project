@@ -306,7 +306,7 @@ public:
   /// function should be extended.
   /// To allow users to find out what flags are returned, clang accepts a
   /// -print-multi-flags-experimental argument.
-  Multilib::flags_list getMultilibFlags(const llvm::opt::ArgList &) const;
+  virtual Multilib::flags_list getMultilibFlags(const llvm::opt::ArgList &) const;
 
   SanitizerArgs getSanitizerArgs(const llvm::opt::ArgList &JobArgs) const;
 

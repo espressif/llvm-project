@@ -51,6 +51,7 @@ enum {
   InstFormatCSB = 20,
   InstFormatCSH = 21,
   InstFormatOther = 22,
+  InstFormatESP32P4 = 23,
 
   InstFormatMask = 31,
   InstFormatShift = 0,
@@ -294,7 +295,9 @@ enum OperandType : unsigned {
   OPERAND_UIMM8_GE32,
   OPERAND_UIMM9_LSB000,
   OPERAND_UIMM10_LSB00_NONZERO,
+  OPERAND_UIMM10_STEP4,
   OPERAND_UIMM12,
+  OPERAND_UIMM13_STEP4,
   OPERAND_ZERO,
   OPERAND_SIMM5,
   OPERAND_SIMM5_PLUS1,

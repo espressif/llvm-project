@@ -977,6 +977,9 @@ def HasVendorXCVbi
       AssemblerPredicate<(all_of FeatureVendorXCVbi),
                          "'XCVbi' (CORE-V Immediate Branching)">;
 
+def FeatureVendorESP32P4 : SubtargetFeature<"xesppie", "HasVendorESP32P4", "true", "'Espressif ESP32P4'">;
+def HasVendorESP32P4 : Predicate<"Subtarget->hasVendorESP32P4()">, AssemblerPredicate<(all_of FeatureVendorESP32P4), "'Espressif ESP32P4'">;
+
 //===----------------------------------------------------------------------===//
 // LLVM specific features and extensions
 //===----------------------------------------------------------------------===//

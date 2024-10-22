@@ -12,6 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "XtensaInstrInfo.h"
 #include "XtensaInstPrinter.h"
 #include "llvm/CodeGen/MachineOperand.h"
 #include "llvm/MC/MCExpr.h"
@@ -70,6 +71,23 @@ void XtensaInstPrinter::printOperand(const MCOperand &MC, raw_ostream &O) {
 void XtensaInstPrinter::printInst(const MCInst *MI, uint64_t Address,
                                   StringRef Annot, const MCSubtargetInfo &STI,
                                   raw_ostream &O) {
+  unsigned Opcode = MI->getOpcode();
+
+  switch (Opcode) {
+  case Xtensa::WSR: {
+    // INTERRUPT mnemonic is read-only, so use INTSET mnemonic instead
+    Register SR = MI->getOperand(0).getReg();
+    if (SR == Xtensa::INTERRUPT) {
+      Register Reg = MI->getOperand(1).getReg();
+      O << '\t' << "wsr" << '\t';
+      printRegName(O, Reg);
+      O << ", "
+        << "intset";
+      printAnnotation(O, Annot);
+      return;
+    }
+  }
+  }
   printInstruction(MI, Address, O);
   printAnnotation(O, Annot);
 }
@@ -92,6 +110,21 @@ void XtensaInstPrinter::printMemOperand(const MCInst *MI, int OpNum,
 
 void XtensaInstPrinter::printBranchTarget(const MCInst *MI, int OpNum,
                                           raw_ostream &OS) {
+  const MCOperand &MC = MI->getOperand(OpNum);
+  if (MI->getOperand(OpNum).isImm()) {
+    int64_t Val = MC.getImm() + 4;
+    OS << ". ";
+    if (Val > 0)
+      OS << '+';
+    OS << Val;
+  } else if (MC.isExpr())
+    MC.getExpr()->print(OS, &MAI, true);
+  else
+    llvm_unreachable("Invalid operand");
+}
+
+void XtensaInstPrinter::printLoopTarget(const MCInst *MI, int OpNum,
+                                        raw_ostream &OS) {
   const MCOperand &MC = MI->getOperand(OpNum);
   if (MI->getOperand(OpNum).isImm()) {
     int64_t Val = MC.getImm() + 4;
@@ -231,12 +264,67 @@ void XtensaInstPrinter::printShimm1_31_AsmOperand(const MCInst *MI, int OpNum,
     printOperand(MI, OpNum, O);
 }
 
+void XtensaInstPrinter::printShimm0_31_AsmOperand(const MCInst *MI, int OpNum,
+                                                  raw_ostream &O) {
+  if (MI->getOperand(OpNum).isImm()) {
+    int64_t Value = MI->getOperand(OpNum).getImm();
+    assert((Value >= 0 && Value <= 31) &&
+           "Invalid argument, value must be in range [0,31]");
+    O << Value;
+  } else
+    printOperand(MI, OpNum, O);
+}
+
 void XtensaInstPrinter::printImm1_16_AsmOperand(const MCInst *MI, int OpNum,
                                                 raw_ostream &O) {
   if (MI->getOperand(OpNum).isImm()) {
     int64_t Value = MI->getOperand(OpNum).getImm();
     assert((Value >= 1 && Value <= 16) &&
            "Invalid argument, value must be in range [1,16]");
+    O << Value;
+  } else
+    printOperand(MI, OpNum, O);
+}
+
+void XtensaInstPrinter::printImm1n_15_AsmOperand(const MCInst *MI, int OpNum,
+                                                 raw_ostream &O) {
+  if (MI->getOperand(OpNum).isImm()) {
+    int64_t Value = MI->getOperand(OpNum).getImm();
+    assert((Value >= -1 && (Value != 0) && Value <= 15) &&
+           "Invalid argument, value must be in ranges <-1,-1> or <1,15>");
+    O << Value;
+  } else
+    printOperand(MI, OpNum, O);
+}
+
+void XtensaInstPrinter::printImm32n_95_AsmOperand(const MCInst *MI, int OpNum,
+                                                  raw_ostream &O) {
+  if (MI->getOperand(OpNum).isImm()) {
+    int64_t Value = MI->getOperand(OpNum).getImm();
+    assert((Value >= -32 && Value <= 95) &&
+           "Invalid argument, value must be in ranges <-32,95>");
+    O << Value;
+  } else
+    printOperand(MI, OpNum, O);
+}
+
+void XtensaInstPrinter::printImm8n_7_AsmOperand(const MCInst *MI, int OpNum,
+                                                raw_ostream &O) {
+  if (MI->getOperand(OpNum).isImm()) {
+    int64_t Value = MI->getOperand(OpNum).getImm();
+    assert((Value >= -8 && Value <= 7) &&
+           "Invalid argument, value must be in ranges <-8,7>");
+    O << Value;
+  } else
+    printOperand(MI, OpNum, O);
+}
+
+void XtensaInstPrinter::printImm64n_4n_AsmOperand(const MCInst *MI, int OpNum,
+                                                  raw_ostream &O) {
+  if (MI->getOperand(OpNum).isImm()) {
+    int64_t Value = MI->getOperand(OpNum).getImm();
+    assert((Value >= -64 && Value <= -4) & ((Value & 0x3) == 0) &&
+           "Invalid argument, value must be in ranges <-64,-4>");
     O << Value;
   } else
     printOperand(MI, OpNum, O);
@@ -282,6 +370,18 @@ void XtensaInstPrinter::printOffset4m32_AsmOperand(const MCInst *MI, int OpNum,
     int64_t Value = MI->getOperand(OpNum).getImm();
     assert((Value >= 0 && Value <= 60 && ((Value & 0x3) == 0)) &&
            "Invalid argument, value must be multiples of four in range [0,60]");
+    O << Value;
+  } else
+    printOperand(MI, OpNum, O);
+}
+
+void XtensaInstPrinter::printEntry_Imm12_AsmOperand(const MCInst *MI, int OpNum,
+                                                    raw_ostream &O) {
+  if (MI->getOperand(OpNum).isImm()) {
+    int64_t Value = MI->getOperand(OpNum).getImm();
+    assert((Value >= 0 && Value <= 32760) &&
+           "Invalid argument, value must be multiples of eight in range "
+           "<0,32760>");
     O << Value;
   } else
     printOperand(MI, OpNum, O);
@@ -344,6 +444,157 @@ void XtensaInstPrinter::printB4constu_AsmOperand(const MCInst *MI, int OpNum,
     default:
       assert((0) && "Invalid B4constu argument");
     }
+    O << Value;
+  } else
+    printOperand(MI, OpNum, O);
+}
+
+void XtensaInstPrinter::printImm7_22_AsmOperand(const MCInst *MI, int OpNum,
+                                                raw_ostream &O) {
+  if (MI->getOperand(OpNum).isImm()) {
+    int64_t Value = MI->getOperand(OpNum).getImm();
+    assert((Value >= 7 && Value <= 22) &&
+           "Invalid argument, value must be in range <7,22>");
+    O << Value;
+  } else
+    printOperand(MI, OpNum, O);
+}
+
+void XtensaInstPrinter::printSelect_2_AsmOperand(const MCInst *MI, int OpNum,
+                                                   raw_ostream &O) {
+  if (MI->getOperand(OpNum).isImm()) {
+    int64_t Value = MI->getOperand(OpNum).getImm();
+    assert((Value >= 0 && Value <= 1) &&
+           "Invalid argument, value must be in range [0,1]");
+    O << Value;
+  } else
+    printOperand(MI, OpNum, O);
+}
+
+void XtensaInstPrinter::printSelect_4_AsmOperand(const MCInst *MI, int OpNum,
+                                                   raw_ostream &O) {
+  if (MI->getOperand(OpNum).isImm()) {
+    int64_t Value = MI->getOperand(OpNum).getImm();
+    assert((Value >= 0 && Value <= 3) &&
+           "Invalid argument, value must be in range [0,3]");
+    O << Value;
+  } else
+    printOperand(MI, OpNum, O);
+}
+
+void XtensaInstPrinter::printSelect_8_AsmOperand(const MCInst *MI, int OpNum,
+                                                   raw_ostream &O) {
+  if (MI->getOperand(OpNum).isImm()) {
+    int64_t Value = MI->getOperand(OpNum).getImm();
+    assert((Value >= 0 && Value <= 7) &&
+           "Invalid argument, value must be in range [0,7]");
+    O << Value;
+  } else
+    printOperand(MI, OpNum, O);
+}
+
+void XtensaInstPrinter::printSelect_16_AsmOperand(const MCInst *MI, int OpNum,
+                                                   raw_ostream &O) {
+  if (MI->getOperand(OpNum).isImm()) {
+    int64_t Value = MI->getOperand(OpNum).getImm();
+    assert((Value >= 0 && Value <= 15) &&
+           "Invalid argument, value must be in range [0,15]");
+    O << Value;
+  } else
+    printOperand(MI, OpNum, O);
+}
+
+void XtensaInstPrinter::printSelect_256_AsmOperand(const MCInst *MI, int OpNum,
+                                                   raw_ostream &O) {
+  if (MI->getOperand(OpNum).isImm()) {
+    int64_t Value = MI->getOperand(OpNum).getImm();
+    assert((Value >= 0 && Value <= 255) &&
+           "Invalid argument, value must be in range [0,255]");
+    O << Value;
+  } else
+    printOperand(MI, OpNum, O);
+}
+
+void XtensaInstPrinter::printOffset_16_16_AsmOperand(const MCInst *MI, int OpNum,
+                                                   raw_ostream &O) {
+  if (MI->getOperand(OpNum).isImm()) {
+    int64_t Value = MI->getOperand(OpNum).getImm();
+    assert((Value >= -128 && Value <= 112 && (Value & 0xf) == 0) &&
+           "Invalid argument, value must be in range [-128,112], first 4 bits "
+           "should be zero");
+    O << Value;
+  } else{
+    printOperand(MI, OpNum, O);
+  }
+}
+
+void XtensaInstPrinter::printOffset_256_8_AsmOperand(const MCInst *MI, int OpNum,
+                                                   raw_ostream &O) {
+  if (MI->getOperand(OpNum).isImm()) {
+    int64_t Value = MI->getOperand(OpNum).getImm();
+    assert((Value >= -1024 && Value <= 1016 && (Value & 0x7) == 0) &&
+           "Invalid argument, value must be in range [-1024,1016], first 3 "
+           "bits should be zero");
+    O << Value;
+  } else
+    printOperand(MI, OpNum, O);
+}
+
+void XtensaInstPrinter::printOffset_256_16_AsmOperand(const MCInst *MI, int OpNum,
+                                                   raw_ostream &O) {
+  if (MI->getOperand(OpNum).isImm()) {
+    int64_t Value = MI->getOperand(OpNum).getImm();
+    assert((Value >= -2048 && Value <= 2032 && (Value & 0xf) == 0) &&
+           "Invalid argument, value must be in range [-2048,2032], first 4 "
+           "bits should be zero");
+    O << Value;
+  } else{
+    printOperand(MI, OpNum, O);
+  }
+}
+
+void XtensaInstPrinter::printOffset_256_4_AsmOperand(const MCInst *MI, int OpNum,
+                                                   raw_ostream &O) {
+  if (MI->getOperand(OpNum).isImm()) {
+    int64_t Value = MI->getOperand(OpNum).getImm();
+    assert((Value >= -512 && Value <= 508 && (Value & 0x3) == 0) &&
+           "Invalid argument, value must be in range [-512,508], first 2 bits "
+           "should be zero");
+    O << Value;
+  } else
+    printOperand(MI, OpNum, O);
+}
+
+void XtensaInstPrinter::printOffset_128_2_AsmOperand(const MCInst *MI, int OpNum,
+                                                   raw_ostream &O) {
+  if (MI->getOperand(OpNum).isImm()) {
+    int64_t Value = MI->getOperand(OpNum).getImm();
+    assert((Value >= 0 && Value <= 254 && (Value & 0x1) == 0) &&
+           "Invalid argument, value must be in range [0,254], first bit should "
+           "be zero");
+    O << Value;
+  } else
+    printOperand(MI, OpNum, O);
+}
+
+void XtensaInstPrinter::printOffset_128_1_AsmOperand(const MCInst *MI, int OpNum,
+                                                   raw_ostream &O) {
+  if (MI->getOperand(OpNum).isImm()) {
+    int64_t Value = MI->getOperand(OpNum).getImm();
+    assert((Value >= 0 && Value <= 127) &&
+           "Invalid argument, value must be in range [0,127]");
+    O << Value;
+  } else
+    printOperand(MI, OpNum, O);
+}
+
+void XtensaInstPrinter::printOffset_64_16_AsmOperand(const MCInst *MI, int OpNum,
+                                                   raw_ostream &O) {
+  if (MI->getOperand(OpNum).isImm()) {
+    int64_t Value = MI->getOperand(OpNum).getImm();
+    assert((Value >= -512 && Value <= 496 && (Value & 0xf) == 0) &&
+           "Invalid argument, value must be in range [-512,496], first 4 bits "
+           "should be zero");
     O << Value;
   } else
     printOperand(MI, OpNum, O);

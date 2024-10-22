@@ -348,3 +348,17 @@ def XIANGSHAN_NANHU : RISCVProcessorModel<"xiangshan-nanhu",
                                            FeatureStdExtSvinval,
                                            FeatureStdExtZicbom,
                                            FeatureStdExtZicboz]>;
+
+def ESPRESSIF_ESP32P4 : RISCVProcessorModel<"esp32p4",
+                                       NoSchedModel,
+                                       [Feature32Bit,
+                                        FeatureVendorESP32P4,
+                                        FeatureStdExtZicsr,
+                                        FeatureStdExtZifencei,
+                                        FeatureStdExtM,
+                                        FeatureStdExtA,
+                                        FeatureStdExtF,
+                                        FeatureStdExtC,
+                                        FeatureStdExtZcb,
+                                        FeatureStdExtZcmp,
+                                        FeatureStdExtZcmt]>;

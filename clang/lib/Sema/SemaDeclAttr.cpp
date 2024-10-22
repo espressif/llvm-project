@@ -7710,6 +7710,32 @@ static void handleAVRSignalAttr(Sema &S, Decl *D, const ParsedAttr &AL) {
   handleSimpleAttribute<AVRSignalAttr>(S, D, AL);
 }
 
+static void handleMipsShortCall(Sema &S, Decl *D, const ParsedAttr &AL) {
+  if (!isFunctionOrMethod(D)) {
+    S.Diag(D->getLocation(), diag::warn_attribute_wrong_decl_type)
+        << "'short_call'" << ExpectedFunction;
+    return;
+  }
+
+  if (!AL.checkExactlyNumArgs(S, 0))
+    return;
+
+  handleSimpleAttribute<MipsShortCallAttr>(S, D, AL);
+}
+
+static void handleXtensaShortCall(Sema &S, Decl *D, const ParsedAttr &AL){
+  if (!isFunctionOrMethod(D)) {
+    S.Diag(D->getLocation(), diag::warn_attribute_wrong_decl_type)
+        << "'short_call'" << ExpectedFunction;
+    return;
+  }
+
+  if (!AL.checkExactlyNumArgs(S, 0))
+    return;
+
+  handleSimpleAttribute<XtensaShortCallAttr>(S, D, AL);
+}
+
 static void handleBPFPreserveAIRecord(Sema &S, RecordDecl *RD) {
   // Add preserve_access_index attribute to all fields and inner records.
   for (auto *D : RD->decls()) {
@@ -7905,6 +7931,20 @@ static void handleRISCVInterruptAttr(Sema &S, Decl *D,
   }
 
   D->addAttr(::new (S.Context) RISCVInterruptAttr(S.Context, AL, Kind));
+}
+
+static void handleShortCallAttr(Sema &S, Decl *D, const ParsedAttr &AL) {
+  switch (S.Context.getTargetInfo().getTriple().getArch()) {
+  case llvm::Triple::xtensa:
+    handleXtensaShortCall(S, D, AL);
+    break;
+  case llvm::Triple::mips64:
+  case llvm::Triple::mips:
+    handleMipsShortCall(S, D, AL);
+    break;
+  default:
+    break;
+  }
 }
 
 static void handleInterruptAttr(Sema &S, Decl *D, const ParsedAttr &AL) {
@@ -9850,6 +9890,9 @@ ProcessDeclAttribute(Sema &S, Scope *scope, Decl *D, const ParsedAttr &AL,
 
   case ParsedAttr::AT_UsingIfExists:
     handleSimpleAttribute<UsingIfExistsAttr>(S, D, AL);
+    break;
+  case ParsedAttr::AT_ShortCall:
+    handleShortCallAttr(S, D, AL);
     break;
   }
 }

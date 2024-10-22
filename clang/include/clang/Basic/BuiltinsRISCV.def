@@ -89,5 +89,7 @@ TARGET_BUILTIN(__builtin_riscv_sm3p1, "UiUi", "nc", "zksh")
 TARGET_BUILTIN(__builtin_riscv_ntl_load, "v.", "t", "zihintntl")
 TARGET_BUILTIN(__builtin_riscv_ntl_store, "v.", "t", "zihintntl")
 
+#include "clang/Basic/BuiltinsRISCVESP32P4.def"
+
 #undef BUILTIN
 #undef TARGET_BUILTIN
