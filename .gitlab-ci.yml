@@ -415,7 +415,7 @@ sign_aarch64-apple-darwin:
   if [ -n "${TEST_APP_IDF_CUSTOM_BRANCH:-}" ]; then
     echo "TEST_APP_IDF_CUSTOM_BRANCH=$TEST_APP_IDF_CUSTOM_BRANCH"
     # Clone esp-idf
-    git clone --shallow-submodules --recursive --single-branch --branch $TEST_APP_IDF_CUSTOM_BRANCH -- https://gitlab-ci-token:${BOT_TOKEN}@${CI_SERVER_HOST}:${CI_SERVER_PORT}/espressif/esp-idf.git esp-idf
+    git clone --shallow-submodules --recursive --single-branch --branch $TEST_APP_IDF_CUSTOM_BRANCH -- https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}:${CI_SERVER_PORT}/espressif/esp-idf.git esp-idf
     export IDF_PATH=$PWD/esp-idf
     # Activate pyenv
     if [ $(command -v pyenv) ]; then
@@ -429,7 +429,7 @@ sign_aarch64-apple-darwin:
   fi
   idf.py --version || true
   pushd $IDF_PATH/components
-  git clone --shallow-submodules --recursive --single-branch --branch $TEST_APP_ESP_DSP_CUSTOM_BRANCH -- https://gitlab-ci-token:${BOT_TOKEN}@${CI_SERVER_HOST}:${CI_SERVER_PORT}/idf/esp-dsp.git esp-dsp
+  git clone --shallow-submodules --recursive --single-branch --branch $TEST_APP_ESP_DSP_CUSTOM_BRANCH -- https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}:${CI_SERVER_PORT}/idf/esp-dsp.git esp-dsp
   pushd $PWD/esp-dsp/test_app
 
 test_esp_dsp:
