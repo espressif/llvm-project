@@ -439,6 +439,8 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
   if (Subtarget.hasS32C1I()) {
     setMaxAtomicSizeInBitsSupported(32);
     setMinCmpXchgSizeInBits(32);
+  } else if (Subtarget.hasForcedAtomics()) {
+    setMaxAtomicSizeInBitsSupported(32);
   } else {
     setMaxAtomicSizeInBitsSupported(0);
   }
