@@ -76,6 +76,8 @@ XtensaSubtarget::initializeSubtargetDependencies(StringRef CPU, StringRef FS) {
   HasESP32S2Ops = false;
   HasESP32S3Ops = false;
   HasHIFI3 = false;
+  HasForcedAtomics = false;
+  HasAtomicLdSt = false;
 
   // Parse features string.
   ParseSubtargetFeatures(CPUName, CPUName, FS);
