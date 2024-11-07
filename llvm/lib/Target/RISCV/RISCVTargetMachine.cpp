@@ -16,6 +16,7 @@
 #include "RISCVMachineFunctionInfo.h"
 #include "RISCVTargetObjectFile.h"
 #include "RISCVTargetTransformInfo.h"
+#include "RISCVSplitLoopByLength.h"
 #include "TargetInfo/RISCVTargetInfo.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/Analysis/TargetTransformInfo.h"
@@ -36,6 +37,7 @@
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Support/FormattedStream.h"
 #include "llvm/Target/TargetOptions.h"
+#include "llvm/Passes/PassBuilder.h"
 #include "llvm/Transforms/IPO.h"
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/Transforms/Vectorize/LoopIdiomVectorize.h"
@@ -102,6 +104,10 @@ static cl::opt<bool> EnableVSETVLIAfterRVVRegAlloc(
     "riscv-vsetvl-after-rvv-regalloc", cl::Hidden,
     cl::desc("Insert vsetvls after vector register allocation"),
     cl::init(true));
+
+static cl::opt<bool>
+    EnableEsp32P4Optimize("enable-esp32-p4-optimize", cl::init(false),
+                          cl::Hidden, cl::desc("enable esp32 p4 optimize"));
 
 extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeRISCVTarget() {
   RegisterTargetMachine<RISCVTargetMachine> X(getTheRISCV32Target());
@@ -581,6 +587,26 @@ void RISCVTargetMachine::registerPassBuilderCallbacks(PassBuilder &PB) {
                                                  OptimizationLevel Level) {
     LPM.addPass(LoopIdiomVectorizePass(LoopIdiomVectorizeStyle::Predicated));
   });
+
+  PB.registerPipelineParsingCallback(
+      [](StringRef Name, FunctionPassManager &FPM,
+         ArrayRef<PassBuilder::PipelineElement>) {
+        if (Name == "riscv-split-loop-by-length") {
+          FPM.addPass(RISCVSplitLoopByLengthPass());
+          return true;
+        }
+        return false;
+      });
+
+  PB.registerOptimizerLastEPCallback(
+      [](ModulePassManager &PM, OptimizationLevel Level) {
+        if(EnableEsp32P4Optimize && (Level == OptimizationLevel::O3 || Level == OptimizationLevel::O2)){
+          EnableRISCVSplitLoopByLength = true;
+          FunctionPassManager FPM;
+          FPM.addPass(RISCVSplitLoopByLengthPass());
+          PM.addPass(createModuleToFunctionPassAdaptor(std::move(FPM)));
+        }
+      });
 }
 
 yaml::MachineFunctionInfo *
