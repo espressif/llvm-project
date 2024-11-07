@@ -39,6 +39,7 @@ add_llvm_target(RISCVCodeGen
   RISCVExpandPseudoInsts.cpp
   RISCVFrameLowering.cpp
   RISCVGatherScatterLowering.cpp
+  RISCVSplitLoopByLength.cpp
   RISCVIndirectBranchTracking.cpp
   RISCVInsertVSETVLI.cpp
   RISCVInsertReadWriteCSR.cpp
@@ -84,6 +85,7 @@ add_llvm_target(RISCVCodeGen
   MC
   RISCVDesc
   RISCVInfo
+  Passes
   Scalar
   SelectionDAG
   Support
