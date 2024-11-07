@@ -37,6 +37,7 @@ add_llvm_target(RISCVCodeGen
   RISCVFoldMasks.cpp
   RISCVFrameLowering.cpp
   RISCVGatherScatterLowering.cpp
+  RISCVSplitLoopByLength.cpp
   RISCVInsertVSETVLI.cpp
   RISCVInsertReadWriteCSR.cpp
   RISCVInsertWriteVXRM.cpp
@@ -76,6 +77,7 @@ add_llvm_target(RISCVCodeGen
   MC
   RISCVDesc
   RISCVInfo
+  Passes
   Scalar
   SelectionDAG
   Support
