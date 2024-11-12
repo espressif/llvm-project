@@ -299,7 +299,7 @@
 // RUN:     --sysroot=%T/baremetal_clang_rt_noarch \
 // RUN:   | FileCheck --check-prefix=CHECK-ESP-RV32_CLANGRT-NOARCH %s
 // CHECK-ESP-RV32_CLANGRT-NOARCH: "{{[^"]*}}libclang_rt.builtins.a"
-// CHECK-ESP-RV32_CLANGRT-NOARCH-NOT: "{{[^"]*}}libclang_rt.builtins-riscv32.a"
+// CHECK-ESP-RV32_CLANGRT-NOARCH-NOT: "{{[^"]*}}libclang_rt.builtins.a"
 // RUN: rm -rf %T/baremetal_clang_rt_arch
 // RUN: mkdir -p %T/baremetal_clang_rt_arch/lib
 // RUN: touch %T/baremetal_clang_rt_arch/lib/libclang_rt.builtins-riscv32.a
@@ -307,7 +307,7 @@
 // RUN:     --target=riscv32-esp-elf \
 // RUN:     --sysroot=%T/baremetal_clang_rt_arch \
 // RUN:   | FileCheck --check-prefix=CHECK-ESP-RV32-CLANGRT-ARCH %s
-// CHECK-ESP-RV32-CLANGRT-ARCH: "{{[^"]*}}libclang_rt.builtins-riscv32.a"
+// CHECK-ESP-RV32-CLANGRT-ARCH: "{{[^"]*}}libclang_rt.builtins.a"
 // CHECK-ESP-RV32-CLANGRT-ARCH-NOT: "{{[^"]*}}libclang_rt.builtins.a"
 
 
@@ -613,7 +613,7 @@
 // RUN:     --sysroot=%T/baremetal_clang_rt_noarch \
 // RUN:   | FileCheck --check-prefix=CHECK-ESP-ESP32_CLANGRT-NOARCH %s
 // CHECK-ESP-ESP32_CLANGRT-NOARCH: "{{[^"]*}}libclang_rt.builtins.a"
-// CHECK-ESP-ESP32_CLANGRT-NOARCH-NOT: "{{[^"]*}}libclang_rt.builtins-xtensa.a"
+// CHECK-ESP-ESP32_CLANGRT-NOARCH-NOT: "{{[^"]*}}libclang_rt.builtins.a"
 
 // Check that compiler-rt library with the arch filename suffix will be
 // used if present.
@@ -624,5 +624,5 @@
 // RUN:     --target=xtensa-esp-elf \
 // RUN:     --sysroot=%T/baremetal_clang_rt_arch \
 // RUN:   | FileCheck --check-prefix=CHECK-ESP-ESP32-CLANGRT-ARCH %s
-// CHECK-ESP-ESP32-CLANGRT-ARCH: "{{[^"]*}}libclang_rt.builtins-xtensa.a"
+// CHECK-ESP-ESP32-CLANGRT-ARCH: "{{[^"]*}}libclang_rt.builtins.a"
 // CHECK-ESP-ESP32-CLANGRT-ARCH-NOT: "{{[^"]*}}libclang_rt.builtins.a"
