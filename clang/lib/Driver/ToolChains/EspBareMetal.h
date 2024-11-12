@@ -51,8 +51,6 @@ public:
 
   virtual Multilib::flags_list getMultilibFlags(const llvm::opt::ArgList &) const override;
 
-  std::string getCompilerRTPath() const override;
-
 private:
   bool IsIntegratedAsm = true;
 };

@@ -26,8 +26,6 @@
 // RUN: mkdir -p %T/baremetal_default_sysroot/bin
 // RUN: mkdir -p %T/baremetal_default_sysroot/lib/clang-runtimes/riscv32-esp-unknown-elf/include/c++/11.2.0
 // RUN: mkdir -p %T/baremetal_default_sysroot/lib/clang-runtimes/riscv32-esp-unknown-elf/rv32imac-zicsr-zifencei_ilp32/include/c++/11.2.0
-// RUN: mkdir -p %T/baremetal_default_sysroot/lib/clang-runtimes/riscv32-esp-unknown-elf/rv32imac-zicsr-zifencei_ilp32/lib/
-// RUN: touch %T/baremetal_default_sysroot/lib/clang-runtimes/riscv32-esp-unknown-elf/rv32imac-zicsr-zifencei_ilp32/lib/libclang_rt.builtins-riscv32.a
 // RUN: echo "MultilibVersion: '1.0'" > %T/baremetal_default_sysroot/lib/clang-runtimes/multilib.yaml
 // RUN: echo "Variants:" >> %T/baremetal_default_sysroot/lib/clang-runtimes/multilib.yaml
 // RUN: echo "- Dir: riscv32-esp-unknown-elf/rv32imac-zicsr-zifencei_ilp32" >> %T/baremetal_default_sysroot/lib/clang-runtimes/multilib.yaml
@@ -52,14 +50,12 @@
 // CHECK-ESP-RV32IMAC-C-NEXT: "{{[^"]*}}ld{{(\.(lld|bfd|gold))?}}{{(\.exe)?}}" "-m" "elf32lriscv"
 // CHECK-ESP-RV32IMAC-C-SAME: "-o" "{{.*}}.o"
 // CHECK-ESP-RV32IMAC-C-SAME: "-L{{.*}}/baremetal_default_sysroot{{[/\\]+}}bin{{[/\\]+}}..{{[/\\]+}}lib{{[/\\]+}}clang-runtimes{{[/\\]+}}riscv32-esp-unknown-elf{{[/\\]+}}rv32imac-zicsr-zifencei_ilp32{{[/\\]+}}lib"
-// CHECK-ESP-RV32IMAC-C-SAME: "--start-group" "-lc" "-lgloss" "-lnosys" "--end-group" "{{[^"]*}}libclang_rt.builtins-riscv32.a"
+// CHECK-ESP-RV32IMAC-C-SAME: "--start-group" "-lc" "-lgloss" "-lnosys" "--end-group" "{{[^"]*}}libclang_rt.builtins.a"
 
 // RUN: rm -rf %T/baremetal_default_sysroot
 // RUN: mkdir -p %T/baremetal_default_sysroot/bin
 // RUN: mkdir -p %T/baremetal_default_sysroot/lib/clang-runtimes/xtensa-esp-unknown-elf/include/c++/11.2.0
 // RUN: mkdir -p %T/baremetal_default_sysroot/lib/clang-runtimes/xtensa-esp-unknown-elf/esp32/include/c++/11.2.0
-// RUN: mkdir -p %T/baremetal_default_sysroot/lib/clang-runtimes/xtensa-esp-unknown-elf/esp32/lib/
-// RUN: touch %T/baremetal_default_sysroot/lib/clang-runtimes/xtensa-esp-unknown-elf/esp32/lib/libclang_rt.builtins-xtensa.a
 // RUN: echo "MultilibVersion: '1.0'" > %T/baremetal_default_sysroot/lib/clang-runtimes/multilib.yaml
 // RUN: echo "Variants:" >> %T/baremetal_default_sysroot/lib/clang-runtimes/multilib.yaml
 // RUN: echo "- Dir: xtensa-esp-unknown-elf/esp32" >> %T/baremetal_default_sysroot/lib/clang-runtimes/multilib.yaml
@@ -79,4 +75,4 @@
 // CHECK-ESP-ESP32-C-NEXT: "{{[^"]*}}ld{{(\.(lld|bfd|gold))?}}{{(\.exe)?}}"
 // CHECK-ESP-ESP32-C-SAME: "-o" "{{.*}}.o"
 // CHECK-ESP-ESP32-C-SAME: "-L{{.*}}/baremetal_default_sysroot{{[/\\]+}}bin{{[/\\]+}}..{{[/\\]+}}lib{{[/\\]+}}clang-runtimes{{[/\\]+}}xtensa-esp-unknown-elf{{[/\\]+}}esp32{{[/\\]+}}lib"
-// CHECK-ESP-ESP32-C-SAME: "--start-group" "-lc" "-lgloss" "-lnosys" "--end-group" "{{[^"]*}}libclang_rt.builtins-xtensa.a"
+// CHECK-ESP-ESP32-C-SAME: "--start-group" "-lc" "-lgloss" "-lnosys" "--end-group" "{{[^"]*}}libclang_rt.builtins.a"
