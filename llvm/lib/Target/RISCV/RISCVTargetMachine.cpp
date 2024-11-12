@@ -13,10 +13,11 @@
 #include "RISCVTargetMachine.h"
 #include "MCTargetDesc/RISCVBaseInfo.h"
 #include "RISCV.h"
+#include "RISCVCustomLICM.h"
 #include "RISCVMachineFunctionInfo.h"
+#include "RISCVSplitLoopByLength.h"
 #include "RISCVTargetObjectFile.h"
 #include "RISCVTargetTransformInfo.h"
-#include "RISCVSplitLoopByLength.h"
 #include "TargetInfo/RISCVTargetInfo.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/Analysis/TargetTransformInfo.h"
@@ -37,7 +38,6 @@
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Support/FormattedStream.h"
 #include "llvm/Target/TargetOptions.h"
-#include "llvm/Passes/PassBuilder.h"
 #include "llvm/Transforms/IPO.h"
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/Transforms/Vectorize/LoopIdiomVectorize.h"
@@ -595,6 +595,10 @@ void RISCVTargetMachine::registerPassBuilderCallbacks(PassBuilder &PB) {
           FPM.addPass(RISCVSplitLoopByLengthPass());
           return true;
         }
+        if (Name == "riscv-custom-licm") {
+          FPM.addPass(RISCVCustomLICMPass());
+          return true;
+        }
         return false;
       });
 
@@ -602,8 +606,10 @@ void RISCVTargetMachine::registerPassBuilderCallbacks(PassBuilder &PB) {
       [](ModulePassManager &PM, OptimizationLevel Level) {
         if(EnableEsp32P4Optimize && (Level == OptimizationLevel::O3 || Level == OptimizationLevel::O2)){
           EnableRISCVSplitLoopByLength = true;
+          EnableRISCVCustomLICM = true;
           FunctionPassManager FPM;
           FPM.addPass(RISCVSplitLoopByLengthPass());
+          FPM.addPass(RISCVCustomLICMPass());
           PM.addPass(createModuleToFunctionPassAdaptor(std::move(FPM)));
         }
       });
