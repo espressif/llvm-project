@@ -63,6 +63,7 @@ before_script:
   script:
     - *get_toolchain_build_scripts
     - LLVM_PROJECT_PATH=$PWD
+    - git config --global --add safe.directory ${LLVM_PROJECT_PATH}
     - BUILD_PATH=$PWD/${BUILD_DIR}
     - mkdir -p ${BUILD_PATH}
     - BUILD_HOST=$(gcc -dumpmachine)
@@ -187,6 +188,8 @@ build_and_test:
       fi
   script:
     - BUILD_PATH=$PWD/${BUILD_DIR}
+    - LLVM_PROJECT_PATH=$PWD
+    - git config --global --add safe.directory ${LLVM_PROJECT_PATH}
     - mkdir -p ${BUILD_PATH}
     - cmake -G Ninja
       -S llvm
