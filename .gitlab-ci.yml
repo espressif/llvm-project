@@ -11,7 +11,7 @@ stages:
 image: ${CI_DOCKER_REGISTRY}/llvm-build:4
 
 variables:
-  ESP_LLVM_EMBEDDED_TOOLCHAIN_REF: "master"
+  ESP_LLVM_EMBEDDED_TOOLCHAIN_REF: "llvm_release_19"
   ESP_GNU_TOOLCHAIN_VER: "13.2.0_20240305"
   CROSS_ARM_IMAGE: $CI_DOCKER_REGISTRY/llvm-build-cross-arm:1
   CROSS_WIN_IMAGE: $CI_DOCKER_REGISTRY/llvm-build-cross-win:2
