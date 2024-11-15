@@ -14,6 +14,7 @@
 #include "MCTargetDesc/RISCVBaseInfo.h"
 #include "RISCV.h"
 #include "RISCVCustomLICM.h"
+#include "RISCVLoopUnrollAndRemainder.h"
 #include "RISCVMachineFunctionInfo.h"
 #include "RISCVSplitLoopByLength.h"
 #include "RISCVTargetObjectFile.h"
@@ -459,6 +460,10 @@ void RISCVTargetMachine::registerPassBuilderCallbacks(
           FPM.addPass(RISCVCustomLICMPass());
           return true;
         }
+        if (Name == "riscv-loop-unroll-and-remainder") {
+          FPM.addPass(RISCVLoopUnrollAndRemainderPass());
+          return true;
+        }
         return false;
       });
 
@@ -467,9 +472,11 @@ void RISCVTargetMachine::registerPassBuilderCallbacks(
         if(EnableEsp32P4Optimize && (Level == OptimizationLevel::O3 || Level == OptimizationLevel::O2)){
           EnableRISCVSplitLoopByLength = true;
           EnableRISCVCustomLICM = true;
+          EnableRISCVLoopUnrollAndRemainder = true;
           FunctionPassManager FPM;
           FPM.addPass(RISCVSplitLoopByLengthPass());
           FPM.addPass(RISCVCustomLICMPass());
+          FPM.addPass(RISCVLoopUnrollAndRemainderPass());
           PM.addPass(createModuleToFunctionPassAdaptor(std::move(FPM)));
         }
       });
