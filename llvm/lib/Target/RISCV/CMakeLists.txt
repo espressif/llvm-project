@@ -38,6 +38,7 @@ add_llvm_target(RISCVCodeGen
   RISCVGatherScatterLowering.cpp
   RISCVSplitLoopByLength.cpp
   RISCVCustomLICM.cpp
+  RISCVLoopUnrollAndRemainder.cpp
   RISCVInsertVSETVLI.cpp
   RISCVInsertReadWriteCSR.cpp
   RISCVInsertWriteVXRM.cpp
