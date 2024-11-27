@@ -73,6 +73,26 @@ public:
                                const MCSubtargetInfo &STI, raw_ostream &O);
   static const char *getRegisterName(MCRegister Reg);
   static const char *getRegisterName(MCRegister Reg, unsigned AltIdx);
+
+  void printImm8_AsmOperand(const MCInst *MI, int OpNum,
+                            const MCSubtargetInfo &STI, raw_ostream &O);
+  void printSelect_2_AsmOperand(const MCInst *MI, int OpNum,
+                                const MCSubtargetInfo &STI, raw_ostream &O);
+  void printSelect_4_AsmOperand(const MCInst *MI, int OpNum,
+                                const MCSubtargetInfo &STI, raw_ostream &O);
+  void printSelect_8_AsmOperand(const MCInst *MI, int OpNum,
+                                const MCSubtargetInfo &STI, raw_ostream &O);
+  void printSelect_16_AsmOperand(const MCInst *MI, int OpNum,
+                                 const MCSubtargetInfo &STI, raw_ostream &O);
+  void printOffset_16_16_AsmOperand(const MCInst *MI, int OpNum,
+                                    const MCSubtargetInfo &STI, raw_ostream &O);
+  void printOffset_256_8_AsmOperand(const MCInst *MI, int OpNum,
+                                    const MCSubtargetInfo &STI, raw_ostream &O);
+  void printOffset_256_16_AsmOperand(const MCInst *MI, int OpNum,
+                                     const MCSubtargetInfo &STI,
+                                     raw_ostream &O);
+  void printOffset_256_4_AsmOperand(const MCInst *MI, int OpNum,
+                                    const MCSubtargetInfo &STI, raw_ostream &O);
 };
 } // namespace llvm
 

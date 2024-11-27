@@ -451,6 +451,14 @@ public:
     }
   }
 
+  static bool inRange(const MCExpr *Expr, int64_t MinValue, int64_t MaxValue) {
+    if (auto *CE = dyn_cast<MCConstantExpr>(Expr)) {
+      int64_t Value = CE->getValue();
+      return Value >= MinValue && Value <= MaxValue;
+    }
+    return false;
+  }
+
   bool isToken() const override { return Kind == KindTy::Token; }
   bool isReg() const override { return Kind == KindTy::Register; }
   bool isV0Reg() const {
@@ -475,6 +483,43 @@ public:
   bool isRegReg() const { return Kind == KindTy::RegReg; }
   bool isRlist() const { return Kind == KindTy::Rlist; }
   bool isSpimm() const { return Kind == KindTy::Spimm; }
+
+  bool isImm(int64_t MinValue, int64_t MaxValue) const {
+    return Kind == KindTy::Immediate && inRange(getImm(), MinValue, MaxValue);
+  }
+
+  bool isImm8() const {
+    // The addi instruction maybe expaned to addmi and addi.
+    return isImm((-32768 - 128), (32512 + 127));
+  }
+
+  bool isSelect_2() const { return isImm(0, 1); }
+
+  bool isSelect_4() const { return isImm(0, 3); }
+
+  bool isSelect_8() const { return isImm(0, 7); }
+
+  bool isSelect_16() const { return isImm(0, 16); }
+
+  bool isOffset_16_16() const {
+    return isImm(-128, 112) &&
+           ((cast<MCConstantExpr>(getImm())->getValue() & 0xf) == 0);
+  }
+
+  bool isOffset_256_8() const {
+    return isImm(-1024, 1016) &&
+           ((cast<MCConstantExpr>(getImm())->getValue() & 0x7) == 0);
+  }
+
+  bool isOffset_256_16() const {
+    return isImm(-2048, 2032) &&
+           ((cast<MCConstantExpr>(getImm())->getValue() & 0xf) == 0);
+  }
+
+  bool isOffset_256_4() const {
+    return isImm(-512, 508) &&
+           ((cast<MCConstantExpr>(getImm())->getValue() & 0x3) == 0);
+  }
 
   bool isGPR() const {
     return Kind == KindTy::Register &&
@@ -917,6 +962,54 @@ public:
     bool IsConstantImm = evaluateConstantImm(getImm(), Imm, VK);
     return IsConstantImm && isShiftedUInt<6, 3>(Imm) &&
            VK == RISCVMCExpr::VK_RISCV_None;
+  }
+
+    bool isUImm9() const {
+    if (!isImm())
+      return false;
+    int64_t Imm;
+    RISCVMCExpr::VariantKind VK = RISCVMCExpr::VK_RISCV_None;
+    bool IsConstantImm = evaluateConstantImm(getImm(), Imm, VK);
+    return IsConstantImm && isUInt<9>(Imm) &&
+           VK == RISCVMCExpr::VK_RISCV_None;
+  }
+
+  // bool isUImm10() const {
+  //   RISCVMCExpr::VariantKind VK = RISCVMCExpr::VK_RISCV_None;
+  //   int64_t Imm;
+  //   bool IsValid;
+  //   if (!isImm())
+  //     return false;
+  //   bool IsConstantImm = evaluateConstantImm(getImm(), Imm, VK);
+  //   if (!IsConstantImm)
+  //     IsValid = RISCVAsmParser::classifySymbolRef(getImm(), VK);
+  //   else
+  //     IsValid = isUInt<10>(fixImmediateForRV32(Imm, isRV64Imm()));
+  //   return IsValid && VK == RISCVMCExpr::VK_RISCV_None;
+  // }
+
+  bool isUImm12() const {
+    if (!isImm())
+      return false;
+    int64_t Imm;
+    RISCVMCExpr::VariantKind VK = RISCVMCExpr::VK_RISCV_None;
+    bool IsConstantImm = evaluateConstantImm(getImm(), Imm, VK);
+    return IsConstantImm && isUInt<12>(Imm) &&
+           VK == RISCVMCExpr::VK_RISCV_None;
+  }
+
+  bool isUImm13() const {
+    RISCVMCExpr::VariantKind VK = RISCVMCExpr::VK_RISCV_None;
+    int64_t Imm;
+    bool IsValid;
+    if (!isImm())
+      return false;
+    bool IsConstantImm = evaluateConstantImm(getImm(), Imm, VK);
+    if (!IsConstantImm)
+      IsValid = RISCVAsmParser::classifySymbolRef(getImm(), VK);
+    else
+      IsValid = isUInt<13>(fixImmediateForRV32(Imm, isRV64Imm()));
+    return IsValid && VK == RISCVMCExpr::VK_RISCV_None;
   }
 
   bool isUImm10Lsb00NonZero() const {
@@ -1628,6 +1721,10 @@ bool RISCVAsmParser::matchAndEmitInstruction(SMLoc IDLoc, unsigned &Opcode,
     return generateImmOutOfRangeError(
         Operands, ErrorInfo, -(1 << 11), (1 << 11) - 32,
         "immediate must be a multiple of 32 bytes in the range");
+  case Match_InvalidUImm12:
+    return generateImmOutOfRangeError(
+        Operands, ErrorInfo, 0, (1 << 12) - 1,
+        "immediate must be in the range"); 
   case Match_InvalidSImm13Lsb0:
     return generateImmOutOfRangeError(
         Operands, ErrorInfo, -(1 << 12), (1 << 12) - 2,

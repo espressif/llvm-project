@@ -595,3 +595,17 @@ def RP2350_HAZARD3 : RISCVProcessorModel<"rp2350-hazard3",
                                           FeatureStdExtZbkb,
                                           FeatureStdExtZcb,
                                           FeatureStdExtZcmp]>;
+
+def ESPRESSIF_ESP32P4 : RISCVProcessorModel<"esp32p4",
+                                       NoSchedModel,
+                                       [Feature32Bit,
+                                        FeatureVendorXesppie,
+                                        FeatureStdExtZicsr,
+                                        FeatureStdExtZifencei,
+                                        FeatureStdExtM,
+                                        FeatureStdExtA,
+                                        FeatureStdExtF,
+                                        FeatureStdExtC,
+                                        FeatureStdExtZcb,
+                                        FeatureStdExtZcmp,
+                                        FeatureStdExtZcmt]>;

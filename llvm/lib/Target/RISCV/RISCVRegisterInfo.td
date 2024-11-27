@@ -206,6 +206,24 @@ let RegAltNameIndices = [ABIRegAltName] in {
   }
 }
 
+class QRReg<bits<16> num, string n, list<string>alt = []> : Register<n>{
+  let Namespace = "RISCV";
+  let HWEncoding{15-0} = num;
+  let AltNames = alt;
+}
+let RegAltNameIndices = [ABIRegAltName] in {
+  def Q0 : QRReg<0, "q0", ["q0"]>, DwarfRegNum<[0]>;
+  def Q1 : QRReg<1, "q1", ["q1"]>, DwarfRegNum<[1]>;
+  def Q2 : QRReg<2, "q2", ["q2"]>, DwarfRegNum<[2]>;
+  def Q3 : QRReg<3, "q3", ["q3"]>, DwarfRegNum<[3]>;
+  def Q4 : QRReg<4, "q4", ["q4"]>, DwarfRegNum<[4]>;
+  def Q5 : QRReg<5, "q5", ["q5"]>, DwarfRegNum<[5]>;
+  def Q6 : QRReg<6, "q6", ["q6"]>, DwarfRegNum<[6]>;
+  def Q7 : QRReg<7, "q7", ["q7"]>, DwarfRegNum<[7]>;
+}
+
+def QR : RegisterClass<"RISCV", [v16i8, v4i32], 128, (sequence "Q%u", 0, 7)>;
+
 def XLenVT : ValueTypeByHwMode<[RV32, RV64],
                                [i32,  i64]>;
 defvar XLenPairVT = untyped;
@@ -245,6 +263,9 @@ def GPR : GPRRegisterClass<(add (sequence "X%u", 10, 17),
                                 (sequence "X%u", 8, 9),
                                 (sequence "X%u", 18, 27),
                                 (sequence "X%u", 0, 4))>;
+
+def GPRPIE : GPRRegisterClass<(add (sequence "X%u", 8, 15),
+                                   (sequence "X%u", 24, 31))>;
 
 def GPRX0 : GPRRegisterClass<(add X0)>;
 def GPRX1 : GPRRegisterClass<(add X1)>;

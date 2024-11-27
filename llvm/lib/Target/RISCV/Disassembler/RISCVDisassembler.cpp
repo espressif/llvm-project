@@ -85,6 +85,20 @@ static DecodeStatus DecodeGPRRegisterClass(MCInst &Inst, uint32_t RegNo,
   return MCDisassembler::Success;
 }
 
+static DecodeStatus DecodeGPRPIERegisterClass(MCInst &Inst, uint64_t RegNo,
+                                              uint64_t Address,
+                                              const MCDisassembler *Decoder) {
+  auto bit4 = RegNo & 0x8;
+  RegNo |= (bit4 << 4);
+  RegNo |= (1 << 3);
+  if ((RegNo >= 8 && RegNo <= 15) || (RegNo >= 24 && RegNo <= 31)) {
+    MCRegister Reg = RISCV::X0 + RegNo;
+    Inst.addOperand(MCOperand::createReg(Reg));
+    return MCDisassembler::Success;
+  }
+  return MCDisassembler::Fail;
+}
+
 static DecodeStatus DecodeGPRF16RegisterClass(MCInst &Inst, uint32_t RegNo,
                                               uint64_t Address,
                                               const MCDisassembler *Decoder) {
@@ -297,6 +311,21 @@ static DecodeStatus DecodeVRM8RegisterClass(MCInst &Inst, uint32_t RegNo,
   return MCDisassembler::Success;
 }
 
+static const unsigned QRDecoderTable[] = {RISCV::Q0, RISCV::Q1, RISCV::Q2,
+                                          RISCV::Q3, RISCV::Q4, RISCV::Q5,
+                                          RISCV::Q6, RISCV::Q7};
+
+static DecodeStatus DecodeQRRegisterClass(MCInst &Inst, uint64_t RegNo,
+                                          uint64_t Address,
+                                          const void *Decoder) {
+  if (RegNo >= std::size(QRDecoderTable))
+    return MCDisassembler::Fail;
+
+  unsigned Reg = QRDecoderTable[RegNo];
+  Inst.addOperand(MCOperand::createReg(Reg));
+  return MCDisassembler::Success;
+}
+
 static DecodeStatus DecodeVMV0RegisterClass(MCInst &Inst, uint32_t RegNo,
                                             uint64_t Address,
                                             const MCDisassembler *Decoder) {
@@ -457,6 +486,43 @@ static DecodeStatus decodeCSSPushPopchk(MCInst &Inst, uint32_t Insn,
                                         uint64_t Address,
                                         const MCDisassembler *Decoder);
 
+static DecodeStatus decodeSelect_2Operand(MCInst &Inst, uint64_t Imm,
+                                          int64_t Address, const void *Decoder);
+
+static DecodeStatus decodeSelect_4Operand(MCInst &Inst, uint64_t Imm,
+                                          int64_t Address, const void *Decoder);
+
+static DecodeStatus decodeSelect_8Operand(MCInst &Inst, uint64_t Imm,
+                                          int64_t Address, const void *Decoder);
+
+static DecodeStatus decodeSelect_16Operand(MCInst &Inst, uint64_t Imm,
+                                           int64_t Address,
+                                           const void *Decoder);
+
+static DecodeStatus decodeOffset_16_16Operand(MCInst &Inst, int64_t Imm,
+                                              int64_t Address,
+                                              const void *Decoder);
+
+static DecodeStatus decodeOffset_256_8Operand(MCInst &Inst, int64_t Imm,
+                                              int64_t Address,
+                                              const void *Decoder);
+
+static DecodeStatus decodeOffset_256_16Operand(MCInst &Inst, int64_t Imm,
+                                               int64_t Address,
+                                               const void *Decoder);
+
+static DecodeStatus decodeOffset_256_4Operand(MCInst &Inst, int64_t Imm,
+                                              int64_t Address,
+                                              const void *Decoder);
+
+static DecodeStatus decodeUImm13_Step4Operand(MCInst &Inst, int64_t Imm,
+                                              int64_t Address,
+                                              const void *Decoder);
+
+static DecodeStatus decodeUImm10_Step4Operand(MCInst &Inst, int64_t Imm,
+                                              int64_t Address,
+                                              const void *Decoder);
+
 #include "RISCVGenDisassemblerTables.inc"
 
 static DecodeStatus decodeRVCInstrRdRs1ImmZero(MCInst &Inst, uint32_t Insn,
@@ -576,6 +642,90 @@ static DecodeStatus decodeZcmpSpimm(MCInst &Inst, uint32_t Imm,
   return MCDisassembler::Success;
 }
 
+static DecodeStatus decodeSelect_2Operand(MCInst &Inst, uint64_t Imm,
+                                          int64_t Address,
+                                          const void *Decoder) {
+  assert(isUInt<8>(Imm) && "Invalid immediate");
+  Inst.addOperand(MCOperand::createImm(Imm));
+  return MCDisassembler::Success;
+}
+
+static DecodeStatus decodeSelect_4Operand(MCInst &Inst, uint64_t Imm,
+                                          int64_t Address,
+                                          const void *Decoder) {
+  assert(isUInt<8>(Imm) && "Invalid immediate");
+  Inst.addOperand(MCOperand::createImm(Imm));
+  return MCDisassembler::Success;
+}
+
+static DecodeStatus decodeSelect_8Operand(MCInst &Inst, uint64_t Imm,
+                                          int64_t Address,
+                                          const void *Decoder) {
+  assert(isUInt<8>(Imm) && "Invalid immediate");
+  Inst.addOperand(MCOperand::createImm(Imm));
+  return MCDisassembler::Success;
+}
+
+static DecodeStatus decodeSelect_16Operand(MCInst &Inst, uint64_t Imm,
+                                           int64_t Address,
+                                           const void *Decoder) {
+  assert(isUInt<8>(Imm) && "Invalid immediate");
+  Inst.addOperand(MCOperand::createImm(Imm));
+  return MCDisassembler::Success;
+}
+
+static DecodeStatus decodeOffset_16_16Operand(MCInst &Inst, int64_t Imm,
+                                              int64_t Address,
+                                              const void *Decoder) {
+  assert(isInt<8>(Imm) && "Invalid immediate");
+  auto ImmSigned = SignExtend64<4>(Imm);
+  Inst.addOperand(MCOperand::createImm(ImmSigned * 16));
+  return MCDisassembler::Success;
+}
+
+static DecodeStatus decodeOffset_256_8Operand(MCInst &Inst, int64_t Imm,
+                                              int64_t Address,
+                                              const void *Decoder) {
+  assert(isInt<16>(Imm) && "Invalid immediate");
+  auto ImmSigned = SignExtend64<4>(Imm);
+  Inst.addOperand(MCOperand::createImm(ImmSigned * 8));
+  return MCDisassembler::Success;
+}
+
+static DecodeStatus decodeOffset_256_16Operand(MCInst &Inst, int64_t Imm,
+                                               int64_t Address,
+                                               const void *Decoder) {
+  assert(isInt<16>(Imm) && "Invalid immediate");
+  auto ImmSigned = SignExtend64<4>(Imm);
+  Inst.addOperand(MCOperand::createImm(ImmSigned * 16));
+  return MCDisassembler::Success;
+}
+
+static DecodeStatus decodeOffset_256_4Operand(MCInst &Inst, int64_t Imm,
+                                              int64_t Address,
+                                              const void *Decoder) {
+  assert(isInt<16>(Imm) && "Invalid immediate");
+  auto ImmSigned = SignExtend64<4>(Imm);
+  Inst.addOperand(MCOperand::createImm(ImmSigned * 4));
+  return MCDisassembler::Success;
+}
+
+static DecodeStatus decodeUImm13_Step4Operand(MCInst &Inst, int64_t Imm,
+                                              int64_t Address,
+                                              const void *Decoder) {
+  assert(isUInt<13>(Imm) && "Invalid immediate");
+  Inst.addOperand(MCOperand::createImm((Imm * 2) * 2));
+  return MCDisassembler::Success;
+}
+
+static DecodeStatus decodeUImm10_Step4Operand(MCInst &Inst, int64_t Imm,
+                                              int64_t Address,
+                                              const void *Decoder) {
+  assert(isUInt<10>(Imm) && "Invalid immediate");
+  Inst.addOperand(MCOperand::createImm(Imm * 2));
+  return MCDisassembler::Success;
+}
+
 // Add implied SP operand for C.*SP compressed instructions. The SP operand
 // isn't explicitly encoded in the instruction.
 void RISCVDisassembler::addSPOperands(MCInst &MI) const {
@@ -673,6 +823,8 @@ DecodeStatus RISCVDisassembler::getInstruction32(MCInst &MI, uint64_t &Size,
   TRY_TO_DECODE_FEATURE(
       RISCV::FeatureVendorXSfvfnrclipxfqf, DecoderTableXSfvfnrclipxfqf32,
       "SiFive FP32-to-int8 Ranged Clip Instructions opcode table");
+  TRY_TO_DECODE_FEATURE(RISCV::FeatureVendorXesppie, DecoderTableESP32P432,
+                        "ESP32P4 Instruction opcode table");
   TRY_TO_DECODE_FEATURE(RISCV::FeatureVendorXSiFivecdiscarddlone,
                         DecoderTableXSiFivecdiscarddlone32,
                         "SiFive sf.cdiscard.d.l1 custom opcode table");

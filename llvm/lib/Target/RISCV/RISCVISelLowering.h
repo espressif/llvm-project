@@ -919,6 +919,10 @@ public:
                               MachineBasicBlock::instr_iterator &MBBI,
                               const TargetInstrInfo *TII) const override;
 
+  MachineBasicBlock *emitDSPInstrWithCustomInserter(
+      MachineInstr &MI, MachineBasicBlock *MBB, const TargetInstrInfo &TII,
+      MachineFunction *MF, MachineRegisterInfo &MRI, DebugLoc DL) const;
+
   /// True if stack clash protection is enabled for this functions.
   bool hasInlineStackProbe(const MachineFunction &MF) const override;
 

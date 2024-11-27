@@ -118,6 +118,12 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
   // Set up the register classes.
   addRegisterClass(XLenVT, &RISCV::GPRRegClass);
 
+  if (Subtarget.hasVendorXesppie()) {
+    static const MVT::SimpleValueType QRVec[] = {MVT::v16i8, MVT::v4i32};
+    for (auto st : QRVec)
+      addRegisterClass(st, &RISCV::QRRegClass);
+  }
+
   if (Subtarget.hasStdExtZfhmin())
     addRegisterClass(MVT::f16, &RISCV::FPR16RegClass);
   if (Subtarget.hasStdExtZfbfmin())
@@ -19833,9 +19839,13 @@ static MachineBasicBlock *emitFROUND(MachineInstr &MI, MachineBasicBlock *MBB,
 MachineBasicBlock *
 RISCVTargetLowering::EmitInstrWithCustomInserter(MachineInstr &MI,
                                                  MachineBasicBlock *BB) const {
+  const TargetInstrInfo &TII = *Subtarget.getInstrInfo();
+  MachineFunction *MF = BB->getParent();
+  MachineRegisterInfo &MRI = MF->getRegInfo();
+  DebugLoc DL = MI.getDebugLoc();
   switch (MI.getOpcode()) {
   default:
-    llvm_unreachable("Unexpected instr type to insert");
+    return emitDSPInstrWithCustomInserter(MI, BB, TII, MF, MRI, DL);
   case RISCV::ReadCounterWide:
     assert(!Subtarget.is64Bit() &&
            "ReadCounterWide is only to be used on riscv32");
