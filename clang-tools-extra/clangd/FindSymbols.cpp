@@ -10,6 +10,7 @@
 #include "AST.h"
 #include "FuzzyMatch.h"
 #include "ParsedAST.h"
+#include "Protocol.h"
 #include "Quality.h"
 #include "SourceCode.h"
 #include "index/Index.h"
@@ -20,9 +21,9 @@
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringRef.h"
+#include <iterator>
 #include <limits>
-#include <optional>
-#include <tuple>
+#include <vector>
 
 #define DEBUG_TYPE "FindSymbols"
 
@@ -374,11 +375,47 @@ public:
     SymBuilder Root;
     for (auto &TopLevel : AST.getLocalTopLevelDecls())
       traverseDecl(TopLevel, Root);
-    return std::move(std::move(Root).build().children);
+    std::vector<DocumentSymbol> symbols =
+        std::move(std::move(Root).build().children);
+    auto IncludeSymbols = collectIncludeSymbols(AST);
+    symbols.insert(symbols.end(),
+                   std::make_move_iterator(IncludeSymbols.begin()),
+                   std::make_move_iterator(IncludeSymbols.end()));
+    return symbols;
   }
 
 private:
   enum class VisitKind { No, OnlyDecl, OnlyChildren, DeclAndChildren };
+
+  std::vector<DocumentSymbol> collectIncludeSymbols(const ParsedAST &AST) {
+    std::vector<DocumentSymbol> IncludeSymbols;
+    const auto &IS = AST.getIncludeStructure();
+    const auto &MI = IS.MainFileIncludes;
+    for (const auto &Inclusion : MI) {
+
+      DocumentSymbol IncludeSymbol;
+      std::string IncludeText = Inclusion.Written;
+      if (IncludeText.empty())
+        continue;
+
+      if (((IncludeText.front() == '"' && IncludeText.back() == '"') ||
+           (IncludeText.front() == '<' && IncludeText.back() == '>'))) {
+        IncludeText = IncludeText.substr(1, IncludeText.size() - 2);
+      }
+
+      IncludeSymbol.name = IncludeText;
+      IncludeSymbol.kind = SymbolKind::File;
+      IncludeSymbol.range.start.line = Inclusion.HashLine;
+      IncludeSymbol.range.start.character = 0;
+      IncludeSymbol.range.end.line = Inclusion.HashLine;
+      IncludeSymbol.range.end.character =
+          static_cast<int>(Inclusion.Written.size() + 9);
+      IncludeSymbol.selectionRange = IncludeSymbol.range;
+      IncludeSymbols.push_back(std::move(IncludeSymbol));
+    }
+
+    return IncludeSymbols;
+  }
 
   void traverseDecl(Decl *D, SymBuilder &Parent) {
     // Skip symbols which do not originate from the main file.
@@ -627,8 +664,10 @@ PragmaMarkSymbol markToSymbol(const PragmaMark &P) {
 }
 
 std::vector<DocumentSymbol> collectDocSymbols(ParsedAST &AST) {
-  std::vector<DocumentSymbol> Syms = DocumentOutline(AST).build();
-
+  DocumentOutline documentOutline = DocumentOutline(AST);
+  std::vector<DocumentSymbol> Syms = documentOutline.build();
+  // TODO: Add a collection method for macros as well
+   
   const auto &PragmaMarks = AST.getMarks();
   if (PragmaMarks.empty())
     return Syms;
@@ -643,6 +682,7 @@ std::vector<DocumentSymbol> collectDocSymbols(ParsedAST &AST) {
   DocumentSymbol Root;
   Root.children = std::move(Syms);
   Root.range = EntireFile;
+
   mergePragmas(Root, llvm::ArrayRef(Pragmas));
   return Root.children;
 }
