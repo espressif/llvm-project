@@ -498,7 +498,7 @@ TEST(DocumentSymbols, ExternSymbol) {
       #include "foo.h"
       )cpp";
 
-  EXPECT_THAT(getSymbols(TU.build()), IsEmpty());
+  EXPECT_THAT(getSymbols(TU.build()), ElementsAre(withName("foo.h")));
 }
 
 TEST(DocumentSymbols, ExternContext) {
@@ -579,7 +579,7 @@ TEST(DocumentSymbols, InHeaderFile) {
       }
       )cpp";
   EXPECT_THAT(getSymbols(TU.build()),
-              ElementsAre(withName("i"), withName("test")));
+              ElementsAre(withName("i"), withName("test"), withName("bar.h")));
 }
 
 TEST(DocumentSymbols, Template) {
