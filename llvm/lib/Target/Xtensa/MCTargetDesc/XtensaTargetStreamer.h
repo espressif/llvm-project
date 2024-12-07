@@ -24,10 +24,10 @@ class XtensaTargetStreamer : public MCTargetStreamer {
 
 public:
   XtensaTargetStreamer(MCStreamer &S);
-  virtual void emitLiteral(MCSymbol *LblSym, const MCExpr *Value, SMLoc L) = 0;
-  virtual void emitLiteralLabel(MCSymbol *LblSym, SMLoc L) = 0;
-  virtual void emitLiteral(const MCExpr *Value, SMLoc L) = 0;
-  virtual void emitLiteral(std::string str) = 0;
+  virtual void emitLiteral(MCSymbol *LblSym, const MCExpr *Value, SMLoc L) {};
+  virtual void emitLiteralLabel(MCSymbol *LblSym, SMLoc L) {};
+  virtual void emitLiteral(const MCExpr *Value, SMLoc L) {};
+  virtual void emitLiteral(std::string str) {};
   void setLiteralSectionPrefix(StringRef Name) { LiteralSectionPrefix = Name; }
   StringRef getLiteralSectionPrefix() { return LiteralSectionPrefix; }
 };
@@ -37,9 +37,6 @@ class XtensaTargetAsmStreamer : public XtensaTargetStreamer {
 
 public:
   XtensaTargetAsmStreamer(MCStreamer &S, formatted_raw_ostream &OS);
-  void emitLiteral(MCSymbol *LblSym, const MCExpr *Value, SMLoc L) override {}
-  void emitLiteralLabel(MCSymbol *LblSym, SMLoc L) override {}
-  void emitLiteral(const MCExpr *Value, SMLoc L) override {}
   void emitLiteral(std::string str) override;
 };
 
@@ -50,7 +47,6 @@ public:
   void emitLiteral(MCSymbol *LblSym, const MCExpr *Value, SMLoc L) override;
   void emitLiteralLabel(MCSymbol *LblSym, SMLoc L) override;
   void emitLiteral(const MCExpr *Value, SMLoc L) override;
-  void emitLiteral(std::string str) override {}
 };
 } // end namespace llvm
 
