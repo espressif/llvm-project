@@ -85,6 +85,10 @@ createXtensaObjectTargetStreamer(MCStreamer &S, const MCSubtargetInfo &STI) {
   return new XtensaTargetELFStreamer(S);
 }
 
+static MCTargetStreamer *createXtensaNullTargetStreamer(MCStreamer &S) {
+  return new XtensaTargetStreamer(S);
+}
+
 extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeXtensaTargetMC() {
   // Register the MCAsmInfo.
   TargetRegistry::RegisterMCAsmInfo(getTheXtensaTarget(), createXtensaMCAsmInfo);
@@ -119,4 +123,8 @@ extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeXtensaTargetMC() {
   // Register the ELF target streamer.
   TargetRegistry::RegisterObjectTargetStreamer(
       getTheXtensaTarget(), createXtensaObjectTargetStreamer);
+
+  // Register the null target streamer.
+  TargetRegistry::RegisterNullTargetStreamer(getTheXtensaTarget(),
+                                              createXtensaNullTargetStreamer);
 }
