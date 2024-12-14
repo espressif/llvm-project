@@ -373,6 +373,9 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
     setTargetDAGCombine(ISD::BR_CC);
   }
 
+  // make BRCOND legal, its actually only legal for a subset of conds
+  setOperationAction(ISD::BRCOND, MVT::Other, Legal);
+
   // Needed so that we don't try to implement f128 constant loads using
   // a load-and-extend of a f80 constant (in cases where the constant
   // would fit in an f80).
