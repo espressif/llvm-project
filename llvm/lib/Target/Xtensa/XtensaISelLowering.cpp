@@ -1549,15 +1549,13 @@ SDValue XtensaTargetLowering::LowerSELECT_CC(SDValue Op,
   SDValue FalseValue = Op.getOperand(3);
   ISD::CondCode CC = cast<CondCodeSDNode>(Op->getOperand(4))->get();
 
-  unsigned BrOpcode = getBranchOpcode(CC);
-  SDValue TargetCC = DAG.getConstant(BrOpcode, DL, MVT::i32);
-  SDValue TargetCC_FP = DAG.getConstant(CC, DL, MVT::i32);
+  SDValue TargetCC = DAG.getConstant(
+      (LHS.getValueType() == MVT::f32) ? CC : getBranchOpcode(CC), DL,
+      MVT::i32);
 
   if (LHS.getValueType() == MVT::f32 || TrueValue.getValueType() == MVT::f32)
     return DAG.getNode(XtensaISD::SELECT_CC_FP, DL, TrueValue.getValueType(),
-                       LHS, RHS, TrueValue, FalseValue,
-                       (LHS.getValueType() == MVT::f32) ? TargetCC_FP
-                                                        : TargetCC);
+                       LHS, RHS, TrueValue, FalseValue, TargetCC);
   else if (TrueValue.getValueType().isVector())
     return Op;
 
@@ -1571,9 +1569,9 @@ SDValue XtensaTargetLowering::LowerSETCC(SDValue Op, SelectionDAG &DAG) const {
   SDValue RHS = Op.getOperand(1);
   ISD::CondCode CC = cast<CondCodeSDNode>(Op.getOperand(2))->get();
 
-  unsigned BrOpcode = getBranchOpcode(CC);
-  SDValue TargetCC = DAG.getConstant(BrOpcode, DL, MVT::i32);
-  SDValue TargetCC_FP = DAG.getConstant(CC, DL, MVT::i32);
+  SDValue TargetCC = DAG.getConstant(
+      (LHS.getValueType() == MVT::f32) ? CC : getBranchOpcode(CC), DL,
+      MVT::i32);
 
   // Check Op SDNode users
   // If there are only CALL/CALLW nodes, don't expand Global Address
@@ -1598,9 +1596,8 @@ SDValue XtensaTargetLowering::LowerSETCC(SDValue Op, SelectionDAG &DAG) const {
   SDValue FalseV = DAG.getConstant(0, DL, Op.getValueType());
 
   if (LHS.getValueType() == MVT::f32 || TrueV.getValueType() == MVT::f32)
-    return DAG.getNode(
-        XtensaISD::SELECT_CC_FP, DL, TrueV.getValueType(), LHS, RHS, TrueV,
-        FalseV, (LHS.getValueType() == MVT::f32) ? TargetCC_FP : TargetCC);
+    return DAG.getNode(XtensaISD::SELECT_CC_FP, DL, TrueV.getValueType(), LHS,
+                       RHS, TrueV, FalseV, TargetCC);
   else if (TrueV.getValueType().isVector())
     return SDValue();
   else
