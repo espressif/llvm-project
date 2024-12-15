@@ -26,6 +26,7 @@ class XtensaFunctionInfo : public MachineFunctionInfo {
   int VarArgsStackOffset;
   unsigned VarArgsFrameIndex;
   bool SaveFrameRegister = false;
+  unsigned LabelUId = 0;
 
 public:
   explicit XtensaFunctionInfo(const Function &F, const TargetSubtargetInfo *STI)
@@ -43,6 +44,8 @@ public:
 
   bool isSaveFrameRegister() const { return SaveFrameRegister; }
   void setSaveFrameRegister() { SaveFrameRegister = true; }
+
+  unsigned createLabelUId() { return LabelUId++; }
 };
 
 } // namespace llvm
