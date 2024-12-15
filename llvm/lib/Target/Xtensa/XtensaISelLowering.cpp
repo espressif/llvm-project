@@ -1780,31 +1780,31 @@ SDValue XtensaTargetLowering::getAddrPCRel(SDValue Op,
 
 SDValue XtensaTargetLowering::LowerConstantPool(SDValue Op,
                                                 SelectionDAG &DAG) const {
-  EVT PtrVT = Op.getValueType();
   ConstantPoolSDNode *CP = cast<ConstantPoolSDNode>(Op);
+  EVT PtrVT = Op.getValueType();
   auto C = const_cast<Constant *>(CP->getConstVal());
-  auto T = CP->getType();
+  auto T = const_cast<Type *>(CP->getType());
   SDValue Result;
 
-  auto &MF = DAG.getMachineFunction();
   // Do not use constant pool for aggregate or vector constant types,
-  // in such cases create global variable, for example to store tabel
-  // when we lower CTTZ operation.
+  // in such cases create global variable
   if (T->isAggregateType() || T->isVectorTy()) {
     auto AFI = DAG.getMachineFunction().getInfo<XtensaMachineFunctionInfo>();
-    auto M = const_cast<Module *>(MF.getFunction().getParent());
+    auto M = const_cast<Module *>(
+        DAG.getMachineFunction().getFunction().getParent());
     auto GV = new GlobalVariable(
         *M, T, /*isConstant=*/true, GlobalVariable::InternalLinkage, C,
         Twine(DAG.getDataLayout().getPrivateGlobalPrefix()) + "CP" +
-            Twine(MF.getFunctionNumber()) + "_" + Twine(AFI->createLabelUId()));
+            Twine(DAG.getMachineFunction().getFunctionNumber()) + "_" +
+            Twine(AFI->createLabelUId()));
     Result = DAG.getTargetConstantPool(GV, PtrVT, Align(4));
   } else {
-    if (!CP->isMachineConstantPoolEntry()) {
-      Result = DAG.getTargetConstantPool(CP->getConstVal(), PtrVT,
-                                         CP->getAlign(), CP->getOffset());
-    } else {
-      report_fatal_error("This constantpool type is not supported yet");
-    }
+    if (CP->isMachineConstantPoolEntry())
+      Result = DAG.getTargetConstantPool(CP->getMachineCPVal(), PtrVT,
+                                         CP->getAlign());
+    else
+      Result =
+          DAG.getTargetConstantPool(C, PtrVT, CP->getAlign(), CP->getOffset());
   }
 
   return getAddrPCRel(Result, DAG);
