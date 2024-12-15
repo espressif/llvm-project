@@ -1631,11 +1631,6 @@ SDValue XtensaTargetLowering::LowerImmediate(SDValue Op,
     // Check if use node maybe lowered to the MOVI instruction
     if (Value > -2048 && Value <= 2047)
       return Op;
-    // Check if use node maybe lowered to the ADDMI instruction
-    SDNode &OpNode = *Op.getNode();
-    if ((OpNode.hasOneUse() && OpNode.use_begin()->getOpcode() == ISD::ADD) &&
-        isShiftedInt<16, 8>(Value))
-      return Op;
     Type *Ty = Type::getInt32Ty(*DAG.getContext());
     Constant *CV = ConstantInt::get(Ty, Value);
     SDValue CP = DAG.getConstantPool(CV, MVT::i32);
