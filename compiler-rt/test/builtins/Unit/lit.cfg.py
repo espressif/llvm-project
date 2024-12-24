@@ -109,7 +109,7 @@ else:
     else:
       config.substitutions.append( ("%librt ", base_lib + ' -lc -lm ') )
 
-    if config.target_triple in ['xtensa-esp-elf', 'riscv32-esp-elf']:
+    if config.target_triple in ['xtensa-esp-elf', 'xtensa-esp-unknown-elf', 'riscv32-esp-elf', 'riscv32-esp-unknown-elf']:
       config.substitutions.append( ("%librt ", "-Wl,--start-group," + base_lib + ',-lc,-lm,--end-group ') )
     else:
       config.substitutions.append( ("%librt ", base_lib + ' -lc -lm ') )
