@@ -104,7 +104,7 @@ else:
     if sys.platform in ["win32"] and execute_external:
         # Don't pass dosish path separator to msys bash.exe.
         base_lib = base_lib.replace("\\", "/")
-    if config.target_triple in ['xtensa-esp-elf', 'riscv32-esp-elf']:
+    if config.target_triple in ['xtensa-esp-elf', 'xtensa-esp-unknown-elf', 'riscv32-esp-elf', 'riscv32-esp-unknown-elf']:
       config.substitutions.append( ("%librt ", "-Wl,--start-group," + base_lib + ',-lc,-lm,--end-group ') )
     else:
       config.substitutions.append( ("%librt ", base_lib + ' -lc -lm ') )
