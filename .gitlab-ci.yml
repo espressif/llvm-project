@@ -217,6 +217,9 @@ build_and_test:
       -DLLDB_INCLUDE_TESTS=OFF
       -DLLVM_TOOLCHAIN_ENABLED_TARGETS="RISCV"
       -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=Xtensa
+      -DLLVM_USE_LINKER="gold"
+      -DLLVM_PARALLEL_LINK_JOBS=2
+      -DLLVM_PARALLEL_COMPILE_JOBS=2
       -B ${BUILD_PATH} 2>&1 > ${BUILD_PATH}/build.log
     - export CUR_USER=$(whoami);
     - useradd -m test_runner;
