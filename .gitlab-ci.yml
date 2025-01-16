@@ -12,7 +12,7 @@ image: ${CI_DOCKER_REGISTRY}/llvm-build:5
 
 variables:
   ESP_LLVM_EMBEDDED_TOOLCHAIN_REF: "llvm_release_19"
-  ESP_GNU_TOOLCHAIN_VER: "13.2.0_20240305"
+  ESP_GNU_TOOLCHAIN_VER: "14.2.0_20241119"
   CROSS_ARM_IMAGE: $CI_DOCKER_REGISTRY/llvm-build-cross-arm:2
   CROSS_WIN_IMAGE: $CI_DOCKER_REGISTRY/llvm-build-cross-win:2
   DIST_DIR: "dist"
