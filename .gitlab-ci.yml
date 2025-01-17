@@ -28,7 +28,6 @@ variables:
 .get_toolchain_build_scripts: &get_toolchain_build_scripts |
   git clone -b ${ESP_LLVM_EMBEDDED_TOOLCHAIN_REF} ${GITLAB_SSH_SERVER}/${ESP_LLVM_EMBEDDED_TOOLCHAIN_REPO}.git
 
-
 before_script:
   - *use_ci_tools
   - *add_gitlab_key
@@ -318,6 +317,13 @@ build_aarch64-apple-darwin:
 .pack_template:
   stage: pack
   tags: [ "amd64", "build" ]
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: on_success
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+      when: manual
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
   artifacts:
     paths:
       - ${DIST_DIR}/
@@ -392,9 +398,12 @@ pack_aarch64-apple-darwin:
 .macos_codesign_template:
   stage: sign
   rules:
-    # - if: $CI_COMMIT_TAG
-    #   when: on_success
-    - when: manual
+    - if: $CI_COMMIT_TAG
+      when: on_success
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+      when: manual
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
   resource_group: macos_codesign
   tags: [ "darwin", "codesign" ]
   artifacts:
