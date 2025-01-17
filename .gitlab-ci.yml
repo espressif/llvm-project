@@ -391,7 +391,11 @@ pack_aarch64-apple-darwin:
 
 .macos_codesign_template:
   stage: sign
-  when: on_success
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: on_success
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+      when: manual
   resource_group: macos_codesign
   tags: [ "darwin", "codesign" ]
   artifacts:
