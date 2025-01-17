@@ -18,6 +18,12 @@ variables:
   DIST_DIR: "dist"
   BUILD_DIR: "build"
 
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
 .use_ci_tools: &use_ci_tools |
   curl -sSL ${CIT_LOADER_URL} -o cit_loader.sh && sh cit_loader.sh
   source citools/import_functions
@@ -27,7 +33,6 @@ variables:
 
 .get_toolchain_build_scripts: &get_toolchain_build_scripts |
   git clone -b ${ESP_LLVM_EMBEDDED_TOOLCHAIN_REF} ${GITLAB_SSH_SERVER}/${ESP_LLVM_EMBEDDED_TOOLCHAIN_REPO}.git
-
 
 before_script:
   - *use_ci_tools
@@ -391,7 +396,12 @@ pack_aarch64-apple-darwin:
 
 .macos_codesign_template:
   stage: sign
-  when: on_success
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: on_success
+      allow_failure: false
+    - when: manual
+      allow_failure: true
   resource_group: macos_codesign
   tags: [ "darwin", "codesign" ]
   artifacts:
