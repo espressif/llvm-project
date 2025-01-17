@@ -18,6 +18,12 @@ variables:
   DIST_DIR: "dist"
   BUILD_DIR: "build"
 
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
 .use_ci_tools: &use_ci_tools |
   curl -sSL ${CIT_LOADER_URL} -o cit_loader.sh && sh cit_loader.sh
   source citools/import_functions
@@ -187,6 +193,10 @@ before_script:
 build_and_test:
   tags: [ "amd64", "build" ]
   stage: test_build
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: on_success
+    - when: manual
   artifacts:
     paths:
       - ${BUILD_DIR}/*.log
@@ -317,13 +327,6 @@ build_aarch64-apple-darwin:
 .pack_template:
   stage: pack
   tags: [ "amd64", "build" ]
-  rules:
-    - if: $CI_COMMIT_TAG
-      when: on_success
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-      when: manual
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
   artifacts:
     paths:
       - ${DIST_DIR}/
@@ -400,10 +403,7 @@ pack_aarch64-apple-darwin:
   rules:
     - if: $CI_COMMIT_TAG
       when: on_success
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-      when: manual
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
+    - when: manual
   resource_group: macos_codesign
   tags: [ "darwin", "codesign" ]
   artifacts:
