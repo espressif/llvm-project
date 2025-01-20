@@ -32,7 +32,7 @@ workflow:
   cit_add_ssh_key "${GITLAB_KEY}"
 
 .get_toolchain_build_scripts: &get_toolchain_build_scripts |
-  git clone -b ${ESP_LLVM_EMBEDDED_TOOLCHAIN_REF} ${GITLAB_SSH_SERVER}/${ESP_LLVM_EMBEDDED_TOOLCHAIN_REPO}.git
+  git clone -b ${ESP_LLVM_EMBEDDED_TOOLCHAIN_REF} ${GITLAB_SSH_SERVER}/${ESP_LLVM_EMBEDDED_TOOLCHAIN_REPO_PATH}.git
 
 before_script:
   - *use_ci_tools
@@ -115,8 +115,8 @@ before_script:
       -DHOST_TRIPLE=${CONF_HOST}
       -DLLVM_TOOLCHAIN_ENABLED_TARGETS="${TARGET}"
       -DLLVM_USE_LINKER=${USE_LINKER}
-      -DLLVM_PARALLEL_LINK_JOBS=2
-      -DLLVM_PARALLEL_COMPILE_JOBS=2
+      -DLLVM_PARALLEL_LINK_JOBS=${ESP_LLVM_PARALLEL_LINK_JOBS}
+      -DLLVM_PARALLEL_COMPILE_JOBS=${ESP_LLVM_PARALLEL_COMPILE_JOBS}
       -DCLANG_REPOSITORY_STRING="${GH_REPO_HTTPS}"
       -DCPACK_ARCHIVE_THREADS=0
       -B ${BUILD_PATH} 2>&1 > ${BUILD_PATH}/build.log
@@ -224,7 +224,6 @@ build_and_test:
       -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=Xtensa
       -DLLVM_USE_LINKER="gold"
       -DLLVM_PARALLEL_LINK_JOBS=2
-      -DLLVM_PARALLEL_COMPILE_JOBS=2
       -B ${BUILD_PATH} 2>&1 > ${BUILD_PATH}/build.log
     - export CUR_USER=$(whoami);
     - useradd -m test_runner;
