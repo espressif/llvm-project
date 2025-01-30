@@ -112,6 +112,10 @@ void XtensaFrameLowering::emitPrologue(MachineFunction &MF,
   StackSize += (16 - StackSize) & 0xf;
 
   if (STI.isWinABI()) {
+    uint64_t MaxAlignment = MFI.getMaxAlign().value();
+    if(MaxAlignment > 32)
+      StackSize += MaxAlignment;
+
     StackSize += 32;
 
     if (StackSize <= 32760) {
@@ -132,6 +136,28 @@ void XtensaFrameLowering::emitPrologue(MachineFunction &MF,
           .addReg(SP)
           .addReg(TmpReg);
       BuildMI(MBB, MBBI, dl, TII.get(Xtensa::MOVSP), SP).addReg(TmpReg);
+    }
+
+    // Calculate how much is needed to have the correct alignment.
+    // Change offset to: alignment + difference.
+    // For example, in case of alignment of 128:
+    // diff_to_128_aligned_address = (128 - (SP & 127))
+    // new_offset = 128 + diff_to_128_aligned_address
+    // This is safe to do because we increased the stack size by MaxAlignment.
+    unsigned Reg, RegMisAlign;
+    if (MaxAlignment > 32){
+      TII.loadImmediate(MBB, MBBI, &RegMisAlign, MaxAlignment - 1);
+      TII.loadImmediate(MBB, MBBI, &Reg, MaxAlignment);
+      BuildMI(MBB, MBBI, dl, TII.get(Xtensa::AND))
+          .addReg(RegMisAlign, RegState::Define)
+          .addReg(FP)
+          .addReg(RegMisAlign);
+      BuildMI(MBB, MBBI, dl, TII.get(Xtensa::SUB), RegMisAlign)
+          .addReg(Reg)
+          .addReg(RegMisAlign);
+      BuildMI(MBB, MBBI, dl, TII.get(Xtensa::ADD), SP)
+          .addReg(SP)
+          .addReg(RegMisAlign, RegState::Kill);
     }
 
     // Store FP register in A8, because FP may be used to pass function
