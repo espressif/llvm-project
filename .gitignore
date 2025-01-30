@@ -31,6 +31,7 @@
 /*/build-*
 /_build
 /_dist
+/dbg
 
 #==============================================================================#
 # Explicit files to ignore (only matches one).

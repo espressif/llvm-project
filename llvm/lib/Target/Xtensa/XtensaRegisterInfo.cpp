@@ -117,6 +117,7 @@ bool XtensaRegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator II,
   int64_t Offset =
       SPOffset + (int64_t)StackSize + MI.getOperand(FIOperandNum + 1).getImm();
 
+  uint64_t Alignment = MF.getFrameInfo().getObjectAlign(FrameIndex).value();
   bool Valid = Xtensa::isValidAddrOffsetForOpcode(MI.getOpcode(), Offset);
 
   // If MI is not a debug value, make sure Offset fits in the 16-bit immediate
@@ -124,13 +125,13 @@ bool XtensaRegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator II,
   if (!MI.isDebugValue() && !Valid) {
     MachineBasicBlock &MBB = *MI.getParent();
     DebugLoc DL = II->getDebugLoc();
-    unsigned ADD = Xtensa::ADD;
     unsigned Reg;
     const XtensaInstrInfo &TII = *static_cast<const XtensaInstrInfo *>(
         MBB.getParent()->getSubtarget().getInstrInfo());
 
     TII.loadImmediate(MBB, II, &Reg, Offset);
-    BuildMI(MBB, II, DL, TII.get(ADD), Reg)
+
+    BuildMI(MBB, II, DL, TII.get(Xtensa::ADD), Reg)
         .addReg(FrameReg)
         .addReg(Reg, RegState::Kill);
 
