@@ -43,7 +43,7 @@ before_script:
   artifacts:
     paths:
       - ${DIST_DIR}/
-      - ${BUILD_DIR}/*.log
+      - ${BUILD_DIR}/build/*.log
     when: always
     expire_in: 1 day
   dependencies: []
@@ -72,8 +72,10 @@ before_script:
     - *get_toolchain_build_scripts
     - LLVM_PROJECT_PATH=$PWD
     - git config --global --add safe.directory ${LLVM_PROJECT_PATH}
-    - BUILD_PATH=$PWD/${BUILD_DIR}
+    - BUILD_PATH=$PWD/${BUILD_DIR}/build
+    - INSTALL_PATH=$PWD/${BUILD_DIR}/install
     - mkdir -p ${BUILD_PATH}
+    - mkdir -p ${INSTALL_PATH}
     - BUILD_HOST=$(gcc -dumpmachine)
     # Config to build target libraries
     # TODO: do not build core tools (clang, lld, binutils  etc)
@@ -119,6 +121,7 @@ before_script:
       -DLLVM_PARALLEL_COMPILE_JOBS=${ESP_LLVM_PARALLEL_COMPILE_JOBS}
       -DCLANG_REPOSITORY_STRING="${GH_REPO_HTTPS}"
       -DCPACK_ARCHIVE_THREADS=0
+      --install-prefix=${INSTALL_PATH}
       -B ${BUILD_PATH} 2>&1 > ${BUILD_PATH}/build.log
     # Do not run unit tests for cross-builds.
     # Run as non-root user because permission tests fail when run by root.
@@ -168,6 +171,8 @@ before_script:
     # pack distro with standalone libs
     - >
       if [[ "${PACK_STANDALONE_LIBS}" == "ON" ]]; then
+        echo "Clean install dir ${INSTALL_PATH}"
+        rm -rf ${INSTALL_PATH}
         ninja -C ${BUILD_PATH} package-llvm-standalone-libs 2>&1  >> ${BUILD_PATH}/build.log
         DISTRO_PACK_PATH=$(ninja -C ${BUILD_PATH} print-llvm-standalone-libs-package-path | tail -n 1)
         echo "DISTRO_PACK_PATH=${DISTRO_PACK_PATH}"
@@ -178,6 +183,8 @@ before_script:
     # pack target libraries to be re-used in distros for other platforms
     - >
       if [[ "${PACK_TARGET_LIBS}" == "ON" ]]; then
+        echo "Clean install dir ${INSTALL_PATH}"
+        rm -rf ${INSTALL_PATH}
         ninja -C ${BUILD_PATH} package-llvm-toolchain-target-libs 2>&1  >> ${BUILD_PATH}/build.log
         DISTRO_PACK_PATH=$(ninja -C ${BUILD_PATH} print-llvm-toolchain-target-libs-package-path | tail -n 1)
         echo "DISTRO_PACK_PATH=${DISTRO_PACK_PATH}"
