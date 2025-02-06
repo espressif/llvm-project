@@ -125,12 +125,12 @@ define dso_local noundef i32 @dsps_mulc_f32_ansi(ptr noalias noundef readonly %i
 ; CHECK:       for.body:
 ; CHECK-NEXT:    [[I_014:%.*]] = phi i32 [ [[INC:%.*]], [[FOR_BODY]] ], [ [[TMP0]], [[FOR_COND_PREHEADER_NEW2]] ]
 ; CHECK-NEXT:    [[MUL:%.*]] = mul nsw i32 [[I_014]], [[STEP_IN]]
-; CHECK-NEXT:    [[ARRAYIDX:%.*]] = getelementptr inbounds float, ptr [[INPUT]], i32 [[MUL]]
-; CHECK-NEXT:    [[TMP33:%.*]] = load float, ptr [[ARRAYIDX]], align 4
+; CHECK-NEXT:    [[ARRAYIDX1:%.*]] = getelementptr inbounds float, ptr [[INPUT]], i32 [[MUL]]
+; CHECK-NEXT:    [[TMP33:%.*]] = load float, ptr [[ARRAYIDX1]], align 4
 ; CHECK-NEXT:    [[MUL5:%.*]] = fmul float [[C]], [[TMP33]]
 ; CHECK-NEXT:    [[MUL6:%.*]] = mul nsw i32 [[I_014]], [[STEP_OUT]]
-; CHECK-NEXT:    [[ARRAYIDX7:%.*]] = getelementptr inbounds float, ptr [[OUTPUT]], i32 [[MUL6]]
-; CHECK-NEXT:    store float [[MUL5]], ptr [[ARRAYIDX7]], align 4
+; CHECK-NEXT:    [[ARRAYIDX9:%.*]] = getelementptr inbounds float, ptr [[OUTPUT]], i32 [[MUL6]]
+; CHECK-NEXT:    store float [[MUL5]], ptr [[ARRAYIDX9]], align 4
 ; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_014]], 1
 ; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], [[LEN]]
 ; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label [[RETURN]], label [[FOR_BODY]]
