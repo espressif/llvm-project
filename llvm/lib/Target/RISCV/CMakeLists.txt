@@ -45,6 +45,7 @@ add_llvm_target(RISCVCodeGen
   RISCVLoopUnrollAndRemainder.cpp
   RISCVEsp32P4MemIntrin.cpp
   RISCVIndirectBranchTracking.cpp
+  RISCVIntLoopUnrollAndRemainder.cpp
   RISCVInsertReadWriteCSR.cpp
   RISCVInsertVSETVLI.cpp
   RISCVInsertWriteVXRM.cpp
