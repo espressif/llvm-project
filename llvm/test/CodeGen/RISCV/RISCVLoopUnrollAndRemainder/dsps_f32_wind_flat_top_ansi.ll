@@ -4,7 +4,7 @@
 ; Function Attrs: nofree nounwind memory(write)
 define dso_local void @dsps_wind_flat_top_f32(ptr nocapture noundef writeonly %window, i32 noundef %len) local_unnamed_addr {
 ; CHECK-LABEL: define dso_local void @dsps_wind_flat_top_f32(
-; CHECK-SAME: ptr noalias nocapture noundef writeonly [[WINDOW:%.*]], i32 noundef [[LEN:%.*]]) local_unnamed_addr {
+; CHECK-SAME: ptr noalias noundef writeonly captures(none) [[WINDOW:%.*]], i32 noundef [[LEN:%.*]]) local_unnamed_addr {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    [[CMP42:%.*]] = icmp sgt i32 [[LEN]], 0
 ; CHECK-NEXT:    br i1 [[CMP42]], label [[FOR_BODY_LR_PH:%.*]], label [[FOR_COND_CLEANUP:%.*]]
@@ -42,7 +42,7 @@ define dso_local void @dsps_wind_flat_top_f32(ptr nocapture noundef writeonly %w
 ; CHECK-NEXT:    [[MUL15:%.*]] = fmul float [[MUL54]], [[CONV5]]
 ; CHECK-NEXT:    [[CALL30:%.*]] = tail call float @cosf(float noundef [[MUL15]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL30]], float 0x3F7C74D7E0000000, float [[TMP2]])
-; CHECK-NEXT:    [[ARRAYIDX:%.*]] = getelementptr inbounds float, ptr [[WINDOW]], i32 [[I_043]]
+; CHECK-NEXT:    [[ARRAYIDX:%.*]] = getelementptr inbounds nuw float, ptr [[WINDOW]], i32 [[I_043]]
 ; CHECK-NEXT:    store float [[TMP3]], ptr [[ARRAYIDX]], align 4
 ; CHECK-NEXT:    [[INC:%.*]] = or disjoint i32 [[I_043]], 1
 ; CHECK-NEXT:    [[CONV5_1:%.*]] = uitofp nneg i32 [[INC]] to float
@@ -58,7 +58,7 @@ define dso_local void @dsps_wind_flat_top_f32(ptr nocapture noundef writeonly %w
 ; CHECK-NEXT:    [[MUL15_1:%.*]] = fmul float [[MUL54]], [[CONV5_1]]
 ; CHECK-NEXT:    [[CALL30_1:%.*]] = tail call float @cosf(float noundef [[MUL15_1]])
 ; CHECK-NEXT:    [[TMP7:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL30_1]], float 0x3F7C74D7E0000000, float [[TMP6]])
-; CHECK-NEXT:    [[ARRAYIDX_1:%.*]] = getelementptr inbounds float, ptr [[WINDOW]], i32 [[INC]]
+; CHECK-NEXT:    [[ARRAYIDX_1:%.*]] = getelementptr inbounds nuw float, ptr [[WINDOW]], i32 [[INC]]
 ; CHECK-NEXT:    store float [[TMP7]], ptr [[ARRAYIDX_1]], align 4
 ; CHECK-NEXT:    [[INC_1:%.*]] = or disjoint i32 [[I_043]], 2
 ; CHECK-NEXT:    [[CONV5_2:%.*]] = uitofp nneg i32 [[INC_1]] to float
@@ -74,7 +74,7 @@ define dso_local void @dsps_wind_flat_top_f32(ptr nocapture noundef writeonly %w
 ; CHECK-NEXT:    [[MUL15_2:%.*]] = fmul float [[MUL54]], [[CONV5_2]]
 ; CHECK-NEXT:    [[CALL30_2:%.*]] = tail call float @cosf(float noundef [[MUL15_2]])
 ; CHECK-NEXT:    [[TMP11:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL30_2]], float 0x3F7C74D7E0000000, float [[TMP10]])
-; CHECK-NEXT:    [[ARRAYIDX_2:%.*]] = getelementptr inbounds float, ptr [[WINDOW]], i32 [[INC_1]]
+; CHECK-NEXT:    [[ARRAYIDX_2:%.*]] = getelementptr inbounds nuw float, ptr [[WINDOW]], i32 [[INC_1]]
 ; CHECK-NEXT:    store float [[TMP11]], ptr [[ARRAYIDX_2]], align 4
 ; CHECK-NEXT:    [[INC_2:%.*]] = or disjoint i32 [[I_043]], 3
 ; CHECK-NEXT:    [[CONV5_3:%.*]] = uitofp nneg i32 [[INC_2]] to float
@@ -90,7 +90,7 @@ define dso_local void @dsps_wind_flat_top_f32(ptr nocapture noundef writeonly %w
 ; CHECK-NEXT:    [[MUL15_3:%.*]] = fmul float [[MUL54]], [[CONV5_3]]
 ; CHECK-NEXT:    [[CALL30_3:%.*]] = tail call float @cosf(float noundef [[MUL15_3]])
 ; CHECK-NEXT:    [[TMP15:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL30_3]], float 0x3F7C74D7E0000000, float [[TMP14]])
-; CHECK-NEXT:    [[ARRAYIDX_3:%.*]] = getelementptr inbounds float, ptr [[WINDOW]], i32 [[INC_2]]
+; CHECK-NEXT:    [[ARRAYIDX_3:%.*]] = getelementptr inbounds nuw float, ptr [[WINDOW]], i32 [[INC_2]]
 ; CHECK-NEXT:    store float [[TMP15]], ptr [[ARRAYIDX_3]], align 4
 ; CHECK-NEXT:    [[INC_3:%.*]] = or disjoint i32 [[I_043]], 4
 ; CHECK-NEXT:    [[CONV5_4:%.*]] = uitofp nneg i32 [[INC_3]] to float
@@ -106,7 +106,7 @@ define dso_local void @dsps_wind_flat_top_f32(ptr nocapture noundef writeonly %w
 ; CHECK-NEXT:    [[MUL15_4:%.*]] = fmul float [[MUL54]], [[CONV5_4]]
 ; CHECK-NEXT:    [[CALL30_4:%.*]] = tail call float @cosf(float noundef [[MUL15_4]])
 ; CHECK-NEXT:    [[TMP19:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL30_4]], float 0x3F7C74D7E0000000, float [[TMP18]])
-; CHECK-NEXT:    [[ARRAYIDX_4:%.*]] = getelementptr inbounds float, ptr [[WINDOW]], i32 [[INC_3]]
+; CHECK-NEXT:    [[ARRAYIDX_4:%.*]] = getelementptr inbounds nuw float, ptr [[WINDOW]], i32 [[INC_3]]
 ; CHECK-NEXT:    store float [[TMP19]], ptr [[ARRAYIDX_4]], align 4
 ; CHECK-NEXT:    [[INC_4:%.*]] = or disjoint i32 [[I_043]], 5
 ; CHECK-NEXT:    [[CONV5_5:%.*]] = uitofp nneg i32 [[INC_4]] to float
@@ -122,7 +122,7 @@ define dso_local void @dsps_wind_flat_top_f32(ptr nocapture noundef writeonly %w
 ; CHECK-NEXT:    [[MUL15_5:%.*]] = fmul float [[MUL54]], [[CONV5_5]]
 ; CHECK-NEXT:    [[CALL30_5:%.*]] = tail call float @cosf(float noundef [[MUL15_5]])
 ; CHECK-NEXT:    [[TMP23:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL30_5]], float 0x3F7C74D7E0000000, float [[TMP22]])
-; CHECK-NEXT:    [[ARRAYIDX_5:%.*]] = getelementptr inbounds float, ptr [[WINDOW]], i32 [[INC_4]]
+; CHECK-NEXT:    [[ARRAYIDX_5:%.*]] = getelementptr inbounds nuw float, ptr [[WINDOW]], i32 [[INC_4]]
 ; CHECK-NEXT:    store float [[TMP23]], ptr [[ARRAYIDX_5]], align 4
 ; CHECK-NEXT:    [[INC_5:%.*]] = or disjoint i32 [[I_043]], 6
 ; CHECK-NEXT:    [[CONV5_6:%.*]] = uitofp nneg i32 [[INC_5]] to float
@@ -138,7 +138,7 @@ define dso_local void @dsps_wind_flat_top_f32(ptr nocapture noundef writeonly %w
 ; CHECK-NEXT:    [[MUL15_6:%.*]] = fmul float [[MUL54]], [[CONV5_6]]
 ; CHECK-NEXT:    [[CALL30_6:%.*]] = tail call float @cosf(float noundef [[MUL15_6]])
 ; CHECK-NEXT:    [[TMP27:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL30_6]], float 0x3F7C74D7E0000000, float [[TMP26]])
-; CHECK-NEXT:    [[ARRAYIDX_6:%.*]] = getelementptr inbounds float, ptr [[WINDOW]], i32 [[INC_5]]
+; CHECK-NEXT:    [[ARRAYIDX_6:%.*]] = getelementptr inbounds nuw float, ptr [[WINDOW]], i32 [[INC_5]]
 ; CHECK-NEXT:    store float [[TMP27]], ptr [[ARRAYIDX_6]], align 4
 ; CHECK-NEXT:    [[INC_6:%.*]] = or disjoint i32 [[I_043]], 7
 ; CHECK-NEXT:    [[CONV5_7:%.*]] = uitofp nneg i32 [[INC_6]] to float
@@ -154,7 +154,7 @@ define dso_local void @dsps_wind_flat_top_f32(ptr nocapture noundef writeonly %w
 ; CHECK-NEXT:    [[MUL15_7:%.*]] = fmul float [[MUL54]], [[CONV5_7]]
 ; CHECK-NEXT:    [[CALL30_7:%.*]] = tail call float @cosf(float noundef [[MUL15_7]])
 ; CHECK-NEXT:    [[TMP31:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL30_7]], float 0x3F7C74D7E0000000, float [[TMP30]])
-; CHECK-NEXT:    [[ARRAYIDX_7:%.*]] = getelementptr inbounds float, ptr [[WINDOW]], i32 [[INC_6]]
+; CHECK-NEXT:    [[ARRAYIDX_7:%.*]] = getelementptr inbounds nuw float, ptr [[WINDOW]], i32 [[INC_6]]
 ; CHECK-NEXT:    store float [[TMP31]], ptr [[ARRAYIDX_7]], align 4
 ; CHECK-NEXT:    [[INC_7]] = add nuw nsw i32 [[I_043]], 8
 ; CHECK-NEXT:    [[EXITCOND_NOT_7:%.*]] = icmp slt i32 [[INC_7]], [[SUB4]]

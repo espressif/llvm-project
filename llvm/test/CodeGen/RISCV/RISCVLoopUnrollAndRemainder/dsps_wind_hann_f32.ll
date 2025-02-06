@@ -4,7 +4,7 @@
 ; Function Attrs: nofree nounwind memory(write)
 define dso_local void @dsps_wind_hann_f32(ptr nocapture noundef writeonly %window, i32 noundef %len) local_unnamed_addr {
 ; CHECK-LABEL: define dso_local void @dsps_wind_hann_f32(
-; CHECK-SAME: ptr noalias nocapture noundef writeonly [[WINDOW:%.*]], i32 noundef [[LEN:%.*]]) local_unnamed_addr {
+; CHECK-SAME: ptr noalias noundef writeonly captures(none) [[WINDOW:%.*]], i32 noundef [[LEN:%.*]]) local_unnamed_addr {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    [[CMP15:%.*]] = icmp sgt i32 [[LEN]], 0
 ; CHECK-NEXT:    br i1 [[CMP15]], label [[FOR_BODY_LR_PH:%.*]], label [[FOR_COND_CLEANUP:%.*]]
@@ -31,7 +31,7 @@ define dso_local void @dsps_wind_hann_f32(ptr nocapture noundef writeonly %windo
 ; CHECK-NEXT:    [[CALL:%.*]] = tail call float @cosf(float noundef [[MUL6]])
 ; CHECK-NEXT:    [[SUB7:%.*]] = fsub float 1.000000e+00, [[CALL]]
 ; CHECK-NEXT:    [[CONV10:%.*]] = fmul float [[SUB7]], 5.000000e-01
-; CHECK-NEXT:    [[ARRAYIDX:%.*]] = getelementptr inbounds float, ptr [[WINDOW]], i32 [[I_016]]
+; CHECK-NEXT:    [[ARRAYIDX:%.*]] = getelementptr inbounds nuw float, ptr [[WINDOW]], i32 [[I_016]]
 ; CHECK-NEXT:    store float [[CONV10]], ptr [[ARRAYIDX]], align 4
 ; CHECK-NEXT:    [[INC:%.*]] = or disjoint i32 [[I_016]], 1
 ; CHECK-NEXT:    [[CONV5_1:%.*]] = uitofp nneg i32 [[INC]] to float
@@ -39,7 +39,7 @@ define dso_local void @dsps_wind_hann_f32(ptr nocapture noundef writeonly %windo
 ; CHECK-NEXT:    [[CALL_1:%.*]] = tail call float @cosf(float noundef [[MUL6_1]])
 ; CHECK-NEXT:    [[SUB7_1:%.*]] = fsub float 1.000000e+00, [[CALL_1]]
 ; CHECK-NEXT:    [[CONV10_1:%.*]] = fmul float [[SUB7_1]], 5.000000e-01
-; CHECK-NEXT:    [[ARRAYIDX_1:%.*]] = getelementptr inbounds float, ptr [[WINDOW]], i32 [[INC]]
+; CHECK-NEXT:    [[ARRAYIDX_1:%.*]] = getelementptr inbounds nuw float, ptr [[WINDOW]], i32 [[INC]]
 ; CHECK-NEXT:    store float [[CONV10_1]], ptr [[ARRAYIDX_1]], align 4
 ; CHECK-NEXT:    [[INC_1:%.*]] = or disjoint i32 [[I_016]], 2
 ; CHECK-NEXT:    [[CONV5_2:%.*]] = uitofp nneg i32 [[INC_1]] to float
@@ -47,7 +47,7 @@ define dso_local void @dsps_wind_hann_f32(ptr nocapture noundef writeonly %windo
 ; CHECK-NEXT:    [[CALL_2:%.*]] = tail call float @cosf(float noundef [[MUL6_2]])
 ; CHECK-NEXT:    [[SUB7_2:%.*]] = fsub float 1.000000e+00, [[CALL_2]]
 ; CHECK-NEXT:    [[CONV10_2:%.*]] = fmul float [[SUB7_2]], 5.000000e-01
-; CHECK-NEXT:    [[ARRAYIDX_2:%.*]] = getelementptr inbounds float, ptr [[WINDOW]], i32 [[INC_1]]
+; CHECK-NEXT:    [[ARRAYIDX_2:%.*]] = getelementptr inbounds nuw float, ptr [[WINDOW]], i32 [[INC_1]]
 ; CHECK-NEXT:    store float [[CONV10_2]], ptr [[ARRAYIDX_2]], align 4
 ; CHECK-NEXT:    [[INC_2:%.*]] = or disjoint i32 [[I_016]], 3
 ; CHECK-NEXT:    [[CONV5_3:%.*]] = uitofp nneg i32 [[INC_2]] to float
@@ -55,7 +55,7 @@ define dso_local void @dsps_wind_hann_f32(ptr nocapture noundef writeonly %windo
 ; CHECK-NEXT:    [[CALL_3:%.*]] = tail call float @cosf(float noundef [[MUL6_3]])
 ; CHECK-NEXT:    [[SUB7_3:%.*]] = fsub float 1.000000e+00, [[CALL_3]]
 ; CHECK-NEXT:    [[CONV10_3:%.*]] = fmul float [[SUB7_3]], 5.000000e-01
-; CHECK-NEXT:    [[ARRAYIDX_3:%.*]] = getelementptr inbounds float, ptr [[WINDOW]], i32 [[INC_2]]
+; CHECK-NEXT:    [[ARRAYIDX_3:%.*]] = getelementptr inbounds nuw float, ptr [[WINDOW]], i32 [[INC_2]]
 ; CHECK-NEXT:    store float [[CONV10_3]], ptr [[ARRAYIDX_3]], align 4
 ; CHECK-NEXT:    [[INC_3:%.*]] = or disjoint i32 [[I_016]], 4
 ; CHECK-NEXT:    [[CONV5_4:%.*]] = uitofp nneg i32 [[INC_3]] to float
@@ -63,7 +63,7 @@ define dso_local void @dsps_wind_hann_f32(ptr nocapture noundef writeonly %windo
 ; CHECK-NEXT:    [[CALL_4:%.*]] = tail call float @cosf(float noundef [[MUL6_4]])
 ; CHECK-NEXT:    [[SUB7_4:%.*]] = fsub float 1.000000e+00, [[CALL_4]]
 ; CHECK-NEXT:    [[CONV10_4:%.*]] = fmul float [[SUB7_4]], 5.000000e-01
-; CHECK-NEXT:    [[ARRAYIDX_4:%.*]] = getelementptr inbounds float, ptr [[WINDOW]], i32 [[INC_3]]
+; CHECK-NEXT:    [[ARRAYIDX_4:%.*]] = getelementptr inbounds nuw float, ptr [[WINDOW]], i32 [[INC_3]]
 ; CHECK-NEXT:    store float [[CONV10_4]], ptr [[ARRAYIDX_4]], align 4
 ; CHECK-NEXT:    [[INC_4:%.*]] = or disjoint i32 [[I_016]], 5
 ; CHECK-NEXT:    [[CONV5_5:%.*]] = uitofp nneg i32 [[INC_4]] to float
@@ -71,7 +71,7 @@ define dso_local void @dsps_wind_hann_f32(ptr nocapture noundef writeonly %windo
 ; CHECK-NEXT:    [[CALL_5:%.*]] = tail call float @cosf(float noundef [[MUL6_5]])
 ; CHECK-NEXT:    [[SUB7_5:%.*]] = fsub float 1.000000e+00, [[CALL_5]]
 ; CHECK-NEXT:    [[CONV10_5:%.*]] = fmul float [[SUB7_5]], 5.000000e-01
-; CHECK-NEXT:    [[ARRAYIDX_5:%.*]] = getelementptr inbounds float, ptr [[WINDOW]], i32 [[INC_4]]
+; CHECK-NEXT:    [[ARRAYIDX_5:%.*]] = getelementptr inbounds nuw float, ptr [[WINDOW]], i32 [[INC_4]]
 ; CHECK-NEXT:    store float [[CONV10_5]], ptr [[ARRAYIDX_5]], align 4
 ; CHECK-NEXT:    [[INC_5:%.*]] = or disjoint i32 [[I_016]], 6
 ; CHECK-NEXT:    [[CONV5_6:%.*]] = uitofp nneg i32 [[INC_5]] to float
@@ -79,7 +79,7 @@ define dso_local void @dsps_wind_hann_f32(ptr nocapture noundef writeonly %windo
 ; CHECK-NEXT:    [[CALL_6:%.*]] = tail call float @cosf(float noundef [[MUL6_6]])
 ; CHECK-NEXT:    [[SUB7_6:%.*]] = fsub float 1.000000e+00, [[CALL_6]]
 ; CHECK-NEXT:    [[CONV10_6:%.*]] = fmul float [[SUB7_6]], 5.000000e-01
-; CHECK-NEXT:    [[ARRAYIDX_6:%.*]] = getelementptr inbounds float, ptr [[WINDOW]], i32 [[INC_5]]
+; CHECK-NEXT:    [[ARRAYIDX_6:%.*]] = getelementptr inbounds nuw float, ptr [[WINDOW]], i32 [[INC_5]]
 ; CHECK-NEXT:    store float [[CONV10_6]], ptr [[ARRAYIDX_6]], align 4
 ; CHECK-NEXT:    [[INC_6:%.*]] = or disjoint i32 [[I_016]], 7
 ; CHECK-NEXT:    [[CONV5_7:%.*]] = uitofp nneg i32 [[INC_6]] to float
@@ -87,7 +87,7 @@ define dso_local void @dsps_wind_hann_f32(ptr nocapture noundef writeonly %windo
 ; CHECK-NEXT:    [[CALL_7:%.*]] = tail call float @cosf(float noundef [[MUL6_7]])
 ; CHECK-NEXT:    [[SUB7_7:%.*]] = fsub float 1.000000e+00, [[CALL_7]]
 ; CHECK-NEXT:    [[CONV10_7:%.*]] = fmul float [[SUB7_7]], 5.000000e-01
-; CHECK-NEXT:    [[ARRAYIDX_7:%.*]] = getelementptr inbounds float, ptr [[WINDOW]], i32 [[INC_6]]
+; CHECK-NEXT:    [[ARRAYIDX_7:%.*]] = getelementptr inbounds nuw float, ptr [[WINDOW]], i32 [[INC_6]]
 ; CHECK-NEXT:    store float [[CONV10_7]], ptr [[ARRAYIDX_7]], align 4
 ; CHECK-NEXT:    [[INC_7]] = add nuw nsw i32 [[I_016]], 8
 ; CHECK-NEXT:    [[EXITCOND_NOT_7:%.*]] = icmp slt i32 [[INC_7]], [[SUB4]]
