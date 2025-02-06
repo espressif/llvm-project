@@ -4,16 +4,16 @@
 ; Function Attrs: nofree norecurse nosync nounwind memory(argmem: readwrite)
 define dso_local noundef i32 @dsps_biquad_f32_ansi(ptr nocapture noundef readonly %input, ptr nocapture noundef writeonly %output, i32 noundef %len, ptr nocapture noundef readonly %coef, ptr nocapture noundef %w) local_unnamed_addr {
 ; CHECK-LABEL: define dso_local noundef i32 @dsps_biquad_f32_ansi(
-; CHECK-SAME: ptr noalias nocapture noundef readonly [[INPUT:%.*]], ptr noalias nocapture noundef writeonly [[OUTPUT:%.*]], i32 noundef [[LEN:%.*]], ptr noalias nocapture noundef readonly [[COEF:%.*]], ptr noalias nocapture noundef [[W:%.*]]) local_unnamed_addr {
+; CHECK-SAME: ptr noalias noundef readonly captures(none) [[INPUT:%.*]], ptr noalias noundef writeonly captures(none) [[OUTPUT:%.*]], i32 noundef [[LEN:%.*]], ptr noalias noundef readonly captures(none) [[COEF:%.*]], ptr noalias noundef captures(none) [[W:%.*]]) local_unnamed_addr {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    [[TMP0:%.*]] = icmp sgt i32 [[LEN]], 2
 ; CHECK-NEXT:    br i1 [[TMP0]], label [[FOR_COND_PREHEADER:%.*]], label [[FOR_BODY_LR_PH_CLONE:%.*]]
 ; CHECK:       for.cond.preheader:
-; CHECK-NEXT:    [[ARRAYIDX1:%.*]] = getelementptr inbounds i8, ptr [[COEF]], i32 12
-; CHECK-NEXT:    [[ARRAYIDX3:%.*]] = getelementptr inbounds i8, ptr [[COEF]], i32 16
-; CHECK-NEXT:    [[ARRAYIDX4:%.*]] = getelementptr inbounds i8, ptr [[W]], i32 4
-; CHECK-NEXT:    [[ARRAYIDX7:%.*]] = getelementptr inbounds i8, ptr [[COEF]], i32 4
-; CHECK-NEXT:    [[ARRAYIDX10:%.*]] = getelementptr inbounds i8, ptr [[COEF]], i32 8
+; CHECK-NEXT:    [[ARRAYIDX1:%.*]] = getelementptr inbounds nuw i8, ptr [[COEF]], i32 12
+; CHECK-NEXT:    [[ARRAYIDX3:%.*]] = getelementptr inbounds nuw i8, ptr [[COEF]], i32 16
+; CHECK-NEXT:    [[ARRAYIDX4:%.*]] = getelementptr inbounds nuw i8, ptr [[W]], i32 4
+; CHECK-NEXT:    [[ARRAYIDX7:%.*]] = getelementptr inbounds nuw i8, ptr [[COEF]], i32 4
+; CHECK-NEXT:    [[ARRAYIDX10:%.*]] = getelementptr inbounds nuw i8, ptr [[COEF]], i32 8
 ; CHECK-NEXT:    [[DOTPRE:%.*]] = load float, ptr [[W]], align 4
 ; CHECK-NEXT:    [[DOTPRE32:%.*]] = load float, ptr [[ARRAYIDX4]], align 4
 ; CHECK-NEXT:    [[TMP1:%.*]] = load float, ptr [[ARRAYIDX1]], align 4
@@ -24,19 +24,19 @@ define dso_local noundef i32 @dsps_biquad_f32_ansi(ptr nocapture noundef readonl
 ; CHECK-NEXT:    [[TMP6:%.*]] = fneg float [[TMP1]]
 ; CHECK-NEXT:    [[TMP7:%.*]] = fneg float [[TMP2]]
 ; CHECK-NEXT:    [[DOTPRE21:%.*]] = load float, ptr [[INPUT]], align 4
-; CHECK-NEXT:    [[ARRAYIDX_1_PHI_TRANS_INSERT:%.*]] = getelementptr inbounds i8, ptr [[INPUT]], i32 4
+; CHECK-NEXT:    [[ARRAYIDX_1_PHI_TRANS_INSERT:%.*]] = getelementptr inbounds nuw i8, ptr [[INPUT]], i32 4
 ; CHECK-NEXT:    [[DOTPRE22:%.*]] = load float, ptr [[ARRAYIDX_1_PHI_TRANS_INSERT]], align 4
-; CHECK-NEXT:    [[ARRAYIDX_2_PHI_TRANS_INSERT:%.*]] = getelementptr inbounds i8, ptr [[INPUT]], i32 8
+; CHECK-NEXT:    [[ARRAYIDX_2_PHI_TRANS_INSERT:%.*]] = getelementptr inbounds nuw i8, ptr [[INPUT]], i32 8
 ; CHECK-NEXT:    [[DOTPRE23:%.*]] = load float, ptr [[ARRAYIDX_2_PHI_TRANS_INSERT]], align 4
-; CHECK-NEXT:    [[ARRAYIDX_3_PHI_TRANS_INSERT:%.*]] = getelementptr inbounds i8, ptr [[INPUT]], i32 12
+; CHECK-NEXT:    [[ARRAYIDX_3_PHI_TRANS_INSERT:%.*]] = getelementptr inbounds nuw i8, ptr [[INPUT]], i32 12
 ; CHECK-NEXT:    [[DOTPRE24:%.*]] = load float, ptr [[ARRAYIDX_3_PHI_TRANS_INSERT]], align 4
-; CHECK-NEXT:    [[ARRAYIDX_4_PHI_TRANS_INSERT:%.*]] = getelementptr inbounds i8, ptr [[INPUT]], i32 16
+; CHECK-NEXT:    [[ARRAYIDX_4_PHI_TRANS_INSERT:%.*]] = getelementptr inbounds nuw i8, ptr [[INPUT]], i32 16
 ; CHECK-NEXT:    [[DOTPRE25:%.*]] = load float, ptr [[ARRAYIDX_4_PHI_TRANS_INSERT]], align 4
-; CHECK-NEXT:    [[ARRAYIDX_5_PHI_TRANS_INSERT:%.*]] = getelementptr inbounds i8, ptr [[INPUT]], i32 20
+; CHECK-NEXT:    [[ARRAYIDX_5_PHI_TRANS_INSERT:%.*]] = getelementptr inbounds nuw i8, ptr [[INPUT]], i32 20
 ; CHECK-NEXT:    [[DOTPRE26:%.*]] = load float, ptr [[ARRAYIDX_5_PHI_TRANS_INSERT]], align 4
-; CHECK-NEXT:    [[ARRAYIDX_6_PHI_TRANS_INSERT:%.*]] = getelementptr inbounds i8, ptr [[INPUT]], i32 24
+; CHECK-NEXT:    [[ARRAYIDX_6_PHI_TRANS_INSERT:%.*]] = getelementptr inbounds nuw i8, ptr [[INPUT]], i32 24
 ; CHECK-NEXT:    [[DOTPRE27:%.*]] = load float, ptr [[ARRAYIDX_6_PHI_TRANS_INSERT]], align 4
-; CHECK-NEXT:    [[ARRAYIDX_7_PHI_TRANS_INSERT:%.*]] = getelementptr inbounds i8, ptr [[INPUT]], i32 28
+; CHECK-NEXT:    [[ARRAYIDX_7_PHI_TRANS_INSERT:%.*]] = getelementptr inbounds nuw i8, ptr [[INPUT]], i32 28
 ; CHECK-NEXT:    [[DOTPRE28:%.*]] = load float, ptr [[ARRAYIDX_7_PHI_TRANS_INSERT]], align 4
 ; CHECK-NEXT:    br label [[FOR_BODY_7:%.*]]
 ; CHECK:       if.end:
@@ -56,49 +56,49 @@ define dso_local noundef i32 @dsps_biquad_f32_ansi(ptr nocapture noundef readonl
 ; CHECK-NEXT:    [[MUL9_1:%.*]] = fmul float [[TMP4]], [[TMP12]]
 ; CHECK-NEXT:    [[TMP14:%.*]] = tail call float @llvm.fmuladd.f32(float [[TMP3]], float [[TMP17]], float [[MUL9_1]])
 ; CHECK-NEXT:    [[TMP19:%.*]] = tail call float @llvm.fmuladd.f32(float [[TMP5]], float [[DOTPRE]], float [[TMP14]])
-; CHECK-NEXT:    [[ARRAYIDX12_1:%.*]] = getelementptr inbounds i8, ptr [[OUTPUT]], i32 4
+; CHECK-NEXT:    [[ARRAYIDX12_1:%.*]] = getelementptr inbounds nuw i8, ptr [[OUTPUT]], i32 4
 ; CHECK-NEXT:    store float [[TMP19]], ptr [[ARRAYIDX12_1]], align 4
 ; CHECK-NEXT:    [[TMP16:%.*]] = tail call float @llvm.fmuladd.f32(float [[TMP6]], float [[TMP17]], float [[DOTPRE23]])
 ; CHECK-NEXT:    [[TMP22:%.*]] = tail call float @llvm.fmuladd.f32(float [[TMP7]], float [[TMP12]], float [[TMP16]])
 ; CHECK-NEXT:    [[MUL9_2:%.*]] = fmul float [[TMP4]], [[TMP17]]
 ; CHECK-NEXT:    [[TMP18:%.*]] = tail call float @llvm.fmuladd.f32(float [[TMP3]], float [[TMP22]], float [[MUL9_2]])
 ; CHECK-NEXT:    [[TMP24:%.*]] = tail call float @llvm.fmuladd.f32(float [[TMP5]], float [[TMP12]], float [[TMP18]])
-; CHECK-NEXT:    [[ARRAYIDX12_2:%.*]] = getelementptr inbounds i8, ptr [[OUTPUT]], i32 8
+; CHECK-NEXT:    [[ARRAYIDX12_2:%.*]] = getelementptr inbounds nuw i8, ptr [[OUTPUT]], i32 8
 ; CHECK-NEXT:    store float [[TMP24]], ptr [[ARRAYIDX12_2]], align 4
 ; CHECK-NEXT:    [[TMP20:%.*]] = tail call float @llvm.fmuladd.f32(float [[TMP6]], float [[TMP22]], float [[DOTPRE24]])
 ; CHECK-NEXT:    [[TMP27:%.*]] = tail call float @llvm.fmuladd.f32(float [[TMP7]], float [[TMP17]], float [[TMP20]])
 ; CHECK-NEXT:    [[MUL9_3:%.*]] = fmul float [[TMP4]], [[TMP22]]
 ; CHECK-NEXT:    [[TMP23:%.*]] = tail call float @llvm.fmuladd.f32(float [[TMP3]], float [[TMP27]], float [[MUL9_3]])
 ; CHECK-NEXT:    [[TMP29:%.*]] = tail call float @llvm.fmuladd.f32(float [[TMP5]], float [[TMP17]], float [[TMP23]])
-; CHECK-NEXT:    [[ARRAYIDX12_3:%.*]] = getelementptr inbounds i8, ptr [[OUTPUT]], i32 12
+; CHECK-NEXT:    [[ARRAYIDX12_3:%.*]] = getelementptr inbounds nuw i8, ptr [[OUTPUT]], i32 12
 ; CHECK-NEXT:    store float [[TMP29]], ptr [[ARRAYIDX12_3]], align 4
 ; CHECK-NEXT:    [[TMP25:%.*]] = tail call float @llvm.fmuladd.f32(float [[TMP6]], float [[TMP27]], float [[DOTPRE25]])
 ; CHECK-NEXT:    [[TMP32:%.*]] = tail call float @llvm.fmuladd.f32(float [[TMP7]], float [[TMP22]], float [[TMP25]])
 ; CHECK-NEXT:    [[MUL9_4:%.*]] = fmul float [[TMP4]], [[TMP27]]
 ; CHECK-NEXT:    [[TMP26:%.*]] = tail call float @llvm.fmuladd.f32(float [[TMP3]], float [[TMP32]], float [[MUL9_4]])
 ; CHECK-NEXT:    [[TMP34:%.*]] = tail call float @llvm.fmuladd.f32(float [[TMP5]], float [[TMP22]], float [[TMP26]])
-; CHECK-NEXT:    [[ARRAYIDX12_4:%.*]] = getelementptr inbounds i8, ptr [[OUTPUT]], i32 16
+; CHECK-NEXT:    [[ARRAYIDX12_4:%.*]] = getelementptr inbounds nuw i8, ptr [[OUTPUT]], i32 16
 ; CHECK-NEXT:    store float [[TMP34]], ptr [[ARRAYIDX12_4]], align 4
 ; CHECK-NEXT:    [[TMP28:%.*]] = tail call float @llvm.fmuladd.f32(float [[TMP6]], float [[TMP32]], float [[DOTPRE26]])
 ; CHECK-NEXT:    [[TMP37:%.*]] = tail call float @llvm.fmuladd.f32(float [[TMP7]], float [[TMP27]], float [[TMP28]])
 ; CHECK-NEXT:    [[MUL9_5:%.*]] = fmul float [[TMP4]], [[TMP32]]
 ; CHECK-NEXT:    [[TMP30:%.*]] = tail call float @llvm.fmuladd.f32(float [[TMP3]], float [[TMP37]], float [[MUL9_5]])
 ; CHECK-NEXT:    [[TMP39:%.*]] = tail call float @llvm.fmuladd.f32(float [[TMP5]], float [[TMP27]], float [[TMP30]])
-; CHECK-NEXT:    [[ARRAYIDX12_5:%.*]] = getelementptr inbounds i8, ptr [[OUTPUT]], i32 20
+; CHECK-NEXT:    [[ARRAYIDX12_5:%.*]] = getelementptr inbounds nuw i8, ptr [[OUTPUT]], i32 20
 ; CHECK-NEXT:    store float [[TMP39]], ptr [[ARRAYIDX12_5]], align 4
 ; CHECK-NEXT:    [[TMP33:%.*]] = tail call float @llvm.fmuladd.f32(float [[TMP6]], float [[TMP37]], float [[DOTPRE27]])
 ; CHECK-NEXT:    [[TMP42:%.*]] = tail call float @llvm.fmuladd.f32(float [[TMP7]], float [[TMP32]], float [[TMP33]])
 ; CHECK-NEXT:    [[MUL9_6:%.*]] = fmul float [[TMP4]], [[TMP37]]
 ; CHECK-NEXT:    [[TMP35:%.*]] = tail call float @llvm.fmuladd.f32(float [[TMP3]], float [[TMP42]], float [[MUL9_6]])
 ; CHECK-NEXT:    [[TMP44:%.*]] = tail call float @llvm.fmuladd.f32(float [[TMP5]], float [[TMP32]], float [[TMP35]])
-; CHECK-NEXT:    [[ARRAYIDX12_6:%.*]] = getelementptr inbounds i8, ptr [[OUTPUT]], i32 24
+; CHECK-NEXT:    [[ARRAYIDX12_6:%.*]] = getelementptr inbounds nuw i8, ptr [[OUTPUT]], i32 24
 ; CHECK-NEXT:    store float [[TMP44]], ptr [[ARRAYIDX12_6]], align 4
 ; CHECK-NEXT:    [[TMP36:%.*]] = tail call float @llvm.fmuladd.f32(float [[TMP6]], float [[TMP42]], float [[DOTPRE28]])
 ; CHECK-NEXT:    [[TMP40:%.*]] = tail call float @llvm.fmuladd.f32(float [[TMP7]], float [[TMP37]], float [[TMP36]])
 ; CHECK-NEXT:    [[MUL9_7:%.*]] = fmul float [[TMP4]], [[TMP42]]
 ; CHECK-NEXT:    [[TMP38:%.*]] = tail call float @llvm.fmuladd.f32(float [[TMP3]], float [[TMP40]], float [[MUL9_7]])
 ; CHECK-NEXT:    [[TMP49:%.*]] = tail call float @llvm.fmuladd.f32(float [[TMP5]], float [[TMP37]], float [[TMP38]])
-; CHECK-NEXT:    [[ARRAYIDX12_7:%.*]] = getelementptr inbounds i8, ptr [[OUTPUT]], i32 28
+; CHECK-NEXT:    [[ARRAYIDX12_7:%.*]] = getelementptr inbounds nuw i8, ptr [[OUTPUT]], i32 28
 ; CHECK-NEXT:    store float [[TMP49]], ptr [[ARRAYIDX12_7]], align 4
 ; CHECK-NEXT:    store float [[DOTPRE]], ptr [[ARRAYIDX4]], align 4
 ; CHECK-NEXT:    store float [[TMP12]], ptr [[W]], align 4
@@ -110,13 +110,13 @@ define dso_local noundef i32 @dsps_biquad_f32_ansi(ptr nocapture noundef readonl
 ; CHECK:       for.body.clone1:
 ; CHECK-NEXT:    [[TMP50:%.*]] = phi float [ [[DOTPRE]], [[FOR_BODY_LR_PH_CLONE8]] ], [ [[TMP53:%.*]], [[FOR_BODY_CLONE1]] ]
 ; CHECK-NEXT:    [[I_031_CLONE2:%.*]] = phi i32 [ 8, [[FOR_BODY_LR_PH_CLONE8]] ], [ [[INC_CLONE6:%.*]], [[FOR_BODY_CLONE1]] ]
-; CHECK-NEXT:    [[ARRAYIDX_CLONE3:%.*]] = getelementptr inbounds float, ptr [[INPUT]], i32 [[I_031_CLONE2]]
+; CHECK-NEXT:    [[ARRAYIDX_CLONE3:%.*]] = getelementptr inbounds nuw float, ptr [[INPUT]], i32 [[I_031_CLONE2]]
 ; CHECK-NEXT:    [[TMP41:%.*]] = load float, ptr [[ARRAYIDX_CLONE3]], align 4
 ; CHECK-NEXT:    [[TMP43:%.*]] = tail call float @llvm.fmuladd.f32(float [[TMP6]], float [[TMP12]], float [[TMP41]])
 ; CHECK-NEXT:    [[TMP53]] = tail call float @llvm.fmuladd.f32(float [[TMP7]], float [[TMP50]], float [[TMP43]])
 ; CHECK-NEXT:    [[TMP45:%.*]] = tail call float @llvm.fmuladd.f32(float [[TMP3]], float [[TMP53]], float [[MUL9_1]])
 ; CHECK-NEXT:    [[TMP55:%.*]] = tail call float @llvm.fmuladd.f32(float [[TMP5]], float [[TMP50]], float [[TMP45]])
-; CHECK-NEXT:    [[ARRAYIDX12_CLONE5:%.*]] = getelementptr inbounds float, ptr [[OUTPUT]], i32 [[I_031_CLONE2]]
+; CHECK-NEXT:    [[ARRAYIDX12_CLONE5:%.*]] = getelementptr inbounds nuw float, ptr [[OUTPUT]], i32 [[I_031_CLONE2]]
 ; CHECK-NEXT:    store float [[TMP55]], ptr [[ARRAYIDX12_CLONE5]], align 4
 ; CHECK-NEXT:    [[INC_CLONE6]] = add nuw nsw i32 [[I_031_CLONE2]], 1
 ; CHECK-NEXT:    [[EXITCOND_NOT_CLONE7:%.*]] = icmp eq i32 [[INC_CLONE6]], [[LEN]]
@@ -126,11 +126,11 @@ define dso_local noundef i32 @dsps_biquad_f32_ansi(ptr nocapture noundef readonl
 ; CHECK-NEXT:    store float [[TMP53]], ptr [[W]], align 4
 ; CHECK-NEXT:    br label [[IF_END]]
 ; CHECK:       for.body.lr.ph.clone:
-; CHECK-NEXT:    [[ARRAYIDX1_CLONE:%.*]] = getelementptr inbounds i8, ptr [[COEF]], i32 12
-; CHECK-NEXT:    [[ARRAYIDX3_CLONE:%.*]] = getelementptr inbounds i8, ptr [[COEF]], i32 16
-; CHECK-NEXT:    [[ARRAYIDX4_CLONE:%.*]] = getelementptr inbounds i8, ptr [[W]], i32 4
-; CHECK-NEXT:    [[ARRAYIDX7_CLONE:%.*]] = getelementptr inbounds i8, ptr [[COEF]], i32 4
-; CHECK-NEXT:    [[ARRAYIDX10_CLONE:%.*]] = getelementptr inbounds i8, ptr [[COEF]], i32 8
+; CHECK-NEXT:    [[ARRAYIDX1_CLONE:%.*]] = getelementptr inbounds nuw i8, ptr [[COEF]], i32 12
+; CHECK-NEXT:    [[ARRAYIDX3_CLONE:%.*]] = getelementptr inbounds nuw i8, ptr [[COEF]], i32 16
+; CHECK-NEXT:    [[ARRAYIDX4_CLONE:%.*]] = getelementptr inbounds nuw i8, ptr [[W]], i32 4
+; CHECK-NEXT:    [[ARRAYIDX7_CLONE:%.*]] = getelementptr inbounds nuw i8, ptr [[COEF]], i32 4
+; CHECK-NEXT:    [[ARRAYIDX10_CLONE:%.*]] = getelementptr inbounds nuw i8, ptr [[COEF]], i32 8
 ; CHECK-NEXT:    [[DOTPRE_CLONE:%.*]] = load float, ptr [[W]], align 4
 ; CHECK-NEXT:    [[DOTPRE32_CLONE:%.*]] = load float, ptr [[ARRAYIDX4_CLONE]], align 4
 ; CHECK-NEXT:    [[DOTPRE16:%.*]] = load float, ptr [[ARRAYIDX1_CLONE]], align 4
@@ -143,7 +143,7 @@ define dso_local noundef i32 @dsps_biquad_f32_ansi(ptr nocapture noundef readonl
 ; CHECK-NEXT:    [[TMP56:%.*]] = phi float [ [[DOTPRE32_CLONE]], [[FOR_BODY_LR_PH_CLONE]] ], [ [[TMP57:%.*]], [[FOR_BODY_CLONE]] ]
 ; CHECK-NEXT:    [[TMP57]] = phi float [ [[DOTPRE_CLONE]], [[FOR_BODY_LR_PH_CLONE]] ], [ [[TMP60:%.*]], [[FOR_BODY_CLONE]] ]
 ; CHECK-NEXT:    [[I_031_CLONE:%.*]] = phi i32 [ 0, [[FOR_BODY_LR_PH_CLONE]] ], [ [[INC_CLONE:%.*]], [[FOR_BODY_CLONE]] ]
-; CHECK-NEXT:    [[ARRAYIDX_CLONE:%.*]] = getelementptr inbounds float, ptr [[INPUT]], i32 [[I_031_CLONE]]
+; CHECK-NEXT:    [[ARRAYIDX_CLONE:%.*]] = getelementptr inbounds nuw float, ptr [[INPUT]], i32 [[I_031_CLONE]]
 ; CHECK-NEXT:    [[TMP48:%.*]] = load float, ptr [[ARRAYIDX_CLONE]], align 4
 ; CHECK-NEXT:    [[NEG_CLONE:%.*]] = fneg float [[DOTPRE16]]
 ; CHECK-NEXT:    [[TMP52:%.*]] = tail call float @llvm.fmuladd.f32(float [[NEG_CLONE]], float [[TMP57]], float [[TMP48]])
@@ -152,7 +152,7 @@ define dso_local noundef i32 @dsps_biquad_f32_ansi(ptr nocapture noundef readonl
 ; CHECK-NEXT:    [[MUL9_CLONE:%.*]] = fmul float [[DOTPRE19]], [[TMP57]]
 ; CHECK-NEXT:    [[TMP51:%.*]] = tail call float @llvm.fmuladd.f32(float [[DOTPRE18]], float [[TMP60]], float [[MUL9_CLONE]])
 ; CHECK-NEXT:    [[TMP62:%.*]] = tail call float @llvm.fmuladd.f32(float [[DOTPRE20]], float [[TMP56]], float [[TMP51]])
-; CHECK-NEXT:    [[ARRAYIDX12_CLONE:%.*]] = getelementptr inbounds float, ptr [[OUTPUT]], i32 [[I_031_CLONE]]
+; CHECK-NEXT:    [[ARRAYIDX12_CLONE:%.*]] = getelementptr inbounds nuw float, ptr [[OUTPUT]], i32 [[I_031_CLONE]]
 ; CHECK-NEXT:    store float [[TMP62]], ptr [[ARRAYIDX12_CLONE]], align 4
 ; CHECK-NEXT:    store float [[TMP57]], ptr [[ARRAYIDX4_CLONE]], align 4
 ; CHECK-NEXT:    store float [[TMP60]], ptr [[W]], align 4

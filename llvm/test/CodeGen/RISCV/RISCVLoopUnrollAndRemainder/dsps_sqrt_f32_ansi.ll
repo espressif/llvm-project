@@ -140,8 +140,8 @@ define dso_local noundef i32 @dsps_sqrt_f32_ansi(ptr noundef readonly %input, pt
 ; CHECK-NEXT:    br i1 [[EXITCOND_NOT_MODIFY]], label [[FOR_COND_PREHEADER_NEW2]], label [[FOR_BODY_MODIFY]]
 ; CHECK:       for.body:
 ; CHECK-NEXT:    [[I_012:%.*]] = phi i32 [ [[INC:%.*]], [[FOR_BODY]] ], [ [[TMP0]], [[FOR_COND_PREHEADER_NEW2]] ]
-; CHECK-NEXT:    [[ARRAYIDX:%.*]] = getelementptr inbounds float, ptr [[INPUT]], i32 [[I_012]]
-; CHECK-NEXT:    [[TMP48:%.*]] = load i32, ptr [[ARRAYIDX]], align 4
+; CHECK-NEXT:    [[ARRAYIDX1:%.*]] = getelementptr inbounds float, ptr [[INPUT]], i32 [[I_012]]
+; CHECK-NEXT:    [[TMP48:%.*]] = load i32, ptr [[ARRAYIDX1]], align 4
 ; CHECK-NEXT:    [[SHR_I:%.*]] = ashr i32 [[TMP48]], 1
 ; CHECK-NEXT:    [[ADD_I:%.*]] = add nsw i32 [[SHR_I]], 532365312
 ; CHECK-NEXT:    [[ARRAYIDX5:%.*]] = getelementptr inbounds float, ptr [[OUTPUT]], i32 [[I_012]]
