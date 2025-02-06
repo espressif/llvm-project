@@ -8,44 +8,44 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-LABEL: define dso_local noundef i32 @dspi_conv_f32_ansi(
 ; CHECK-SAME: ptr nocapture noundef readonly [[IN_IMAGE:%.*]], ptr nocapture noundef readonly [[FILTER:%.*]], ptr nocapture noundef [[OUT_IMAGE:%.*]]) local_unnamed_addr {
 ; CHECK-NEXT:  entry:
-; CHECK-NEXT:    [[SIZE_X:%.*]] = getelementptr inbounds i8, ptr [[IN_IMAGE]], i32 20
+; CHECK-NEXT:    [[SIZE_X:%.*]] = getelementptr inbounds nuw i8, ptr [[IN_IMAGE]], i32 20
 ; CHECK-NEXT:    [[TMP0:%.*]] = load i32, ptr [[SIZE_X]], align 4
-; CHECK-NEXT:    [[SIZE_X1:%.*]] = getelementptr inbounds i8, ptr [[OUT_IMAGE]], i32 20
+; CHECK-NEXT:    [[SIZE_X1:%.*]] = getelementptr inbounds nuw i8, ptr [[OUT_IMAGE]], i32 20
 ; CHECK-NEXT:    store i32 [[TMP0]], ptr [[SIZE_X1]], align 4
-; CHECK-NEXT:    [[SIZE_Y:%.*]] = getelementptr inbounds i8, ptr [[IN_IMAGE]], i32 24
+; CHECK-NEXT:    [[SIZE_Y:%.*]] = getelementptr inbounds nuw i8, ptr [[IN_IMAGE]], i32 24
 ; CHECK-NEXT:    [[TMP1:%.*]] = load i32, ptr [[SIZE_Y]], align 4
-; CHECK-NEXT:    [[SIZE_Y2:%.*]] = getelementptr inbounds i8, ptr [[OUT_IMAGE]], i32 24
+; CHECK-NEXT:    [[SIZE_Y2:%.*]] = getelementptr inbounds nuw i8, ptr [[OUT_IMAGE]], i32 24
 ; CHECK-NEXT:    store i32 [[TMP1]], ptr [[SIZE_Y2]], align 4
 ; CHECK-NEXT:    [[TMP2:%.*]] = load ptr, ptr [[IN_IMAGE]], align 4
 ; CHECK-NEXT:    [[TMP3:%.*]] = load ptr, ptr [[OUT_IMAGE]], align 4
-; CHECK-NEXT:    [[SIZE_X4:%.*]] = getelementptr inbounds i8, ptr [[FILTER]], i32 20
+; CHECK-NEXT:    [[SIZE_X4:%.*]] = getelementptr inbounds nuw i8, ptr [[FILTER]], i32 20
 ; CHECK-NEXT:    [[TMP4:%.*]] = load i32, ptr [[SIZE_X4]], align 4
 ; CHECK-NEXT:    [[SUB:%.*]] = add nsw i32 [[TMP4]], -1
 ; CHECK-NEXT:    [[SHR:%.*]] = ashr i32 [[SUB]], 1
-; CHECK-NEXT:    [[SIZE_Y5:%.*]] = getelementptr inbounds i8, ptr [[FILTER]], i32 24
+; CHECK-NEXT:    [[SIZE_Y5:%.*]] = getelementptr inbounds nuw i8, ptr [[FILTER]], i32 24
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i32, ptr [[SIZE_Y5]], align 4
 ; CHECK-NEXT:    [[SUB6:%.*]] = add nsw i32 [[TMP5]], -1
 ; CHECK-NEXT:    [[SHR7:%.*]] = ashr i32 [[SUB6]], 1
-; CHECK-NEXT:    [[STRIDE_X:%.*]] = getelementptr inbounds i8, ptr [[IN_IMAGE]], i32 12
+; CHECK-NEXT:    [[STRIDE_X:%.*]] = getelementptr inbounds nuw i8, ptr [[IN_IMAGE]], i32 12
 ; CHECK-NEXT:    [[TMP6:%.*]] = load i32, ptr [[STRIDE_X]], align 4
-; CHECK-NEXT:    [[STEP_Y:%.*]] = getelementptr inbounds i8, ptr [[IN_IMAGE]], i32 8
+; CHECK-NEXT:    [[STEP_Y:%.*]] = getelementptr inbounds nuw i8, ptr [[IN_IMAGE]], i32 8
 ; CHECK-NEXT:    [[TMP7:%.*]] = load i32, ptr [[STEP_Y]], align 4
 ; CHECK-NEXT:    [[MUL:%.*]] = mul nsw i32 [[TMP7]], [[TMP6]]
-; CHECK-NEXT:    [[STRIDE_X8:%.*]] = getelementptr inbounds i8, ptr [[FILTER]], i32 12
+; CHECK-NEXT:    [[STRIDE_X8:%.*]] = getelementptr inbounds nuw i8, ptr [[FILTER]], i32 12
 ; CHECK-NEXT:    [[TMP8:%.*]] = load i32, ptr [[STRIDE_X8]], align 4
-; CHECK-NEXT:    [[STEP_Y9:%.*]] = getelementptr inbounds i8, ptr [[FILTER]], i32 8
+; CHECK-NEXT:    [[STEP_Y9:%.*]] = getelementptr inbounds nuw i8, ptr [[FILTER]], i32 8
 ; CHECK-NEXT:    [[TMP9:%.*]] = load i32, ptr [[STEP_Y9]], align 4
 ; CHECK-NEXT:    [[MUL10:%.*]] = mul nsw i32 [[TMP9]], [[TMP8]]
 ; CHECK-NEXT:    [[CMP938:%.*]] = icmp sgt i32 [[SHR7]], 0
-; CHECK-NEXT:    [[STEP_X29:%.*]] = getelementptr inbounds i8, ptr [[FILTER]], i32 4
+; CHECK-NEXT:    [[STEP_X29:%.*]] = getelementptr inbounds nuw i8, ptr [[FILTER]], i32 4
 ; CHECK-NEXT:    [[TMP10:%.*]] = load i32, ptr [[STEP_X29]], align 4
-; CHECK-NEXT:    [[STEP_Y43:%.*]] = getelementptr inbounds i8, ptr [[OUT_IMAGE]], i32 8
+; CHECK-NEXT:    [[STEP_Y43:%.*]] = getelementptr inbounds nuw i8, ptr [[OUT_IMAGE]], i32 8
 ; CHECK-NEXT:    [[TMP11:%.*]] = load i32, ptr [[STEP_Y43]], align 4
-; CHECK-NEXT:    [[STRIDE_X41:%.*]] = getelementptr inbounds i8, ptr [[OUT_IMAGE]], i32 12
+; CHECK-NEXT:    [[STRIDE_X41:%.*]] = getelementptr inbounds nuw i8, ptr [[OUT_IMAGE]], i32 12
 ; CHECK-NEXT:    [[TMP12:%.*]] = load i32, ptr [[STRIDE_X41]], align 4
-; CHECK-NEXT:    [[STEP_X39:%.*]] = getelementptr inbounds i8, ptr [[OUT_IMAGE]], i32 4
+; CHECK-NEXT:    [[STEP_X39:%.*]] = getelementptr inbounds nuw i8, ptr [[OUT_IMAGE]], i32 4
 ; CHECK-NEXT:    [[TMP13:%.*]] = load i32, ptr [[STEP_X39]], align 4
-; CHECK-NEXT:    [[STEP_X:%.*]] = getelementptr inbounds i8, ptr [[IN_IMAGE]], i32 4
+; CHECK-NEXT:    [[STEP_X:%.*]] = getelementptr inbounds nuw i8, ptr [[IN_IMAGE]], i32 4
 ; CHECK-NEXT:    [[TMP14:%.*]] = load i32, ptr [[STEP_X]], align 4
 ; CHECK-NEXT:    [[TMP15:%.*]] = load ptr, ptr [[FILTER]], align 4
 ; CHECK-NEXT:    [[DIV526_NEG:%.*]] = sdiv i32 [[TMP4]], -2
