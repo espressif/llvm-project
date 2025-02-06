@@ -15,6 +15,7 @@
 #include "RISCV.h"
 #include "RISCVCustomLICM.h"
 #include "RISCVEsp32P4MemIntrin.h"
+#include "RISCVIntLoopUnrollAndRemainder.h"
 #include "RISCVLoopUnrollAndRemainder.h"
 #include "RISCVMachineFunctionInfo.h"
 #include "RISCVMachineScheduler.h"
@@ -696,6 +697,10 @@ void RISCVTargetMachine::registerPassBuilderCallbacks(PassBuilder &PB) {
         }
         if (Name == "riscv-esp32-p4-mem-intrin") {
           FPM.addPass(RISCVEsp32P4MemIntrinPass());
+          return true;
+        }
+        if (Name == "riscv-int-loop-unroll-and-remainder") {
+          FPM.addPass(RISCVIntLoopUnrollAndRemainderPass());
           return true;
         }
         return false;
