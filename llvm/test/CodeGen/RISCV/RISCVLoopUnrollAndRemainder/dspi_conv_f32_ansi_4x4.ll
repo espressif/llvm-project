@@ -6,7 +6,7 @@
 ; Function Attrs: nofree norecurse nosync nounwind memory(readwrite, inaccessiblemem: none)
 define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly %in_image, ptr nocapture noundef readonly %filter, ptr nocapture noundef %out_image) local_unnamed_addr #0 {
 ; CHECK-LABEL: define dso_local noundef i32 @dspi_conv_f32_ansi(
-; CHECK-SAME: ptr noalias nocapture noundef readonly [[IN_IMAGE:%.*]], ptr noalias nocapture noundef readonly [[FILTER:%.*]], ptr noalias nocapture noundef [[OUT_IMAGE:%.*]]) local_unnamed_addr {
+; CHECK-SAME: ptr noalias noundef readonly captures(none) [[IN_IMAGE:%.*]], ptr noalias noundef readonly captures(none) [[FILTER:%.*]], ptr noalias noundef captures(none) [[OUT_IMAGE:%.*]]) local_unnamed_addr {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    [[SIZE_X:%.*]] = getelementptr inbounds [[STRUCT_IMAGE2D_S:%.*]], ptr [[IN_IMAGE]], i32 0, i32 5
 ; CHECK-NEXT:    [[TMP0:%.*]] = load i32, ptr [[SIZE_X]], align 4

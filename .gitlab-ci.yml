@@ -218,7 +218,7 @@ build_and_test:
     expire_in: 1 day
   retry: 2
   variables:
-    TEST_APP_ESP_DSP_CUSTOM_BRANCH: "llvm-21-optimization-test"
+    TEST_APP_ESP_DSP_CUSTOM_BRANCH: "llvm-21-optimization-test-v2"
   before_script:
     - git config --global --add safe.directory $CI_PROJECT_DIR
   after_script:

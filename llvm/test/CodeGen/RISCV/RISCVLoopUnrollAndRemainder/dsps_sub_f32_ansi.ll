@@ -159,15 +159,15 @@ define dso_local noundef i32 @dsps_sub_f32_ansi(ptr noundef readonly %input1, pt
 ; CHECK:       for.body:
 ; CHECK-NEXT:    [[I_021:%.*]] = phi i32 [ [[INC:%.*]], [[FOR_BODY]] ], [ [[TMP0]], [[FOR_COND_PREHEADER_NEW2]] ]
 ; CHECK-NEXT:    [[MUL:%.*]] = mul nsw i32 [[I_021]], [[STEP1]]
-; CHECK-NEXT:    [[ARRAYIDX:%.*]] = getelementptr inbounds float, ptr [[INPUT1]], i32 [[MUL]]
-; CHECK-NEXT:    [[TMP49:%.*]] = load float, ptr [[ARRAYIDX]], align 4
+; CHECK-NEXT:    [[ARRAYIDX1:%.*]] = getelementptr inbounds float, ptr [[INPUT1]], i32 [[MUL]]
+; CHECK-NEXT:    [[TMP49:%.*]] = load float, ptr [[ARRAYIDX1]], align 4
 ; CHECK-NEXT:    [[MUL8:%.*]] = mul nsw i32 [[I_021]], [[STEP2]]
-; CHECK-NEXT:    [[ARRAYIDX9:%.*]] = getelementptr inbounds float, ptr [[INPUT2]], i32 [[MUL8]]
-; CHECK-NEXT:    [[TMP50:%.*]] = load float, ptr [[ARRAYIDX9]], align 4
-; CHECK-NEXT:    [[SUB:%.*]] = fsub float [[TMP49]], [[TMP50]]
+; CHECK-NEXT:    [[ARRAYIDX12:%.*]] = getelementptr inbounds float, ptr [[INPUT2]], i32 [[MUL8]]
+; CHECK-NEXT:    [[TMP50:%.*]] = load float, ptr [[ARRAYIDX12]], align 4
+; CHECK-NEXT:    [[SUB63:%.*]] = fsub float [[TMP49]], [[TMP50]]
 ; CHECK-NEXT:    [[MUL10:%.*]] = mul nsw i32 [[I_021]], [[STEP_OUT]]
 ; CHECK-NEXT:    [[ARRAYIDX11:%.*]] = getelementptr inbounds float, ptr [[OUTPUT]], i32 [[MUL10]]
-; CHECK-NEXT:    store float [[SUB]], ptr [[ARRAYIDX11]], align 4
+; CHECK-NEXT:    store float [[SUB63]], ptr [[ARRAYIDX11]], align 4
 ; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_021]], 1
 ; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], [[LEN]]
 ; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label [[RETURN]], label [[FOR_BODY]]
