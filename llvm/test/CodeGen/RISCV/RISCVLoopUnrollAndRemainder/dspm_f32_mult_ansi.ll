@@ -4,7 +4,7 @@
 ; Function Attrs: nofree norecurse nosync nounwind memory(argmem: readwrite)
 define dso_local noundef i32 @dspm_mult_f32_ansi(ptr nocapture noundef readonly %A, ptr nocapture noundef readonly %B, ptr nocapture noundef writeonly %C, i32 noundef %m, i32 noundef %n, i32 noundef %k) local_unnamed_addr {
 ; CHECK-LABEL: define dso_local noundef i32 @dspm_mult_f32_ansi(
-; CHECK-SAME: ptr noalias nocapture noundef readonly [[A:%.*]], ptr noalias nocapture noundef readonly [[B:%.*]], ptr noalias nocapture noundef writeonly [[C:%.*]], i32 noundef [[M:%.*]], i32 noundef [[N:%.*]], i32 noundef [[K:%.*]]) local_unnamed_addr {
+; CHECK-SAME: ptr noalias noundef readonly captures(none) [[A:%.*]], ptr noalias noundef readonly captures(none) [[B:%.*]], ptr noalias noundef writeonly captures(none) [[C:%.*]], i32 noundef [[M:%.*]], i32 noundef [[N:%.*]], i32 noundef [[K:%.*]]) local_unnamed_addr {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    [[CMP54:%.*]] = icmp sgt i32 [[M]], 0
 ; CHECK-NEXT:    br i1 [[CMP54]], label [[FOR_COND1_PREHEADER_LR_PH:%.*]], label [[FOR_COND_CLEANUP:%.*]]
