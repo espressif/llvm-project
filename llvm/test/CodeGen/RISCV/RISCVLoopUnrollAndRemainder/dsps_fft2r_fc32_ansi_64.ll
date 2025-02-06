@@ -6,7 +6,7 @@
 ; Function Attrs: nounwind
 define dso_local noundef i32 @dsps_fft2r_fc32_ansi(ptr nocapture noundef %data, i32 noundef %N, ptr nocapture noundef readonly %w) local_unnamed_addr #0 {
 ; CHECK-LABEL: define dso_local noundef i32 @dsps_fft2r_fc32_ansi(
-; CHECK-SAME: ptr noalias nocapture noundef [[DATA:%.*]], i32 noundef [[N:%.*]], ptr noalias nocapture noundef readonly [[W:%.*]]) local_unnamed_addr {
+; CHECK-SAME: ptr noalias noundef captures(none) [[DATA:%.*]], i32 noundef [[N:%.*]], ptr noalias noundef readonly captures(none) [[W:%.*]]) local_unnamed_addr {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    [[CALL:%.*]] = tail call zeroext i1 @dsp_is_power_of_two(i32 noundef [[N]])
 ; CHECK-NEXT:    br i1 [[CALL]], label [[IF_END:%.*]], label [[RETURN:%.*]]

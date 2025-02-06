@@ -6,36 +6,36 @@
 ; Function Attrs: nofree norecurse nosync nounwind memory(read, argmem: readwrite, inaccessiblemem: none)
 define dso_local noundef i32 @dspi_dotprod_f32_ansi(ptr nocapture noundef readonly %in_image, ptr nocapture noundef readonly %filter, ptr nocapture noundef writeonly %out_value, i32 noundef %count_x, i32 noundef %count_y) local_unnamed_addr {
 ; CHECK-LABEL: define dso_local noundef i32 @dspi_dotprod_f32_ansi(
-; CHECK-SAME: ptr noalias nocapture noundef readonly [[IN_IMAGE:%.*]], ptr noalias nocapture noundef readonly [[FILTER:%.*]], ptr noalias nocapture noundef writeonly [[OUT_VALUE:%.*]], i32 noundef [[COUNT_X:%.*]], i32 noundef [[COUNT_Y:%.*]]) local_unnamed_addr {
+; CHECK-SAME: ptr noalias noundef readonly captures(none) [[IN_IMAGE:%.*]], ptr noalias noundef readonly captures(none) [[FILTER:%.*]], ptr noalias noundef writeonly captures(none) [[OUT_VALUE:%.*]], i32 noundef [[COUNT_X:%.*]], i32 noundef [[COUNT_Y:%.*]]) local_unnamed_addr {
 ; CHECK-NEXT:  entry:
-; CHECK-NEXT:    [[STEP_X:%.*]] = getelementptr inbounds i8, ptr [[IN_IMAGE]], i32 4
+; CHECK-NEXT:    [[STEP_X:%.*]] = getelementptr inbounds nuw i8, ptr [[IN_IMAGE]], i32 4
 ; CHECK-NEXT:    [[TMP0:%.*]] = load i32, ptr [[STEP_X]], align 4
 ; CHECK-NEXT:    [[MUL:%.*]] = mul nsw i32 [[TMP0]], [[COUNT_X]]
-; CHECK-NEXT:    [[STRIDE_X:%.*]] = getelementptr inbounds i8, ptr [[IN_IMAGE]], i32 12
+; CHECK-NEXT:    [[STRIDE_X:%.*]] = getelementptr inbounds nuw i8, ptr [[IN_IMAGE]], i32 12
 ; CHECK-NEXT:    [[TMP1:%.*]] = load i32, ptr [[STRIDE_X]], align 4
 ; CHECK-NEXT:    [[CMP:%.*]] = icmp sgt i32 [[MUL]], [[TMP1]]
 ; CHECK-NEXT:    br i1 [[CMP]], label [[RETURN:%.*]], label [[IF_END:%.*]]
 ; CHECK:       if.end:
-; CHECK-NEXT:    [[STEP_Y:%.*]] = getelementptr inbounds i8, ptr [[IN_IMAGE]], i32 8
+; CHECK-NEXT:    [[STEP_Y:%.*]] = getelementptr inbounds nuw i8, ptr [[IN_IMAGE]], i32 8
 ; CHECK-NEXT:    [[TMP2:%.*]] = load i32, ptr [[STEP_Y]], align 4
 ; CHECK-NEXT:    [[MUL1:%.*]] = mul nsw i32 [[TMP2]], [[COUNT_Y]]
-; CHECK-NEXT:    [[STRIDE_Y:%.*]] = getelementptr inbounds i8, ptr [[IN_IMAGE]], i32 16
+; CHECK-NEXT:    [[STRIDE_Y:%.*]] = getelementptr inbounds nuw i8, ptr [[IN_IMAGE]], i32 16
 ; CHECK-NEXT:    [[TMP3:%.*]] = load i32, ptr [[STRIDE_Y]], align 4
 ; CHECK-NEXT:    [[CMP2:%.*]] = icmp sgt i32 [[MUL1]], [[TMP3]]
 ; CHECK-NEXT:    br i1 [[CMP2]], label [[RETURN]], label [[IF_END4:%.*]]
 ; CHECK:       if.end4:
-; CHECK-NEXT:    [[STEP_X5:%.*]] = getelementptr inbounds i8, ptr [[FILTER]], i32 4
+; CHECK-NEXT:    [[STEP_X5:%.*]] = getelementptr inbounds nuw i8, ptr [[FILTER]], i32 4
 ; CHECK-NEXT:    [[TMP4:%.*]] = load i32, ptr [[STEP_X5]], align 4
 ; CHECK-NEXT:    [[MUL6:%.*]] = mul nsw i32 [[TMP4]], [[COUNT_X]]
-; CHECK-NEXT:    [[STRIDE_X7:%.*]] = getelementptr inbounds i8, ptr [[FILTER]], i32 12
+; CHECK-NEXT:    [[STRIDE_X7:%.*]] = getelementptr inbounds nuw i8, ptr [[FILTER]], i32 12
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i32, ptr [[STRIDE_X7]], align 4
 ; CHECK-NEXT:    [[CMP8:%.*]] = icmp sgt i32 [[MUL6]], [[TMP5]]
 ; CHECK-NEXT:    br i1 [[CMP8]], label [[RETURN]], label [[IF_END10:%.*]]
 ; CHECK:       if.end10:
-; CHECK-NEXT:    [[STEP_Y11:%.*]] = getelementptr inbounds i8, ptr [[FILTER]], i32 8
+; CHECK-NEXT:    [[STEP_Y11:%.*]] = getelementptr inbounds nuw i8, ptr [[FILTER]], i32 8
 ; CHECK-NEXT:    [[TMP6:%.*]] = load i32, ptr [[STEP_Y11]], align 4
 ; CHECK-NEXT:    [[MUL12:%.*]] = mul nsw i32 [[TMP6]], [[COUNT_Y]]
-; CHECK-NEXT:    [[STRIDE_Y13:%.*]] = getelementptr inbounds i8, ptr [[FILTER]], i32 16
+; CHECK-NEXT:    [[STRIDE_Y13:%.*]] = getelementptr inbounds nuw i8, ptr [[FILTER]], i32 16
 ; CHECK-NEXT:    [[TMP7:%.*]] = load i32, ptr [[STRIDE_Y13]], align 4
 ; CHECK-NEXT:    [[CMP14:%.*]] = icmp sgt i32 [[MUL12]], [[TMP7]]
 ; CHECK-NEXT:    br i1 [[CMP14]], label [[RETURN]], label [[IF_END16:%.*]]
