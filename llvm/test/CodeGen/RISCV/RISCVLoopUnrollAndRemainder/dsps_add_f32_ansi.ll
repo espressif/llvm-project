@@ -159,8 +159,8 @@ define dso_local noundef i32 @dsps_add_f32_ansi(ptr noundef readonly %input1, pt
 ; CHECK:       for.body:
 ; CHECK-NEXT:    [[I_021:%.*]] = phi i32 [ [[INC:%.*]], [[FOR_BODY]] ], [ [[TMP0]], [[FOR_COND_PREHEADER_NEW2]] ]
 ; CHECK-NEXT:    [[MUL:%.*]] = mul nsw i32 [[I_021]], [[STEP1]]
-; CHECK-NEXT:    [[ARRAYIDX:%.*]] = getelementptr inbounds float, ptr [[INPUT1]], i32 [[MUL]]
-; CHECK-NEXT:    [[TMP34:%.*]] = load float, ptr [[ARRAYIDX]], align 4
+; CHECK-NEXT:    [[ARRAYIDX3:%.*]] = getelementptr inbounds float, ptr [[INPUT1]], i32 [[MUL]]
+; CHECK-NEXT:    [[TMP34:%.*]] = load float, ptr [[ARRAYIDX3]], align 4
 ; CHECK-NEXT:    [[MUL8:%.*]] = mul nsw i32 [[I_021]], [[STEP2]]
 ; CHECK-NEXT:    [[ARRAYIDX9:%.*]] = getelementptr inbounds float, ptr [[INPUT2]], i32 [[MUL8]]
 ; CHECK-NEXT:    [[TMP35:%.*]] = load float, ptr [[ARRAYIDX9]], align 4

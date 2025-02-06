@@ -1,5 +1,5 @@
 //===-- RISCVLoopUnrollAndRemainder.cpp - Loop Unrolling Pass
-//------------------===//
+//-------------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
@@ -7,22 +7,49 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file implements a loop unrolling optimization pass specifically designed
-// for Digital Signal Processing (DSP) algorithms. The pass targets common
-// computational patterns found in various DSP operations including:
-// - FIR and IIR filters
-// - Convolution and correlation
-// - Vector operations
-// - Dot product calculations
-// - Mathematical functions
+// This file implements a specialized loop unrolling optimization pass for
+// RISC-V architecture. The pass targets Digital Signal Processing (DSP)
+// algorithms and includes optimizations for:
 //
-// The pass performs the following main operations:
-// 1. Identifies loops in DSP algorithm implementations
-// 2. Unrolls the main computational loops, typically by a factor of 8
-// 3. Efficiently handles remainder iterations
-// 4. Optimizes memory access patterns for improved cache utilization
-// 5. Adjusts control flow and PHI nodes to support the unrolled structure
-// 6. Performs cleanup and further optimization after unrolling
+// Supported DSP Algorithm Types:
+// - FIR and IIR filters (DspsF32FirLoopUnroller, DspsF32FirdLoopUnroller)
+// - Convolution and correlation (DspsF32ConvCcorrUnroller, DspiF32ConvUnroller)
+// - Matrix operations (DspmF32MultLoopUnroller, DspmF32MultExLoopUnroller,
+//                     DspmF32AddLoopUnroller)
+// - Dot product calculations (DspsF32DotprodLoopUnroller and variants)
+// - FFT transforms (DspsF32Fft2rUnroller)
+// - Mathematical functions (DspsF32MathLoopUnroller)
+// - Window functions (DspsF32WindBlackmanLoopUnroller)
+//
+// Key Optimization Features:
+// 1. Loop Unrolling
+//    - Supports various unroll factors (4, 8, 16, etc.)
+//    - Optimizes unrolling strategy based on data set sizes
+//    - Handles remainder iterations efficiently
+//
+// 2. Memory Access Optimization
+//    - Optimizes array access patterns
+//    - Improves cache utilization
+//    - Enables vectorization opportunities
+//
+// 3. Control Flow Optimization
+//    - Adjusts basic block layout
+//    - Optimizes PHI nodes
+//    - Handles nested loop structures
+//
+// 4. Post-processing Optimization
+//    - Algorithm-specific optimizations
+//    - Strength reduction
+//    - Common subexpression elimination
+//
+// Configuration Options:
+// - EnableRISCVLoopUnrollAndRemainder: Enable/disable the pass
+// - DSPIMatrixSize: Configure matrix sizes (4x4 to 64x64)
+// - DSPSFft2rFc32N: Configure FFT sizes (64 to 1024 points)
+//
+// The pass uses a factory pattern (LoopUnrollerFactory) to create specific
+// Unroller instances. Each DSP algorithm type has its corresponding Unroller
+// class that inherits from the base LoopUnroller class.
 //
 // This transformation can significantly improve performance for DSP algorithms
 // by:
@@ -107,7 +134,6 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
-#include <iostream>
 #include <limits>
 #include <optional>
 #include <string>
@@ -118,228 +144,1553 @@ using namespace llvm;
 
 #define DEBUG_TYPE "riscv-loop-unroll-and-remainder"
 
-// Enumeration to represent different types of unrolling
-enum class UnrollType {
-  DOTPROD,
-  ADD_ADDC_SUB_MUL_MULC_SQRT,
-  CONV_CCORR,
-  FIRD,
-  FIR,
-  CORR,
-  UNKNOWN
-};
-
-// Global variable to store the current unroll type
-static UnrollType currentUnrollType = UnrollType::UNKNOWN;
-
 // Command line option to enable the RISCVLoopUnrollAndRemainder pass
 cl::opt<bool> llvm::EnableRISCVLoopUnrollAndRemainder(
     "riscv-loop-unroll-and-remainder", cl::init(false),
     cl::desc("Enable loop unrolling and remainder specific loop"));
 
-// Helper function to get a basic block by name from a function
-static BasicBlock *getBasicBlockByName(Function &F, StringRef Name) {
-  for (BasicBlock &BB : F)
-    if (BB.getName() == Name)
-      return &BB;
-  return nullptr;
+// Define enum type to represent different DSPI matrix sizes
+enum class DSPIMatrixSize {
+  SIZE_4X4,
+  SIZE_8X8,
+  SIZE_16X16,
+  SIZE_32X32,
+  SIZE_64X64
+};
+
+// Command line option to control DSPI matrix size
+static cl::opt<DSPIMatrixSize>
+    DSPIMatrixSizeOpt("dspi-matrix-size",
+                      cl::desc("Select DSPI matrix size for optimization:"),
+                      cl::values(clEnumValN(DSPIMatrixSize::SIZE_4X4, "4x4",
+                                            "Optimize 4x4 matrix"),
+                                 clEnumValN(DSPIMatrixSize::SIZE_8X8, "8x8",
+                                            "Optimize 8x8 matrix"),
+                                 clEnumValN(DSPIMatrixSize::SIZE_16X16, "16x16",
+                                            "Optimize 16x16 matrix"),
+                                 clEnumValN(DSPIMatrixSize::SIZE_32X32, "32x32",
+                                            "Optimize 32x32 matrix"),
+                                 clEnumValN(DSPIMatrixSize::SIZE_64X64, "64x64",
+                                            "Optimize 64x64 matrix")),
+                      cl::init(DSPIMatrixSize::SIZE_8X8));
+
+enum class DSPSFft2rFc32N { N_64, N_128, N_256, N_512, N_1024 };
+
+// Command line option to control DSPS FFT2R FC32 matrix size
+static cl::opt<DSPSFft2rFc32N> DSPSFft2rFc32NOpt(
+    "dsps-fft2r-fc32-n",
+    cl::desc("Select DSPS FFT2R FC32 matrix size for optimization:"),
+    cl::values(clEnumValN(DSPSFft2rFc32N::N_64, "64", "Optimize 64N"),
+               clEnumValN(DSPSFft2rFc32N::N_128, "128", "Optimize 128N"),
+               clEnumValN(DSPSFft2rFc32N::N_256, "256", "Optimize 256N"),
+               clEnumValN(DSPSFft2rFc32N::N_512, "512", "Optimize 512N"),
+               clEnumValN(DSPSFft2rFc32N::N_1024, "1024", "Optimize 1024N")),
+    cl::init(DSPSFft2rFc32N::N_64));
+
+// Helper Function to simplify loop and form LCSSA
+void LoopUnroller::simplifyAndFormLCSSA(Loop *L, DominatorTree &DT,
+                                        LoopInfo *LI, ScalarEvolution &SE,
+                                        AssumptionCache &AC) {
+  simplifyLoop(L, &DT, LI, &SE, &AC, nullptr, false);
+  formLCSSARecursively(*L, DT, LI, &SE);
 }
 
-// Helper function to get the first ICmp instruction with a specific predicate
-// in a basic block
-static ICmpInst *getFirstICmpInstWithPredicate(BasicBlock *BB,
-                                               ICmpInst::Predicate Predicate) {
-  for (Instruction &I : *BB) {
-    if (auto *CI = dyn_cast<ICmpInst>(&I)) {
-      if (CI->getPredicate() == Predicate) {
-        return CI;
-      }
-    }
+LoopUnrollResult DspsF32BiquadLoopUnroller::unroll(Loop &L) {
+  LoopUnrollResult Result =
+      UnrollLoop(&L,
+                 {/*Count*/ UnrollCount, /*Force*/ true, /*Runtime*/ false,
+                  /*AllowExpensiveTripCount*/ true,
+                  /*UnrollRemainder*/ true, true},
+                 &LI, &SE, &DT, &AC, &TTI, /*ORE*/ &ORE, true);
+  return Result;
+}
+
+LoopUnrollResult DspsF32DotprodSimpleLoopUnroller::unroll(Loop &L) {
+  LoopUnrollResult Result =
+      UnrollLoop(&L,
+                 {/*Count*/ UnrollCount, /*Force*/ true, /*Runtime*/ false,
+                  /*AllowExpensiveTripCount*/ true,
+                  /*UnrollRemainder*/ true, true},
+                 &LI, &SE, &DT, &AC, &TTI, /*ORE*/ &ORE, true);
+  return Result;
+}
+
+LoopUnrollResult DspsF32DotprodLoopUnroller::unroll(Loop &L) {
+  transformOneLoopDepth(F);
+  return LoopUnrollResult::FullyUnrolled;
+}
+
+LoopUnrollResult DspsF32DotprodComplexLoopUnroller::unroll(Loop &L) {
+  LoopUnrollResult Result =
+      UnrollLoop(&L,
+                 {/*Count*/ UnrollCount, /*Force*/ true, /*Runtime*/ false,
+                  /*AllowExpensiveTripCount*/ true,
+                  /*UnrollRemainder*/ true, true},
+                 &LI, &SE, &DT, &AC, &TTI, /*ORE*/ &ORE, true);
+  return Result;
+}
+
+// Factory Function to create DspiF32DotprodUnroller
+std::unique_ptr<DspiF32DotprodUnroller>
+createDspiF32DotprodUnroller(Function &F, LoopInfo &LI, ScalarEvolution &SE,
+                             DominatorTree &DT, AssumptionCache &AC,
+                             const TargetTransformInfo &TTI,
+                             OptimizationRemarkEmitter &ORE, int UnrollCount) {
+  if (DSPIMatrixSizeOpt == DSPIMatrixSize::SIZE_4X4 ||
+      DSPIMatrixSizeOpt == DSPIMatrixSize::SIZE_8X8 ||
+      DSPIMatrixSizeOpt == DSPIMatrixSize::SIZE_16X16) {
+    return std::make_unique<DspiF32DotprodSmallUnroller>(F, LI, SE, DT, AC, TTI,
+                                                         ORE, UnrollCount);
+  } else if (DSPIMatrixSizeOpt == DSPIMatrixSize::SIZE_32X32 ||
+             DSPIMatrixSizeOpt == DSPIMatrixSize::SIZE_64X64) {
+    return std::make_unique<DspiF32DotprodLargeUnroller>(F, LI, SE, DT, AC, TTI,
+                                                         ORE, UnrollCount);
   }
-  return nullptr;
+  llvm_unreachable("unsupported DSPIMatrixSize");
 }
 
-// Helper function to get the last ICmp instruction with a specific predicate in
-// a basic block
-static ICmpInst *getLastICmpInstWithPredicate(BasicBlock *BB,
-                                              ICmpInst::Predicate Predicate) {
-  ICmpInst *lastICmp = nullptr;
-  for (Instruction &I : *BB) {
-    if (auto *CI = dyn_cast<ICmpInst>(&I)) {
-      if (CI->getPredicate() == Predicate) {
-        lastICmp = CI;
-      }
-    }
+// Factory Function to create DspiF32ConvUnroller
+std::unique_ptr<DspiF32ConvUnroller> createDspiF32ConvUnroller(
+    Function &F, LoopInfo &LI, DominatorTree &DT, ScalarEvolution &SE,
+    AssumptionCache &AC, const TargetTransformInfo &TTI,
+    OptimizationRemarkEmitter &ORE, unsigned UnrollCount) {
+  if (DSPIMatrixSizeOpt == DSPIMatrixSize::SIZE_4X4) {
+    // 4x4 matrix uses factor 4, no post-processing
+    return std::make_unique<DspiF32ConvSmallUnroller>(F, LI, DT, SE, AC, TTI,
+                                                      ORE, 8);
+  } else if (DSPIMatrixSizeOpt == DSPIMatrixSize::SIZE_8X8) {
+    // 8x8 matrix uses factor 8, requires post-processing
+    return std::make_unique<DspiF32ConvLargeUnroller>(F, LI, DT, SE, AC, TTI,
+                                                      ORE, 8);
+  } else if (DSPIMatrixSizeOpt == DSPIMatrixSize::SIZE_16X16) {
+    // 16x16 matrix uses factor 16, requires post-processing
+    return std::make_unique<DspiF32ConvLargeUnroller>(F, LI, DT, SE, AC, TTI,
+                                                      ORE, 16);
+  } else if (DSPIMatrixSizeOpt == DSPIMatrixSize::SIZE_32X32 ||
+             DSPIMatrixSizeOpt == DSPIMatrixSize::SIZE_64X64) {
+    // 32x32 matrix uses factor 32, requires post-processing
+    return std::make_unique<DspiF32ConvLargeUnroller>(F, LI, DT, SE, AC, TTI,
+                                                      ORE, 16);
   }
-  return lastICmp;
+  llvm_unreachable("unsupported DSPIMatrixSize");
 }
 
-template <typename T> static T *getFirstInst(BasicBlock *BB) {
-  for (Instruction &I : *BB) {
-    if (T *Inst = dyn_cast<T>(&I)) {
-      return Inst;
-    }
-  }
-  return nullptr;
-}
-
-template <typename T> static T *getLastInst(BasicBlock *BB) {
-  for (Instruction &I : reverse(*BB)) {
-    if (T *Inst = dyn_cast<T>(&I)) {
-      return Inst;
-    }
-  }
-  return nullptr;
-}
-
-// Helper function to get the first float PHI node in a basic block
-static PHINode *getFirstFloatPhi(BasicBlock *BB) {
-  for (auto &Inst : *BB) {
-    if (auto *Phi = dyn_cast<PHINode>(&Inst)) {
-      if (Phi->getType()->isFloatTy()) {
-        return Phi;
-      }
-    }
-  }
-  return nullptr;
-}
-
-// Helper function to get the last float PHI node in a basic block
-static PHINode *getLastFloatPhi(BasicBlock *BB) {
-  for (auto it = BB->rbegin(); it != BB->rend(); ++it) {
-    if (auto *Phi = dyn_cast<PHINode>(&*it)) {
-      if (Phi->getType()->isFloatTy()) {
-        return Phi;
-      }
-    }
-  }
-  return nullptr;
-}
-
-// Helper function to get the first 32-bit integer PHI node in a basic block
-static PHINode *getFirstI32Phi(BasicBlock *BB) {
-  for (auto &Inst : *BB) {
-    if (auto *Phi = dyn_cast<PHINode>(&Inst)) {
-      if (Phi->getType()->isIntegerTy(32)) {
-        return Phi;
-      }
-    }
-  }
-  return nullptr;
-}
-
-// Helper function to get the last 32-bit integer PHI node in a basic block
-static PHINode *getLastI32Phi(BasicBlock *BB) {
-  for (auto it = BB->rbegin(); it != BB->rend(); ++it) {
-    if (auto *Phi = dyn_cast<PHINode>(&*it)) {
-      if (Phi->getType()->isIntegerTy(32)) {
-        return Phi;
-      }
-    }
-  }
-  return nullptr;
-}
-
-// Helper function to get the first CallInst with a specific name in a basic
-// block
-static CallInst *getFirstCallInstWithName(BasicBlock *BB, StringRef Name) {
-  for (Instruction &I : *BB) {
-    if (auto *Call = dyn_cast<CallInst>(&I)) {
-      if (Call->getCalledFunction() &&
-          Call->getCalledFunction()->getName() == Name) {
-        return Call;
-      }
-    }
-  }
-  return nullptr;
-}
-
-// Helper function to update operands of new instructions
-static void updateOperands(SmallVector<Instruction *, 8> &NewInsts,
-                           ValueToValueMapTy &ValueMap) {
-  for (Instruction *inst : NewInsts) {
-    for (unsigned i = 0; i < inst->getNumOperands(); i++) {
-      Value *op = inst->getOperand(i);
-      if (ValueMap.count(op)) {
-        inst->setOperand(i, ValueMap[op]);
-      }
-    }
+// Factory Function to create DspsF32Fft2rUnroller
+std::unique_ptr<DspsF32Fft2rUnroller> createDspsF32Fft2rUnroller(
+    Function &F, LoopInfo &LI, DominatorTree &DT, ScalarEvolution &SE,
+    AssumptionCache &AC, const TargetTransformInfo &TTI,
+    OptimizationRemarkEmitter &ORE, unsigned UnrollCount) {
+  switch (DSPSFft2rFc32NOpt) {
+  case DSPSFft2rFc32N::N_256:
+  case DSPSFft2rFc32N::N_512:
+  case DSPSFft2rFc32N::N_1024:
+    // Large FFT uses factor 4, requires post-processing
+    return std::make_unique<DspsF32Fft2rLargeUnroller>(F, LI, DT, SE, AC, TTI,
+                                                       ORE, 4);
+  case DSPSFft2rFc32N::N_64:
+  case DSPSFft2rFc32N::N_128:
+    // Small FFT uses factor 4, no post-processing
+    return std::make_unique<DspsF32Fft2rSmallUnroller>(F, LI, DT, SE, AC, TTI,
+                                                       ORE, 4);
+  default:
+    llvm_unreachable("unsupported FFT size");
   }
 }
 
-// Helper function to swap the successors of a terminator instruction
-static void swapTerminatorSuccessors(BasicBlock *BB) {
-  if (auto *BI = dyn_cast<BranchInst>(BB->getTerminator())) {
-    if (BI->isConditional() && BI->getNumSuccessors() == 2) {
-      BasicBlock *TrueSuccessor = BI->getSuccessor(0);
-      BasicBlock *FalseSuccessor = BI->getSuccessor(1);
-      BI->setSuccessor(0, FalseSuccessor);
-      BI->setSuccessor(1, TrueSuccessor);
+// Factory class to create specific unrollers
+class LoopUnrollerFactory {
+public:
+  static std::unique_ptr<LoopUnroller>
+  createLoopUnroller(Function &F, LoopInfo &LI, DominatorTree &DT,
+                     ScalarEvolution &SE, AssumptionCache &AC,
+                     const TargetTransformInfo &TTI,
+                     OptimizationRemarkEmitter &ORE) {
+    std::unique_ptr<LoopUnroller> Unroller;
+    Unroller = std::make_unique<DspsF32CorrLoopUnroller>(F, LI, DT, SE, AC, TTI,
+                                                         ORE, 16);
+    if (Unroller->checkType()) {
+      return Unroller;
+    }
+
+    Unroller = std::make_unique<DspsF32BiquadLoopUnroller>(F, LI, DT, SE, AC,
+                                                           TTI, ORE, 8);
+    if (Unroller->checkType()) {
+      return Unroller;
+    }
+    Unroller = createDspiF32ConvUnroller(F, LI, DT, SE, AC, TTI, ORE, 8);
+    if (Unroller->checkType()) {
+      return Unroller;
+    }
+    Unroller = createDspiF32DotprodUnroller(F, LI, SE, DT, AC, TTI, ORE, 8);
+    if (Unroller->checkType()) {
+      return Unroller;
+    }
+    Unroller = std::make_unique<DspsF32WindBlackmanLoopUnroller>(
+        F, LI, DT, SE, AC, TTI, ORE, 8);
+    if (Unroller->checkType()) {
+      return Unroller;
+    }
+    Unroller = std::make_unique<DspmF32MultLoopUnroller>(F, LI, DT, SE, AC, TTI,
+                                                         ORE, 8);
+    if (Unroller->checkType()) {
+      return Unroller;
+    }
+    Unroller = std::make_unique<DspmF32MultExLoopUnroller>(F, LI, DT, SE, AC,
+                                                           TTI, ORE, 8);
+    if (Unroller->checkType()) {
+      return Unroller;
+    }
+    Unroller = std::make_unique<DspsF32ConvCcorrUnroller>(F, LI, DT, SE, AC,
+                                                          TTI, ORE, 8);
+    if (Unroller->checkType()) {
+      return Unroller;
+    }
+    Unroller = std::make_unique<DspmF32AddLoopUnroller>(F, LI, DT, SE, AC, TTI,
+                                                        ORE, 8);
+    if (Unroller->checkType()) {
+      return Unroller;
+    }
+    Unroller = std::make_unique<DspsF32DotprodLoopUnroller>(F, LI, DT, SE, AC,
+                                                            TTI, ORE, 8);
+    if (Unroller->checkType()) {
+      return Unroller;
+    }
+    Unroller = std::make_unique<DspsF32DotprodSimpleLoopUnroller>(
+        F, LI, DT, SE, AC, TTI, ORE, 8);
+    if (Unroller->checkType()) {
+      return Unroller;
+    }
+    Unroller = std::make_unique<DspsF32DotprodComplexLoopUnroller>(
+        F, LI, DT, SE, AC, TTI, ORE, 8);
+    if (Unroller->checkType()) {
+      return Unroller;
+    }
+    Unroller = std::make_unique<DspsF32MathLoopUnroller>(F, LI, DT, SE, AC, TTI,
+                                                         ORE, 16);
+    if (Unroller->checkType()) {
+      return Unroller;
+    }
+
+    Unroller = std::make_unique<DspsF32FirLoopUnroller>(F, LI, DT, SE, AC, TTI,
+                                                        ORE, 16);
+    if (Unroller->checkType()) {
+      return Unroller;
+    }
+    Unroller = std::make_unique<DspsF32FirdLoopUnroller>(F, LI, DT, SE, AC, TTI,
+                                                         ORE, 8);
+
+    if (Unroller->checkType()) {
+      return Unroller;
+    }
+    Unroller = createDspsF32Fft2rUnroller(F, LI, DT, SE, AC, TTI, ORE, 8);
+    if (Unroller->checkType()) {
+      return Unroller;
+    }
+
+    return nullptr;
+  }
+};
+
+// Check loop depth and Sub-loops
+static bool checkLoopStructure(Function &F, LoopInfo &LI,
+                               unsigned ExpectedDepth = 1,
+                               unsigned ExpectedOuterLoops = 2,
+                               unsigned ExpectedInnerLoops = 0) {
+  // Check maximum loop depth
+  unsigned MaxDepth = 0;
+  for (auto &BB : F) {
+    MaxDepth = std::max(MaxDepth, LI.getLoopDepth(&BB));
+  }
+  if (MaxDepth != ExpectedDepth) {
+    return false;
+  }
+
+  // Check outer and inner loop counts
+  int OuterLoopCount = 0;
+  int InnerLoopCount = 0;
+  for (Loop *L : LI.getLoopsInPreorder()) {
+    if (L->getLoopDepth() == 1) {
+      OuterLoopCount++;
+    } else if (L->getLoopDepth() == 2) {
+      InnerLoopCount++;
     } else {
-      llvm_unreachable("BB's terminator is not a conditional branch or doesn't "
-                       "have two successors");
+      return false;
     }
-  } else {
-    llvm_unreachable("BB's terminator is not a branch instruction");
   }
+
+  return OuterLoopCount == ExpectedOuterLoops &&
+         InnerLoopCount == ExpectedInnerLoops;
 }
 
-// Helper function to clone a basic block and update its relations
-static BasicBlock *cloneBasicBlockWithRelations(BasicBlock *BB,
-                                                const std::string &NameSuffix,
-                                                Function *F) {
-  ValueToValueMapTy VMap;
-  BasicBlock *NewBB = CloneBasicBlock(BB, VMap, NameSuffix, F);
+// Check DSPS F32 CORR type Function
+bool DspsF32CorrLoopUnroller::checkDspsF32CorrType(Function &F, LoopInfo &LI) {
+  // Check basic block count
+  if (F.size() != 7 || F.arg_size() != 5)
+    return false;
 
-  // Update instruction references in the new block
-  for (Instruction &I : *NewBB) {
-    // Update operands
-    for (Use &U : I.operands()) {
-      Value *V = U.get();
-      Value *NewV = VMap[V];
-      if (NewV) {
-        U.set(NewV);
-      }
+  // Get critical basic blocks
+  BasicBlock *Entry = &F.getEntryBlock();
+  BasicBlock *ForCondPreheader = getBasicBlockByName(F, "for.cond.preheader");
+  BasicBlock *Return = getBasicBlockByName(F, "return");
+
+  // Check basic block existence
+  if (!Entry || !ForCondPreheader || !Return)
+    return false;
+
+  // Check basic block jump relation
+  if (!checkSuccessors(Entry, 2, Return, ForCondPreheader))
+    return false;
+
+  if (!checkLoopStructure(F, LI, 2, 1, 1))
+    return false;
+  // Check floating point multiply-add instruction usage
+  if (!checkFMulAddUsage(F))
+    return false;
+
+  return true;
+}
+
+/// Check convolution-specific loop structure patterns.
+/// Convolution algorithms typically have 2-3 main loops with specific
+/// characteristics including Fmuladd operations and complex bounds.
+bool DspsF32ConvCcorrUnroller::checkConvolutionLoopStructure(Function &F,
+                                                             LoopInfo &LI) {
+  auto Loops = LI.getLoopsInPreorder();
+
+  // Convolution algorithms typically have 2-3 main loops
+  if (Loops.size() < 2)
+    return false;
+
+  int NestedLoopsWithFMulAdd = 0;
+  int LoopsWithComplexBounds = 0;
+
+  for (auto *L : Loops) {
+    // Check if loop contains Fmuladd operations
+    if (containsFMulAdd(L)) {
+      NestedLoopsWithFMulAdd++;
     }
 
-    // Update PHI node basic block references
-    if (PHINode *PN = dyn_cast<PHINode>(&I)) {
-      for (unsigned i = 0, e = PN->getNumIncomingValues(); i != e; ++i) {
-        BasicBlock *IncomingBB = PN->getIncomingBlock(i);
-        if (IncomingBB == BB) {
-          PN->setIncomingBlock(i, NewBB);
-        } else if (VMap.count(IncomingBB)) {
-          PN->setIncomingBlock(i, cast<BasicBlock>(VMap[IncomingBB]));
+    // Check loop boundary complexity (convolution characteristic)
+    // Use simpler but effective method to detect complex loop bounds
+    BasicBlock *Header = L->getHeader();
+    if (Header && !Header->hasNPredecessors(1)) {
+      LoopsWithComplexBounds++;
+    }
+
+    // Check exit condition complexity
+    SmallVector<BasicBlock *, 4> ExitBlocks;
+    L->getExitBlocks(ExitBlocks);
+    if (ExitBlocks.size() > 1) {
+      LoopsWithComplexBounds++;
+    }
+
+    // Check for complex control flow within the loop (multiple branches)
+    for (auto *BB : L->getBlocks()) {
+      if (auto *BI = dyn_cast<BranchInst>(BB->getTerminator())) {
+        if (BI->isConditional()) {
+          LoopsWithComplexBounds++;
+          break;
         }
       }
     }
   }
 
-  return NewBB;
+  // At least 2 loops with multiply-add operations and complex bounds
+  return NestedLoopsWithFMulAdd >= 2 && LoopsWithComplexBounds >= 1;
 }
 
-// Helper function to unroll and duplicate a loop iteration
+/// Check if a loop contains Fmuladd operations.
+/// This is a key characteristic of convolution algorithms.
+bool DspsF32ConvCcorrUnroller::containsFMulAdd(Loop *L) {
+  for (auto *BB : L->getBlocks()) {
+    for (auto &I : *BB) {
+      if (auto *Call = dyn_cast<CallInst>(&I)) {
+        if (Call->getIntrinsicID() == Intrinsic::fmuladd) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+// Analyze GEP instruction Index patterns.
+/// Supports complex patterns from Clang 20 including XOR optimizations.
+void DspsF32ConvCcorrUnroller::analyzeIndexPattern(GetElementPtrInst *GEP,
+                                                   int &SubCount,
+                                                   int &AddCount) {
+  // Check GEP direct operands
+  for (auto &Op : GEP->operands()) {
+    if (auto *BinOp = dyn_cast<BinaryOperator>(Op)) {
+      switch (BinOp->getOpcode()) {
+      case Instruction::Sub:
+        SubCount++;
+        break;
+      case Instruction::Add:
+        AddCount++;
+        break;
+      case Instruction::Xor:
+        // XOR with -1 is equivalent to NOT, often used for subtraction
+        // optimization
+        if (auto *CI = dyn_cast<ConstantInt>(BinOp->getOperand(1))) {
+          if (CI->isMinusOne()) {
+            SubCount++; // xor x, -1 equivalent to subtraction operation
+          }
+        }
+        break;
+      default:
+        break;
+      }
+    }
+  }
+
+  // Check GEP Index value definition instructions
+  for (unsigned I = 1; I < GEP->getNumOperands(); ++I) {
+    Value *Index = GEP->getOperand(I);
+    if (auto *BinOp = dyn_cast<BinaryOperator>(Index)) {
+      switch (BinOp->getOpcode()) {
+      case Instruction::Sub:
+        SubCount++;
+        break;
+      case Instruction::Add:
+        AddCount++;
+        break;
+      case Instruction::Xor:
+        if (auto *CI = dyn_cast<ConstantInt>(BinOp->getOperand(1))) {
+          if (CI->isMinusOne()) {
+            SubCount++;
+          }
+        }
+        break;
+      default:
+        break;
+      }
+    }
+  }
+
+  // Special handling for chained GEP: check if GEP base address is also a GEP
+  if (auto *BaseGEP = dyn_cast<GetElementPtrInst>(GEP->getPointerOperand())) {
+    // Recursively analyze base address GEP
+    analyzeIndexPattern(BaseGEP, SubCount, AddCount);
+  }
+}
+
+// Updated memory pattern check Function - deep data flow analysis
+bool DspsF32ConvCcorrUnroller::checkConvolutionMemoryPattern(Function &F) {
+  int FMulAddCount = 0;
+  int GEPWithSub = 0;
+  int GEPWithAdd = 0;
+  int ComplexIndexPatterns = 0;
+  int XorPatterns = 0;
+
+  // Collect all arithmetic instructions
+  std::set<Value *> AddInstructions;
+  std::set<Value *> SubInstructions;
+  std::set<Value *> XorInstructions;
+
+  for (auto &BB : F) {
+    for (auto &I : BB) {
+      // Count Fmuladd instructions
+      if (auto *Call = dyn_cast<CallInst>(&I)) {
+        if (Call->getIntrinsicID() == Intrinsic::fmuladd) {
+          FMulAddCount++;
+        }
+      }
+
+      // Collect all arithmetic instructions
+      if (auto *BinOp = dyn_cast<BinaryOperator>(&I)) {
+        switch (BinOp->getOpcode()) {
+        case Instruction::Add:
+          AddInstructions.insert(BinOp);
+          break;
+        case Instruction::Sub:
+          SubInstructions.insert(BinOp);
+          break;
+        case Instruction::Xor:
+          if (auto *CI = dyn_cast<ConstantInt>(BinOp->getOperand(1))) {
+            if (CI->isMinusOne()) {
+              XorInstructions.insert(BinOp);
+            }
+          }
+          break;
+        default:
+          break;
+        }
+      }
+    }
+  }
+
+  // Deep analysis of GEP instruction Index sources
+  for (auto &BB : F) {
+    for (auto &I : BB) {
+      if (auto *GEP = dyn_cast<GetElementPtrInst>(&I)) {
+        // Analyze each Index operand
+        for (unsigned I = 1; I < GEP->getNumOperands(); ++I) {
+          Value *Index = GEP->getOperand(I);
+
+          // Directly check if Index is an arithmetic instruction
+          if (AddInstructions.count(Index)) {
+            GEPWithAdd++;
+            ComplexIndexPatterns++;
+          }
+          if (SubInstructions.count(Index)) {
+            GEPWithSub++;
+            ComplexIndexPatterns++;
+          }
+          if (XorInstructions.count(Index)) {
+            GEPWithSub++;
+            ComplexIndexPatterns++;
+            XorPatterns++;
+          }
+
+          // Check PHI nodes: PHI nodes may connect arithmetic instructions and
+          // GEP
+          if (auto *PHI = dyn_cast<PHINode>(Index)) {
+            for (unsigned J = 0; J < PHI->getNumIncomingValues(); ++J) {
+              Value *IncomingValue = PHI->getIncomingValue(J);
+
+              if (AddInstructions.count(IncomingValue)) {
+                GEPWithAdd++;
+                ComplexIndexPatterns++;
+              }
+              if (SubInstructions.count(IncomingValue)) {
+                GEPWithSub++;
+                ComplexIndexPatterns++;
+              }
+              if (XorInstructions.count(IncomingValue)) {
+                GEPWithSub++;
+                ComplexIndexPatterns++;
+                XorPatterns++;
+              }
+            }
+          }
+
+          // Recursive check: if Index itself is the result of another
+          // instruction
+          if (auto *DefInst = dyn_cast<Instruction>(Index)) {
+            // Check operands of the defining instruction
+            for (auto &Op : DefInst->operands()) {
+              if (AddInstructions.count(Op)) {
+                GEPWithAdd++;
+                ComplexIndexPatterns++;
+              }
+              if (SubInstructions.count(Op)) {
+                GEPWithSub++;
+                ComplexIndexPatterns++;
+              }
+              if (XorInstructions.count(Op)) {
+                GEPWithSub++;
+                ComplexIndexPatterns++;
+                XorPatterns++;
+              }
+            }
+          }
+        }
+
+        // Analyze chained GEP
+        if (auto *BaseGEP =
+                dyn_cast<GetElementPtrInst>(GEP->getPointerOperand())) {
+          ComplexIndexPatterns++;
+        }
+      }
+    }
+  }
+
+  // Essential characteristics of convolution algorithms:
+  bool HasSubPattern = GEPWithSub > 0 || XorPatterns > 0;
+  bool HasAddPattern = GEPWithAdd > 0;
+
+  return FMulAddCount >= 3 && HasSubPattern && HasAddPattern &&
+         ComplexIndexPatterns >= 2;
+}
+
+/// Check DSPS F32 CONV/CCORR type Function.
+/// This Function validates the characteristics of convolution/cross-correlation
+/// algorithms including parameter count, computation patterns, loop structure,
+/// memory access patterns, and defensive programming practices.
+bool DspsF32ConvCcorrUnroller::checkDspsF32ConvCcorr(Function &F,
+                                                     LoopInfo &LI) {
+  // 1. Parameter characteristics: 5 parameters (signal, signal_length, kernel,
+  // kernel_length, output)
+  if (F.arg_size() != 5)
+    return false;
+
+  // 2. Core computation pattern: must have Fmuladd instructions
+  if (!checkFMulAddUsage(F))
+    return false;
+
+  // 3. Loop structure check (at least two main loops)
+  if (!checkConvolutionLoopStructure(F, LI))
+    return false;
+
+  // 4. Memory access pattern: different indexing patterns for two input arrays
+  if (!checkConvolutionMemoryPattern(F))
+    return false;
+
+  // 5. Null pointer validation pattern (defensive programming characteristic)
+  if (!checkNullPointerValidation(F))
+    return false;
+
+  return true;
+}
+
+/// Check null pointer validation patterns.
+/// This is a defensive programming characteristic commonly found in DSP
+/// functions.
+bool DspsF32ConvCcorrUnroller::checkNullPointerValidation(Function &F) {
+  // Find null pointer checks in Entry basic block
+  BasicBlock *Entry = &F.getEntryBlock();
+
+  int NullChecks = 0;
+  int EarlyReturns = 0;
+
+  for (auto &I : *Entry) {
+    // Check null pointer comparisons
+    if (auto *ICmp = dyn_cast<ICmpInst>(&I)) {
+      if (ICmp->getPredicate() == ICmpInst::ICMP_EQ) {
+        // Check if comparing with null
+        for (auto &Op : ICmp->operands()) {
+          if (isa<ConstantPointerNull>(Op)) {
+            NullChecks++;
+            break;
+          }
+        }
+      }
+    }
+
+    // Check early returns
+    if (auto *Br = dyn_cast<BranchInst>(&I)) {
+      if (Br->isConditional()) {
+        // Check if there are direct jumps to return block
+        for (unsigned I = 0; I < Br->getNumSuccessors(); ++I) {
+          BasicBlock *Successor = Br->getSuccessor(I);
+          if (Successor->getTerminator() &&
+              isa<ReturnInst>(Successor->getTerminator())) {
+            EarlyReturns++;
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  // DSP functions typically have multiple null pointer checks and early returns
+  return NullChecks >= 2 && EarlyReturns >= 1;
+}
+
+// Check DSPS F32 FIRD type Function
+bool DspsF32FirdLoopUnroller::checkDspsF32FirdType(Function &F, LoopInfo &LI) {
+  // Check basic block and parameter count
+  if (F.size() != 14 || F.arg_size() != 4)
+    return false;
+
+  // Check floating point multiply-add instruction usage
+  if (!checkFMulAddUsage(F))
+    return false;
+
+  // Get critical basic blocks
+  BasicBlock *Entry = &F.getEntryBlock();
+  BasicBlock *ForCondCleanup = getBasicBlockByName(F, "for.cond.cleanup");
+
+  if (!Entry || !ForCondCleanup)
+    return false;
+
+  if (Entry->getTerminator()->getSuccessor(1) != ForCondCleanup)
+    return false;
+
+  if (!checkLoopStructure(F, LI, 2, 1, 3))
+    return false;
+  return true;
+}
+
+// Check DSPI CONV F32 type Function
+bool DspiF32ConvUnroller::checkDspiF32ConvType(Function &F, LoopInfo &LI) {
+  // Check parameter count
+  if (F.arg_size() != 3)
+    return false;
+
+  // Check parameter type
+  for (const Argument &Arg : F.args()) {
+    if (!Arg.getType()->isPointerTy()) {
+      return false;
+    }
+  }
+
+  // Check loop structure
+  int OuterLoopCount = 0;
+  int InnerLoopCount = 0;
+  for (Loop *L : LI) {
+    OuterLoopCount++;
+    for (Loop *SubL : L->getSubLoops()) {
+      for (Loop *SubsubL : SubL->getSubLoops()) {
+        for (Loop *subsubsubL : SubsubL->getSubLoops()) {
+          InnerLoopCount++;
+        }
+      }
+    }
+  }
+
+  return OuterLoopCount == 4 && InnerLoopCount == 9;
+}
+
+// Check DSPS F32 FIR type Function
+bool DspsF32FirLoopUnroller::checkDspsF32FirType(Function &F, LoopInfo &LI) {
+  // Check basic block and parameter count
+  if (F.size() != 19 || F.arg_size() != 4)
+    return false;
+
+  // Check floating point multiply-add instruction usage
+  if (!checkFMulAddUsage(F))
+    return false;
+
+  // Get critical basic blocks
+  BasicBlock *Entry = &F.getEntryBlock();
+  BasicBlock *ForCondPreheader = getBasicBlockByName(F, "for.cond.preheader");
+  BasicBlock *ForBodyLrPh = getBasicBlockByName(F, "for.body.lr.ph");
+  BasicBlock *IfEnd = getBasicBlockByName(F, "if.end");
+  BasicBlock *ForBody = getBasicBlockByName(F, "for.body");
+  BasicBlock *ForBodyClone = getBasicBlockByName(F, "for.body.clone");
+  BasicBlock *ForBodyLrPhClone = getBasicBlockByName(F, "for.body.lr.ph.clone");
+
+  // Check basic block existence and jump relation
+  if (!Entry || !ForCondPreheader || !ForBodyLrPh || !IfEnd || !ForBody ||
+      !ForBodyClone || !ForBodyLrPhClone)
+    return false;
+
+  if (!checkSuccessors(Entry, 2, ForCondPreheader, ForBodyLrPhClone))
+    return false;
+  if (!checkSuccessors(ForCondPreheader, 2, ForBodyLrPh, IfEnd))
+    return false;
+  if (!checkSuccessors(ForBodyLrPh, 1, ForBody))
+    return false;
+  if (!checkSuccessors(ForBodyLrPhClone, 1, ForBodyClone))
+    return false;
+
+  // Check loop structure
+  if (!checkLoopStructure(F, LI, 2, 2, 2) &&
+      !checkLoopStructure(F, LI, 2, 2, 4))
+    return false;
+  return true;
+}
+
+// Check DSPS Wind Blackman F32 type Function
+bool DspsF32WindBlackmanLoopUnroller::checkDspsWindBlackmanF32Type(
+    Function &F) {
+  // Check basic block and parameter count
+  if (F.size() != 4 || F.arg_size() != 2)
+    return false;
+
+  // Get critical basic blocks
+  BasicBlock *Entry = &F.getEntryBlock();
+  BasicBlock *ForBodyLrPh = getBasicBlockByName(F, "for.body.lr.ph");
+  BasicBlock *ForBody = getBasicBlockByName(F, "for.body");
+  BasicBlock *ForCondCleanup = getBasicBlockByName(F, "for.cond.cleanup");
+
+  // Check basic block existence and jump relation
+  if (!Entry || !ForBodyLrPh || !ForBody || !ForCondCleanup)
+    return false;
+
+  if (!checkSuccessors(Entry, 2, ForBodyLrPh, ForCondCleanup))
+    return false;
+  if (ForBodyLrPh->getSingleSuccessor() != ForBody)
+    return false;
+  if (succ_size(ForCondCleanup) != 0)
+    return false;
+  if (!checkSuccessors(ForBody, 2, ForCondCleanup, ForBody))
+    return false;
+
+  return true;
+}
+
+// Check DSPM F32 Add type function，add/Sub/addc/mulc
+bool DspmF32AddLoopUnroller::checkDspmF32AddType(Function &F, LoopInfo &LI) {
+  // 1. Basic constraint check - support different versions with varying basic
+  // block counts
+  if (F.size() < 4 || F.size() > 7)
+    return false;
+
+  // 2. Parameter count check - support different Function modes
+  // 11 parameters: dspm_add_f32_ansi, dspm_sub_f32_ansi (two input arrays)
+  // 9 parameters: dspm_addc_f32_ansi, dspm_mulc_f32_ansi (array and constant
+  // operations)
+  if (!(F.arg_size() == 11 || F.arg_size() == 9))
+    return false;
+
+  // 3. Parameter type pattern validation - determine Function type based on
+  // parameter count
+  auto ArgIt = F.arg_begin();
+
+  if (F.arg_size() == 11) {
+    // Two array mode: input1, input2, output, rows, cols, padd1, padd2,
+    // padd_out, step1, step2, step_out
+    if (!ArgIt->getType()->isPointerTy())
+      return false; // input1 ptr
+    ++ArgIt;
+    if (!ArgIt->getType()->isPointerTy())
+      return false; // input2 ptr
+    ++ArgIt;
+    if (!ArgIt->getType()->isPointerTy())
+      return false; // output ptr
+    ++ArgIt;
+    // The remaining 8 parameters should be i32
+    for (int I = 0; I < 8; ++I) {
+      if (!ArgIt->getType()->isIntegerTy(32))
+        return false;
+      ++ArgIt;
+    }
+  } else if (F.arg_size() == 9) {
+    // Array and constant mode: input, output, C, rows, cols, padd_in, padd_out,
+    // step_in, step_out
+    if (!ArgIt->getType()->isPointerTy())
+      return false; // input ptr
+    ++ArgIt;
+    if (!ArgIt->getType()->isPointerTy())
+      return false; // output ptr
+    ++ArgIt;
+    if (!ArgIt->getType()->isFloatTy())
+      return false; // C (float constant)
+    ++ArgIt;
+    // The remaining 6 parameters should be i32
+    for (int I = 0; I < 6; ++I) {
+      if (!ArgIt->getType()->isIntegerTy(32))
+        return false;
+      ++ArgIt;
+    }
+  }
+
+  // 4. Loop structure analysis - this is the essence of control flow
+  if (LI.empty())
+    return false;
+
+  // There should be nested loop structure: outer loop (row) + inner loop
+  // (column)
+  Loop *OuterLoop = nullptr;
+  int TopLevelLoopCount = 0;
+
+  for (Loop *L : LI) {
+    if (L->getLoopDepth() == 1) {
+      OuterLoop = L;
+      TopLevelLoopCount++;
+    }
+  }
+
+  // There should be only one top level loop
+  if (TopLevelLoopCount != 1 || !OuterLoop)
+    return false;
+
+  // The outer loop should contain one inner loop
+  if (OuterLoop->getSubLoops().size() != 1)
+    return false;
+
+  Loop *InnerLoop = OuterLoop->getSubLoops()[0];
+  if (!InnerLoop || InnerLoop->getLoopDepth() != 2)
+    return false;
+
+  // The inner loop should not have any Sub loops
+  if (!InnerLoop->getSubLoops().empty())
+    return false;
+
+  // 5. Key operation validation - check floating point operations
+  bool HasFloatBinaryOp = false;
+  bool HasLoad = false;
+  bool HasStore = false;
+  int LoadCount = 0;
+
+  // Supported floating point operations
+  bool HasFAdd = false, HasFSub = false, HasFMul = false;
+
+  for (BasicBlock &BB : F) {
+    for (Instruction &Inst : BB) {
+      // Check floating point operations - core operations of DSPM Function
+      if (auto *BinOp = dyn_cast<BinaryOperator>(&Inst)) {
+        switch (BinOp->getOpcode()) {
+        case Instruction::FAdd:
+          HasFAdd = true;
+          HasFloatBinaryOp = true;
+          break;
+        case Instruction::FSub:
+          HasFSub = true;
+          HasFloatBinaryOp = true;
+          break;
+        case Instruction::FMul:
+          HasFMul = true;
+          HasFloatBinaryOp = true;
+          break;
+        default:
+          break;
+        }
+      }
+      // Check memory access pattern
+      else if (isa<LoadInst>(&Inst)) {
+        HasLoad = true;
+        LoadCount++;
+      } else if (isa<StoreInst>(&Inst)) {
+        HasStore = true;
+      }
+    }
+  }
+
+  // There must be floating point operations, memory loads and stores
+  if (!HasFloatBinaryOp || !HasLoad || !HasStore)
+    return false;
+
+  // 6. Validate Function pattern based on parameter count and operation type
+  if (F.arg_size() == 11) {
+    // Two array mode requires at least 2 load instructions, and can only be
+    // addition or subtraction
+    if (LoadCount < 2 || (!HasFAdd && !HasFSub))
+      return false;
+  } else if (F.arg_size() == 9) {
+    // Array and constant mode requires at least 1 load instruction, and
+    // supports addition or multiplication
+    if (LoadCount < 1 || (!HasFAdd && !HasFMul))
+      return false;
+  }
+
+  // 7. Control flow topology validation - based on structure rather than name
+  BasicBlock *Entry = &F.getEntryBlock();
+
+  // Entry should have a conditional branch - one to return, one to loop
+  if (!isa<BranchInst>(Entry->getTerminator()) ||
+      Entry->getTerminator()->getNumSuccessors() != 2)
+    return false;
+
+  // Find return basic block
+  BasicBlock *ReturnBB = nullptr;
+  for (BasicBlock &BB : F) {
+    if (isa<ReturnInst>(BB.getTerminator())) {
+      ReturnBB = &BB;
+      break;
+    }
+  }
+
+  if (!ReturnBB)
+    return false;
+
+  // One successor of Entry should be ReturnBB (error handling path)
+  bool HasReturnSuccessor = false;
+  for (unsigned I = 0; I < Entry->getTerminator()->getNumSuccessors(); ++I) {
+    if (Entry->getTerminator()->getSuccessor(I) == ReturnBB) {
+      HasReturnSuccessor = true;
+      break;
+    }
+  }
+
+  if (!HasReturnSuccessor)
+    return false;
+
+  // 8. Loop structure topology validation
+  BasicBlock *OuterHeader = OuterLoop->getHeader();
+  BasicBlock *InnerHeader = InnerLoop->getHeader();
+
+  if (!OuterHeader || !InnerHeader)
+    return false;
+
+  // Validate basic loop topology
+  // The inner loop should have a self-loop edge (this is the essential
+  // characteristic of loop)
+  bool InnerHasSelfLoop = false;
+  if (auto *BI = dyn_cast<BranchInst>(InnerHeader->getTerminator())) {
+    for (unsigned I = 0; I < BI->getNumSuccessors(); ++I) {
+      if (BI->getSuccessor(I) == InnerHeader) {
+        InnerHasSelfLoop = true;
+        break;
+      }
+    }
+  }
+
+  if (!InnerHasSelfLoop)
+    return false;
+
+  // The outer loop should be able to return to its head (outer loop
+  // characteristic)
+  BasicBlock *OuterLatch = OuterLoop->getLoopLatch();
+  if (!OuterLatch)
+    return false;
+
+  bool OuterHasBackEdge = false;
+  if (auto *BI = dyn_cast<BranchInst>(OuterLatch->getTerminator())) {
+    for (unsigned I = 0; I < BI->getNumSuccessors(); ++I) {
+      if (BI->getSuccessor(I) == OuterHeader) {
+        OuterHasBackEdge = true;
+        break;
+      }
+    }
+  }
+
+  if (!OuterHasBackEdge)
+    return false;
+
+  // 9. Validate loop exit structure
+  // The outer loop should have a path to return
+  SmallVector<BasicBlock *, 4> OuterExitBlocks;
+  OuterLoop->getExitBlocks(OuterExitBlocks);
+
+  bool HasExitToReturn = false;
+  for (BasicBlock *ExitBB : OuterExitBlocks) {
+    if (ExitBB == ReturnBB) {
+      HasExitToReturn = true;
+      break;
+    }
+    // Or through intermediate basic blocks to return
+    if (auto *BI = dyn_cast<BranchInst>(ExitBB->getTerminator())) {
+      for (unsigned I = 0; I < BI->getNumSuccessors(); ++I) {
+        if (BI->getSuccessor(I) == ReturnBB) {
+          HasExitToReturn = true;
+          break;
+        }
+      }
+    }
+    if (HasExitToReturn)
+      break;
+  }
+
+  if (!HasExitToReturn)
+    return false;
+
+  return true;
+}
+
+// Check DSPM F32 Mult type Function
+bool DspmF32MultLoopUnroller::checkDspmF32MultType(Function &F, LoopInfo &LI) {
+  for (Loop *L : LI) {
+    // Check first layer loop
+    BasicBlock *ForCond1PreheaderLrPh = L->getLoopPreheader();
+    BasicBlock *ForCond1Preheader = L->getHeader();
+    BasicBlock *ForCondCleanup = L->getExitBlock();
+    BasicBlock *ForCondCleanup3 = L->getExitingBlock();
+
+    // Check basic block existence and jump relation
+    if (!ForCond1PreheaderLrPh || !ForCond1Preheader || !ForCondCleanup ||
+        !ForCondCleanup3)
+      return false;
+    if (ForCondCleanup3 != L->getLoopLatch())
+      return false;
+    if (L->getSubLoops().size() != 1)
+      return false;
+
+    // Check second layer loop
+    Loop *SubL = L->getSubLoops().front();
+    if (!SubL)
+      return false;
+
+    BasicBlock *ForBody4LrPh = SubL->getLoopPreheader();
+    BasicBlock *ForBody4 = SubL->getHeader();
+    BasicBlock *ForCondCleanup8 = SubL->getExitingBlock();
+
+    if (!ForBody4LrPh || !ForBody4)
+      return false;
+    if (SubL->getExitBlock() != ForCondCleanup3)
+      return false;
+    if (SubL->getLoopLatch() != ForCondCleanup8)
+      return false;
+    if (SubL->getSubLoops().size() != 1)
+      return false;
+
+    // Check third layer loop
+    Loop *SubsubL = SubL->getSubLoops().front();
+    if (!SubsubL || !SubsubL->getSubLoops().empty())
+      return false;
+
+    if (ForBody4 != SubsubL->getLoopPredecessor())
+      return false;
+
+    BasicBlock *ForBody9 = SubsubL->getHeader();
+    if (!ForBody9)
+      return false;
+
+    if (ForBody9 != SubsubL->getLoopLatch() ||
+        ForBody9 != SubsubL->getExitingBlock())
+      return false;
+
+    if (ForCondCleanup8 != SubsubL->getExitBlock())
+      return false;
+
+    // Check PHI node
+    PHINode *FirstF32Phi = getFirstFloatPhi(ForBody9);
+    if (!FirstF32Phi)
+      return false;
+
+    // Check compare instruction
+    for (auto &I : *ForCond1PreheaderLrPh) {
+      if (auto *Icmp = dyn_cast<ICmpInst>(&I)) {
+        if (Icmp->getPredicate() == ICmpInst::ICMP_SGT) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+  return false;
+}
+
+// Check DSPM F32 Mult Ex type Function
+bool DspmF32MultExLoopUnroller::checkDspmF32MultExType(Function &F,
+                                                       LoopInfo &LI) {
+  for (Loop *L : LI) {
+    // Check first layer loop
+    BasicBlock *ForCond1PreheaderLrPh = L->getLoopPreheader();
+    BasicBlock *ForCond1Preheader = L->getHeader();
+    BasicBlock *ForCondCleanup = L->getExitBlock();
+    BasicBlock *ForCondCleanup3 = L->getExitingBlock();
+
+    // Check basic block existence and jump relation
+    if (!ForCond1PreheaderLrPh || !ForCond1Preheader || !ForCondCleanup ||
+        !ForCondCleanup3)
+      return false;
+    if (ForCondCleanup3 != L->getLoopLatch())
+      return false;
+    if (L->getSubLoops().size() != 1)
+      return false;
+
+    // Check second layer loop
+    Loop *SubL = L->getSubLoops().front();
+    if (!SubL)
+      return false;
+
+    BasicBlock *ForBody4LrPh = SubL->getLoopPreheader();
+    BasicBlock *ForBody4 = SubL->getHeader();
+    BasicBlock *ForCondCleanup8 = SubL->getExitingBlock();
+
+    if (!ForBody4LrPh || !ForBody4)
+      return false;
+    if (SubL->getExitBlock() != ForCondCleanup3)
+      return false;
+    if (SubL->getLoopLatch() != ForCondCleanup8)
+      return false;
+    if (SubL->getSubLoops().size() != 1)
+      return false;
+
+    // Check third layer loop
+    Loop *SubsubL = SubL->getSubLoops().front();
+    if (!SubsubL || !SubsubL->getSubLoops().empty())
+      return false;
+
+    if (ForBody4 != SubsubL->getLoopPredecessor())
+      return false;
+
+    BasicBlock *ForBody9 = SubsubL->getHeader();
+    if (!ForBody9)
+      return false;
+
+    if (ForBody9 != SubsubL->getLoopLatch() ||
+        ForBody9 != SubsubL->getExitingBlock())
+      return false;
+
+    if (ForCondCleanup8 != SubsubL->getExitBlock())
+      return false;
+
+    // Check PHI node
+    PHINode *FirstF32Phi = getFirstFloatPhi(ForBody9);
+    if (!FirstF32Phi)
+      return false;
+
+    // Check compare instruction
+    for (auto &I : *ForCond1PreheaderLrPh) {
+      if (auto *Icmp = dyn_cast<ICmpInst>(&I)) {
+        if (Icmp->getPredicate() == ICmpInst::ICMP_UGT) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+  return false;
+}
+
+// Check DSPI F32 Dotprod type Function
+bool DspiF32DotprodUnroller::checkDspiF32DotprodType(Function &F,
+                                                     LoopInfo &LI) {
+  for (Loop *L : LI) {
+    // Get critical basic blocks
+    BasicBlock *ForCond25Preheader = L->getHeader();
+    BasicBlock *ForCond25PreheaderLrPh = L->getLoopPreheader();
+
+    if (!ForCond25Preheader || !ForCond25PreheaderLrPh)
+      return false;
+    if (ForCond25PreheaderLrPh->getSingleSuccessor() != ForCond25Preheader)
+      return false;
+
+    // Check Sub loop
+    for (Loop *SubL : L->getSubLoops()) {
+      BasicBlock *ForBody28 = SubL->getHeader();
+      if (!ForBody28)
+        return false;
+      if (SubL->getLoopPredecessor() != ForCond25Preheader)
+        return false;
+
+      // Check jump relation
+      if (ForCond25Preheader->getTerminator()->getNumSuccessors() != 2 ||
+          ForCond25Preheader->getTerminator()->getSuccessor(0) != ForBody28)
+        return false;
+      if (ForBody28->getTerminator()->getNumSuccessors() != 2 ||
+          ForBody28->getTerminator()->getSuccessor(1) != ForBody28)
+        return false;
+      if (ForBody28->getTerminator()->getSuccessor(0) !=
+          ForCond25Preheader->getTerminator()->getSuccessor(1))
+        return false;
+
+      // Check PHI node and floating point multiply-add instruction
+      PHINode *FirstF32Phi = getFirstFloatPhi(ForCond25Preheader);
+      if (!FirstF32Phi)
+        return false;
+      Instruction *FirstFMulAddInst = getFirstFMulAddInst(ForBody28);
+      if (!FirstFMulAddInst)
+        return false;
+
+      return true;
+    }
+  }
+  return false;
+}
+
+// Check DSPS FFT2R FC32 type Function
+bool DspsF32Fft2rUnroller::checkDspsFft2rFc32Type(Function &F, LoopInfo &LI) {
+  // Check parameter
+  if (F.arg_size() != 3)
+    return false;
+
+  // Get Function parameter iterator
+  Function::arg_iterator Args = F.arg_begin();
+
+  // Check parameter type
+  if (!Args->getType()->isPointerTy())
+    return false;
+  ++Args;
+
+  if (!Args->getType()->isIntegerTy(32))
+    return false;
+  ++Args;
+
+  if (!Args->getType()->isPointerTy())
+    return false;
+
+  return true;
+}
+
+// Check simplest dot product type Function
+bool DspsF32DotprodSimpleLoopUnroller::checkIfDotProdSimplest(Function &F) {
+  bool Flag = false;
+
+  if (F.size() == 3) {
+    // Get critical basic blocks
+    BasicBlock *EntryBB = &F.getEntryBlock();
+    BasicBlock *ForCondCleanup = getBasicBlockByName(F, "for.cond.cleanup");
+    BasicBlock *ForBody = getBasicBlockByName(F, "for.body");
+
+    if (EntryBB && ForCondCleanup && ForBody) {
+      // Check floating point multiply-add instruction
+      Instruction *Fmuladd = getFirstFMulAddInst(ForBody);
+      if (Fmuladd) {
+        // Check jump relation
+        if (checkSuccessors(ForBody, 2, ForCondCleanup, ForBody)) {
+          if (EntryBB->getTerminator()->getSuccessor(0) == ForBody) {
+            Flag = true;
+          }
+        }
+      }
+    }
+  }
+  return Flag;
+}
+
+// Check complicated dot product type Function
+bool DspsF32DotprodComplexLoopUnroller::checkIfDotProdComplicated(Function &F) {
+  bool Flag1 = false;
+  bool Flag2 = false;
+  bool Flag3 = false;
+
+  if (F.size() == 3) {
+    // Get critical basic blocks
+    BasicBlock *EntryBB = &F.getEntryBlock();
+    BasicBlock *ForCondCleanup = getBasicBlockByName(F, "for.cond.cleanup");
+    BasicBlock *ForBody = getBasicBlockByName(F, "for.body");
+
+    if (EntryBB && ForCondCleanup && ForBody) {
+      // Check floating point multiply-add instruction
+      Instruction *Fmuladd = getFirstFMulAddInst(ForBody);
+      if (Fmuladd) {
+        // Check jump relation
+        if (checkSuccessors(ForBody, 2, ForCondCleanup, ForBody)) {
+          if (EntryBB->getTerminator()->getSuccessor(0) == ForBody) {
+            Flag1 = true;
+          }
+        }
+      }
+    }
+
+    if (ForBody) {
+      // Check floating point operation instruction
+      for (Instruction &Inst : *ForBody) {
+        if (auto *BinOp = dyn_cast<BinaryOperator>(&Inst)) {
+          if (BinOp->getOpcode() == Instruction::FAdd ||
+              BinOp->getOpcode() == Instruction::FMul ||
+              BinOp->getOpcode() == Instruction::FSub ||
+              BinOp->getOpcode() == Instruction::FDiv) {
+            Flag2 = true;
+          }
+        }
+      }
+
+      // Check floating point PHI node
+      int FloatPhiCount = 0;
+      for (PHINode &Phi : ForBody->phis()) {
+        if (Phi.getType()->isFloatTy()) {
+          FloatPhiCount++;
+        }
+      }
+      if (FloatPhiCount == 1) {
+        Flag3 = true;
+      }
+    }
+  }
+
+  return Flag1 && Flag2 && Flag3;
+}
+
+// Check DSPS F32 Biquad type Function
+bool DspsF32BiquadLoopUnroller::checkDspsF32BiquadType(Function &F) {
+  // Check basic block and parameter
+  if (F.size() != 8 || F.arg_size() != 5)
+    return false;
+
+  // Get critical basic blocks
+  BasicBlock *EntryBB = &F.getEntryBlock();
+  BasicBlock *ForCondPreheader = getBasicBlockByName(F, "for.cond.preheader");
+  BasicBlock *ForBodyLrPh = getBasicBlockByName(F, "for.body.lr.ph");
+  BasicBlock *IfEnd = getBasicBlockByName(F, "if.end");
+  BasicBlock *ForBody = getBasicBlockByName(F, "for.body");
+  BasicBlock *ForCondCleanup = getBasicBlockByName(F, "for.cond.cleanup");
+
+  // Check basic block existence
+  if (!EntryBB || !ForCondPreheader || !ForBodyLrPh || !IfEnd || !ForBody ||
+      !ForCondCleanup)
+    return false;
+
+  // Check basic block successor number
+  if (succ_size(EntryBB) != 2 || succ_size(ForCondPreheader) != 2 ||
+      succ_size(ForBodyLrPh) != 1 || succ_size(IfEnd) != 0 ||
+      succ_size(ForBody) != 2 || succ_size(ForCondCleanup) != 1)
+    return false;
+
+  // Check jump relation
+  if (EntryBB->getTerminator()->getSuccessor(0) != ForCondPreheader ||
+      !checkSuccessors(ForCondPreheader, 2, ForBodyLrPh, IfEnd) ||
+      !checkSuccessors(ForBodyLrPh, 1, ForBody) ||
+      !checkSuccessors(ForBody, 2, ForCondCleanup, ForBody) ||
+      !checkSuccessors(ForCondCleanup, 1, IfEnd))
+    return false;
+
+  return true;
+}
+
+// Check DSPS F32 Dotprod type Function with count
+bool DspsF32DotprodSimpleLoopUnroller::checkDspsF32DotprodWithCount(
+    Function &F, LoopInfo &LI, ScalarEvolution &SE) {
+  // Get unique one-layer loop
+  Loop *L = nullptr;
+  for (Loop *TopLevelLoop : LI) {
+    if (TopLevelLoop->getLoopDepth() == 1) {
+      L = TopLevelLoop;
+      break;
+    }
+  }
+  if (!L || !L->getSubLoops().empty())
+    return false;
+
+  // Check if It is the simplest dot product type
+  if (!checkIfDotProdSimplest(F))
+    return false;
+
+  // Check loop structure
+  if (!L->getLoopLatch() || !L->getExitingBlock())
+    return false;
+
+  // Check loop count
+  const SCEV *TripCount = SE.getBackedgeTakenCount(L);
+  if (isa<SCEVConstant>(TripCount)) {
+    return true;
+  }
+  return false;
+}
+
+// Check complicated DSPS F32 Dotprod type Function
+bool DspsF32DotprodComplexLoopUnroller::checkDspsF32DotprodComplex(
+    Function &F, LoopInfo &LI) {
+  // Get unique one-layer loop
+  Loop *L = nullptr;
+  for (Loop *TopLevelLoop : LI) {
+    if (TopLevelLoop->getLoopDepth() == 1) {
+      L = TopLevelLoop;
+      break;
+    }
+  }
+  if (!L || !L->getSubLoops().empty())
+    return false;
+
+  // Check if It is the complicated dot product type
+  if (!checkIfDotProdComplicated(F))
+    return false;
+
+  // Check loop structure
+  if (!L->getLoopLatch() || !L->getExitingBlock())
+    return false;
+
+  if (L->getCanonicalInductionVariable())
+    return false;
+
+  // Check loop preheader
+  BasicBlock *LoopPreheader = L->getLoopPreheader();
+  if (LoopPreheader)
+    return true;
+
+  BasicBlock *LoopHeader = L->getHeader();
+  BasicBlock *NewPreheader =
+      BasicBlock::Create(LoopHeader->getContext(), "for.cond.preheader",
+                         LoopHeader->getParent(), LoopHeader);
+
+  DomTreeUpdater DTU(DT, DomTreeUpdater::UpdateStrategy::Eager);
+  SmallVector<DominatorTree::UpdateType, 4> Updates;
+
+  // Redirect all external predecessors to the new preheader basic block
+  for (BasicBlock *Pred : predecessors(LoopHeader)) {
+    if (!L->contains(Pred)) {
+      Updates.push_back({DominatorTree::Delete, Pred, LoopHeader});
+      Updates.push_back({DominatorTree::Insert, Pred, NewPreheader});
+
+      Pred->getTerminator()->replaceUsesOfWith(LoopHeader, NewPreheader);
+      // Update PHI nodes in the loop header to point to the new preheader basic
+      // block
+      for (PHINode &PN : LoopHeader->phis()) {
+        int Index = PN.getBasicBlockIndex(Pred);
+        if (Index != -1) {
+          PN.setIncomingBlock(Index, NewPreheader);
+        }
+      }
+    }
+  }
+  // Jump from the new preheader to the loop header
+  BranchInst::Create(LoopHeader, NewPreheader);
+  Updates.push_back({DominatorTree::Insert, NewPreheader, LoopHeader});
+
+  DTU.applyUpdates(Updates);
+  SE.forgetLoop(L);
+
+  return true;
+}
+
+bool DspsF32MathLoopUnroller::checkDspsF32MathType(Function &F, LoopInfo &LI) {
+  // Check the number of basic blocks
+  if (F.size() != 6)
+    return false;
+
+  BasicBlock *Entry = &F.getEntryBlock();
+  BasicBlock *IfEnd = getBasicBlockByName(F, "if.end");
+  BasicBlock *ForCondPreheader = getBasicBlockByName(F, "for.cond.preheader");
+  BasicBlock *ForBody = getBasicBlockByName(F, "for.body");
+  BasicBlock *ForBodyClone = getBasicBlockByName(F, "for.body.clone");
+  BasicBlock *Return = getBasicBlockByName(F, "return");
+
+  if (!Entry || !IfEnd || !ForCondPreheader || !ForBody || !ForBodyClone ||
+      !Return)
+    return false;
+
+  if (!checkSuccessors(Entry, 2, Return, IfEnd) ||
+      !checkSuccessors(IfEnd, 2, ForBody, ForCondPreheader) ||
+      !checkSuccessors(ForCondPreheader, 2, ForBodyClone, Return) ||
+      !checkSuccessors(ForBody, 2, Return, ForBody) ||
+      !checkSuccessors(ForBodyClone, 2, Return, ForBodyClone))
+    return false;
+
+  // Check if there are three outer loops, each with one inner loop
+  int OuterLoopCount = 0;
+  int InnerLoopCount = 0;
+  for (Loop *L : LI.getLoopsInPreorder()) {
+    if (L->getLoopDepth() == 1) {
+      OuterLoopCount++;
+      if (L->getSubLoops().size() == 1) {
+        InnerLoopCount++;
+      }
+    }
+  }
+
+  if (OuterLoopCount != 2 || InnerLoopCount != 0) {
+    return false;
+  }
+
+  return true;
+}
+
+bool DspsF32DotprodLoopUnroller::checkDspsF32DotprodType(Function &F,
+                                                         LoopInfo &LI) {
+  // Check the number of basic blocks
+  if (F.size() != 5)
+    return false;
+
+  // Check the loop nesting level
+  unsigned int MaxLoopDepth = 0;
+  for (auto &BB : F) {
+    MaxLoopDepth = std::max(MaxLoopDepth, LI.getLoopDepth(&BB));
+  }
+  if (MaxLoopDepth != 1) {
+    return false;
+  }
+
+  BasicBlock *Entry = &F.getEntryBlock();
+  BasicBlock *ForCondPreheader = getBasicBlockByName(F, "for.cond.preheader");
+  BasicBlock *IfEnd = getBasicBlockByName(F, "if.end");
+  BasicBlock *ForBody = getBasicBlockByName(F, "for.body");
+  BasicBlock *ForBodyClone = getBasicBlockByName(F, "for.body.clone");
+
+  if (!Entry || !IfEnd || !ForCondPreheader || !ForBody || !ForBodyClone)
+    return false;
+
+  if (!checkSuccessors(Entry, 2, ForBody, ForCondPreheader) ||
+      !checkSuccessors(ForCondPreheader, 2, ForBodyClone, IfEnd) ||
+      !checkSuccessors(ForBody, 2, IfEnd, ForBody) ||
+      !checkSuccessors(ForBody, 2, IfEnd, ForBody) ||
+      !checkSuccessors(ForBodyClone, 2, IfEnd, ForBodyClone))
+    return false;
+
+  // Check if there are three outer loops, each with one inner loop
+  int OuterLoopCount = 0;
+  int InnerLoopCount = 0;
+  for (Loop *L : LI.getLoopsInPreorder()) {
+    if (L->getLoopDepth() == 1) {
+      OuterLoopCount++;
+      if (L->getSubLoops().size() == 1) {
+        InnerLoopCount++;
+      }
+    }
+  }
+
+  if (OuterLoopCount != 2 || InnerLoopCount != 0) {
+    return false;
+  }
+
+  return true;
+}
+
+// Helper Function to unroll and duplicate a loop iteration
 static Instruction *unrollAndDuplicateLoopIteration(LLVMContext &Ctx,
                                                     BasicBlock *BB,
                                                     IRBuilder<> &Builder,
-                                                    unsigned int i) {
+                                                    unsigned int I) {
   PHINode *IPhi = dyn_cast<PHINode>(&BB->front());
   BasicBlock::iterator BeginIt, EndIt, ToIt;
-  SmallVector<Instruction *, 8> newInsts;
+  SmallVector<Instruction *, 8> NewInsts;
   ValueToValueMapTy ValueMap;
   Instruction *Add = nullptr;
-  Instruction *tailcallfmuladd = nullptr;
-  Instruction *duplicatedPhiNode = nullptr;
+  Instruction *DuplicatedPhiNode = nullptr;
 
   // Find the range of instructions to duplicate
-  for (Instruction &I : *BB) {
-    if (auto *phi = dyn_cast<PHINode>(&I)) {
-      if (phi->getType()->isFloatTy()) {
-        BeginIt = I.getIterator();
+  for (Instruction &Inst : *BB) {
+    if (auto *Phi = dyn_cast<PHINode>(&Inst)) {
+      if (Phi->getType()->isFloatTy()) {
+        BeginIt = Inst.getIterator();
       }
-    } else if (RecurrenceDescriptor::isFMulAddIntrinsic(&I)) {
-      EndIt = std::next(I.getIterator());
-      tailcallfmuladd = &I;
+    } else if (RecurrenceDescriptor::isFMulAddIntrinsic(&Inst)) {
+      EndIt = std::next(Inst.getIterator());
       ToIt = std::next(EndIt);
       break;
     }
@@ -348,101 +1699,83 @@ static Instruction *unrollAndDuplicateLoopIteration(LLVMContext &Ctx,
   assert(&*BeginIt && &*EndIt && "Failed to find instruction range");
 
   // Clone and modify instructions
-  int arrayidx = 0;
-  for (auto it = BeginIt; it != EndIt; ++it) {
-    Instruction *newInst = it->clone();
-    if (newInst->getOpcode() == Instruction::PHI)
-      newInst->setName("acc" + Twine(i));
+  int Arrayidx = 0;
+  for (auto It = BeginIt; It != EndIt; ++It) {
+    Instruction *NewInst = It->clone();
+    if (NewInst->getOpcode() == Instruction::PHI)
+      NewInst->setName("acc" + Twine(I));
 
-    if (auto *GEP = dyn_cast<GetElementPtrInst>(newInst)) {
+    if (auto *GEP = dyn_cast<GetElementPtrInst>(NewInst)) {
       if (!Add)
         Add = BinaryOperator::CreateDisjoint(
-            Instruction::Or, IPhi, ConstantInt::get(Type::getInt32Ty(Ctx), i),
-            "add" + Twine(i), BB);
+            Instruction::Or, IPhi, ConstantInt::get(Type::getInt32Ty(Ctx), I),
+            "add" + Twine(I), BB);
 
-      newInst->setName("arrayidx" + Twine(i) + "_" + Twine(arrayidx));
-      newInst->setOperand(1, Add);
-      arrayidx++;
+      NewInst->setName("Arrayidx" + Twine(I) + "_" + Twine(Arrayidx));
+      NewInst->setOperand(1, Add);
+      Arrayidx++;
     }
-    newInsts.push_back(newInst);
-    ValueMap[&*it] = newInst;
+    NewInsts.push_back(NewInst);
+    ValueMap[&*It] = NewInst;
   }
 
   // Update operands and insert new instructions
-  updateOperands(newInsts, ValueMap);
-  for (Instruction *newInst : newInsts) {
-    if (newInst->getOpcode() == Instruction::PHI)
-      duplicatedPhiNode = newInst->clone();
-    newInst->insertInto(BB, BB->end());
+  updateOperands(NewInsts, ValueMap);
+  for (Instruction *NewInst : NewInsts) {
+    if (NewInst->getOpcode() == Instruction::PHI)
+      DuplicatedPhiNode = NewInst->clone();
+    NewInst->insertInto(BB, BB->end());
   }
 
-  return duplicatedPhiNode;
-}
-
-// Helper function to move PHI nodes to the top of a basic block
-static void movePHINodesToTop(BasicBlock &BB,
-                              BasicBlock *ForBodyPreheaderBB = nullptr) {
-  SmallVector<PHINode *, 8> PHIs;
-  for (Instruction &I : BB) {
-    if (PHINode *PHI = dyn_cast<PHINode>(&I)) {
-      if (ForBodyPreheaderBB)
-        PHI->setIncomingBlock(1, ForBodyPreheaderBB);
-      PHIs.push_back(PHI);
-    }
-  }
-
-  // Move PHI nodes in reverse order
-  for (auto it = PHIs.rbegin(); it != PHIs.rend(); ++it) {
-    (*it)->moveBefore(&BB.front());
-  }
+  return DuplicatedPhiNode;
 }
 
 static void modifyFirdAddToOr(BasicBlock *ClonedForBody) {
-  SmallVector<BinaryOperator *> addInsts;
+  SmallVector<BinaryOperator *> AddInsts;
 
   // Collect all add instructions that meet the criteria
   for (auto &I : *ClonedForBody) {
-    if (auto *binOp = dyn_cast<BinaryOperator>(&I)) {
-      if (binOp->getOpcode() == Instruction::Add && binOp->hasNoSignedWrap() &&
-          binOp->hasNoUnsignedWrap()) {
-        addInsts.push_back(binOp);
+    if (auto *BinOp = dyn_cast<BinaryOperator>(&I)) {
+      if (BinOp->getOpcode() == Instruction::Add && BinOp->hasNoSignedWrap() &&
+          BinOp->hasNoUnsignedWrap()) {
+        AddInsts.push_back(BinOp);
       }
     }
   }
-  if (addInsts.empty()) {
+  if (AddInsts.empty()) {
     return;
   }
   // Replace each add instruction with an or disjoint instruction
-  for (auto it = addInsts.begin(); it != std::prev(addInsts.end()); ++it) {
-    auto *addInst = *it;
+  for (auto It = AddInsts.begin(); It != std::prev(AddInsts.end()); ++It) {
+    auto *AddInst = *It;
     // Create a new or disjoint instruction
-    Instruction *orInst =
-        BinaryOperator::CreateDisjoint(Instruction::Or, addInst->getOperand(0),
-                                       addInst->getOperand(1), "add", addInst);
+    Instruction *OrInst =
+        BinaryOperator::CreateDisjoint(Instruction::Or, AddInst->getOperand(0),
+                                       AddInst->getOperand(1), "add", AddInst);
 
     // Replace all uses of the add instruction
-    addInst->replaceAllUsesWith(orInst);
+    AddInst->replaceAllUsesWith(OrInst);
 
     // Delete the original add instruction
-    addInst->eraseFromParent();
-    orInst->setName("add");
+    AddInst->eraseFromParent();
+    OrInst->setName("add");
   }
 }
 
-// Helper function to update predecessors to point to a new preheader
+// Helper Function to update predecessors to point to a new preheader
 static void updatePredecessorsToPreheader(BasicBlock *ForBody,
                                           BasicBlock *ForBodyPreheader) {
-  SmallVector<BasicBlock *, 4> predecessors_bb;
+  SmallVector<BasicBlock *, 4> PredecessorsBb;
   for (auto *Pred : predecessors(ForBody)) {
     if (Pred != ForBody)
-      predecessors_bb.push_back(Pred);
+      PredecessorsBb.push_back(Pred);
   }
 
-  for (BasicBlock *Pred : predecessors_bb) {
+  for (BasicBlock *Pred : PredecessorsBb) {
     Instruction *TI = Pred->getTerminator();
-    for (unsigned i = 0; i < TI->getNumSuccessors(); ++i) {
-      if (TI->getSuccessor(i) == ForBody) {
-        TI->setSuccessor(i, ForBodyPreheader);
+    for (unsigned I = 0; I < TI->getNumSuccessors(); ++I) {
+      if (TI->getSuccessor(I) == ForBody) {
+        TI->setSuccessor(I, ForBodyPreheader);
       }
     }
   }
@@ -452,7 +1785,7 @@ static void updatePredecessorsToPreheader(BasicBlock *ForBody,
   }
 }
 
-// Helper function to get the 'len' value from the entry block
+// Helper Function to get the 'Len' value from the Entry block
 static Value *getLenFromEntryBlock(Function &F) {
   ICmpInst *ICmp = nullptr;
   for (BasicBlock &BB : F) {
@@ -461,56 +1794,56 @@ static Value *getLenFromEntryBlock(Function &F) {
       break;
   }
 
-  assert(ICmp && "icmp sgt instruction not found");
+  assert(ICmp && "Icmp sgt instruction not found");
   return ICmp->getOperand(0);
 }
 
-// Helper function to find specific instructions in a basic block
+// Helper Function to find specific instructions in a basic block
 static std::tuple<PHINode *, CallInst *, BinaryOperator *>
 findKeyInstructions(BasicBlock *ForBody) {
   PHINode *ThirdPHI = nullptr;
-  CallInst *callInst = nullptr;
-  BinaryOperator *addInst = nullptr;
+  CallInst *CallInst2 = nullptr;
+  BinaryOperator *AddInst = nullptr;
   int PHICount = 0;
 
-  for (Instruction &I : *ForBody) {
-    if (auto *PHI = dyn_cast<PHINode>(&I)) {
+  for (Instruction &Inst : *ForBody) {
+    if (auto *PHI = dyn_cast<PHINode>(&Inst)) {
       PHICount++;
       if (PHICount == 3) {
         ThirdPHI = PHI;
       }
-    } else if (auto *ci = dyn_cast<CallInst>(&I)) {
-      callInst = ci;
-    } else if (auto *BinOp = dyn_cast<BinaryOperator>(&I)) {
+    } else if (auto *CI = dyn_cast<CallInst>(&Inst)) {
+      CallInst2 = CI;
+    } else if (auto *BinOp = dyn_cast<BinaryOperator>(&Inst)) {
       if (BinOp->getOpcode() == Instruction::Add) {
-        addInst = BinOp;
+        AddInst = BinOp;
       }
     }
   }
 
-  return std::make_tuple(ThirdPHI, callInst, addInst);
+  return std::make_tuple(ThirdPHI, CallInst2, AddInst);
 }
 
-// Helper function to rename instructions
-static void renameInstruction(Instruction *inst) {
-  if (inst->getOpcode() == Instruction::PHI) {
-    inst->setName("acc");
-  } else if (inst->getOpcode() == Instruction::GetElementPtr) {
-    inst->setName("arrayidx");
+// Helper Function to rename instructions
+static void inline renameInstruction(Instruction *Inst) {
+  if (Inst->getOpcode() == Instruction::PHI) {
+    Inst->setName("acc");
+  } else if (Inst->getOpcode() == Instruction::GetElementPtr) {
+    Inst->setName("Arrayidx");
   }
 }
 
-// Helper function to set add instruction in for body
-static void setAddInForBody(Instruction *inst, Instruction *Add,
-                            Instruction *InsertBefore) {
-  if (inst->getOpcode() == Instruction::PHI) {
+// Helper Function to set add instruction in for body
+static void inline setAddInForBody(Instruction *Inst, Instruction *Add,
+                                   Instruction *InsertBefore) {
+  if (Inst->getOpcode() == Instruction::PHI) {
     Add->moveBefore(InsertBefore);
-  } else if (inst->getOpcode() == Instruction::GetElementPtr) {
-    inst->setOperand(1, Add);
+  } else if (Inst->getOpcode() == Instruction::GetElementPtr) {
+    Inst->setOperand(1, Add);
   }
 }
 
-// Helper function to copy and remap instructions
+// Helper Function to copy and remap instructions
 static void copyAndRemapInstructions(Instruction *StartInst,
                                      Instruction *EndInst,
                                      Instruction *InsertBefore,
@@ -518,107 +1851,106 @@ static void copyAndRemapInstructions(Instruction *StartInst,
   ValueToValueMapTy ValueMap;
   SmallVector<Instruction *, 8> NewInsts;
 
-  for (auto it = StartInst->getIterator(); &*it != EndInst; ++it) {
-    Instruction *newInst = it->clone();
-    if (auto *BinOp = dyn_cast<BinaryOperator>(newInst)) {
+  for (auto It = StartInst->getIterator(); &*It != EndInst; ++It) {
+    Instruction *NewInst = It->clone();
+    if (auto *BinOp = dyn_cast<BinaryOperator>(NewInst)) {
       if (BinOp->getOpcode() == Instruction::Add) {
         continue;
       }
     }
-    NewInsts.push_back(newInst);
-    ValueMap[&*it] = newInst;
+    NewInsts.push_back(NewInst);
+    ValueMap[&*It] = NewInst;
   }
 
   updateOperands(NewInsts, ValueMap);
 
-  for (Instruction *newInst : NewInsts) {
-    renameInstruction(newInst);
-    newInst->insertBefore(InsertBefore);
-    setAddInForBody(newInst, Add, InsertBefore);
+  for (Instruction *NewInst : NewInsts) {
+    renameInstruction(NewInst);
+    NewInst->insertBefore(InsertBefore);
+    setAddInForBody(NewInst, Add, InsertBefore);
   }
 }
 
-// Helper function to preprocess the cloned for body
-static void preProcessClonedForBody(BasicBlock *ClonedForBody, Value *sub) {
-  Instruction *addInst = nullptr;
-  for (Instruction &I : *ClonedForBody) {
-    if (auto *BinOp = dyn_cast<BinaryOperator>(&I)) {
+// Helper Function to preprocess the cloned for body
+static void preProcessClonedForBody(BasicBlock *ClonedForBody, Value *Sub) {
+  Instruction *AddInst = nullptr;
+  for (Instruction &Inst : *ClonedForBody) {
+    if (auto *BinOp = dyn_cast<BinaryOperator>(&Inst)) {
       if (BinOp->getOpcode() == Instruction::Add) {
         BinOp->setOperand(1, ConstantInt::get(BinOp->getType(), 8));
-        addInst = BinOp;
+        AddInst = BinOp;
       }
     }
-    if (auto *icmp = dyn_cast<ICmpInst>(&I)) {
-      icmp->setPredicate(CmpInst::Predicate::ICMP_SLT);
-      icmp->setOperand(0, addInst);
-      icmp->setOperand(1, sub);
-      icmp->setName("cmp11");
+    if (auto *Icmp = dyn_cast<ICmpInst>(&Inst)) {
+      Icmp->setPredicate(CmpInst::Predicate::ICMP_SLT);
+      Icmp->setOperand(0, AddInst);
+      Icmp->setOperand(1, Sub);
+      Icmp->setName("cmp11");
     }
   }
-  LLVM_DEBUG(ClonedForBody->dump());
 }
 
-// Helper function to modify getelementptr instructions
+// Helper Function to modify getelementptr instructions
 static void modifyGetElementPtr(BasicBlock *BB) {
-  SmallVector<GetElementPtrInst *, 8> gepInsts;
-  Value *firstGEPOperand0 = nullptr;
-  Value *secondGEPOperand1 = nullptr;
+  SmallVector<GetElementPtrInst *, 8> GepInsts;
+  Value *FirstGEPOperand0 = nullptr;
+  Value *SecondGEPOperand1 = nullptr;
 
-  for (Instruction &I : *BB) {
-    if (auto *GEP = dyn_cast<GetElementPtrInst>(&I)) {
-      gepInsts.push_back(GEP);
+  for (Instruction &Inst : *BB) {
+    if (auto *GEP = dyn_cast<GetElementPtrInst>(&Inst)) {
+      GepInsts.push_back(GEP);
     }
   }
 
-  if (gepInsts.size() < 8 || gepInsts.size() % 2 != 0) {
+  if (GepInsts.size() < 8 || GepInsts.size() % 2 != 0) {
     return;
   }
 
-  firstGEPOperand0 = gepInsts[0];
-  secondGEPOperand1 = gepInsts[1];
+  FirstGEPOperand0 = GepInsts[0];
+  SecondGEPOperand1 = GepInsts[1];
 
-  for (size_t i = 2; i < gepInsts.size(); ++i) {
-    if (i % 2 == 0) {
-      if (i < gepInsts.size() - 2) {
-        gepInsts[i]->setOperand(0, firstGEPOperand0);
+  for (size_t I = 2; I < GepInsts.size(); ++I) {
+    if (I % 2 == 0) {
+      if (I < GepInsts.size() - 2) {
+        GepInsts[I]->setOperand(0, FirstGEPOperand0);
       }
     } else {
-      gepInsts[i]->setOperand(0, secondGEPOperand1);
+      GepInsts[I]->setOperand(0, SecondGEPOperand1);
     }
 
-    if (i == 14)
+    if (I == 14)
       continue;
 
-    Instruction *operand1 = dyn_cast<Instruction>(gepInsts[i]->getOperand(1));
-    gepInsts[i]->setOperand(
-        1, ConstantInt::get(Type::getInt32Ty(BB->getContext()), i / 2));
-    if (operand1 && operand1->use_empty()) {
-      operand1->eraseFromParent();
+    Instruction *Operand1 = dyn_cast<Instruction>(GepInsts[I]->getOperand(1));
+    GepInsts[I]->setOperand(
+        1, ConstantInt::get(Type::getInt32Ty(BB->getContext()), I / 2));
+    if (Operand1 && Operand1->use_empty()) {
+      Operand1->eraseFromParent();
     }
   }
 }
 
-// Helper function to check if a PHI node has an incoming value of zero
-static bool isIncomingValueZeroOfPhi(PHINode *phi) {
-  return phi->getType()->isIntegerTy(32) &&
-         isa<ConstantInt>(phi->getIncomingValue(0)) &&
-         cast<ConstantInt>(phi->getIncomingValue(0))->isZero();
+// Helper Function to check if a PHI node has an incoming value of zero
+static bool isIncomingValueZeroOfPhi(PHINode *Phi) {
+  return Phi->getType()->isIntegerTy(32) &&
+         isa<ConstantInt>(Phi->getIncomingValue(0)) &&
+         cast<ConstantInt>(Phi->getIncomingValue(0))->isZero();
 }
 
-// Helper function to find and set add instructions
+// Helper Function to find and set add instructions
 static std::pair<Instruction *, Instruction *>
 findAndSetAddInstructions(BasicBlock *ClonedForBody) {
   Instruction *FirstAdd = nullptr;
   Instruction *SecondAdd = nullptr;
 
-  for (Instruction &I : *ClonedForBody) {
-    if (BinaryOperator *BinOp = dyn_cast<BinaryOperator>(&I)) {
+  for (Instruction &Inst : *ClonedForBody) {
+    if (BinaryOperator *BinOp = dyn_cast<BinaryOperator>(&Inst)) {
       if (BinOp->getOpcode() == Instruction::Add) {
         if (!FirstAdd) {
-          FirstAdd = &I;
+          FirstAdd = &Inst;
           FirstAdd->setHasNoSignedWrap(true);
         } else if (!SecondAdd) {
-          SecondAdd = &I;
+          SecondAdd = &Inst;
           break;
         }
       }
@@ -629,115 +1961,99 @@ findAndSetAddInstructions(BasicBlock *ClonedForBody) {
 }
 
 // Helper functions for PHI node manipulation
-
 static PHINode *findZeroInitializedPHI(BasicBlock *block) {
-  for (Instruction &I : *block) {
-    if (PHINode *phi = dyn_cast<PHINode>(&I)) {
-      if (isIncomingValueZeroOfPhi(phi)) {
-        return phi;
-      }
+  for (PHINode &Phi : block->phis()) {
+    if (isIncomingValueZeroOfPhi(&Phi)) {
+      return &Phi;
     }
   }
   return nullptr;
 }
 
 static PHINode *findIntegerPHI(BasicBlock *block) {
-  for (Instruction &I : *block) {
-    if (PHINode *phi = dyn_cast<PHINode>(&I)) {
-      if (phi->getType()->isIntegerTy(32) && !isIncomingValueZeroOfPhi(phi)) {
-        return phi;
-      }
+  for (PHINode &Phi : block->phis()) {
+    if (Phi.getType()->isIntegerTy(32) && !isIncomingValueZeroOfPhi(&Phi)) {
+      return &Phi;
     }
   }
   return nullptr;
 }
 
-// Helper function to unroll loop body
-static void unrollLoopBody(BasicBlock *block, PHINode *thirdPHI,
-                           Instruction *callInst, Instruction *addInst,
-                           PHINode *zeroInitializedPHI, LLVMContext &context) {
-  for (int i = 1; i < 8; i++) {
-    Instruction *add = BinaryOperator::CreateDisjoint(
-        Instruction::Or, zeroInitializedPHI,
-        ConstantInt::get(Type::getInt32Ty(context), i), "add" + Twine(i),
+// Helper Function to unroll loop body
+static void unrollLoopBody(BasicBlock *block, PHINode *ThirdPHI,
+                           Instruction *CallInst, Instruction *AddInst,
+                           PHINode *ZeroInitializedPHI, LLVMContext &Context) {
+  for (int I = 1; I < 8; I++) {
+    Instruction *Add = BinaryOperator::CreateDisjoint(
+        Instruction::Or, ZeroInitializedPHI,
+        ConstantInt::get(Type::getInt32Ty(Context), I), "add" + Twine(I),
         block);
-    copyAndRemapInstructions(thirdPHI, callInst->getNextNode(), addInst, add);
+    copyAndRemapInstructions(ThirdPHI, CallInst->getNextNode(), AddInst, Add);
   }
 }
 
-// Helper function to update add instruction
-static void updateAddInstruction(Instruction *addInst, PHINode *integerPHI,
-                                 LLVMContext &context) {
-  if (addInst) {
-    addInst->setOperand(1, ConstantInt::get(Type::getInt32Ty(context), 8));
-    addInst->setOperand(0, integerPHI);
-  }
-}
-
-// Helper function to update block terminator
-static void updateBlockTerminator(BasicBlock *block, BasicBlock *successor) {
-  Instruction *terminator = block->getTerminator();
-  terminator->setSuccessor(0, block);
-  terminator->setSuccessor(1, successor);
-}
-
-// Helper function to modify getelementptr for unrolling
+// Helper Function to modify getelementptr for unrolling
 static void modifyGetElementPtrForUnrolling(BasicBlock *block) {
-  SmallVector<GetElementPtrInst *, 8> gepInsts;
-  for (Instruction &I : *block) {
-    if (auto *GEP = dyn_cast<GetElementPtrInst>(&I)) {
-      gepInsts.push_back(GEP);
+  SmallVector<GetElementPtrInst *, 8> GepInsts;
+  for (Instruction &Inst : *block) {
+    if (auto *GEP = dyn_cast<GetElementPtrInst>(&Inst)) {
+      GepInsts.push_back(GEP);
     }
   }
 
-  for (size_t i = 2; i < gepInsts.size(); i += 2) {
-    gepInsts[i]->setOperand(0, gepInsts[0]);
-    gepInsts[i]->setOperand(
-        1, ConstantInt::get(Type::getInt32Ty(block->getContext()), i / 2));
+  for (size_t I = 2; I < GepInsts.size(); I += 2) {
+    GepInsts[I]->setOperand(0, GepInsts[0]);
+    GepInsts[I]->setOperand(
+        1, ConstantInt::get(Type::getInt32Ty(block->getContext()), I / 2));
   }
 }
 
-// Helper function to handle add instructions
+// Helper Function to handle add instructions
 static void handleAddInstructions(BasicBlock *block, unsigned int unrollFactor,
-                                  PHINode *zeroInitializedPHI,
-                                  LLVMContext &context) {
-  auto [firstAdd, secondAdd] = findAndSetAddInstructions(block);
+                                  PHINode *ZeroInitializedPHI,
+                                  LLVMContext &Context) {
+  auto [FirstAdd, SecondAdd] = findAndSetAddInstructions(block);
 
-  if (firstAdd && secondAdd) {
-    firstAdd->moveBefore(secondAdd);
+  if (FirstAdd && SecondAdd) {
+    FirstAdd->moveBefore(SecondAdd);
 
     if (unrollFactor == 1) {
-      firstAdd->setOperand(1, ConstantInt::get(Type::getInt32Ty(context), 8));
-      secondAdd->setOperand(0, zeroInitializedPHI);
+      FirstAdd->setOperand(1, ConstantInt::get(Type::getInt32Ty(Context), 8));
+      SecondAdd->setOperand(0, ZeroInitializedPHI);
     }
   }
 }
 
 // Function to unroll the cloned for loop body
 static void unrollClonedForBody(BasicBlock *clonedForBody,
-                                BasicBlock *forCondPreheader,
+                                BasicBlock *ForCondPreheader,
                                 unsigned int unrollFactor = 0) {
-  Function *function = clonedForBody->getParent();
-  LLVMContext &context = function->getContext();
+  Function *Function = clonedForBody->getParent();
+  LLVMContext &Context = Function->getContext();
 
   // Find key instructions in the cloned for body
-  auto [thirdPHI, callInst, addInst] = findKeyInstructions(clonedForBody);
-  PHINode *zeroInitializedPHI = findZeroInitializedPHI(clonedForBody);
-  PHINode *integerPHI = findIntegerPHI(clonedForBody);
+  auto [ThirdPHI, CallInst, AddInst] = findKeyInstructions(clonedForBody);
+  PHINode *ZeroInitializedPHI = findZeroInitializedPHI(clonedForBody);
+  PHINode *IntegerPHI = findIntegerPHI(clonedForBody);
 
-  assert(zeroInitializedPHI && "No matching zero-initialized PHI node found");
+  assert(ZeroInitializedPHI && "No matching zero-initialized PHI node found");
 
   // Unroll the loop body if key instructions are found
-  if (thirdPHI && callInst) {
-    unrollLoopBody(clonedForBody, thirdPHI, callInst, addInst,
-                   zeroInitializedPHI, context);
+  if (ThirdPHI && CallInst) {
+    unrollLoopBody(clonedForBody, ThirdPHI, CallInst, AddInst,
+                   ZeroInitializedPHI, Context);
   }
 
   // Update the add instruction
-  updateAddInstruction(addInst, integerPHI, context);
+  if (AddInst) {
+    AddInst->setOperand(1, ConstantInt::get(Type::getInt32Ty(Context), 8));
+    AddInst->setOperand(0, IntegerPHI);
+  }
 
-  // Update the basic block terminator
-  updateBlockTerminator(clonedForBody, forCondPreheader);
+  // Update the basic block Terminator
+  Instruction *Terminator = clonedForBody->getTerminator();
+  Terminator->setSuccessor(0, clonedForBody);
+  Terminator->setSuccessor(1, ForCondPreheader);
 
   // Move PHI nodes to the top of the basic block
   movePHINodesToTop(*clonedForBody);
@@ -750,17 +2066,17 @@ static void unrollClonedForBody(BasicBlock *clonedForBody,
   }
 
   // Handle add instructions
-  handleAddInstructions(clonedForBody, unrollFactor, zeroInitializedPHI,
-                        context);
+  handleAddInstructions(clonedForBody, unrollFactor, ZeroInitializedPHI,
+                        Context);
 }
 
 // Function to check if a call instruction can be moved
 static bool canMoveCallInstruction(CallInst *callInst,
-                                   Instruction *insertPoint) {
-  for (unsigned i = 0; i < callInst->getNumOperands(); ++i) {
-    if (auto *operandInst = dyn_cast<Instruction>(callInst->getOperand(i))) {
-      if (operandInst->getParent() == callInst->getParent() &&
-          insertPoint->comesBefore(operandInst)) {
+                                   Instruction *InsertPoint) {
+  for (unsigned I = 0; I < callInst->getNumOperands(); ++I) {
+    if (auto *OperandInst = dyn_cast<Instruction>(callInst->getOperand(I))) {
+      if (OperandInst->getParent() == callInst->getParent() &&
+          InsertPoint->comesBefore(OperandInst)) {
         return false;
       }
     }
@@ -771,313 +2087,293 @@ static bool canMoveCallInstruction(CallInst *callInst,
 // Function to group and reorder instructions in a basic block
 static void groupAndReorderInstructions(BasicBlock *clonedForBody) {
   // Collect different types of instructions
-  SmallVector<PHINode *> phiNodes;
-  SmallVector<Instruction *> orInsts, gepInsts, loadInsts, storeInsts, mulInsts,
-      addInsts, subInsts, callInsts, ashrInsts, faddInsts, fmulInsts, fsubInsts;
+  SmallVector<PHINode *> PhiNodes;
+  SmallVector<Instruction *> OrInsts, GepInsts, LoadInsts, StoreInsts, MulInsts,
+      AddInsts, SubInsts, CallInsts, FaddInsts, FmulInsts, FsubInsts;
 
   // Categorize instructions by type
-  for (Instruction &I : *clonedForBody) {
-    if (auto *phi = dyn_cast<PHINode>(&I)) {
-      phiNodes.push_back(phi);
-    } else if (I.getOpcode() == Instruction::Or) {
-      orInsts.push_back(&I);
-    } else if (isa<GetElementPtrInst>(&I)) {
-      gepInsts.push_back(&I);
-    } else if (isa<LoadInst>(&I)) {
-      loadInsts.push_back(&I);
-    } else if (isa<StoreInst>(&I)) {
-      storeInsts.push_back(&I);
-    } else if (I.getOpcode() == Instruction::Mul) {
-      mulInsts.push_back(&I);
-    } else if (isa<CallInst>(&I)) {
-      callInsts.push_back(&I);
-    } else if (I.getOpcode() == Instruction::Add) {
-      addInsts.push_back(&I);
-    } else if (I.getOpcode() == Instruction::Sub) {
-      subInsts.push_back(&I);
-    } else if (I.getOpcode() == Instruction::FAdd) {
-      faddInsts.push_back(&I);
-    } else if (I.getOpcode() == Instruction::FMul) {
-      fmulInsts.push_back(&I);
-    } else if (I.getOpcode() == Instruction::FSub) {
-      fsubInsts.push_back(&I);
-    } else if (I.getOpcode() == Instruction::AShr) {
+  for (Instruction &Inst : *clonedForBody) {
+    if (auto *Phi = dyn_cast<PHINode>(&Inst)) {
+      PhiNodes.push_back(Phi);
+    } else if (Inst.getOpcode() == Instruction::Or) {
+      OrInsts.push_back(&Inst);
+    } else if (isa<GetElementPtrInst>(&Inst)) {
+      GepInsts.push_back(&Inst);
+    } else if (isa<LoadInst>(&Inst)) {
+      LoadInsts.push_back(&Inst);
+    } else if (isa<StoreInst>(&Inst)) {
+      StoreInsts.push_back(&Inst);
+    } else if (Inst.getOpcode() == Instruction::Mul) {
+      MulInsts.push_back(&Inst);
+    } else if (isa<CallInst>(&Inst)) {
+      CallInsts.push_back(&Inst);
+    } else if (Inst.getOpcode() == Instruction::Add) {
+      AddInsts.push_back(&Inst);
+    } else if (Inst.getOpcode() == Instruction::Sub) {
+      SubInsts.push_back(&Inst);
+    } else if (Inst.getOpcode() == Instruction::FAdd) {
+      FaddInsts.push_back(&Inst);
+    } else if (Inst.getOpcode() == Instruction::FMul) {
+      FmulInsts.push_back(&Inst);
+    } else if (Inst.getOpcode() == Instruction::FSub) {
+      FsubInsts.push_back(&Inst);
+    } else if (Inst.getOpcode() == Instruction::AShr) {
       return;
     }
   }
 
   // If no PHI nodes are found, return
-  if (phiNodes.empty()) {
+  if (PhiNodes.empty()) {
     return;
   }
 
   // Reorder instructions
-  Instruction *insertPoint = phiNodes.back()->getNextNode();
-  bool canMoveCallInst =
-      callInsts.empty() ||
-      canMoveCallInstruction(dyn_cast<CallInst>(callInsts[0]), insertPoint);
+  Instruction *InsertPoint = PhiNodes.back()->getNextNode();
+  bool CanMoveCallInst =
+      CallInsts.empty() ||
+      canMoveCallInstruction(dyn_cast<CallInst>(CallInsts[0]), InsertPoint);
 
-  auto moveInstructions = [&insertPoint](SmallVector<Instruction *> &insts) {
-    for (auto *inst : insts) {
-      inst->moveBefore(insertPoint);
-      insertPoint = inst->getNextNode();
+  auto moveInstructions = [&InsertPoint](SmallVector<Instruction *> &Insts) {
+    for (auto *Inst : Insts) {
+      Inst->moveBefore(InsertPoint);
+      InsertPoint = Inst->getNextNode();
     }
   };
 
   // Move instructions in the desired order
-  moveInstructions(mulInsts);
-  moveInstructions(addInsts);
-  moveInstructions(orInsts);
-  moveInstructions(subInsts);
-  moveInstructions(gepInsts);
-  moveInstructions(loadInsts);
-  moveInstructions(faddInsts);
-  moveInstructions(fmulInsts);
-  moveInstructions(fsubInsts);
-  if (canMoveCallInst) {
-    moveInstructions(callInsts);
+  moveInstructions(MulInsts);
+  moveInstructions(AddInsts);
+  moveInstructions(OrInsts);
+  moveInstructions(SubInsts);
+  moveInstructions(GepInsts);
+  moveInstructions(LoadInsts);
+  moveInstructions(FaddInsts);
+  moveInstructions(FmulInsts);
+  moveInstructions(FsubInsts);
+  if (CanMoveCallInst) {
+    moveInstructions(CallInsts);
   }
 }
 
 // Function to transform a single loop depth (currently suitable for
 // dotprod/dotprode example)
-static bool transformOneLoopDepth(Function &F) {
-  LLVMContext &ctx = F.getContext();
-  bool changed = false;
+bool DspsF32DotprodLoopUnroller::transformOneLoopDepth(Function &F) {
+  LLVMContext &Ctx = F.getContext();
+  bool Changed = false;
 
   // Get necessary basic blocks and values
-  Value *len = getLenFromEntryBlock(F);
-  BasicBlock *entryBB = &F.getEntryBlock();
-  BasicBlock *forBodyBB = getBasicBlockByName(F, "for.body");
-  BasicBlock *forBodyNewBB = getBasicBlockByName(F, "for.body.clone");
-  BasicBlock *ifEnd = getBasicBlockByName(F, "if.end");
-  BasicBlock *forCond46PreheaderBB =
+  Value *Len = getLenFromEntryBlock(F);
+  BasicBlock *EntryBB = &F.getEntryBlock();
+  BasicBlock *ForBodyBB = getBasicBlockByName(F, "for.body");
+  BasicBlock *ForBodyNewBB = getBasicBlockByName(F, "for.body.clone");
+  BasicBlock *IfEnd = getBasicBlockByName(F, "if.end");
+  BasicBlock *ForCond46PreheaderBB =
       getBasicBlockByName(F, "for.cond.preheader");
 
-  assert(forBodyBB && "Expected to find for.body!");
-  assert(forBodyNewBB && "Expected to find for.body.clone!");
-  assert(ifEnd && "Expected to find if.end!");
-  assert(forCond46PreheaderBB && "Expected to find for.cond.preheader!");
+  assert(ForBodyBB && "Expected to find for.body!");
+  assert(ForBodyNewBB && "Expected to find for.body.clone!");
+  assert(IfEnd && "Expected to find if.end!");
+  assert(ForCond46PreheaderBB && "Expected to find for.cond.preheader!");
 
   // Create new basic blocks
-  BasicBlock *forCondPreheaderBB =
-      BasicBlock::Create(F.getContext(), "for.cond.preheader", &F, forBodyBB);
-  BasicBlock *forBodyPreheaderBB =
-      BasicBlock::Create(F.getContext(), "for.body.preheader", &F, forBodyBB);
-  BasicBlock *forCond31PreheaderBB =
-      BasicBlock::Create(F.getContext(), "for.cond31.preheader", &F, forBodyBB);
-  BasicBlock *forBody33BB = cloneBasicBlockWithRelations(forBodyBB, "33", &F);
-  forBody33BB->setName("for.body33");
-  forBody33BB->moveAfter(forBodyBB);
-  BasicBlock *forEnd37BB =
-      BasicBlock::Create(F.getContext(), "for.end37", &F, forBodyNewBB);
+  BasicBlock *ForCondPreheaderBB =
+      BasicBlock::Create(F.getContext(), "for.cond.preheader", &F, ForBodyBB);
+  BasicBlock *ForBodyPreheaderBB =
+      BasicBlock::Create(F.getContext(), "for.body.preheader", &F, ForBodyBB);
+  BasicBlock *ForCond31PreheaderBB =
+      BasicBlock::Create(F.getContext(), "for.cond31.preheader", &F, ForBodyBB);
+  BasicBlock *ForBody33BB = cloneBasicBlockWithRelations(ForBodyBB, "33", &F);
+  ForBody33BB->setName("for.body33");
+  ForBody33BB->moveAfter(ForBodyBB);
+  BasicBlock *ForEnd37BB =
+      BasicBlock::Create(F.getContext(), "for.end37", &F, ForBodyNewBB);
 
-  // Add instructions to forCondPreheaderBB
-  IRBuilder<> builder(forCondPreheaderBB);
-  Value *negativeSeven = ConstantInt::get(Type::getInt32Ty(F.getContext()), -7);
-  Value *sub = builder.CreateNSWAdd(len, negativeSeven, "sub");
-  Value *seven = ConstantInt::get(Type::getInt32Ty(F.getContext()), 7);
-  Value *cmp1113 = builder.CreateICmpUGT(len, seven, "cmp1113");
-  builder.CreateCondBr(cmp1113, forBodyPreheaderBB, forCond31PreheaderBB);
+  // Add instructions to ForCondPreheaderBB
+  IRBuilder<> builder(ForCondPreheaderBB);
+  Value *NegativeSeven = ConstantInt::get(Type::getInt32Ty(F.getContext()), -7);
+  Value *Sub = builder.CreateNSWAdd(Len, NegativeSeven, "Sub");
+  Value *Seven = ConstantInt::get(Type::getInt32Ty(F.getContext()), 7);
+  Value *Cmp1113 = builder.CreateICmpUGT(Len, Seven, "Cmp1113");
+  builder.CreateCondBr(Cmp1113, ForBodyPreheaderBB, ForCond31PreheaderBB);
 
-  // Add instructions to forBodyPreheaderBB
-  builder.SetInsertPoint(forBodyPreheaderBB);
-  Value *mask = ConstantInt::get(Type::getInt32Ty(F.getContext()), 2147483640);
-  Value *andValue = builder.CreateAnd(len, mask, "");
-  builder.CreateBr(forBodyBB);
+  // Add instructions to ForBodyPreheaderBB
+  builder.SetInsertPoint(ForBodyPreheaderBB);
+  Value *Mask = ConstantInt::get(Type::getInt32Ty(F.getContext()), 2147483640);
+  Value *AndValue = builder.CreateAnd(Len, Mask, "");
+  builder.CreateBr(ForBodyBB);
 
   // Modify for.body
-  PHINode *iPhi = dyn_cast<PHINode>(&forBodyBB->front());
-  iPhi->setName("i.0122");
+  PHINode *IPhi = dyn_cast<PHINode>(&ForBodyBB->front());
+  IPhi->setName("I.0122");
 
-  // copy first float phinode from forBodyBB to forCond31PreheaderBB
-  PHINode *firstFloatPhi = getFirstFloatPhi(forBodyBB);
-  PHINode *acc00Lcssa = PHINode::Create(firstFloatPhi->getType(), 2,
-                                        "acc0.0.lcssa", forCond31PreheaderBB);
-  acc00Lcssa->addIncoming(firstFloatPhi->getIncomingValue(0),
-                          firstFloatPhi->getIncomingBlock(0));
-  acc00Lcssa->addIncoming(firstFloatPhi->getIncomingValue(1),
-                          forCondPreheaderBB);
+  // copy first float phinode from ForBodyBB to ForCond31PreheaderBB
+  PHINode *FirstFloatPhi = getFirstFloatPhi(ForBodyBB);
+  PHINode *Acc00Lcssa = PHINode::Create(FirstFloatPhi->getType(), 2,
+                                        "acc0.0.lcssa", ForCond31PreheaderBB);
+  Acc00Lcssa->addIncoming(FirstFloatPhi->getIncomingValue(0),
+                          FirstFloatPhi->getIncomingBlock(0));
+  Acc00Lcssa->addIncoming(FirstFloatPhi->getIncomingValue(1),
+                          ForCondPreheaderBB);
   // Unroll and duplicate loop iterations
   SmallVector<Instruction *> instructions;
-  for (int i = 0; i < 7; i++) {
-    Instruction *copyedPhiNode =
-        unrollAndDuplicateLoopIteration(ctx, forBodyBB, builder, i + 1);
-    if (PHINode *phi = dyn_cast<PHINode>(copyedPhiNode)) {
-      phi->setName("acc" + Twine(i + 1) + ".0.lcssa");
-      phi->setIncomingBlock(1, forCondPreheaderBB);
-      phi->insertInto(forCond31PreheaderBB, forCond31PreheaderBB->end());
-      instructions.push_back(phi);
+  for (int I = 0; I < 7; I++) {
+    Instruction *CopyedPhiNode =
+        unrollAndDuplicateLoopIteration(Ctx, ForBodyBB, builder, I + 1);
+    if (PHINode *Phi = dyn_cast<PHINode>(CopyedPhiNode)) {
+      Phi->setName("acc" + Twine(I + 1) + ".0.lcssa");
+      Phi->setIncomingBlock(1, ForCondPreheaderBB);
+      Phi->insertInto(ForCond31PreheaderBB, ForCond31PreheaderBB->end());
+      instructions.push_back(Phi);
     }
   }
 
-  // Update for.body terminator
-  Instruction *incInst = nullptr;
-  MDNode *loopMD = nullptr;
-  for (auto &I : *forBodyBB) {
+  // Update for.body Terminator
+  Instruction *IncInst = nullptr;
+  MDNode *LoopMD = nullptr;
+  for (auto &I : *ForBodyBB) {
     if (I.getOpcode() == Instruction::Add) {
-      incInst = &I;
-      Instruction *icmp = I.getNextNode();
-      Instruction *br = icmp->getNextNode();
-      assert(icmp->getOpcode() == Instruction::ICmp &&
-             br->getOpcode() == Instruction::Br &&
+      IncInst = &I;
+      Instruction *Icmp = I.getNextNode();
+      Instruction *Br = Icmp->getNextNode();
+      assert(Icmp->getOpcode() == Instruction::ICmp &&
+             Br->getOpcode() == Instruction::Br &&
              "Unexpected instruction sequence");
-      I.moveAfter(&forBodyBB->back());
-      loopMD = br->getMetadata(LLVMContext::MD_loop);
-      br->eraseFromParent();
-      icmp->eraseFromParent();
+      I.moveAfter(&ForBodyBB->back());
+      LoopMD = Br->getMetadata(LLVMContext::MD_loop);
+      Br->eraseFromParent();
+      Icmp->eraseFromParent();
       break;
     }
   }
 
   // Modify add instruction
-  incInst->setOperand(1, ConstantInt::get(Type::getInt32Ty(F.getContext()), 8));
-  incInst->setName("add30");
+  IncInst->setOperand(1, ConstantInt::get(Type::getInt32Ty(F.getContext()), 8));
+  IncInst->setName("add30");
 
-  builder.SetInsertPoint(forBodyBB);
-  Value *cmp1 = builder.CreateICmpSLT(incInst, sub, "cmp1");
+  builder.SetInsertPoint(ForBodyBB);
+  Value *Cmp1 = builder.CreateICmpSLT(IncInst, Sub, "Cmp1");
   BranchInst *newBr =
-      builder.CreateCondBr(cmp1, forBodyBB, forCond31PreheaderBB);
-  newBr->setMetadata(LLVMContext::MD_loop, loopMD);
+      builder.CreateCondBr(Cmp1, ForBodyBB, ForCond31PreheaderBB);
+  newBr->setMetadata(LLVMContext::MD_loop, LoopMD);
 
-  movePHINodesToTop(*forBodyBB, forBodyPreheaderBB);
+  movePHINodesToTop(*ForBodyBB);
+  for (PHINode &PHI : ForBodyBB->phis()) {
+    PHI.setIncomingBlock(1, ForBodyPreheaderBB);
+  }
 
-  // Add instructions to forCond31PreheaderBB
-  builder.SetInsertPoint(forCond31PreheaderBB);
-  PHINode *i0Lcssa =
-      builder.CreatePHI(Type::getInt32Ty(F.getContext()), 0, "i.0.lcssa");
-  i0Lcssa->addIncoming(ConstantInt::get(Type::getInt32Ty(F.getContext()), 0),
-                       forCondPreheaderBB);
-  i0Lcssa->addIncoming(andValue, forBodyBB);
-  Value *cmp32132 = builder.CreateICmpSLT(i0Lcssa, len, "cmp32132");
-  builder.CreateCondBr(cmp32132, forBody33BB, forEnd37BB);
+  // Add instructions to ForCond31PreheaderBB
+  builder.SetInsertPoint(ForCond31PreheaderBB);
+  PHINode *I0Lcssa =
+      builder.CreatePHI(Type::getInt32Ty(F.getContext()), 0, "I.0.lcssa");
+  I0Lcssa->addIncoming(ConstantInt::get(Type::getInt32Ty(F.getContext()), 0),
+                       ForCondPreheaderBB);
+  I0Lcssa->addIncoming(AndValue, ForBodyBB);
+  Value *Cmp32132 = builder.CreateICmpSLT(I0Lcssa, Len, "Cmp32132");
+  builder.CreateCondBr(Cmp32132, ForBody33BB, ForEnd37BB);
 
-  // Modify forBody33BB
-  Instruction *tempInstr = nullptr;
-  for (auto &I : *forBody33BB) {
-    if (PHINode *phi = dyn_cast<PHINode>(&I)) {
-      if (phi->getType()->isIntegerTy(32)) {
-        phi->setIncomingValue(1, i0Lcssa);
-        phi->setIncomingBlock(1, forCond31PreheaderBB);
-      } else if (phi->getType()->isFloatTy()) {
-        phi->setIncomingValue(1, acc00Lcssa);
-        phi->setIncomingBlock(1, forCond31PreheaderBB);
-        tempInstr = phi;
-      }
+  // Modify ForBody33BB
+  Instruction *TempInstr = nullptr;
+  for (PHINode &PHI : ForBody33BB->phis()) {
+    if (PHI.getType()->isIntegerTy(32)) {
+      PHI.setIncomingValue(1, I0Lcssa);
+      PHI.setIncomingBlock(1, ForCond31PreheaderBB);
+    } else if (PHI.getType()->isFloatTy()) {
+      PHI.setIncomingValue(1, Acc00Lcssa);
+      PHI.setIncomingBlock(1, ForCond31PreheaderBB);
+      TempInstr = &PHI;
     }
   }
 
-  // Modify forEnd37BB
-  Instruction *acc01Lcssa = tempInstr->clone();
-  acc01Lcssa->setName("acc0.1.lcssa");
-  acc01Lcssa->insertInto(forEnd37BB, forEnd37BB->end());
-  builder.SetInsertPoint(forEnd37BB);
+  // Modify ForEnd37BB
+  Instruction *Acc01Lcssa = TempInstr->clone();
+  Acc01Lcssa->setName("acc0.1.lcssa");
+  Acc01Lcssa->insertInto(ForEnd37BB, ForEnd37BB->end());
+  builder.SetInsertPoint(ForEnd37BB);
 
   // Create pairs of floating-point additions
-  Value *sum01 = builder.CreateFAdd(acc01Lcssa, instructions[0], "sum01");
-  Value *sum23 = builder.CreateFAdd(instructions[1], instructions[2], "sum23");
-  Value *sum45 = builder.CreateFAdd(instructions[3], instructions[4], "sum45");
-  Value *sum67 = builder.CreateFAdd(instructions[5], instructions[6], "sum67");
+  Value *Sum01 = builder.CreateFAdd(Acc01Lcssa, instructions[0], "Sum01");
+  Value *Sum23 = builder.CreateFAdd(instructions[1], instructions[2], "Sum23");
+  Value *Sum45 = builder.CreateFAdd(instructions[3], instructions[4], "Sum45");
+  Value *Sum67 = builder.CreateFAdd(instructions[5], instructions[6], "Sum67");
 
   // Combine pairs
-  Value *sum0123 = builder.CreateFAdd(sum01, sum23, "sum0123");
-  Value *sum4567 = builder.CreateFAdd(sum45, sum67, "sum4567");
+  Value *Sum0123 = builder.CreateFAdd(Sum01, Sum23, "Sum0123");
+  Value *Sum4567 = builder.CreateFAdd(Sum45, Sum67, "Sum4567");
 
   // Final addition
-  Value *currentAdd = builder.CreateFAdd(sum0123, sum4567, "add44");
-  builder.CreateBr(ifEnd);
+  Value *CurrentAdd = builder.CreateFAdd(Sum0123, Sum4567, "add44");
+  builder.CreateBr(IfEnd);
 
-  // Modify entry basic block
-  BranchInst *entryBi = dyn_cast<BranchInst>(entryBB->getTerminator());
-  entryBi->setSuccessor(0, forCondPreheaderBB);
-  entryBi->setSuccessor(1, forCond46PreheaderBB);
+  // Modify Entry basic block
+  BranchInst *EntryBi = dyn_cast<BranchInst>(EntryBB->getTerminator());
+  EntryBi->setSuccessor(0, ForCondPreheaderBB);
+  EntryBi->setSuccessor(1, ForCond46PreheaderBB);
 
-  // Modify forCond46PreheaderBB
-  forCond46PreheaderBB->getTerminator()->getPrevNode()->setName("cmp47110");
+  // Modify ForCond46PreheaderBB
+  ForCond46PreheaderBB->getTerminator()->getPrevNode()->setName("cmp47110");
 
   // Modify for.body33
-  BranchInst *forBody33Bi = dyn_cast<BranchInst>(forBody33BB->getTerminator());
-  forBody33Bi->setSuccessor(0, forEnd37BB);
-  forBody33Bi->setSuccessor(1, forBody33BB);
+  BranchInst *ForBody33Bi = dyn_cast<BranchInst>(ForBody33BB->getTerminator());
+  ForBody33Bi->setSuccessor(0, ForEnd37BB);
+  ForBody33Bi->setSuccessor(1, ForBody33BB);
 
   // Modify if.end
-  PHINode *ifEndPhi = dyn_cast<PHINode>(&ifEnd->front());
-  ifEndPhi->setIncomingValue(1, currentAdd);
-  ifEndPhi->setIncomingBlock(1, forEnd37BB);
+  PHINode *IfEndPhi = dyn_cast<PHINode>(&IfEnd->front());
+  IfEndPhi->setIncomingValue(1, CurrentAdd);
+  IfEndPhi->setIncomingBlock(1, ForEnd37BB);
 
-  changed = true;
-  return changed;
+  Changed = true;
+  return Changed;
 }
 
 // Function to unroll the cloned for.cond.preheader
 static void unrollClonedForCondPreheader(BasicBlock *clonedForBody,
                                          BasicBlock *clonedForCondPreheader,
-                                         BasicBlock *forCondPreheader) {
+                                         BasicBlock *ForCondPreheader) {
   Function *F = clonedForBody->getParent();
-  BasicBlock *forBody = getBasicBlockByName(*F, "for.body");
-  assert(forBody && "Expected to find for.body!");
+  BasicBlock *ForBody = getBasicBlockByName(*F, "for.body");
+  assert(ForBody && "Expected to find for.body!");
 
-  // Find PHI instructions in clonedForBody
-  SmallVector<PHINode *> phiNodes;
-  for (Instruction &I : *clonedForBody) {
-    if (PHINode *phi = dyn_cast<PHINode>(&I)) {
-      phiNodes.push_back(phi);
-    }
-  }
-
-  // Remove unused PHI nodes in clonedForCondPreheader
-  SmallVector<PHINode *> unusedPhiNodes;
-  for (Instruction &I : *clonedForCondPreheader) {
-    if (PHINode *phi = dyn_cast<PHINode>(&I)) {
-      if (phi->use_empty()) {
-        unusedPhiNodes.push_back(phi);
-      }
-    }
-  }
-  for (PHINode *phi : unusedPhiNodes) {
-    phi->eraseFromParent();
-  }
-
+  DeleteDeadPHIs(clonedForCondPreheader);
   // Clone PHI instructions to the beginning of clonedForCondPreheader
-  Instruction *insertPoint = &clonedForCondPreheader->front();
+  Instruction *InsertPoint = &clonedForCondPreheader->front();
   SmallVector<PHINode *> clonedPhiNodes;
-  for (PHINode *phi : phiNodes) {
-    PHINode *clonedPhi = cast<PHINode>(phi->clone());
-    clonedPhi->setName(phi->getName() + ".clone");
-    clonedPhi->setIncomingBlock(0, forBody);
-    clonedPhi->insertBefore(insertPoint);
-    insertPoint = clonedPhi->getNextNode();
-    clonedPhiNodes.push_back(clonedPhi);
+  for (PHINode &Phi : clonedForBody->phis()) {
+    PHINode *ClonedPhi = cast<PHINode>(Phi.clone());
+    ClonedPhi->setName(Phi.getName() + ".clone");
+    ClonedPhi->setIncomingBlock(0, ForBody);
+    ClonedPhi->insertBefore(InsertPoint);
+    InsertPoint = ClonedPhi->getNextNode();
+    clonedPhiNodes.push_back(ClonedPhi);
   }
-
-  // Find and clone the unique icmp instruction in forBody
-  Value *specStoreSelect = nullptr;
-  Instruction *cmpSlt = nullptr;
-  for (Instruction &I : *forBody) {
-    if (auto *icmp = dyn_cast<ICmpInst>(&I)) {
-      specStoreSelect = icmp->getOperand(0);
-      cmpSlt = icmp->clone();
-      cmpSlt->setName("cmp_slt");
-      cmpSlt->insertAfter(insertPoint);
+  // Find and clone the unique Icmp instruction in ForBody
+  Value *SpecStoreSelect = nullptr;
+  Instruction *CmpSlt = nullptr;
+  for (Instruction &Inst : *ForBody) {
+    if (auto *Icmp = dyn_cast<ICmpInst>(&Inst)) {
+      SpecStoreSelect = Icmp->getOperand(0);
+      CmpSlt = Icmp->clone();
+      CmpSlt->setName("cmp_slt");
+      CmpSlt->insertAfter(InsertPoint);
       break;
     }
   }
-  assert(specStoreSelect && "Failed to find icmp instruction in ForBody");
+  assert(SpecStoreSelect && "Failed to find Icmp instruction in ForBody");
 
-  // Replace the existing icmp in clonedForCondPreheader
-  for (Instruction &I : *clonedForCondPreheader) {
-    if (auto *icmp = dyn_cast<ICmpInst>(&I)) {
-      icmp->replaceAllUsesWith(cmpSlt);
-      icmp->eraseFromParent();
+  // Replace the existing Icmp in clonedForCondPreheader
+  for (Instruction &Inst : *clonedForCondPreheader) {
+    if (auto *Icmp = dyn_cast<ICmpInst>(&Inst)) {
+      Icmp->replaceAllUsesWith(CmpSlt);
+      Icmp->eraseFromParent();
       break;
     }
   }
 
   // Set the operand of cmp_slt to the first cloned PHI node
-  cmpSlt->setOperand(0, clonedPhiNodes[0]);
+  CmpSlt->setOperand(0, clonedPhiNodes[0]);
 
   // Update the successor of clonedForCondPreheader
-  clonedForCondPreheader->getTerminator()->setSuccessor(1, forCondPreheader);
+  clonedForCondPreheader->getTerminator()->setSuccessor(1, ForCondPreheader);
 }
 
 static std::tuple<Value *, Value *, Value *>
@@ -1086,26 +2382,25 @@ modifyForBodyPreheader(BasicBlock *ForBodyPreheader,
   PHINode *TargetPHI = nullptr;
   PHINode *TargetPHI2 = nullptr;
   PHINode *TargetPHI3 = nullptr;
-  for (Instruction &I : *ClonedForCondPreheader) {
-    if (auto *phi = dyn_cast<PHINode>(&I)) {
-      if (phi->getType()->isIntegerTy(32)) {
-        if (isIncomingValueZeroOfPhi(phi)) {
-          // Found the target PHI node
-          TargetPHI = phi;
-        } else {
-          TargetPHI2 = phi;
-        }
-      } else if (phi->getType()->isFloatTy()) {
-        if (TargetPHI3 == nullptr) {
-          TargetPHI3 = phi;
-          break;
-        }
+  for (PHINode &Phi : ClonedForCondPreheader->phis()) {
+    if (Phi.getType()->isIntegerTy(32)) {
+      if (isIncomingValueZeroOfPhi(&Phi)) {
+        // Found the target PHI node
+        TargetPHI = &Phi;
+      } else {
+        TargetPHI2 = &Phi;
+      }
+    } else if (Phi.getType()->isFloatTy()) {
+      if (TargetPHI3 == nullptr) {
+        TargetPHI3 = &Phi;
+        break;
       }
     }
   }
+
   BinaryOperator *NewSub = nullptr;
-  for (Instruction &I : *ForBodyPreheader) {
-    if (auto *BinOp = dyn_cast<BinaryOperator>(&I)) {
+  for (Instruction &Inst : *ForBodyPreheader) {
+    if (auto *BinOp = dyn_cast<BinaryOperator>(&Inst)) {
       if (BinOp->getOpcode() == Instruction::Sub) {
         // Change to add
         NewSub = BinaryOperator::CreateAdd(BinOp->getOperand(0), TargetPHI,
@@ -1126,8 +2421,7 @@ static Value *expandForCondPreheader(
     BasicBlock *ForBody, BasicBlock *ForCondPreheader,
     BasicBlock *ClonedForCondPreheader,
     std::tuple<Value *, Value *, Value *> NewSubAndTargetPHI3) {
-  Instruction *TargetInst =
-      getFirstCallInstWithName(ForBody, "llvm.fmuladd.f32");
+  Instruction *TargetInst = getFirstFMulAddInst(ForBody);
   assert(TargetInst && "TargetInst not found");
   Value *NewSub = std::get<0>(NewSubAndTargetPHI3);
   Value *TargetPHI2 = std::get<1>(NewSubAndTargetPHI3);
@@ -1137,7 +2431,7 @@ static Value *expandForCondPreheader(
       ForCondPreheader->getContext(), ForCondPreheader->getName() + ".loopexit",
       ForCondPreheader->getParent(), ForCondPreheader);
 
-  // Create new sub instruction in .loopexit block
+  // Create new Sub instruction in .loopexit block
   IRBuilder<> Builder(LoopExit);
   Value *NewSubInst = Builder.CreateSub(NewSub, TargetPHI2);
 
@@ -1158,26 +2452,22 @@ static Value *expandForCondPreheader(
          "Failed to find target PHI node in ClonedForCondPreheader");
 
   // Update the incoming value of the PHI nodes in ForCondPreheader to the
-  // result of the new sub instruction
+  // result of the new Sub instruction
   for (PHINode &Phi : ForCondPreheader->phis()) {
     if (Phi.getType()->isIntegerTy(32)) {
       Phi.setIncomingValue(0, TargetPHI);
-      Phi.setIncomingBlock(0, ClonedForCondPreheader);
       Phi.setIncomingValue(1, NewSubInst);
-      Phi.setIncomingBlock(1, LoopExit);
     } else if (Phi.getType()->isFloatTy()) {
       Phi.setIncomingValue(0, TargetPHI3);
-      Phi.setIncomingBlock(0, ClonedForCondPreheader);
-      // Phi.setIncomingValue(1, TargetInst);
-      Phi.setIncomingBlock(1, LoopExit);
+      Phi.setIncomingValue(1, TargetInst);
     }
   }
-
-  // Get the icmp instruction in ForCondPreheader
+  setPHINodesBlock(ForCondPreheader, ClonedForCondPreheader, LoopExit);
+  // Get the Icmp instruction in ForCondPreheader
   ICmpInst *icmpInst = getFirstInst<ICmpInst>(ForCondPreheader);
 
-  // Ensure we found the icmp instruction
-  assert(icmpInst && "Failed to find icmp instruction in ForCondPreheader");
+  // Ensure we found the Icmp instruction
+  assert(icmpInst && "Failed to find Icmp instruction in ForCondPreheader");
 
   // Set the operand 1 of icmpInst to constant 7
   LLVMContext &Ctx = ForCondPreheader->getContext();
@@ -1186,7 +2476,7 @@ static Value *expandForCondPreheader(
 
   // Create a new add nsw instruction before icmpInst, with operand 0 the same
   // as icmpInst, and operand 1 as -7. This instruction will be used as the
-  // return value of the function
+  // return value of the Function
   Value *constNeg7 = ConstantInt::get(Type::getInt32Ty(Ctx), -7);
   IRBuilder<> BuilderBeforeICmp(icmpInst);
   Value *AddInst =
@@ -1197,14 +2487,37 @@ static Value *expandForCondPreheader(
   return AddInst;
 }
 
-static void updateRealForBody(Function &F, Value *sub) {
+static void updateRealForBody(Function &F, Value *Sub) {
   BasicBlock *ForBody = getBasicBlockByName(F, "for.body");
   assert(ForBody && "Expected to find for.body!");
-  ICmpInst *lastICmp =
+  ICmpInst *LastICmp =
       getLastICmpInstWithPredicate(ForBody, ICmpInst::ICMP_SLT);
-  if (lastICmp) {
-    lastICmp->setOperand(1, sub);
+  if (LastICmp) {
+    LastICmp->setOperand(1, Sub);
   }
+}
+
+// Helper Function to find two i32 PHI nodes in a basic block
+static std::pair<PHINode *, PHINode *> findTwoI32PhiInBB(BasicBlock *BB) {
+  PHINode *FirstI32Phi = nullptr;
+  PHINode *secondI32Phi = nullptr;
+
+  for (PHINode &Phi : BB->phis()) {
+    if (Phi.getType()->isIntegerTy(32)) {
+      if (isIncomingValueZeroOfPhi(&Phi)) {
+        FirstI32Phi = &Phi;
+      } else {
+        secondI32Phi = &Phi;
+      }
+      if (FirstI32Phi && secondI32Phi)
+        break;
+    }
+  }
+
+  assert(FirstI32Phi && secondI32Phi &&
+         "Failed to find two i32 type PHI nodes in basic block");
+
+  return std::make_pair(FirstI32Phi, secondI32Phi);
 }
 
 static void modifyForBody(BasicBlock *ClonedForCondPreheader,
@@ -1220,11 +2533,11 @@ static void modifyForBody(BasicBlock *ClonedForCondPreheader,
   // type PHI node in ClonedForCondPreheader
   FloatPhiInForBody->setIncomingValue(0, FirstFloatPhiInClonedForCondPreheader);
 
-  // Find the unique icmp eq instruction in ForBody
+  // Find the unique Icmp eq instruction in ForBody
   ICmpInst *IcmpEq = getFirstICmpInstWithPredicate(ForBody, ICmpInst::ICMP_EQ);
 
-  // Ensure we found the icmp eq instruction
-  assert(IcmpEq && "Failed to find icmp eq instruction in ForBody");
+  // Ensure we found the Icmp eq instruction
+  assert(IcmpEq && "Failed to find Icmp eq instruction in ForBody");
 
   // Get the original operand 1
   Value *OriginalOperand1 = IcmpEq->getOperand(1);
@@ -1235,48 +2548,13 @@ static void modifyForBody(BasicBlock *ClonedForCondPreheader,
     // Set operand 1 to the operand 0 of the original operand 1 instruction
     IcmpEq->setOperand(1, OriginalOperand1Inst->getOperand(0));
   } else {
-    assert(false && "The original operand 1 is not an instruction, "
-                    "cannot get its operand 0\n");
+    llvm_unreachable("The original operand 1 is not an instruction, "
+                     "cannot get its operand 0\n");
   }
 
-  // Find the phi i32 incoming value that is a variable in
-  // ClonedForCondPreheader
-  PHINode *TargetPHI = nullptr;
-  PHINode *TargetPHI2 = nullptr;
-  for (Instruction &I : *ClonedForCondPreheader) {
-    if (PHINode *Phi = dyn_cast<PHINode>(&I)) {
-      if (isIncomingValueZeroOfPhi(Phi)) {
-        TargetPHI = Phi;
-      } else {
-        TargetPHI2 = Phi;
-      }
-      if (TargetPHI && TargetPHI2)
-        break;
-    }
-  }
-
-  // Ensure we found the target PHI node
-  assert(TargetPHI &&
-         "Failed to find the target PHI node in ClonedForCondPreheader");
-
-  // Find the phi i32 incoming value that is a variable in ForBody
-  PHINode *TargetPHIInForBody = nullptr;
-  PHINode *TargetPHIInForBody2 = nullptr;
-  for (Instruction &I : *ForBody) {
-    if (PHINode *Phi = dyn_cast<PHINode>(&I)) {
-      if (isIncomingValueZeroOfPhi(Phi)) {
-        TargetPHIInForBody = Phi;
-      } else {
-        TargetPHIInForBody2 = Phi;
-      }
-      if (TargetPHIInForBody && TargetPHIInForBody2)
-        break;
-    }
-  }
-
-  // Ensure that the target PHI nodes are found
-  assert(TargetPHIInForBody && TargetPHIInForBody2 &&
-         "Failed to find matching PHI nodes in ForBody");
+  // Original code can be simplified to:
+  auto [TargetPHI, TargetPHI2] = findTwoI32PhiInBB(ClonedForCondPreheader);
+  auto [TargetPHIInForBody, TargetPHIInForBody2] = findTwoI32PhiInBB(ForBody);
 
   // Set the incoming value of the PHI nodes found in ForBody
   // to the PHI nodes found in ClonedForCondPreheader
@@ -1287,12 +2565,12 @@ static void modifyForBody(BasicBlock *ClonedForCondPreheader,
 }
 
 static void insertUnusedInstructionsBeforeIcmp(PHINode *phiI32InClonedForBody,
-                                               ICmpInst *lastIcmpEq) {
+                                               ICmpInst *LastIcmpEq) {
   for (Use &U : phiI32InClonedForBody->uses()) {
     if (Instruction *Used = dyn_cast<Instruction>(U.getUser())) {
       if (Used->getParent() == nullptr) {
         if (Used->use_empty()) {
-          Used->insertBefore(lastIcmpEq);
+          Used->insertBefore(LastIcmpEq);
         }
       }
     }
@@ -1301,32 +2579,20 @@ static void insertUnusedInstructionsBeforeIcmp(PHINode *phiI32InClonedForBody,
 
 static void modifyClonedForBody(BasicBlock *ClonedForBody) {
 
-  ICmpInst *lastIcmpEq = getLastInst<ICmpInst>(ClonedForBody);
-  assert(lastIcmpEq &&
-         "Failed to find last icmp eq instruction in ClonedForBody");
+  ICmpInst *LastIcmpEq = getLastInst<ICmpInst>(ClonedForBody);
+  assert(LastIcmpEq &&
+         "Failed to find last Icmp eq instruction in ClonedForBody");
 
   PHINode *phiI32InClonedForBody = nullptr;
-  for (auto &Inst : *ClonedForBody) {
-    if (PHINode *Phi = dyn_cast<PHINode>(&Inst)) {
-      if (isIncomingValueZeroOfPhi(Phi)) {
-        phiI32InClonedForBody = Phi;
-        insertUnusedInstructionsBeforeIcmp(phiI32InClonedForBody, lastIcmpEq);
-      }
+  for (PHINode &Phi : ClonedForBody->phis()) {
+    if (isIncomingValueZeroOfPhi(&Phi)) {
+      phiI32InClonedForBody = &Phi;
+      insertUnusedInstructionsBeforeIcmp(phiI32InClonedForBody, LastIcmpEq);
     }
   }
 
-  // Ensure that the phi i32 node is found
-  assert(phiI32InClonedForBody && "phi i32 node not found in ClonedForBody");
-}
-
-static BasicBlock *getFirstSuccessorOfForBody(BasicBlock *ForBody) {
-  BasicBlock *ForCondPreheader = nullptr;
-  assert(succ_size(ForBody) == 2 && "ForBody should have 2 successors");
-  for (auto *succ : successors(ForBody)) {
-    ForCondPreheader = succ;
-    break;
-  }
-  return ForCondPreheader;
+  // Ensure that the Phi i32 node is found
+  assert(phiI32InClonedForBody && "Phi i32 node not found in ClonedForBody");
 }
 
 static std::tuple<BasicBlock *, BasicBlock *, BasicBlock *>
@@ -1353,7 +2619,7 @@ cloneThreeBB(BasicBlock *ForBodyPreheader, BasicBlock *ForBody,
 }
 
 static std::tuple<BasicBlock *, BasicBlock *, Value *>
-modifyFirstForBody(Loop *L, Function &F, BasicBlock *ForBody, Value *sub) {
+modifyFirstForBody(Loop *L, Function &F, BasicBlock *ForBody, Value *Sub) {
 
   BasicBlock *ForBodyPreheader = L->getLoopPreheader();
 
@@ -1365,8 +2631,8 @@ modifyFirstForBody(Loop *L, Function &F, BasicBlock *ForBody, Value *sub) {
     PreForBody = Pred;
   }
 
-  // Find the first successor of ForBody, it should have two
-  BasicBlock *ForCondPreheader = getFirstSuccessorOfForBody(ForBody);
+  // Find the first successor of ForBody, It should have two
+  BasicBlock *ForCondPreheader = ForBody->getTerminator()->getSuccessor(0);
 
   std::tuple<BasicBlock *, BasicBlock *, BasicBlock *> ClonedBBs =
       cloneThreeBB(ForBodyPreheader, ForBody, ForCondPreheader, F);
@@ -1394,8 +2660,8 @@ modifyFirstForBody(Loop *L, Function &F, BasicBlock *ForBody, Value *sub) {
   // for.body -> for.cond71.preheader
   PreForBody->getTerminator()->setSuccessor(1, ClonedForCondPreheader);
 
-  preProcessClonedForBody(ClonedForBody, sub);
-  updateRealForBody(F, sub);
+  preProcessClonedForBody(ClonedForBody, Sub);
+  updateRealForBody(F, Sub);
   unrollClonedForBody(ClonedForBody, ClonedForCondPreheader, 0);
   modifyClonedForBody(ClonedForBody);
   unrollClonedForCondPreheader(ClonedForBody, ClonedForCondPreheader,
@@ -1432,27 +2698,27 @@ static bool moveIfEndToEnd(Function &F) {
 static Value *modifyForCondPreheader(Function &F) {
   LLVMContext &Ctx = F.getContext();
 
-  BasicBlock *forCondPreheader = getBasicBlockByName(F, "for.cond.preheader");
-  BasicBlock *forBodyLrPh = getBasicBlockByName(F, "for.body.lr.ph");
-  assert(forCondPreheader && "Expected to find for.cond.preheader!");
-  assert(forBodyLrPh && "Expected to find for.body.lr.ph!");
-  forCondPreheader->replaceAllUsesWith(forBodyLrPh);
-  forCondPreheader->eraseFromParent();
-  forBodyLrPh->setName("for.cond.preheader");
+  BasicBlock *ForCondPreheader = getBasicBlockByName(F, "for.cond.preheader");
+  BasicBlock *ForBodyLrPh = getBasicBlockByName(F, "for.body.lr.ph");
+  assert(ForCondPreheader && "Expected to find for.cond.preheader!");
+  assert(ForBodyLrPh && "Expected to find for.body.lr.ph!");
+  ForCondPreheader->replaceAllUsesWith(ForBodyLrPh);
+  ForCondPreheader->eraseFromParent();
+  ForBodyLrPh->setName("for.cond.preheader");
 
-  unsigned int loadnum = 0;
-  for (auto I = forBodyLrPh->begin(); I != forBodyLrPh->end(); ++I) {
-    if (auto *loadinst = dyn_cast<LoadInst>(&*I)) {
-      loadnum++;
-      if (loadnum == 2) {
-        IRBuilder<> Builder(loadinst->getNextNode());
+  unsigned int Loadnum = 0;
+  for (auto I = ForBodyLrPh->begin(); I != ForBodyLrPh->end(); ++I) {
+    if (auto *Loadinst = dyn_cast<LoadInst>(&*I)) {
+      Loadnum++;
+      if (Loadnum == 2) {
+        IRBuilder<> Builder(Loadinst->getNextNode());
         Value *NegSeven = ConstantInt::get(Type::getInt32Ty(Ctx), -7);
-        Value *Sub = Builder.CreateNSWAdd(loadinst, NegSeven, "sub");
+        Value *Sub = Builder.CreateNSWAdd(Loadinst, NegSeven, "Sub");
         return Sub; // Return the newly inserted instruction
       }
     }
   }
-  assert(false && "it must not be here");
+  llvm_unreachable("It must not be here");
 }
 
 static void modifyForCondPreheader2(BasicBlock *ClonedForBody,
@@ -1460,33 +2726,25 @@ static void modifyForCondPreheader2(BasicBlock *ClonedForBody,
                                     BasicBlock *ForCondPreheader,
                                     Value *andinst) {
 
-  // Find phi instructions of float type in ClonedForBody
-  SmallVector<PHINode *> PhiNodes;
-  for (Instruction &I : *ClonedForBody) {
-    if (PHINode *Phi = dyn_cast<PHINode>(&I)) {
-      PhiNodes.push_back(Phi);
-    }
-  }
-
-  // Clone the found phi instructions to the beginning of ClonedForCondPreheader
+  // Clone the found Phi instructions to the beginning of ClonedForCondPreheader
   // in order
   Instruction *InsertPoint = &ForCondPreheader->front();
-  PHINode *phi = cast<PHINode>(InsertPoint);
+  PHINode *Phi = cast<PHINode>(InsertPoint);
 
-  BasicBlock *lastForCondPreheader = phi->getIncomingBlock(0);
+  BasicBlock *LastForCondPreheader = Phi->getIncomingBlock(0);
   SmallVector<PHINode *> ClonedPhiNodes;
   unsigned int floatphicount = 0;
-  for (PHINode *Phi : PhiNodes) {
-    PHINode *ClonedPhi = cast<PHINode>(Phi->clone());
-    ClonedPhi->setName(Phi->getName() + ".clone");
-    // Modify the operand 0 basicblock of each phi instruction to ForBody
-    if (Phi->getType()->isFloatTy()) {
+  for (PHINode &Phi2 : ClonedForBody->phis()) {
+    PHINode *ClonedPhi = cast<PHINode>(Phi2.clone());
+    ClonedPhi->setName(Phi2.getName() + ".clone");
+    // Modify the operand 0 basicblock of each Phi instruction to ForBody
+    if (Phi2.getType()->isFloatTy()) {
       if (floatphicount == 0) {
-        ClonedPhi->setIncomingValue(0, phi->getIncomingValue(0));
+        ClonedPhi->setIncomingValue(0, Phi->getIncomingValue(0));
         floatphicount++;
       }
     }
-    ClonedPhi->setIncomingBlock(0, lastForCondPreheader);
+    ClonedPhi->setIncomingBlock(0, LastForCondPreheader);
     ClonedPhi->insertAfter(InsertPoint);
     // Update the insertion point to after the newly inserted PHI node
     InsertPoint = ClonedPhi;
@@ -1494,30 +2752,30 @@ static void modifyForCondPreheader2(BasicBlock *ClonedForBody,
     ClonedPhiNodes.push_back(ClonedPhi);
   }
 
-  // Find operand 1 of the icmp instruction from ClonedForBody
+  // Find operand 1 of the Icmp instruction from ClonedForBody
   ICmpInst *firstIcmp = getFirstInst<ICmpInst>(ClonedForBody);
-  assert(firstIcmp && "Unable to find icmp instruction in ClonedForBody");
+  assert(firstIcmp && "Unable to find Icmp instruction in ClonedForBody");
   Value *IcmpOperand1 = firstIcmp->getOperand(1);
 
-  // Set operand 0 of icmp in ForCondPreheader to ClonedPhiNodes[0], and operand
+  // Set operand 0 of Icmp in ForCondPreheader to ClonedPhiNodes[0], and operand
   // 1 to IcmpOperand1
-  for (Instruction &I : *ForCondPreheader) {
-    if (ICmpInst *Icmp = dyn_cast<ICmpInst>(&I)) {
+  for (Instruction &Inst : *ForCondPreheader) {
+    if (ICmpInst *Icmp = dyn_cast<ICmpInst>(&Inst)) {
       Icmp->setOperand(0, ClonedPhiNodes[0]);
       Icmp->setOperand(1, IcmpOperand1);
-      Icmp->setName("cmp");
+      Icmp->setName("Cmp");
       break;
     }
   }
 
   ForCondPreheader->getTerminator()->setSuccessor(1, ClonedForCondPreheader);
 
-  // // Delete redundant getelementptr, store and add instructions
+  // Delete redundant getelementptr, store and add instructions
   SmallVector<Instruction *> InstructionsToRemove;
-  for (Instruction &I : *ForCondPreheader) {
-    if (isa<GetElementPtrInst>(&I) || isa<StoreInst>(&I) ||
-        isa<BinaryOperator>(&I)) {
-      InstructionsToRemove.push_back(&I);
+  for (Instruction &Inst : *ForCondPreheader) {
+    if (isa<GetElementPtrInst>(&Inst) || isa<StoreInst>(&Inst) ||
+        isa<BinaryOperator>(&Inst)) {
+      InstructionsToRemove.push_back(&Inst);
     }
   }
   for (auto Inst = InstructionsToRemove.rbegin();
@@ -1526,13 +2784,13 @@ static void modifyForCondPreheader2(BasicBlock *ClonedForBody,
       (*Inst)->eraseFromParent();
     }
   }
-  // Find the icmp instruction in ClonedForCondPreheader
+  // Find the Icmp instruction in ClonedForCondPreheader
   ICmpInst *IcmpInForCondPreheader =
       getFirstICmpInstWithPredicate(ForCondPreheader, ICmpInst::ICMP_EQ);
 
-  // Ensure that the icmp instruction is found
+  // Ensure that the Icmp instruction is found
   assert(IcmpInForCondPreheader &&
-         "icmp instruction not found in ClonedForCondPreheader");
+         "Icmp instruction not found in ClonedForCondPreheader");
 
   // Get the original operand 1
   Value *OriginalOperand1 = IcmpInForCondPreheader->getOperand(1);
@@ -1549,23 +2807,21 @@ static void modifyForCondPreheader2(BasicBlock *ClonedForBody,
     IcmpInForCondPreheader->setPredicate(CmpInst::ICMP_SLT);
 
   } else {
-    assert(false && "The original operand 1 is not an instruction, cannot get "
-                    "its operand 0\n");
+    llvm_unreachable("The original operand 1 is not an instruction, cannot get "
+                     "its operand 0\n");
   }
 
-  // Find phi i32 node in ForCondPreheader with incoming 0 value == 0
+  // Find Phi i32 node in ForCondPreheader with incoming 0 value == 0
   PHINode *TargetPhi = nullptr;
-  for (Instruction &I : *ForCondPreheader) {
-    if (PHINode *Phi = dyn_cast<PHINode>(&I)) {
-      if (isIncomingValueZeroOfPhi(Phi)) {
-        TargetPhi = Phi;
-        break;
-      }
+  for (PHINode &Phi : ForCondPreheader->phis()) {
+    if (isIncomingValueZeroOfPhi(&Phi)) {
+      TargetPhi = &Phi;
+      break;
     }
   }
 
-  // Ensure the target phi node is found
-  assert(TargetPhi && "No matching phi i32 node found in ForCondPreheader");
+  // Ensure the target Phi node is found
+  assert(TargetPhi && "No matching Phi i32 node found in ForCondPreheader");
 
   TargetPhi->setIncomingValue(1, andinst);
 }
@@ -1573,7 +2829,7 @@ static void modifyForCondPreheader2(BasicBlock *ClonedForBody,
 static Value *modifyClonedForBodyPreheader(BasicBlock *ClonedForBodyPreheader,
                                            BasicBlock *ForBody) {
   ICmpInst *firstIcmp = getFirstInst<ICmpInst>(ForBody);
-  assert(firstIcmp && "Unable to find icmp instruction in ForBody");
+  assert(firstIcmp && "Unable to find Icmp instruction in ForBody");
 
   Value *IcmpOperand1 = firstIcmp->getOperand(1);
 
@@ -1587,38 +2843,27 @@ static void modifyClonedForCondPreheader(BasicBlock *ClonedForCondPreheader,
                                          BasicBlock *ForBody,
                                          BasicBlock *ForCondPreheader) {
 
-  // Find float type phi node in ForBody
-  PHINode *FloatPhiInForBody = nullptr;
-  for (Instruction &I : *ForBody) {
-    if (PHINode *Phi = dyn_cast<PHINode>(&I)) {
-      if (Phi->getType()->isFloatTy()) {
-        FloatPhiInForBody = cast<PHINode>(I.clone());
-        break;
-      }
-    }
-  }
-
-  // Find and replace float type phi node in ClonedForCondPreheader
+  PHINode *FloatPhiInForBody =
+      cast<PHINode>(getFirstFloatPhi(ForBody)->clone());
+  // Find and replace float type Phi node in ClonedForCondPreheader
   if (FloatPhiInForBody) {
-    PHINode *phi = getFirstFloatPhi(ClonedForCondPreheader);
-    assert(phi && "phi node not found");
-    FloatPhiInForBody->insertBefore(phi);
-    phi->replaceAllUsesWith(FloatPhiInForBody);
-    phi->eraseFromParent();
+    PHINode *Phi = getFirstFloatPhi(ClonedForCondPreheader);
+    assert(Phi && "Phi node not found");
+    FloatPhiInForBody->insertBefore(Phi);
+    Phi->replaceAllUsesWith(FloatPhiInForBody);
+    Phi->eraseFromParent();
   }
 
-  // Set incomingblock 0 of FloatPhiInForBody to ForCondPreheader
+  // // Set incomingblock 0 of FloatPhiInForBody to ForCondPreheader
   if (FloatPhiInForBody) {
     FloatPhiInForBody->setIncomingBlock(0, ForCondPreheader);
   }
 
-  // Find float type phi nodes in ForCondPreheader
+  // Find float type Phi nodes in ForCondPreheader
   SmallVector<PHINode *> FloatPhisInForCondPreheader;
-  for (Instruction &I : *ForCondPreheader) {
-    if (PHINode *Phi = dyn_cast<PHINode>(&I)) {
-      if (Phi->getType()->isFloatTy()) {
-        FloatPhisInForCondPreheader.push_back(Phi);
-      }
+  for (auto &Phi : ForCondPreheader->phis()) {
+    if (Phi.getType()->isFloatTy()) {
+      FloatPhisInForCondPreheader.push_back(&Phi);
     }
   }
 
@@ -1685,18 +2930,18 @@ static void modifyClonedForCondPreheader(BasicBlock *ClonedForCondPreheader,
 
   if (SecondSuccessor && addinst) {
     // Iterate through all PHI nodes in SecondSuccessor
-    int phiCount = 0;
+    int PhiCount = 0;
     for (PHINode &Phi : SecondSuccessor->phis()) {
-      if (phiCount == 1) { // Second phi node
+      if (PhiCount == 1) { // Second Phi node
         // Set the second predecessor to ClonedForCondPreheader and its value to
         // addinst
         Phi.setIncomingBlock(1, ClonedForCondPreheader);
         Phi.setIncomingValue(1, addinst);
       } else {
-        // For other phi nodes, only update the predecessor basic block
+        // For other Phi nodes, only update the predecessor basic block
         Phi.setIncomingBlock(1, ClonedForCondPreheader);
       }
-      phiCount++;
+      PhiCount++;
     }
   }
 }
@@ -1704,112 +2949,82 @@ static void modifyClonedForCondPreheader(BasicBlock *ClonedForCondPreheader,
 static void modifyClonedForBody2(BasicBlock *ClonedForBody,
                                  BasicBlock *ClonedForCondPreheader,
                                  Value *AddInst, BasicBlock *ForCondPreheader) {
-  SmallVector<PHINode *> floatPhiNodes;
+  SmallVector<PHINode *> FloatPhiNodes;
 
   // Iterate through all instructions in ClonedForCondPreheader
-  for (Instruction &I : *ClonedForCondPreheader) {
-    if (PHINode *Phi = dyn_cast<PHINode>(&I)) {
-      if (Phi->getType()->isFloatTy()) {
-        floatPhiNodes.push_back(Phi);
-        if (floatPhiNodes.size() == 8) {
-          break; // Stop after finding 8 float type PHI nodes
-        }
+  for (auto &Phi : ClonedForCondPreheader->phis()) {
+    if (Phi.getType()->isFloatTy()) {
+      FloatPhiNodes.push_back(&Phi);
+      if (FloatPhiNodes.size() == 8) {
+        break; // Stop after finding 8 float type PHI nodes
       }
     }
   }
 
   // Ensure we found 8 float type PHI nodes
-  assert(floatPhiNodes.size() == 8 &&
+  assert(FloatPhiNodes.size() == 8 &&
          "Unable to find 8 float type PHI nodes in ClonedForCondPreheader");
 
-  // Now floatPhiNodes contains 8 float type PHI nodes in order
+  // Now FloatPhiNodes contains 8 float type PHI nodes in order
 
   // Iterate through all PHI nodes in ClonedForBody
-  int phiIndex = 0;
+  int PhiIndex = 0;
   for (PHINode &Phi : ClonedForBody->phis()) {
     if (Phi.getType()->isFloatTy()) {
-      // Ensure we don't access floatPhiNodes out of bounds
-      if (phiIndex < floatPhiNodes.size()) {
+      // Ensure we don't access FloatPhiNodes out of bounds
+      if (PhiIndex < FloatPhiNodes.size()) {
         // Set the 0th incoming value of the PHI node to the corresponding node
-        // in floatPhiNodes
-        if (phiIndex >
-            0) { // Don't set the first phi node, as it's floatPhiInForBody
-          Phi.setIncomingValue(0, floatPhiNodes[phiIndex]);
+        // in FloatPhiNodes
+        if (PhiIndex >
+            0) { // Don't set the first Phi node, as It's floatPhiInForBody
+          Phi.setIncomingValue(0, FloatPhiNodes[PhiIndex]);
         }
-        phiIndex++;
+        PhiIndex++;
       } else {
         // If the number of float type PHI nodes in ClonedForBody exceeds the
-        // size of floatPhiNodes, output a warning
+        // size of FloatPhiNodes, output a warning
         assert(false && "Warning: Number of float type PHI nodes in "
                         "ClonedForBody exceeds expectations\n");
-        break;
       }
     }
   }
 
   // Ensure we processed all expected PHI nodes
-  if (phiIndex < floatPhiNodes.size()) {
+  if (PhiIndex < FloatPhiNodes.size()) {
     assert(false && "Warning: Number of float type PHI nodes in ClonedForBody "
                     "is less than expected\n");
   }
 
-  // Find the last icmp eq instruction in ClonedForBody
-  ICmpInst *lastIcmpEq =
+  // Find the last Icmp eq instruction in ClonedForBody
+  ICmpInst *LastIcmpEq =
       getLastICmpInstWithPredicate(ClonedForBody, ICmpInst::ICMP_EQ);
 
-  // Ensure we found the icmp eq instruction
-  assert(lastIcmpEq && "Unable to find icmp eq instruction in ClonedForBody");
+  // Ensure we found the Icmp eq instruction
+  assert(LastIcmpEq && "Unable to find Icmp eq instruction in ClonedForBody");
 
-  // Set operand 1 to addInst
-  lastIcmpEq->setOperand(1, AddInst);
-  // Change the predicate of the icmp eq instruction to slt (signed less than)
-  lastIcmpEq->setPredicate(ICmpInst::ICMP_SLT);
-  // Change the name to cmp
-  lastIcmpEq->setName("cmp");
+  // Set operand 1 to AddInst
+  LastIcmpEq->setOperand(1, AddInst);
+  // Change the predicate of the Icmp eq instruction to slt (signed less than)
+  LastIcmpEq->setPredicate(ICmpInst::ICMP_SLT);
+  // Change the name to Cmp
+  LastIcmpEq->setName("Cmp");
 
   ClonedForBody->getTerminator()->setSuccessor(1, ForCondPreheader);
 
-  // Find phi i32 node in ClonedForBody
+  // Find Phi i32 node in ClonedForBody
   PHINode *phiI32InClonedForBody = nullptr;
-  for (auto &Inst : *ClonedForBody) {
-    if (PHINode *Phi = dyn_cast<PHINode>(&Inst)) {
-      if (Phi->getType()->isIntegerTy(32)) {
-        phiI32InClonedForBody = Phi;
-        insertUnusedInstructionsBeforeIcmp(phiI32InClonedForBody, lastIcmpEq);
-      }
+  for (auto &Phi : ClonedForBody->phis()) {
+    if (Phi.getType()->isIntegerTy(32)) {
+      phiI32InClonedForBody = &Phi;
+      insertUnusedInstructionsBeforeIcmp(phiI32InClonedForBody, LastIcmpEq);
     }
   }
 
-  // Ensure we found the phi i32 node
+  // Ensure we found the Phi i32 node
   assert(phiI32InClonedForBody &&
-         "Unable to find phi i32 node in ClonedForBody");
+         "Unable to find Phi i32 node in ClonedForBody");
 }
 
-static std::pair<PHINode *, PHINode *> findTwoI32PhiInBB(BasicBlock *ForBody) {
-  // Find the first i32 type PHI instruction in ForBody
-  PHINode *firstI32PhiInBB = nullptr;
-  PHINode *secondI32PhiInBB = nullptr;
-  int i32PhiCount2 = 0;
-  for (auto &Inst : *ForBody) {
-    if (PHINode *Phi = dyn_cast<PHINode>(&Inst)) {
-      if (Phi->getType()->isIntegerTy(32)) {
-        if (i32PhiCount2 == 0) {
-          firstI32PhiInBB = Phi;
-          i32PhiCount2++;
-        } else if (i32PhiCount2 == 1) {
-          secondI32PhiInBB = Phi;
-          break;
-        }
-      }
-    }
-  }
-
-  // Ensure we found two i32 type PHI instructions in ForBody
-  assert(firstI32PhiInBB && secondI32PhiInBB &&
-         "Unable to find two i32 type PHI instructions in BB");
-
-  return std::make_pair(firstI32PhiInBB, secondI32PhiInBB);
-}
 static void modifyForBody2(BasicBlock *ClonedForCondPreheader,
                            BasicBlock *ForBody, BasicBlock *ForCondPreheader) {
   // Find the first i32 type PHI instruction in ForCondPreheader
@@ -1821,7 +3036,7 @@ static void modifyForBody2(BasicBlock *ClonedForCondPreheader,
       findTwoI32PhiInBB(ForBody);
 
   // Set the incoming 0 value of the two i32 type PHI instructions found in
-  // ForBody to the firstI32Phi found in ForCondPreheader
+  // ForBody to the FirstI32Phi found in ForCondPreheader
   firstI32PhiInForBody->setIncomingValue(0, firstI32PhiInForCondPreheader);
   secondI32PhiInForBody->setIncomingValue(0, secondI32PhiInForCondPreheader);
 
@@ -1829,15 +3044,13 @@ static void modifyForBody2(BasicBlock *ClonedForCondPreheader,
 
   // Find the first float type PHI instruction in ForCondPreheader
   PHINode *SecondFloatPhiInForCondPreheader = nullptr;
-  int floatPhiCount = 0;
-  for (auto &Inst : *ForCondPreheader) {
-    if (PHINode *Phi = dyn_cast<PHINode>(&Inst)) {
-      if (Phi->getType()->isFloatTy()) {
-        floatPhiCount++;
-        if (floatPhiCount == 2) {
-          SecondFloatPhiInForCondPreheader = Phi;
-          break;
-        }
+  int FloatPhiCount = 0;
+  for (auto &Phi : ForCondPreheader->phis()) {
+    if (Phi.getType()->isFloatTy()) {
+      FloatPhiCount++;
+      if (FloatPhiCount == 2) {
+        SecondFloatPhiInForCondPreheader = &Phi;
+        break;
       }
     }
   }
@@ -1866,22 +3079,14 @@ static void modifyForBody2(BasicBlock *ClonedForCondPreheader,
       0, SecondFloatPhiInForCondPreheader);
 }
 
-// Helper function to run dead code elimination
-static void runDeadCodeElimination(Function &F) {
-  legacy::FunctionPassManager FPM(F.getParent());
-  FPM.add(createDeadCodeEliminationPass());
-  FPM.run(F);
-  LLVM_DEBUG(F.dump());
-}
-
 static bool modifySecondForBody(Loop *L, Function &F, BasicBlock *ForBody,
                                 BasicBlock *FirstClonedForCondPreheader,
                                 BasicBlock *FirstForCondPreheader,
                                 Value *AddInst) {
   BasicBlock *ForBodyPreheader = L->getLoopPreheader();
 
-  // Find the 0th successor of ForBody, it should have two
-  BasicBlock *ForCondPreheader = getFirstSuccessorOfForBody(ForBody);
+  // Find the 0th successor of ForBody, It should have two
+  BasicBlock *ForCondPreheader = ForBody->getTerminator()->getSuccessor(0);
 
   std::tuple<BasicBlock *, BasicBlock *, BasicBlock *> ClonedBBs =
       cloneThreeBB(ForBodyPreheader, ForBody, ForCondPreheader, F);
@@ -1918,30 +3123,32 @@ static bool modifySecondForBody(Loop *L, Function &F, BasicBlock *ForBody,
 
   return true;
 }
+
 static void insertDoublePreheader(Function &F) {
-  BasicBlock *entry = &F.getEntryBlock();
+  BasicBlock *Entry = &F.getEntryBlock();
   BasicBlock *ifend = &F.back();
-  BasicBlock *entry_successor1 = entry->getTerminator()->getSuccessor(1);
+  BasicBlock *entry_successor1 = Entry->getTerminator()->getSuccessor(1);
 
   // Create a new basic block
   BasicBlock *newBB = BasicBlock::Create(
       F.getContext(), entry_successor1->getName() + ".preheader", &F,
       entry_successor1);
 
-  Value *len = getLenFromEntryBlock(F);
+  Value *Len = getLenFromEntryBlock(F);
 
   // Insert instructions in the new basic block
   IRBuilder<> builder(newBB);
   Value *cmp151349 = builder.CreateICmpSGT(
-      len, ConstantInt::get(len->getType(), 0), "cmp151349");
+      Len, ConstantInt::get(Len->getType(), 0), "cmp151349");
 
   // Create a conditional branch
   builder.CreateCondBr(cmp151349, entry_successor1, ifend);
 
-  // Modify the terminator of entry to jump to the new basic block
-  entry->getTerminator()->setSuccessor(1, newBB);
+  // Modify the Terminator of Entry to jump to the new basic block
+  Entry->getTerminator()->setSuccessor(1, newBB);
 }
-static bool unrollFir(Function &F, Loop *L) {
+
+bool DspsF32FirLoopUnroller::unrollFir(Function &F, Loop *L) {
 
   bool Changed = false;
   static BasicBlock *FirstClonedForCondPreheader = nullptr;
@@ -1956,9 +3163,9 @@ static bool unrollFir(Function &F, Loop *L) {
 
     if (Changed) {
       insertDoublePreheader(F);
-      Value *sub = modifyForCondPreheader(F);
+      Value *Sub = modifyForCondPreheader(F);
       std::tuple<BasicBlock *, BasicBlock *, Value *> result =
-          modifyFirstForBody(L, F, BB, sub);
+          modifyFirstForBody(L, F, BB, Sub);
       FirstClonedForCondPreheader = std::get<0>(result);
       FirstForCondPreheader = std::get<1>(result);
       AddInst = std::get<2>(result);
@@ -1972,66 +3179,59 @@ static bool unrollFir(Function &F, Loop *L) {
   return Changed;
 }
 
-// Preprocessing function
+// Preprocessing Function
 static PHINode *preprocessClonedForBody(BasicBlock *ClonedForBody) {
   // Find the unique PHI node
-  PHINode *phiNode = nullptr;
-  for (auto &I : *ClonedForBody) {
-    if (auto *phi = dyn_cast<PHINode>(&I)) {
-      phiNode = phi;
-      break;
-    }
-  }
-
+  PHINode *PhiNode = getFirstInst<PHINode>(ClonedForBody);
   // Ensure that the PHI node is found
-  assert(phiNode && "PHI node not found");
+  assert(PhiNode && "PHI node not found");
 
   // Find two mul nsw instructions
-  SmallVector<BinaryOperator *> mulInsts;
+  SmallVector<BinaryOperator *> MulInsts;
   for (auto &I : *ClonedForBody) {
-    if (auto *binOp = dyn_cast<BinaryOperator>(&I)) {
-      if (binOp->getOpcode() == Instruction::Mul && binOp->hasNoSignedWrap()) {
-        mulInsts.push_back(binOp);
+    if (auto *BinOp = dyn_cast<BinaryOperator>(&I)) {
+      if (BinOp->getOpcode() == Instruction::Mul && BinOp->hasNoSignedWrap()) {
+        MulInsts.push_back(BinOp);
       }
     }
   }
 
   // Replace mul nsw instructions with the PHI node
-  for (auto *mulInst : mulInsts) {
-    mulInst->replaceAllUsesWith(phiNode);
+  for (auto *mulInst : MulInsts) {
+    mulInst->replaceAllUsesWith(PhiNode);
     mulInst->eraseFromParent();
   }
-  return phiNode;
+  return PhiNode;
 }
 
 static Instruction *modifyAddToOrInClonedForBody(BasicBlock *ClonedForBody) {
   // Find the unique add nuw nsw instruction
-  Instruction *addInst = nullptr;
+  Instruction *AddInst = nullptr;
   for (auto &I : *ClonedForBody) {
-    if (auto *binOp = dyn_cast<BinaryOperator>(&I)) {
-      if (binOp->getOpcode() == Instruction::Add &&
-          binOp->hasNoUnsignedWrap()) {
-        addInst = binOp;
+    if (auto *BinOp = dyn_cast<BinaryOperator>(&I)) {
+      if (BinOp->getOpcode() == Instruction::Add &&
+          BinOp->hasNoUnsignedWrap()) {
+        AddInst = BinOp;
         break;
       }
     }
   }
 
   // Ensure that the add nuw nsw instruction is found
-  assert(addInst && "add nuw nsw instruction not found");
+  assert(AddInst && "add nuw nsw instruction not found");
 
   // Create a new or disjoint instruction
-  Instruction *orInst = BinaryOperator::CreateDisjoint(
-      Instruction::Or, addInst->getOperand(0),
-      ConstantInt::get(addInst->getType(), 1), "add", addInst);
+  Instruction *OrInst = BinaryOperator::CreateDisjoint(
+      Instruction::Or, AddInst->getOperand(0),
+      ConstantInt::get(AddInst->getType(), 1), "add", AddInst);
 
   // Replace all uses of the add instruction
-  addInst->replaceAllUsesWith(orInst);
+  AddInst->replaceAllUsesWith(OrInst);
 
   // Delete the original add instruction
-  addInst->eraseFromParent();
-  orInst->setName("add");
-  return orInst;
+  AddInst->eraseFromParent();
+  OrInst->setName("add");
+  return OrInst;
 }
 
 static void runInstCombinePass(Function &F) {
@@ -2051,101 +3251,101 @@ static void runInstCombinePass(Function &F) {
   PB.registerLoopAnalyses(LAM);
   PB.crossRegisterProxies(LAM, FAM, CGAM, MAM);
 
-  // Create function-level optimization pipeline
+  // Create Function-level optimization pipeline
   FunctionPassManager FPM;
   FPM.addPass(InstCombinePass());
   FPM.run(F, FAM);
 }
 
 static Value *unrolladdcClonedForBody(BasicBlock *ClonedForBody,
-                                      int unroll_factor) {
+                                      int UnrollFactor) {
 
-  // Call the preprocessing function
-  PHINode *phiNode = preprocessClonedForBody(ClonedForBody);
+  // Call the preprocessing Function
+  PHINode *PhiNode = preprocessClonedForBody(ClonedForBody);
 
   // Replace add instructions with or instructions
-  Instruction *orInst = modifyAddToOrInClonedForBody(ClonedForBody);
+  Instruction *OrInst = modifyAddToOrInClonedForBody(ClonedForBody);
 
   // Find the first non-PHI instruction and or instruction
-  Instruction *firstNonPHI = ClonedForBody->getFirstNonPHI();
+  Instruction *FirstNonPHI = ClonedForBody->getFirstNonPHI();
 
   // Ensure that the start and end instructions are found
-  assert(firstNonPHI && orInst && "Start or end instruction not found");
+  assert(FirstNonPHI && OrInst && "Start or end instruction not found");
 
-  // Find the icmp instruction
+  // Find the Icmp instruction
   Instruction *icmpInst = getFirstInst<ICmpInst>(ClonedForBody);
 
-  // Ensure that the icmp instruction is found
-  assert(icmpInst && "icmp instruction not found");
+  // Ensure that the Icmp instruction is found
+  assert(icmpInst && "Icmp instruction not found");
 
-  // Print information about the icmp instruction
+  // Print information about the Icmp instruction
 
-  Instruction *newOrInst = orInst;
+  Instruction *NewOrInst = OrInst;
   // Copy instructions 15 times
-  for (int i = 1; i <= (unroll_factor - 1); i++) {
+  for (int I = 1; I <= (UnrollFactor - 1); I++) {
     ValueToValueMapTy VMap;
-    for (auto it = firstNonPHI->getIterator(); &*it != orInst; ++it) {
-      Instruction *newInst = it->clone();
-      // For getelementptr instructions, set the second operand to orInst
-      if (GetElementPtrInst *GEP = dyn_cast<GetElementPtrInst>(newInst)) {
-        newInst->setOperand(1, newOrInst);
-        newInst->setName("arrayidx");
+    for (auto It = FirstNonPHI->getIterator(); &*It != OrInst; ++It) {
+      Instruction *NewInst = It->clone();
+      // For getelementptr instructions, set the second operand to OrInst
+      if (GetElementPtrInst *GEP = dyn_cast<GetElementPtrInst>(NewInst)) {
+        NewInst->setOperand(1, NewOrInst);
+        NewInst->setName("Arrayidx");
       }
-      // If it's a fadd instruction, change its name to add
-      if (newInst->getOpcode() == Instruction::FAdd) {
-        newInst->setName("add");
+      // If It's a fadd instruction, change its name to add
+      if (NewInst->getOpcode() == Instruction::FAdd) {
+        NewInst->setName("add");
       }
-      VMap[&*it] = newInst;
-      newInst->insertBefore(icmpInst);
+      VMap[&*It] = NewInst;
+      NewInst->insertBefore(icmpInst);
     }
 
     // Update operands of new instructions
-    for (auto it = firstNonPHI->getIterator(); &*it != orInst; ++it) {
-      Instruction *newInst = cast<Instruction>(VMap[&*it]);
-      for (unsigned j = 0; j < newInst->getNumOperands(); j++) {
-        Value *op = newInst->getOperand(j);
-        if (VMap.count(op)) {
-          newInst->setOperand(j, VMap[op]);
+    for (auto It = FirstNonPHI->getIterator(); &*It != OrInst; ++It) {
+      Instruction *NewInst = cast<Instruction>(VMap[&*It]);
+      for (unsigned J = 0; J < NewInst->getNumOperands(); J++) {
+        Value *Op = NewInst->getOperand(J);
+        if (VMap.count(Op)) {
+          NewInst->setOperand(J, VMap[Op]);
         }
       }
     }
-    // Clone orInst and insert before icmpInst
-    newOrInst = orInst->clone();
-    // Set the second operand of newOrInst to i+1
-    newOrInst->setOperand(1, ConstantInt::get(newOrInst->getType(), i + 1));
-    newOrInst->setName("add");
-    newOrInst->insertBefore(icmpInst);
-    VMap[orInst] = newOrInst;
+    // Clone OrInst and insert before icmpInst
+    NewOrInst = OrInst->clone();
+    // Set the second operand of NewOrInst to I+1
+    NewOrInst->setOperand(1, ConstantInt::get(NewOrInst->getType(), I + 1));
+    NewOrInst->setName("add");
+    NewOrInst->insertBefore(icmpInst);
+    VMap[OrInst] = NewOrInst;
   }
 
   // Replace or instruction with add nuw nsw instruction
-  IRBuilder<> Builder(newOrInst);
+  IRBuilder<> Builder(NewOrInst);
   Value *newAddInst =
-      Builder.CreateNUWAdd(newOrInst->getOperand(0), newOrInst->getOperand(1));
-  newOrInst->replaceAllUsesWith(newAddInst);
-  newOrInst->eraseFromParent();
+      Builder.CreateNUWAdd(NewOrInst->getOperand(0), NewOrInst->getOperand(1));
+  NewOrInst->replaceAllUsesWith(newAddInst);
+  NewOrInst->eraseFromParent();
 
-  // Create a new add instruction, subtracting 16 from len
+  // Create a new add instruction, subtracting 16 from Len
   Builder.SetInsertPoint(icmpInst);
-  Value *len = icmpInst->getOperand(1);
-  Value *sub = Builder.CreateNSWAdd(
-      len, ConstantInt::get(len->getType(), -unroll_factor), "sub");
-  // Set the icmp instruction's predicate to sgt, and operands to newAddInst
-  if (ICmpInst *icmp = dyn_cast<ICmpInst>(icmpInst)) {
-    icmp->setPredicate(ICmpInst::ICMP_SGT);
-    icmp->setOperand(0, newAddInst);
-    icmp->setOperand(1, sub);
+  Value *Len = icmpInst->getOperand(1);
+  Value *Sub = Builder.CreateNSWAdd(
+      Len, ConstantInt::get(Len->getType(), -UnrollFactor), "Sub");
+  // Set the Icmp instruction's predicate to sgt, and operands to newAddInst
+  if (ICmpInst *Icmp = dyn_cast<ICmpInst>(icmpInst)) {
+    Icmp->setPredicate(ICmpInst::ICMP_SGT);
+    Icmp->setOperand(0, newAddInst);
+    Icmp->setOperand(1, Sub);
   }
 
-  phiNode->setIncomingValue(0, newAddInst);
-  return sub;
+  PhiNode->setIncomingValue(0, newAddInst);
+  return Sub;
 }
 
 static void expandForCondPreheaderaddc(Function &F,
                                        BasicBlock *ForCondPreheader,
                                        BasicBlock *ClonedForBody,
-                                       BasicBlock *ForBody, Value *sub,
-                                       int unroll_factor) {
+                                       BasicBlock *ForBody, Value *Sub,
+                                       int UnrollFactor) {
   // Create a new ForCondPreheader after the original ForCondPreheader
   BasicBlock *NewForCondPreheader = BasicBlock::Create(
       ForCondPreheader->getContext(), "for.cond.preheader.new",
@@ -2155,20 +3355,20 @@ static void expandForCondPreheaderaddc(Function &F,
       NewForCondPreheader->getContext(), "for.cond.preheader.new2",
       NewForCondPreheader->getParent(), NewForCondPreheader->getNextNode());
 
-  // Move sub to the new ForCondPreheader
-  if (Instruction *SubInst = dyn_cast<Instruction>(sub)) {
+  // Move Sub to the new ForCondPreheader
+  if (Instruction *SubInst = dyn_cast<Instruction>(Sub)) {
     SubInst->removeFromParent();
     SubInst->insertInto(NewForCondPreheader, NewForCondPreheader->begin());
   }
 
   // Create new comparison instruction in NewForCondPreheader
   IRBuilder<> Builder(NewForCondPreheader);
-  Value *len = getLenFromEntryBlock(F);
+  Value *Len = getLenFromEntryBlock(F);
 
-  assert(len && "Parameter named 'len' not found");
+  assert(Len && "Parameter named 'Len' not found");
 
   Value *cmp6not207 = Builder.CreateICmpULT(
-      len, ConstantInt::get(len->getType(), unroll_factor), "cmp6.not207");
+      Len, ConstantInt::get(Len->getType(), UnrollFactor), "cmp6.not207");
 
   // Create conditional branch instruction
   Builder.CreateCondBr(cmp6not207, NewForCondPreheader2, ClonedForBody);
@@ -2178,72 +3378,67 @@ static void expandForCondPreheaderaddc(Function &F,
   BasicBlock *returnBB = getBasicBlockByName(F, "return");
   assert(ifEndBB && "Expected to find if.end!");
   assert(returnBB && "Expected to find return!");
-  // Get the terminator instruction of if.end
-  Instruction *terminator = ifEndBB->getTerminator();
-  if (!terminator) {
-    assert(false && "if.end basic block has no terminator instruction\n");
+  // Get the Terminator instruction of if.end
+  Instruction *Terminator = ifEndBB->getTerminator();
+  if (!Terminator) {
+    assert(false && "if.end basic block has no Terminator instruction\n");
     return;
   }
 
-  // Replace the first operand of the terminator instruction with
+  // Replace the first operand of the Terminator instruction with
   // NewForCondPreheader
-  terminator->setOperand(2, NewForCondPreheader);
+  Terminator->setOperand(2, NewForCondPreheader);
 
   // Find the unique PHINode in clonedForBody
-  PHINode *uniquePHI = nullptr;
-  for (Instruction &I : *ClonedForBody) {
-    if (auto *phi = dyn_cast<PHINode>(&I)) {
-      if (uniquePHI) {
-        // If we've already found a PHINode but find another, it's not unique
-
-        uniquePHI = nullptr;
-        break;
-      }
-      uniquePHI = phi;
+  PHINode *UniquePHI = nullptr;
+  for (auto &Phi : ClonedForBody->phis()) {
+    if (UniquePHI) {
+      // If we've already found a PHINode but find another, It's not unique
+      UniquePHI = nullptr;
+      break;
     }
+    UniquePHI = &Phi;
   }
 
-  assert(uniquePHI && "No unique PHINode found in ForBody\n");
+  assert(UniquePHI && "No unique PHINode found in ForBody\n");
 
-  uniquePHI->setIncomingBlock(1, NewForCondPreheader);
-  auto *clonedphi = uniquePHI->clone();
+  UniquePHI->setIncomingBlock(1, NewForCondPreheader);
+  auto *clonedphi = UniquePHI->clone();
   clonedphi->insertInto(NewForCondPreheader2, NewForCondPreheader2->begin());
 
   // Create comparison instruction
   ICmpInst *cmp85209 =
-      new ICmpInst(ICmpInst::ICMP_SLT, clonedphi, len, "cmp85209");
+      new ICmpInst(ICmpInst::ICMP_SLT, clonedphi, Len, "cmp85209");
   cmp85209->insertAfter(clonedphi);
 
   // Create conditional branch instruction
-  BranchInst *br = BranchInst::Create(ForBody, returnBB, cmp85209);
+  BranchInst *Br = BranchInst::Create(ForBody, returnBB, cmp85209);
 
-  br->insertAfter(cmp85209);
+  Br->insertAfter(cmp85209);
 
-  // Get the terminator instruction of ClonedForBody
+  // Get the Terminator instruction of ClonedForBody
   BranchInst *clonedTerminator =
       dyn_cast<BranchInst>(ClonedForBody->getTerminator());
   assert(clonedTerminator &&
-         "ClonedForBody's terminator should be a BranchInst");
+         "ClonedForBody's Terminator should be a BranchInst");
   if (!clonedTerminator) {
-    assert(false && "ClonedForBody has no terminator instruction\n");
+    assert(false && "ClonedForBody has no Terminator instruction\n");
     return;
   }
 
-  // Set the first operand of ClonedForBody's terminator to NewForCondPreheader2
+  // Set the first operand of ClonedForBody's Terminator to NewForCondPreheader2
   clonedTerminator->setOperand(2, NewForCondPreheader2);
 
   // Find the unique PHI node in ForBody
   PHINode *uniquePHI2 = nullptr;
-  for (Instruction &I : *ForBody) {
-    if (auto *phi = dyn_cast<PHINode>(&I)) {
-      if (uniquePHI2) {
-        // If we've already found a PHINode but find another, it's not unique
+  for (auto &Phi : ForBody->phis()) {
+    if (uniquePHI2) {
+      // If we've already found a PHINode but find another, It's not unique
 
-        uniquePHI = nullptr;
-        break;
-      }
-      uniquePHI2 = phi;
+      UniquePHI = nullptr;
+      break;
     }
+    uniquePHI2 = &Phi;
   }
 
   assert(uniquePHI2 && "No unique PHINode found in ForBody\n");
@@ -2253,15 +3448,13 @@ static void expandForCondPreheaderaddc(Function &F,
 
   // Find the unique PHI node in returnBB
   PHINode *returnBBPHI = nullptr;
-  for (Instruction &I : *returnBB) {
-    if (auto *phi = dyn_cast<PHINode>(&I)) {
-      if (returnBBPHI) {
-        // If we've already found a PHINode but find another, it's not unique
-        returnBBPHI = nullptr;
-        break;
-      }
-      returnBBPHI = phi;
+  for (auto &Phi : returnBB->phis()) {
+    if (returnBBPHI) {
+      // If we've already found a PHINode but find another, It's not unique
+      returnBBPHI = nullptr;
+      break;
     }
+    returnBBPHI = &Phi;
   }
 
   if (returnBBPHI) {
@@ -2273,13 +3466,6 @@ static void expandForCondPreheaderaddc(Function &F,
   }
 }
 
-static void addnoalias(Function &F) {
-  for (Argument &Arg : F.args()) {
-    if (Arg.getType()->isPointerTy()) {
-      Arg.addAttr(Attribute::NoAlias);
-    }
-  }
-}
 static BasicBlock *cloneForBody(Function &F, BasicBlock *ForBody,
                                 const std::string &Suffix) {
   ValueToValueMapTy VMap;
@@ -2289,55 +3475,46 @@ static BasicBlock *cloneForBody(Function &F, BasicBlock *ForBody,
   return ClonedForBody;
 }
 
-static void unrollAddc(Function &F, ScalarEvolution &SE, Loop *L,
-                       int unroll_factor) {
+void DspsF32MathLoopUnroller::unrollMath(Function &F, ScalarEvolution &SE,
+                                         Loop *L, int UnrollFactor) {
 
-  // Get the basic block containing the function body from L
+  // Get the basic block containing the Function body from L
   BasicBlock *ForBody = L->getHeader();
 
-  // Ensure that the basic block containing the function body is found
-  if (!ForBody) {
-    assert(ForBody && "ForBody not found");
-    return;
-  }
+  // Ensure that the basic block containing the Function body is found
+  assert(ForBody && "ForBody not found");
 
   // clone for body
-
   BasicBlock *ClonedForBody = cloneForBody(F, ForBody, ".modify");
   ClonedForBody->moveBefore(ForBody);
 
-  Value *sub = unrolladdcClonedForBody(ClonedForBody, unroll_factor);
+  Value *Sub = unrolladdcClonedForBody(ClonedForBody, UnrollFactor);
 
   // Find the ForCondPreheader basic block from F
   BasicBlock *ForCondPreheader = getBasicBlockByName(F, "for.cond.preheader");
   assert(ForCondPreheader && "Expected to find for.cond.preheader!");
-  expandForCondPreheaderaddc(F, ForCondPreheader, ClonedForBody, ForBody, sub,
-                             unroll_factor);
+  expandForCondPreheaderaddc(F, ForCondPreheader, ClonedForBody, ForBody, Sub,
+                             UnrollFactor);
   runInstCombinePass(F);
   groupAndReorderInstructions(ClonedForBody);
-
-  // Verify the function
-  if (verifyFunction(F, &errs())) {
-    LLVM_DEBUG(errs() << "Function verification failed\n");
-    return;
-  }
 }
 
-static void unrollCorr(Function &F, Loop *L, int unroll_factor) {
+bool DspsF32CorrLoopUnroller::unrollCorr(Function &F, Loop *L,
+                                         int UnrollFactor) {
 
-  // Get the basic block containing the function body from L
+  // Get critical basic blocks
   BasicBlock *ForBody = L->getHeader();
-  assert(ForBody && "ForBody not found");
+  BasicBlock *returnBB = getBasicBlockByName(F, "return");
+  BasicBlock *ForCondPreheader = getBasicBlockByName(F, "for.cond.preheader");
+  BasicBlock *ForCond11PreheaderUs = L->getLoopPreheader();
+
+  // Verify that basic blocks exist
+  if (!ForBody || !returnBB || !ForCondPreheader || !ForCond11PreheaderUs) {
+    report_fatal_error("Required basic blocks not found");
+  }
 
   // clone for body
   BasicBlock *ClonedForBody = cloneForBody(F, ForBody, ".unroll");
-
-  BasicBlock *returnBB = getBasicBlockByName(F, "return");
-  assert(returnBB && "Expected to find return!");
-  BasicBlock *ForCondPreheader = getBasicBlockByName(F, "for.cond.preheader");
-  assert(ForCondPreheader && "Expected to find for.cond.preheader!");
-  BasicBlock *ForCond11PreheaderUs = L->getLoopPreheader();
-  assert(ForCond11PreheaderUs && "Expected to find for.cond.preheader!");
 
   ClonedForBody->moveBefore(returnBB);
 
@@ -2346,13 +3523,13 @@ static void unrollCorr(Function &F, Loop *L, int unroll_factor) {
   // Find the first instruction in ForCondPreheader
   Instruction *FirstInst = &*ForCondPreheader->begin();
   Instruction *SecondInst = FirstInst->getNextNode();
-  // Ensure the first instruction is a sub nsw instruction
+  // Ensure the first instruction is a Sub nsw instruction
   if (BinaryOperator *SubInst = dyn_cast<BinaryOperator>(FirstInst)) {
     if (SubInst->getOpcode() == Instruction::Sub &&
         SubInst->hasNoSignedWrap()) {
       ;
     } else {
-      assert(false && "The first instruction in ForCondPreheader is not a sub "
+      assert(false && "The first instruction in ForCondPreheader is not a Sub "
                       "nsw instruction\n");
     }
   } else {
@@ -2362,14 +3539,14 @@ static void unrollCorr(Function &F, Loop *L, int unroll_factor) {
   // Insert new instruction after FirstInst
   IRBuilder<> Builder(FirstInst->getNextNode());
   Value *Sub6 = Builder.CreateNSWAdd(
-      FirstInst, ConstantInt::get(FirstInst->getType(), 1 - unroll_factor),
+      FirstInst, ConstantInt::get(FirstInst->getType(), 1 - UnrollFactor),
       "sub6");
 
   if (ICmpInst *CmpInst = dyn_cast<ICmpInst>(SecondInst)) {
     if (CmpInst->getPredicate() == ICmpInst::ICMP_EQ) {
       CmpInst->setOperand(0, FirstInst);
       CmpInst->setOperand(
-          1, ConstantInt::get(FirstInst->getType(), unroll_factor - 1));
+          1, ConstantInt::get(FirstInst->getType(), UnrollFactor - 1));
       CmpInst->setPredicate(ICmpInst::ICMP_SGT);
     }
   }
@@ -2392,7 +3569,7 @@ static void unrollCorr(Function &F, Loop *L, int unroll_factor) {
   ForCondPreheader->getTerminator()->setSuccessor(0, ForCond8PreheaderLrPh);
   ForCondPreheader->getTerminator()->setSuccessor(1, ForCond91Preheader);
 
-  // Find the parameter named patlen from the function arguments
+  // Find the parameter named patlen from the Function arguments
   Value *PatlenArg = F.getArg(3);
   Value *SignalArg = F.getArg(0);
   assert(PatlenArg && "Parameter named patlen not found\n");
@@ -2454,8 +3631,6 @@ static void unrollCorr(Function &F, Loop *L, int unroll_factor) {
   Builder.SetInsertPoint(ForCond11PreheaderPreheader,
                          ForCond11PreheaderPreheader->begin());
 
-  Instruction *ForCond11PreheaderPreheaderterminater =
-      ForCond11PreheaderPreheader->getTerminator();
   Instruction *ForCond11PreheaderPreheaderFirstInst =
       &*ForCond11PreheaderPreheader->begin();
   Value *SiglenArg = ForCond11PreheaderPreheaderFirstInst->getOperand(0);
@@ -2464,7 +3639,7 @@ static void unrollCorr(Function &F, Loop *L, int unroll_factor) {
       N0Lcssa, ConstantInt::get(Type::getInt32Ty(F.getContext()), 2), "");
 
   // Create getelementptr instruction
-  // Find memset function call
+  // Find memset Function call
   CallInst *MemsetCall = getFirstCallInstWithName(ForCond11PreheaderPreheader,
                                                   "llvm.memset.p0.i32");
 
@@ -2513,15 +3688,10 @@ static void unrollCorr(Function &F, Loop *L, int unroll_factor) {
   Value *SiglenPlus2 = Builder.CreateAdd(
       SiglenArg, ConstantInt::get(Type::getInt32Ty(F.getContext()), 1), "");
 
-  // Add %7 = sub i32 %6, %patlen
+  // Add %7 = Sub i32 %6, %patlen
   Value *SubResult2 = Builder.CreateSub(SiglenPlus2, PatlenArg, "");
 
-  // Find PHI node
-  PHINode *PhiNode = nullptr;
-  for (PHINode &Phi : ForCond11PreheaderUs->phis()) {
-    PhiNode = &Phi;
-    break;
-  }
+  PHINode *PhiNode = getFirstInst<PHINode>(ForCond11PreheaderUs);
 
   assert(PhiNode && "PHI node not found in for.cond11.preheader.us\n");
 
@@ -2530,11 +3700,11 @@ static void unrollCorr(Function &F, Loop *L, int unroll_factor) {
   PhiNode->setIncomingValue(1, N0Lcssa);
 
   BasicBlock *ForCond11ForCondCleanup13CritEdgeUs = ForBody->getNextNode();
-  // Find icmp ult instruction in ForCond11ForCondCleanup13CritEdgeUs
+  // Find Icmp ult instruction in ForCond11ForCondCleanup13CritEdgeUs
   ICmpInst *IcmpUltInst = getLastICmpInstWithPredicate(
       ForCond11ForCondCleanup13CritEdgeUs, ICmpInst::ICMP_ULT);
 
-  assert(IcmpUltInst && "icmp ult instruction not found in "
+  assert(IcmpUltInst && "Icmp ult instruction not found in "
                         "ForCond11ForCondCleanup13CritEdgeUs\n");
 
   IcmpUltInst->setOperand(0, PhiNode->getIncomingValue(0));
@@ -2544,13 +3714,10 @@ static void unrollCorr(Function &F, Loop *L, int unroll_factor) {
   swapTerminatorSuccessors(ForCond11ForCondCleanup13CritEdgeUs);
 
   // Find PHI nodes in ClonedForBody
-  for (PHINode &Phi : ClonedForBody->phis()) {
-    Phi.setIncomingBlock(0, ForBody10LrPh);
-  }
-
-  // Find phi float instruction in ClonedForBody
+  setPHIIndexIncomingBlock(ClonedForBody, 0, ForBody10LrPh);
+  // Find Phi float instruction in ClonedForBody
   PHINode *FloatPhi = getFirstFloatPhi(ClonedForBody);
-  assert(FloatPhi && "phi float node not found");
+  assert(FloatPhi && "Phi float node not found");
   // Find getelementptr inbounds instructions in ClonedForBody
   GetElementPtrInst *GEPInst = nullptr;
   GetElementPtrInst *GEPInst2 = nullptr;
@@ -2570,19 +3737,18 @@ static void unrollCorr(Function &F, Loop *L, int unroll_factor) {
 
   GEPInst2->setOperand(0, GEP);
 
-  Instruction *loadinst = GEPInst->getNextNode();
+  Instruction *Loadinst = GEPInst->getNextNode();
   GEPInst->moveBefore(FloatPhi);
-  loadinst->moveBefore(FloatPhi);
+  Loadinst->moveBefore(FloatPhi);
 
   if (FloatPhi) {
     // Find the llvm.fmuladd.f32 instruction
-    Instruction *FMulAdd =
-        getFirstCallInstWithName(ClonedForBody, "llvm.fmuladd.f32");
+    Instruction *FMulAdd = getFirstFMulAddInst(ClonedForBody);
     assert(FMulAdd && "llvm.fmuladd.f32 instruction not found\n");
     Instruction *InsertPoint = FMulAdd->getNextNode();
     if (FMulAdd) {
-      // Copy instructions unroll_factor-1 times
-      for (int i = 0; i < (unroll_factor - 1); ++i) {
+      // Copy instructions UnrollFactor-1 times
+      for (int I = 0; I < (UnrollFactor - 1); ++I) {
         ValueToValueMapTy VMap;
         for (auto It = FloatPhi->getIterator(); &*It != FMulAdd->getNextNode();
              ++It) {
@@ -2595,18 +3761,18 @@ static void unrollCorr(Function &F, Loop *L, int unroll_factor) {
         for (auto It = FloatPhi->getIterator(); &*It != FMulAdd->getNextNode();
              ++It) {
           Instruction *NewInst = cast<Instruction>(VMap[&*It]);
-          for (unsigned j = 0; j < NewInst->getNumOperands(); j++) {
-            Value *Op = NewInst->getOperand(j);
+          for (unsigned J = 0; J < NewInst->getNumOperands(); J++) {
+            Value *Op = NewInst->getOperand(J);
             if (VMap.count(Op)) {
-              NewInst->setOperand(j, VMap[Op]);
+              NewInst->setOperand(J, VMap[Op]);
             }
           }
-          // If NewInst is a getelementptr instruction, set its operand 1 to i+1
+          // If NewInst is a getelementptr instruction, set its operand 1 to I+1
           if (GetElementPtrInst *GEP = dyn_cast<GetElementPtrInst>(NewInst)) {
             GEP->setOperand(0, GEPInst);
             GEP->setOperand(
-                1, ConstantInt::get(GEP->getOperand(1)->getType(), i + 1));
-            GEP->setName("arrayidx" + std::to_string(i + 1));
+                1, ConstantInt::get(GEP->getOperand(1)->getType(), I + 1));
+            GEP->setName("Arrayidx" + std::to_string(I + 1));
           }
         }
       }
@@ -2615,7 +3781,7 @@ static void unrollCorr(Function &F, Loop *L, int unroll_factor) {
       assert(false && "llvm.fmuladd.f32 instruction not found\n");
     }
   } else {
-    assert(false && "phi float instruction not found\n");
+    assert(false && "Phi float instruction not found\n");
   }
   movePHINodesToTop(*ClonedForBody);
   groupAndReorderInstructions(ClonedForBody);
@@ -2628,7 +3794,7 @@ static void unrollCorr(Function &F, Loop *L, int unroll_factor) {
   // Create unconditional branch to ClonedForBody in for.cond.cleanup
   BranchInst::Create(ClonedForBody, ForCondCleanup);
 
-  // Get the terminator instruction of ClonedForBody
+  // Get the Terminator instruction of ClonedForBody
   Instruction *Terminator = ClonedForBody->getTerminator();
 
   // Set the first successor of ClonedForBody to for.cond.cleanup
@@ -2636,50 +3802,49 @@ static void unrollCorr(Function &F, Loop *L, int unroll_factor) {
     Terminator->setSuccessor(0, ForCondCleanup);
   }
 
-  // Clone phi float nodes from ClonedForBody to ForCondCleanup
-  int i = 0;
+  // Clone Phi float nodes from ClonedForBody to ForCondCleanup
+  int I = 0;
   for (PHINode &Phi : ClonedForBody->phis()) {
     if (Phi.getType()->isFloatTy()) {
       Instruction *newPhi = Phi.clone();
       cast<PHINode>(newPhi)->setIncomingBlock(0, ForCond8Preheader);
       newPhi->insertBefore(ForCondCleanup->getTerminator());
-      if (i == 0) {
-        GetElementPtrInst *arrayidx = GetElementPtrInst::Create(
-            Type::getFloatTy(F.getContext()), DestArg, N0276, "arrayidx",
-            ForCondCleanup->getTerminator());
-        StoreInst *storeInst =
-            new StoreInst(newPhi, arrayidx, ForCondCleanup->getTerminator());
-      } else {
-        Instruction *orInst = BinaryOperator::CreateDisjoint(
-            Instruction::Or, N0276, ConstantInt::get(N0276->getType(), i),
-            "add");
-        orInst->insertBefore(ForCondCleanup->getTerminator());
-        GetElementPtrInst *arrayidx = GetElementPtrInst::Create(
-            Type::getFloatTy(F.getContext()), DestArg, orInst, "arrayidx",
+      if (I == 0) {
+        GetElementPtrInst *Arrayidx = GetElementPtrInst::Create(
+            Type::getFloatTy(F.getContext()), DestArg, N0276, "Arrayidx",
             ForCondCleanup->getTerminator());
 
-        StoreInst *storeInst =
-            new StoreInst(newPhi, arrayidx, ForCondCleanup->getTerminator());
+        new StoreInst(newPhi, Arrayidx, ForCondCleanup->getTerminator());
+      } else {
+        Instruction *OrInst = BinaryOperator::CreateDisjoint(
+            Instruction::Or, N0276, ConstantInt::get(N0276->getType(), I),
+            "add");
+        OrInst->insertBefore(ForCondCleanup->getTerminator());
+        GetElementPtrInst *Arrayidx = GetElementPtrInst::Create(
+            Type::getFloatTy(F.getContext()), DestArg, OrInst, "Arrayidx",
+            ForCondCleanup->getTerminator());
+
+        new StoreInst(newPhi, Arrayidx, ForCondCleanup->getTerminator());
       }
-      i++;
+      I++;
     }
   }
 
   // Insert new instructions at the end of ClonedForBody
   Builder.SetInsertPoint(ForCondCleanup->getTerminator());
-  Value *add89 = Builder.CreateAdd(
-      N0276, ConstantInt::get(N0276->getType(), unroll_factor), "add89", true,
-      true);
+  Value *add89 =
+      Builder.CreateAdd(N0276, ConstantInt::get(N0276->getType(), UnrollFactor),
+                        "add89", true, true);
   Value *cmp7 = Builder.CreateICmpSLT(add89, Sub6, "cmp7");
 
-  // Get the original terminator instruction
+  // Get the original Terminator instruction
   Instruction *OldTerminator = ForCondCleanup->getTerminator();
 
   // Create new conditional branch instruction
   BranchInst *NewBr =
       BranchInst::Create(ForCond8Preheader, ForCond91Preheader, cmp7);
 
-  // Insert new branch instruction and delete the old terminator
+  // Insert new branch instruction and delete the old Terminator
   ReplaceInstWithInst(OldTerminator, NewBr);
 
   movePHINodesToTop(*ForCondCleanup);
@@ -2701,106 +3866,20 @@ static void unrollCorr(Function &F, Loop *L, int unroll_factor) {
     Phi.addIncoming(ConstantInt::get(Type::getInt32Ty(F.getContext()), 0),
                     ForCond91Preheader);
   }
+
   // for.cond95.preheader.lr.ph -> for.cond11.preheader.us.preheader
   ForCond95PreheaderLrPh->getTerminator()->setSuccessor(
       0, ForCond11PreheaderUsPreheader);
-}
 
-static bool checkIfDotProdSimplest(Function &F) {
-  bool flag = false;
-
-  if (F.size() == 3) {
-    BasicBlock *entryBB = getBasicBlockByName(F, "entry");
-    BasicBlock *forCondCleanup = getBasicBlockByName(F, "for.cond.cleanup");
-    BasicBlock *forBody = getBasicBlockByName(F, "for.body");
-    if (entryBB && forCondCleanup && forBody) {
-      CallInst *fmuladd = getFirstCallInstWithName(forBody, "llvm.fmuladd.f32");
-      if (fmuladd) {
-        if (forBody->getTerminator()->getSuccessor(0) == forCondCleanup &&
-            forBody->getTerminator()->getSuccessor(1) == forBody) {
-          if (entryBB->getTerminator()->getSuccessor(0) == forBody) {
-            flag = true;
-          }
-        }
-      }
-    }
-  }
-  return flag;
-}
-// for dotprod, llvm.fmuladd.f32 is in for.body
-static bool checkIfDotProdComplicated(Function &F) {
-  bool flag1 = false;
-  bool flag2 = false;
-  bool flag3 = false;
-  if (F.size() == 3) {
-    BasicBlock *entryBB = getBasicBlockByName(F, "entry");
-    BasicBlock *forCondCleanup = getBasicBlockByName(F, "for.cond.cleanup");
-    BasicBlock *forBody = getBasicBlockByName(F, "for.body");
-    if (entryBB && forCondCleanup && forBody) {
-      CallInst *fmuladd = getFirstCallInstWithName(forBody, "llvm.fmuladd.f32");
-      if (fmuladd) {
-
-        if (forBody->getTerminator()->getSuccessor(0) == forCondCleanup &&
-            forBody->getTerminator()->getSuccessor(1) == forBody) {
-          if (entryBB->getTerminator()->getSuccessor(0) == forBody) {
-            flag1 = true;
-          }
-        }
-      }
-    }
-    if (forBody) {
-      for (Instruction &I : *forBody) {
-        if (auto *BinOp = dyn_cast<BinaryOperator>(&I)) {
-          if (BinOp->getOpcode() == Instruction::FAdd ||
-              BinOp->getOpcode() == Instruction::FMul ||
-              BinOp->getOpcode() == Instruction::FSub ||
-              BinOp->getOpcode() == Instruction::FDiv) {
-            flag2 = true;
-          }
-        }
-      }
-
-      // Check if forBody has exactly one float PHI node
-      int floatPhiCount = 0;
-      for (PHINode &Phi : forBody->phis()) {
-        if (Phi.getType()->isFloatTy()) {
-          floatPhiCount++;
-        }
-      }
-      if (floatPhiCount == 1) {
-        flag3 = true;
-      }
-    }
-  }
-
-  return flag1 && flag2 && flag3;
-}
-static bool shouldUnrollLoopWithCount(Function &F, Loop *L,
-                                      ScalarEvolution &SE) {
-  if (!checkIfDotProdSimplest(F)) {
-    return false;
-  }
-  // Check if the loop is suitable for unrolling
-  if (!L->getLoopLatch())
-    return false;
-  if (!L->getExitingBlock())
-    return false;
-
-  // Check if the loop count is fixed and appropriate, loop count is constant
-  const SCEV *TripCount = SE.getBackedgeTakenCount(L);
-  if (isa<SCEVConstant>(TripCount)) {
-    // More condition checks can be added here
-    return true;
-  }
-  return false;
+  return true;
 }
 
 static void
 insertPhiNodesForFMulAdd(BasicBlock *LoopHeader, BasicBlock *LoopPreheader,
                          SmallVector<CallInst *, 16> &FMulAddCalls) {
   // Collect all tail call float @llvm.fmuladd.f32 in LoopHeader
-  for (Instruction &I : *LoopHeader) {
-    if (CallInst *CI = dyn_cast<CallInst>(&I)) {
+  for (Instruction &Inst : *LoopHeader) {
+    if (CallInst *CI = dyn_cast<CallInst>(&Inst)) {
       if (Function *F = CI->getCalledFunction()) {
         if (F->getName() == "llvm.fmuladd.f32" && CI->isTailCall()) {
           FMulAddCalls.push_back(CI);
@@ -2809,13 +3888,13 @@ insertPhiNodesForFMulAdd(BasicBlock *LoopHeader, BasicBlock *LoopPreheader,
     }
   }
 
-  // Insert phi nodes for each FMulAdd call
+  // Insert Phi nodes for each FMulAdd call
   for (CallInst *CI : FMulAddCalls) {
-    // Create new phi node
+    // Create new Phi node
     PHINode *PHI =
-        PHINode::Create(CI->getType(), 2, CI->getName() + ".phi", CI);
+        PHINode::Create(CI->getType(), 2, CI->getName() + ".Phi", CI);
 
-    // Set incoming values for phi node
+    // Set incoming values for Phi node
     PHI->addIncoming(ConstantFP::get(CI->getType(), 0), LoopPreheader);
     PHI->addIncoming(CI, LoopHeader);
 
@@ -2823,7 +3902,8 @@ insertPhiNodesForFMulAdd(BasicBlock *LoopHeader, BasicBlock *LoopPreheader,
   }
 }
 
-static void postUnrollLoopWithCount(Function &F, Loop *L, int unroll_count) {
+void DspsF32DotprodSimpleLoopUnroller::postUnrollLoopWithCount(
+    Function &F, Loop *L, int unrollCount) {
   BasicBlock *LoopHeader = L->getHeader();
   BasicBlock *LoopPreheader = L->getLoopPreheader();
   // Collect all tail call float @llvm.fmuladd.f32 in LoopHeader
@@ -2844,8 +3924,8 @@ static void postUnrollLoopWithCount(Function &F, Loop *L, int unroll_count) {
   LastICmp->setOperand(
       1, ConstantInt::get(Operand1->getType(),
                           dyn_cast<ConstantInt>(Operand1)->getSExtValue() -
-                              (2 * unroll_count - 1)));
-  LastICmp->setName("cmp");
+                              (2 * unrollCount - 1)));
+  LastICmp->setName("Cmp");
 
   swapTerminatorSuccessors(LoopHeader);
 
@@ -2879,239 +3959,52 @@ static void postUnrollLoopWithCount(Function &F, Loop *L, int unroll_count) {
   // Replace the original ret instruction
   RetInst->setOperand(0, CurrentSum);
 
-  // Verify function
+  // Verify Function
   if (verifyFunction(F, &errs())) {
     LLVM_DEBUG(errs() << "Function verification failed\n");
     return;
   }
 }
 
-static bool shouldUnrollComplexLoop(Function &F, Loop *L, ScalarEvolution &SE,
-                                    DominatorTree &DT, LoopInfo &LI) {
-  if (!checkIfDotProdComplicated(F)) {
-    return false;
-  }
-  // Check if the loop is suitable for unrolling
-  if (!L->getLoopLatch())
-    return false;
-  if (!L->getExitingBlock())
-    return false;
+static std::pair<Value *, Value *> modifyEntryBB(BasicBlock &EntryBB,
+                                                 int unrollCount) {
+  ICmpInst *Icmp = getLastInst<ICmpInst>(&EntryBB);
+  assert(Icmp && "Icmp not found");
+  Value *start_index = Icmp->getOperand(0);
+  Value *end_index = Icmp->getOperand(1);
+  // Insert new instructions before Icmp
+  IRBuilder<> Builder(Icmp);
+  Value *Sub = Builder.CreateNSWAdd(
+      end_index, ConstantInt::get(end_index->getType(), -unrollCount), "Sub");
+  Icmp->setOperand(0, Sub);
+  Icmp->setOperand(1, start_index);
+  return std::make_pair(Sub, end_index);
+}
 
-  if (L->getCanonicalInductionVariable())
-    return false;
-
+void DspsF32DotprodComplexLoopUnroller::postUnrollLoopWithVariable(
+    Function &F, Loop *L, int unrollCount) {
   BasicBlock *LoopPreheader = L->getLoopPreheader();
-  if (LoopPreheader) {
-    return true;
-  }
-
-  BasicBlock *LoopHeader = L->getHeader();
-  BasicBlock *NewPreheader =
-      BasicBlock::Create(LoopHeader->getContext(), "for.cond.preheader",
-                         LoopHeader->getParent(), LoopHeader);
-
-  DomTreeUpdater DTU(DT, DomTreeUpdater::UpdateStrategy::Eager);
-  SmallVector<DominatorTree::UpdateType, 4> Updates;
-
-  // Redirect all external predecessors to the new preheader basic block
-  for (BasicBlock *pred : predecessors(LoopHeader)) {
-    if (!L->contains(pred)) {
-      Updates.push_back({DominatorTree::Delete, pred, LoopHeader});
-      Updates.push_back({DominatorTree::Insert, pred, NewPreheader});
-
-      pred->getTerminator()->replaceUsesOfWith(LoopHeader, NewPreheader);
-      // Update PHI nodes in the loop header to point to the new preheader basic
-      // block
-      for (PHINode &PN : LoopHeader->phis()) {
-        int Index = PN.getBasicBlockIndex(pred);
-        if (Index != -1) {
-          PN.setIncomingBlock(Index, NewPreheader);
-        }
-      }
-    }
-  }
-  // Jump from the new preheader to the loop header
-  BranchInst::Create(LoopHeader, NewPreheader);
-  Updates.push_back({DominatorTree::Insert, NewPreheader, LoopHeader});
-
-  DTU.applyUpdates(Updates);
-  SE.forgetLoop(L);
-
-  return true;
-}
-static bool shouldUnrollAddcType(Function &F, LoopInfo *LI) {
-  // Check the number of basic blocks
-  if (F.size() != 6)
-    return false;
-
-  // Check the loop nesting level
-  unsigned int maxLoopDepth = 0;
-  for (auto &BB : F) {
-    maxLoopDepth = std::max(maxLoopDepth, LI->getLoopDepth(&BB));
-  }
-  if (maxLoopDepth != 1) {
-    return false;
-  }
-
-  BasicBlock *Entry = getBasicBlockByName(F, "entry");
-  BasicBlock *IfEnd = getBasicBlockByName(F, "if.end");
-  BasicBlock *ForCondPreheader = getBasicBlockByName(F, "for.cond.preheader");
-  BasicBlock *ForBody = getBasicBlockByName(F, "for.body");
-  BasicBlock *ForBodyClone = getBasicBlockByName(F, "for.body.clone");
-  BasicBlock *Return = getBasicBlockByName(F, "return");
-
-  if (!Entry || !IfEnd || !ForCondPreheader || !ForBody || !ForBodyClone ||
-      !Return)
-    return false;
-
-  if (Entry->getTerminator()->getSuccessor(0) != Return ||
-      Entry->getTerminator()->getSuccessor(1) != IfEnd ||
-      IfEnd->getTerminator()->getSuccessor(0) != ForBody ||
-      IfEnd->getTerminator()->getSuccessor(1) != ForCondPreheader ||
-      ForCondPreheader->getTerminator()->getSuccessor(0) != ForBodyClone ||
-      ForCondPreheader->getTerminator()->getSuccessor(1) != Return ||
-      ForBody->getTerminator()->getSuccessor(0) != Return ||
-      ForBody->getTerminator()->getSuccessor(1) != ForBody ||
-      ForBodyClone->getTerminator()->getSuccessor(0) != Return ||
-      ForBodyClone->getTerminator()->getSuccessor(1) != ForBodyClone)
-    return false;
-
-  // Check if there are three outer loops, each with one inner loop
-  int outerLoopCount = 0;
-  int innerLoopCount = 0;
-  for (Loop *L : LI->getLoopsInPreorder()) {
-    if (L->getLoopDepth() == 1) {
-      outerLoopCount++;
-      if (L->getSubLoops().size() == 1) {
-        innerLoopCount++;
-      }
-    }
-  }
-
-  if (outerLoopCount != 2 || innerLoopCount != 0) {
-    return false;
-  }
-
-  return true;
-}
-
-static bool shouldUnrollDotprodType(Function &F, LoopInfo *LI) {
-  // Check the number of basic blocks
-  if (F.size() != 5)
-    return false;
-
-  // Check the loop nesting level
-  unsigned int maxLoopDepth = 0;
-  for (auto &BB : F) {
-    maxLoopDepth = std::max(maxLoopDepth, LI->getLoopDepth(&BB));
-  }
-  if (maxLoopDepth != 1) {
-    return false;
-  }
-
-  BasicBlock *Entry = getBasicBlockByName(F, "entry");
-  BasicBlock *ForCondPreheader = getBasicBlockByName(F, "for.cond.preheader");
-  BasicBlock *IfEnd = getBasicBlockByName(F, "if.end");
-  BasicBlock *ForBody = getBasicBlockByName(F, "for.body");
-  BasicBlock *ForBodyClone = getBasicBlockByName(F, "for.body.clone");
-
-  if (!Entry || !IfEnd || !ForCondPreheader || !ForBody || !ForBodyClone)
-    return false;
-
-  if (Entry->getTerminator()->getSuccessor(0) != ForBody ||
-      Entry->getTerminator()->getSuccessor(1) != ForCondPreheader ||
-      ForCondPreheader->getTerminator()->getSuccessor(0) != ForBodyClone ||
-      ForCondPreheader->getTerminator()->getSuccessor(1) != IfEnd ||
-      ForBody->getTerminator()->getSuccessor(0) != IfEnd ||
-      ForBody->getTerminator()->getSuccessor(1) != ForBody ||
-      ForBodyClone->getTerminator()->getSuccessor(0) != IfEnd ||
-      ForBodyClone->getTerminator()->getSuccessor(1) != ForBodyClone)
-    return false;
-
-  // Check if there are three outer loops, each with one inner loop
-  int outerLoopCount = 0;
-  int innerLoopCount = 0;
-  for (Loop *L : LI->getLoopsInPreorder()) {
-    if (L->getLoopDepth() == 1) {
-      outerLoopCount++;
-      if (L->getSubLoops().size() == 1) {
-        innerLoopCount++;
-      }
-    }
-  }
-
-  if (outerLoopCount != 2 || innerLoopCount != 0) {
-    return false;
-  }
-
-  return true;
-}
-
-static std::pair<Value *, Value *> modifyEntryBB(BasicBlock &entryBB) {
-  ICmpInst *icmp = getLastInst<ICmpInst>(&entryBB);
-  assert(icmp && "icmp not found");
-  Value *start_index = icmp->getOperand(0);
-  Value *end_index = icmp->getOperand(1);
-  // Insert new instructions before icmp
-  IRBuilder<> Builder(icmp);
-  Value *sub = Builder.CreateNSWAdd(
-      end_index, ConstantInt::get(end_index->getType(), -8), "sub");
-  icmp->setOperand(0, sub);
-  icmp->setOperand(1, start_index);
-  return std::make_pair(sub, end_index);
-}
-
-static void postUnrollLoopWithVariable(Function &F, Loop *L, int unroll_count) {
-  BasicBlock *LoopPreheader = L->getLoopPreheader();
-  // Get the basic blocks to merge
-  SmallVector<BasicBlock *> BBsToMerge;
-  BasicBlock *ForBody1 = getBasicBlockByName(F, "for.body.1");
-  BasicBlock *ForBody2 = getBasicBlockByName(F, "for.body.2");
-  BasicBlock *ForBody3 = getBasicBlockByName(F, "for.body.3");
-  BasicBlock *ForBody4 = getBasicBlockByName(F, "for.body.4");
-  BasicBlock *ForBody5 = getBasicBlockByName(F, "for.body.5");
-  BasicBlock *ForBody6 = getBasicBlockByName(F, "for.body.6");
-  BasicBlock *ForBody7 = getBasicBlockByName(F, "for.body.7");
-  assert(ForBody1 && ForBody2 && ForBody3 && ForBody4 && ForBody5 && ForBody6 &&
-         ForBody7 && "basic block not found");
-  BBsToMerge.push_back(ForBody1);
-  BBsToMerge.push_back(ForBody2);
-  BBsToMerge.push_back(ForBody3);
-  BBsToMerge.push_back(ForBody4);
-  BBsToMerge.push_back(ForBody5);
-  BBsToMerge.push_back(ForBody6);
-  BBsToMerge.push_back(ForBody7);
-
-  BasicBlock *LoopHeader = L->getHeader();
-  BasicBlock *LoopHeaderClone =
-      cloneBasicBlockWithRelations(LoopHeader, ".clone", &F);
-  LoopHeaderClone->moveAfter(LoopHeader);
-  // Create a new basic block as for.end
   BasicBlock *ForEnd = getBasicBlockByName(F, "for.cond.cleanup");
   assert(ForEnd && "basic block not found");
   ForEnd->setName("for.end");
 
+  auto [LoopHeaderClone, ForBody7] = cloneAndMergeLoop(L, F, unrollCount);
   LoopHeaderClone->getTerminator()->setSuccessor(1, LoopHeaderClone);
   for (PHINode &Phi : LoopHeaderClone->phis()) {
     Phi.setIncomingBlock(1, LoopHeaderClone);
   }
-
-  for (BasicBlock *BB : BBsToMerge) {
-    MergeBasicBlockIntoOnlyPred(BB);
-  }
-
   // Adjust positions
   LoopHeaderClone->moveAfter(getBasicBlockByName(F, "for.body.7"));
   assert(LoopHeaderClone && "basic block not found");
   ForEnd->moveAfter(LoopHeaderClone);
 
-  BasicBlock &entryBB = F.getEntryBlock();
-  auto [Sub, end_index] = modifyEntryBB(entryBB);
-  entryBB.getTerminator()->setSuccessor(1, ForBody7);
+  BasicBlock &EntryBB = F.getEntryBlock();
+  auto [Sub, end_index] = modifyEntryBB(EntryBB, unrollCount);
+  EntryBB.getTerminator()->setSuccessor(1, ForBody7);
 
   SmallVector<Instruction *> FAMSDInsts;
-  for (Instruction &I : *ForBody7) {
-    if (auto *BinOp = dyn_cast<BinaryOperator>(&I)) {
+  for (Instruction &Inst : *ForBody7) {
+    if (auto *BinOp = dyn_cast<BinaryOperator>(&Inst)) {
       if (BinOp->getOpcode() == Instruction::FAdd ||
           BinOp->getOpcode() == Instruction::FMul ||
           BinOp->getOpcode() == Instruction::FSub ||
@@ -3121,47 +4014,47 @@ static void postUnrollLoopWithVariable(Function &F, Loop *L, int unroll_count) {
     }
   }
   assert(!FAMSDInsts.empty() && "fadd/fmul/fsub/fdiv instruction not found");
-  PHINode *firstFloatPhi = getFirstFloatPhi(ForBody7);
-  assert(firstFloatPhi && "phi node not found");
-  // Clone phi node 7 times
-  for (int i = 0; i < 7; i++) {
-    PHINode *clonedPhi = cast<PHINode>(firstFloatPhi->clone());
-    clonedPhi->setName("result" + Twine(i));
-    clonedPhi->insertAfter(firstFloatPhi);
-    auto *temp = FAMSDInsts[i];
-    clonedPhi->setIncomingValue(1, temp);
-    temp->setOperand(0, clonedPhi);
+  PHINode *FirstFloatPhi = getFirstFloatPhi(ForBody7);
+  assert(FirstFloatPhi && "Phi node not found");
+  // Clone Phi node 7 times
+  for (int I = 0; I < 7; I++) {
+    PHINode *ClonedPhi = cast<PHINode>(FirstFloatPhi->clone());
+    ClonedPhi->setName("result" + Twine(I));
+    ClonedPhi->insertAfter(FirstFloatPhi);
+    auto *Temp = FAMSDInsts[I];
+    ClonedPhi->setIncomingValue(1, Temp);
+    Temp->setOperand(0, ClonedPhi);
   }
 
   for (PHINode &Phi : ForBody7->phis()) {
-    Phi.setIncomingBlock(0, &entryBB);
-    auto *temp = Phi.clone();
-    temp->setName("result0.0.lcssa");
-    temp->insertBefore(LoopPreheader->getTerminator());
+    Phi.setIncomingBlock(0, &EntryBB);
+    auto *Temp = Phi.clone();
+    Temp->setName("result0.0.lcssa");
+    Temp->insertBefore(LoopPreheader->getTerminator());
   }
 
-  ICmpInst *lastICmp = getLastInst<ICmpInst>(ForBody7);
-  assert(lastICmp && "icmp not found");
-  lastICmp->setOperand(1, Sub);
-  lastICmp->setPredicate(ICmpInst::ICMP_SLT);
+  ICmpInst *LastICmp = getLastInst<ICmpInst>(ForBody7);
+  assert(LastICmp && "Icmp not found");
+  LastICmp->setOperand(1, Sub);
+  LastICmp->setPredicate(ICmpInst::ICMP_SLT);
 
   ForBody7->getTerminator()->setSuccessor(0, LoopPreheader);
   ForBody7->getTerminator()->setSuccessor(1, ForBody7);
 
-  PHINode *firstI32Phi = getFirstI32Phi(LoopPreheader);
-  assert(firstI32Phi && "phi node not found");
-  // Insert icmp slt instruction in LoopPreheader
+  PHINode *FirstI32Phi = getFirstI32Phi(LoopPreheader);
+  assert(FirstI32Phi && "Phi node not found");
+  // Insert Icmp slt instruction in LoopPreheader
   IRBuilder<> Builder(LoopPreheader->getTerminator());
   ICmpInst *NewICmp =
-      cast<ICmpInst>(Builder.CreateICmpSLT(firstI32Phi, end_index, "cmp"));
+      cast<ICmpInst>(Builder.CreateICmpSLT(FirstI32Phi, end_index, "Cmp"));
 
   // Convert the original unconditional branch to a conditional branch
   BranchInst *OldBr = cast<BranchInst>(LoopPreheader->getTerminator());
   BranchInst *NewBr = BranchInst::Create(LoopHeaderClone, ForEnd, NewICmp);
   ReplaceInstWithInst(OldBr, NewBr);
 
-  Instruction *faddInst = nullptr;
-  Instruction *addNswInst = nullptr;
+  Instruction *FaddInst = nullptr;
+  Instruction *AddNswInst = nullptr;
 
   for (auto &I : *LoopHeaderClone) {
     if (auto *BinOp = dyn_cast<BinaryOperator>(&I)) {
@@ -3170,38 +4063,36 @@ static void postUnrollLoopWithVariable(Function &F, Loop *L, int unroll_count) {
            BinOp->getOpcode() == Instruction::FSub ||
            BinOp->getOpcode() == Instruction::FDiv) &&
           BinOp->getType()->isFloatTy()) {
-        faddInst = BinOp;
+        FaddInst = BinOp;
       } else if (BinOp->getOpcode() == Instruction::Add &&
                  BinOp->hasNoSignedWrap()) {
-        addNswInst = BinOp;
+        AddNswInst = BinOp;
       }
     }
 
-    if (faddInst && addNswInst) {
+    if (FaddInst && AddNswInst) {
       break;
     }
   }
-  assert(faddInst && addNswInst &&
+  assert(FaddInst && AddNswInst &&
          "fadd/fmul/fsub/fdiv float and add nsw instructions not found");
-  PHINode *firstI32PhiLoopHeaderClone = getFirstI32Phi(LoopHeaderClone);
-  assert(firstI32PhiLoopHeaderClone && "phi node not found");
-  firstI32PhiLoopHeaderClone->setIncomingValue(0, firstI32Phi);
-  firstI32PhiLoopHeaderClone->setIncomingValue(1, addNswInst);
+  PHINode *FirstI32PhiLoopHeaderClone = getFirstI32Phi(LoopHeaderClone);
+  assert(FirstI32PhiLoopHeaderClone && "Phi node not found");
+  FirstI32PhiLoopHeaderClone->setIncomingValue(0, FirstI32Phi);
+  FirstI32PhiLoopHeaderClone->setIncomingValue(1, AddNswInst);
 
-  PHINode *firstFloatPhiLoopHeaderClone = getFirstFloatPhi(LoopHeaderClone);
-  assert(firstFloatPhiLoopHeaderClone && "phi node not found");
-  PHINode *lastFloatPhiLoopPreheader = getLastFloatPhi(LoopPreheader);
-  assert(lastFloatPhiLoopPreheader && "phi node not found");
-  firstFloatPhiLoopHeaderClone->setIncomingValue(0, lastFloatPhiLoopPreheader);
-  firstFloatPhiLoopHeaderClone->setIncomingValue(1, faddInst);
+  PHINode *FirstFloatPhiLoopHeaderClone = getFirstFloatPhi(LoopHeaderClone);
+  assert(FirstFloatPhiLoopHeaderClone && "Phi node not found");
+  PHINode *LastFloatPhiLoopPreheader = getLastFloatPhi(LoopPreheader);
+  assert(LastFloatPhiLoopPreheader && "Phi node not found");
+  FirstFloatPhiLoopHeaderClone->setIncomingValue(0, LastFloatPhiLoopPreheader);
+  FirstFloatPhiLoopHeaderClone->setIncomingValue(1, FaddInst);
 
-  // Collect all phi float instructions in LoopPreheader
-  SmallVector<PHINode *> floatPhis;
-  for (auto &I : *LoopPreheader) {
-    if (auto *Phi = dyn_cast<PHINode>(&I)) {
-      if (Phi->getType()->isFloatTy()) {
-        floatPhis.push_back(Phi);
-      }
+  // Collect all Phi float instructions in LoopPreheader
+  SmallVector<PHINode *> FloatPhis;
+  for (auto &Phi : LoopPreheader->phis()) {
+    if (Phi.getType()->isFloatTy()) {
+      FloatPhis.push_back(&Phi);
     }
   }
 
@@ -3219,308 +4110,39 @@ static void postUnrollLoopWithVariable(Function &F, Loop *L, int unroll_count) {
 
   Builder.SetInsertPoint(RetInst);
   // Create a series of fadd instructions
-  assert(floatPhis.size() == 8 && "expected floatPhis has 8 phi node");
+  assert(FloatPhis.size() == 8 && "expected FloatPhis has 8 Phi node");
   Value *CurrentSum = nullptr;
-  Value *add64 = Builder.CreateFAdd(floatPhis[0], OriginalRetValue, "add64");
-  Value *add65 = Builder.CreateFAdd(floatPhis[1], floatPhis[2], "add65");
-  Value *add66 = Builder.CreateFAdd(floatPhis[3], floatPhis[4], "add66");
-  Value *add67 = Builder.CreateFAdd(floatPhis[5], floatPhis[6], "add67");
-  Value *add68 = Builder.CreateFAdd(add64, add65, "add68");
-  Value *add69 = Builder.CreateFAdd(add66, add67, "add69");
-  CurrentSum = Builder.CreateFAdd(add68, add69, "add70");
+  Value *Add64 = Builder.CreateFAdd(FloatPhis[0], OriginalRetValue, "Add64");
+  Value *Add65 = Builder.CreateFAdd(FloatPhis[1], FloatPhis[2], "Add65");
+  Value *Add66 = Builder.CreateFAdd(FloatPhis[3], FloatPhis[4], "Add66");
+  Value *Add67 = Builder.CreateFAdd(FloatPhis[5], FloatPhis[6], "Add67");
+  Value *Add68 = Builder.CreateFAdd(Add64, Add65, "Add68");
+  Value *Add69 = Builder.CreateFAdd(Add66, Add67, "Add69");
+  CurrentSum = Builder.CreateFAdd(Add68, Add69, "add70");
 
   // Replace the original ret instruction
   RetInst->setOperand(0, CurrentSum);
-  PHINode *firstFloatPhiForEnd = getFirstFloatPhi(ForEnd);
-  assert(firstFloatPhiForEnd && "phi node not found");
-  // Remove existing incoming values from firstFloatPhiForEnd
-  while (firstFloatPhiForEnd->getNumIncomingValues() > 0) {
-    firstFloatPhiForEnd->removeIncomingValue(0u, false);
+  PHINode *FirstFloatPhiForEnd = getFirstFloatPhi(ForEnd);
+  assert(FirstFloatPhiForEnd && "Phi node not found");
+  // Remove existing incoming values from FirstFloatPhiForEnd
+  while (FirstFloatPhiForEnd->getNumIncomingValues() > 0) {
+    FirstFloatPhiForEnd->removeIncomingValue(0u, false);
   }
-  // Add two incoming values to firstFloatPhiForEnd
-  firstFloatPhiForEnd->addIncoming(faddInst, LoopHeaderClone);
-  firstFloatPhiForEnd->addIncoming(lastFloatPhiLoopPreheader, LoopPreheader);
+  // Add two incoming values to FirstFloatPhiForEnd
+  FirstFloatPhiForEnd->addIncoming(FaddInst, LoopHeaderClone);
+  FirstFloatPhiForEnd->addIncoming(LastFloatPhiLoopPreheader, LoopPreheader);
 
   runDeadCodeElimination(F);
-}
-
-static bool shouldUnrollCorr(Function &F, LoopInfo *LI) {
-  if (F.size() != 7)
-    return false;
-
-  BasicBlock *Entry = getBasicBlockByName(F, "entry");
-  BasicBlock *ForCondPreheader = getBasicBlockByName(F, "for.cond.preheader");
-  BasicBlock *Return = getBasicBlockByName(F, "return");
-
-  if (!Entry || !ForCondPreheader || !Return)
-    return false;
-
-  if (Entry->getTerminator()->getSuccessor(0) != Return ||
-      Entry->getTerminator()->getSuccessor(1) != ForCondPreheader) {
-    return false;
-  }
-
-  // Feature 2: Has 5 parameters
-  if (F.arg_size() != 5) {
-    return false;
-  }
-
-  unsigned int loopNestLevel = 0;
-  for (auto &BB : F) {
-    if (isa<BranchInst>(BB.getTerminator())) {
-      loopNestLevel = std::max(loopNestLevel, LI->getLoopDepth(&BB));
-    }
-  }
-  if (loopNestLevel != 2) {
-    return false;
-  }
-
-  bool hasFMulAdd = false;
-  for (auto &BB : F) {
-    for (auto &I : BB) {
-      if (RecurrenceDescriptor::isFMulAddIntrinsic(&I)) {
-        hasFMulAdd = true;
-        break;
-      }
-    }
-    if (hasFMulAdd)
-      break;
-  }
-  if (!hasFMulAdd) {
-    return false;
-  }
-
-  return true;
-}
-
-static bool shouldUnrollConvccorr(Function &F, LoopInfo *LI) {
-  // Check the number of basic blocks
-  if (F.size() != 17)
-    return false;
-
-  // Check the number of parameters
-  if (F.arg_size() != 5) {
-    return false;
-  }
-
-  // Check the loop nesting level
-  unsigned int maxLoopDepth = 0;
-  for (auto &BB : F) {
-    maxLoopDepth = std::max(maxLoopDepth, LI->getLoopDepth(&BB));
-  }
-  if (maxLoopDepth != 2) {
-    return false;
-  }
-
-  // Check if the fmuladd.f32 inline function is used
-  bool hasFMulAdd = false;
-  for (auto &BB : F) {
-    for (auto &I : BB) {
-      if (RecurrenceDescriptor::isFMulAddIntrinsic(&I)) {
-        hasFMulAdd = true;
-        break;
-      }
-    }
-    if (hasFMulAdd)
-      break;
-  }
-  if (!hasFMulAdd) {
-    return false;
-  }
-
-  BasicBlock *Entry = getBasicBlockByName(F, "entry");
-  BasicBlock *ForBody = getBasicBlockByName(F, "for.body");
-  BasicBlock *ForEnd = getBasicBlockByName(F, "for.end");
-  BasicBlock *Return = getBasicBlockByName(F, "return");
-
-  if (!Entry || !ForBody || !ForEnd || !Return)
-    return false;
-
-  if (Entry->getTerminator()->getSuccessor(0) != Return ||
-      ForEnd->getTerminator()->getSuccessor(1) != ForBody)
-    return false;
-
-  // Check if there are three outer loops, each with one inner loop
-  int outerLoopCount = 0;
-  int innerLoopCount = 0;
-  for (Loop *L : LI->getLoopsInPreorder()) {
-    if (L->getLoopDepth() == 1) {
-      outerLoopCount++;
-      if (L->getSubLoops().size() == 1) {
-        innerLoopCount++;
-      }
-    }
-  }
-
-  if (outerLoopCount != 3 || innerLoopCount != 3) {
-    return false;
-  }
-
-  // Check if there are three icmp eq instructions in the entry basic block
-  int icmpEqCount = 0;
-  for (auto &I : *Entry) {
-    if (auto *ICmp = dyn_cast<ICmpInst>(&I)) {
-      if (ICmp->getPredicate() == ICmpInst::ICMP_EQ) {
-        icmpEqCount++;
-      }
-    }
-  }
-
-  if (icmpEqCount != 3) {
-    return false;
-  }
-
-  return true;
-}
-
-static bool shouldUnrollFird(Function &F, LoopInfo *LI) {
-
-  // Check the number of basic blocks
-  if (F.size() != 14)
-    return false;
-
-  // Check the number of parameters
-  if (F.arg_size() != 4) {
-    return false;
-  }
-
-  // Check the loop nesting level
-  unsigned int maxLoopDepth = 0;
-  for (auto &BB : F) {
-    maxLoopDepth = std::max(maxLoopDepth, LI->getLoopDepth(&BB));
-  }
-  if (maxLoopDepth != 2) {
-    return false;
-  }
-
-  // Check if the fmuladd.f32 inline function is used
-  bool hasFMulAdd = false;
-  for (auto &BB : F) {
-    for (auto &I : BB) {
-      if (RecurrenceDescriptor::isFMulAddIntrinsic(&I)) {
-        hasFMulAdd = true;
-        break;
-      }
-    }
-    if (hasFMulAdd)
-      break;
-  }
-  if (!hasFMulAdd) {
-    return false;
-  }
-
-  BasicBlock *Entry = getBasicBlockByName(F, "entry");
-  BasicBlock *ForCondCleanup = getBasicBlockByName(F, "for.cond.cleanup");
-
-  if (!Entry || !ForCondCleanup)
-    return false;
-
-  if (Entry->getTerminator()->getSuccessor(1) != ForCondCleanup)
-    return false;
-
-  // Check if there are three outer loops, each with one inner loop
-  int outerLoopCount = 0;
-  int innerLoopCount = 0;
-  for (Loop *L : LI->getLoopsInPreorder()) {
-    if (L->getLoopDepth() == 1) {
-      outerLoopCount++;
-    } else if (L->getLoopDepth() == 2) {
-      innerLoopCount++;
-    } else {
-      return false;
-    }
-  }
-
-  if (outerLoopCount != 1 || innerLoopCount != 3) {
-    return false;
-  }
-
-  return true;
-}
-
-static bool shouldUnrollFirType(Function &F, LoopInfo *LI) {
-  // Check the number of basic blocks
-  if (F.size() != 19)
-    return false;
-
-  // Check the number of parameters
-  if (F.arg_size() != 4) {
-    return false;
-  }
-
-  // Check the loop nesting level
-  unsigned int maxLoopDepth = 0;
-  for (auto &BB : F) {
-    maxLoopDepth = std::max(maxLoopDepth, LI->getLoopDepth(&BB));
-  }
-  if (maxLoopDepth != 2) {
-    return false;
-  }
-
-  // Check if the fmuladd.f32 inline function is used
-  bool hasFMulAdd = false;
-  for (auto &BB : F) {
-    for (auto &I : BB) {
-      if (RecurrenceDescriptor::isFMulAddIntrinsic(&I)) {
-        hasFMulAdd = true;
-        break;
-      }
-    }
-    if (hasFMulAdd)
-      break;
-  }
-  if (!hasFMulAdd) {
-    return false;
-  }
-
-  BasicBlock *Entry = getBasicBlockByName(F, "entry");
-  BasicBlock *ForCondPreheader = getBasicBlockByName(F, "for.cond.preheader");
-  BasicBlock *ForBodyLrPh = getBasicBlockByName(F, "for.body.lr.ph");
-  BasicBlock *IfEnd = getBasicBlockByName(F, "if.end");
-  BasicBlock *ForBody = getBasicBlockByName(F, "for.body");
-  BasicBlock *ForBodyClone = getBasicBlockByName(F, "for.body.clone");
-  BasicBlock *ForBodyLrPhClone = getBasicBlockByName(F, "for.body.lr.ph.clone");
-
-  if (!Entry || !ForCondPreheader || !ForBodyLrPh || !IfEnd || !ForBody ||
-      !ForBodyClone || !ForBodyLrPhClone)
-    return false;
-
-  if (Entry->getTerminator()->getSuccessor(0) != ForCondPreheader ||
-      Entry->getTerminator()->getSuccessor(1) != ForBodyLrPhClone ||
-      ForCondPreheader->getTerminator()->getSuccessor(0) != ForBodyLrPh ||
-      ForCondPreheader->getTerminator()->getSuccessor(1) != IfEnd ||
-      ForBodyLrPh->getSingleSuccessor() != ForBody ||
-      ForBodyLrPhClone->getSingleSuccessor() != ForBodyClone)
-    return false;
-
-  // Check if there are three outer loops, each with one inner loop
-  int outerLoopCount = 0;
-  int innerLoopCount = 0;
-  for (Loop *L : LI->getLoopsInPreorder()) {
-    if (L->getLoopDepth() == 1) {
-      outerLoopCount++;
-    } else if (L->getLoopDepth() == 2) {
-      innerLoopCount++;
-    } else {
-      return false;
-    }
-  }
-  // for opt is 4, for clang is 2.
-  if (outerLoopCount != 2 || (innerLoopCount != 2 && innerLoopCount != 4)) {
-    return false;
-  }
-
-  return true;
 }
 
 static void eraseAllStoreInstInBB(BasicBlock *BB) {
   assert(BB && "BasicBlock is nullptr");
   // Erase all store instructions in BB
-  for (auto it = BB->begin(); it != BB->end();) {
-    if (isa<StoreInst>(&*it)) {
-      it = it->eraseFromParent();
+  for (auto It = BB->begin(); It != BB->end();) {
+    if (isa<StoreInst>(&*It)) {
+      It = It->eraseFromParent();
     } else {
-      ++it;
+      ++It;
     }
   }
 }
@@ -3529,14 +4151,10 @@ static GetElementPtrInst *getUniqueGetElementPtrInst(BasicBlock *BB) {
   assert(BB && "BasicBlock is nullptr");
   // Get the unique getelementptr instruction in BB
   GetElementPtrInst *GEP = nullptr;
-  for (Instruction &I : *BB) {
-    if (auto *GEPI = dyn_cast<GetElementPtrInst>(&I)) {
+  for (Instruction &Inst : *BB) {
+    if (auto *GEPI = dyn_cast<GetElementPtrInst>(&Inst)) {
       if (!GEP) {
         GEP = GEPI;
-      } else {
-        // If multiple getelementptr instructions are found, set GEP to nullptr
-        // and exit the loop
-        GEP = nullptr;
         break;
       }
     }
@@ -3553,7 +4171,7 @@ static void createCriticalEdgeAndMoveStoreInst(BasicBlock *CloneForBody,
       CloneForBody->getContext(), "for.cond.for.end_crit_edge",
       CloneForBody->getParent(), ForEnd37);
 
-  // Update the terminator instruction of CloneForBody
+  // Update the Terminator instruction of CloneForBody
   CloneForBody->getTerminator()->setSuccessor(0, CriticalEdge);
 
   // Create an unconditional branch instruction to jump to OldForEnd
@@ -3577,30 +4195,30 @@ static std::tuple<Value *, GetElementPtrInst *, Value *>
 modifyOuterLoop4(Loop *L, BasicBlock *ForBodyMerged,
                  BasicBlock *CloneForBodyPreheader) {
   BasicBlock *BB = L->getHeader();
-  PHINode *phi = getLastInst<PHINode>(BB);
+  PHINode *Phi = getLastInst<PHINode>(BB);
   // Add new instructions
   IRBuilder<> Builder(BB);
-  Builder.SetInsertPoint(phi->getNextNode());
+  Builder.SetInsertPoint(Phi->getNextNode());
 
   // and i32 %n.0551, -8
-  Value *Add2 = Builder.CreateAnd(phi, ConstantInt::get(phi->getType(), -8));
+  Value *Add2 = Builder.CreateAnd(Phi, ConstantInt::get(Phi->getType(), -8));
 
-  // %sub = and i32 %n.0551, 2147483644
+  // %Sub = and i32 %n.0551, 2147483644
   Value *Sub =
-      Builder.CreateAnd(phi, ConstantInt::get(phi->getType(), 2147483640));
+      Builder.CreateAnd(Phi, ConstantInt::get(Phi->getType(), 2147483640));
 
-  // %cmp12538.not = icmp eq i32 %sub, 0
-  Value *Cmp = Builder.CreateICmpEQ(Sub, ConstantInt::get(phi->getType(), 0));
+  // %cmp12538.not = Icmp eq i32 %Sub, 0
+  Value *Cmp = Builder.CreateICmpEQ(Sub, ConstantInt::get(Phi->getType(), 0));
 
-  // br i1 %cmp12538.not, label %for.cond.cleanup, label %for.body.preheader
+  // Br i1 %cmp12538.not, label %for.cond.cleanup, label %for.body.preheader
   // Move the conditional branch instruction to the end of BB
-  auto *newcondBr =
+  auto *NewcondBr =
       Builder.CreateCondBr(Cmp, CloneForBodyPreheader, ForBodyMerged);
 
-  // Erase the terminator instruction of BB
-  Instruction *oldTerminator = BB->getTerminator();
-  newcondBr->moveAfter(oldTerminator);
-  oldTerminator->eraseFromParent();
+  // Erase the Terminator instruction of BB
+  Instruction *OldTerminator = BB->getTerminator();
+  NewcondBr->moveAfter(OldTerminator);
+  OldTerminator->eraseFromParent();
 
   // Erase all store instructions in BB
   eraseAllStoreInstInBB(BB);
@@ -3636,15 +4254,15 @@ static void modifyInnerLoop4(Loop *L, BasicBlock *ForBodyMerged, Value *Sub,
   // Create an instruction to add the results of four FMulAdd calls
   assert(FMulAddCalls.size() == 8 && "Expected 8 FMulAdd calls");
   Value *Sum = nullptr;
-  Value *sum = BinaryOperator::CreateFAdd(FMulAddCalls[0], FMulAddCalls[1],
-                                          "sum", NewForEnd);
-  Value *sum23 = BinaryOperator::CreateFAdd(FMulAddCalls[2], FMulAddCalls[3],
-                                            "sum23", NewForEnd);
+  Value *Sum1 = BinaryOperator::CreateFAdd(FMulAddCalls[0], FMulAddCalls[1],
+                                           "sum", NewForEnd);
+  Value *Sum23 = BinaryOperator::CreateFAdd(FMulAddCalls[2], FMulAddCalls[3],
+                                            "Sum23", NewForEnd);
   Value *sum24 = BinaryOperator::CreateFAdd(FMulAddCalls[4], FMulAddCalls[5],
                                             "sum24", NewForEnd);
   Value *sum25 = BinaryOperator::CreateFAdd(FMulAddCalls[6], FMulAddCalls[7],
                                             "sum25", NewForEnd);
-  Value *sum26 = BinaryOperator::CreateFAdd(sum, sum23, "sum26", NewForEnd);
+  Value *sum26 = BinaryOperator::CreateFAdd(Sum1, Sum23, "sum26", NewForEnd);
   Value *sum27 = BinaryOperator::CreateFAdd(sum24, sum25, "sum27", NewForEnd);
   Sum = BinaryOperator::CreateFAdd(sum26, sum27, "sum28", NewForEnd);
   IRBuilder<> Builder(NewForEnd);
@@ -3662,7 +4280,7 @@ static void modifyInnerLoop4(Loop *L, BasicBlock *ForBodyMerged, Value *Sub,
   CloneForBody->moveAfter(CloneForBodyPreheader);
 
   // Create a PHI node in CloneForBodyPreheader
-  PHINode *SumPHI = PHINode::Create(Sum->getType(), 2, "sum.phi",
+  PHINode *SumPHI = PHINode::Create(Sum->getType(), 2, "sum.Phi",
                                     CloneForBodyPreheader->getFirstNonPHI());
 
   // Set the incoming values of the PHI node
@@ -3670,29 +4288,25 @@ static void modifyInnerLoop4(Loop *L, BasicBlock *ForBodyMerged, Value *Sub,
   SumPHI->addIncoming(Sum, NewForEnd);
 
   // Create a PHI node in CloneForBodyPreheader
-  PHINode *AddPHI = PHINode::Create(Add2->getType(), 2, "add.phi",
+  PHINode *AddPHI = PHINode::Create(Add2->getType(), 2, "add.Phi",
                                     CloneForBodyPreheader->getFirstNonPHI());
 
   // Set the incoming values of the PHI node
   AddPHI->addIncoming(ConstantInt::get(Add2->getType(), 0), OuterBB);
   AddPHI->addIncoming(Add2, NewForEnd);
-  Value *phifloatincomingvalue0 =
-      getFirstCallInstWithName(CloneForBody, "llvm.fmuladd.f32");
+  Instruction *phifloatincomingvalue0 = getFirstFMulAddInst(CloneForBody);
   Value *phii32incomingvalue0 =
       getLastInst<ICmpInst>(CloneForBody)->getOperand(0);
   for (PHINode &Phi : CloneForBody->phis()) {
     if (Phi.getType()->isIntegerTy(32)) {
       Phi.setIncomingValue(0, AddPHI);
-      Phi.setIncomingBlock(0, CloneForBodyPreheader);
       Phi.setIncomingValue(1, phii32incomingvalue0);
-      Phi.setIncomingBlock(1, CloneForBody);
     } else if (Phi.getType()->isFloatTy()) {
       Phi.setIncomingValue(0, SumPHI);
-      Phi.setIncomingBlock(0, CloneForBodyPreheader);
       Phi.setIncomingValue(1, phifloatincomingvalue0);
-      Phi.setIncomingBlock(1, CloneForBody);
     }
   }
+  setPHINodesBlock(CloneForBody, CloneForBodyPreheader, CloneForBody);
   BasicBlock *OldForEnd = CloneForBody->getTerminator()->getSuccessor(0);
   createCriticalEdgeAndMoveStoreInst(CloneForBody, OldForEnd);
 
@@ -3739,13 +4353,14 @@ modifyOuterLoop8(Loop *L) {
 static std::tuple<Value *, Value *, GetElementPtrInst *>
 modifyOuterLoop16(Loop *L) {
   BasicBlock *BB = L->getHeader();
-  BasicBlock *BBLoopPreHeader = L->getLoopPreheader();
   ICmpInst *LastICmp = getLastInst<ICmpInst>(BB);
   LastICmp->setPredicate(ICmpInst::ICMP_ULT);
   swapTerminatorSuccessors(BB);
 
   eraseAllStoreInstInBB(BB);
   Value *lkern_0 = getFirstI32Phi(BB)->getIncomingValue(1);
+
+  BasicBlock *BBLoopPreHeader = L->getLoopPreheader();
   // Insert an and instruction in BBLoopPreHeader
   IRBuilder<> Builder(BBLoopPreHeader->getTerminator());
   Value *Div536 = Builder.CreateAnd(lkern_0, -16, "div536");
@@ -3767,9 +4382,9 @@ modifyOuterLoop16(Loop *L) {
 
 static void modifyInnerLoop(Loop *L, BasicBlock *ForBodyMerged, Value *Add60,
                             BasicBlock *CloneForBody, Value *Add56,
-                            GetElementPtrInst *GEP, uint32_t unroll_count) {
-  assert((unroll_count == 8 || unroll_count == 16) &&
-         "unroll_count must be 8 or 16");
+                            GetElementPtrInst *GEP, uint32_t unrollCount) {
+  assert((unrollCount == 8 || unrollCount == 16) &&
+         "unrollCount must be 8 or 16");
   BasicBlock *OuterBB = L->getHeader();
 
   // Find the predecessor BasicBlock of ForBodyMergedPreheader
@@ -3798,9 +4413,9 @@ static void modifyInnerLoop(Loop *L, BasicBlock *ForBodyMerged, Value *Add60,
   BasicBlock *ForEndLoopExit = ForBodyMerged->getTerminator()->getSuccessor(1);
   // Create an instruction to add the results of four FMulAdd calls
   Value *Sum = nullptr;
-  if (unroll_count == 16) {
-    Value *sum45 =
-        BinaryOperator::CreateFAdd(FMulAddCalls[0], FMulAddCalls[1], "sum45",
+  if (unrollCount == 16) {
+    Value *Sum45 =
+        BinaryOperator::CreateFAdd(FMulAddCalls[0], FMulAddCalls[1], "Sum45",
                                    ForEndLoopExit->getTerminator());
     Value *sum46 =
         BinaryOperator::CreateFAdd(FMulAddCalls[2], FMulAddCalls[3], "sum46",
@@ -3824,7 +4439,7 @@ static void modifyInnerLoop(Loop *L, BasicBlock *ForBodyMerged, Value *Add60,
         BinaryOperator::CreateFAdd(FMulAddCalls[14], FMulAddCalls[15], "sum52",
                                    ForEndLoopExit->getTerminator());
 
-    Value *sum53 = BinaryOperator::CreateFAdd(sum45, sum46, "sum53",
+    Value *sum53 = BinaryOperator::CreateFAdd(Sum45, sum46, "sum53",
                                               ForEndLoopExit->getTerminator());
     Value *sum54 = BinaryOperator::CreateFAdd(sum47, sum48, "sum54",
                                               ForEndLoopExit->getTerminator());
@@ -3840,7 +4455,7 @@ static void modifyInnerLoop(Loop *L, BasicBlock *ForBodyMerged, Value *Add60,
 
     Sum = BinaryOperator::CreateFAdd(sum57, sum58, "sum59",
                                      ForEndLoopExit->getTerminator());
-  } else if (unroll_count == 8) {
+  } else if (unrollCount == 8) {
     Value *sum60 =
         BinaryOperator::CreateFAdd(FMulAddCalls[0], FMulAddCalls[1], "sum60",
                                    ForEndLoopExit->getTerminator());
@@ -3867,7 +4482,7 @@ static void modifyInnerLoop(Loop *L, BasicBlock *ForBodyMerged, Value *Add60,
       ForEndLoopExit->getContext(), "for.end164", ForEndLoopExit->getParent(),
       ForEndLoopExit->getNextNode());
 
-  // Set the target of the terminator instruction of ForEndLoopExit to
+  // Set the target of the Terminator instruction of ForEndLoopExit to
   // for.end164
   Instruction *Terminator = ForEndLoopExit->getTerminator();
   BasicBlock *OldSuccessor = Terminator->getSuccessor(0);
@@ -3877,32 +4492,32 @@ static void modifyInnerLoop(Loop *L, BasicBlock *ForBodyMerged, Value *Add60,
   // original successor basic block
   BranchInst::Create(OldSuccessor, ForEnd164);
 
-  // Create a new phi node in for.end164
+  // Create a new Phi node in for.end164
   PHINode *PhiSum = PHINode::Create(Type::getInt32Ty(ForEnd164->getContext()),
-                                    2, "phi.sum", ForEnd164->getFirstNonPHI());
+                                    2, "Phi.sum", ForEnd164->getFirstNonPHI());
 
-  // Set the incoming values of the phi node
+  // Set the incoming values of the Phi node
   PhiSum->addIncoming(Add56, OuterBB);
   PhiSum->addIncoming(LastICmp->getOperand(0), ForEndLoopExit);
 
-  // Create a new phi float node in for.end164
+  // Create a new Phi float node in for.end164
   PHINode *PhiFloat =
-      PHINode::Create(Type::getFloatTy(ForEnd164->getContext()), 2, "phi.float",
+      PHINode::Create(Type::getFloatTy(ForEnd164->getContext()), 2, "Phi.float",
                       ForEnd164->getFirstNonPHI());
 
-  // Set the incoming values of the phi node
+  // Set the incoming values of the Phi node
   PhiFloat->addIncoming(
       ConstantFP::get(Type::getFloatTy(ForEnd164->getContext()), 0.0), OuterBB);
   PhiFloat->addIncoming(Sum, ForEndLoopExit);
   // Create a new StoreInst instruction in for.end164
   new StoreInst(PhiFloat, GEP, ForEnd164->getTerminator());
 
-  Value *operand1 = unroll_count == 16
+  Value *Operand1 = unrollCount == 16
                         ? getFirstI32Phi(OuterBB)
                         : getLastInst<ICmpInst>(CloneForBody)->getOperand(1);
   // Create a new comparison instruction
   ICmpInst *NewCmp =
-      new ICmpInst(ICmpInst::ICMP_UGT, PhiSum, operand1, "cmp182.not587");
+      new ICmpInst(ICmpInst::ICMP_UGT, PhiSum, Operand1, "cmp182.not587");
   NewCmp->insertBefore(ForEnd164->getTerminator());
 
   // Replace the original unconditional branch with a conditional branch
@@ -3912,74 +4527,48 @@ static void modifyInnerLoop(Loop *L, BasicBlock *ForBodyMerged, Value *Add60,
   ReplaceInstWithInst(OldBr, NewBr);
 
   CloneForBody->moveAfter(ForEnd164);
-  Instruction *TargetInst =
-      getFirstCallInstWithName(CloneForBody, "llvm.fmuladd.f32");
+  Instruction *TargetInst = getFirstFMulAddInst(CloneForBody);
   for (PHINode &Phi : CloneForBody->phis()) {
     if (Phi.getType()->isIntegerTy(32)) {
       Phi.setIncomingValue(0,
                            getLastInst<ICmpInst>(CloneForBody)->getOperand(0));
-      Phi.setIncomingBlock(0, CloneForBody);
       Phi.setIncomingValue(1, PhiSum);
-      Phi.setIncomingBlock(1, ForEnd164);
     } else if (Phi.getType()->isFloatTy()) {
       Phi.setIncomingValue(0, TargetInst);
-      Phi.setIncomingBlock(0, CloneForBody);
       Phi.setIncomingValue(1, PhiFloat);
-      Phi.setIncomingBlock(1, ForEnd164);
     }
   }
-
+  setPHINodesBlock(CloneForBody, CloneForBody, ForEnd164);
   createCriticalEdgeAndMoveStoreInst(CloneForBody, ForEnd37);
 
   OuterBB->getTerminator()->setSuccessor(1, ForEnd164);
 }
 
-static void PostUnrollConv(Function &F, Loop *L, int unroll_count,
-                           int unroll_index) {
-  BasicBlock *ForBody = L->getHeader();
-  BasicBlock *CloneForBody =
-      cloneBasicBlockWithRelations(ForBody, ".clone", &F);
-  CloneForBody->moveAfter(ForBody);
-  // Set the second branch of the terminator instruction of CloneForBody to
-  // ForBody
-  CloneForBody->getTerminator()->setSuccessor(1, ForBody);
+void DspsF32ConvCcorrUnroller::PostUnrollConv(Function &F, Loop *L,
+                                              int unrollCount,
+                                              int unroll_index) {
 
-  StringRef ForBodyName = ForBody->getName();
-  // Get the basic blocks to merge
-  std::vector<BasicBlock *> BBsToMerge;
-  for (int i = 1; i < unroll_count; ++i) {
-    std::string BBName = (ForBodyName + "." + std::to_string(i)).str();
-    BasicBlock *ForBodyClone = getBasicBlockByName(F, BBName);
-    if (ForBodyClone) {
-      BBsToMerge.push_back(ForBodyClone);
-    }
-  }
-
-  if (BBsToMerge.size() == static_cast<size_t>(unroll_count - 1)) {
-    for (BasicBlock *BB : BBsToMerge) {
-      MergeBasicBlockIntoOnlyPred(BB);
-    }
-  }
+  auto [CloneForBody, ForBodyMerged] = cloneAndMergeLoop(L, F, unrollCount);
   // Get the outer loop of L
   Loop *OuterLoop = L->getParentLoop();
-  if (unroll_count == 8 && unroll_index == 0) {
+  if (unrollCount == 8 && unroll_index == 0) {
     BasicBlock *CloneForBodyPreheader = BasicBlock::Create(
         CloneForBody->getContext(), CloneForBody->getName() + ".preheader",
         CloneForBody->getParent(), CloneForBody);
 
     updatePredecessorsToPreheader(CloneForBody, CloneForBodyPreheader);
     auto [Sub, GEP, Add2] =
-        modifyOuterLoop4(OuterLoop, BBsToMerge[6], CloneForBodyPreheader);
-    modifyInnerLoop4(OuterLoop, BBsToMerge[6], Sub, CloneForBody, GEP, Add2,
+        modifyOuterLoop4(OuterLoop, ForBodyMerged, CloneForBodyPreheader);
+    modifyInnerLoop4(OuterLoop, ForBodyMerged, Sub, CloneForBody, GEP, Add2,
                      CloneForBodyPreheader);
-  } else if (unroll_count == 16) {
+  } else if (unrollCount == 16) {
     auto [Add60, Add56, GEP] = modifyOuterLoop16(OuterLoop);
-    modifyInnerLoop(OuterLoop, BBsToMerge[14], Add60, CloneForBody, Add56, GEP,
-                    unroll_count);
-  } else if (unroll_count == 8) {
+    modifyInnerLoop(OuterLoop, ForBodyMerged, Add60, CloneForBody, Add56, GEP,
+                    unrollCount);
+  } else if (unrollCount == 8) {
     auto [Add214, Add207, GEP] = modifyOuterLoop8(OuterLoop);
-    modifyInnerLoop(OuterLoop, BBsToMerge[6], Add214, CloneForBody, Add207, GEP,
-                    unroll_count);
+    modifyInnerLoop(OuterLoop, ForBodyMerged, Add214, CloneForBody, Add207, GEP,
+                    unrollCount);
   }
   LLVM_DEBUG(F.dump());
 }
@@ -3989,34 +4578,31 @@ static void modifyFirstCloneForBody(BasicBlock *CloneForBody,
                                     BasicBlock *ForBody27LrPh,
                                     PHINode *CoeffPosLcssa, Value *Operand1) {
   CloneForBody->getTerminator()->setSuccessor(1, CloneForBody);
-  for (PHINode &Phi : CloneForBody->phis()) {
-    Phi.setIncomingBlock(0, ForBody27LrPh);
-    Phi.setIncomingBlock(1, CloneForBody);
-  }
+  setPHINodesBlock(CloneForBody, ForBody27LrPh, CloneForBody);
   PHINode *FirstI32Phi = getFirstI32Phi(CloneForBody);
   PHINode *LastI32Phi = getLastI32Phi(CloneForBody);
   FirstI32Phi->setIncomingValue(0, N_0_lcssa);
   FirstI32Phi->setIncomingBlock(0, ForBody27LrPh);
 
-  Instruction *firstAddInst = nullptr;
-  Instruction *lastAddInst = nullptr;
-  for (Instruction &I : *CloneForBody) {
-    if (I.getOpcode() == Instruction::Add) {
-      if (!firstAddInst) {
-        firstAddInst = &I;
+  Instruction *FirstAddInst = nullptr;
+  Instruction *LastAddInst = nullptr;
+  for (Instruction &Inst : *CloneForBody) {
+    if (Inst.getOpcode() == Instruction::Add) {
+      if (!FirstAddInst) {
+        FirstAddInst = &Inst;
       }
-      lastAddInst = &I;
+      LastAddInst = &Inst;
     }
   }
   ICmpInst *LastCmpInst = getLastInst<ICmpInst>(CloneForBody);
-  LastCmpInst->setOperand(0, lastAddInst);
+  LastCmpInst->setOperand(0, LastAddInst);
   LastCmpInst->setOperand(1, Operand1);
-  FirstI32Phi->setIncomingValue(1, lastAddInst);
+  FirstI32Phi->setIncomingValue(1, LastAddInst);
 
   LastI32Phi->setIncomingValue(0, CoeffPosLcssa);
   LastI32Phi->setIncomingBlock(0, ForBody27LrPh);
 
-  LastI32Phi->setIncomingValue(1, firstAddInst);
+  LastI32Phi->setIncomingValue(1, FirstAddInst);
 }
 
 static bool setBBFromOtherBB(Function &F, StringRef BBName,
@@ -4025,8 +4611,8 @@ static bool setBBFromOtherBB(Function &F, StringRef BBName,
   LoadInst *FirstLoad = nullptr;
   LoadInst *LastLoad = nullptr;
   BasicBlock *ForBody27LrPh = getBasicBlockByName(F, BBName);
-  for (Instruction &I : *ForBody27LrPh) {
-    if (auto *LI = dyn_cast<LoadInst>(&I)) {
+  for (Instruction &Inst : *ForBody27LrPh) {
+    if (auto *LI = dyn_cast<LoadInst>(&Inst)) {
       if (!FirstLoad) {
         FirstLoad = LI;
       }
@@ -4039,17 +4625,17 @@ static bool setBBFromOtherBB(Function &F, StringRef BBName,
   // modify getelementptr
   // Traverse the GEP instructions in ForBodyMerged
   std::vector<GetElementPtrInst *> GEPInsts;
-  for (Instruction &I : *ForBodyMerged) {
-    if (auto *GEP = dyn_cast<GetElementPtrInst>(&I)) {
+  for (Instruction &Inst : *ForBodyMerged) {
+    if (auto *GEP = dyn_cast<GetElementPtrInst>(&Inst)) {
       GEPInsts.push_back(GEP);
     }
   }
   // Ensure there is at least one GEP instruction
   if (!GEPInsts.empty()) {
-    for (size_t i = 0; i < GEPInsts.size(); ++i) {
-      GetElementPtrInst *CurrentGEP = GEPInsts[i];
+    for (size_t I = 0; I < GEPInsts.size(); ++I) {
+      GetElementPtrInst *CurrentGEP = GEPInsts[I];
 
-      if (i % 2 == 1) { // Odd
+      if (I % 2 == 1) { // Odd
         CurrentGEP->setOperand(0, LastLoad);
       } else { // Even
         CurrentGEP->setOperand(0, FirstLoad);
@@ -4061,8 +4647,9 @@ static bool setBBFromOtherBB(Function &F, StringRef BBName,
 
 // Function to modify the first loop in FIRD (Finite Impulse Response Design)
 // transformation
-static void modifyFirdFirstLoop(Function &F, Loop *L, BasicBlock *ForBodyMerged,
-                                BasicBlock *CloneForBody) {
+void DspsF32FirdLoopUnroller::modifyFirdFirstLoop(Function &F, Loop *L,
+                                                  BasicBlock *ForBodyMerged,
+                                                  BasicBlock *CloneForBody) {
   BasicBlock *ForCond23Preheader =
       ForBodyMerged->getTerminator()->getSuccessor(0)->getSingleSuccessor();
   assert(ForCond23Preheader &&
@@ -4084,26 +4671,26 @@ static void modifyFirdFirstLoop(Function &F, Loop *L, BasicBlock *ForBodyMerged,
   PHINode *N_069 = getFirstI32Phi(ForBodyMerged);
   Value *Inc20_7 = N_069->getIncomingValue(1);
   BasicBlock *ForBodyMergedLoopPreheader = N_069->getIncomingBlock(0);
-  // Create new phi node at the beginning of ForBodyMerged
+  // Create new Phi node at the beginning of ForBodyMerged
   PHINode *Add281 = PHINode::Create(Type::getInt32Ty(F.getContext()), 2,
                                     "add281", &ForBodyMerged->front());
 
-  // Set incoming values for phi node
+  // Set incoming values for Phi node
   Add281->addIncoming(Add269, ForBodyMergedLoopPreheader);
   Add281->addIncoming(Inc20_7, ForBodyMerged);
 
   N_069->setIncomingValue(1, Add281);
 
   ICmpInst *LastICmpInPreheader = getLastInst<ICmpInst>(ForCond23Preheader);
-  // Create new phi node
+  // Create new Phi node
   PHINode *N_0_lcssa = PHINode::Create(Type::getInt32Ty(F.getContext()), 2,
                                        "n.0.lcssa", LastICmpInPreheader);
 
-  // Set incoming values for phi node
+  // Set incoming values for Phi node
   N_0_lcssa->addIncoming(FirstI32Phi, ForCondCleanup3);
   N_0_lcssa->addIncoming(Add281, ForBodyMerged);
 
-  // Replace operand of LastICmpInPreheader with new phi node
+  // Replace operand of LastICmpInPreheader with new Phi node
   LastICmpInPreheader->setOperand(0, N_0_lcssa);
   LastICmpInPreheader->setPredicate(ICmpInst::ICMP_SLT);
 
@@ -4117,7 +4704,7 @@ static void modifyFirdFirstLoop(Function &F, Loop *L, BasicBlock *ForBodyMerged,
   BasicBlock *ForBody27LrPh =
       ForCond23Preheader->getTerminator()->getSuccessor(0);
   Builder.SetInsertPoint(ForBody27LrPh->getTerminator());
-  Value *Add11 = Builder.CreateAdd(Operand1, CoeffPosLcssa);
+  Builder.CreateAdd(Operand1, CoeffPosLcssa);
 
   ForBody27LrPh->getTerminator()->setSuccessor(0, CloneForBody);
   ICmpInst *LastICmpInForBodyMerged = getLastInst<ICmpInst>(ForBodyMerged);
@@ -4127,23 +4714,23 @@ static void modifyFirdFirstLoop(Function &F, Loop *L, BasicBlock *ForBodyMerged,
   modifyFirstCloneForBody(CloneForBody, N_0_lcssa, ForBody27LrPh, CoeffPosLcssa,
                           Operand1);
 
-  PHINode *acc_0_lcssa = getFirstFloatPhi(ForCond23Preheader);
-  BasicBlock *ForCond23PreheaderLoopExit = acc_0_lcssa->getIncomingBlock(1);
+  PHINode *Acc_0_lcssa = getFirstFloatPhi(ForCond23Preheader);
+  BasicBlock *ForCond23PreheaderLoopExit = Acc_0_lcssa->getIncomingBlock(1);
   PHINode *_lcssa = getFirstFloatPhi(ForCond23PreheaderLoopExit);
-  acc_0_lcssa->setIncomingValue(1, _lcssa->getIncomingValue(0));
-  acc_0_lcssa->setIncomingBlock(1, _lcssa->getIncomingBlock(0));
+  Acc_0_lcssa->setIncomingValue(1, _lcssa->getIncomingValue(0));
+  Acc_0_lcssa->setIncomingBlock(1, _lcssa->getIncomingBlock(0));
 
-  Value *floatZero = acc_0_lcssa->getIncomingValue(0);
+  Value *floatZero = Acc_0_lcssa->getIncomingValue(0);
 
   // Get all incoming values and blocks for PHINode
-  for (unsigned i = 1; i < _lcssa->getNumIncomingValues(); ++i) {
-    Value *IncomingValue = _lcssa->getIncomingValue(i);
-    BasicBlock *IncomingBlock = _lcssa->getIncomingBlock(i);
+  for (unsigned I = 1; I < _lcssa->getNumIncomingValues(); ++I) {
+    Value *IncomingValue = _lcssa->getIncomingValue(I);
+    BasicBlock *IncomingBlock = _lcssa->getIncomingBlock(I);
 
-    // Create new phi node in ForCond23Preheader
+    // Create new Phi node in ForCond23Preheader
     PHINode *NewPhi =
         PHINode::Create(floatZero->getType(), 2,
-                        "acc." + std::to_string(i) + ".lcssa", CoeffPosLcssa);
+                        "acc." + std::to_string(I) + ".lcssa", CoeffPosLcssa);
     // Add incoming values
     NewPhi->addIncoming(floatZero, ForCondCleanup3);
     NewPhi->addIncoming(IncomingValue, IncomingBlock);
@@ -4151,7 +4738,7 @@ static void modifyFirdFirstLoop(Function &F, Loop *L, BasicBlock *ForBodyMerged,
   Value *coeff_pos_068 = getLastI32Phi(ForBodyMerged)->getIncomingValue(1);
   CoeffPosLcssa->setIncomingValue(1, coeff_pos_068);
 
-  getLastFloatPhi(CloneForBody)->setIncomingValue(0, acc_0_lcssa);
+  getLastFloatPhi(CloneForBody)->setIncomingValue(0, Acc_0_lcssa);
 
   BasicBlock *PredBB = ForBodyMerged->getSinglePredecessor();
   if (!PredBB) {
@@ -4164,8 +4751,8 @@ static void modifyFirdFirstLoop(Function &F, Loop *L, BasicBlock *ForBodyMerged,
   SmallVector<CallInst *, 8> FMulAddCalls;
   // insertPhiNodesForFMulAdd(ForBodyMerged, ForCond23PreHeader, FMulAddCalls);
   // Collect all tail call float @llvm.fmuladd.f32 in LoopHeader
-  for (Instruction &I : *ForBodyMerged) {
-    if (CallInst *CI = dyn_cast<CallInst>(&I)) {
+  for (Instruction &Inst : *ForBodyMerged) {
+    if (CallInst *CI = dyn_cast<CallInst>(&Inst)) {
       if (Function *F = CI->getCalledFunction()) {
         if (F->getName() == "llvm.fmuladd.f32" && CI->isTailCall()) {
           FMulAddCalls.push_back(CI);
@@ -4174,12 +4761,12 @@ static void modifyFirdFirstLoop(Function &F, Loop *L, BasicBlock *ForBodyMerged,
     }
   }
 
-  // Insert phi nodes for each FMulAdd call
+  // Insert Phi nodes for each FMulAdd call
   for (CallInst *CI : FMulAddCalls) {
-    // Create new phi node
+    // Create new Phi node
     PHINode *PHI = PHINode::Create(CI->getType(), 2, CI->getName() + "acc", CI);
 
-    // Set incoming values for phi node
+    // Set incoming values for Phi node
     PHI->addIncoming(ConstantFP::get(CI->getType(), 0), PredBB);
     PHI->addIncoming(CI, ForBodyMerged);
 
@@ -4196,8 +4783,8 @@ static void modifyFirdFirstLoop(Function &F, Loop *L, BasicBlock *ForBodyMerged,
   LoadInst *FirstLoad = nullptr;
   LoadInst *LastLoad = nullptr;
   BasicBlock *ForBody14LrPh = getBasicBlockByName(F, "for.body14.lr.ph");
-  for (Instruction &I : *ForBody14LrPh) {
-    if (auto *LI = dyn_cast<LoadInst>(&I)) {
+  for (Instruction &Inst : *ForBody14LrPh) {
+    if (auto *LI = dyn_cast<LoadInst>(&Inst)) {
       if (!FirstLoad) {
         FirstLoad = LI;
       }
@@ -4211,17 +4798,17 @@ static void modifyFirdFirstLoop(Function &F, Loop *L, BasicBlock *ForBodyMerged,
   // modify getelementptr
   // Iterate through getelementptr instructions in ForBodyMerged
   std::vector<GetElementPtrInst *> GEPInsts;
-  for (Instruction &I : *ForBodyMerged) {
-    if (auto *GEP = dyn_cast<GetElementPtrInst>(&I)) {
+  for (Instruction &Inst : *ForBodyMerged) {
+    if (auto *GEP = dyn_cast<GetElementPtrInst>(&Inst)) {
       GEPInsts.push_back(GEP);
     }
   }
   // Ensure at least one getelementptr instruction exists
   if (!GEPInsts.empty()) {
-    for (size_t i = 0; i < GEPInsts.size(); ++i) {
-      GetElementPtrInst *CurrentGEP = GEPInsts[i];
+    for (size_t I = 0; I < GEPInsts.size(); ++I) {
+      GetElementPtrInst *CurrentGEP = GEPInsts[I];
 
-      if (i % 2 == 1) { // Odd
+      if (I % 2 == 1) { // Odd
         CurrentGEP->setOperand(0, LastLoad);
       } else { // Even
         CurrentGEP->setOperand(0, FirstLoad);
@@ -4234,18 +4821,18 @@ static void modifyFirdFirstLoop(Function &F, Loop *L, BasicBlock *ForBodyMerged,
     // Get first getelementptr instruction
     GetElementPtrInst *SecondGEP = GEPInsts[1];
 
-    // Starting from index 1, process every other getelementptr
-    for (size_t i = 3; i < GEPInsts.size(); i += 2) {
-      GetElementPtrInst *CurrentGEP = GEPInsts[i];
+    // Starting from Index 1, process every other getelementptr
+    for (size_t I = 3; I < GEPInsts.size(); I += 2) {
+      GetElementPtrInst *CurrentGEP = GEPInsts[I];
 
       // Set current getelementptr's operand 0 to first getelementptr's value
       CurrentGEP->setOperand(0, SecondGEP);
 
-      // Set operand 1 to current index value
+      // Set operand 1 to current Index value
       // ConstantInt *IndexValue =
-      // ConstantInt::get(CurrentGEP->getOperand(1)->getType(), i);
+      // ConstantInt::get(CurrentGEP->getOperand(1)->getType(), I);
       CurrentGEP->setOperand(
-          1, ConstantInt::get(CurrentGEP->getOperand(1)->getType(), (i) / 2));
+          1, ConstantInt::get(CurrentGEP->getOperand(1)->getType(), (I) / 2));
     }
   }
 
@@ -4253,14 +4840,13 @@ static void modifyFirdFirstLoop(Function &F, Loop *L, BasicBlock *ForBodyMerged,
 
   BasicBlock *ForCondCleanup26LoopExit = CloneForBody->getNextNode();
   BasicBlock *ForCondCleanup26 = ForCondCleanup26LoopExit->getSingleSuccessor();
-  Instruction *tailcallInst =
-      getFirstCallInstWithName(CloneForBody, "llvm.fmuladd.f32");
+  Instruction *tailcallInst = getFirstFMulAddInst(CloneForBody);
 
   // Find add instruction in ForBody27LrPh
   Instruction *AddInst = nullptr;
-  for (Instruction &I : *ForBody27LrPh) {
-    if (I.getOpcode() == Instruction::Add) {
-      AddInst = &I;
+  for (Instruction &Inst : *ForBody27LrPh) {
+    if (Inst.getOpcode() == Instruction::Add) {
+      AddInst = &Inst;
       break;
     }
   }
@@ -4268,8 +4854,8 @@ static void modifyFirdFirstLoop(Function &F, Loop *L, BasicBlock *ForBodyMerged,
   // Insert new instructions in ForCondCleanup26LoopExit
   Builder.SetInsertPoint(ForCondCleanup26LoopExit->getFirstNonPHI());
   Value *SubResult = Builder.CreateSub(AddInst, N_0_lcssa);
-  PHINode *firstFloatPhi = getFirstFloatPhi(ForCondCleanup26);
-  firstFloatPhi->setIncomingValue(1, tailcallInst);
+  PHINode *FirstFloatPhi = getFirstFloatPhi(ForCondCleanup26);
+  FirstFloatPhi->setIncomingValue(1, tailcallInst);
 
   ForCond23Preheader->setName("for.cond63.preheader");
   // Create new PHI node in ForCondCleanup26
@@ -4280,7 +4866,6 @@ static void modifyFirdFirstLoop(Function &F, Loop *L, BasicBlock *ForBodyMerged,
   // Set incoming values and blocks for PHI node
   CoeffPosLcssaPhi->addIncoming(CoeffPosLcssa, ForCond23Preheader);
   CoeffPosLcssaPhi->addIncoming(SubResult, ForCondCleanup26LoopExit);
-  // eraseAllStoreInstInBB(ForCondCleanup26);
 
   ICmpInst *LastICmpForCondCleanup26 = getLastInst<ICmpInst>(ForCondCleanup26);
 
@@ -4308,29 +4893,28 @@ static void modifyFirdFirstLoop(Function &F, Loop *L, BasicBlock *ForBodyMerged,
   ForCond130Preheader->setName("for.cond130.preheader");
   ForCond130Preheader->moveAfter(CloneForBody);
   ForCondCleanup26->getTerminator()->setSuccessor(0, ForCond130Preheader);
-  for (PHINode &Phi : ForCond130Preheader->phis()) {
-    Phi.setIncomingBlock(0, ForCondCleanup26);
-  }
-  // Iterate through phi nodes in ForCond130Preheader and ForCond23Preheader
-  // simultaneously
-  auto it130 = ForCond130Preheader->begin();
-  auto it23 = ForCond23Preheader->begin();
 
-  while (it130 != ForCond130Preheader->end() &&
-         it23 != ForCond23Preheader->end()) {
-    if (auto *phi130 = dyn_cast<PHINode>(&*it130)) {
-      if (auto *phi23 = dyn_cast<PHINode>(&*it23)) {
-        if (phi130->getType()->isFloatTy() && phi23->getType()->isFloatTy()) {
-          // Write phi float from ForCond23Preheader to incomingvalue 0 position
+  setPHIIndexIncomingBlock(ForCond130Preheader, 0, ForCondCleanup26);
+  // Iterate through Phi nodes in ForCond130Preheader and ForCond23Preheader
+  // simultaneously
+  auto It130 = ForCond130Preheader->begin();
+  auto It23 = ForCond23Preheader->begin();
+
+  while (It130 != ForCond130Preheader->end() &&
+         It23 != ForCond23Preheader->end()) {
+    if (auto *Phi130 = dyn_cast<PHINode>(&*It130)) {
+      if (auto *Phi23 = dyn_cast<PHINode>(&*It23)) {
+        if (Phi130->getType()->isFloatTy() && Phi23->getType()->isFloatTy()) {
+          // Write Phi float from ForCond23Preheader to incomingvalue 0 position
           // in ForCond130Preheader
-          phi130->setIncomingValue(0, phi23);
+          Phi130->setIncomingValue(0, Phi23);
         }
       }
-      ++it23;
+      ++It23;
     }
-    ++it130;
+    ++It130;
   }
-  getFirstFloatPhi(ForCond130Preheader)->setIncomingValue(0, firstFloatPhi);
+  getFirstFloatPhi(ForCond130Preheader)->setIncomingValue(0, FirstFloatPhi);
 
   getFirstI32Phi(ForCond130Preheader)
       ->setIncomingValue(0, getFirstI32Phi(ForCondCleanup26));
@@ -4371,40 +4955,39 @@ static void modifyFirdFirstLoop(Function &F, Loop *L, BasicBlock *ForBodyMerged,
   ForBodyMerged->getTerminator()->setSuccessor(0, ForCond23Preheader);
 }
 
-static bool copyFloatPhiIncomingValue(int i, BasicBlock *srcBB,
+static bool copyFloatPhiIncomingValue(int I, BasicBlock *srcBB,
                                       BasicBlock *tarBB) {
   assert(srcBB && tarBB && "srcBB or tarBB should not be nullptr");
-  // Collect phi float nodes from ForCond130Preheader in reverse order into
+  // Collect Phi float nodes from ForCond130Preheader in reverse order into
   // vector
-  SmallVector<Value *, 8> floatPhis;
+  SmallVector<Value *, 8> FloatPhis;
 
-  for (auto it = srcBB->rbegin(); it != srcBB->rend(); ++it) {
-    if (PHINode *phi = dyn_cast<PHINode>(&*it)) {
-      if (phi->getType()->isFloatTy()) {
-        floatPhis.push_back(phi->getIncomingValue(i));
+  for (auto It = srcBB->rbegin(); It != srcBB->rend(); ++It) {
+    if (PHINode *Phi = dyn_cast<PHINode>(&*It)) {
+      if (Phi->getType()->isFloatTy()) {
+        FloatPhis.push_back(Phi->getIncomingValue(I));
       }
     }
   }
 
-  // Traverse phi float nodes in ForBodyMerged in reverse order and store values
-  // from floatPhis into their incoming value 0
-  auto floatPhiIt = floatPhis.begin();
-  for (auto it = tarBB->rbegin();
-       it != tarBB->rend() && floatPhiIt != floatPhis.end(); ++it) {
-    if (PHINode *phi = dyn_cast<PHINode>(&*it)) {
-      if (phi->getType()->isFloatTy()) {
-        phi->setIncomingValue(i, *floatPhiIt);
-        ++floatPhiIt;
+  // Traverse Phi float nodes in ForBodyMerged in reverse order and store values
+  // from FloatPhis into their incoming value 0
+  auto FloatPhiIt = FloatPhis.begin();
+  for (auto It = tarBB->rbegin();
+       It != tarBB->rend() && FloatPhiIt != FloatPhis.end(); ++It) {
+    if (PHINode *Phi = dyn_cast<PHINode>(&*It)) {
+      if (Phi->getType()->isFloatTy()) {
+        Phi->setIncomingValue(I, *FloatPhiIt);
+        ++FloatPhiIt;
       }
     }
   }
   return true;
 }
 
-static void modifyFirdSecondLoop(Function &F, Loop *L,
-                                 BasicBlock *ForBodyMerged,
-                                 BasicBlock *CloneForBody) {
-  BasicBlock *ForBody = L->getHeader();
+void DspsF32FirdLoopUnroller::modifyFirdSecondLoop(Function &F, Loop *L,
+                                                   BasicBlock *ForBodyMerged,
+                                                   BasicBlock *CloneForBody) {
 
   BasicBlock *ForBody133LrPh =
       BasicBlock::Create(CloneForBody->getContext(), "for.body133.lr.ph",
@@ -4422,8 +5005,8 @@ static void modifyFirdSecondLoop(Function &F, Loop *L,
   }
   SmallVector<CallInst *, 8> FMulAddCalls;
   // Collect all tail call float @llvm.fmuladd.f32 in LoopHeader
-  for (Instruction &I : *ForBodyMerged) {
-    if (CallInst *CI = dyn_cast<CallInst>(&I)) {
+  for (Instruction &Inst : *ForBodyMerged) {
+    if (CallInst *CI = dyn_cast<CallInst>(&Inst)) {
       if (Function *F = CI->getCalledFunction()) {
         if (F->getName() == "llvm.fmuladd.f32" && CI->isTailCall()) {
           FMulAddCalls.push_back(CI);
@@ -4432,31 +5015,31 @@ static void modifyFirdSecondLoop(Function &F, Loop *L,
     }
   }
 
-  // Insert phi nodes for each FMulAdd call
+  // Insert Phi nodes for each FMulAdd call
   for (CallInst *CI : FMulAddCalls) {
-    // Create new phi node
+    // Create new Phi node
     PHINode *PHI = PHINode::Create(CI->getType(), 2, CI->getName() + "acc", CI);
 
-    // Set incoming values for phi node
+    // Set incoming values for Phi node
     PHI->addIncoming(ConstantFP::get(CI->getType(), 0), PredBB);
     PHI->addIncoming(CI, ForBodyMerged);
 
     CI->setOperand(2, PHI);
   }
-  PHINode *n22_075 = getFirstI32Phi(ForBodyMerged);
-  // Create new phi node in ForBodyMerged
+  PHINode *N22_075 = getFirstI32Phi(ForBodyMerged);
+  // Create new Phi node in ForBodyMerged
   PHINode *Add76310 = PHINode::Create(Type::getInt32Ty(F.getContext()), 2,
                                       "add76310", &ForBodyMerged->front());
   Add76310->addIncoming(ConstantInt::get(Type::getInt32Ty(F.getContext()), 8),
                         ForBody133LrPh);
-  n22_075->setIncomingValue(1, Add76310);
+  N22_075->setIncomingValue(1, Add76310);
   // Create new add instruction in ForBodyMerged
   IRBuilder<> Builder(ForBodyMerged->getTerminator());
   Value *Add76 = Builder.CreateAdd(
       Add76310, ConstantInt::get(Type::getInt32Ty(F.getContext()), 8), "add76",
       true, true);
 
-  // Update phi node's loop edge
+  // Update Phi node's loop edge
   Add76310->addIncoming(Add76, ForBodyMerged);
 
   movePHINodesToTop(*ForBodyMerged);
@@ -4465,9 +5048,8 @@ static void modifyFirdSecondLoop(Function &F, Loop *L,
   LastICmp->setPredicate(ICmpInst::ICMP_SGT);
   cast<Instruction>(Add76)->moveBefore(LastICmp);
   LastICmp->setOperand(0, Add76);
-  for (PHINode &Phi : ForBodyMerged->phis()) {
-    Phi.setIncomingBlock(0, PredBB);
-  }
+
+  setPHIIndexIncomingBlock(ForBodyMerged, 0, PredBB);
 
   BasicBlock *NewForEnd141 =
       BasicBlock::Create(F.getContext(), "for.end141", &F, CloneForBody);
@@ -4492,7 +5074,7 @@ static void modifyFirdSecondLoop(Function &F, Loop *L,
   BasicBlock *ForCondCleanup = getBasicBlockByName(F, "for.cond.cleanup");
   getFirstI32Phi(ForCondCleanup)->setIncomingBlock(1, NewForEnd141);
 
-  // Find len parameter in function F
+  // Find Len parameter in Function F
   Value *LenArg = getLenFromEntryBlock(F);
   assert(LenArg && "LenArg should be");
 
@@ -4504,8 +5086,8 @@ static void modifyFirdSecondLoop(Function &F, Loop *L,
 
   BasicBlock *ForCond130Preheader =
       getBasicBlockByName(F, "for.cond130.preheader");
-  for (PHINode &phi : ForCond130Preheader->phis()) {
-    phi.setIncomingBlock(1, ForBodyMerged);
+  for (PHINode &Phi : ForCond130Preheader->phis()) {
+    Phi.setIncomingBlock(1, ForBodyMerged);
   }
   ForCond130Preheader->getTerminator()->setSuccessor(0, ForBody133LrPh);
   ForCond130Preheader->getTerminator()->setSuccessor(1, NewForEnd141);
@@ -4514,39 +5096,37 @@ static void modifyFirdSecondLoop(Function &F, Loop *L,
   // Create new instructions in ForBody133LrPh
   BasicBlock *ForBody79LrPh = getBasicBlockByName(F, "for.body79.lr.ph");
   ForBody79LrPh->getTerminator()->setSuccessor(0, ForBodyMerged);
-  // Copy loadinst from ForBody79LrPh to ForBody133LrPh
+  // Copy Loadinst from ForBody79LrPh to ForBody133LrPh
   Builder.SetInsertPoint(ForBody133LrPh->getTerminator());
-  for (Instruction &I : *ForBody79LrPh) {
-    if (isa<LoadInst>(I)) {
-      Instruction *ClonedInst = I.clone();
-      ClonedInst->setName(I.getName());
+  for (Instruction &Inst : *ForBody79LrPh) {
+    if (isa<LoadInst>(Inst)) {
+      Instruction *ClonedInst = Inst.clone();
+      ClonedInst->setName(Inst.getName());
       Builder.Insert(ClonedInst);
     }
   }
 
   // modify ForBodyMerged
-  for (PHINode &Phi : ForBodyMerged->phis()) {
-    Phi.setIncomingBlock(0, ForBody79LrPh);
-  }
+  setPHIIndexIncomingBlock(ForBodyMerged, 0, ForBody79LrPh);
 
-  PHINode *coeff_pos174 = getLastI32Phi(ForBodyMerged);
-  PHINode *coeff_pos_0_lcssa_clone = getFirstI32Phi(ForCond130Preheader);
-  coeff_pos_0_lcssa_clone->setIncomingValue(1,
-                                            coeff_pos174->getIncomingValue(1));
-  coeff_pos174->setIncomingValue(0,
-                                 coeff_pos_0_lcssa_clone->getIncomingValue(0));
+  PHINode *Coeff_pos174 = getLastI32Phi(ForBodyMerged);
+  PHINode *Coeff_pos_0_lcssa_clone = getFirstI32Phi(ForCond130Preheader);
+  Coeff_pos_0_lcssa_clone->setIncomingValue(1,
+                                            Coeff_pos174->getIncomingValue(1));
+  Coeff_pos174->setIncomingValue(0,
+                                 Coeff_pos_0_lcssa_clone->getIncomingValue(0));
 
-  bool res = copyFloatPhiIncomingValue(0, ForCond130Preheader, ForBodyMerged);
-  assert(res && "copyFloatPhiIncomingZeroValue failed");
+  bool Res = copyFloatPhiIncomingValue(0, ForCond130Preheader, ForBodyMerged);
+  assert(Res && "copyFloatPhiIncomingZeroValue failed");
 
-  bool res1 = copyFloatPhiIncomingValue(1, ForBodyMerged, ForCond130Preheader);
-  assert(res1 && "copyFloatPhiIncomingValue failed");
+  bool Res1 = copyFloatPhiIncomingValue(1, ForBodyMerged, ForCond130Preheader);
+  assert(Res1 && "copyFloatPhiIncomingValue failed");
   // Find first and last load instructions in ForBody79LrPh
   LoadInst *FirstLoad = nullptr;
   LoadInst *LastLoad = nullptr;
 
-  for (Instruction &I : *ForBody79LrPh) {
-    if (auto *LI = dyn_cast<LoadInst>(&I)) {
+  for (Instruction &Inst : *ForBody79LrPh) {
+    if (auto *LI = dyn_cast<LoadInst>(&Inst)) {
       if (!FirstLoad) {
         FirstLoad = LI;
       }
@@ -4558,18 +5138,18 @@ static void modifyFirdSecondLoop(Function &F, Loop *L,
          "Could not find load instructions in ForBody79LrPh");
   // Iterate through GetElementPtrInst
   std::vector<GetElementPtrInst *> GEPInsts;
-  for (Instruction &I : *ForBodyMerged) {
-    if (auto *GEP = dyn_cast<GetElementPtrInst>(&I)) {
+  for (Instruction &Inst : *ForBodyMerged) {
+    if (auto *GEP = dyn_cast<GetElementPtrInst>(&Inst)) {
       GEPInsts.push_back(GEP);
     }
   }
 
   // Ensure there is at least one getelementptr instruction
   if (!GEPInsts.empty()) {
-    for (size_t i = 0; i < GEPInsts.size(); ++i) {
-      GetElementPtrInst *CurrentGEP = GEPInsts[i];
+    for (size_t I = 0; I < GEPInsts.size(); ++I) {
+      GetElementPtrInst *CurrentGEP = GEPInsts[I];
 
-      if (i % 2 == 1) { // odd
+      if (I % 2 == 1) { // odd
         CurrentGEP->setOperand(0, LastLoad);
       } else { // even
         CurrentGEP->setOperand(0, FirstLoad);
@@ -4582,87 +5162,84 @@ static void modifyFirdSecondLoop(Function &F, Loop *L,
     // Get first getelementptr instruction
     GetElementPtrInst *FirstGEP = GEPInsts[0];
 
-    // Starting from index 1, process every other getelementptr
-    for (size_t i = 2; i < GEPInsts.size(); i += 2) {
-      GetElementPtrInst *CurrentGEP = GEPInsts[i];
+    // Starting from Index 1, process every other getelementptr
+    for (size_t I = 2; I < GEPInsts.size(); I += 2) {
+      GetElementPtrInst *CurrentGEP = GEPInsts[I];
 
       // Set current getelementptr's operand 0 to first getelementptr's value
       CurrentGEP->setOperand(0, FirstGEP);
 
-      // Set operand 1 to current index value
+      // Set operand 1 to current Index value
       CurrentGEP->setOperand(
-          1, ConstantInt::get(CurrentGEP->getOperand(1)->getType(), (i) / 2));
+          1, ConstantInt::get(CurrentGEP->getOperand(1)->getType(), (I) / 2));
     }
   }
 
   ForBodyMerged->getTerminator()->setSuccessor(0, ForCond130Preheader);
 
   // modify for.body27.clone
-  PHINode *n_0_lcssa_clone = getLastI32Phi(ForCond130Preheader);
+  PHINode *N_0_lcssa_clone = getLastI32Phi(ForCond130Preheader);
   PHINode *acc_0_lcssa_clone = getFirstFloatPhi(ForCond130Preheader);
-  Instruction *tailcallInst =
-      getFirstCallInstWithName(CloneForBody, "llvm.fmuladd.f32");
-  Instruction *firstAddInst = nullptr;
-  Instruction *lastAddInst = nullptr;
-  for (Instruction &I : *CloneForBody) {
-    if (I.getOpcode() == Instruction::Add) {
-      if (!firstAddInst) {
-        firstAddInst = &I;
+  Instruction *tailcallInst = getFirstFMulAddInst(CloneForBody);
+  Instruction *FirstAddInst = nullptr;
+  Instruction *LastAddInst = nullptr;
+  for (Instruction &Inst : *CloneForBody) {
+    if (Inst.getOpcode() == Instruction::Add) {
+      if (!FirstAddInst) {
+        FirstAddInst = &Inst;
       }
-      lastAddInst = &I;
+      LastAddInst = &Inst;
     }
   }
-  int index = 0;
+  int Index = 0;
   for (PHINode &Phi : CloneForBody->phis()) {
-    Phi.setIncomingBlock(0, ForBody133LrPh);
-    Phi.setIncomingBlock(1, CloneForBody);
-    if (index == 0) {
-      Phi.setIncomingValue(0, n_0_lcssa_clone);
-      Phi.setIncomingValue(1, lastAddInst);
-    } else if (index == 1) {
-      Phi.setIncomingValue(0, coeff_pos_0_lcssa_clone);
-      Phi.setIncomingValue(1, firstAddInst);
-    } else if (index == 2) {
+    if (Index == 0) {
+      Phi.setIncomingValue(0, N_0_lcssa_clone);
+      Phi.setIncomingValue(1, LastAddInst);
+    } else if (Index == 1) {
+      Phi.setIncomingValue(0, Coeff_pos_0_lcssa_clone);
+      Phi.setIncomingValue(1, FirstAddInst);
+    } else if (Index == 2) {
       Phi.setIncomingValue(0, acc_0_lcssa_clone);
       Phi.setIncomingValue(1, tailcallInst);
     }
-    index++;
+    Index++;
   }
+  setPHINodesBlock(CloneForBody, ForBody133LrPh, CloneForBody);
 
   CloneForBody->getTerminator()->setSuccessor(0, NewForEnd141);
   CloneForBody->getTerminator()->setSuccessor(1, CloneForBody);
 
   // modify for.end141
-  // Create phi float node in NewForEnd141
+  // Create Phi float node in NewForEnd141
   PHINode *AccPhi = PHINode::Create(Type::getFloatTy(F.getContext()), 2,
                                     "acc0.3.lcssa", &NewForEnd141->front());
   AccPhi->addIncoming(acc_0_lcssa_clone, ForCond130Preheader);
   AccPhi->addIncoming(tailcallInst, CloneForBody);
 
-  int i = 0;
   Value *Sum = nullptr;
-  Instruction *insertPoint = AccPhi->getNextNode();
-  // Count the number of float type phi nodes in ForCond130Preheader
-  SmallVector<PHINode *, 8> floatPhis;
-  for (PHINode &phi : ForCond130Preheader->phis()) {
-    if (phi.getType()->isFloatTy()) {
-      floatPhis.push_back(&phi);
+  Instruction *InsertPoint = AccPhi->getNextNode();
+  // Count the number of float type Phi nodes in ForCond130Preheader
+  SmallVector<PHINode *, 8> FloatPhis;
+  for (PHINode &Phi : ForCond130Preheader->phis()) {
+    if (Phi.getType()->isFloatTy()) {
+      FloatPhis.push_back(&Phi);
     }
   }
-  assert(floatPhis.size() == 8 &&
-         "Expected 8 float phi nodes in ForCond130Preheader");
+  assert(FloatPhis.size() == 8 &&
+         "Expected 8 float Phi nodes in ForCond130Preheader");
   // Create parallel add instructions for better performance
   Value *Add60 =
-      BinaryOperator::CreateFAdd(floatPhis[1], AccPhi, "add60", insertPoint);
-  Value *Add61 = BinaryOperator::CreateFAdd(floatPhis[2], floatPhis[3], "add61",
-                                            insertPoint);
-  Value *Add62 = BinaryOperator::CreateFAdd(floatPhis[4], floatPhis[5], "add62",
-                                            insertPoint);
-  Value *Add63 = BinaryOperator::CreateFAdd(floatPhis[6], floatPhis[7], "add63",
-                                            insertPoint);
-  Value *Add64 = BinaryOperator::CreateFAdd(Add60, Add61, "add64", insertPoint);
-  Value *Add65 = BinaryOperator::CreateFAdd(Add62, Add63, "add65", insertPoint);
-  Value *Add66 = BinaryOperator::CreateFAdd(Add64, Add65, "add66", insertPoint);
+      BinaryOperator::CreateFAdd(FloatPhis[1], AccPhi, "add60", InsertPoint);
+  Value *Add61 = BinaryOperator::CreateFAdd(FloatPhis[2], FloatPhis[3], "add61",
+                                            InsertPoint);
+  Value *Add62 = BinaryOperator::CreateFAdd(FloatPhis[4], FloatPhis[5], "add62",
+                                            InsertPoint);
+  Value *Add63 = BinaryOperator::CreateFAdd(FloatPhis[6], FloatPhis[7], "add63",
+                                            InsertPoint);
+  Value *Add64 = BinaryOperator::CreateFAdd(Add60, Add61, "Add64", InsertPoint);
+  Value *Add65 = BinaryOperator::CreateFAdd(Add62, Add63, "Add65", InsertPoint);
+  Value *Add66 = BinaryOperator::CreateFAdd(Add64, Add65, "Add66", InsertPoint);
   Sum = Add66;
 
   // Move getelementptr and store instructions from for.cond.cleanup26 to
@@ -4672,23 +5249,23 @@ static void modifyFirdSecondLoop(Function &F, Loop *L,
   SmallVector<Instruction *, 2> instructionsToMove;
 
   // Collect instructions to move
-  for (Instruction &I : *ForCondCleanup26) {
-    if (isa<GetElementPtrInst>(I) || isa<StoreInst>(I)) {
-      instructionsToMove.push_back(&I);
+  for (Instruction &Inst : *ForCondCleanup26) {
+    if (isa<GetElementPtrInst>(Inst) || isa<StoreInst>(Inst)) {
+      instructionsToMove.push_back(&Inst);
     }
   }
 
   // Move instructions
-  for (Instruction *I : instructionsToMove) {
-    I->moveBefore(insertPoint);
-    if (isa<StoreInst>(I)) {
-      I->setOperand(0, Sum);
+  for (Instruction *Inst : instructionsToMove) {
+    Inst->moveBefore(InsertPoint);
+    if (isa<StoreInst>(Inst)) {
+      Inst->setOperand(0, Sum);
     }
   }
 
   // Update instructions that used moved instructions
-  for (Instruction &I : *NewForEnd141) {
-    I.replaceUsesOfWith(ForCondCleanup26, NewForEnd141);
+  for (Instruction &Inst : *NewForEnd141) {
+    Inst.replaceUsesOfWith(ForCondCleanup26, NewForEnd141);
   }
 
   // Get for.cond.cleanup.loopexit basic block
@@ -4707,231 +5284,1089 @@ static void modifyFirdSecondLoop(Function &F, Loop *L,
   setBBFromOtherBB(F, "for.body133.lr.ph", CloneForBody);
 }
 
-// Main function to perform FIRD unrolling
-static void PostUnrollFird(Function &F, Loop *L, int loop_index) {
-  BasicBlock *ForBody = L->getHeader();
-  BasicBlock *CloneForBody =
-      cloneBasicBlockWithRelations(ForBody, ".clone", &F);
-  CloneForBody->moveAfter(ForBody);
-  CloneForBody->getTerminator()->setSuccessor(1, ForBody);
-
-  // Merge basic blocks
-  std::vector<BasicBlock *> BBsToMerge;
-  for (int i = 1; i < 8; ++i) {
-    std::string BBName = (ForBody->getName() + "." + std::to_string(i)).str();
-    BasicBlock *ForBodyClone = getBasicBlockByName(F, BBName);
-    if (ForBodyClone) {
-      BBsToMerge.push_back(ForBodyClone);
-    } else {
-      llvm_unreachable("can't find ForBodyClone");
-    }
-  }
-  if (BBsToMerge.size() == 7) {
-    for (BasicBlock *BB : BBsToMerge) {
-      MergeBasicBlockIntoOnlyPred(BB);
-    }
-  }
-  BasicBlock *ForBodyMerged = BBsToMerge[6];
+// Main Function to perform FIRD unrolling
+void DspsF32FirdLoopUnroller::PostUnrollFird(Function &F, Loop *L,
+                                             int Loop_index) {
+  auto [CloneForBody, ForBodyMerged] = cloneAndMergeLoop(L, F, 8);
   CloneForBody->moveAfter(ForBodyMerged);
 
   // Perform loop-specific modifications
-  if (loop_index == 1) {
+  if (Loop_index == 1) {
     modifyFirdFirstLoop(F, L, ForBodyMerged, CloneForBody);
-  } else if (loop_index == 2) {
+  } else if (Loop_index == 2) {
     modifyFirdSecondLoop(F, L, ForBodyMerged, CloneForBody);
   }
 }
 
-// Helper function to check if a loop is simple (single-level, innermost, and
-// outermost)
-static bool isSimpleLoop(const Loop *L) {
-  return L->getLoopDepth() == 1 && L->isInnermost() && L->isOutermost();
+void DspsF32WindBlackmanLoopUnroller::postUnrollDspsWindBlackmanF32(
+    Function &F, Loop *L, int unrollCount) {
+
+  BasicBlock *ForBodyLrPh = L->getLoopPreheader();
+  runSimplifyDcePasses(F);
+
+  auto [ForBodyclone, ForBodyMerged] = cloneAndMergeLoop(L, F, unrollCount);
+  ForBodyclone->moveAfter(ForBodyMerged);
+
+  BasicBlock *ForCondCleanup = ForBodyMerged->getTerminator()->getSuccessor(0);
+  ICmpInst *Exitcond_not_7 = getLastInst<ICmpInst>(ForBodyMerged);
+  Value *Len = Exitcond_not_7->getOperand(1);
+
+  IRBuilder<> Builder(ForBodyLrPh->getTerminator());
+  Value *Sub4 =
+      Builder.CreateNSWAdd(Len, ConstantInt::get(Len->getType(), -7), "Sub4");
+  BasicBlock *ForCond97Preheader = BasicBlock::Create(
+      F.getContext(), "for.cond97.preheader", &F, ForBodyMerged);
+
+  // BasicBlock *ForBodyLrPh = L->getLoopPreheader();
+  Value *Cmp169 =
+      Builder.CreateICmpSGT(Len, ConstantInt::get(Len->getType(), 7), "Cmp169");
+
+  // Modify the original branch
+  ForBodyLrPh->getTerminator()->eraseFromParent();
+  BranchInst::Create(ForBodyMerged, ForCond97Preheader, Cmp169, ForBodyLrPh);
+  Exitcond_not_7->setOperand(1, Sub4);
+  Exitcond_not_7->setPredicate(ICmpInst::ICMP_SLT);
+
+  // Clone PHI nodes from ForBodyMerged to ForCond97Preheader
+  Builder.SetInsertPoint(ForCond97Preheader);
+
+  PHINode *I_0_lcssa = nullptr;
+  // Iterate through PHI nodes in ForBodyMerged and clone
+  for (auto &Phi : ForBodyMerged->phis()) {
+    if (Phi.getType()->isIntegerTy(32)) {
+      PHINode *NewPhi = cast<PHINode>(Phi.clone());
+      NewPhi->insertInto(ForCond97Preheader, ForCond97Preheader->begin());
+      NewPhi->setName("I.0.lcssa");
+      I_0_lcssa = NewPhi;
+      // Create comparison instruction
+      Value *Cmp98171 = Builder.CreateICmpSLT(NewPhi, Len, "Cmp98171");
+      // Create conditional branch instruction
+      Builder.CreateCondBr(Cmp98171, ForBodyclone, ForCondCleanup);
+    } else {
+      llvm_unreachable("Unsupported type");
+    }
+  }
+
+  ForBodyMerged->getTerminator()->setSuccessor(0, ForCond97Preheader);
+  swapTerminatorSuccessors(ForBodyMerged);
+
+  ForBodyclone->getTerminator()->setSuccessor(1, ForBodyclone);
+
+  for (auto &Phi : ForBodyclone->phis()) {
+    if (Phi.getType()->isIntegerTy(32)) {
+      Phi.setIncomingValue(0, Phi.user_back());
+      Phi.setIncomingValue(1, I_0_lcssa);
+    } else {
+      llvm_unreachable("Unsupported type");
+    }
+  }
+  setPHINodesBlock(ForBodyclone, ForBodyclone, ForCond97Preheader);
+  runSimplifyDcePasses(F);
+  runPostPass(F);
 }
 
-// Handle simple loops
-static bool handleSimpleLoop(Function &F, Loop *L, ScalarEvolution &SE,
-                             LoopInfo *LI, DominatorTree &DT,
-                             AssumptionCache &AC,
-                             const TargetTransformInfo &TTI,
-                             OptimizationRemarkEmitter &ORE) {
-  if (shouldUnrollLoopWithCount(F, L, SE)) {
-    LLVM_DEBUG(errs() << "Unrolling loop with count\n");
-    auto UnrollResult =
-        UnrollLoop(L,
-                   {/*Count*/ 8, /*Force*/ true, /*Runtime*/ false,
-                    /*AllowExpensiveTripCount*/ true,
-                    /*UnrollRemainder*/ true, true},
-                   LI, &SE, &DT, &AC, &TTI, /*ORE*/ &ORE, true);
-    postUnrollLoopWithCount(F, L, 8);
-    return true;
-  }
-
-  if (shouldUnrollComplexLoop(F, L, SE, DT, *LI)) {
-    LLVM_DEBUG(errs() << "Unrolling complex loop\n");
-    auto UnrollResult =
-        UnrollLoop(L,
-                   {/*Count*/ 8, /*Force*/ true, /*Runtime*/ false,
-                    /*AllowExpensiveTripCount*/ true,
-                    /*UnrollRemainder*/ true, true},
-                   LI, &SE, &DT, &AC, &TTI, /*ORE*/ &ORE, true);
-    postUnrollLoopWithVariable(F, L, 8);
-    return true;
-  }
-
-  if (shouldUnrollAddcType(F, LI)) {
-    LLVM_DEBUG(errs() << "Unrolling ADDC type loop\n");
-    unrollAddc(F, SE, L, 16);
-    currentUnrollType = UnrollType::ADD_ADDC_SUB_MUL_MULC_SQRT;
-    return true;
-  }
-
-  if (shouldUnrollDotprodType(F, LI)) {
-    LLVM_DEBUG(errs() << "Transforming dot product type loop\n");
-    currentUnrollType = UnrollType::DOTPROD;
-    transformOneLoopDepth(F);
-    return true;
-  }
-
-  LLVM_DEBUG(errs() << "No unrolling performed for this loop\n");
-  return false;
+LoopUnrollResult DspsF32FirdLoopUnroller::unroll(Loop &L) {
+  simplifyAndFormLCSSA(&L, DT, &LI, SE, AC);
+  LoopUnrollResult Result =
+      UnrollLoop(&L,
+                 {/*Count*/ UnrollCount, /*Force*/ true, /*Runtime*/ false,
+                  /*AllowExpensiveTripCount*/ true,
+                  /*UnrollRemainder*/ true, true},
+                 &LI, &SE, &DT, &AC, &TTI, /*ORE*/ &ORE,
+                 false); // must set false, true cause error
+  return Result;
 }
 
-// Helper function to simplify loop and form LCSSA
-static void simplifyAndFormLCSSA(Loop *L, DominatorTree &DT, LoopInfo *LI,
-                                 ScalarEvolution &SE, AssumptionCache &AC) {
-  simplifyLoop(L, &DT, LI, &SE, &AC, nullptr, false);
-  formLCSSARecursively(*L, DT, LI, &SE);
+void DspiF32DotprodSmallUnroller::postUnrollDspiF32Dotprod(Function &F, Loop *L,
+                                                           int unrollCount,
+                                                           LoopInfo &LI) {
+  runSimplifyDcePasses(F);
+  BasicBlock *ForCond25Preheader = L->getLoopPredecessor();
+  BasicBlock *ForCondCleanup27 =
+      ForCond25Preheader->getTerminator()->getSuccessor(1);
+  auto [LoopHeaderClone, ForBodyMerged] = cloneAndMergeLoop(L, F, unrollCount);
+  LoopHeaderClone->moveAfter(ForBodyMerged);
+  ForCondCleanup27->moveAfter(LoopHeaderClone);
+
+  BasicBlock *ForCond25PreheaderLrPh = nullptr;
+  for (BasicBlock *Pred : predecessors(ForCond25Preheader)) {
+    if (Pred->getSingleSuccessor() == ForCond25Preheader) {
+      ForCond25PreheaderLrPh = Pred;
+      break;
+    }
+  }
+  // Get original comparison instruction
+  ICmpInst *Cmp2673 = getFirstInst<ICmpInst>(ForCond25PreheaderLrPh);
+
+  // Get Count_x operand
+  Value *Count_x = Cmp2673->getOperand(0);
+  Cmp2673->setOperand(1, ConstantInt::get(Count_x->getType(), 7));
+  // Create new instruction
+  IRBuilder<> Builder(Cmp2673);
+  Value *Sub = Builder.CreateNSWAdd(
+      Count_x, ConstantInt::get(Count_x->getType(), -7), "Sub");
+  Value *And_val =
+      Builder.CreateAnd(Count_x, ConstantInt::get(Count_x->getType(), -8));
+
+  // Create new for.cond128.preheader basic block
+  BasicBlock *ForCond128Preheader = BasicBlock::Create(
+      F.getContext(), "for.cond128.preheader", &F, ForBodyMerged);
+  // Create x.0.lcssa Phi node
+  Builder.SetInsertPoint(ForCond128Preheader);
+  // Create PHI node
+  PHINode *X0Lcssa =
+      Builder.CreatePHI(Type::getInt32Ty(F.getContext()), 2, "x.0.lcssa");
+  X0Lcssa->addIncoming(ConstantInt::get(Type::getInt32Ty(F.getContext()), 0),
+                       ForCond25Preheader);
+  X0Lcssa->addIncoming(And_val, ForBodyMerged);
+
+  // Create comparison instruction
+  Value *Cmp129268 = Builder.CreateICmpSLT(X0Lcssa, Count_x, "Cmp129268");
+
+  // Create conditional branch instruction
+  Builder.CreateCondBr(Cmp129268, LoopHeaderClone, ForCondCleanup27);
+
+  ForCond25Preheader->getTerminator()->setSuccessor(1, ForCond128Preheader);
+
+  ICmpInst *Cmp26 = getLastInst<ICmpInst>(ForBodyMerged);
+  Cmp26->setPredicate(ICmpInst::ICMP_SLT);
+  Cmp26->setOperand(1, Sub);
+  ForBodyMerged->getTerminator()->setSuccessor(0, ForBodyMerged);
+  ForBodyMerged->getTerminator()->setSuccessor(1, ForCond128Preheader);
+
+  for (auto &Phi : LoopHeaderClone->phis()) {
+    if (Phi.getType()->isIntegerTy(32)) {
+      Phi.setIncomingValue(1, X0Lcssa);
+      Phi.setIncomingValue(0, getLastAddInst<int32_t>(LoopHeaderClone));
+    } else if (Phi.getType()->isFloatTy()) {
+      Phi.setIncomingValue(0, getFirstFMulAddInst(LoopHeaderClone));
+    }
+  }
+  setPHINodesBlock(LoopHeaderClone, LoopHeaderClone, ForCond128Preheader);
+  LoopHeaderClone->getTerminator()->setSuccessor(1, LoopHeaderClone);
+
+  PHINode *Acc174 = getFirstFloatPhi(ForBodyMerged);
+  PHINode *ClonedPhi2 = nullptr;
+  if (Acc174) {
+    ClonedPhi2 = cast<PHINode>(Acc174->clone());
+    ClonedPhi2->insertBefore(ForCond128Preheader->getFirstNonPHI());
+  }
+
+  PHINode *Acc_1_lcssa = getFirstFloatPhi(ForCondCleanup27);
+  PHINode *Acc174clone = getFirstFloatPhi(LoopHeaderClone);
+  PHINode *ClonedPhi = nullptr;
+  if (Acc174clone) {
+    Acc174clone->setIncomingValue(1, ClonedPhi2);
+    ClonedPhi = cast<PHINode>(Acc174clone->clone());
+    ClonedPhi->insertBefore(ForCondCleanup27->getFirstNonPHI());
+  }
+  Acc_1_lcssa->replaceAllUsesWith(ClonedPhi);
+  Acc_1_lcssa->eraseFromParent();
+
+  runSimplifyDcePasses(F);
+  runPostPass(F);
 }
 
-// Helper function to get CONV unroll factor
-static unsigned int getConvUnrollFactor(uint32_t unrollCount) {
-  static const unsigned int unrollFactors[] = {8, 16, 8};
-  return unrollFactors[unrollCount % 3];
+void DspiF32DotprodLargeUnroller::postUnrollDspiF32DotprodVariables(
+    Function &F, Loop *L, int unrollCount, LoopInfo &LI) {
+  runSimplifyDcePasses(F);
+  BasicBlock *ForCond25Preheader = L->getLoopPredecessor();
+  BasicBlock *ForCondCleanup27 =
+      ForCond25Preheader->getTerminator()->getSuccessor(1);
+  auto [LoopHeaderClone, ForBodyMerged] = cloneAndMergeLoop(L, F, unrollCount);
+  LoopHeaderClone->moveAfter(ForBodyMerged);
+  ForCondCleanup27->moveAfter(LoopHeaderClone);
+
+  BasicBlock *ForCond25PreheaderLrPh = nullptr;
+  for (BasicBlock *Pred : predecessors(ForCond25Preheader)) {
+    if (Pred->getSingleSuccessor() == ForCond25Preheader) {
+      ForCond25PreheaderLrPh = Pred;
+      break;
+    }
+  }
+
+  // Get original comparison instruction
+  ICmpInst *Cmp2673 = getFirstInst<ICmpInst>(ForCond25PreheaderLrPh);
+
+  // Get Count_x operand
+  Value *Count_x = Cmp2673->getOperand(0);
+  Cmp2673->setOperand(1, ConstantInt::get(Count_x->getType(), 7));
+  // Create new instruction
+  IRBuilder<> Builder(Cmp2673);
+  Value *Sub = Builder.CreateNSWAdd(
+      Count_x, ConstantInt::get(Count_x->getType(), -7), "Sub");
+  Value *And_val =
+      Builder.CreateAnd(Count_x, ConstantInt::get(Count_x->getType(), -8));
+
+  // Create for.end.loopexit basic block
+  BasicBlock *ForEndLoopexit = BasicBlock::Create(
+      F.getContext(), "for.end.loopexit", &F, LoopHeaderClone);
+
+  // Create for.end basic block
+  BasicBlock *ForEnd =
+      BasicBlock::Create(F.getContext(), "for.end", &F, LoopHeaderClone);
+
+  // Create unconditional jump from for.end.loopexit to for.end
+  BranchInst::Create(ForEnd, ForEndLoopexit);
+
+  // Create PHI node in for.end
+  PHINode *X0Lcssa =
+      PHINode::Create(Count_x->getType(), 2, "x.0.lcssa", ForEnd);
+  X0Lcssa->addIncoming(ConstantInt::get(Count_x->getType(), 0),
+                       ForCond25Preheader);
+  X0Lcssa->addIncoming(And_val, ForEndLoopexit);
+
+  // Create comparison instruction
+  ICmpInst *Cmp106225 =
+      new ICmpInst(ForEnd->getTerminator(), ICmpInst::ICMP_SLT, X0Lcssa,
+                   Count_x, "Cmp106225");
+
+  // Create conditional branch instruction
+  BranchInst::Create(LoopHeaderClone, ForCondCleanup27, Cmp106225, ForEnd);
+
+  // Iterate through instructions in ForBodyMerged, find Fmuladd instructions
+  SmallVector<Instruction *, 8> FmuladdInsts;
+  for (auto &I : *ForBodyMerged) {
+    if (RecurrenceDescriptor::isFMulAddIntrinsic(&I)) {
+      FmuladdInsts.push_back(&I);
+    }
+  }
+
+  for (Instruction *I : FmuladdInsts) {
+    // Create new Phi float instruction
+    PHINode *PhiFloat = PHINode::Create(Type::getFloatTy(F.getContext()), 2, "",
+                                        &*ForBodyMerged->begin());
+    PhiFloat->addIncoming(cast<CallInst>(I), ForBodyMerged);
+    PhiFloat->addIncoming(
+        ConstantFP::get(Type::getFloatTy(F.getContext()), 0.0),
+        ForCond25Preheader);
+    PhiFloat->setName("acc");
+    // Set last operand of Fmuladd instruction to new Phi instruction
+    cast<CallInst>(I)->setArgOperand(2, PhiFloat);
+  }
+
+  Builder.SetInsertPoint(ForEndLoopexit->getFirstNonPHI());
+
+  // Add pairs until only one value remains
+  SmallVector<Value *, 8> CurrentValues(FmuladdInsts.begin(),
+                                        FmuladdInsts.end());
+  while (CurrentValues.size() > 1) {
+    SmallVector<Value *, 8> NextValues;
+
+    // Pairwise addition
+    for (size_t I = 0; I < CurrentValues.size() - 1; I += 2) {
+      Value *Sum = Builder.CreateFAdd(CurrentValues[I], CurrentValues[I + 1],
+                                      "pairwise.sum");
+      NextValues.push_back(Sum);
+    }
+
+    // If there's an odd value, add It to the next round
+    if (CurrentValues.size() % 2 == 1) {
+      NextValues.push_back(CurrentValues.back());
+    }
+
+    CurrentValues = NextValues;
+  }
+
+  PHINode *Acc_071 = getFirstFloatPhi(ForCond25Preheader);
+  // Create Phi node in ForEnd
+  PHINode *Add103 = PHINode::Create(Type::getFloatTy(F.getContext()), 2,
+                                    "Add103", ForEnd->getFirstNonPHI());
+  Add103->addIncoming(ConstantFP::get(Type::getFloatTy(F.getContext()), 0.0),
+                      ForCond25Preheader);
+  Add103->addIncoming(CurrentValues[0], ForEndLoopexit);
+
+  Builder.SetInsertPoint(Add103->getNextNode());
+  Value *Add104 = Builder.CreateFAdd(Acc_071, Add103, "Add104");
+
+  ICmpInst *ExitCondNot7 = getLastInst<ICmpInst>(ForBodyMerged);
+  ExitCondNot7->setPredicate(ICmpInst::ICMP_SLT);
+  ExitCondNot7->setOperand(1, Sub);
+  ForBodyMerged->getTerminator()->setSuccessor(0, ForBodyMerged);
+  ForBodyMerged->getTerminator()->setSuccessor(1, ForEndLoopexit);
+
+  for (auto &Phi : LoopHeaderClone->phis()) {
+    if (Phi.getType()->isIntegerTy(32)) {
+      Phi.setIncomingValue(1, X0Lcssa);
+      Phi.setIncomingValue(0, getLastAddInst<int32_t>(LoopHeaderClone));
+    } else if (Phi.getType()->isFloatTy()) {
+      Phi.setIncomingValue(1, Add104);
+      Phi.setIncomingValue(0, getFirstFMulAddInst(LoopHeaderClone));
+    }
+  }
+  setPHINodesBlock(LoopHeaderClone, LoopHeaderClone, ForEnd);
+  LoopHeaderClone->getTerminator()->setSuccessor(1, LoopHeaderClone);
+
+  PHINode *Acc_1_lcssa = getFirstFloatPhi(ForCondCleanup27);
+  PHINode *ClonedPhi =
+      PHINode::Create(Type::getFloatTy(F.getContext()), 2, "acc.1.lcssa.clone",
+                      ForCondCleanup27->getFirstNonPHI());
+  ClonedPhi->addIncoming(Add104, ForEnd);
+  ClonedPhi->addIncoming(getFirstFMulAddInst(LoopHeaderClone), LoopHeaderClone);
+  Acc_1_lcssa->replaceAllUsesWith(ClonedPhi);
+  Acc_1_lcssa->eraseFromParent();
+
+  ForCond25Preheader->getTerminator()->setSuccessor(1, ForEnd);
 }
 
-// Handle CONV type unrolling
-static bool handleConvUnroll(Function &F, Loop *L, ScalarEvolution &SE,
-                             LoopInfo *LI, DominatorTree &DT,
-                             AssumptionCache &AC,
-                             const TargetTransformInfo &TTI,
-                             OptimizationRemarkEmitter &ORE,
-                             uint32_t &unrollCount) {
-  LLVM_DEBUG(errs() << "Unrolling CONV type loop\n");
-  currentUnrollType = UnrollType::CONV_CCORR;
+static void preprocessUnrolledBBs(BasicBlock *BB) {
+  // Get last two instructions of BB
+  Instruction *Br = BB->getTerminator();
+  ICmpInst *Cmp = getLastInst<ICmpInst>(BB);
+  BasicBlock *NextBB = nullptr;
+  BasicBlock *ForCondCleanup26Loopexit = nullptr;
+  // Set successor block based on comparison instruction type
+  if (Cmp->getPredicate() == ICmpInst::ICMP_EQ) {
+    // If eq, swap successor block order
+    NextBB = Br->getSuccessor(1);
+    ForCondCleanup26Loopexit = Br->getSuccessor(0);
+  } else if (Cmp->getPredicate() == ICmpInst::ICMP_SLT) {
+    // If slt, keep original order
+    NextBB = Br->getSuccessor(0);
+    ForCondCleanup26Loopexit = Br->getSuccessor(1);
+  } else {
+    llvm_unreachable("Unsupported comparison predicate");
+  }
 
-  unsigned int unrollFactor = getConvUnrollFactor(unrollCount);
-  simplifyAndFormLCSSA(L, DT, LI, SE, AC);
+  // Delete original conditional branch and comparison instruction
+  Br->eraseFromParent();
+  Cmp->eraseFromParent();
 
-  auto UnrollResult =
-      UnrollLoop(L, {unrollFactor, true, false, true, true, true}, LI, &SE, &DT,
-                 &AC, &TTI, &ORE, true);
+  // Create unconditional jump from BB to NextBB
+  BranchInst::Create(NextBB, BB);
 
-  unrollCount++;
-  return true;
+  // Delete incoming value and block from Phi node
+  if (ForCondCleanup26Loopexit) {
+    for (PHINode &Phi : ForCondCleanup26Loopexit->phis()) {
+      int Idx = Phi.getBasicBlockIndex(BB);
+      if (Idx != -1) {
+        Phi.removeIncomingValue(Idx);
+      }
+    }
+  }
 }
 
-// Handle FIRD type unrolling
-static bool handleFirdUnroll(Function &F, Loop *L, ScalarEvolution &SE,
-                             LoopInfo *LI, DominatorTree &DT,
-                             AssumptionCache &AC,
-                             const TargetTransformInfo &TTI,
-                             OptimizationRemarkEmitter &ORE,
-                             uint32_t &unroll_times) {
-  LLVM_DEBUG(errs() << "Unrolling FIRD type loop\n");
-  currentUnrollType = UnrollType::FIRD;
+// General Function to hoist Index into Entry block
+static void hoistIndexIntoEntryBlock(BasicBlock *ForBodyMerged, Function &F,
+                                     int unrollFactor) {
+  BasicBlock *EntryBlock = &F.getEntryBlock();
+  Instruction *EntryBlockTerminator = EntryBlock->getTerminator();
+  PHINode *N_0894 = getFirstI32Phi(ForBodyMerged);
 
-  if (unroll_times == 0) {
-    unroll_times++;
-    return false;
+  // Static array to store multiplication instructions
+  static std::vector<Value *> FilterMuls;
+  static std::vector<Value *> ImageMuls;
+  if (FilterMuls.empty()) {
+    FilterMuls.resize(unrollFactor - 1);
+    ImageMuls.resize(unrollFactor - 1);
   }
 
-  simplifyAndFormLCSSA(L, DT, LI, SE, AC);
+  // Get all referencing instructions of N_0894
+  SmallVector<Instruction *, 2> MulUsers;
+  SmallVector<Instruction *, 2> AddUsers;
+  for (User *U : N_0894->users()) {
+    if (Instruction *I = dyn_cast<Instruction>(U)) {
+      if (I->getOpcode() == Instruction::Mul) {
+        MulUsers.push_back(I);
+      } else if (I->getOpcode() == Instruction::Add) {
+        AddUsers.push_back(I);
+      }
+    }
+  }
 
-  auto UnrollResult = UnrollLoop(L, {8, true, false, true, true, true}, LI, &SE,
-                                 &DT, &AC, &TTI, &ORE, false);
+  // Get Filter_step_x and In_image_step_x
+  Value *Filter_step_x = nullptr;
+  Value *Mul30_ = nullptr;
+  Value *In_image_step_x = nullptr;
+  Value *Mul28_ = nullptr;
+  for (Instruction *I : reverse(MulUsers)) {
+    if (GetElementPtrInst *GEP = dyn_cast<GetElementPtrInst>(I->user_back())) {
+      if (GEP->isInBounds()) {
+        Filter_step_x = I->getOperand(0);
+        Mul30_ = I;
+      } else {
+        In_image_step_x = I->getOperand(0);
+        Mul28_ = I;
+      }
+    }
+  }
+  assert(Mul30_ && "Mul30_ is nullptr");
+  assert(Filter_step_x && "Filter_step_x is nullptr");
 
-  return true;
+  // Process addition instructions
+  for (Instruction *I : reverse(AddUsers)) {
+    if (I->getOpcode() == Instruction::Add) {
+      if (auto *ConstOp = dyn_cast<ConstantInt>(I->getOperand(1))) {
+        int64_t ConstVal = ConstOp->getSExtValue();
+        if (ConstVal != unrollFactor)
+          I->setOperand(0, Mul30_);
+
+        if (ConstVal == unrollFactor) {
+          // Skip for unrollFactor case
+        } else if (ConstVal == 1) {
+          I->setOperand(1, Filter_step_x);
+        } else if (ConstVal == 2) {
+          if (FilterMuls[0] == nullptr) {
+            FilterMuls[0] = BinaryOperator::CreateNSWShl(
+                Filter_step_x, ConstantInt::get(Filter_step_x->getType(), 1),
+                "mul28", EntryBlockTerminator);
+          }
+          I->setOperand(1, FilterMuls[0]);
+        } else {
+          int MulIdx = ConstVal - 2;
+          if (FilterMuls[MulIdx] == nullptr) {
+            FilterMuls[MulIdx] = BinaryOperator::CreateNSWMul(
+                Filter_step_x,
+                ConstantInt::get(Filter_step_x->getType(), ConstVal),
+                "mul" + std::to_string(28 + MulIdx), EntryBlockTerminator);
+          }
+          I->setOperand(1, FilterMuls[MulIdx]);
+        }
+
+        Instruction *Inst = I->user_back();
+        if (Inst->getOpcode() == Instruction::Mul) {
+          Inst->replaceAllUsesWith(I);
+          Inst->eraseFromParent();
+        }
+      }
+    }
+  }
+
+  // Process GEP instruction
+  Instruction *Arrayidx = dyn_cast<Instruction>(Mul28_->user_back());
+  Value *Arrayidx_0_op = Arrayidx->getOperand(0);
+
+  SmallVector<Instruction *, 16> Get_element_ptr_users;
+  for (User *U : Arrayidx_0_op->users()) {
+    if (Instruction *I = dyn_cast<Instruction>(U)) {
+      Get_element_ptr_users.push_back(I);
+    }
+  }
+
+  int Idx = 1;
+  for (Instruction *I : reverse(Get_element_ptr_users)) {
+    if (I != Arrayidx) {
+      I->setOperand(0, Arrayidx);
+
+      if (Idx == unrollFactor) {
+        // Skip for unrollFactor case
+      } else if (Idx == 1) {
+        I->setOperand(1, In_image_step_x);
+      } else if (Idx == 2) {
+        if (ImageMuls[0] == nullptr) {
+          ImageMuls[0] = BinaryOperator::CreateNSWShl(
+              In_image_step_x, ConstantInt::get(In_image_step_x->getType(), 1),
+              "mul" + std::to_string(34), EntryBlockTerminator);
+        }
+        I->setOperand(1, ImageMuls[0]);
+      } else {
+        int MulIdx = Idx - 2;
+        if (ImageMuls[MulIdx] == nullptr) {
+          ImageMuls[MulIdx] = BinaryOperator::CreateNSWMul(
+              In_image_step_x,
+              ConstantInt::get(In_image_step_x->getType(), Idx),
+              "mul" + std::to_string(34 + MulIdx), EntryBlockTerminator);
+        }
+        I->setOperand(1, ImageMuls[MulIdx]);
+      }
+      Idx++;
+    }
+  }
 }
 
-// Handle innermost loops
-static bool handleInnermostLoop(Function &F, Loop *L, ScalarEvolution &SE,
-                                LoopInfo *LI, DominatorTree &DT,
-                                AssumptionCache &AC,
-                                const TargetTransformInfo &TTI,
-                                OptimizationRemarkEmitter &ORE,
-                                uint32_t &unrollCount) {
-  if (shouldUnrollCorr(F, LI)) {
-    LLVM_DEBUG(errs() << "Unrolling correlation type loop\n");
-    unrollCorr(F, L, 16);
-    currentUnrollType = UnrollType::CORR;
-    return true;
-  }
-
-  if (shouldUnrollFirType(F, LI) || currentUnrollType == UnrollType::FIR) {
-    LLVM_DEBUG(errs() << "Transforming FIR type loop\n");
-    unrollFir(F, L);
-    currentUnrollType = UnrollType::FIR;
-    return true;
-  }
-
-  if (shouldUnrollConvccorr(F, LI) ||
-      currentUnrollType == UnrollType::CONV_CCORR) {
-    return handleConvUnroll(F, L, SE, LI, DT, AC, TTI, ORE, unrollCount);
-  }
-
-  if (shouldUnrollFird(F, LI) || currentUnrollType == UnrollType::FIRD) {
-    return handleFirdUnroll(F, L, SE, LI, DT, AC, TTI, ORE, unrollCount);
-  }
-
-  LLVM_DEBUG(errs() << "No unrolling performed for this innermost loop\n");
-  return false;
+// Wrapper Function, call general Function
+static void hoistIndexIntoEntryBlock4(BasicBlock *ForBodyMerged, Function &F) {
+  hoistIndexIntoEntryBlock(ForBodyMerged, F, 4);
 }
 
-static LoopUnrollResult
-tryToUnrollLoop(Function &F, Loop *L, DominatorTree &DT, LoopInfo *LI,
-                ScalarEvolution &SE, const TargetTransformInfo &TTI,
-                AssumptionCache &AC, OptimizationRemarkEmitter &ORE,
-                BlockFrequencyInfo *BFI, ProfileSummaryInfo *PSI) {
-  // Initialize variables
-  bool changed = false;
-  static uint32_t unrollCount = 0;
-  // Handle single-level loops
-  if (isSimpleLoop(L)) {
-    changed = handleSimpleLoop(F, L, SE, LI, DT, AC, TTI, ORE);
-  }
-  // Handle innermost loops
-  else if (L->isInnermost()) {
-    changed = handleInnermostLoop(F, L, SE, LI, DT, AC, TTI, ORE, unrollCount);
-  }
-
-  return changed ? LoopUnrollResult::PartiallyUnrolled
-                 : LoopUnrollResult::Unmodified;
+static void hoistIndexIntoEntryBlock8(BasicBlock *ForBodyMerged, Function &F) {
+  hoistIndexIntoEntryBlock(ForBodyMerged, F, 8);
 }
 
-// Helper function to process CONV unroll type
-void processConvUnroll(Function &F, const SmallVector<Loop *, 4> &InnerLoops) {
-  static const int unroll_counts[] = {8, 16, 8};
+static void hoistIndexIntoEntryBlock16(BasicBlock *ForBodyMerged, Function &F) {
+  hoistIndexIntoEntryBlock(ForBodyMerged, F, 16);
+}
+
+void DspiF32ConvLargeUnroller::postUnrollDspiF32Conv(
+    Function &F, SmallVector<Loop *, 2> &FIRDWillTransformLoops,
+    int unrollCount, LoopInfo &LI) {
+  runSimplifyDcePasses(F);
+  BasicBlock &EntryBB = F.getEntryBlock();
+  int Loop_idx = 0;
+  for (auto L : FIRDWillTransformLoops) {
+
+    BasicBlock *LoopHeader = L->getHeader();
+
+    ValueToValueMapTy VMap;
+    BasicBlock *LoopHeaderClone =
+        CloneBasicBlock(LoopHeader, VMap, ".clone", &F);
+
+    for (Instruction &Inst : *LoopHeaderClone) {
+      for (unsigned I = 0; I < Inst.getNumOperands(); ++I) {
+        Value *Op = Inst.getOperand(I);
+        if (VMap.count(Op)) {
+          Inst.setOperand(I, VMap[Op]); // Update operand to new value
+        }
+      }
+    }
+
+    LoopHeaderClone->moveAfter(LoopHeader);
+    Instruction *LoopHeaderCloneTerminator = LoopHeaderClone->getTerminator();
+    LoopHeaderCloneTerminator->eraseFromParent();
+
+    preprocessUnrolledBBs(LoopHeader);
+
+    std::vector<BasicBlock *> BBsToMerge;
+    StringRef ForBodyName = LoopHeader->getName();
+    for (int I = 1; I < unrollCount; ++I) {
+      std::string BBName = (ForBodyName + "." + std::to_string(I)).str();
+      BasicBlock *ClonedBB = getBasicBlockByName(F, BBName);
+      if (I < unrollCount - 1) {
+        preprocessUnrolledBBs(ClonedBB);
+      }
+      if (ClonedBB) {
+        BBsToMerge.push_back(ClonedBB);
+      } else {
+        llvm_unreachable("Basic block not found");
+      }
+    }
+
+    if (BBsToMerge.size() == static_cast<size_t>(unrollCount - 1)) {
+      for (BasicBlock *BB : BBsToMerge) {
+        MergeBasicBlockIntoOnlyPred(BB);
+      }
+    }
+
+    BasicBlock *ForBodyMerged = BBsToMerge.back();
+    if (unrollCount == 4) {
+      hoistIndexIntoEntryBlock4(ForBodyMerged, F);
+    } else if (unrollCount == 8) {
+      hoistIndexIntoEntryBlock8(ForBodyMerged, F);
+    } else if (unrollCount == 16) {
+      hoistIndexIntoEntryBlock16(ForBodyMerged, F);
+    }
+
+    BasicBlock *ForBody = nullptr;
+    for (BasicBlock *Pred : predecessors(ForBodyMerged)) {
+      if (Pred != ForBodyMerged) {
+        ForBody = Pred;
+        break;
+      }
+    }
+    assert(ForBody != nullptr && "ForBody not found");
+
+    LoopHeaderClone->moveAfter(ForBodyMerged);
+    for (auto &Phi : LoopHeaderClone->phis()) {
+      Phi.setIncomingBlock(1, LoopHeaderClone);
+    }
+
+    BasicBlock *ForCondCleanup26 = nullptr;
+    for (BasicBlock *succ : successors(ForBodyMerged)) {
+      if (succ != ForBodyMerged) {
+        ForCondCleanup26 = succ;
+        break;
+      }
+    }
+    ForCondCleanup26->moveAfter(LoopHeaderClone);
+
+    // Create new loop preheader basic block
+    BasicBlock *loopHeaderCloneLrPh = BasicBlock::Create(
+        F.getContext(), LoopHeaderClone->getName() + ".lr.ph", &F,
+        LoopHeaderClone);
+
+    // Create unconditional branch instruction to LoopHeaderClone
+    IRBuilder<> Builder(loopHeaderCloneLrPh);
+    Builder.CreateBr(LoopHeaderClone);
+
+    // Update incoming block of Phi nodes in LoopHeaderClone
+    setPHIIndexIncomingBlock(LoopHeaderClone, 0, loopHeaderCloneLrPh);
+
+    ICmpInst *cmp25_clone = getLastInst<ICmpInst>(LoopHeaderClone);
+    Value *inc_clone = cmp25_clone->getOperand(0);
+    Value *op1 = cmp25_clone->getOperand(1);
+    cmp25_clone->setPredicate(ICmpInst::ICMP_EQ);
+    Value *first_fadd = getFirstFMulAddInst(LoopHeaderClone);
+    for (auto &PN : LoopHeaderClone->phis()) {
+      if (PN.getType()->isIntegerTy(32)) {
+        PN.setIncomingValue(1, inc_clone);
+      } else if (PN.getType()->isFloatingPointTy()) {
+        PN.setIncomingValue(1, first_fadd);
+      }
+    }
+
+    // Create for.cond.preheader basic block
+    BasicBlock *ForCondPreheader = BasicBlock::Create(
+        F.getContext(), "for.cond.preheader", &F, loopHeaderCloneLrPh);
+
+    // Clone Phi nodes from ForBodyMerged to ForCondPreheader
+    IRBuilder<> BuilderPreheader(ForCondPreheader);
+    for (auto &I : *ForBodyMerged) {
+      PHINode *PN = dyn_cast<PHINode>(&I);
+      if (!PN)
+        break;
+
+      Instruction *In = I.clone();
+
+      if (PN->getType()->isIntegerTy(32)) {
+        Value *cond = BuilderPreheader.CreateICmpSLT(In, op1);
+        BuilderPreheader.CreateCondBr(cond, loopHeaderCloneLrPh,
+                                      ForCondCleanup26);
+      }
+      In->insertBefore(&*ForCondPreheader->begin());
+    }
+
+    // Create conditional branch instruction in LoopHeaderClone
+    BranchInst *BI =
+        BranchInst::Create(ForCondCleanup26, LoopHeaderClone, cmp25_clone);
+    BI->insertAfter(cmp25_clone);
+
+    ForBody->getTerminator()->setSuccessor(1, ForCondPreheader);
+    ForBodyMerged->getTerminator()->setSuccessor(1, ForCondPreheader);
+
+    PHINode *Acc_1_lcssa = getLastInst<PHINode>(ForCondCleanup26);
+    Acc_1_lcssa->setIncomingBlock(0, ForCondPreheader);
+    Acc_1_lcssa->setIncomingValue(0, getFirstFloatPhi(ForCondPreheader));
+    Acc_1_lcssa->setIncomingValue(1, first_fadd);
+    Acc_1_lcssa->setIncomingBlock(1, LoopHeaderClone);
+
+    for (auto &Phi : ForCondPreheader->phis()) {
+      if (Phi.getType()->isFloatingPointTy() ||
+          Phi.getType()->isIntegerTy(32)) {
+        for (auto &HeaderPN : LoopHeaderClone->phis()) {
+          if (HeaderPN.getType() == Phi.getType()) {
+            HeaderPN.setIncomingValue(0, &Phi);
+          }
+        }
+      }
+    }
+
+    GetElementPtrInst *gep = getFirstInst<GetElementPtrInst>(LoopHeaderClone);
+    Instruction *gep_op0 = dyn_cast<Instruction>(gep->getOperand(0));
+    if (gep_op0->getParent() != LoopHeaderClone) {
+      Instruction *gep_op0_op0_clone =
+          dyn_cast<Instruction>(gep_op0->getOperand(0))->clone();
+      gep_op0_op0_clone->insertBefore(&*loopHeaderCloneLrPh->begin());
+      gep->setOperand(0, gep_op0_op0_clone);
+    }
+
+    LoopHeaderClone->getTerminator()->setSuccessor(0, ForCondCleanup26);
+
+    ICmpInst *exitcond1057_not_7 = getLastInst<ICmpInst>(ForBodyMerged);
+    exitcond1057_not_7->setPredicate(ICmpInst::ICMP_SLT);
+
+    Value *Operand_1 = exitcond1057_not_7->getOperand(1);
+    if (dyn_cast<Instruction>(Operand_1)->getParent() == &EntryBB) {
+      IRBuilder<> BuilderEntry(EntryBB.getTerminator());
+      Value *sub22 = BuilderEntry.CreateNSWAdd(
+          Operand_1, ConstantInt::get(Operand_1->getType(), 1 - unrollCount),
+          "sub22");
+      exitcond1057_not_7->setOperand(1, sub22);
+
+      if (BranchInst *forBodyTerm =
+              dyn_cast<BranchInst>(ForBody->getTerminator())) {
+        if (ICmpInst *forBodyTermCond =
+                dyn_cast<ICmpInst>(forBodyTerm->getCondition())) {
+          if (forBodyTermCond->getOperand(1) == Operand_1) {
+            forBodyTermCond->setOperand(1, sub22);
+          } else {
+            // llvm_unreachable("Unexpected operand in ForBody Terminator
+            // condition");
+            ;
+          }
+        }
+      }
+    } else if (Instruction *Sub135 = dyn_cast<Instruction>(Operand_1)) {
+      IRBuilder<> Builder(Sub135->getParent()->getTerminator());
+      Value *Sub216 = Builder.CreateNSWAdd(
+          Operand_1, ConstantInt::get(Operand_1->getType(), 1 - unrollCount),
+          "Sub216");
+      exitcond1057_not_7->setOperand(1, Sub216);
+    }
+
+    Instruction *Sub135 = dyn_cast<Instruction>(Operand_1);
+    for (User *U : Sub135->users()) {
+      if (ICmpInst *ICI = dyn_cast<ICmpInst>(U)) {
+        if (ICI->getOperand(0) == Sub135) {
+          if (ConstantInt *CI = dyn_cast<ConstantInt>(ICI->getOperand(1))) {
+            if (CI->isZero()) {
+              ICI->setOperand(1,
+                              ConstantInt::get(CI->getType(), unrollCount - 1));
+            }
+          }
+        }
+      }
+    }
+    ForBodyMerged->getTerminator()->setSuccessor(0, ForBodyMerged);
+
+    Loop_idx++;
+  }
+
+  SmallVector<Instruction *, 512> InstsToMove;
+  for (auto &BB : F) {
+    for (auto &I : BB) {
+      if (isa<PHINode>(I) || isa<BranchInst>(I))
+        continue;
+      InstsToMove.push_back(&I); // Store pointer instead of object
+    }
+  }
+
+  for (auto *I : InstsToMove) { // Use pointer
+    if (I->getNumOperands() > 0) {
+      Value *FirstOp = I->getOperand(0);
+      if (Instruction *FirstOpInst = dyn_cast<Instruction>(FirstOp)) {
+        BasicBlock *BaseParent = FirstOpInst->getParent();
+        BasicBlock *InstParent = I->getParent();
+
+        bool AllSameParent = true;
+        for (unsigned Idx = 1; Idx < I->getNumOperands(); Idx++) {
+          Value *Op = I->getOperand(Idx);
+          if (Instruction *OpInst = dyn_cast<Instruction>(Op)) {
+            if (OpInst->getParent() != BaseParent) {
+              AllSameParent = false;
+              break;
+            }
+          }
+        }
+
+        if (AllSameParent && BaseParent != InstParent &&
+            BaseParent != nullptr) {
+          I->moveBefore(BaseParent->getTerminator());
+        }
+      }
+    }
+  }
+
+  runPostPass(F);
+  runSimplifyDcePasses(F);
+}
+
+static void groupSameInstForAdd(BasicBlock *ForBodyMerged) {
+  // Collect different types of instructions
+  SmallVector<PHINode *> PhiNodes;
+  SmallVector<Instruction *> OrInsts, GepInsts, LoadInsts, MulnswInsts,
+      FaddInsts, FmulInsts, FsubInsts, StoreInsts;
+
+  // Categorize instructions by type
+  for (Instruction &Inst : *ForBodyMerged) {
+    if (auto *Phi = dyn_cast<PHINode>(&Inst)) {
+      PhiNodes.push_back(Phi);
+    } else if (Inst.getOpcode() == Instruction::Or) {
+      OrInsts.push_back(&Inst);
+    } else if (isa<GetElementPtrInst>(&Inst)) {
+      GepInsts.push_back(&Inst);
+    } else if (isa<LoadInst>(&Inst)) {
+      LoadInsts.push_back(&Inst);
+    } else if (auto *binInst = dyn_cast<BinaryOperator>(&Inst)) {
+      if (binInst->getOpcode() == Instruction::Mul &&
+          binInst->hasNoSignedWrap()) {
+        MulnswInsts.push_back(binInst);
+      } else if (binInst->getOpcode() == Instruction::FAdd) {
+        FaddInsts.push_back(binInst);
+      } else if (binInst->getOpcode() == Instruction::FMul) {
+        FmulInsts.push_back(binInst);
+      } else if (binInst->getOpcode() == Instruction::FSub) {
+        FsubInsts.push_back(binInst);
+      }
+    } else if (isa<StoreInst>(&Inst)) {
+      StoreInsts.push_back(&Inst);
+    }
+  }
+
+  // If no PHI nodes are found, return
+  if (PhiNodes.empty()) {
+    return;
+  }
+
+  // Reorder instructions
+  Instruction *InsertPoint = PhiNodes.back()->getNextNode();
+
+  auto moveInstructions = [&InsertPoint](SmallVector<Instruction *> &Insts) {
+    for (auto *Inst : Insts) {
+      Inst->moveBefore(InsertPoint);
+      InsertPoint = Inst->getNextNode();
+    }
+  };
+
+  // Move instructions in the desired order
+  moveInstructions(OrInsts);
+  moveInstructions(MulnswInsts);
+  moveInstructions(GepInsts);
+  moveInstructions(LoadInsts);
+  moveInstructions(FaddInsts);
+  moveInstructions(FsubInsts);
+  moveInstructions(FmulInsts);
+  moveInstructions(StoreInsts);
+}
+
+void DspmF32AddLoopUnroller::postUnrollDspmF32Add(Function &F, Loop *L,
+                                                  int unrollCount) {
+  runSimplifyDcePasses(F);
+  BasicBlock *forCond34Preheader = L->getLoopPreheader();
+  auto [ForBodyCloned, ForBodyMerged] = cloneAndMergeLoop(L, F, unrollCount);
+  ForBodyCloned->moveAfter(ForBodyMerged);
+  BasicBlock *forCondCleanup36 =
+      ForBodyMerged->getTerminator()->getSuccessor(0);
+  forCondCleanup36->moveAfter(ForBodyCloned);
+
+  BasicBlock *forCond34PreheaderLrPh =
+      F.getEntryBlock().getTerminator()->getSuccessor(1);
+
+  ICmpInst *exitCond_Not_7 = getLastInst<ICmpInst>(ForBodyMerged);
+  Value *cols = exitCond_Not_7->getOperand(1);
+  exitCond_Not_7->setPredicate(ICmpInst::ICMP_SLT);
+
+  IRBuilder<> Builder(forCond34PreheaderLrPh->getTerminator());
+  Value *Sub = Builder.CreateAdd(cols, ConstantInt::get(cols->getType(), -7),
+                                 "Sub", true);
+  Value *cmp35236 =
+      Builder.CreateICmp(ICmpInst::ICMP_UGT, cols,
+                         ConstantInt::get(cols->getType(), 7), "cmp35236");
+  exitCond_Not_7->setOperand(1, Sub);
+
+  BasicBlock *forCond113Preheader = BasicBlock::Create(
+      F.getContext(), "forCond113Preheader", &F, ForBodyMerged);
+  PHINode *col_0_lcssa = cast<PHINode>(ForBodyMerged->begin()->clone());
+  col_0_lcssa->setName("col.0.lcssa");
+  col_0_lcssa->insertInto(forCond113Preheader, forCond113Preheader->begin());
+
+  Builder.SetInsertPoint(forCond113Preheader);
+  Value *cmp114238 =
+      Builder.CreateICmp(ICmpInst::ICMP_SLT, col_0_lcssa, cols, "cmp114238");
+  Builder.CreateCondBr(cmp114238, ForBodyCloned, forCondCleanup36);
+
+  // Modify jump target of forCond34Preheader to forCond113Preheader
+  forCond34Preheader->getTerminator()->eraseFromParent();
+  BranchInst::Create(ForBodyMerged, forCond113Preheader, cmp35236,
+                     forCond34Preheader);
+
+  PHINode *acc_080_clone = getFirstI32Phi(ForBodyCloned);
+  acc_080_clone->setIncomingValue(0, getLastAddInst<int32_t>(ForBodyCloned));
+  acc_080_clone->setIncomingBlock(0, ForBodyCloned);
+  acc_080_clone->setIncomingValue(1, col_0_lcssa);
+  acc_080_clone->setIncomingBlock(1, forCond113Preheader);
+
+  ForBodyCloned->getTerminator()->setSuccessor(1, ForBodyCloned);
+  ForBodyMerged->getTerminator()->setSuccessor(0, forCond113Preheader);
+  swapTerminatorSuccessors(ForBodyMerged);
+
+  runSimplifyDcePasses(F);
+  runPostPass(F);
+  groupSameInstForAdd(ForBodyMerged);
+}
+
+void DspmF32MultLoopUnroller::postUnrollDspmF32Mult(Function &F, Loop *L,
+                                                    int unrollCount) {
+  runSimplifyDcePasses(F);
+  BasicBlock *ForBody4 = L->getLoopPredecessor();
+  BasicBlock *ForCondCleanup8 = ForBody4->getTerminator()->getSuccessor(1);
+
+  auto [forBody113, ForBodyMerged] = cloneAndMergeLoop(L, F, unrollCount);
+  forBody113->moveAfter(ForBodyMerged);
+  ForCondCleanup8->moveAfter(forBody113);
+
+  ICmpInst *Exitcond_not_7 = getLastInst<ICmpInst>(ForBodyMerged);
+  Value *n = Exitcond_not_7->getOperand(1);
+
+  BasicBlock *ForCond1PreheaderLrPh =
+      F.getEntryBlock().getTerminator()->getSuccessor(0);
+  // Get Icmp instruction in ForCond1PreheaderLrPh
+  ICmpInst *Cmp658 = nullptr;
+  for (auto &I : *ForCond1PreheaderLrPh) {
+    if (auto *Icmp = dyn_cast<ICmpInst>(&I)) {
+      if (Icmp->getPredicate() == ICmpInst::ICMP_SGT &&
+          Icmp->getOperand(0) == n) {
+        Cmp658 = Icmp;
+        break;
+      }
+    }
+  }
+  assert(Cmp658 && "Cmp658 not found");
+  Cmp658->setOperand(1, ConstantInt::get(n->getType(), 8));
+
+  IRBuilder<> Builder(Cmp658);
+  Value *sub6 =
+      Builder.CreateNSWAdd(n, ConstantInt::get(n->getType(), -7), "sub6");
+
+  // Create new for.cond110.preheader basic block
+  BasicBlock *forCond110Preheader = BasicBlock::Create(
+      F.getContext(), "for.cond110.preheader", &F, ForBodyMerged);
+
+  // Clone PHI nodes from ForBodyMerged to for.cond110.preheader
+  Builder.SetInsertPoint(forCond110Preheader);
+
+  PHINode *S_0_lcssa = nullptr;
+  PHINode *Acc_0_lcssa = nullptr;
+  // Iterate over PHI nodes in ForBodyMerged and clone
+  for (auto &Phi : ForBodyMerged->phis()) {
+    PHINode *NewPhi = cast<PHINode>(Phi.clone());
+    NewPhi->insertInto(forCond110Preheader, forCond110Preheader->begin());
+    if (Phi.getType()->isIntegerTy(32)) {
+      NewPhi->setName("s.0.lcssa");
+      S_0_lcssa = NewPhi;
+      // Create comparison instruction
+      Value *cmp111262 = Builder.CreateICmpSLT(NewPhi, n, "cmp111262");
+      // Create conditional branch instruction
+      Builder.CreateCondBr(cmp111262, forBody113, ForCondCleanup8);
+    } else if (Phi.getType()->isFloatTy()) {
+      NewPhi->setName("acc.0.lcssa");
+      Acc_0_lcssa = NewPhi;
+    } else {
+      llvm_unreachable("Unsupported type");
+    }
+  }
+
+  // Update predecessor basic block Terminator
+  ForBody4->getTerminator()->setSuccessor(1, forCond110Preheader);
+  ForBodyMerged->getTerminator()->setSuccessor(0, forCond110Preheader);
+
+  Exitcond_not_7->setOperand(1, sub6);
+  Exitcond_not_7->setPredicate(ICmpInst::ICMP_SLT);
+  swapTerminatorSuccessors(ForBodyMerged);
+
+  for (auto &Phi : forBody113->phis()) {
+    if (Phi.getType()->isIntegerTy(32)) {
+      Phi.setIncomingValue(0, Phi.user_back());
+      Phi.setIncomingValue(1, S_0_lcssa);
+    } else if (Phi.getType()->isFloatTy()) {
+      Phi.setIncomingValue(0, Phi.user_back());
+      Phi.setIncomingValue(1, Acc_0_lcssa);
+    } else {
+      llvm_unreachable("Unsupported type");
+    }
+  }
+  setPHINodesBlock(forBody113, forBody113, forCond110Preheader);
+  forBody113->getTerminator()->setSuccessor(1, forBody113);
+
+  runSimplifyDcePasses(F);
+  runPostPass(F);
+}
+
+void DspmF32MultExLoopUnroller::postUnrollDspmF32MultEx(Function &F, Loop *L,
+                                                        int unrollCount) {
+  runSimplifyDcePasses(F);
+  BasicBlock *ForBody4 = L->getLoopPredecessor();
+  BasicBlock *ForCondCleanup8 = ForBody4->getTerminator()->getSuccessor(1);
+
+  auto [forBody113, ForBodyMerged] = cloneAndMergeLoop(L, F, unrollCount);
+  forBody113->moveAfter(ForBodyMerged);
+  ForCondCleanup8->moveAfter(forBody113);
+
+  ICmpInst *Exitcond_not_7 = getLastInst<ICmpInst>(ForBodyMerged);
+  Value *n = Exitcond_not_7->getOperand(1);
+
+  BasicBlock *ForCond1PreheaderLrPh =
+      F.getEntryBlock().getTerminator()->getSuccessor(1);
+  // Get Icmp instruction in ForCond1PreheaderLrPh
+  ICmpInst *Cmp658 = nullptr;
+  for (auto &I : *ForCond1PreheaderLrPh) {
+    if (auto *Icmp = dyn_cast<ICmpInst>(&I)) {
+      if (Icmp->getPredicate() == ICmpInst::ICMP_UGT) {
+        Cmp658 = Icmp;
+        break;
+      }
+    }
+  }
+  assert(Cmp658 && "Cmp658 not found");
+  Cmp658->setOperand(1, ConstantInt::get(n->getType(), 8));
+
+  IRBuilder<> Builder(Cmp658);
+  Value *sub6 =
+      Builder.CreateNSWAdd(n, ConstantInt::get(n->getType(), -7), "sub6");
+
+  // Create new for.cond110.preheader basic block
+  BasicBlock *forCond110Preheader = BasicBlock::Create(
+      F.getContext(), "for.cond110.preheader", &F, ForBodyMerged);
+
+  // Clone PHI nodes from ForBodyMerged to for.cond110.preheader
+  Builder.SetInsertPoint(forCond110Preheader);
+
+  PHINode *S_0_lcssa = nullptr;
+  PHINode *Acc_0_lcssa = nullptr;
+  // Iterate over PHI nodes in ForBodyMerged and clone
+  for (auto &Phi : ForBodyMerged->phis()) {
+    PHINode *NewPhi = cast<PHINode>(Phi.clone());
+    NewPhi->insertInto(forCond110Preheader, forCond110Preheader->begin());
+    if (Phi.getType()->isIntegerTy(32)) {
+      NewPhi->setName("s.0.lcssa");
+      S_0_lcssa = NewPhi;
+      // Create comparison instruction
+      Value *cmp111262 = Builder.CreateICmpSLT(NewPhi, n, "cmp111262");
+      // Create conditional branch instruction
+      Builder.CreateCondBr(cmp111262, forBody113, ForCondCleanup8);
+    } else if (Phi.getType()->isFloatTy()) {
+      NewPhi->setName("acc.0.lcssa");
+      Acc_0_lcssa = NewPhi;
+    } else {
+      llvm_unreachable("Unsupported type");
+    }
+  }
+
+  // Update predecessor basic block Terminator
+  ForBody4->getTerminator()->setSuccessor(1, forCond110Preheader);
+  ForBodyMerged->getTerminator()->setSuccessor(0, forCond110Preheader);
+
+  Exitcond_not_7->setOperand(1, sub6);
+  Exitcond_not_7->setPredicate(ICmpInst::ICMP_SLT);
+  swapTerminatorSuccessors(ForBodyMerged);
+
+  for (auto &Phi : forBody113->phis()) {
+    if (Phi.getType()->isIntegerTy(32)) {
+      Phi.setIncomingValue(0, Phi.user_back());
+      Phi.setIncomingValue(1, S_0_lcssa);
+    } else if (Phi.getType()->isFloatTy()) {
+      Phi.setIncomingValue(0, Phi.user_back());
+      Phi.setIncomingValue(1, Acc_0_lcssa);
+    } else {
+      llvm_unreachable("Unsupported type");
+    }
+  }
+  setPHINodesBlock(forBody113, forBody113, forCond110Preheader);
+  forBody113->getTerminator()->setSuccessor(1, forBody113);
+
+  runSimplifyDcePasses(F);
+  runPostPass(F);
+}
+
+LoopUnrollResult DspsF32ConvCcorrUnroller::unroll(Loop &L) {
+  simplifyAndFormLCSSA(&L, DT, &LI, SE, AC);
+  // Get unroll factor of the loop
+  unsigned factor = UnrollFactors[&L];
+  return UnrollLoop(&L,
+                    {/*Count*/ factor,
+                     /*Force*/ true,
+                     /*Runtime*/ false,
+                     /*AllowExpensiveTripCount*/ true,
+                     /*UnrollRemainder*/ true,
+                     /*UnrollRemainder*/ true},
+                    &LI, &SE, &DT, &AC, &TTI, /*ORE*/ &ORE, true);
+}
+
+// Helper Function to process CONV unroll type
+void DspsF32ConvCcorrUnroller::processConvUnroll(
+    Function &F, SmallVector<Loop *, 2> &InnerLoops) {
+  // static const int unroll_counts[] = {8, 16, 8};
   static int unroll_index = 0;
   for (auto *L : InnerLoops) {
-    PostUnrollConv(F, L, unroll_counts[unroll_index], unroll_index);
+    PostUnrollConv(F, L, UnrollFactors[L], unroll_index);
     unroll_index = (unroll_index + 1) % 3;
   }
 }
 
-// Helper function to process FIRD unroll type
-void processFirdUnroll(Function &F, const SmallVector<Loop *, 4> &InnerLoops) {
-  static int loop_index = 0;
+// Helper Function to process FIRD unroll type
+void DspsF32FirdLoopUnroller::processFirdUnroll(
+    Function &F, SmallVector<Loop *, 2> &InnerLoops) {
+  static int Loop_index = 0;
   for (auto &L : InnerLoops) {
-    if (loop_index == 0) {
-      loop_index++;
+    if (Loop_index == 0) {
+      Loop_index++;
       continue;
     }
-    PostUnrollFird(F, L, loop_index);
-    loop_index++;
+    PostUnrollFird(F, L, Loop_index);
+    Loop_index++;
   }
 }
 
-static void addCommonOptimizationPasses(Function &F) {
+void LoopUnroller::addCommonOptimizationPasses(Function &F) {
   // Create necessary analysis managers
   LoopAnalysisManager LAM;
   FunctionAnalysisManager FAM;
@@ -4948,19 +6383,16 @@ static void addCommonOptimizationPasses(Function &F) {
   PB.registerLoopAnalyses(LAM);
   PB.crossRegisterProxies(LAM, FAM, CGAM, MAM);
 
-  // Create function-level optimization pipeline
-  FunctionPassManager FPM;
+  // Create Function-level optimization pipeline
 
-  if (currentUnrollType == UnrollType::CORR ||
-      currentUnrollType == UnrollType::FIRD)
-    FPM.addPass(createFunctionToLoopPassAdaptor(LoopStrengthReducePass()));
+  addPasses();
   FPM.addPass(EarlyCSEPass(true));
   FPM.addPass(ReassociatePass());
 
   FPM.run(F, FAM);
 }
 
-static void addLegacyCommonOptimizationPasses(Function &F) {
+void DspsF32FirdLoopUnroller::addLegacyCommonOptimizationPasses(Function &F) {
   legacy::FunctionPassManager FPM(F.getParent());
   FPM.add(createLoopSimplifyPass());
   FPM.add(createLICMPass()); // Loop Invariant Code Motion
@@ -4970,7 +6402,7 @@ static void addLegacyCommonOptimizationPasses(Function &F) {
       SimplifyCFGOptions()
           .bonusInstThreshold(1) // Set instruction bonus threshold
           .forwardSwitchCondToPhi(
-              true) // Allow forwarding switch conditions to phi
+              true) // Allow forwarding switch conditions to Phi
           .convertSwitchToLookupTable(
               true)                  // Allow converting switch to lookup table
           .needCanonicalLoops(false) // Don't require canonical loop form
@@ -4982,6 +6414,455 @@ static void addLegacyCommonOptimizationPasses(Function &F) {
   FPM.doInitialization();
   FPM.run(F);
   FPM.doFinalization();
+}
+
+void DspsF32BiquadLoopUnroller::postUnrollBiquad(
+    Function &F, SmallVector<Loop *, 2> &InnerLoops, uint32_t unrollCount) {
+  Loop *L = InnerLoops[0];
+
+  BasicBlock *LoopHeader = L->getHeader();
+  ValueToValueMapTy ForBodyClonedVMap;
+  BasicBlock *ForBodyCloned =
+      CloneBasicBlock(LoopHeader, ForBodyClonedVMap, ".clone", &F);
+
+  ForBodyCloned->moveAfter(LoopHeader);
+  ForBodyCloned->getTerminator()->setSuccessor(1, LoopHeader);
+
+  std::vector<BasicBlock *> BBsToMerge;
+  StringRef ForBodyName = LoopHeader->getName();
+  for (int I = 1; I < unrollCount; ++I) {
+    std::string BBName = (ForBodyName + "." + std::to_string(I)).str();
+    BasicBlock *ClonedBB = getBasicBlockByName(F, BBName);
+    if (ClonedBB) {
+      BBsToMerge.push_back(ClonedBB);
+    } else {
+      llvm_unreachable("Basic block not found");
+    }
+  }
+
+  if (BBsToMerge.size() == static_cast<size_t>(unrollCount - 1)) {
+    for (BasicBlock *BB : BBsToMerge) {
+      MergeBasicBlockIntoOnlyPred(BB);
+    }
+  }
+
+  BasicBlock *ForBodyMerged = BBsToMerge.back();
+  ForBodyCloned->moveAfter(ForBodyMerged);
+  BasicBlock *ForCondCleanup = ForBodyMerged->getTerminator()->getSuccessor(0);
+  ForCondCleanup->moveAfter(ForBodyCloned);
+
+  ICmpInst *Exitcond_not_7 = getLastInst<ICmpInst>(ForBodyMerged);
+  Value *Len = Exitcond_not_7->getOperand(1);
+  Exitcond_not_7->setPredicate(ICmpInst::ICMP_SLT);
+
+  BasicBlock *ForCondPreheader =
+      F.getEntryBlock().getTerminator()->getSuccessor(0);
+
+  IRBuilder<> Builder(ForCondPreheader->getTerminator());
+  Value *Sub =
+      Builder.CreateAdd(Len, ConstantInt::get(Len->getType(), -7), "Sub", true);
+  Exitcond_not_7->setOperand(1, Sub);
+
+  BasicBlock *forCond150Preheader = BasicBlock::Create(
+      F.getContext(), "for.cond150.preheader", &F, ForBodyMerged);
+  PHINode *I_0_lcssa =
+      cast<PHINode>(cast<Instruction>(getFirstI32Phi(ForBodyMerged))->clone());
+  I_0_lcssa->setIncomingBlock(0, ForCondPreheader);
+  I_0_lcssa->setName("I.0.lcssa");
+  I_0_lcssa->insertInto(forCond150Preheader, forCond150Preheader->begin());
+
+  Builder.SetInsertPoint(forCond150Preheader);
+  Value *cmp1514 =
+      Builder.CreateICmp(ICmpInst::ICMP_SLT, I_0_lcssa, Len, "cmp151376");
+  Builder.CreateCondBr(cmp1514, ForBodyCloned, ForCondCleanup);
+
+  ForCondPreheader->getTerminator()->setSuccessor(1, forCond150Preheader);
+
+  ForBodyMerged->getTerminator()->setSuccessor(0, forCond150Preheader);
+  swapTerminatorSuccessors(ForBodyMerged);
+
+  BasicBlock *ForBodyLrPh = ForCondPreheader->getTerminator()->getSuccessor(0);
+  // Clone ForBodyLrPh and move It before ForBodyCloned
+  ValueToValueMapTy VMap;
+  BasicBlock *forBodyLrPhClone =
+      CloneBasicBlock(ForBodyLrPh, VMap, ".clone", &F);
+
+  forBodyLrPhClone->moveBefore(ForBodyCloned);
+  forBodyLrPhClone->getTerminator()->setSuccessor(0, ForBodyCloned);
+  // Update PHI nodes in ForBodyCloned to use forBodyLrPhClone
+  updatePhiNodes(ForBodyCloned, ForBodyLrPh, forBodyLrPhClone);
+
+  for (Instruction &Inst : *forBodyLrPhClone) {
+    for (unsigned I = 0; I < Inst.getNumOperands(); ++I) {
+      Value *Op = Inst.getOperand(I);
+      if (VMap.count(Op)) {
+        Inst.setOperand(I, VMap[Op]); // Update operand to mapped new value
+      }
+    }
+  }
+  // Update branch instruction in forCond150Preheader to target forBodyLrPhClone
+  forCond150Preheader->getTerminator()->setSuccessor(0, forBodyLrPhClone);
+
+  // Collect llvm.fmuladd.f32 instructions in ForBodyCloned
+  for (Instruction &Inst : *ForBodyCloned) {
+    if (RecurrenceDescriptor::isFMulAddIntrinsic(&Inst)) {
+      CallInst *CI = cast<CallInst>(&Inst);
+      for (unsigned I = 0; I < CI->getNumOperands(); I++) {
+        Value *Op = CI->getOperand(I);
+        if (VMap.count(Op)) {
+          CI->setOperand(I, VMap[Op]);
+        } else if (ForBodyClonedVMap.count(Op)) {
+          CI->setOperand(I, ForBodyClonedVMap[Op]);
+        }
+      }
+    } else {
+      for (unsigned I = 0; I < Inst.getNumOperands(); ++I) {
+        Value *Op = Inst.getOperand(I);
+        if (VMap.count(Op)) {
+          Inst.setOperand(I, VMap[Op]);
+        } else if (ForBodyClonedVMap.count(Op)) {
+          Inst.setOperand(I, ForBodyClonedVMap[Op]);
+        }
+      }
+    }
+  }
+
+  for (PHINode &Phi : ForBodyCloned->phis()) {
+    if (Phi.getType()->isIntegerTy(32)) {
+      Phi.setIncomingValue(0, I_0_lcssa);
+    }
+    Phi.setIncomingBlock(1, ForBodyCloned);
+  }
+
+  // Clone ForCondCleanup and move It after ForBodyCloned
+  ValueToValueMapTy CleanupVMap;
+  BasicBlock *forCondCleanupClone =
+      CloneBasicBlock(ForCondCleanup, CleanupVMap, ".clone", &F);
+
+  forCondCleanupClone->moveBefore(ForBodyCloned->getNextNode());
+  ForBodyCloned->getTerminator()->setSuccessor(0, forCondCleanupClone);
+  ForBodyCloned->getTerminator()->setSuccessor(1, ForBodyCloned);
+
+  for (Instruction &Inst : *forCondCleanupClone) {
+    for (unsigned I = 0; I < Inst.getNumOperands(); ++I) {
+      Value *Op = Inst.getOperand(I);
+      if (VMap.count(Op)) {
+        Inst.setOperand(I, VMap[Op]);
+      } else if (ForBodyClonedVMap.count(Op)) {
+        Inst.setOperand(I, ForBodyClonedVMap[Op]);
+      }
+    }
+  }
+
+  PHINode *phi59 = getFirstFloatPhi(ForBodyCloned);
+  Value *pre_clone14 = phi59->getIncomingValue(0);
+  phi59->replaceAllUsesWith(pre_clone14);
+  phi59->eraseFromParent();
+
+  PHINode *Phi60 = getFirstFloatPhi(ForBodyCloned);
+  Value *Phi62 = nullptr;
+  for (User *U : Phi60->users()) {
+    Phi62 = U;
+  }
+  Phi60->setIncomingValue(1, Phi62);
+
+  // Find last store instruction in ForBodyCloned
+  StoreInst *LastStore = nullptr;
+  for (Instruction &BI : *ForBodyMerged) {
+    if (auto *Store = dyn_cast<StoreInst>(&BI)) {
+      LastStore = Store;
+    }
+  }
+
+  // Iterate over store instructions in ForCondCleanup
+  // First, collect all store instructions to be moved
+  SmallVector<StoreInst *, 4> StoresToMove;
+  for (Instruction &Inst : *ForCondCleanup) {
+    if (auto *SI = dyn_cast<StoreInst>(&Inst)) {
+      StoresToMove.push_back(SI);
+    }
+  }
+
+  // Move collected store instructions together
+  if (LastStore) {
+    Instruction *InsertPoint = LastStore->getNextNode();
+    for (StoreInst *SI : StoresToMove) {
+      SI->moveBefore(InsertPoint);
+    }
+  }
+
+  getFirstI32Phi(ForBodyCloned)
+      ->setIncomingValue(1, getFirstAddInst<int32_t>(ForBodyCloned));
+  runSimplifyDcePasses(F);
+  runPostPass(F);
+}
+
+static void groupSameInstructionDspsFft2rFc32(BasicBlock *ForBody) {
+  // Collect different types of instructions
+  SmallVector<PHINode *> PhiNodes;
+  SmallVector<Instruction *> AddInsts, ShlInsts, OrInsts, GepInsts, LoadInsts,
+      FmulInsts, FsubInsts, FaddInsts, FmuladdInsts;
+
+  // Categorize instructions by type
+  for (Instruction &Inst : *ForBody) {
+    if (auto *Phi = dyn_cast<PHINode>(&Inst)) {
+      PhiNodes.push_back(Phi);
+    } else if (Inst.getOpcode() == Instruction::Or) {
+      OrInsts.push_back(&Inst);
+    } else if (isa<GetElementPtrInst>(&Inst)) {
+      GepInsts.push_back(&Inst);
+    } else if (isa<LoadInst>(&Inst)) {
+      LoadInsts.push_back(&Inst);
+    } else if (Inst.getOpcode() == Instruction::FAdd) {
+      FaddInsts.push_back(&Inst);
+    } else if (Inst.getOpcode() == Instruction::FSub) {
+      FsubInsts.push_back(&Inst);
+    } else if (Inst.getOpcode() == Instruction::FMul) {
+      FmulInsts.push_back(&Inst);
+    } else if (auto *mulInst = dyn_cast<BinaryOperator>(&Inst)) {
+      if (mulInst->getOpcode() == Instruction::Add) {
+        AddInsts.push_back(mulInst);
+      } else if (mulInst->getOpcode() == Instruction::Shl) {
+        ShlInsts.push_back(mulInst);
+      }
+    } else if (RecurrenceDescriptor::isFMulAddIntrinsic(&Inst)) {
+      FmuladdInsts.push_back(&Inst);
+    }
+  }
+
+  // If no PHI nodes are found, return
+  if (PhiNodes.empty()) {
+    return;
+  }
+
+  // Reorder instructions
+  Instruction *InsertPoint = PhiNodes.back()->getNextNode();
+
+  auto moveInstructions = [&InsertPoint](SmallVector<Instruction *> &Insts) {
+    for (auto *Inst : Insts) {
+      Inst->moveBefore(InsertPoint);
+      InsertPoint = Inst->getNextNode();
+    }
+  };
+
+  // Move instructions in the desired order
+  moveInstructions(AddInsts);
+  moveInstructions(ShlInsts);
+  moveInstructions(OrInsts);
+  moveInstructions(GepInsts);
+  moveInstructions(LoadInsts);
+  moveInstructions(FmulInsts);
+  moveInstructions(FmuladdInsts);
+  moveInstructions(FaddInsts);
+  moveInstructions(FsubInsts);
+}
+
+static void copyPHINodes(BasicBlock *sourceBB, BasicBlock *targetBB) {
+  for (PHINode &Phi : sourceBB->phis()) {
+    // Create a new PHI node
+    PHINode *newPhi = PHINode::Create(Phi.getType(), Phi.getNumIncomingValues(),
+                                      Phi.getName(), targetBB);
+
+    // Copy each operand
+    for (unsigned I = 0; I < Phi.getNumIncomingValues(); ++I) {
+      Value *incomingValue = Phi.getIncomingValue(I);
+      BasicBlock *incomingBlock = Phi.getIncomingBlock(I);
+      newPhi->addIncoming(incomingValue, incomingBlock);
+    }
+  }
+}
+
+void DspsF32Fft2rLargeUnroller::postUnrollDspsFft2rFc32(
+    Function &F, SmallVector<Loop *, 2> &FIRDWillTransformLoops,
+    int unrollCount, LoopInfo &LI) {
+  runSimplifyDcePasses(F);
+
+  assert(FIRDWillTransformLoops.size() == 1);
+  Loop *L = FIRDWillTransformLoops[0];
+
+  BasicBlock *LoopHeader = L->getHeader();
+
+  ValueToValueMapTy VMap;
+  BasicBlock *LoopHeaderClone = CloneBasicBlock(LoopHeader, VMap, ".clone", &F);
+
+  for (Instruction &Inst : *LoopHeaderClone) {
+    for (unsigned I = 0; I < Inst.getNumOperands(); ++I) {
+      Value *Op = Inst.getOperand(I);
+      if (VMap.count(Op)) {
+        Inst.setOperand(I, VMap[Op]); // Update operand to mapped new value
+      }
+    }
+  }
+
+  LoopHeaderClone->moveAfter(LoopHeader);
+  Instruction *LoopHeaderCloneTerminator = LoopHeaderClone->getTerminator();
+  LoopHeaderCloneTerminator->eraseFromParent();
+
+  preprocessUnrolledBBs(LoopHeader);
+
+  std::vector<BasicBlock *> BBsToMerge;
+  StringRef ForBodyName = LoopHeader->getName();
+  for (int I = 1; I < unrollCount; ++I) {
+    std::string BBName = (ForBodyName + "." + std::to_string(I)).str();
+    BasicBlock *ClonedBB = getBasicBlockByName(F, BBName);
+    if (I < unrollCount - 1) {
+      preprocessUnrolledBBs(ClonedBB);
+    }
+    if (ClonedBB) {
+      BBsToMerge.push_back(ClonedBB);
+    } else {
+      llvm_unreachable("Basic block not found");
+    }
+  }
+
+  if (BBsToMerge.size() == static_cast<size_t>(unrollCount - 1)) {
+    for (BasicBlock *BB : BBsToMerge) {
+      MergeBasicBlockIntoOnlyPred(BB);
+    }
+  }
+
+  BasicBlock *ForBodyMerged = BBsToMerge.back();
+  BasicBlock *ForBody = nullptr;
+  for (BasicBlock *Pred : predecessors(ForBodyMerged)) {
+    if (Pred != ForBodyMerged) {
+      ForBody = Pred;
+      break;
+    }
+  }
+  assert(ForBody != nullptr && "ForBody not found");
+
+  LoopHeaderClone->moveAfter(ForBodyMerged);
+  for (auto &Phi : LoopHeaderClone->phis()) {
+    Phi.setIncomingBlock(1, LoopHeaderClone);
+  }
+
+  BasicBlock *ForCondCleanup26 = nullptr;
+  for (BasicBlock *succ : successors(ForBodyMerged)) {
+    if (succ != ForBodyMerged) {
+      ForCondCleanup26 = succ;
+      break;
+    }
+  }
+  ForCondCleanup26->moveAfter(LoopHeaderClone);
+
+  // Create new loop preheader basic block
+  BasicBlock *loopHeaderCloneLrPh =
+      BasicBlock::Create(F.getContext(), LoopHeaderClone->getName() + ".lr.ph",
+                         &F, LoopHeaderClone);
+
+  // Create unconditional branch instruction to LoopHeaderClone
+  IRBuilder<> Builder(loopHeaderCloneLrPh);
+  Builder.CreateBr(LoopHeaderClone);
+
+  // Update incoming block of PHI nodes in LoopHeaderClone
+  setPHIIndexIncomingBlock(LoopHeaderClone, 0, loopHeaderCloneLrPh);
+
+  for (auto &PN : LoopHeaderClone->phis()) {
+    for (auto &I : *LoopHeaderClone) {
+      if (auto *Add = dyn_cast<BinaryOperator>(&I)) {
+        if (Add->getOpcode() == Instruction::Add && Add->hasNoSignedWrap()) {
+          if (Add->getOperand(0) == &PN &&
+              isa<ConstantInt>(Add->getOperand(1)) &&
+              cast<ConstantInt>(Add->getOperand(1))->equalsInt(1)) {
+            PN.setIncomingValue(1, Add);
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  ICmpInst *cmp25_clone = getLastInst<ICmpInst>(LoopHeaderClone);
+
+  Value *N2_0105 = cmp25_clone->getOperand(1);
+  // Create for.cond.preheader basic block
+  BasicBlock *ForCondPreheader = BasicBlock::Create(
+      F.getContext(), "for.cond.preheader", &F, loopHeaderCloneLrPh);
+
+  // Clone PHI nodes from ForBodyMerged to ForCondPreheader
+  IRBuilder<> BuilderPreheader(ForCondPreheader);
+
+  copyPHINodes(ForBodyMerged, ForCondPreheader);
+  PHINode *Temp = getFirstI32Phi(ForCondPreheader);
+  Value *Cond = BuilderPreheader.CreateICmpULT(Temp, N2_0105);
+  BuilderPreheader.CreateCondBr(Cond, loopHeaderCloneLrPh, ForCondCleanup26);
+
+  // Create conditional branch instruction in LoopHeaderClone
+  BranchInst *BI =
+      BranchInst::Create(ForCondCleanup26, LoopHeaderClone, cmp25_clone);
+  BI->insertAfter(cmp25_clone);
+
+  ForCondPreheader->moveBefore(ForBodyMerged);
+  BasicBlock *ForBody6LrPh = nullptr;
+  BasicBlock *ForBody6 = nullptr;
+  for (auto &L : LI) {
+    for (auto &SubL : *L) {
+      ForBody6LrPh = SubL->getLoopPredecessor();
+      ForBody6 = SubL->getHeader();
+      break;
+    }
+  }
+  assert(ForBody6LrPh != nullptr && "ForBody6LrPh not found");
+  assert(ForBody6 != nullptr && "ForBody6 not found");
+
+  ICmpInst *cmp1097_not = getLastInst<ICmpInst>(ForBody6LrPh);
+
+  IRBuilder<> BuilderForBody6LrPh(cmp1097_not);
+  Value *Sub = BuilderForBody6LrPh.CreateAdd(
+      N2_0105, ConstantInt::get(N2_0105->getType(), -3), "sub",
+      /*HasNUW=*/false, /*HasNSW=*/true);
+
+  cmp1097_not->setOperand(1, ConstantInt::get(N2_0105->getType(), 7));
+  cmp1097_not->setPredicate(ICmpInst::ICMP_UGT);
+  Value *And_val = BuilderForBody6LrPh.CreateAnd(
+      N2_0105, ConstantInt::get(N2_0105->getType(), 1073741820), "and");
+  ForBody6->getTerminator()->setSuccessor(0, ForCondPreheader);
+  swapTerminatorSuccessors(ForBody6);
+
+  setPHIIndexIncomingBlock(ForCondPreheader, 0, ForBody6);
+
+  PHINode *I_0_lcssa = getFirstI32Phi(ForCondPreheader);
+  I_0_lcssa->setIncomingValue(1, And_val);
+
+  BasicBlock *forBody12LrPh = ForBody6->getTerminator()->getSuccessor(0);
+  // Move non-branch instructions from forBody12LrPh to ForBody6
+  std::vector<Instruction *> instsToMove;
+  for (auto &I : *forBody12LrPh) {
+    if (!isa<BranchInst>(I)) {
+      instsToMove.push_back(&I);
+    }
+  }
+
+  // Move instructions to before ForBody6 Terminator
+  Instruction *forBody6Term = ForBody6->getTerminator();
+  for (auto *I : instsToMove) {
+    I->moveBefore(forBody6Term);
+  }
+
+  ICmpInst *exitCond_not_3 = getLastInst<ICmpInst>(ForBodyMerged);
+  exitCond_not_3->setOperand(1, Sub);
+  exitCond_not_3->setPredicate(ICmpInst::ICMP_SLT);
+  ForBodyMerged->getTerminator()->setSuccessor(0, ForCondPreheader);
+  swapTerminatorSuccessors(ForBodyMerged);
+
+  for (auto &phi1 : LoopHeaderClone->phis()) {
+    for (auto &phi2 : ForCondPreheader->phis()) {
+      if (phi1.getIncomingValue(0) == phi2.getIncomingValue(0)) {
+        phi1.setIncomingValue(0, &phi2);
+      }
+    }
+  }
+  PHINode *Ia_198_clone = getLastI32Phi(LoopHeaderClone);
+  PHINode *Ia_198_clone_clone = cast<PHINode>(Ia_198_clone->clone());
+  Ia_198_clone_clone->insertBefore(ForCondCleanup26->getFirstNonPHI());
+  Ia_198_clone_clone->setIncomingBlock(0, ForCondPreheader);
+  PHINode *Ia_1_lcssa = getFirstI32Phi(ForCondCleanup26);
+  Ia_1_lcssa->replaceAllUsesWith(Ia_198_clone_clone);
+  Ia_1_lcssa->eraseFromParent();
+  groupSameInstructionDspsFft2rFc32(ForBodyMerged);
+
+  runPostPass(F);
+  runSimplifyDcePasses(F);
 }
 
 PreservedAnalyses
@@ -5000,6 +6881,11 @@ RISCVLoopUnrollAndRemainderPass::run(Function &F, FunctionAnalysisManager &AM) {
   auto &DT = AM.getResult<DominatorTreeAnalysis>(F);
   auto &AC = AM.getResult<AssumptionAnalysis>(F);
   auto &ORE = AM.getResult<OptimizationRemarkEmitterAnalysis>(F);
+
+  auto Handler =
+      LoopUnrollerFactory::createLoopUnroller(F, LI, DT, SE, AC, TTI, ORE);
+  if (!Handler)
+    return PreservedAnalyses::all();
 
   LoopAnalysisManager *LAM = nullptr;
   if (auto *LAMProxy = AM.getCachedResult<LoopAnalysisManagerFunctionProxy>(F))
@@ -5029,36 +6915,25 @@ RISCVLoopUnrollAndRemainderPass::run(Function &F, FunctionAnalysisManager &AM) {
     std::string LoopName = std::string(L.getName());
     if (L.getName().contains(".clone"))
       continue;
-
-    if (L.isInnermost()) {
-      InnerLoops.push_back(&L);
+    if (!Handler->shouldUnroll(L)) {
+      continue;
     }
 
-    LoopUnrollResult Result =
-        tryToUnrollLoop(F, &L, DT, &LI, SE, TTI, AC, ORE, BFI, PSI);
+    LoopUnrollResult Result = Handler->unroll(L);
     Changed |= Result != LoopUnrollResult::Unmodified;
-
+    Handler->postTransform(L);
     // Clear cached analysis results if loop was fully unrolled
     if (LAM && Result == LoopUnrollResult::FullyUnrolled)
       LAM->clear(L, LoopName);
   }
 
-  // Post-processing for specific unroll types
-  if (currentUnrollType == UnrollType::CONV_CCORR) {
-    processConvUnroll(F, InnerLoops);
-  } else if (currentUnrollType == UnrollType::FIRD) {
-    processFirdUnroll(F, InnerLoops);
-  }
-
+  Handler->postUnrolledLoops();
   // Run dead code elimination
   runDeadCodeElimination(F);
-  if (currentUnrollType != UnrollType::FIR)
-    addCommonOptimizationPasses(F);
-  if (currentUnrollType == UnrollType::FIRD) {
-    addLegacyCommonOptimizationPasses(F);
-  }
+  Handler->addCommonOptimizationPasses(F);
+  Handler->addLegacyCommonOptimizationPasses(F);
 
-  // Verify function
+  // Verify Function
   if (verifyFunction(F, &errs())) {
     LLVM_DEBUG(errs() << "Function verification failed\n");
     report_fatal_error("Function verification failed");
