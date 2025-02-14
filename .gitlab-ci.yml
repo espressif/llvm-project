@@ -10,6 +10,10 @@ stages:
 
 image: ${CI_DOCKER_REGISTRY}/llvm-build:5
 
+default:
+  interruptible: true
+  retry: 2
+
 variables:
   ESP_LLVM_EMBEDDED_TOOLCHAIN_REF: "esp-19.1.2_20250211"
   ESP_GNU_TOOLCHAIN_VER: "14.2.0_20241119"
