@@ -12,7 +12,6 @@ image: ${CI_DOCKER_REGISTRY}/llvm-build:5
 
 default:
   interruptible: true
-  retry: 2
 
 variables:
   ESP_LLVM_EMBEDDED_TOOLCHAIN_REF: "esp-19.1.2_20250211"
@@ -51,6 +50,7 @@ before_script:
     when: always
     expire_in: 1 day
   dependencies: []
+  retry: 2
   variables:
     TARGET: "Xtensa;RISCV"
     USE_LINKER: "ld"
@@ -210,6 +210,7 @@ build_and_test:
       - ./esp-dsp/scripts/
     when: always
     expire_in: 1 day
+  retry: 2
   variables:
     TEST_APP_ESP_DSP_CUSTOM_BRANCH: "llvm-19.1.2-optimization-test"
   after_script:
