@@ -14,7 +14,7 @@ default:
   interruptible: true
 
 variables:
-  ESP_LLVM_EMBEDDED_TOOLCHAIN_REF: "esp-19.1.2_20250225"
+  ESP_LLVM_EMBEDDED_TOOLCHAIN_REF: "esp-19.1.2_20250312"
   ESP_GNU_TOOLCHAIN_VER: "14.2.0_20241119"
   CROSS_ARM_IMAGE: $CI_DOCKER_REGISTRY/llvm-build-cross-arm:2
   CROSS_WIN_IMAGE: $CI_DOCKER_REGISTRY/llvm-build-cross-win:2
