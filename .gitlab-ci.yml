@@ -465,6 +465,7 @@ sign_aarch64-apple-darwin:
   pushd $PWD/esp-dsp/test_app
 
 test_esp_dsp:
+  stage: test
   image: espressif/idf:latest
   tags: [ "amd64", "build" ]
   allow_failure: true
@@ -497,8 +498,8 @@ test_esp_dsp:
 
 test_xesppie:
   stage: test
-  dependencies:
-    - build_x86_64-linux-gnu
+  needs:
+    - job: "build_x86_64-linux-gnu"
   allow_failure: true
   only:
     - tags
