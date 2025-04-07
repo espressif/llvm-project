@@ -46,25 +46,23 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VCMULAS_S16_QACC_H_LD_IP_P: {
     unsigned Opc = RISCV::ESP_VCMULAS_S16_QACC_H_LD_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vcmulas_s16_qacc_h_ld_ip "
                         "first argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vcmulas_s16_qacc_h_ld_ip "
                         "first argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &OFFSET_16_16 = MI.getOperand(3);
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &OFFSET_16_16 = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vcmulas_s16_qacc_h_ld_ip "
                         "first argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg())
@@ -76,25 +74,23 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VCMULAS_S16_QACC_H_LD_XP_P: {
     unsigned Opc = RISCV::ESP_VCMULAS_S16_QACC_H_LD_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &QX = MI.getOperand(1);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &QX = MI.getOperand(2);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vcmulas_s16_qacc_h_ld_xp "
                         "first argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(2);
+    MachineOperand &QY = MI.getOperand(3);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vcmulas_s16_qacc_h_ld_xp "
                         "first argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vcmulas_s16_qacc_h_ld_xp "
                         "first argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
@@ -124,25 +120,23 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VCMULAS_S16_QACC_L_LD_IP_P: {
     unsigned Opc = RISCV::ESP_VCMULAS_S16_QACC_L_LD_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vcmulas_s16_qacc_l_ld_ip "
                         "first argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vcmulas_s16_qacc_l_ld_ip "
                         "first argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &OFFSET_16_16 = MI.getOperand(3);
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &OFFSET_16_16 = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vcmulas_s16_qacc_l_ld_ip "
                         "first argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg())
@@ -154,25 +148,23 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VCMULAS_S16_QACC_L_LD_XP_P: {
     unsigned Opc = RISCV::ESP_VCMULAS_S16_QACC_L_LD_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &QX = MI.getOperand(1);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &QX = MI.getOperand(2);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vcmulas_s16_qacc_l_ld_xp "
                         "first argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(2);
+    MachineOperand &QY = MI.getOperand(3);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vcmulas_s16_qacc_l_ld_xp "
                         "first argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vcmulas_s16_qacc_l_ld_xp "
                         "first argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
@@ -202,25 +194,23 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VCMULAS_S8_QACC_H_LD_IP_P: {
     unsigned Opc = RISCV::ESP_VCMULAS_S8_QACC_H_LD_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vcmulas_s8_qacc_h_ld_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vcmulas_s8_qacc_h_ld_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &OFFSET_16_16 = MI.getOperand(3);
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &OFFSET_16_16 = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vcmulas_s8_qacc_h_ld_ip first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg())
@@ -232,25 +222,23 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VCMULAS_S8_QACC_H_LD_XP_P: {
     unsigned Opc = RISCV::ESP_VCMULAS_S8_QACC_H_LD_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &QX = MI.getOperand(1);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &QX = MI.getOperand(2);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vcmulas_s8_qacc_h_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(2);
+    MachineOperand &QY = MI.getOperand(3);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vcmulas_s8_qacc_h_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vcmulas_s8_qacc_h_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
@@ -280,25 +268,23 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VCMULAS_S8_QACC_L_LD_IP_P: {
     unsigned Opc = RISCV::ESP_VCMULAS_S8_QACC_L_LD_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vcmulas_s8_qacc_l_ld_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vcmulas_s8_qacc_l_ld_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &OFFSET_16_16 = MI.getOperand(3);
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &OFFSET_16_16 = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vcmulas_s8_qacc_l_ld_ip first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg())
@@ -310,25 +296,23 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VCMULAS_S8_QACC_L_LD_XP_P: {
     unsigned Opc = RISCV::ESP_VCMULAS_S8_QACC_L_LD_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &QX = MI.getOperand(1);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &QX = MI.getOperand(2);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vcmulas_s8_qacc_l_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(2);
+    MachineOperand &QY = MI.getOperand(3);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vcmulas_s8_qacc_l_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vcmulas_s8_qacc_l_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
@@ -358,25 +342,23 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_S16_QACC_LD_IP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_S16_QACC_LD_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_s16_qacc_ld_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_s16_qacc_ld_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &OFFSET_16_16 = MI.getOperand(3);
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &OFFSET_16_16 = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_s16_qacc_ld_ip first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg())
@@ -388,25 +370,23 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_S16_QACC_LD_XP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_S16_QACC_LD_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &QX = MI.getOperand(1);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &QX = MI.getOperand(2);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_s16_qacc_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(2);
+    MachineOperand &QY = MI.getOperand(3);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_s16_qacc_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_s16_qacc_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
@@ -418,24 +398,22 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_S16_QACC_ST_IP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_S16_QACC_ST_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_s16_qacc_st_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_s16_qacc_st_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_s16_qacc_st_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &OFFSET_16_16 = MI.getOperand(4);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &OFFSET_16_16 = MI.getOperand(5);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -448,24 +426,22 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_S16_QACC_ST_XP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_S16_QACC_ST_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &QX = MI.getOperand(1);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &QX = MI.getOperand(2);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_s16_qacc_st_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(2);
+    MachineOperand &QY = MI.getOperand(3);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_s16_qacc_st_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(3);
+    MachineOperand &QU = MI.getOperand(4);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_s16_qacc_st_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(4);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(5);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
@@ -496,25 +472,23 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_S16_XACC_LD_IP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_S16_XACC_LD_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_s16_xacc_ld_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_s16_xacc_ld_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &OFFSET_16_16 = MI.getOperand(3);
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &OFFSET_16_16 = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_s16_xacc_ld_ip first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg())
@@ -526,25 +500,23 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_S16_XACC_LD_XP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_S16_XACC_LD_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &QX = MI.getOperand(1);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &QX = MI.getOperand(2);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_s16_xacc_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(2);
+    MachineOperand &QY = MI.getOperand(3);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_s16_xacc_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_s16_xacc_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
@@ -556,24 +528,22 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_S16_XACC_ST_IP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_S16_XACC_ST_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_s16_xacc_st_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_s16_xacc_st_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_s16_xacc_st_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &OFFSET_16_16 = MI.getOperand(4);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &OFFSET_16_16 = MI.getOperand(5);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -586,24 +556,22 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_S16_XACC_ST_XP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_S16_XACC_ST_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &QX = MI.getOperand(1);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &QX = MI.getOperand(2);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_s16_xacc_st_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(2);
+    MachineOperand &QY = MI.getOperand(3);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_s16_xacc_st_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(3);
+    MachineOperand &QU = MI.getOperand(4);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_s16_xacc_st_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(4);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(5);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
@@ -634,25 +602,23 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_S8_QACC_LD_IP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_S8_QACC_LD_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_s8_qacc_ld_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_s8_qacc_ld_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &OFFSET_16_16 = MI.getOperand(3);
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &OFFSET_16_16 = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_s8_qacc_ld_ip first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg())
@@ -664,25 +630,23 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_S8_QACC_LD_XP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_S8_QACC_LD_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &QX = MI.getOperand(1);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &QX = MI.getOperand(2);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_s8_qacc_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(2);
+    MachineOperand &QY = MI.getOperand(3);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_s8_qacc_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_s8_qacc_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
@@ -694,24 +658,22 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_S8_QACC_ST_IP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_S8_QACC_ST_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_s8_qacc_st_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_s8_qacc_st_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_s8_qacc_st_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &OFFSET_16_16 = MI.getOperand(4);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &OFFSET_16_16 = MI.getOperand(5);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -724,24 +686,22 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_S8_QACC_ST_XP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_S8_QACC_ST_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &QX = MI.getOperand(1);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &QX = MI.getOperand(2);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_s8_qacc_st_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(2);
+    MachineOperand &QY = MI.getOperand(3);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_s8_qacc_st_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(3);
+    MachineOperand &QU = MI.getOperand(4);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_s8_qacc_st_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(4);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(5);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
@@ -772,25 +732,23 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_S8_XACC_LD_IP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_S8_XACC_LD_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_s8_xacc_ld_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_s8_xacc_ld_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &OFFSET_16_16 = MI.getOperand(3);
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &OFFSET_16_16 = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_s8_xacc_ld_ip first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg())
@@ -802,25 +760,23 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_S8_XACC_LD_XP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_S8_XACC_LD_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &QX = MI.getOperand(1);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &QX = MI.getOperand(2);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_s8_xacc_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(2);
+    MachineOperand &QY = MI.getOperand(3);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_s8_xacc_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_s8_xacc_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
@@ -832,24 +788,22 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_S8_XACC_ST_IP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_S8_XACC_ST_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_s8_xacc_st_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_s8_xacc_st_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_s8_xacc_st_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &OFFSET_16_16 = MI.getOperand(4);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &OFFSET_16_16 = MI.getOperand(5);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -862,24 +816,22 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_S8_XACC_ST_XP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_S8_XACC_ST_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &QX = MI.getOperand(1);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &QX = MI.getOperand(2);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_s8_xacc_st_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(2);
+    MachineOperand &QY = MI.getOperand(3);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_s8_xacc_st_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(3);
+    MachineOperand &QU = MI.getOperand(4);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_s8_xacc_st_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(4);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(5);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
@@ -910,25 +862,23 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_U16_QACC_LD_IP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_U16_QACC_LD_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_u16_qacc_ld_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_u16_qacc_ld_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &OFFSET_16_16 = MI.getOperand(3);
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &OFFSET_16_16 = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_u16_qacc_ld_ip first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg())
@@ -940,25 +890,23 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_U16_QACC_LD_XP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_U16_QACC_LD_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &QX = MI.getOperand(1);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &QX = MI.getOperand(2);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_u16_qacc_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(2);
+    MachineOperand &QY = MI.getOperand(3);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_u16_qacc_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_u16_qacc_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
@@ -970,24 +918,22 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_U16_QACC_ST_IP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_U16_QACC_ST_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_u16_qacc_st_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_u16_qacc_st_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_u16_qacc_st_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &OFFSET_16_16 = MI.getOperand(4);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &OFFSET_16_16 = MI.getOperand(5);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -1000,24 +946,22 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_U16_QACC_ST_XP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_U16_QACC_ST_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &QX = MI.getOperand(1);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &QX = MI.getOperand(2);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_u16_qacc_st_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(2);
+    MachineOperand &QY = MI.getOperand(3);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_u16_qacc_st_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(3);
+    MachineOperand &QU = MI.getOperand(4);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_u16_qacc_st_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(4);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(5);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
@@ -1048,25 +992,23 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_U16_XACC_LD_IP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_U16_XACC_LD_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_u16_xacc_ld_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_u16_xacc_ld_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &OFFSET_16_16 = MI.getOperand(3);
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &OFFSET_16_16 = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_u16_xacc_ld_ip first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg())
@@ -1078,25 +1020,23 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_U16_XACC_LD_XP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_U16_XACC_LD_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &QX = MI.getOperand(1);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &QX = MI.getOperand(2);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_u16_xacc_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(2);
+    MachineOperand &QY = MI.getOperand(3);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_u16_xacc_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_u16_xacc_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
@@ -1108,24 +1048,22 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_U16_XACC_ST_IP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_U16_XACC_ST_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_u16_xacc_st_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_u16_xacc_st_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_u16_xacc_st_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &OFFSET_16_16 = MI.getOperand(4);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &OFFSET_16_16 = MI.getOperand(5);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -1138,24 +1076,22 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_U16_XACC_ST_XP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_U16_XACC_ST_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &QX = MI.getOperand(1);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &QX = MI.getOperand(2);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_u16_xacc_st_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(2);
+    MachineOperand &QY = MI.getOperand(3);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_u16_xacc_st_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(3);
+    MachineOperand &QU = MI.getOperand(4);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_u16_xacc_st_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(4);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(5);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
@@ -1186,25 +1122,23 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_U8_QACC_LD_IP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_U8_QACC_LD_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_u8_qacc_ld_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_u8_qacc_ld_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &OFFSET_16_16 = MI.getOperand(3);
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &OFFSET_16_16 = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_u8_qacc_ld_ip first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg())
@@ -1216,25 +1150,23 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_U8_QACC_LD_XP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_U8_QACC_LD_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &QX = MI.getOperand(1);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &QX = MI.getOperand(2);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_u8_qacc_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(2);
+    MachineOperand &QY = MI.getOperand(3);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_u8_qacc_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_u8_qacc_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
@@ -1246,24 +1178,22 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_U8_QACC_ST_IP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_U8_QACC_ST_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_u8_qacc_st_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_u8_qacc_st_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_u8_qacc_st_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &OFFSET_16_16 = MI.getOperand(4);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &OFFSET_16_16 = MI.getOperand(5);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -1276,24 +1206,22 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_U8_QACC_ST_XP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_U8_QACC_ST_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &QX = MI.getOperand(1);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &QX = MI.getOperand(2);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_u8_qacc_st_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(2);
+    MachineOperand &QY = MI.getOperand(3);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_u8_qacc_st_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(3);
+    MachineOperand &QU = MI.getOperand(4);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_u8_qacc_st_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(4);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(5);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
@@ -1324,25 +1252,23 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_U8_XACC_LD_IP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_U8_XACC_LD_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_u8_xacc_ld_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_u8_xacc_ld_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &OFFSET_16_16 = MI.getOperand(3);
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &OFFSET_16_16 = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_u8_xacc_ld_ip first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg())
@@ -1354,25 +1280,23 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_U8_XACC_LD_XP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_U8_XACC_LD_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &QX = MI.getOperand(1);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &QX = MI.getOperand(2);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_u8_xacc_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(2);
+    MachineOperand &QY = MI.getOperand(3);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_u8_xacc_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_u8_xacc_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
@@ -1384,24 +1308,22 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_U8_XACC_ST_IP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_U8_XACC_ST_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_u8_xacc_st_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_u8_xacc_st_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_u8_xacc_st_ip first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &OFFSET_16_16 = MI.getOperand(4);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &OFFSET_16_16 = MI.getOperand(5);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -1414,24 +1336,22 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_U8_XACC_ST_XP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_U8_XACC_ST_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &QX = MI.getOperand(1);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &QX = MI.getOperand(2);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_u8_xacc_st_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(2);
+    MachineOperand &QY = MI.getOperand(3);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_u8_xacc_st_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(3);
+    MachineOperand &QU = MI.getOperand(4);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_u8_xacc_st_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(4);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(5);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
@@ -1444,24 +1364,22 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_S16_QACC_LDBC_INCP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_S16_QACC_LDBC_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_s16_qacc_ldbc_incp "
                         "first argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_s16_qacc_ldbc_incp "
                         "first argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QU = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QU = MI.getOperand(4);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_s16_qacc_ldbc_incp "
                         "first argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -1472,24 +1390,22 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_S8_QACC_LDBC_INCP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_S8_QACC_LDBC_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_s8_qacc_ldbc_incp "
                         "first argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_s8_qacc_ldbc_incp "
                         "first argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QU = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QU = MI.getOperand(4);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_s8_qacc_ldbc_incp "
                         "first argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -1500,24 +1416,22 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_U16_QACC_LDBC_INCP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_U16_QACC_LDBC_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_u16_qacc_ldbc_incp "
                         "first argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_u16_qacc_ldbc_incp "
                         "first argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QU = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QU = MI.getOperand(4);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_u16_qacc_ldbc_incp "
                         "first argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -1528,24 +1442,22 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMULAS_U8_QACC_LDBC_INCP_P: {
     unsigned Opc = RISCV::ESP_VMULAS_U8_QACC_LDBC_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmulas_u8_qacc_ldbc_incp "
                         "first argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmulas_u8_qacc_ldbc_incp "
                         "first argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QU = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QU = MI.getOperand(4);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmulas_u8_qacc_ldbc_incp "
                         "first argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -1576,25 +1488,23 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VSMULAS_S16_QACC_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VSMULAS_S16_QACC_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vsmulas_s16_qacc_ld_incp "
                         "first argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vsmulas_s16_qacc_ld_incp "
                         "first argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &SELECT_16 = MI.getOperand(3);
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &SELECT_16 = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vsmulas_s16_qacc_ld_incp "
                         "first argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg())
@@ -1626,25 +1536,23 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VSMULAS_S8_QACC_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VSMULAS_S8_QACC_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vsmulas_s8_qacc_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vsmulas_s8_qacc_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &SELECT_16 = MI.getOperand(3);
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &SELECT_16 = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vsmulas_s8_qacc_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg())
@@ -1676,25 +1584,23 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VSMULAS_U16_QACC_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VSMULAS_U16_QACC_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vsmulas_u16_qacc_ld_incp "
                         "first argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vsmulas_u16_qacc_ld_incp "
                         "first argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &SELECT_16 = MI.getOperand(3);
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &SELECT_16 = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vsmulas_u16_qacc_ld_incp "
                         "first argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg())
@@ -1726,25 +1632,23 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VSMULAS_U8_QACC_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VSMULAS_U8_QACC_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vsmulas_u8_qacc_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vsmulas_u8_qacc_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &SELECT_16 = MI.getOperand(3);
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &SELECT_16 = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vsmulas_u8_qacc_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg())
@@ -1781,30 +1685,28 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_CMUL_S16_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_CMUL_S16_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_cmul_s16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_cmul_s16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &SELECT_4 = MI.getOperand(3);
-    MachineOperand &QZ = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &SELECT_4 = MI.getOperand(4);
+    MachineOperand &QZ = MI.getOperand(5);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_cmul_s16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(5);
+    MachineOperand &QU = MI.getOperand(6);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_cmul_s16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg())
@@ -1816,29 +1718,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_CMUL_S16_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_CMUL_S16_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_cmul_s16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_cmul_s16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_cmul_s16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &SELECT_4 = MI.getOperand(4);
-    MachineOperand &QZ = MI.getOperand(5);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &SELECT_4 = MI.getOperand(5);
+    MachineOperand &QZ = MI.getOperand(6);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_cmul_s16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -1876,30 +1776,28 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_CMUL_S8_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_CMUL_S8_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_cmul_s8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_cmul_s8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &SELECT_4 = MI.getOperand(3);
-    MachineOperand &QZ = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &SELECT_4 = MI.getOperand(4);
+    MachineOperand &QZ = MI.getOperand(5);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_cmul_s8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(5);
+    MachineOperand &QU = MI.getOperand(6);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_cmul_s8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg())
@@ -1911,29 +1809,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_CMUL_S8_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_CMUL_S8_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_cmul_s8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_cmul_s8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_cmul_s8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &SELECT_4 = MI.getOperand(4);
-    MachineOperand &QZ = MI.getOperand(5);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &SELECT_4 = MI.getOperand(5);
+    MachineOperand &QZ = MI.getOperand(6);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_cmul_s8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -1971,30 +1867,28 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_CMUL_U16_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_CMUL_U16_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_cmul_u16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_cmul_u16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &SELECT_4 = MI.getOperand(3);
-    MachineOperand &QZ = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &SELECT_4 = MI.getOperand(4);
+    MachineOperand &QZ = MI.getOperand(5);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_cmul_u16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(5);
+    MachineOperand &QU = MI.getOperand(6);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_cmul_u16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg())
@@ -2006,29 +1900,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_CMUL_U16_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_CMUL_U16_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_cmul_u16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_cmul_u16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_cmul_u16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &SELECT_4 = MI.getOperand(4);
-    MachineOperand &QZ = MI.getOperand(5);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &SELECT_4 = MI.getOperand(5);
+    MachineOperand &QZ = MI.getOperand(6);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_cmul_u16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -2066,30 +1958,28 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_CMUL_U8_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_CMUL_U8_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_cmul_u8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_cmul_u8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &SELECT_4 = MI.getOperand(3);
-    MachineOperand &QZ = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &SELECT_4 = MI.getOperand(4);
+    MachineOperand &QZ = MI.getOperand(5);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_cmul_u8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(5);
+    MachineOperand &QU = MI.getOperand(6);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_cmul_u8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg())
@@ -2101,29 +1991,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_CMUL_U8_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_CMUL_U8_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_cmul_u8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_cmul_u8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_cmul_u8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &SELECT_4 = MI.getOperand(4);
-    MachineOperand &QZ = MI.getOperand(5);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &SELECT_4 = MI.getOperand(5);
+    MachineOperand &QZ = MI.getOperand(6);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_cmul_u8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -2405,29 +2293,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VADD_S16_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VADD_S16_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vadd_s16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vadd_s16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QV = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QV = MI.getOperand(4);
     unsigned QVVal = QV.getImm();
     assert(QVVal < 8 && "Unexpected value of esp_vadd_s16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vadd_s16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QVVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -2438,28 +2324,26 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VADD_S16_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_VADD_S16_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vadd_s16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vadd_s16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vadd_s16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QV = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QV = MI.getOperand(5);
     unsigned QVVal = QV.getImm();
     assert(QVVal < 8 && "Unexpected value of esp_vadd_s16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QVVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -2494,29 +2378,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VADD_S32_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VADD_S32_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vadd_s32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vadd_s32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QV = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QV = MI.getOperand(4);
     unsigned QVVal = QV.getImm();
     assert(QVVal < 8 && "Unexpected value of esp_vadd_s32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vadd_s32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QVVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -2527,28 +2409,26 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VADD_S32_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_VADD_S32_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vadd_s32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vadd_s32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vadd_s32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QV = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QV = MI.getOperand(5);
     unsigned QVVal = QV.getImm();
     assert(QVVal < 8 && "Unexpected value of esp_vadd_s32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QVVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -2583,29 +2463,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VADD_S8_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VADD_S8_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vadd_s8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vadd_s8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QV = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QV = MI.getOperand(4);
     unsigned QVVal = QV.getImm();
     assert(QVVal < 8 && "Unexpected value of esp_vadd_s8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vadd_s8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QVVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -2616,28 +2494,26 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VADD_S8_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_VADD_S8_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vadd_s8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vadd_s8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vadd_s8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QV = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QV = MI.getOperand(5);
     unsigned QVVal = QV.getImm();
     assert(QVVal < 8 && "Unexpected value of esp_vadd_s8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QVVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -2672,29 +2548,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VADD_U16_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VADD_U16_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vadd_u16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vadd_u16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QV = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QV = MI.getOperand(4);
     unsigned QVVal = QV.getImm();
     assert(QVVal < 8 && "Unexpected value of esp_vadd_u16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vadd_u16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QVVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -2705,28 +2579,26 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VADD_U16_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_VADD_U16_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vadd_u16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vadd_u16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vadd_u16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QV = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QV = MI.getOperand(5);
     unsigned QVVal = QV.getImm();
     assert(QVVal < 8 && "Unexpected value of esp_vadd_u16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QVVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -2761,29 +2633,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VADD_U32_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VADD_U32_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vadd_u32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vadd_u32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QV = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QV = MI.getOperand(4);
     unsigned QVVal = QV.getImm();
     assert(QVVal < 8 && "Unexpected value of esp_vadd_u32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vadd_u32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QVVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -2794,28 +2664,26 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VADD_U32_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_VADD_U32_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vadd_u32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vadd_u32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vadd_u32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QV = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QV = MI.getOperand(5);
     unsigned QVVal = QV.getImm();
     assert(QVVal < 8 && "Unexpected value of esp_vadd_u32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QVVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -2850,29 +2718,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VADD_U8_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VADD_U8_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vadd_u8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vadd_u8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QV = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QV = MI.getOperand(4);
     unsigned QVVal = QV.getImm();
     assert(QVVal < 8 && "Unexpected value of esp_vadd_u8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vadd_u8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QVVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -2883,28 +2749,26 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VADD_U8_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_VADD_U8_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vadd_u8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vadd_u8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vadd_u8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QV = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QV = MI.getOperand(5);
     unsigned QVVal = QV.getImm();
     assert(QVVal < 8 && "Unexpected value of esp_vadd_u8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QVVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -2959,29 +2823,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMAX_S16_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VMAX_S16_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmax_s16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmax_s16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QZ = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QZ = MI.getOperand(4);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmax_s16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmax_s16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -2992,28 +2854,26 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMAX_S16_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_VMAX_S16_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmax_s16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmax_s16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmax_s16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QZ = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QZ = MI.getOperand(5);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmax_s16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -3048,29 +2908,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMAX_S32_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VMAX_S32_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmax_s32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmax_s32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QZ = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QZ = MI.getOperand(4);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmax_s32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmax_s32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -3081,28 +2939,26 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMAX_S32_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_VMAX_S32_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmax_s32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmax_s32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmax_s32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QZ = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QZ = MI.getOperand(5);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmax_s32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -3137,29 +2993,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMAX_S8_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VMAX_S8_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmax_s8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmax_s8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QZ = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QZ = MI.getOperand(4);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmax_s8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmax_s8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -3170,28 +3024,26 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMAX_S8_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_VMAX_S8_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmax_s8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmax_s8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmax_s8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QZ = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QZ = MI.getOperand(5);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmax_s8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -3226,29 +3078,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMAX_U16_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VMAX_U16_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmax_u16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmax_u16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QZ = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QZ = MI.getOperand(4);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmax_u16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmax_u16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -3259,28 +3109,26 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMAX_U16_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_VMAX_U16_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmax_u16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmax_u16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmax_u16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QZ = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QZ = MI.getOperand(5);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmax_u16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -3315,29 +3163,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMAX_U32_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VMAX_U32_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmax_u32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmax_u32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QZ = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QZ = MI.getOperand(4);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmax_u32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmax_u32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -3348,28 +3194,26 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMAX_U32_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_VMAX_U32_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmax_u32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmax_u32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmax_u32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QZ = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QZ = MI.getOperand(5);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmax_u32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -3404,29 +3248,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMAX_U8_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VMAX_U8_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmax_u8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmax_u8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QZ = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QZ = MI.getOperand(4);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmax_u8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmax_u8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -3437,28 +3279,26 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMAX_U8_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_VMAX_U8_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmax_u8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmax_u8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmax_u8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QZ = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QZ = MI.getOperand(5);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmax_u8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -3493,29 +3333,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMIN_S16_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VMIN_S16_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmin_s16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmin_s16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QZ = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QZ = MI.getOperand(4);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmin_s16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmin_s16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -3526,28 +3364,26 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMIN_S16_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_VMIN_S16_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmin_s16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmin_s16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmin_s16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QZ = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QZ = MI.getOperand(5);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmin_s16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -3582,29 +3418,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMIN_S32_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VMIN_S32_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmin_s32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmin_s32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QZ = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QZ = MI.getOperand(4);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmin_s32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmin_s32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -3615,28 +3449,26 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMIN_S32_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_VMIN_S32_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmin_s32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmin_s32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmin_s32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QZ = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QZ = MI.getOperand(5);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmin_s32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -3671,29 +3503,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMIN_S8_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VMIN_S8_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmin_s8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmin_s8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QZ = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QZ = MI.getOperand(4);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmin_s8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmin_s8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -3704,28 +3534,26 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMIN_S8_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_VMIN_S8_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmin_s8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmin_s8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmin_s8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QZ = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QZ = MI.getOperand(5);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmin_s8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -3760,29 +3588,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMIN_U16_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VMIN_U16_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmin_u16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmin_u16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QZ = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QZ = MI.getOperand(4);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmin_u16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmin_u16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -3793,28 +3619,26 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMIN_U16_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_VMIN_U16_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmin_u16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmin_u16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmin_u16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QZ = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QZ = MI.getOperand(5);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmin_u16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -3849,29 +3673,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMIN_U32_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VMIN_U32_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmin_u32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmin_u32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QZ = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QZ = MI.getOperand(4);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmin_u32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmin_u32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -3882,28 +3704,26 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMIN_U32_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_VMIN_U32_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmin_u32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmin_u32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmin_u32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QZ = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QZ = MI.getOperand(5);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmin_u32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -3938,29 +3758,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMIN_U8_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VMIN_U8_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmin_u8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmin_u8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QZ = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QZ = MI.getOperand(4);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmin_u8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmin_u8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -3971,28 +3789,26 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMIN_U8_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_VMIN_U8_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmin_u8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmin_u8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmin_u8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QZ = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QZ = MI.getOperand(5);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmin_u8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -4027,29 +3843,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMUL_S16_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VMUL_S16_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmul_s16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmul_s16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QZ = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QZ = MI.getOperand(4);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmul_s16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmul_s16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -4088,28 +3902,26 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMUL_S16_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_VMUL_S16_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmul_s16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmul_s16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmul_s16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QZ = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QZ = MI.getOperand(5);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmul_s16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -4172,29 +3984,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMUL_S8_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VMUL_S8_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmul_s8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmul_s8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QZ = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QZ = MI.getOperand(4);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmul_s8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmul_s8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -4205,28 +4015,26 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMUL_S8_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_VMUL_S8_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmul_s8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmul_s8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmul_s8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QZ = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QZ = MI.getOperand(5);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmul_s8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -4261,29 +4069,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMUL_U16_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VMUL_U16_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmul_u16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmul_u16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QZ = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QZ = MI.getOperand(4);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmul_u16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmul_u16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -4294,28 +4100,26 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMUL_U16_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_VMUL_U16_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmul_u16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmul_u16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmul_u16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QZ = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QZ = MI.getOperand(5);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmul_u16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -4350,29 +4154,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMUL_U8_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VMUL_U8_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmul_u8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmul_u8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QZ = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QZ = MI.getOperand(4);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmul_u8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmul_u8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -4383,28 +4185,26 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VMUL_U8_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_VMUL_U8_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vmul_u8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vmul_u8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vmul_u8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QZ = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QZ = MI.getOperand(5);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vmul_u8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -4817,29 +4617,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VSUB_S16_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VSUB_S16_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vsub_s16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vsub_s16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QV = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QV = MI.getOperand(4);
     unsigned QVVal = QV.getImm();
     assert(QVVal < 8 && "Unexpected value of esp_vsub_s16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vsub_s16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QVVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -4850,28 +4648,26 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VSUB_S16_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_VSUB_S16_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vsub_s16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vsub_s16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vsub_s16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QV = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QV = MI.getOperand(5);
     unsigned QVVal = QV.getImm();
     assert(QVVal < 8 && "Unexpected value of esp_vsub_s16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QVVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -4906,29 +4702,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VSUB_S32_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VSUB_S32_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vsub_s32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vsub_s32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QV = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QV = MI.getOperand(4);
     unsigned QVVal = QV.getImm();
     assert(QVVal < 8 && "Unexpected value of esp_vsub_s32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vsub_s32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QVVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -4939,28 +4733,26 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VSUB_S32_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_VSUB_S32_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vsub_s32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vsub_s32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vsub_s32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QV = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QV = MI.getOperand(5);
     unsigned QVVal = QV.getImm();
     assert(QVVal < 8 && "Unexpected value of esp_vsub_s32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QVVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -4995,29 +4787,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VSUB_S8_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VSUB_S8_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vsub_s8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vsub_s8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QV = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QV = MI.getOperand(4);
     unsigned QVVal = QV.getImm();
     assert(QVVal < 8 && "Unexpected value of esp_vsub_s8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vsub_s8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QVVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -5028,28 +4818,26 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VSUB_S8_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_VSUB_S8_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vsub_s8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vsub_s8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vsub_s8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QV = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QV = MI.getOperand(5);
     unsigned QVVal = QV.getImm();
     assert(QVVal < 8 && "Unexpected value of esp_vsub_s8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QVVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -5084,29 +4872,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VSUB_U16_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VSUB_U16_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vsub_u16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vsub_u16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QV = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QV = MI.getOperand(4);
     unsigned QVVal = QV.getImm();
     assert(QVVal < 8 && "Unexpected value of esp_vsub_u16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vsub_u16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QVVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -5117,28 +4903,26 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VSUB_U16_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_VSUB_U16_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vsub_u16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vsub_u16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vsub_u16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QV = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QV = MI.getOperand(5);
     unsigned QVVal = QV.getImm();
     assert(QVVal < 8 && "Unexpected value of esp_vsub_u16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QVVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -5173,29 +4957,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VSUB_U32_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VSUB_U32_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vsub_u32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vsub_u32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QV = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QV = MI.getOperand(4);
     unsigned QVVal = QV.getImm();
     assert(QVVal < 8 && "Unexpected value of esp_vsub_u32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vsub_u32_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QVVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -5206,28 +4988,26 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VSUB_U32_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_VSUB_U32_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vsub_u32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vsub_u32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vsub_u32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QV = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QV = MI.getOperand(5);
     unsigned QVVal = QV.getImm();
     assert(QVVal < 8 && "Unexpected value of esp_vsub_u32_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QVVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -5262,29 +5042,27 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VSUB_U8_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_VSUB_U8_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vsub_u8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vsub_u8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QV = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QV = MI.getOperand(4);
     unsigned QVVal = QV.getImm();
     assert(QVVal < 8 && "Unexpected value of esp_vsub_u8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vsub_u8_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QVVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg());
@@ -5295,28 +5073,26 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VSUB_U8_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_VSUB_U8_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_vsub_u8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_vsub_u8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vsub_u8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &QV = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &QV = MI.getOperand(5);
     unsigned QVVal = QV.getImm();
     assert(QVVal < 8 && "Unexpected value of esp_vsub_u8_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QVVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QUVal)
@@ -5358,13 +5134,11 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_SAT_P: {
     unsigned Opc = RISCV::ESP_SAT;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS0 = MI.getOperand(0);
-    MachineOperand &RS1 = MI.getOperand(1);
-    MachineOperand &RSD = MI.getOperand(2);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS0 = MI.getOperand(1);
+    MachineOperand &RS1 = MI.getOperand(2);
+    MachineOperand &RSD = MI.getOperand(3);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS0.getReg())
         .addReg(RS1.getReg())
         .addReg(RSD.getReg());
@@ -6059,9 +5833,8 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_MOVX_R_CFG_P: {
     unsigned Opc = RISCV::ESP_MOVX_R_CFG;
     MachineBasicBlock *MBB = MI.getParent();
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
-    BuildMI(*MBB, MI, DL, TII.get(Opc)).addReg(R1, RegState::Define);
+    MachineOperand &RS1 = MI.getOperand(0);
+    BuildMI(*MBB, MI, DL, TII.get(Opc)).addReg(RS1.getReg(), RegState::Define);
 
     MI.eraseFromParent();
     return MBB;
@@ -6079,8 +5852,8 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_MOVX_R_PERF_P: {
     unsigned Opc = RISCV::ESP_MOVX_R_PERF;
     MachineBasicBlock *MBB = MI.getParent();
+    MachineOperand &RS1 = MI.getOperand(0);
     const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    MachineOperand &RS1 = MI.getOperand(1);
     unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(R1, RegState::Define)
@@ -6540,39 +6313,37 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_FFT_AMS_S16_LD_INCP_P: {
     unsigned Opc = RISCV::ESP_FFT_AMS_S16_LD_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_fft_ams_s16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_fft_ams_s16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QW = MI.getOperand(2);
+    MachineOperand &QW = MI.getOperand(3);
     unsigned QWVal = QW.getImm();
     assert(QWVal < 8 && "Unexpected value of esp_fft_ams_s16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &SELECT_2 = MI.getOperand(4);
-    MachineOperand &QU = MI.getOperand(5);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &SELECT_2 = MI.getOperand(5);
+    MachineOperand &QU = MI.getOperand(6);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_fft_ams_s16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QZ = MI.getOperand(6);
+    MachineOperand &QZ = MI.getOperand(7);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_fft_ams_s16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QV = MI.getOperand(7);
+    MachineOperand &QV = MI.getOperand(8);
     unsigned QVVal = QV.getImm();
     assert(QVVal < 8 && "Unexpected value of esp_fft_ams_s16_ld_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
         .addReg(RISCV::Q0 + QVVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QWVal)
@@ -6585,39 +6356,37 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_FFT_AMS_S16_LD_INCP_UAUP_P: {
     unsigned Opc = RISCV::ESP_FFT_AMS_S16_LD_INCP_UAUP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_fft_ams_s16_ld_incp_uaup "
                         "first argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_fft_ams_s16_ld_incp_uaup "
                         "first argument, it must bi in range [0,7]");
-    MachineOperand &QW = MI.getOperand(2);
+    MachineOperand &QW = MI.getOperand(3);
     unsigned QWVal = QW.getImm();
     assert(QWVal < 8 && "Unexpected value of esp_fft_ams_s16_ld_incp_uaup "
                         "first argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &SELECT_2 = MI.getOperand(4);
-    MachineOperand &QU = MI.getOperand(5);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &SELECT_2 = MI.getOperand(5);
+    MachineOperand &QU = MI.getOperand(6);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_fft_ams_s16_ld_incp_uaup "
                         "first argument, it must bi in range [0,7]");
-    MachineOperand &QZ = MI.getOperand(6);
+    MachineOperand &QZ = MI.getOperand(7);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_fft_ams_s16_ld_incp_uaup "
                         "first argument, it must bi in range [0,7]");
-    MachineOperand &QV = MI.getOperand(7);
+    MachineOperand &QV = MI.getOperand(8);
     unsigned QVVal = QV.getImm();
     assert(QVVal < 8 && "Unexpected value of esp_fft_ams_s16_ld_incp_uaup "
                         "first argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
         .addReg(RISCV::Q0 + QVVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QWVal)
@@ -6630,39 +6399,37 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_FFT_AMS_S16_LD_R32_DECP_P: {
     unsigned Opc = RISCV::ESP_FFT_AMS_S16_LD_R32_DECP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_fft_ams_s16_ld_r32_decp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_fft_ams_s16_ld_r32_decp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QW = MI.getOperand(2);
+    MachineOperand &QW = MI.getOperand(3);
     unsigned QWVal = QW.getImm();
     assert(QWVal < 8 && "Unexpected value of esp_fft_ams_s16_ld_r32_decp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &SELECT_2 = MI.getOperand(4);
-    MachineOperand &QU = MI.getOperand(5);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &SELECT_2 = MI.getOperand(5);
+    MachineOperand &QU = MI.getOperand(6);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_fft_ams_s16_ld_r32_decp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QZ = MI.getOperand(6);
+    MachineOperand &QZ = MI.getOperand(7);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_fft_ams_s16_ld_r32_decp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QV = MI.getOperand(7);
+    MachineOperand &QV = MI.getOperand(8);
     unsigned QVVal = QV.getImm();
     assert(QVVal < 8 && "Unexpected value of esp_fft_ams_s16_ld_r32_decp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
         .addReg(RISCV::Q0 + QVVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QWVal)
@@ -6719,15 +6486,13 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_FFT_BITREV_P: {
     unsigned Opc = RISCV::ESP_FFT_BITREV;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS1 = MI.getOperand(0);
-    MachineOperand &QV = MI.getOperand(1);
+    MachineOperand &RS1 = MI.getOperand(1);
+    MachineOperand &QV = MI.getOperand(2);
     unsigned QVVal = QV.getImm();
     assert(QVVal < 8 && "Unexpected value of esp_fft_bitrev first argument, it "
                         "must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QVVal, RegState::Define)
         .addReg(RS1.getReg())
         .addReg(RISCV::Q0 + QVVal);
@@ -6738,31 +6503,29 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_FFT_CMUL_S16_LD_XP_P: {
     unsigned Opc = RISCV::ESP_FFT_CMUL_S16_LD_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &QX = MI.getOperand(1);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &QX = MI.getOperand(2);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_fft_cmul_s16_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(2);
+    MachineOperand &QY = MI.getOperand(3);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_fft_cmul_s16_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(3);
-    MachineOperand &SELECT_8 = MI.getOperand(4);
-    MachineOperand &QZ = MI.getOperand(5);
+    MachineOperand &RS1 = MI.getOperand(4);
+    MachineOperand &SELECT_8 = MI.getOperand(5);
+    MachineOperand &QZ = MI.getOperand(6);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_fft_cmul_s16_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(6);
+    MachineOperand &QU = MI.getOperand(7);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_fft_cmul_s16_ld_xp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
@@ -6775,27 +6538,25 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_FFT_CMUL_S16_ST_XP_P: {
     unsigned Opc = RISCV::ESP_FFT_CMUL_S16_ST_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &QX = MI.getOperand(1);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &QX = MI.getOperand(2);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_fft_cmul_s16_st_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(2);
+    MachineOperand &QY = MI.getOperand(3);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_fft_cmul_s16_st_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(3);
+    MachineOperand &QU = MI.getOperand(4);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_fft_cmul_s16_st_xp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(4);
-    MachineOperand &SELECT_4 = MI.getOperand(5);
-    MachineOperand &UPD_4 = MI.getOperand(6);
-    MachineOperand &SELECT_8 = MI.getOperand(7);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(5);
+    MachineOperand &SELECT_4 = MI.getOperand(6);
+    MachineOperand &UPD_4 = MI.getOperand(7);
+    MachineOperand &SELECT_8 = MI.getOperand(8);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
@@ -6841,25 +6602,23 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_FFT_R2BF_S16_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_FFT_R2BF_S16_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QX = MI.getOperand(0);
+    MachineOperand &QX = MI.getOperand(1);
     unsigned QXVal = QX.getImm();
     assert(QXVal < 8 && "Unexpected value of esp_fft_r2bf_s16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_fft_r2bf_s16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &SELECT_4 = MI.getOperand(3);
-    MachineOperand &QZ = MI.getOperand(4);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &SELECT_4 = MI.getOperand(4);
+    MachineOperand &QZ = MI.getOperand(5);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_fft_r2bf_s16_st_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QXVal)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg())
@@ -6871,16 +6630,14 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_FFT_VST_R32_DECP_P: {
     unsigned Opc = RISCV::ESP_FFT_VST_R32_DECP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QU = MI.getOperand(0);
+    MachineOperand &QU = MI.getOperand(1);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_fft_vst_r32_decp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(1);
-    MachineOperand &SELECT_2 = MI.getOperand(2);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(2);
+    MachineOperand &SELECT_2 = MI.getOperand(3);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QUVal)
         .addReg(RS1.getReg())
         .addImm(SELECT_2.getImm());
@@ -6891,17 +6648,15 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_LD_128_USAR_IP_P: {
     unsigned Opc = RISCV::ESP_LD_128_USAR_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS1 = MI.getOperand(0);
-    MachineOperand &OFFSET_256_16 = MI.getOperand(1);
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &RS1 = MI.getOperand(1);
+    MachineOperand &OFFSET_256_16 = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_ld_128_usar_ip first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS1.getReg())
         .addImm(OFFSET_256_16.getImm());
 
@@ -6911,17 +6666,15 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_LD_128_USAR_XP_P: {
     unsigned Opc = RISCV::ESP_LD_128_USAR_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &RS1 = MI.getOperand(1);
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &RS1 = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_ld_128_usar_xp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RS1.getReg());
 
@@ -6931,12 +6684,10 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_LD_XACC_IP_P: {
     unsigned Opc = RISCV::ESP_LD_XACC_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS1 = MI.getOperand(0);
-    MachineOperand &OFFSET_256_8 = MI.getOperand(1);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(1);
+    MachineOperand &OFFSET_256_8 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS1.getReg())
         .addImm(OFFSET_256_8.getImm());
 
@@ -6946,12 +6697,10 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_LDQA_S16_128_IP_P: {
     unsigned Opc = RISCV::ESP_LDQA_S16_128_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS1 = MI.getOperand(0);
-    MachineOperand &OFFSET_256_16 = MI.getOperand(1);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(1);
+    MachineOperand &OFFSET_256_16 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS1.getReg())
         .addImm(OFFSET_256_16.getImm());
 
@@ -6961,12 +6710,10 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_LDQA_S16_128_XP_P: {
     unsigned Opc = RISCV::ESP_LDQA_S16_128_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &RS1 = MI.getOperand(1);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &RS1 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RS1.getReg());
 
@@ -6976,12 +6723,10 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_LDQA_S8_128_IP_P: {
     unsigned Opc = RISCV::ESP_LDQA_S8_128_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS1 = MI.getOperand(0);
-    MachineOperand &OFFSET_256_16 = MI.getOperand(1);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(1);
+    MachineOperand &OFFSET_256_16 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS1.getReg())
         .addImm(OFFSET_256_16.getImm());
 
@@ -6991,12 +6736,10 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_LDQA_S8_128_XP_P: {
     unsigned Opc = RISCV::ESP_LDQA_S8_128_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &RS1 = MI.getOperand(1);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &RS1 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RS1.getReg());
 
@@ -7006,12 +6749,10 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_LDQA_U16_128_IP_P: {
     unsigned Opc = RISCV::ESP_LDQA_U16_128_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS1 = MI.getOperand(0);
-    MachineOperand &OFFSET_256_16 = MI.getOperand(1);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(1);
+    MachineOperand &OFFSET_256_16 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS1.getReg())
         .addImm(OFFSET_256_16.getImm());
 
@@ -7021,12 +6762,10 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_LDQA_U16_128_XP_P: {
     unsigned Opc = RISCV::ESP_LDQA_U16_128_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &RS1 = MI.getOperand(1);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &RS1 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RS1.getReg());
 
@@ -7036,12 +6775,10 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_LDQA_U8_128_IP_P: {
     unsigned Opc = RISCV::ESP_LDQA_U8_128_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS1 = MI.getOperand(0);
-    MachineOperand &OFFSET_256_16 = MI.getOperand(1);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(1);
+    MachineOperand &OFFSET_256_16 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS1.getReg())
         .addImm(OFFSET_256_16.getImm());
 
@@ -7051,12 +6788,10 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_LDQA_U8_128_XP_P: {
     unsigned Opc = RISCV::ESP_LDQA_U8_128_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &RS1 = MI.getOperand(1);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &RS1 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RS1.getReg());
 
@@ -7066,17 +6801,15 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VLDBC_16_IP_P: {
     unsigned Opc = RISCV::ESP_VLDBC_16_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS1 = MI.getOperand(0);
-    MachineOperand &OFFSET_256_4 = MI.getOperand(1);
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &RS1 = MI.getOperand(1);
+    MachineOperand &OFFSET_256_4 = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vldbc_16_ip first argument, "
                         "it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS1.getReg())
         .addImm(OFFSET_256_4.getImm());
 
@@ -7086,17 +6819,15 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VLDBC_16_XP_P: {
     unsigned Opc = RISCV::ESP_VLDBC_16_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &RS1 = MI.getOperand(1);
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &RS1 = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vldbc_16_xp first argument, "
                         "it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RS1.getReg());
 
@@ -7106,17 +6837,15 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VLDBC_32_IP_P: {
     unsigned Opc = RISCV::ESP_VLDBC_32_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS1 = MI.getOperand(0);
-    MachineOperand &OFFSET_256_4 = MI.getOperand(1);
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &RS1 = MI.getOperand(1);
+    MachineOperand &OFFSET_256_4 = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vldbc_32_ip first argument, "
                         "it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS1.getReg())
         .addImm(OFFSET_256_4.getImm());
 
@@ -7126,17 +6855,15 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VLDBC_32_XP_P: {
     unsigned Opc = RISCV::ESP_VLDBC_32_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &RS1 = MI.getOperand(1);
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &RS1 = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vldbc_32_xp first argument, "
                         "it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RS1.getReg());
 
@@ -7146,17 +6873,15 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VLDBC_8_IP_P: {
     unsigned Opc = RISCV::ESP_VLDBC_8_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS1 = MI.getOperand(0);
-    MachineOperand &OFFSET_256_4 = MI.getOperand(1);
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &RS1 = MI.getOperand(1);
+    MachineOperand &OFFSET_256_4 = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vldbc_8_ip first argument, it "
                         "must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS1.getReg())
         .addImm(OFFSET_256_4.getImm());
 
@@ -7166,17 +6891,15 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VLDBC_8_XP_P: {
     unsigned Opc = RISCV::ESP_VLDBC_8_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &RS1 = MI.getOperand(1);
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &RS1 = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vldbc_8_xp first argument, it "
                         "must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RS1.getReg());
 
@@ -7186,22 +6909,20 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VLDEXT_S16_IP_P: {
     unsigned Opc = RISCV::ESP_VLDEXT_S16_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS1 = MI.getOperand(0);
-    MachineOperand &OFFSET_16_16 = MI.getOperand(1);
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &RS1 = MI.getOperand(1);
+    MachineOperand &OFFSET_16_16 = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vldext_s16_ip first argument, "
                         "it must bi in range [0,7]");
-    MachineOperand &QZ = MI.getOperand(3);
+    MachineOperand &QZ = MI.getOperand(4);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vldext_s16_ip first argument, "
                         "it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS1.getReg())
         .addImm(OFFSET_16_16.getImm());
 
@@ -7211,22 +6932,20 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VLDEXT_S16_XP_P: {
     unsigned Opc = RISCV::ESP_VLDEXT_S16_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &RS1 = MI.getOperand(1);
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &RS1 = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vldext_s16_xp first argument, "
                         "it must bi in range [0,7]");
-    MachineOperand &QZ = MI.getOperand(3);
+    MachineOperand &QZ = MI.getOperand(4);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vldext_s16_xp first argument, "
                         "it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RS1.getReg());
 
@@ -7236,22 +6955,20 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VLDEXT_S8_IP_P: {
     unsigned Opc = RISCV::ESP_VLDEXT_S8_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS1 = MI.getOperand(0);
-    MachineOperand &OFFSET_16_16 = MI.getOperand(1);
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &RS1 = MI.getOperand(1);
+    MachineOperand &OFFSET_16_16 = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vldext_s8_ip first argument, "
                         "it must bi in range [0,7]");
-    MachineOperand &QZ = MI.getOperand(3);
+    MachineOperand &QZ = MI.getOperand(4);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vldext_s8_ip first argument, "
                         "it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS1.getReg())
         .addImm(OFFSET_16_16.getImm());
 
@@ -7261,22 +6978,20 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VLDEXT_S8_XP_P: {
     unsigned Opc = RISCV::ESP_VLDEXT_S8_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &RS1 = MI.getOperand(1);
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &RS1 = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vldext_s8_xp first argument, "
                         "it must bi in range [0,7]");
-    MachineOperand &QZ = MI.getOperand(3);
+    MachineOperand &QZ = MI.getOperand(4);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vldext_s8_xp first argument, "
                         "it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RS1.getReg());
 
@@ -7286,22 +7001,20 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VLDEXT_U16_IP_P: {
     unsigned Opc = RISCV::ESP_VLDEXT_U16_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS1 = MI.getOperand(0);
-    MachineOperand &OFFSET_16_16 = MI.getOperand(1);
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &RS1 = MI.getOperand(1);
+    MachineOperand &OFFSET_16_16 = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vldext_u16_ip first argument, "
                         "it must bi in range [0,7]");
-    MachineOperand &QZ = MI.getOperand(3);
+    MachineOperand &QZ = MI.getOperand(4);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vldext_u16_ip first argument, "
                         "it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS1.getReg())
         .addImm(OFFSET_16_16.getImm());
 
@@ -7311,22 +7024,20 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VLDEXT_U16_XP_P: {
     unsigned Opc = RISCV::ESP_VLDEXT_U16_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &RS1 = MI.getOperand(1);
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &RS1 = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vldext_u16_xp first argument, "
                         "it must bi in range [0,7]");
-    MachineOperand &QZ = MI.getOperand(3);
+    MachineOperand &QZ = MI.getOperand(4);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vldext_u16_xp first argument, "
                         "it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RS1.getReg());
 
@@ -7336,22 +7047,20 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VLDEXT_U8_IP_P: {
     unsigned Opc = RISCV::ESP_VLDEXT_U8_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS1 = MI.getOperand(0);
-    MachineOperand &OFFSET_16_16 = MI.getOperand(1);
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &RS1 = MI.getOperand(1);
+    MachineOperand &OFFSET_16_16 = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vldext_u8_ip first argument, "
                         "it must bi in range [0,7]");
-    MachineOperand &QZ = MI.getOperand(3);
+    MachineOperand &QZ = MI.getOperand(4);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vldext_u8_ip first argument, "
                         "it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS1.getReg())
         .addImm(OFFSET_16_16.getImm());
 
@@ -7361,22 +7070,20 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VLDEXT_U8_XP_P: {
     unsigned Opc = RISCV::ESP_VLDEXT_U8_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &RS1 = MI.getOperand(1);
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &RS1 = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vldext_u8_xp first argument, "
                         "it must bi in range [0,7]");
-    MachineOperand &QZ = MI.getOperand(3);
+    MachineOperand &QZ = MI.getOperand(4);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vldext_u8_xp first argument, "
                         "it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RS1.getReg());
 
@@ -7386,21 +7093,19 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VLDHBC_16_INCP_P: {
     unsigned Opc = RISCV::ESP_VLDHBC_16_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS1 = MI.getOperand(0);
-    MachineOperand &QU = MI.getOperand(1);
+    MachineOperand &RS1 = MI.getOperand(1);
+    MachineOperand &QU = MI.getOperand(2);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vldhbc_16_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QZ = MI.getOperand(2);
+    MachineOperand &QZ = MI.getOperand(3);
     unsigned QZVal = QZ.getImm();
     assert(QZVal < 8 && "Unexpected value of esp_vldhbc_16_incp first "
                         "argument, it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
         .addReg(RISCV::Q0 + QZVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS1.getReg());
 
     MI.eraseFromParent();
@@ -7409,12 +7114,10 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_LD_QACC_H_H_128_IP_P: {
     unsigned Opc = RISCV::ESP_LD_QACC_H_H_128_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS1 = MI.getOperand(0);
-    MachineOperand &OFFSET_256_16 = MI.getOperand(1);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(1);
+    MachineOperand &OFFSET_256_16 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS1.getReg())
         .addImm(OFFSET_256_16.getImm());
 
@@ -7424,12 +7127,10 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_LD_QACC_H_L_128_IP_P: {
     unsigned Opc = RISCV::ESP_LD_QACC_H_L_128_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS1 = MI.getOperand(0);
-    MachineOperand &OFFSET_256_16 = MI.getOperand(1);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(1);
+    MachineOperand &OFFSET_256_16 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS1.getReg())
         .addImm(OFFSET_256_16.getImm());
 
@@ -7439,12 +7140,10 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_LD_QACC_L_H_128_IP_P: {
     unsigned Opc = RISCV::ESP_LD_QACC_L_H_128_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS1 = MI.getOperand(0);
-    MachineOperand &OFFSET_256_16 = MI.getOperand(1);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(1);
+    MachineOperand &OFFSET_256_16 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS1.getReg())
         .addImm(OFFSET_256_16.getImm());
 
@@ -7454,12 +7153,10 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_LD_QACC_L_L_128_IP_P: {
     unsigned Opc = RISCV::ESP_LD_QACC_L_L_128_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS1 = MI.getOperand(0);
-    MachineOperand &OFFSET_256_16 = MI.getOperand(1);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(1);
+    MachineOperand &OFFSET_256_16 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS1.getReg())
         .addImm(OFFSET_256_16.getImm());
 
@@ -7469,12 +7166,10 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_LD_UA_STATE_IP_P: {
     unsigned Opc = RISCV::ESP_LD_UA_STATE_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS1 = MI.getOperand(0);
-    MachineOperand &OFFSET_256_16 = MI.getOperand(1);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(1);
+    MachineOperand &OFFSET_256_16 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS1.getReg())
         .addImm(OFFSET_256_16.getImm());
 
@@ -7508,12 +7203,10 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_ST_QACC_H_H_128_IP_P: {
     unsigned Opc = RISCV::ESP_ST_QACC_H_H_128_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS1 = MI.getOperand(0);
-    MachineOperand &OFFSET_256_16 = MI.getOperand(1);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(1);
+    MachineOperand &OFFSET_256_16 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS1.getReg())
         .addImm(OFFSET_256_16.getImm());
 
@@ -7523,12 +7216,10 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_ST_QACC_H_L_128_IP_P: {
     unsigned Opc = RISCV::ESP_ST_QACC_H_L_128_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS1 = MI.getOperand(0);
-    MachineOperand &OFFSET_256_16 = MI.getOperand(1);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(1);
+    MachineOperand &OFFSET_256_16 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS1.getReg())
         .addImm(OFFSET_256_16.getImm());
 
@@ -7538,12 +7229,10 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_ST_QACC_L_H_128_IP_P: {
     unsigned Opc = RISCV::ESP_ST_QACC_L_H_128_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS1 = MI.getOperand(0);
-    MachineOperand &OFFSET_256_16 = MI.getOperand(1);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(1);
+    MachineOperand &OFFSET_256_16 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS1.getReg())
         .addImm(OFFSET_256_16.getImm());
 
@@ -7553,12 +7242,10 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_ST_QACC_L_L_128_IP_P: {
     unsigned Opc = RISCV::ESP_ST_QACC_L_L_128_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS1 = MI.getOperand(0);
-    MachineOperand &OFFSET_256_16 = MI.getOperand(1);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(1);
+    MachineOperand &OFFSET_256_16 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS1.getReg())
         .addImm(OFFSET_256_16.getImm());
 
@@ -7568,12 +7255,10 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_ST_UA_STATE_IP_P: {
     unsigned Opc = RISCV::ESP_ST_UA_STATE_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS1 = MI.getOperand(0);
-    MachineOperand &OFFSET_256_16 = MI.getOperand(1);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(1);
+    MachineOperand &OFFSET_256_16 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS1.getReg())
         .addImm(OFFSET_256_16.getImm());
 
@@ -7607,17 +7292,15 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VLD_128_IP_P: {
     unsigned Opc = RISCV::ESP_VLD_128_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS1 = MI.getOperand(0);
-    MachineOperand &OFFSET_256_16 = MI.getOperand(1);
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &RS1 = MI.getOperand(1);
+    MachineOperand &OFFSET_256_16 = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vld_128_ip first argument, it "
                         "must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS1.getReg())
         .addImm(OFFSET_256_16.getImm());
 
@@ -7627,17 +7310,15 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VLD_128_XP_P: {
     unsigned Opc = RISCV::ESP_VLD_128_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &RS1 = MI.getOperand(1);
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &RS1 = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vld_128_xp first argument, it "
                         "must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RS1.getReg());
 
@@ -7647,17 +7328,15 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VLD_H_64_IP_P: {
     unsigned Opc = RISCV::ESP_VLD_H_64_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS1 = MI.getOperand(0);
-    MachineOperand &OFFSET_256_8 = MI.getOperand(1);
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &RS1 = MI.getOperand(1);
+    MachineOperand &OFFSET_256_8 = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vld_h_64_ip first argument, "
                         "it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS1.getReg())
         .addImm(OFFSET_256_8.getImm());
 
@@ -7667,17 +7346,15 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VLD_H_64_XP_P: {
     unsigned Opc = RISCV::ESP_VLD_H_64_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &RS1 = MI.getOperand(1);
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &RS1 = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vld_h_64_xp first argument, "
                         "it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RS1.getReg());
 
@@ -7687,17 +7364,15 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VLD_L_64_IP_P: {
     unsigned Opc = RISCV::ESP_VLD_L_64_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS1 = MI.getOperand(0);
-    MachineOperand &OFFSET_256_8 = MI.getOperand(1);
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &RS1 = MI.getOperand(1);
+    MachineOperand &OFFSET_256_8 = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vld_l_64_ip first argument, "
                         "it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS1.getReg())
         .addImm(OFFSET_256_8.getImm());
 
@@ -7707,17 +7382,15 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VLD_L_64_XP_P: {
     unsigned Opc = RISCV::ESP_VLD_L_64_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &RS1 = MI.getOperand(1);
-    MachineOperand &QU = MI.getOperand(2);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &RS1 = MI.getOperand(2);
+    MachineOperand &QU = MI.getOperand(3);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vld_l_64_xp first argument, "
                         "it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RS1.getReg());
 
@@ -7727,16 +7400,14 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VST_128_IP_P: {
     unsigned Opc = RISCV::ESP_VST_128_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QU = MI.getOperand(0);
+    MachineOperand &QU = MI.getOperand(1);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vst_128_ip first argument, it "
                         "must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(1);
-    MachineOperand &OFFSET_256_16 = MI.getOperand(2);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(2);
+    MachineOperand &OFFSET_256_16 = MI.getOperand(3);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QUVal)
         .addReg(RS1.getReg())
         .addImm(OFFSET_256_16.getImm());
@@ -7747,16 +7418,14 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VST_128_XP_P: {
     unsigned Opc = RISCV::ESP_VST_128_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &QU = MI.getOperand(1);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &QU = MI.getOperand(2);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vst_128_xp first argument, it "
                         "must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(3);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RISCV::Q0 + QUVal)
         .addReg(RS1.getReg());
@@ -7767,16 +7436,14 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VST_H_64_IP_P: {
     unsigned Opc = RISCV::ESP_VST_H_64_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QU = MI.getOperand(0);
+    MachineOperand &QU = MI.getOperand(1);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vst_h_64_ip first argument, "
                         "it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(1);
-    MachineOperand &OFFSET_256_8 = MI.getOperand(2);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(2);
+    MachineOperand &OFFSET_256_8 = MI.getOperand(3);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QUVal)
         .addReg(RS1.getReg())
         .addImm(OFFSET_256_8.getImm());
@@ -7787,16 +7454,14 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VST_H_64_XP_P: {
     unsigned Opc = RISCV::ESP_VST_H_64_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &QU = MI.getOperand(1);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &QU = MI.getOperand(2);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vst_h_64_xp first argument, "
                         "it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(3);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RISCV::Q0 + QUVal)
         .addReg(RS1.getReg());
@@ -7807,16 +7472,14 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VST_L_64_IP_P: {
     unsigned Opc = RISCV::ESP_VST_L_64_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QU = MI.getOperand(0);
+    MachineOperand &QU = MI.getOperand(1);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vst_l_64_ip first argument, "
                         "it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(1);
-    MachineOperand &OFFSET_256_8 = MI.getOperand(2);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(2);
+    MachineOperand &OFFSET_256_8 = MI.getOperand(3);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QUVal)
         .addReg(RS1.getReg())
         .addImm(OFFSET_256_8.getImm());
@@ -7827,16 +7490,14 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_VST_L_64_XP_P: {
     unsigned Opc = RISCV::ESP_VST_L_64_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &QU = MI.getOperand(1);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &QU = MI.getOperand(2);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_vst_l_64_xp first argument, "
                         "it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(3);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RISCV::Q0 + QUVal)
         .addReg(RS1.getReg());
@@ -7916,25 +7577,23 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_SRC_Q_LD_IP_P: {
     unsigned Opc = RISCV::ESP_SRC_Q_LD_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QY = MI.getOperand(0);
+    MachineOperand &QY = MI.getOperand(1);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_src_q_ld_ip first argument, "
                         "it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(1);
-    MachineOperand &QW = MI.getOperand(2);
+    MachineOperand &RS1 = MI.getOperand(2);
+    MachineOperand &QW = MI.getOperand(3);
     unsigned QWVal = QW.getImm();
     assert(QWVal < 8 && "Unexpected value of esp_src_q_ld_ip first argument, "
                         "it must bi in range [0,7]");
-    MachineOperand &OFFSET_256_16 = MI.getOperand(3);
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &OFFSET_256_16 = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_src_q_ld_ip first argument, "
                         "it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QWVal, RegState::Define)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RS1.getReg())
@@ -7947,25 +7606,23 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_SRC_Q_LD_XP_P: {
     unsigned Opc = RISCV::ESP_SRC_Q_LD_XP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS2 = MI.getOperand(0);
-    MachineOperand &QY = MI.getOperand(1);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &QY = MI.getOperand(2);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_src_q_ld_xp first argument, "
                         "it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    MachineOperand &QW = MI.getOperand(3);
+    MachineOperand &RS1 = MI.getOperand(3);
+    MachineOperand &QW = MI.getOperand(4);
     unsigned QWVal = QW.getImm();
     assert(QWVal < 8 && "Unexpected value of esp_src_q_ld_xp first argument, "
                         "it must bi in range [0,7]");
-    MachineOperand &QU = MI.getOperand(4);
+    MachineOperand &QU = MI.getOperand(5);
     unsigned QUVal = QU.getImm();
     assert(QUVal < 8 && "Unexpected value of esp_src_q_ld_xp first argument, "
                         "it must bi in range [0,7]");
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(RISCV::Q0 + QUVal, RegState::Define)
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QWVal, RegState::Define)
         .addReg(RS2.getReg())
         .addReg(RISCV::Q0 + QYVal)
@@ -8172,19 +7829,17 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_SRCQ_128_ST_INCP_P: {
     unsigned Opc = RISCV::ESP_SRCQ_128_ST_INCP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &QY = MI.getOperand(0);
+    MachineOperand &QY = MI.getOperand(1);
     unsigned QYVal = QY.getImm();
     assert(QYVal < 8 && "Unexpected value of esp_srcq_128_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &QW = MI.getOperand(1);
+    MachineOperand &QW = MI.getOperand(2);
     unsigned QWVal = QW.getImm();
     assert(QWVal < 8 && "Unexpected value of esp_srcq_128_st_incp first "
                         "argument, it must bi in range [0,7]");
-    MachineOperand &RS1 = MI.getOperand(2);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(3);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RISCV::Q0 + QYVal)
         .addReg(RISCV::Q0 + QWVal)
         .addReg(RS1.getReg());
@@ -8437,12 +8092,10 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_ST_S_XACC_IP_P: {
     unsigned Opc = RISCV::ESP_ST_S_XACC_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS1 = MI.getOperand(0);
-    MachineOperand &OFFSET_256_8 = MI.getOperand(1);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(1);
+    MachineOperand &OFFSET_256_8 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS1.getReg())
         .addImm(OFFSET_256_8.getImm());
 
@@ -8452,12 +8105,10 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
   case RISCV::ESP_ST_U_XACC_IP_P: {
     unsigned Opc = RISCV::ESP_ST_U_XACC_IP;
     MachineBasicBlock *MBB = MI.getParent();
-    MachineOperand &RS1 = MI.getOperand(0);
-    MachineOperand &OFFSET_256_8 = MI.getOperand(1);
-    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
-    unsigned R1 = MRI.createVirtualRegister(RC);
+    MachineOperand &RS1 = MI.getOperand(1);
+    MachineOperand &OFFSET_256_8 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
-        .addReg(R1, RegState::Define)
+        .addReg(MI.getOperand(0).getReg(), RegState::Define)
         .addReg(RS1.getReg())
         .addImm(OFFSET_256_8.getImm());
 
