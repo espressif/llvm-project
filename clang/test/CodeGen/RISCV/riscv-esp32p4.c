@@ -10,390 +10,390 @@
 // CHECK-NEXT:    store i32 10, ptr [[DATA]], align 4
 // CHECK-NEXT:    call void @llvm.riscv.esp.vcmulas.s16.qacc.h(i32 4, i32 2)
 // CHECK-NEXT:    [[TMP0:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vcmulas.s16.qacc.h.ld.ip(i32 4, i32 0, i32 [[TMP0]], i32 -96, i32 3)
-// CHECK-NEXT:    [[TMP1:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP1:%.*]] = call i32 @llvm.riscv.esp.vcmulas.s16.qacc.h.ld.ip(i32 4, i32 0, i32 [[TMP0]], i32 -96, i32 3)
 // CHECK-NEXT:    [[TMP2:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vcmulas.s16.qacc.h.ld.xp(i32 [[TMP1]], i32 5, i32 5, i32 [[TMP2]], i32 5)
-// CHECK-NEXT:    call void @llvm.riscv.esp.vcmulas.s16.qacc.l(i32 6, i32 1)
 // CHECK-NEXT:    [[TMP3:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vcmulas.s16.qacc.l.ld.ip(i32 2, i32 3, i32 [[TMP3]], i32 -48, i32 3)
-// CHECK-NEXT:    [[TMP4:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP4:%.*]] = call i32 @llvm.riscv.esp.vcmulas.s16.qacc.h.ld.xp(i32 [[TMP2]], i32 5, i32 5, i32 [[TMP3]], i32 5)
+// CHECK-NEXT:    call void @llvm.riscv.esp.vcmulas.s16.qacc.l(i32 6, i32 1)
 // CHECK-NEXT:    [[TMP5:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vcmulas.s16.qacc.l.ld.xp(i32 [[TMP4]], i32 7, i32 2, i32 [[TMP5]], i32 1)
-// CHECK-NEXT:    call void @llvm.riscv.esp.vcmulas.s8.qacc.h(i32 4, i32 4)
-// CHECK-NEXT:    [[TMP6:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vcmulas.s8.qacc.h.ld.ip(i32 7, i32 4, i32 [[TMP6]], i32 -128, i32 4)
+// CHECK-NEXT:    [[TMP6:%.*]] = call i32 @llvm.riscv.esp.vcmulas.s16.qacc.l.ld.ip(i32 2, i32 3, i32 [[TMP5]], i32 -48, i32 3)
 // CHECK-NEXT:    [[TMP7:%.*]] = load i32, ptr [[DATA]], align 4
 // CHECK-NEXT:    [[TMP8:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vcmulas.s8.qacc.h.ld.xp(i32 [[TMP7]], i32 2, i32 3, i32 [[TMP8]], i32 1)
-// CHECK-NEXT:    call void @llvm.riscv.esp.vcmulas.s8.qacc.l(i32 6, i32 4)
-// CHECK-NEXT:    [[TMP9:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vcmulas.s8.qacc.l.ld.ip(i32 5, i32 5, i32 [[TMP9]], i32 16, i32 7)
+// CHECK-NEXT:    [[TMP9:%.*]] = call i32 @llvm.riscv.esp.vcmulas.s16.qacc.l.ld.xp(i32 [[TMP7]], i32 7, i32 2, i32 [[TMP8]], i32 1)
+// CHECK-NEXT:    call void @llvm.riscv.esp.vcmulas.s8.qacc.h(i32 4, i32 4)
 // CHECK-NEXT:    [[TMP10:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP11:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vcmulas.s8.qacc.l.ld.xp(i32 [[TMP10]], i32 4, i32 4, i32 [[TMP11]], i32 2)
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.s16.qacc(i32 7, i32 6)
+// CHECK-NEXT:    [[TMP11:%.*]] = call i32 @llvm.riscv.esp.vcmulas.s8.qacc.h.ld.ip(i32 7, i32 4, i32 [[TMP10]], i32 -128, i32 4)
 // CHECK-NEXT:    [[TMP12:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.s16.qacc.ld.ip(i32 0, i32 4, i32 [[TMP12]], i32 96, i32 4)
 // CHECK-NEXT:    [[TMP13:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP14:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.s16.qacc.ld.xp(i32 [[TMP13]], i32 4, i32 4, i32 [[TMP14]], i32 7)
+// CHECK-NEXT:    [[TMP14:%.*]] = call i32 @llvm.riscv.esp.vcmulas.s8.qacc.h.ld.xp(i32 [[TMP12]], i32 2, i32 3, i32 [[TMP13]], i32 1)
+// CHECK-NEXT:    call void @llvm.riscv.esp.vcmulas.s8.qacc.l(i32 6, i32 4)
 // CHECK-NEXT:    [[TMP15:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.s16.qacc.st.ip(i32 2, i32 1, i32 7, i32 [[TMP15]], i32 -128)
-// CHECK-NEXT:    [[TMP16:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP16:%.*]] = call i32 @llvm.riscv.esp.vcmulas.s8.qacc.l.ld.ip(i32 5, i32 5, i32 [[TMP15]], i32 16, i32 7)
 // CHECK-NEXT:    [[TMP17:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.s16.qacc.st.xp(i32 [[TMP16]], i32 1, i32 2, i32 6, i32 [[TMP17]])
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.s16.xacc(i32 1, i32 3)
 // CHECK-NEXT:    [[TMP18:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.s16.xacc.ld.ip(i32 7, i32 3, i32 [[TMP18]], i32 -96, i32 5)
-// CHECK-NEXT:    [[TMP19:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP19:%.*]] = call i32 @llvm.riscv.esp.vcmulas.s8.qacc.l.ld.xp(i32 [[TMP17]], i32 4, i32 4, i32 [[TMP18]], i32 2)
+// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.s16.qacc(i32 7, i32 6)
 // CHECK-NEXT:    [[TMP20:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.s16.xacc.ld.xp(i32 [[TMP19]], i32 3, i32 1, i32 [[TMP20]], i32 1)
-// CHECK-NEXT:    [[TMP21:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.s16.xacc.st.ip(i32 2, i32 0, i32 0, i32 [[TMP21]], i32 64)
+// CHECK-NEXT:    [[TMP21:%.*]] = call i32 @llvm.riscv.esp.vmulas.s16.qacc.ld.ip(i32 0, i32 4, i32 [[TMP20]], i32 96, i32 4)
 // CHECK-NEXT:    [[TMP22:%.*]] = load i32, ptr [[DATA]], align 4
 // CHECK-NEXT:    [[TMP23:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.s16.xacc.st.xp(i32 [[TMP22]], i32 6, i32 3, i32 6, i32 [[TMP23]])
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.s8.qacc(i32 0, i32 0)
-// CHECK-NEXT:    [[TMP24:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.s8.qacc.ld.ip(i32 0, i32 3, i32 [[TMP24]], i32 0, i32 7)
+// CHECK-NEXT:    [[TMP24:%.*]] = call i32 @llvm.riscv.esp.vmulas.s16.qacc.ld.xp(i32 [[TMP22]], i32 4, i32 4, i32 [[TMP23]], i32 7)
 // CHECK-NEXT:    [[TMP25:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP26:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.s8.qacc.ld.xp(i32 [[TMP25]], i32 4, i32 3, i32 [[TMP26]], i32 4)
+// CHECK-NEXT:    [[TMP26:%.*]] = call i32 @llvm.riscv.esp.vmulas.s16.qacc.st.ip(i32 2, i32 1, i32 7, i32 [[TMP25]], i32 -128)
 // CHECK-NEXT:    [[TMP27:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.s8.qacc.st.ip(i32 3, i32 3, i32 5, i32 [[TMP27]], i32 -64)
 // CHECK-NEXT:    [[TMP28:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP29:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.s8.qacc.st.xp(i32 [[TMP28]], i32 4, i32 7, i32 0, i32 [[TMP29]])
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.s8.xacc(i32 3, i32 3)
+// CHECK-NEXT:    [[TMP29:%.*]] = call i32 @llvm.riscv.esp.vmulas.s16.qacc.st.xp(i32 [[TMP27]], i32 1, i32 2, i32 6, i32 [[TMP28]])
+// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.s16.xacc(i32 1, i32 3)
 // CHECK-NEXT:    [[TMP30:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.s8.xacc.ld.ip(i32 3, i32 2, i32 [[TMP30]], i32 0, i32 5)
-// CHECK-NEXT:    [[TMP31:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP31:%.*]] = call i32 @llvm.riscv.esp.vmulas.s16.xacc.ld.ip(i32 7, i32 3, i32 [[TMP30]], i32 -96, i32 5)
 // CHECK-NEXT:    [[TMP32:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.s8.xacc.ld.xp(i32 [[TMP31]], i32 6, i32 3, i32 [[TMP32]], i32 0)
 // CHECK-NEXT:    [[TMP33:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.s8.xacc.st.ip(i32 1, i32 7, i32 7, i32 [[TMP33]], i32 -32)
-// CHECK-NEXT:    [[TMP34:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP34:%.*]] = call i32 @llvm.riscv.esp.vmulas.s16.xacc.ld.xp(i32 [[TMP32]], i32 3, i32 1, i32 [[TMP33]], i32 1)
 // CHECK-NEXT:    [[TMP35:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.s8.xacc.st.xp(i32 [[TMP34]], i32 6, i32 7, i32 6, i32 [[TMP35]])
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.u16.qacc(i32 5, i32 4)
-// CHECK-NEXT:    [[TMP36:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.u16.qacc.ld.ip(i32 5, i32 2, i32 [[TMP36]], i32 64, i32 6)
+// CHECK-NEXT:    [[TMP36:%.*]] = call i32 @llvm.riscv.esp.vmulas.s16.xacc.st.ip(i32 2, i32 0, i32 0, i32 [[TMP35]], i32 64)
 // CHECK-NEXT:    [[TMP37:%.*]] = load i32, ptr [[DATA]], align 4
 // CHECK-NEXT:    [[TMP38:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.u16.qacc.ld.xp(i32 [[TMP37]], i32 5, i32 7, i32 [[TMP38]], i32 7)
-// CHECK-NEXT:    [[TMP39:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.u16.qacc.st.ip(i32 1, i32 4, i32 3, i32 [[TMP39]], i32 -96)
+// CHECK-NEXT:    [[TMP39:%.*]] = call i32 @llvm.riscv.esp.vmulas.s16.xacc.st.xp(i32 [[TMP37]], i32 6, i32 3, i32 6, i32 [[TMP38]])
+// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.s8.qacc(i32 0, i32 0)
 // CHECK-NEXT:    [[TMP40:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP41:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.u16.qacc.st.xp(i32 [[TMP40]], i32 5, i32 0, i32 2, i32 [[TMP41]])
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.u16.xacc(i32 0, i32 7)
+// CHECK-NEXT:    [[TMP41:%.*]] = call i32 @llvm.riscv.esp.vmulas.s8.qacc.ld.ip(i32 0, i32 3, i32 [[TMP40]], i32 0, i32 7)
 // CHECK-NEXT:    [[TMP42:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.u16.xacc.ld.ip(i32 6, i32 6, i32 [[TMP42]], i32 -96, i32 4)
 // CHECK-NEXT:    [[TMP43:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP44:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.u16.xacc.ld.xp(i32 [[TMP43]], i32 6, i32 5, i32 [[TMP44]], i32 6)
+// CHECK-NEXT:    [[TMP44:%.*]] = call i32 @llvm.riscv.esp.vmulas.s8.qacc.ld.xp(i32 [[TMP42]], i32 4, i32 3, i32 [[TMP43]], i32 4)
 // CHECK-NEXT:    [[TMP45:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.u16.xacc.st.ip(i32 3, i32 0, i32 4, i32 [[TMP45]], i32 64)
-// CHECK-NEXT:    [[TMP46:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP46:%.*]] = call i32 @llvm.riscv.esp.vmulas.s8.qacc.st.ip(i32 3, i32 3, i32 5, i32 [[TMP45]], i32 -64)
 // CHECK-NEXT:    [[TMP47:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.u16.xacc.st.xp(i32 [[TMP46]], i32 1, i32 0, i32 4, i32 [[TMP47]])
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.u8.qacc(i32 5, i32 4)
 // CHECK-NEXT:    [[TMP48:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.u8.qacc.ld.ip(i32 5, i32 3, i32 [[TMP48]], i32 80, i32 5)
-// CHECK-NEXT:    [[TMP49:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP49:%.*]] = call i32 @llvm.riscv.esp.vmulas.s8.qacc.st.xp(i32 [[TMP47]], i32 4, i32 7, i32 0, i32 [[TMP48]])
+// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.s8.xacc(i32 3, i32 3)
 // CHECK-NEXT:    [[TMP50:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.u8.qacc.ld.xp(i32 [[TMP49]], i32 4, i32 7, i32 [[TMP50]], i32 4)
-// CHECK-NEXT:    [[TMP51:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.u8.qacc.st.ip(i32 3, i32 3, i32 5, i32 [[TMP51]], i32 -96)
+// CHECK-NEXT:    [[TMP51:%.*]] = call i32 @llvm.riscv.esp.vmulas.s8.xacc.ld.ip(i32 3, i32 2, i32 [[TMP50]], i32 0, i32 5)
 // CHECK-NEXT:    [[TMP52:%.*]] = load i32, ptr [[DATA]], align 4
 // CHECK-NEXT:    [[TMP53:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.u8.qacc.st.xp(i32 [[TMP52]], i32 6, i32 7, i32 3, i32 [[TMP53]])
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.u8.xacc(i32 0, i32 1)
-// CHECK-NEXT:    [[TMP54:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.u8.xacc.ld.ip(i32 6, i32 0, i32 [[TMP54]], i32 -32, i32 7)
+// CHECK-NEXT:    [[TMP54:%.*]] = call i32 @llvm.riscv.esp.vmulas.s8.xacc.ld.xp(i32 [[TMP52]], i32 6, i32 3, i32 [[TMP53]], i32 0)
 // CHECK-NEXT:    [[TMP55:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP56:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.u8.xacc.ld.xp(i32 [[TMP55]], i32 3, i32 3, i32 [[TMP56]], i32 5)
+// CHECK-NEXT:    [[TMP56:%.*]] = call i32 @llvm.riscv.esp.vmulas.s8.xacc.st.ip(i32 1, i32 7, i32 7, i32 [[TMP55]], i32 -32)
 // CHECK-NEXT:    [[TMP57:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.u8.xacc.st.ip(i32 7, i32 0, i32 4, i32 [[TMP57]], i32 32)
 // CHECK-NEXT:    [[TMP58:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP59:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.u8.xacc.st.xp(i32 [[TMP58]], i32 1, i32 0, i32 0, i32 [[TMP59]])
+// CHECK-NEXT:    [[TMP59:%.*]] = call i32 @llvm.riscv.esp.vmulas.s8.xacc.st.xp(i32 [[TMP57]], i32 6, i32 7, i32 6, i32 [[TMP58]])
+// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.u16.qacc(i32 5, i32 4)
 // CHECK-NEXT:    [[TMP60:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.s16.qacc.ldbc.incp(i32 3, i32 6, i32 [[TMP60]], i32 7)
-// CHECK-NEXT:    [[TMP61:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.s8.qacc.ldbc.incp(i32 5, i32 3, i32 [[TMP61]], i32 6)
+// CHECK-NEXT:    [[TMP61:%.*]] = call i32 @llvm.riscv.esp.vmulas.u16.qacc.ld.ip(i32 5, i32 2, i32 [[TMP60]], i32 64, i32 6)
 // CHECK-NEXT:    [[TMP62:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.u16.qacc.ldbc.incp(i32 0, i32 3, i32 [[TMP62]], i32 2)
 // CHECK-NEXT:    [[TMP63:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.u8.qacc.ldbc.incp(i32 4, i32 7, i32 [[TMP63]], i32 3)
-// CHECK-NEXT:    call void @llvm.riscv.esp.vsmulas.s16.qacc(i32 7, i32 7, i32 4)
-// CHECK-NEXT:    [[TMP64:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vsmulas.s16.qacc.ld.incp(i32 7, i32 7, i32 [[TMP64]], i32 4, i32 1)
-// CHECK-NEXT:    call void @llvm.riscv.esp.vsmulas.s8.qacc(i32 7, i32 0, i32 7)
+// CHECK-NEXT:    [[TMP64:%.*]] = call i32 @llvm.riscv.esp.vmulas.u16.qacc.ld.xp(i32 [[TMP62]], i32 5, i32 7, i32 [[TMP63]], i32 7)
 // CHECK-NEXT:    [[TMP65:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vsmulas.s8.qacc.ld.incp(i32 5, i32 6, i32 [[TMP65]], i32 15, i32 2)
-// CHECK-NEXT:    call void @llvm.riscv.esp.vsmulas.u16.qacc(i32 7, i32 0, i32 10)
-// CHECK-NEXT:    [[TMP66:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vsmulas.u16.qacc.ld.incp(i32 7, i32 6, i32 [[TMP66]], i32 1, i32 0)
-// CHECK-NEXT:    call void @llvm.riscv.esp.vsmulas.u8.qacc(i32 3, i32 6, i32 5)
+// CHECK-NEXT:    [[TMP66:%.*]] = call i32 @llvm.riscv.esp.vmulas.u16.qacc.st.ip(i32 1, i32 4, i32 3, i32 [[TMP65]], i32 -96)
 // CHECK-NEXT:    [[TMP67:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vsmulas.u8.qacc.ld.incp(i32 6, i32 1, i32 [[TMP67]], i32 4, i32 0)
-// CHECK-NEXT:    call void @llvm.riscv.esp.cmul.s16(i32 2, i32 1, i32 3, i32 1)
 // CHECK-NEXT:    [[TMP68:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.cmul.s16.ld.incp(i32 2, i32 7, i32 [[TMP68]], i32 0, i32 5, i32 0)
-// CHECK-NEXT:    [[TMP69:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.cmul.s16.st.incp(i32 7, i32 4, i32 6, i32 [[TMP69]], i32 2, i32 5)
-// CHECK-NEXT:    call void @llvm.riscv.esp.cmul.s8(i32 5, i32 7, i32 2, i32 4)
+// CHECK-NEXT:    [[TMP69:%.*]] = call i32 @llvm.riscv.esp.vmulas.u16.qacc.st.xp(i32 [[TMP67]], i32 5, i32 0, i32 2, i32 [[TMP68]])
+// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.u16.xacc(i32 0, i32 7)
 // CHECK-NEXT:    [[TMP70:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.cmul.s8.ld.incp(i32 0, i32 6, i32 [[TMP70]], i32 2, i32 7, i32 5)
-// CHECK-NEXT:    [[TMP71:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.cmul.s8.st.incp(i32 1, i32 6, i32 5, i32 [[TMP71]], i32 0, i32 2)
-// CHECK-NEXT:    call void @llvm.riscv.esp.cmul.u16(i32 7, i32 4, i32 0, i32 0)
+// CHECK-NEXT:    [[TMP71:%.*]] = call i32 @llvm.riscv.esp.vmulas.u16.xacc.ld.ip(i32 6, i32 6, i32 [[TMP70]], i32 -96, i32 4)
 // CHECK-NEXT:    [[TMP72:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.cmul.u16.ld.incp(i32 2, i32 0, i32 [[TMP72]], i32 3, i32 1, i32 1)
 // CHECK-NEXT:    [[TMP73:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.cmul.u16.st.incp(i32 4, i32 3, i32 4, i32 [[TMP73]], i32 1, i32 2)
-// CHECK-NEXT:    call void @llvm.riscv.esp.cmul.u8(i32 3, i32 4, i32 1, i32 5)
-// CHECK-NEXT:    [[TMP74:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.cmul.u8.ld.incp(i32 5, i32 0, i32 [[TMP74]], i32 1, i32 5, i32 1)
+// CHECK-NEXT:    [[TMP74:%.*]] = call i32 @llvm.riscv.esp.vmulas.u16.xacc.ld.xp(i32 [[TMP72]], i32 6, i32 5, i32 [[TMP73]], i32 6)
 // CHECK-NEXT:    [[TMP75:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.cmul.u8.st.incp(i32 2, i32 7, i32 4, i32 [[TMP75]], i32 3, i32 1)
-// CHECK-NEXT:    [[TMP76:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.max.s16.a(i32 2, i32 [[TMP76]])
+// CHECK-NEXT:    [[TMP76:%.*]] = call i32 @llvm.riscv.esp.vmulas.u16.xacc.st.ip(i32 3, i32 0, i32 4, i32 [[TMP75]], i32 64)
 // CHECK-NEXT:    [[TMP77:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.max.s32.a(i32 0, i32 [[TMP77]])
 // CHECK-NEXT:    [[TMP78:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.max.s8.a(i32 7, i32 [[TMP78]])
-// CHECK-NEXT:    [[TMP79:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.max.u16.a(i32 4, i32 [[TMP79]])
+// CHECK-NEXT:    [[TMP79:%.*]] = call i32 @llvm.riscv.esp.vmulas.u16.xacc.st.xp(i32 [[TMP77]], i32 1, i32 0, i32 4, i32 [[TMP78]])
+// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.u8.qacc(i32 5, i32 4)
 // CHECK-NEXT:    [[TMP80:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.max.u32.a(i32 4, i32 [[TMP80]])
-// CHECK-NEXT:    [[TMP81:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.max.u8.a(i32 3, i32 [[TMP81]])
+// CHECK-NEXT:    [[TMP81:%.*]] = call i32 @llvm.riscv.esp.vmulas.u8.qacc.ld.ip(i32 5, i32 3, i32 [[TMP80]], i32 80, i32 5)
 // CHECK-NEXT:    [[TMP82:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.min.s16.a(i32 0, i32 [[TMP82]])
 // CHECK-NEXT:    [[TMP83:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.min.s32.a(i32 7, i32 [[TMP83]])
-// CHECK-NEXT:    [[TMP84:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.min.s8.a(i32 4, i32 [[TMP84]])
+// CHECK-NEXT:    [[TMP84:%.*]] = call i32 @llvm.riscv.esp.vmulas.u8.qacc.ld.xp(i32 [[TMP82]], i32 4, i32 7, i32 [[TMP83]], i32 4)
 // CHECK-NEXT:    [[TMP85:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.min.u16.a(i32 7, i32 [[TMP85]])
-// CHECK-NEXT:    [[TMP86:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.min.u32.a(i32 6, i32 [[TMP86]])
+// CHECK-NEXT:    [[TMP86:%.*]] = call i32 @llvm.riscv.esp.vmulas.u8.qacc.st.ip(i32 3, i32 3, i32 5, i32 [[TMP85]], i32 -96)
 // CHECK-NEXT:    [[TMP87:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.min.u8.a(i32 1, i32 [[TMP87]])
+// CHECK-NEXT:    [[TMP88:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP89:%.*]] = call i32 @llvm.riscv.esp.vmulas.u8.qacc.st.xp(i32 [[TMP87]], i32 6, i32 7, i32 3, i32 [[TMP88]])
+// CHECK-NEXT:    call void @llvm.riscv.esp.vmulas.u8.xacc(i32 0, i32 1)
+// CHECK-NEXT:    [[TMP90:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP91:%.*]] = call i32 @llvm.riscv.esp.vmulas.u8.xacc.ld.ip(i32 6, i32 0, i32 [[TMP90]], i32 -32, i32 7)
+// CHECK-NEXT:    [[TMP92:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP93:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP94:%.*]] = call i32 @llvm.riscv.esp.vmulas.u8.xacc.ld.xp(i32 [[TMP92]], i32 3, i32 3, i32 [[TMP93]], i32 5)
+// CHECK-NEXT:    [[TMP95:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP96:%.*]] = call i32 @llvm.riscv.esp.vmulas.u8.xacc.st.ip(i32 7, i32 0, i32 4, i32 [[TMP95]], i32 32)
+// CHECK-NEXT:    [[TMP97:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP98:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP99:%.*]] = call i32 @llvm.riscv.esp.vmulas.u8.xacc.st.xp(i32 [[TMP97]], i32 1, i32 0, i32 0, i32 [[TMP98]])
+// CHECK-NEXT:    [[TMP100:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP101:%.*]] = call i32 @llvm.riscv.esp.vmulas.s16.qacc.ldbc.incp(i32 3, i32 6, i32 [[TMP100]], i32 7)
+// CHECK-NEXT:    [[TMP102:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP103:%.*]] = call i32 @llvm.riscv.esp.vmulas.s8.qacc.ldbc.incp(i32 5, i32 3, i32 [[TMP102]], i32 6)
+// CHECK-NEXT:    [[TMP104:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP105:%.*]] = call i32 @llvm.riscv.esp.vmulas.u16.qacc.ldbc.incp(i32 0, i32 3, i32 [[TMP104]], i32 2)
+// CHECK-NEXT:    [[TMP106:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP107:%.*]] = call i32 @llvm.riscv.esp.vmulas.u8.qacc.ldbc.incp(i32 4, i32 7, i32 [[TMP106]], i32 3)
+// CHECK-NEXT:    call void @llvm.riscv.esp.vsmulas.s16.qacc(i32 7, i32 7, i32 4)
+// CHECK-NEXT:    [[TMP108:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP109:%.*]] = call i32 @llvm.riscv.esp.vsmulas.s16.qacc.ld.incp(i32 7, i32 7, i32 [[TMP108]], i32 4, i32 1)
+// CHECK-NEXT:    call void @llvm.riscv.esp.vsmulas.s8.qacc(i32 7, i32 0, i32 7)
+// CHECK-NEXT:    [[TMP110:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP111:%.*]] = call i32 @llvm.riscv.esp.vsmulas.s8.qacc.ld.incp(i32 5, i32 6, i32 [[TMP110]], i32 15, i32 2)
+// CHECK-NEXT:    call void @llvm.riscv.esp.vsmulas.u16.qacc(i32 7, i32 0, i32 10)
+// CHECK-NEXT:    [[TMP112:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP113:%.*]] = call i32 @llvm.riscv.esp.vsmulas.u16.qacc.ld.incp(i32 7, i32 6, i32 [[TMP112]], i32 1, i32 0)
+// CHECK-NEXT:    call void @llvm.riscv.esp.vsmulas.u8.qacc(i32 3, i32 6, i32 5)
+// CHECK-NEXT:    [[TMP114:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP115:%.*]] = call i32 @llvm.riscv.esp.vsmulas.u8.qacc.ld.incp(i32 6, i32 1, i32 [[TMP114]], i32 4, i32 0)
+// CHECK-NEXT:    call void @llvm.riscv.esp.cmul.s16(i32 2, i32 1, i32 3, i32 1)
+// CHECK-NEXT:    [[TMP116:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP117:%.*]] = call i32 @llvm.riscv.esp.cmul.s16.ld.incp(i32 2, i32 7, i32 [[TMP116]], i32 0, i32 5, i32 0)
+// CHECK-NEXT:    [[TMP118:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP119:%.*]] = call i32 @llvm.riscv.esp.cmul.s16.st.incp(i32 7, i32 4, i32 6, i32 [[TMP118]], i32 2, i32 5)
+// CHECK-NEXT:    call void @llvm.riscv.esp.cmul.s8(i32 5, i32 7, i32 2, i32 4)
+// CHECK-NEXT:    [[TMP120:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP121:%.*]] = call i32 @llvm.riscv.esp.cmul.s8.ld.incp(i32 0, i32 6, i32 [[TMP120]], i32 2, i32 7, i32 5)
+// CHECK-NEXT:    [[TMP122:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP123:%.*]] = call i32 @llvm.riscv.esp.cmul.s8.st.incp(i32 1, i32 6, i32 5, i32 [[TMP122]], i32 0, i32 2)
+// CHECK-NEXT:    call void @llvm.riscv.esp.cmul.u16(i32 7, i32 4, i32 0, i32 0)
+// CHECK-NEXT:    [[TMP124:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP125:%.*]] = call i32 @llvm.riscv.esp.cmul.u16.ld.incp(i32 2, i32 0, i32 [[TMP124]], i32 3, i32 1, i32 1)
+// CHECK-NEXT:    [[TMP126:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP127:%.*]] = call i32 @llvm.riscv.esp.cmul.u16.st.incp(i32 4, i32 3, i32 4, i32 [[TMP126]], i32 1, i32 2)
+// CHECK-NEXT:    call void @llvm.riscv.esp.cmul.u8(i32 3, i32 4, i32 1, i32 5)
+// CHECK-NEXT:    [[TMP128:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP129:%.*]] = call i32 @llvm.riscv.esp.cmul.u8.ld.incp(i32 5, i32 0, i32 [[TMP128]], i32 1, i32 5, i32 1)
+// CHECK-NEXT:    [[TMP130:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP131:%.*]] = call i32 @llvm.riscv.esp.cmul.u8.st.incp(i32 2, i32 7, i32 4, i32 [[TMP130]], i32 3, i32 1)
+// CHECK-NEXT:    [[TMP132:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.max.s16.a(i32 2, i32 [[TMP132]])
+// CHECK-NEXT:    [[TMP133:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.max.s32.a(i32 0, i32 [[TMP133]])
+// CHECK-NEXT:    [[TMP134:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.max.s8.a(i32 7, i32 [[TMP134]])
+// CHECK-NEXT:    [[TMP135:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.max.u16.a(i32 4, i32 [[TMP135]])
+// CHECK-NEXT:    [[TMP136:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.max.u32.a(i32 4, i32 [[TMP136]])
+// CHECK-NEXT:    [[TMP137:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.max.u8.a(i32 3, i32 [[TMP137]])
+// CHECK-NEXT:    [[TMP138:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.min.s16.a(i32 0, i32 [[TMP138]])
+// CHECK-NEXT:    [[TMP139:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.min.s32.a(i32 7, i32 [[TMP139]])
+// CHECK-NEXT:    [[TMP140:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.min.s8.a(i32 4, i32 [[TMP140]])
+// CHECK-NEXT:    [[TMP141:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.min.u16.a(i32 7, i32 [[TMP141]])
+// CHECK-NEXT:    [[TMP142:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.min.u32.a(i32 6, i32 [[TMP142]])
+// CHECK-NEXT:    [[TMP143:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.min.u8.a(i32 1, i32 [[TMP143]])
 // CHECK-NEXT:    call void @llvm.riscv.esp.vabs.16(i32 7, i32 0)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vabs.32(i32 0, i32 3)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vabs.8(i32 5, i32 2)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vadd.s16(i32 0, i32 4, i32 0)
-// CHECK-NEXT:    [[TMP88:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vadd.s16.ld.incp(i32 4, i32 2, i32 [[TMP88]], i32 0, i32 7)
-// CHECK-NEXT:    [[TMP89:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vadd.s16.st.incp(i32 5, i32 7, i32 0, i32 [[TMP89]], i32 5)
+// CHECK-NEXT:    [[TMP144:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP145:%.*]] = call i32 @llvm.riscv.esp.vadd.s16.ld.incp(i32 4, i32 2, i32 [[TMP144]], i32 0, i32 7)
+// CHECK-NEXT:    [[TMP146:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP147:%.*]] = call i32 @llvm.riscv.esp.vadd.s16.st.incp(i32 5, i32 7, i32 0, i32 [[TMP146]], i32 5)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vadd.s32(i32 6, i32 5, i32 0)
-// CHECK-NEXT:    [[TMP90:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vadd.s32.ld.incp(i32 5, i32 6, i32 [[TMP90]], i32 0, i32 2)
-// CHECK-NEXT:    [[TMP91:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vadd.s32.st.incp(i32 7, i32 7, i32 0, i32 [[TMP91]], i32 1)
+// CHECK-NEXT:    [[TMP148:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP149:%.*]] = call i32 @llvm.riscv.esp.vadd.s32.ld.incp(i32 5, i32 6, i32 [[TMP148]], i32 0, i32 2)
+// CHECK-NEXT:    [[TMP150:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP151:%.*]] = call i32 @llvm.riscv.esp.vadd.s32.st.incp(i32 7, i32 7, i32 0, i32 [[TMP150]], i32 1)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vadd.s8(i32 6, i32 5, i32 5)
-// CHECK-NEXT:    [[TMP92:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vadd.s8.ld.incp(i32 2, i32 4, i32 [[TMP92]], i32 6, i32 7)
-// CHECK-NEXT:    [[TMP93:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vadd.s8.st.incp(i32 4, i32 6, i32 4, i32 [[TMP93]], i32 7)
+// CHECK-NEXT:    [[TMP152:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP153:%.*]] = call i32 @llvm.riscv.esp.vadd.s8.ld.incp(i32 2, i32 4, i32 [[TMP152]], i32 6, i32 7)
+// CHECK-NEXT:    [[TMP154:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP155:%.*]] = call i32 @llvm.riscv.esp.vadd.s8.st.incp(i32 4, i32 6, i32 4, i32 [[TMP154]], i32 7)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vadd.u16(i32 0, i32 6, i32 5)
-// CHECK-NEXT:    [[TMP94:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vadd.u16.ld.incp(i32 6, i32 7, i32 [[TMP94]], i32 5, i32 1)
-// CHECK-NEXT:    [[TMP95:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vadd.u16.st.incp(i32 1, i32 3, i32 4, i32 [[TMP95]], i32 5)
+// CHECK-NEXT:    [[TMP156:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP157:%.*]] = call i32 @llvm.riscv.esp.vadd.u16.ld.incp(i32 6, i32 7, i32 [[TMP156]], i32 5, i32 1)
+// CHECK-NEXT:    [[TMP158:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP159:%.*]] = call i32 @llvm.riscv.esp.vadd.u16.st.incp(i32 1, i32 3, i32 4, i32 [[TMP158]], i32 5)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vadd.u32(i32 7, i32 3, i32 0)
-// CHECK-NEXT:    [[TMP96:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vadd.u32.ld.incp(i32 0, i32 4, i32 [[TMP96]], i32 5, i32 5)
-// CHECK-NEXT:    [[TMP97:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vadd.u32.st.incp(i32 1, i32 5, i32 6, i32 [[TMP97]], i32 1)
+// CHECK-NEXT:    [[TMP160:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP161:%.*]] = call i32 @llvm.riscv.esp.vadd.u32.ld.incp(i32 0, i32 4, i32 [[TMP160]], i32 5, i32 5)
+// CHECK-NEXT:    [[TMP162:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP163:%.*]] = call i32 @llvm.riscv.esp.vadd.u32.st.incp(i32 1, i32 5, i32 6, i32 [[TMP162]], i32 1)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vadd.u8(i32 0, i32 1, i32 5)
-// CHECK-NEXT:    [[TMP98:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vadd.u8.ld.incp(i32 5, i32 1, i32 [[TMP98]], i32 2, i32 6)
-// CHECK-NEXT:    [[TMP99:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vadd.u8.st.incp(i32 1, i32 7, i32 4, i32 [[TMP99]], i32 2)
+// CHECK-NEXT:    [[TMP164:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP165:%.*]] = call i32 @llvm.riscv.esp.vadd.u8.ld.incp(i32 5, i32 1, i32 [[TMP164]], i32 2, i32 6)
+// CHECK-NEXT:    [[TMP166:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP167:%.*]] = call i32 @llvm.riscv.esp.vadd.u8.st.incp(i32 1, i32 7, i32 4, i32 [[TMP166]], i32 2)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vclamp.s16(i32 3, i32 12, i32 5)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vmax.s16(i32 1, i32 2, i32 2)
-// CHECK-NEXT:    [[TMP100:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmax.s16.ld.incp(i32 3, i32 0, i32 [[TMP100]], i32 5, i32 1)
-// CHECK-NEXT:    [[TMP101:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmax.s16.st.incp(i32 0, i32 4, i32 2, i32 [[TMP101]], i32 3)
+// CHECK-NEXT:    [[TMP168:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP169:%.*]] = call i32 @llvm.riscv.esp.vmax.s16.ld.incp(i32 3, i32 0, i32 [[TMP168]], i32 5, i32 1)
+// CHECK-NEXT:    [[TMP170:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP171:%.*]] = call i32 @llvm.riscv.esp.vmax.s16.st.incp(i32 0, i32 4, i32 2, i32 [[TMP170]], i32 3)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vmax.s32(i32 0, i32 2, i32 4)
-// CHECK-NEXT:    [[TMP102:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmax.s32.ld.incp(i32 3, i32 5, i32 [[TMP102]], i32 3, i32 6)
-// CHECK-NEXT:    [[TMP103:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmax.s32.st.incp(i32 6, i32 0, i32 7, i32 [[TMP103]], i32 4)
+// CHECK-NEXT:    [[TMP172:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP173:%.*]] = call i32 @llvm.riscv.esp.vmax.s32.ld.incp(i32 3, i32 5, i32 [[TMP172]], i32 3, i32 6)
+// CHECK-NEXT:    [[TMP174:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP175:%.*]] = call i32 @llvm.riscv.esp.vmax.s32.st.incp(i32 6, i32 0, i32 7, i32 [[TMP174]], i32 4)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vmax.s8(i32 1, i32 0, i32 3)
-// CHECK-NEXT:    [[TMP104:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmax.s8.ld.incp(i32 1, i32 6, i32 [[TMP104]], i32 6, i32 6)
-// CHECK-NEXT:    [[TMP105:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmax.s8.st.incp(i32 2, i32 7, i32 1, i32 [[TMP105]], i32 0)
+// CHECK-NEXT:    [[TMP176:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP177:%.*]] = call i32 @llvm.riscv.esp.vmax.s8.ld.incp(i32 1, i32 6, i32 [[TMP176]], i32 6, i32 6)
+// CHECK-NEXT:    [[TMP178:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP179:%.*]] = call i32 @llvm.riscv.esp.vmax.s8.st.incp(i32 2, i32 7, i32 1, i32 [[TMP178]], i32 0)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vmax.u16(i32 6, i32 6, i32 3)
-// CHECK-NEXT:    [[TMP106:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmax.u16.ld.incp(i32 5, i32 2, i32 [[TMP106]], i32 2, i32 1)
-// CHECK-NEXT:    [[TMP107:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmax.u16.st.incp(i32 3, i32 6, i32 2, i32 [[TMP107]], i32 0)
+// CHECK-NEXT:    [[TMP180:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP181:%.*]] = call i32 @llvm.riscv.esp.vmax.u16.ld.incp(i32 5, i32 2, i32 [[TMP180]], i32 2, i32 1)
+// CHECK-NEXT:    [[TMP182:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP183:%.*]] = call i32 @llvm.riscv.esp.vmax.u16.st.incp(i32 3, i32 6, i32 2, i32 [[TMP182]], i32 0)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vmax.u32(i32 2, i32 3, i32 3)
-// CHECK-NEXT:    [[TMP108:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmax.u32.ld.incp(i32 1, i32 4, i32 [[TMP108]], i32 5, i32 5)
-// CHECK-NEXT:    [[TMP109:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmax.u32.st.incp(i32 4, i32 2, i32 1, i32 [[TMP109]], i32 4)
+// CHECK-NEXT:    [[TMP184:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP185:%.*]] = call i32 @llvm.riscv.esp.vmax.u32.ld.incp(i32 1, i32 4, i32 [[TMP184]], i32 5, i32 5)
+// CHECK-NEXT:    [[TMP186:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP187:%.*]] = call i32 @llvm.riscv.esp.vmax.u32.st.incp(i32 4, i32 2, i32 1, i32 [[TMP186]], i32 4)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vmax.u8(i32 7, i32 0, i32 4)
-// CHECK-NEXT:    [[TMP110:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmax.u8.ld.incp(i32 1, i32 5, i32 [[TMP110]], i32 4, i32 7)
-// CHECK-NEXT:    [[TMP111:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmax.u8.st.incp(i32 1, i32 2, i32 5, i32 [[TMP111]], i32 7)
+// CHECK-NEXT:    [[TMP188:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP189:%.*]] = call i32 @llvm.riscv.esp.vmax.u8.ld.incp(i32 1, i32 5, i32 [[TMP188]], i32 4, i32 7)
+// CHECK-NEXT:    [[TMP190:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP191:%.*]] = call i32 @llvm.riscv.esp.vmax.u8.st.incp(i32 1, i32 2, i32 5, i32 [[TMP190]], i32 7)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vmin.s16(i32 5, i32 1, i32 7)
-// CHECK-NEXT:    [[TMP112:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmin.s16.ld.incp(i32 7, i32 6, i32 [[TMP112]], i32 6, i32 4)
-// CHECK-NEXT:    [[TMP113:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmin.s16.st.incp(i32 7, i32 0, i32 6, i32 [[TMP113]], i32 2)
+// CHECK-NEXT:    [[TMP192:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP193:%.*]] = call i32 @llvm.riscv.esp.vmin.s16.ld.incp(i32 7, i32 6, i32 [[TMP192]], i32 6, i32 4)
+// CHECK-NEXT:    [[TMP194:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP195:%.*]] = call i32 @llvm.riscv.esp.vmin.s16.st.incp(i32 7, i32 0, i32 6, i32 [[TMP194]], i32 2)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vmin.s32(i32 7, i32 4, i32 7)
-// CHECK-NEXT:    [[TMP114:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmin.s32.ld.incp(i32 0, i32 1, i32 [[TMP114]], i32 5, i32 4)
-// CHECK-NEXT:    [[TMP115:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmin.s32.st.incp(i32 1, i32 6, i32 7, i32 [[TMP115]], i32 4)
+// CHECK-NEXT:    [[TMP196:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP197:%.*]] = call i32 @llvm.riscv.esp.vmin.s32.ld.incp(i32 0, i32 1, i32 [[TMP196]], i32 5, i32 4)
+// CHECK-NEXT:    [[TMP198:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP199:%.*]] = call i32 @llvm.riscv.esp.vmin.s32.st.incp(i32 1, i32 6, i32 7, i32 [[TMP198]], i32 4)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vmin.s8(i32 5, i32 6, i32 4)
-// CHECK-NEXT:    [[TMP116:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmin.s8.ld.incp(i32 1, i32 6, i32 [[TMP116]], i32 6, i32 5)
-// CHECK-NEXT:    [[TMP117:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmin.s8.st.incp(i32 7, i32 7, i32 6, i32 [[TMP117]], i32 7)
+// CHECK-NEXT:    [[TMP200:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP201:%.*]] = call i32 @llvm.riscv.esp.vmin.s8.ld.incp(i32 1, i32 6, i32 [[TMP200]], i32 6, i32 5)
+// CHECK-NEXT:    [[TMP202:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP203:%.*]] = call i32 @llvm.riscv.esp.vmin.s8.st.incp(i32 7, i32 7, i32 6, i32 [[TMP202]], i32 7)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vmin.u16(i32 7, i32 1, i32 1)
-// CHECK-NEXT:    [[TMP118:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmin.u16.ld.incp(i32 6, i32 0, i32 [[TMP118]], i32 3, i32 0)
-// CHECK-NEXT:    [[TMP119:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmin.u16.st.incp(i32 0, i32 7, i32 5, i32 [[TMP119]], i32 3)
+// CHECK-NEXT:    [[TMP204:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP205:%.*]] = call i32 @llvm.riscv.esp.vmin.u16.ld.incp(i32 6, i32 0, i32 [[TMP204]], i32 3, i32 0)
+// CHECK-NEXT:    [[TMP206:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP207:%.*]] = call i32 @llvm.riscv.esp.vmin.u16.st.incp(i32 0, i32 7, i32 5, i32 [[TMP206]], i32 3)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vmin.u32(i32 6, i32 5, i32 0)
-// CHECK-NEXT:    [[TMP120:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmin.u32.ld.incp(i32 3, i32 7, i32 [[TMP120]], i32 1, i32 4)
-// CHECK-NEXT:    [[TMP121:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmin.u32.st.incp(i32 1, i32 0, i32 2, i32 [[TMP121]], i32 3)
+// CHECK-NEXT:    [[TMP208:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP209:%.*]] = call i32 @llvm.riscv.esp.vmin.u32.ld.incp(i32 3, i32 7, i32 [[TMP208]], i32 1, i32 4)
+// CHECK-NEXT:    [[TMP210:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP211:%.*]] = call i32 @llvm.riscv.esp.vmin.u32.st.incp(i32 1, i32 0, i32 2, i32 [[TMP210]], i32 3)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vmin.u8(i32 2, i32 0, i32 7)
-// CHECK-NEXT:    [[TMP122:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmin.u8.ld.incp(i32 4, i32 2, i32 [[TMP122]], i32 4, i32 3)
-// CHECK-NEXT:    [[TMP123:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmin.u8.st.incp(i32 1, i32 7, i32 4, i32 [[TMP123]], i32 4)
+// CHECK-NEXT:    [[TMP212:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP213:%.*]] = call i32 @llvm.riscv.esp.vmin.u8.ld.incp(i32 4, i32 2, i32 [[TMP212]], i32 4, i32 3)
+// CHECK-NEXT:    [[TMP214:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP215:%.*]] = call i32 @llvm.riscv.esp.vmin.u8.st.incp(i32 1, i32 7, i32 4, i32 [[TMP214]], i32 4)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vmul.s16(i32 7, i32 5, i32 3)
-// CHECK-NEXT:    [[TMP124:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmul.s16.ld.incp(i32 5, i32 4, i32 [[TMP124]], i32 1, i32 6)
+// CHECK-NEXT:    [[TMP216:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP217:%.*]] = call i32 @llvm.riscv.esp.vmul.s16.ld.incp(i32 5, i32 4, i32 [[TMP216]], i32 1, i32 6)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vmul.s16.s8xs8(i32 7, i32 6, i32 4, i32 4)
-// CHECK-NEXT:    [[TMP125:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmul.s16.st.incp(i32 0, i32 1, i32 5, i32 [[TMP125]], i32 7)
+// CHECK-NEXT:    [[TMP218:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP219:%.*]] = call i32 @llvm.riscv.esp.vmul.s16.st.incp(i32 0, i32 1, i32 5, i32 [[TMP218]], i32 7)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vmul.s32.s16xs16(i32 5, i32 3, i32 1, i32 2)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vmul.s8(i32 1, i32 6, i32 0)
-// CHECK-NEXT:    [[TMP126:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmul.s8.ld.incp(i32 2, i32 1, i32 [[TMP126]], i32 6, i32 5)
-// CHECK-NEXT:    [[TMP127:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmul.s8.st.incp(i32 5, i32 2, i32 1, i32 [[TMP127]], i32 7)
+// CHECK-NEXT:    [[TMP220:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP221:%.*]] = call i32 @llvm.riscv.esp.vmul.s8.ld.incp(i32 2, i32 1, i32 [[TMP220]], i32 6, i32 5)
+// CHECK-NEXT:    [[TMP222:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP223:%.*]] = call i32 @llvm.riscv.esp.vmul.s8.st.incp(i32 5, i32 2, i32 1, i32 [[TMP222]], i32 7)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vmul.u16(i32 7, i32 3, i32 6)
-// CHECK-NEXT:    [[TMP128:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmul.u16.ld.incp(i32 3, i32 3, i32 [[TMP128]], i32 2, i32 0)
-// CHECK-NEXT:    [[TMP129:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmul.u16.st.incp(i32 6, i32 5, i32 0, i32 [[TMP129]], i32 1)
+// CHECK-NEXT:    [[TMP224:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP225:%.*]] = call i32 @llvm.riscv.esp.vmul.u16.ld.incp(i32 3, i32 3, i32 [[TMP224]], i32 2, i32 0)
+// CHECK-NEXT:    [[TMP226:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP227:%.*]] = call i32 @llvm.riscv.esp.vmul.u16.st.incp(i32 6, i32 5, i32 0, i32 [[TMP226]], i32 1)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vmul.u8(i32 2, i32 2, i32 7)
-// CHECK-NEXT:    [[TMP130:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmul.u8.ld.incp(i32 1, i32 1, i32 [[TMP130]], i32 6, i32 7)
-// CHECK-NEXT:    [[TMP131:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vmul.u8.st.incp(i32 5, i32 0, i32 6, i32 [[TMP131]], i32 2)
-// CHECK-NEXT:    [[TMP132:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vprelu.s16(i32 [[TMP132]], i32 0, i32 7, i32 3)
-// CHECK-NEXT:    [[TMP133:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vprelu.s8(i32 [[TMP133]], i32 6, i32 6, i32 6)
-// CHECK-NEXT:    [[TMP134:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP135:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vrelu.s16(i32 [[TMP134]], i32 [[TMP135]], i32 3)
-// CHECK-NEXT:    [[TMP136:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP137:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vrelu.s8(i32 [[TMP136]], i32 [[TMP137]], i32 7)
-// CHECK-NEXT:    [[TMP138:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vsadds.s16(i32 [[TMP138]], i32 5, i32 4)
-// CHECK-NEXT:    [[TMP139:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vsadds.s8(i32 [[TMP139]], i32 6, i32 6)
-// CHECK-NEXT:    [[TMP140:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vsadds.u16(i32 [[TMP140]], i32 7, i32 2)
-// CHECK-NEXT:    [[TMP141:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vsadds.u8(i32 [[TMP141]], i32 2, i32 0)
-// CHECK-NEXT:    [[TMP142:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP143:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vsat.s16(i32 [[TMP142]], i32 [[TMP143]], i32 7, i32 5)
-// CHECK-NEXT:    [[TMP144:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP145:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vsat.s32(i32 [[TMP144]], i32 [[TMP145]], i32 2, i32 5)
-// CHECK-NEXT:    [[TMP146:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP147:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vsat.s8(i32 [[TMP146]], i32 [[TMP147]], i32 2, i32 5)
-// CHECK-NEXT:    [[TMP148:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP149:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vsat.u16(i32 [[TMP148]], i32 [[TMP149]], i32 0, i32 2)
-// CHECK-NEXT:    [[TMP150:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP151:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vsat.u32(i32 [[TMP150]], i32 [[TMP151]], i32 4, i32 2)
-// CHECK-NEXT:    [[TMP152:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP153:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vsat.u8(i32 [[TMP152]], i32 [[TMP153]], i32 0, i32 2)
-// CHECK-NEXT:    [[TMP154:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vssubs.s16(i32 [[TMP154]], i32 3, i32 6)
-// CHECK-NEXT:    [[TMP155:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vssubs.s8(i32 [[TMP155]], i32 5, i32 5)
-// CHECK-NEXT:    [[TMP156:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vssubs.u16(i32 [[TMP156]], i32 6, i32 3)
-// CHECK-NEXT:    [[TMP157:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vssubs.u8(i32 [[TMP157]], i32 0, i32 3)
+// CHECK-NEXT:    [[TMP228:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP229:%.*]] = call i32 @llvm.riscv.esp.vmul.u8.ld.incp(i32 1, i32 1, i32 [[TMP228]], i32 6, i32 7)
+// CHECK-NEXT:    [[TMP230:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP231:%.*]] = call i32 @llvm.riscv.esp.vmul.u8.st.incp(i32 5, i32 0, i32 6, i32 [[TMP230]], i32 2)
+// CHECK-NEXT:    [[TMP232:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.vprelu.s16(i32 [[TMP232]], i32 0, i32 7, i32 3)
+// CHECK-NEXT:    [[TMP233:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.vprelu.s8(i32 [[TMP233]], i32 6, i32 6, i32 6)
+// CHECK-NEXT:    [[TMP234:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP235:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.vrelu.s16(i32 [[TMP234]], i32 [[TMP235]], i32 3)
+// CHECK-NEXT:    [[TMP236:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP237:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.vrelu.s8(i32 [[TMP236]], i32 [[TMP237]], i32 7)
+// CHECK-NEXT:    [[TMP238:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.vsadds.s16(i32 [[TMP238]], i32 5, i32 4)
+// CHECK-NEXT:    [[TMP239:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.vsadds.s8(i32 [[TMP239]], i32 6, i32 6)
+// CHECK-NEXT:    [[TMP240:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.vsadds.u16(i32 [[TMP240]], i32 7, i32 2)
+// CHECK-NEXT:    [[TMP241:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.vsadds.u8(i32 [[TMP241]], i32 2, i32 0)
+// CHECK-NEXT:    [[TMP242:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP243:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.vsat.s16(i32 [[TMP242]], i32 [[TMP243]], i32 7, i32 5)
+// CHECK-NEXT:    [[TMP244:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP245:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.vsat.s32(i32 [[TMP244]], i32 [[TMP245]], i32 2, i32 5)
+// CHECK-NEXT:    [[TMP246:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP247:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.vsat.s8(i32 [[TMP246]], i32 [[TMP247]], i32 2, i32 5)
+// CHECK-NEXT:    [[TMP248:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP249:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.vsat.u16(i32 [[TMP248]], i32 [[TMP249]], i32 0, i32 2)
+// CHECK-NEXT:    [[TMP250:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP251:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.vsat.u32(i32 [[TMP250]], i32 [[TMP251]], i32 4, i32 2)
+// CHECK-NEXT:    [[TMP252:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP253:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.vsat.u8(i32 [[TMP252]], i32 [[TMP253]], i32 0, i32 2)
+// CHECK-NEXT:    [[TMP254:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.vssubs.s16(i32 [[TMP254]], i32 3, i32 6)
+// CHECK-NEXT:    [[TMP255:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.vssubs.s8(i32 [[TMP255]], i32 5, i32 5)
+// CHECK-NEXT:    [[TMP256:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.vssubs.u16(i32 [[TMP256]], i32 6, i32 3)
+// CHECK-NEXT:    [[TMP257:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.vssubs.u8(i32 [[TMP257]], i32 0, i32 3)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vsub.s16(i32 0, i32 5, i32 3)
-// CHECK-NEXT:    [[TMP158:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vsub.s16.ld.incp(i32 0, i32 1, i32 [[TMP158]], i32 5, i32 3)
-// CHECK-NEXT:    [[TMP159:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vsub.s16.st.incp(i32 5, i32 7, i32 7, i32 [[TMP159]], i32 4)
+// CHECK-NEXT:    [[TMP258:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP259:%.*]] = call i32 @llvm.riscv.esp.vsub.s16.ld.incp(i32 0, i32 1, i32 [[TMP258]], i32 5, i32 3)
+// CHECK-NEXT:    [[TMP260:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP261:%.*]] = call i32 @llvm.riscv.esp.vsub.s16.st.incp(i32 5, i32 7, i32 7, i32 [[TMP260]], i32 4)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vsub.s32(i32 3, i32 0, i32 3)
-// CHECK-NEXT:    [[TMP160:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vsub.s32.ld.incp(i32 1, i32 2, i32 [[TMP160]], i32 0, i32 2)
-// CHECK-NEXT:    [[TMP161:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vsub.s32.st.incp(i32 4, i32 0, i32 0, i32 [[TMP161]], i32 5)
+// CHECK-NEXT:    [[TMP262:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP263:%.*]] = call i32 @llvm.riscv.esp.vsub.s32.ld.incp(i32 1, i32 2, i32 [[TMP262]], i32 0, i32 2)
+// CHECK-NEXT:    [[TMP264:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP265:%.*]] = call i32 @llvm.riscv.esp.vsub.s32.st.incp(i32 4, i32 0, i32 0, i32 [[TMP264]], i32 5)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vsub.s8(i32 4, i32 1, i32 3)
-// CHECK-NEXT:    [[TMP162:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vsub.s8.ld.incp(i32 3, i32 7, i32 [[TMP162]], i32 3, i32 5)
-// CHECK-NEXT:    [[TMP163:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vsub.s8.st.incp(i32 5, i32 7, i32 3, i32 [[TMP163]], i32 3)
+// CHECK-NEXT:    [[TMP266:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP267:%.*]] = call i32 @llvm.riscv.esp.vsub.s8.ld.incp(i32 3, i32 7, i32 [[TMP266]], i32 3, i32 5)
+// CHECK-NEXT:    [[TMP268:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP269:%.*]] = call i32 @llvm.riscv.esp.vsub.s8.st.incp(i32 5, i32 7, i32 3, i32 [[TMP268]], i32 3)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vsub.u16(i32 4, i32 6, i32 5)
-// CHECK-NEXT:    [[TMP164:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vsub.u16.ld.incp(i32 4, i32 7, i32 [[TMP164]], i32 0, i32 5)
-// CHECK-NEXT:    [[TMP165:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vsub.u16.st.incp(i32 2, i32 2, i32 7, i32 [[TMP165]], i32 3)
+// CHECK-NEXT:    [[TMP270:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP271:%.*]] = call i32 @llvm.riscv.esp.vsub.u16.ld.incp(i32 4, i32 7, i32 [[TMP270]], i32 0, i32 5)
+// CHECK-NEXT:    [[TMP272:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP273:%.*]] = call i32 @llvm.riscv.esp.vsub.u16.st.incp(i32 2, i32 2, i32 7, i32 [[TMP272]], i32 3)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vsub.u32(i32 0, i32 1, i32 2)
-// CHECK-NEXT:    [[TMP166:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vsub.u32.ld.incp(i32 5, i32 6, i32 [[TMP166]], i32 3, i32 5)
-// CHECK-NEXT:    [[TMP167:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vsub.u32.st.incp(i32 0, i32 1, i32 4, i32 [[TMP167]], i32 2)
+// CHECK-NEXT:    [[TMP274:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP275:%.*]] = call i32 @llvm.riscv.esp.vsub.u32.ld.incp(i32 5, i32 6, i32 [[TMP274]], i32 3, i32 5)
+// CHECK-NEXT:    [[TMP276:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP277:%.*]] = call i32 @llvm.riscv.esp.vsub.u32.st.incp(i32 0, i32 1, i32 4, i32 [[TMP276]], i32 2)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vsub.u8(i32 4, i32 2, i32 7)
-// CHECK-NEXT:    [[TMP168:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vsub.u8.ld.incp(i32 2, i32 7, i32 [[TMP168]], i32 3, i32 4)
-// CHECK-NEXT:    [[TMP169:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vsub.u8.st.incp(i32 6, i32 4, i32 7, i32 [[TMP169]], i32 7)
-// CHECK-NEXT:    [[TMP170:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP171:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP172:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.addx2(i32 [[TMP170]], i32 [[TMP171]], i32 [[TMP172]])
-// CHECK-NEXT:    [[TMP173:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP174:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP175:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.addx4(i32 [[TMP173]], i32 [[TMP174]], i32 [[TMP175]])
-// CHECK-NEXT:    [[TMP176:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP177:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP178:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.sat(i32 [[TMP176]], i32 [[TMP177]], i32 [[TMP178]])
-// CHECK-NEXT:    [[TMP179:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP180:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP181:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.subx2(i32 [[TMP179]], i32 [[TMP180]], i32 [[TMP181]])
-// CHECK-NEXT:    [[TMP182:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP183:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP184:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.subx4(i32 [[TMP182]], i32 [[TMP183]], i32 [[TMP184]])
+// CHECK-NEXT:    [[TMP278:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP279:%.*]] = call i32 @llvm.riscv.esp.vsub.u8.ld.incp(i32 2, i32 7, i32 [[TMP278]], i32 3, i32 4)
+// CHECK-NEXT:    [[TMP280:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP281:%.*]] = call i32 @llvm.riscv.esp.vsub.u8.st.incp(i32 6, i32 4, i32 7, i32 [[TMP280]], i32 7)
+// CHECK-NEXT:    [[TMP282:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP283:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP284:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.addx2(i32 [[TMP282]], i32 [[TMP283]], i32 [[TMP284]])
+// CHECK-NEXT:    [[TMP285:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP286:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP287:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.addx4(i32 [[TMP285]], i32 [[TMP286]], i32 [[TMP287]])
+// CHECK-NEXT:    [[TMP288:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP289:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP290:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP291:%.*]] = call i32 @llvm.riscv.esp.sat(i32 [[TMP288]], i32 [[TMP289]], i32 [[TMP290]])
+// CHECK-NEXT:    [[TMP292:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP293:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP294:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.subx2(i32 [[TMP292]], i32 [[TMP293]], i32 [[TMP294]])
+// CHECK-NEXT:    [[TMP295:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP296:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP297:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.subx4(i32 [[TMP295]], i32 [[TMP296]], i32 [[TMP297]])
 // CHECK-NEXT:    call void @llvm.riscv.esp.andq(i32 0, i32 1, i32 4)
 // CHECK-NEXT:    call void @llvm.riscv.esp.notq(i32 0, i32 1)
 // CHECK-NEXT:    call void @llvm.riscv.esp.orq(i32 0, i32 6, i32 3)
@@ -420,47 +420,46 @@
 // CHECK-NEXT:    call void @llvm.riscv.esp.mov.s8.qacc(i32 5)
 // CHECK-NEXT:    call void @llvm.riscv.esp.mov.u16.qacc(i32 5)
 // CHECK-NEXT:    call void @llvm.riscv.esp.mov.u8.qacc(i32 5)
-// CHECK-NEXT:    [[TMP185:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.movi.16.a(i32 2, i32 8, i32 [[TMP185]])
-// CHECK-NEXT:    [[TMP186:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.movi.16.q(i32 [[TMP186]], i32 12, i32 1)
-// CHECK-NEXT:    [[TMP187:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.movi.32.a(i32 4, i32 2, i32 [[TMP187]])
-// CHECK-NEXT:    [[TMP188:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.movi.32.q(i32 [[TMP188]], i32 1, i32 0)
-// CHECK-NEXT:    [[TMP189:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.movi.8.a(i32 0, i32 13, i32 [[TMP189]])
-// CHECK-NEXT:    [[TMP190:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.movi.8.q(i32 [[TMP190]], i32 14, i32 3)
-// CHECK-NEXT:    [[TMP191:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.movx.r.cfg(i32 [[TMP191]])
-// CHECK-NEXT:    [[TMP192:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.movx.r.fft.bit.width(i32 [[TMP192]])
-// CHECK-NEXT:    [[TMP193:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP194:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.movx.r.perf(i32 [[TMP193]], i32 [[TMP194]])
-// CHECK-NEXT:    [[TMP195:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.movx.r.sar(i32 [[TMP195]])
-// CHECK-NEXT:    [[TMP196:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.movx.r.sar.bytes(i32 [[TMP196]])
-// CHECK-NEXT:    [[TMP197:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.movx.r.xacc.h(i32 [[TMP197]])
-// CHECK-NEXT:    [[TMP198:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.movx.r.xacc.l(i32 [[TMP198]])
-// CHECK-NEXT:    [[TMP199:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.movx.w.cfg(i32 [[TMP199]])
-// CHECK-NEXT:    [[TMP200:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.movx.w.fft.bit.width(i32 [[TMP200]])
-// CHECK-NEXT:    [[TMP201:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.movx.w.perf(i32 [[TMP201]])
-// CHECK-NEXT:    [[TMP202:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.movx.w.sar(i32 [[TMP202]])
-// CHECK-NEXT:    [[TMP203:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.movx.w.sar.bytes(i32 [[TMP203]])
-// CHECK-NEXT:    [[TMP204:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.movx.w.xacc.h(i32 [[TMP204]])
-// CHECK-NEXT:    [[TMP205:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.movx.w.xacc.l(i32 [[TMP205]])
+// CHECK-NEXT:    [[TMP298:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.movi.16.a(i32 2, i32 8, i32 [[TMP298]])
+// CHECK-NEXT:    [[TMP299:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.movi.16.q(i32 [[TMP299]], i32 12, i32 1)
+// CHECK-NEXT:    [[TMP300:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.movi.32.a(i32 4, i32 2, i32 [[TMP300]])
+// CHECK-NEXT:    [[TMP301:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.movi.32.q(i32 [[TMP301]], i32 1, i32 0)
+// CHECK-NEXT:    [[TMP302:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.movi.8.a(i32 0, i32 13, i32 [[TMP302]])
+// CHECK-NEXT:    [[TMP303:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.movi.8.q(i32 [[TMP303]], i32 14, i32 3)
+// CHECK-NEXT:    [[TMP304:%.*]] = call i32 @llvm.riscv.esp.movx.r.cfg()
+// CHECK-NEXT:    [[TMP305:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.movx.r.fft.bit.width(i32 [[TMP305]])
+// CHECK-NEXT:    [[TMP306:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP307:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.movx.r.perf(i32 [[TMP306]], i32 [[TMP307]])
+// CHECK-NEXT:    [[TMP308:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.movx.r.sar(i32 [[TMP308]])
+// CHECK-NEXT:    [[TMP309:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.movx.r.sar.bytes(i32 [[TMP309]])
+// CHECK-NEXT:    [[TMP310:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.movx.r.xacc.h(i32 [[TMP310]])
+// CHECK-NEXT:    [[TMP311:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.movx.r.xacc.l(i32 [[TMP311]])
+// CHECK-NEXT:    [[TMP312:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.movx.w.cfg(i32 [[TMP312]])
+// CHECK-NEXT:    [[TMP313:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.movx.w.fft.bit.width(i32 [[TMP313]])
+// CHECK-NEXT:    [[TMP314:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.movx.w.perf(i32 [[TMP314]])
+// CHECK-NEXT:    [[TMP315:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.movx.w.sar(i32 [[TMP315]])
+// CHECK-NEXT:    [[TMP316:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.movx.w.sar.bytes(i32 [[TMP316]])
+// CHECK-NEXT:    [[TMP317:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.movx.w.xacc.h(i32 [[TMP317]])
+// CHECK-NEXT:    [[TMP318:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.movx.w.xacc.l(i32 [[TMP318]])
 // CHECK-NEXT:    call void @llvm.riscv.esp.vext.s16(i32 0, i32 4, i32 6)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vext.s8(i32 0, i32 7, i32 1)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vext.u16(i32 1, i32 0, i32 6)
@@ -478,181 +477,181 @@
 // CHECK-NEXT:    call void @llvm.riscv.esp.zero.q(i32 3)
 // CHECK-NEXT:    call void @llvm.riscv.esp.zero.qacc()
 // CHECK-NEXT:    call void @llvm.riscv.esp.zero.xacc()
-// CHECK-NEXT:    [[TMP206:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.fft.ams.s16.ld.incp(i32 1, i32 1, i32 3, i32 [[TMP206]], i32 0, i32 6, i32 0, i32 3)
-// CHECK-NEXT:    [[TMP207:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.fft.ams.s16.ld.incp.uaup(i32 3, i32 0, i32 1, i32 [[TMP207]], i32 0, i32 3, i32 3, i32 1)
-// CHECK-NEXT:    [[TMP208:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.fft.ams.s16.ld.r32.decp(i32 2, i32 3, i32 7, i32 [[TMP208]], i32 0, i32 1, i32 1, i32 4)
-// CHECK-NEXT:    [[TMP209:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP210:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.fft.ams.s16.st.incp(i32 4, i32 4, i32 0, i32 5, i32 [[TMP209]], i32 [[TMP210]], i32 1, i32 1)
-// CHECK-NEXT:    [[TMP211:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.fft.bitrev(i32 [[TMP211]], i32 6)
-// CHECK-NEXT:    [[TMP212:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP213:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.fft.cmul.s16.ld.xp(i32 [[TMP212]], i32 7, i32 0, i32 [[TMP213]], i32 2, i32 1, i32 2)
-// CHECK-NEXT:    [[TMP214:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP215:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.fft.cmul.s16.st.xp(i32 [[TMP214]], i32 6, i32 0, i32 7, i32 [[TMP215]], i32 0, i32 1, i32 0)
+// CHECK-NEXT:    [[TMP319:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP320:%.*]] = call i32 @llvm.riscv.esp.fft.ams.s16.ld.incp(i32 1, i32 1, i32 3, i32 [[TMP319]], i32 0, i32 6, i32 0, i32 3)
+// CHECK-NEXT:    [[TMP321:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP322:%.*]] = call i32 @llvm.riscv.esp.fft.ams.s16.ld.incp.uaup(i32 3, i32 0, i32 1, i32 [[TMP321]], i32 0, i32 3, i32 3, i32 1)
+// CHECK-NEXT:    [[TMP323:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP324:%.*]] = call i32 @llvm.riscv.esp.fft.ams.s16.ld.r32.decp(i32 2, i32 3, i32 7, i32 [[TMP323]], i32 0, i32 1, i32 1, i32 4)
+// CHECK-NEXT:    [[TMP325:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP326:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.fft.ams.s16.st.incp(i32 4, i32 4, i32 0, i32 5, i32 [[TMP325]], i32 [[TMP326]], i32 1, i32 1)
+// CHECK-NEXT:    [[TMP327:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP328:%.*]] = call i32 @llvm.riscv.esp.fft.bitrev(i32 [[TMP327]], i32 6)
+// CHECK-NEXT:    [[TMP329:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP330:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP331:%.*]] = call i32 @llvm.riscv.esp.fft.cmul.s16.ld.xp(i32 [[TMP329]], i32 7, i32 0, i32 [[TMP330]], i32 2, i32 1, i32 2)
+// CHECK-NEXT:    [[TMP332:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP333:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP334:%.*]] = call i32 @llvm.riscv.esp.fft.cmul.s16.st.xp(i32 [[TMP332]], i32 6, i32 0, i32 7, i32 [[TMP333]], i32 0, i32 1, i32 0)
 // CHECK-NEXT:    call void @llvm.riscv.esp.fft.r2bf.s16(i32 2, i32 5, i32 0, i32 7, i32 5)
-// CHECK-NEXT:    [[TMP216:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.fft.r2bf.s16.st.incp(i32 1, i32 7, i32 [[TMP216]], i32 1, i32 6)
-// CHECK-NEXT:    [[TMP217:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.fft.vst.r32.decp(i32 2, i32 [[TMP217]], i32 1)
-// CHECK-NEXT:    [[TMP218:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP218]], i32 -464, i32 7)
-// CHECK-NEXT:    [[TMP219:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP220:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.ld.128.usar.xp(i32 [[TMP219]], i32 [[TMP220]], i32 0)
-// CHECK-NEXT:    [[TMP221:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.ld.xacc.ip(i32 [[TMP221]], i32 -224)
-// CHECK-NEXT:    [[TMP222:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.ldqa.s16.128.ip(i32 [[TMP222]], i32 288)
-// CHECK-NEXT:    [[TMP223:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP224:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.ldqa.s16.128.xp(i32 [[TMP223]], i32 [[TMP224]])
-// CHECK-NEXT:    [[TMP225:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.ldqa.s8.128.ip(i32 [[TMP225]], i32 -1408)
-// CHECK-NEXT:    [[TMP226:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP227:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.ldqa.s8.128.xp(i32 [[TMP226]], i32 [[TMP227]])
-// CHECK-NEXT:    [[TMP228:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.ldqa.u16.128.ip(i32 [[TMP228]], i32 -1440)
-// CHECK-NEXT:    [[TMP229:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP230:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.ldqa.u16.128.xp(i32 [[TMP229]], i32 [[TMP230]])
-// CHECK-NEXT:    [[TMP231:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.ldqa.u8.128.ip(i32 [[TMP231]], i32 -816)
-// CHECK-NEXT:    [[TMP232:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP233:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.ldqa.u8.128.xp(i32 [[TMP232]], i32 [[TMP233]])
-// CHECK-NEXT:    [[TMP234:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vldbc.16.ip(i32 [[TMP234]], i32 380, i32 2)
-// CHECK-NEXT:    [[TMP235:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP236:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vldbc.16.xp(i32 [[TMP235]], i32 [[TMP236]], i32 3)
-// CHECK-NEXT:    [[TMP237:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vldbc.32.ip(i32 [[TMP237]], i32 -292, i32 7)
-// CHECK-NEXT:    [[TMP238:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP239:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vldbc.32.xp(i32 [[TMP238]], i32 [[TMP239]], i32 1)
-// CHECK-NEXT:    [[TMP240:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vldbc.8.ip(i32 [[TMP240]], i32 -416, i32 5)
-// CHECK-NEXT:    [[TMP241:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP242:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vldbc.8.xp(i32 [[TMP241]], i32 [[TMP242]], i32 7)
-// CHECK-NEXT:    [[TMP243:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vldext.s16.ip(i32 [[TMP243]], i32 -80, i32 0, i32 3)
-// CHECK-NEXT:    [[TMP244:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP245:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vldext.s16.xp(i32 [[TMP244]], i32 [[TMP245]], i32 2, i32 5)
-// CHECK-NEXT:    [[TMP246:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vldext.s8.ip(i32 [[TMP246]], i32 0, i32 2, i32 7)
-// CHECK-NEXT:    [[TMP247:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP248:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vldext.s8.xp(i32 [[TMP247]], i32 [[TMP248]], i32 7, i32 5)
-// CHECK-NEXT:    [[TMP249:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vldext.u16.ip(i32 [[TMP249]], i32 32, i32 0, i32 6)
-// CHECK-NEXT:    [[TMP250:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP251:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vldext.u16.xp(i32 [[TMP250]], i32 [[TMP251]], i32 7, i32 6)
-// CHECK-NEXT:    [[TMP252:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vldext.u8.ip(i32 [[TMP252]], i32 -16, i32 3, i32 1)
-// CHECK-NEXT:    [[TMP253:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP254:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vldext.u8.xp(i32 [[TMP253]], i32 [[TMP254]], i32 5, i32 4)
-// CHECK-NEXT:    [[TMP255:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vldhbc.16.incp(i32 [[TMP255]], i32 2, i32 3)
-// CHECK-NEXT:    [[TMP256:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.ld.qacc.h.h.128.ip(i32 [[TMP256]], i32 -240)
-// CHECK-NEXT:    [[TMP257:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.ld.qacc.h.l.128.ip(i32 [[TMP257]], i32 -32)
-// CHECK-NEXT:    [[TMP258:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.ld.qacc.l.h.128.ip(i32 [[TMP258]], i32 -64)
-// CHECK-NEXT:    [[TMP259:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.ld.qacc.l.l.128.ip(i32 [[TMP259]], i32 -80)
-// CHECK-NEXT:    [[TMP260:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.ld.ua.state.ip(i32 [[TMP260]], i32 1504)
-// CHECK-NEXT:    [[TMP261:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.ldxq.32(i32 [[TMP261]], i32 6, i32 1, i32 7, i32 1)
-// CHECK-NEXT:    [[TMP262:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.st.qacc.h.h.128.ip(i32 [[TMP262]], i32 -480)
-// CHECK-NEXT:    [[TMP263:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.st.qacc.h.l.128.ip(i32 [[TMP263]], i32 -1712)
-// CHECK-NEXT:    [[TMP264:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.st.qacc.l.h.128.ip(i32 [[TMP264]], i32 960)
-// CHECK-NEXT:    [[TMP265:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.st.qacc.l.l.128.ip(i32 [[TMP265]], i32 1920)
-// CHECK-NEXT:    [[TMP266:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.st.ua.state.ip(i32 [[TMP266]], i32 -1360)
-// CHECK-NEXT:    [[TMP267:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.stxq.32(i32 [[TMP267]], i32 6, i32 2, i32 3, i32 0)
-// CHECK-NEXT:    [[TMP268:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vld.128.ip(i32 [[TMP268]], i32 -1136, i32 0)
-// CHECK-NEXT:    [[TMP269:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP270:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vld.128.xp(i32 [[TMP269]], i32 [[TMP270]], i32 5)
-// CHECK-NEXT:    [[TMP271:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vld.h.64.ip(i32 [[TMP271]], i32 1008, i32 4)
-// CHECK-NEXT:    [[TMP272:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP273:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vld.h.64.xp(i32 [[TMP272]], i32 [[TMP273]], i32 2)
-// CHECK-NEXT:    [[TMP274:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vld.l.64.ip(i32 [[TMP274]], i32 -304, i32 6)
-// CHECK-NEXT:    [[TMP275:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP276:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vld.l.64.xp(i32 [[TMP275]], i32 [[TMP276]], i32 6)
-// CHECK-NEXT:    [[TMP277:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP277]], i32 -1216)
-// CHECK-NEXT:    [[TMP278:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP279:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vst.128.xp(i32 [[TMP278]], i32 6, i32 [[TMP279]])
-// CHECK-NEXT:    [[TMP280:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vst.h.64.ip(i32 1, i32 [[TMP280]], i32 -456)
-// CHECK-NEXT:    [[TMP281:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP282:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vst.h.64.xp(i32 [[TMP281]], i32 2, i32 [[TMP282]])
-// CHECK-NEXT:    [[TMP283:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vst.l.64.ip(i32 6, i32 [[TMP283]], i32 664)
-// CHECK-NEXT:    [[TMP284:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP285:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.vst.l.64.xp(i32 [[TMP284]], i32 4, i32 [[TMP285]])
+// CHECK-NEXT:    [[TMP335:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP336:%.*]] = call i32 @llvm.riscv.esp.fft.r2bf.s16.st.incp(i32 1, i32 7, i32 [[TMP335]], i32 1, i32 6)
+// CHECK-NEXT:    [[TMP337:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP338:%.*]] = call i32 @llvm.riscv.esp.fft.vst.r32.decp(i32 2, i32 [[TMP337]], i32 1)
+// CHECK-NEXT:    [[TMP339:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP340:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP339]], i32 -464, i32 7)
+// CHECK-NEXT:    [[TMP341:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP342:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP343:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.xp(i32 [[TMP341]], i32 [[TMP342]], i32 0)
+// CHECK-NEXT:    [[TMP344:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP345:%.*]] = call i32 @llvm.riscv.esp.ld.xacc.ip(i32 [[TMP344]], i32 -224)
+// CHECK-NEXT:    [[TMP346:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP347:%.*]] = call i32 @llvm.riscv.esp.ldqa.s16.128.ip(i32 [[TMP346]], i32 288)
+// CHECK-NEXT:    [[TMP348:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP349:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP350:%.*]] = call i32 @llvm.riscv.esp.ldqa.s16.128.xp(i32 [[TMP348]], i32 [[TMP349]])
+// CHECK-NEXT:    [[TMP351:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP352:%.*]] = call i32 @llvm.riscv.esp.ldqa.s8.128.ip(i32 [[TMP351]], i32 -1408)
+// CHECK-NEXT:    [[TMP353:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP354:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP355:%.*]] = call i32 @llvm.riscv.esp.ldqa.s8.128.xp(i32 [[TMP353]], i32 [[TMP354]])
+// CHECK-NEXT:    [[TMP356:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP357:%.*]] = call i32 @llvm.riscv.esp.ldqa.u16.128.ip(i32 [[TMP356]], i32 -1440)
+// CHECK-NEXT:    [[TMP358:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP359:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP360:%.*]] = call i32 @llvm.riscv.esp.ldqa.u16.128.xp(i32 [[TMP358]], i32 [[TMP359]])
+// CHECK-NEXT:    [[TMP361:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP362:%.*]] = call i32 @llvm.riscv.esp.ldqa.u8.128.ip(i32 [[TMP361]], i32 -816)
+// CHECK-NEXT:    [[TMP363:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP364:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP365:%.*]] = call i32 @llvm.riscv.esp.ldqa.u8.128.xp(i32 [[TMP363]], i32 [[TMP364]])
+// CHECK-NEXT:    [[TMP366:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP367:%.*]] = call i32 @llvm.riscv.esp.vldbc.16.ip(i32 [[TMP366]], i32 380, i32 2)
+// CHECK-NEXT:    [[TMP368:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP369:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP370:%.*]] = call i32 @llvm.riscv.esp.vldbc.16.xp(i32 [[TMP368]], i32 [[TMP369]], i32 3)
+// CHECK-NEXT:    [[TMP371:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP372:%.*]] = call i32 @llvm.riscv.esp.vldbc.32.ip(i32 [[TMP371]], i32 -292, i32 7)
+// CHECK-NEXT:    [[TMP373:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP374:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP375:%.*]] = call i32 @llvm.riscv.esp.vldbc.32.xp(i32 [[TMP373]], i32 [[TMP374]], i32 1)
+// CHECK-NEXT:    [[TMP376:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP377:%.*]] = call i32 @llvm.riscv.esp.vldbc.8.ip(i32 [[TMP376]], i32 -416, i32 5)
+// CHECK-NEXT:    [[TMP378:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP379:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP380:%.*]] = call i32 @llvm.riscv.esp.vldbc.8.xp(i32 [[TMP378]], i32 [[TMP379]], i32 7)
+// CHECK-NEXT:    [[TMP381:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP382:%.*]] = call i32 @llvm.riscv.esp.vldext.s16.ip(i32 [[TMP381]], i32 -80, i32 0, i32 3)
+// CHECK-NEXT:    [[TMP383:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP384:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP385:%.*]] = call i32 @llvm.riscv.esp.vldext.s16.xp(i32 [[TMP383]], i32 [[TMP384]], i32 2, i32 5)
+// CHECK-NEXT:    [[TMP386:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP387:%.*]] = call i32 @llvm.riscv.esp.vldext.s8.ip(i32 [[TMP386]], i32 0, i32 2, i32 7)
+// CHECK-NEXT:    [[TMP388:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP389:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP390:%.*]] = call i32 @llvm.riscv.esp.vldext.s8.xp(i32 [[TMP388]], i32 [[TMP389]], i32 7, i32 5)
+// CHECK-NEXT:    [[TMP391:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP392:%.*]] = call i32 @llvm.riscv.esp.vldext.u16.ip(i32 [[TMP391]], i32 32, i32 0, i32 6)
+// CHECK-NEXT:    [[TMP393:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP394:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP395:%.*]] = call i32 @llvm.riscv.esp.vldext.u16.xp(i32 [[TMP393]], i32 [[TMP394]], i32 7, i32 6)
+// CHECK-NEXT:    [[TMP396:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP397:%.*]] = call i32 @llvm.riscv.esp.vldext.u8.ip(i32 [[TMP396]], i32 -16, i32 3, i32 1)
+// CHECK-NEXT:    [[TMP398:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP399:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP400:%.*]] = call i32 @llvm.riscv.esp.vldext.u8.xp(i32 [[TMP398]], i32 [[TMP399]], i32 5, i32 4)
+// CHECK-NEXT:    [[TMP401:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP402:%.*]] = call i32 @llvm.riscv.esp.vldhbc.16.incp(i32 [[TMP401]], i32 2, i32 3)
+// CHECK-NEXT:    [[TMP403:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP404:%.*]] = call i32 @llvm.riscv.esp.ld.qacc.h.h.128.ip(i32 [[TMP403]], i32 -240)
+// CHECK-NEXT:    [[TMP405:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP406:%.*]] = call i32 @llvm.riscv.esp.ld.qacc.h.l.128.ip(i32 [[TMP405]], i32 -32)
+// CHECK-NEXT:    [[TMP407:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP408:%.*]] = call i32 @llvm.riscv.esp.ld.qacc.l.h.128.ip(i32 [[TMP407]], i32 -64)
+// CHECK-NEXT:    [[TMP409:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP410:%.*]] = call i32 @llvm.riscv.esp.ld.qacc.l.l.128.ip(i32 [[TMP409]], i32 -80)
+// CHECK-NEXT:    [[TMP411:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP412:%.*]] = call i32 @llvm.riscv.esp.ld.ua.state.ip(i32 [[TMP411]], i32 1504)
+// CHECK-NEXT:    [[TMP413:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.ldxq.32(i32 [[TMP413]], i32 6, i32 1, i32 7, i32 1)
+// CHECK-NEXT:    [[TMP414:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP415:%.*]] = call i32 @llvm.riscv.esp.st.qacc.h.h.128.ip(i32 [[TMP414]], i32 -480)
+// CHECK-NEXT:    [[TMP416:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP417:%.*]] = call i32 @llvm.riscv.esp.st.qacc.h.l.128.ip(i32 [[TMP416]], i32 -1712)
+// CHECK-NEXT:    [[TMP418:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP419:%.*]] = call i32 @llvm.riscv.esp.st.qacc.l.h.128.ip(i32 [[TMP418]], i32 960)
+// CHECK-NEXT:    [[TMP420:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP421:%.*]] = call i32 @llvm.riscv.esp.st.qacc.l.l.128.ip(i32 [[TMP420]], i32 1920)
+// CHECK-NEXT:    [[TMP422:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP423:%.*]] = call i32 @llvm.riscv.esp.st.ua.state.ip(i32 [[TMP422]], i32 -1360)
+// CHECK-NEXT:    [[TMP424:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.stxq.32(i32 [[TMP424]], i32 6, i32 2, i32 3, i32 0)
+// CHECK-NEXT:    [[TMP425:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP426:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[TMP425]], i32 -1136, i32 0)
+// CHECK-NEXT:    [[TMP427:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP428:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP429:%.*]] = call i32 @llvm.riscv.esp.vld.128.xp(i32 [[TMP427]], i32 [[TMP428]], i32 5)
+// CHECK-NEXT:    [[TMP430:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP431:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[TMP430]], i32 1008, i32 4)
+// CHECK-NEXT:    [[TMP432:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP433:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP434:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.xp(i32 [[TMP432]], i32 [[TMP433]], i32 2)
+// CHECK-NEXT:    [[TMP435:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP436:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[TMP435]], i32 -304, i32 6)
+// CHECK-NEXT:    [[TMP437:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP438:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP439:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.xp(i32 [[TMP437]], i32 [[TMP438]], i32 6)
+// CHECK-NEXT:    [[TMP440:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP441:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP440]], i32 -1216)
+// CHECK-NEXT:    [[TMP442:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP443:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP444:%.*]] = call i32 @llvm.riscv.esp.vst.128.xp(i32 [[TMP442]], i32 6, i32 [[TMP443]])
+// CHECK-NEXT:    [[TMP445:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP446:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 1, i32 [[TMP445]], i32 -456)
+// CHECK-NEXT:    [[TMP447:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP448:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP449:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.xp(i32 [[TMP447]], i32 2, i32 [[TMP448]])
+// CHECK-NEXT:    [[TMP450:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP451:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 6, i32 [[TMP450]], i32 664)
+// CHECK-NEXT:    [[TMP452:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP453:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP454:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.xp(i32 [[TMP452]], i32 4, i32 [[TMP453]])
 // CHECK-NEXT:    call void @llvm.riscv.esp.slci.2q(i32 2, i32 0, i32 14)
-// CHECK-NEXT:    [[TMP286:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP287:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.slcxxp.2q(i32 [[TMP286]], i32 [[TMP287]], i32 0, i32 1)
+// CHECK-NEXT:    [[TMP455:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP456:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.slcxxp.2q(i32 [[TMP455]], i32 [[TMP456]], i32 0, i32 1)
 // CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 7, i32 3, i32 2)
-// CHECK-NEXT:    [[TMP288:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[TMP288]], i32 4, i32 1168, i32 4)
-// CHECK-NEXT:    [[TMP289:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP290:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.src.q.ld.xp(i32 [[TMP289]], i32 0, i32 [[TMP290]], i32 1, i32 0)
+// CHECK-NEXT:    [[TMP457:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP458:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[TMP457]], i32 4, i32 1168, i32 4)
+// CHECK-NEXT:    [[TMP459:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP460:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP461:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.xp(i32 [[TMP459]], i32 0, i32 [[TMP460]], i32 1, i32 0)
 // CHECK-NEXT:    call void @llvm.riscv.esp.src.q.qup(i32 3, i32 3, i32 0)
 // CHECK-NEXT:    call void @llvm.riscv.esp.srci.2q(i32 7, i32 4, i32 1)
 // CHECK-NEXT:    call void @llvm.riscv.esp.srcmb.s16.q.qacc(i32 2, i32 1, i32 5)
-// CHECK-NEXT:    [[TMP291:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.srcmb.s16.qacc(i32 [[TMP291]], i32 0, i32 7)
+// CHECK-NEXT:    [[TMP462:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.srcmb.s16.qacc(i32 [[TMP462]], i32 0, i32 7)
 // CHECK-NEXT:    call void @llvm.riscv.esp.srcmb.s8.q.qacc(i32 7, i32 0, i32 3)
-// CHECK-NEXT:    [[TMP292:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.srcmb.s8.qacc(i32 [[TMP292]], i32 1, i32 3)
+// CHECK-NEXT:    [[TMP463:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.srcmb.s8.qacc(i32 [[TMP463]], i32 1, i32 3)
 // CHECK-NEXT:    call void @llvm.riscv.esp.srcmb.u16.q.qacc(i32 6, i32 1, i32 0)
-// CHECK-NEXT:    [[TMP293:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.srcmb.u16.qacc(i32 [[TMP293]], i32 0, i32 0)
+// CHECK-NEXT:    [[TMP464:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.srcmb.u16.qacc(i32 [[TMP464]], i32 0, i32 0)
 // CHECK-NEXT:    call void @llvm.riscv.esp.srcmb.u8.q.qacc(i32 6, i32 0, i32 7)
-// CHECK-NEXT:    [[TMP294:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.srcmb.u8.qacc(i32 [[TMP294]], i32 1, i32 2)
-// CHECK-NEXT:    [[TMP295:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.srcq.128.st.incp(i32 0, i32 5, i32 [[TMP295]])
-// CHECK-NEXT:    [[TMP296:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP297:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.srcxxp.2q(i32 [[TMP296]], i32 [[TMP297]], i32 7, i32 5)
-// CHECK-NEXT:    [[TMP298:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP299:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.srs.s.xacc(i32 [[TMP298]], i32 [[TMP299]])
-// CHECK-NEXT:    [[TMP300:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    [[TMP301:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.srs.u.xacc(i32 [[TMP300]], i32 [[TMP301]])
+// CHECK-NEXT:    [[TMP465:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.srcmb.u8.qacc(i32 [[TMP465]], i32 1, i32 2)
+// CHECK-NEXT:    [[TMP466:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP467:%.*]] = call i32 @llvm.riscv.esp.srcq.128.st.incp(i32 0, i32 5, i32 [[TMP466]])
+// CHECK-NEXT:    [[TMP468:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP469:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.srcxxp.2q(i32 [[TMP468]], i32 [[TMP469]], i32 7, i32 5)
+// CHECK-NEXT:    [[TMP470:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP471:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.srs.s.xacc(i32 [[TMP470]], i32 [[TMP471]])
+// CHECK-NEXT:    [[TMP472:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP473:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    call void @llvm.riscv.esp.srs.u.xacc(i32 [[TMP472]], i32 [[TMP473]])
 // CHECK-NEXT:    call void @llvm.riscv.esp.vsl.32(i32 0, i32 3)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vsld.16(i32 6, i32 4, i32 4)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vsld.32(i32 2, i32 7, i32 5)
@@ -662,10 +661,10 @@
 // CHECK-NEXT:    call void @llvm.riscv.esp.vsrd.16(i32 6, i32 2, i32 1)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vsrd.32(i32 7, i32 5, i32 4)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vsrd.8(i32 2, i32 1, i32 4)
-// CHECK-NEXT:    [[TMP302:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.st.s.xacc.ip(i32 [[TMP302]], i32 912)
-// CHECK-NEXT:    [[TMP303:%.*]] = load i32, ptr [[DATA]], align 4
-// CHECK-NEXT:    call void @llvm.riscv.esp.st.u.xacc.ip(i32 [[TMP303]], i32 -112)
+// CHECK-NEXT:    [[TMP474:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP475:%.*]] = call i32 @llvm.riscv.esp.st.s.xacc.ip(i32 [[TMP474]], i32 912)
+// CHECK-NEXT:    [[TMP476:%.*]] = load i32, ptr [[DATA]], align 4
+// CHECK-NEXT:    [[TMP477:%.*]] = call i32 @llvm.riscv.esp.st.u.xacc.ip(i32 [[TMP476]], i32 -112)
 // CHECK-NEXT:    ret void
 //
 void test() {
@@ -903,7 +902,7 @@ __builtin_riscv_esp_movi_32_a(4, 2, data);
 __builtin_riscv_esp_movi_32_q(data, 1, 0);
 __builtin_riscv_esp_movi_8_a(0, 13, data);
 __builtin_riscv_esp_movi_8_q(data, 14, 3);
-__builtin_riscv_esp_movx_r_cfg(data);
+__builtin_riscv_esp_movx_r_cfg();
 __builtin_riscv_esp_movx_r_fft_bit_width(data);
 __builtin_riscv_esp_movx_r_perf(data, data);
 __builtin_riscv_esp_movx_r_sar(data);
