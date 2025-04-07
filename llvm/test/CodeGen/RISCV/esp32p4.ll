@@ -14,1001 +14,1003 @@ define void @test(){
 ; CHECK-NEXT:    .cfi_offset s10, -8
 ; CHECK-NEXT:    .cfi_offset s11, -4
 ; CHECK-NEXT:    li a0, 8
-; CHECK-NEXT:    esp.vld.128.ip q0, a0, 784
-; CHECK-NEXT:    li a0, 8
-; CHECK-NEXT:    esp.vld.128.ip q1, a0, 784
-; CHECK-NEXT:    li a0, 8
-; CHECK-NEXT:    esp.vld.128.ip q2, a0, 784
-; CHECK-NEXT:    li a0, 8
-; CHECK-NEXT:    esp.vld.128.ip q3, a0, 784
-; CHECK-NEXT:    li a0, 8
-; CHECK-NEXT:    esp.vld.128.ip q4, a0, 784
-; CHECK-NEXT:    li a0, 8
-; CHECK-NEXT:    esp.vld.128.ip q5, a0, 784
-; CHECK-NEXT:    li a0, 8
-; CHECK-NEXT:    esp.vld.128.ip q6, a0, 784
-; CHECK-NEXT:    li a0, 8
-; CHECK-NEXT:    esp.vld.128.ip q7, a0, 784
-; CHECK-NEXT:    esp.vcmulas.s16.qacc.h q0, q4
+; CHECK-NEXT:    esp.vld.128.ip q0, a0, 496
+; CHECK-NEXT:    esp.vld.128.ip q1, a0, 496
+; CHECK-NEXT:    esp.vld.128.ip q2, a0, 496
+; CHECK-NEXT:    esp.vld.128.ip q3, a0, 496
+; CHECK-NEXT:    esp.vld.128.ip q4, a0, 496
+; CHECK-NEXT:    esp.vld.128.ip q5, a0, 496
+; CHECK-NEXT:    esp.vld.128.ip q6, a0, 496
+; CHECK-NEXT:    esp.vld.128.ip q7, a0, 496
+; CHECK-NEXT:    esp.vcmulas.s16.qacc.h q0, q6
 ; CHECK-NEXT:    li a0, 10
-; CHECK-NEXT:    esp.vcmulas.s16.qacc.h.ld.ip q1, a0, -48, q6, q1
-; CHECK-NEXT:    li s9, 12
-; CHECK-NEXT:    li a0, 2
-; CHECK-NEXT:    esp.vcmulas.s16.qacc.h.ld.xp q1, a0, s9, q2, q7
-; CHECK-NEXT:    esp.vcmulas.s16.qacc.l q7, q6
+; CHECK-NEXT:    esp.vcmulas.s16.qacc.h.ld.ip q2, a0, 0, q0, q3
+; CHECK-NEXT:    li t6, 7
+; CHECK-NEXT:    li a0, 3
+; CHECK-NEXT:    esp.vcmulas.s16.qacc.h.ld.xp q6, a0, t6, q2, q0
+; CHECK-NEXT:    esp.vcmulas.s16.qacc.l q2, q3
 ; CHECK-NEXT:    li a0, 8
-; CHECK-NEXT:    esp.vcmulas.s16.qacc.l.ld.ip q7, a0, 48, q7, q0
-; CHECK-NEXT:    li t4, 14
-; CHECK-NEXT:    li a0, 7
-; CHECK-NEXT:    esp.vcmulas.s16.qacc.l.ld.xp q1, a0, t4, q2, q7
-; CHECK-NEXT:    esp.vcmulas.s8.qacc.h q1, q1
-; CHECK-NEXT:    li a0, 5
-; CHECK-NEXT:    esp.vcmulas.s8.qacc.h.ld.ip q4, a0, 32, q1, q6
-; CHECK-NEXT:    li s11, 7
-; CHECK-NEXT:    li a0, 2
-; CHECK-NEXT:    esp.vcmulas.s8.qacc.h.ld.xp q6, a0, s11, q3, q2
-; CHECK-NEXT:    esp.vcmulas.s8.qacc.l q4, q5
-; CHECK-NEXT:    li a0, 4
-; CHECK-NEXT:    esp.vcmulas.s8.qacc.l.ld.ip q4, a0, -48, q2, q5
-; CHECK-NEXT:    li a0, 14
-; CHECK-NEXT:    esp.vcmulas.s8.qacc.l.ld.xp q7, a0, s11, q6, q3
-; CHECK-NEXT:    esp.vmulas.s16.qacc q4, q2
-; CHECK-NEXT:    li a0, 4
-; CHECK-NEXT:    esp.vmulas.s16.qacc.ld.ip q1, a0, 96, q5, q7
-; CHECK-NEXT:    li t3, 3
-; CHECK-NEXT:    li a0, 8
-; CHECK-NEXT:    esp.vmulas.s16.qacc.ld.xp q6, a0, t3, q4, q2
-; CHECK-NEXT:    li a5, 0
-; CHECK-NEXT:    li a0, 0
-; CHECK-NEXT:    esp.vmulas.s16.qacc.st.ip q1, a0, 80, q7, q6
-; CHECK-NEXT:    li a0, 5
-; CHECK-NEXT:    esp.vmulas.s16.qacc.st.xp q6, a0, a0, q0, q7
-; CHECK-NEXT:    esp.vmulas.s16.xacc q3, q5
-; CHECK-NEXT:    li a0, 9
-; CHECK-NEXT:    esp.vmulas.s16.xacc.ld.ip q5, a0, 96, q1, q7
-; CHECK-NEXT:    li a2, 8
-; CHECK-NEXT:    li a0, 13
-; CHECK-NEXT:    esp.vmulas.s16.xacc.ld.xp q0, a0, a2, q5, q5
-; CHECK-NEXT:    li a0, 1
-; CHECK-NEXT:    esp.vmulas.s16.xacc.st.ip q2, a0, 16, q4, q6
-; CHECK-NEXT:    li t6, 5
-; CHECK-NEXT:    li a0, 2
-; CHECK-NEXT:    esp.vmulas.s16.xacc.st.xp q7, a0, t6, q7, q7
-; CHECK-NEXT:    esp.vmulas.s8.qacc q6, q1
-; CHECK-NEXT:    li a0, 8
-; CHECK-NEXT:    esp.vmulas.s8.qacc.ld.ip q2, a0, -128, q3, q5
-; CHECK-NEXT:    li a0, 8
-; CHECK-NEXT:    esp.vmulas.s8.qacc.ld.xp q4, a0, t6, q0, q5
-; CHECK-NEXT:    li a0, 1
-; CHECK-NEXT:    esp.vmulas.s8.qacc.st.ip q7, a0, 16, q6, q0
-; CHECK-NEXT:    li a0, 10
-; CHECK-NEXT:    esp.vmulas.s8.qacc.st.xp q4, a0, s9, q6, q1
-; CHECK-NEXT:    esp.vmulas.s8.xacc q3, q7
-; CHECK-NEXT:    li a0, 1
-; CHECK-NEXT:    esp.vmulas.s8.xacc.ld.ip q7, a0, -16, q4, q5
-; CHECK-NEXT:    li t5, 10
-; CHECK-NEXT:    li a0, 7
-; CHECK-NEXT:    esp.vmulas.s8.xacc.ld.xp q1, a0, t5, q7, q0
+; CHECK-NEXT:    esp.vcmulas.s16.qacc.l.ld.ip q1, a0, -64, q4, q3
+; CHECK-NEXT:    li s11, 1
+; CHECK-NEXT:    li a1, 12
+; CHECK-NEXT:    esp.vcmulas.s16.qacc.l.ld.xp q7, a1, s11, q5, q4
+; CHECK-NEXT:    esp.vcmulas.s8.qacc.h q0, q3
+; CHECK-NEXT:    li a1, 3
+; CHECK-NEXT:    esp.vcmulas.s8.qacc.h.ld.ip q5, a1, -48, q3, q7
+; CHECK-NEXT:    li a3, 11
+; CHECK-NEXT:    li a1, 6
+; CHECK-NEXT:    esp.vcmulas.s8.qacc.h.ld.xp q4, a1, a3, q4, q0
+; CHECK-NEXT:    esp.vcmulas.s8.qacc.l q4, q0
 ; CHECK-NEXT:    li a1, 2
-; CHECK-NEXT:    li a0, 8
-; CHECK-NEXT:    esp.vmulas.s8.xacc.st.ip q6, a0, -128, q6, q1
-; CHECK-NEXT:    li a0, 4
-; CHECK-NEXT:    esp.vmulas.s8.xacc.st.xp q5, a0, a1, q4, q1
-; CHECK-NEXT:    esp.vmulas.u16.qacc q6, q1
-; CHECK-NEXT:    li a0, 8
-; CHECK-NEXT:    esp.vmulas.u16.qacc.ld.ip q7, a0, -32, q0, q0
+; CHECK-NEXT:    esp.vcmulas.s8.qacc.l.ld.ip q0, a1, 0, q7, q5
+; CHECK-NEXT:    li t5, 8
+; CHECK-NEXT:    li a1, 4
+; CHECK-NEXT:    esp.vcmulas.s8.qacc.l.ld.xp q6, a1, t5, q3, q0
+; CHECK-NEXT:    esp.vmulas.s16.qacc q3, q0
+; CHECK-NEXT:    li a1, 7
+; CHECK-NEXT:    esp.vmulas.s16.qacc.ld.ip q4, a1, 80, q0, q1
+; CHECK-NEXT:    li a1, 2
+; CHECK-NEXT:    esp.vmulas.s16.qacc.ld.xp q7, a1, t6, q7, q2
+; CHECK-NEXT:    li a1, 9
+; CHECK-NEXT:    esp.vmulas.s16.qacc.st.ip q2, a1, -32, q3, q4
+; CHECK-NEXT:    li a1, 10
+; CHECK-NEXT:    esp.vmulas.s16.qacc.st.xp q4, a1, t5, q6, q6
+; CHECK-NEXT:    esp.vmulas.s16.xacc q1, q0
+; CHECK-NEXT:    li a1, 8
+; CHECK-NEXT:    esp.vmulas.s16.xacc.ld.ip q4, a1, -16, q1, q6
+; CHECK-NEXT:    li a1, 12
+; CHECK-NEXT:    esp.vmulas.s16.xacc.ld.xp q7, a1, s11, q2, q3
+; CHECK-NEXT:    li a1, 13
+; CHECK-NEXT:    esp.vmulas.s16.xacc.st.ip q1, a1, 16, q4, q2
+; CHECK-NEXT:    li a1, 3
+; CHECK-NEXT:    esp.vmulas.s16.xacc.st.xp q3, a1, t5, q7, q4
+; CHECK-NEXT:    esp.vmulas.s8.qacc q4, q3
+; CHECK-NEXT:    li a1, 4
+; CHECK-NEXT:    esp.vmulas.s8.qacc.ld.ip q4, a1, 32, q5, q2
+; CHECK-NEXT:    li a1, 14
+; CHECK-NEXT:    esp.vmulas.s8.qacc.ld.xp q7, a1, a1, q1, q6
+; CHECK-NEXT:    li a1, 5
+; CHECK-NEXT:    esp.vmulas.s8.qacc.st.ip q6, a1, -112, q1, q6
+; CHECK-NEXT:    li a0, 9
+; CHECK-NEXT:    li a1, 7
+; CHECK-NEXT:    esp.vmulas.s8.qacc.st.xp q5, a1, a0, q3, q3
+; CHECK-NEXT:    esp.vmulas.s8.xacc q7, q0
 ; CHECK-NEXT:    li a0, 6
-; CHECK-NEXT:    esp.vmulas.u16.qacc.ld.xp q2, a0, s11, q6, q7
-; CHECK-NEXT:    li a0, 8
-; CHECK-NEXT:    esp.vmulas.u16.qacc.st.ip q4, a0, 16, q6, q5
-; CHECK-NEXT:    li s0, 9
-; CHECK-NEXT:    li a0, 2
-; CHECK-NEXT:    esp.vmulas.u16.qacc.st.xp q4, a0, s0, q3, q7
-; CHECK-NEXT:    esp.vmulas.u16.xacc q6, q1
-; CHECK-NEXT:    li a4, 6
-; CHECK-NEXT:    li a0, 3
-; CHECK-NEXT:    esp.vmulas.u16.xacc.ld.ip q2, a0, -48, q2, q2
-; CHECK-NEXT:    li a0, 0
-; CHECK-NEXT:    esp.vmulas.u16.xacc.ld.xp q7, a0, a4, q3, q0
-; CHECK-NEXT:    li a0, 9
-; CHECK-NEXT:    esp.vmulas.u16.xacc.st.ip q0, a0, 96, q1, q4
-; CHECK-NEXT:    li a0, 2
-; CHECK-NEXT:    esp.vmulas.u16.xacc.st.xp q6, a0, t6, q3, q7
-; CHECK-NEXT:    esp.vmulas.u8.qacc q7, q1
-; CHECK-NEXT:    li a0, 9
-; CHECK-NEXT:    esp.vmulas.u8.qacc.ld.ip q7, a0, -48, q7, q4
-; CHECK-NEXT:    li a0, 11
-; CHECK-NEXT:    esp.vmulas.u8.qacc.ld.xp q4, a0, s9, q6, q7
-; CHECK-NEXT:    li a0, 14
-; CHECK-NEXT:    esp.vmulas.u8.qacc.st.ip q2, a0, 0, q1, q7
-; CHECK-NEXT:    li a0, 7
-; CHECK-NEXT:    esp.vmulas.u8.qacc.st.xp q4, a0, a0, q0, q0
-; CHECK-NEXT:    esp.vmulas.u8.xacc q6, q4
+; CHECK-NEXT:    li a1, 12
+; CHECK-NEXT:    esp.vmulas.s8.xacc.ld.ip q7, a1, 16, q7, q0
+; CHECK-NEXT:    li a1, 3
+; CHECK-NEXT:    esp.vmulas.s8.xacc.ld.xp q0, a1, a0, q2, q1
+; CHECK-NEXT:    li a1, 13
+; CHECK-NEXT:    esp.vmulas.s8.xacc.st.ip q4, a1, 32, q5, q6
+; CHECK-NEXT:    li s1, 3
+; CHECK-NEXT:    li a1, 12
+; CHECK-NEXT:    esp.vmulas.s8.xacc.st.xp q2, a1, s1, q1, q7
+; CHECK-NEXT:    esp.vmulas.u16.qacc q5, q0
+; CHECK-NEXT:    li a1, 4
+; CHECK-NEXT:    esp.vmulas.u16.qacc.ld.ip q2, a1, 48, q4, q4
+; CHECK-NEXT:    li a1, 9
+; CHECK-NEXT:    esp.vmulas.u16.qacc.ld.xp q3, a1, t6, q1, q7
+; CHECK-NEXT:    li a1, 12
+; CHECK-NEXT:    esp.vmulas.u16.qacc.st.ip q1, a1, -128, q1, q2
+; CHECK-NEXT:    li a1, 11
+; CHECK-NEXT:    esp.vmulas.u16.qacc.st.xp q2, a1, t6, q1, q6
+; CHECK-NEXT:    li a1, 12
+; CHECK-NEXT:    esp.vmulas.u16.xacc q1, q7
+; CHECK-NEXT:    li a2, 1
+; CHECK-NEXT:    esp.vmulas.u16.xacc.ld.ip q4, a2, 16, q2, q4
+; CHECK-NEXT:    li a2, 3
+; CHECK-NEXT:    esp.vmulas.u16.xacc.ld.xp q5, a2, a1, q1, q7
+; CHECK-NEXT:    li a2, 2
+; CHECK-NEXT:    esp.vmulas.u16.xacc.st.ip q1, a2, -64, q7, q6
+; CHECK-NEXT:    li a2, 9
+; CHECK-NEXT:    esp.vmulas.u16.xacc.st.xp q1, a2, a2, q2, q4
+; CHECK-NEXT:    li a5, 14
+; CHECK-NEXT:    esp.vmulas.u8.qacc q7, q4
+; CHECK-NEXT:    li a2, 5
+; CHECK-NEXT:    esp.vmulas.u8.qacc.ld.ip q1, a2, -32, q7, q6
+; CHECK-NEXT:    li a2, 8
+; CHECK-NEXT:    esp.vmulas.u8.qacc.ld.xp q6, a2, a5, q6, q0
+; CHECK-NEXT:    li a2, 12
+; CHECK-NEXT:    esp.vmulas.u8.qacc.st.ip q0, a2, 96, q6, q4
+; CHECK-NEXT:    li a2, 3
+; CHECK-NEXT:    esp.vmulas.u8.qacc.st.xp q5, a2, a1, q2, q6
+; CHECK-NEXT:    li s9, 4
+; CHECK-NEXT:    esp.vmulas.u8.xacc q0, q2
+; CHECK-NEXT:    li a2, 4
+; CHECK-NEXT:    esp.vmulas.u8.xacc.ld.ip q2, a2, -112, q7, q6
+; CHECK-NEXT:    li a2, 9
+; CHECK-NEXT:    esp.vmulas.u8.xacc.ld.xp q3, a2, s9, q4, q0
+; CHECK-NEXT:    li a2, 1
+; CHECK-NEXT:    esp.vmulas.u8.xacc.st.ip q3, a2, -48, q1, q5
+; CHECK-NEXT:    li s8, 5
+; CHECK-NEXT:    li a2, 6
+; CHECK-NEXT:    esp.vmulas.u8.xacc.st.xp q7, a2, s8, q5, q7
+; CHECK-NEXT:    li a2, 6
+; CHECK-NEXT:    esp.vmulas.s16.qacc.ldbc.incp q7, a2, q1, q2
+; CHECK-NEXT:    li a2, 1
+; CHECK-NEXT:    esp.vmulas.s8.qacc.ldbc.incp q2, a2, q1, q0
+; CHECK-NEXT:    li a2, 6
+; CHECK-NEXT:    esp.vmulas.u16.qacc.ldbc.incp q2, a2, q7, q6
+; CHECK-NEXT:    li a2, 10
+; CHECK-NEXT:    esp.vmulas.u8.qacc.ldbc.incp q4, a2, q7, q7
+; CHECK-NEXT:    li s0, 0
+; CHECK-NEXT:    esp.vsmulas.s16.qacc q4, q2, 0
+; CHECK-NEXT:    li a2, 0
+; CHECK-NEXT:    esp.vsmulas.s16.qacc.ld.incp q1, a2, q7, q7, 11
+; CHECK-NEXT:    esp.vsmulas.s8.qacc q4, q0, 2
+; CHECK-NEXT:    li a2, 4
+; CHECK-NEXT:    esp.vsmulas.s8.qacc.ld.incp q5, a2, q5, q1, 7
+; CHECK-NEXT:    esp.vsmulas.u16.qacc q5, q5, 3
+; CHECK-NEXT:    li a2, 11
+; CHECK-NEXT:    esp.vsmulas.u16.qacc.ld.incp q1, a2, q7, q5, 14
+; CHECK-NEXT:    esp.vsmulas.u8.qacc q2, q4, 2
+; CHECK-NEXT:    li a2, 6
+; CHECK-NEXT:    esp.vsmulas.u8.qacc.ld.incp q5, a2, q3, q1, 14
+; CHECK-NEXT:    esp.cmul.s16 q5, q3, q2, 1
+; CHECK-NEXT:    li a2, 4
+; CHECK-NEXT:    esp.cmul.s16.ld.incp q7, a2, q0, q6, q3, 2
+; CHECK-NEXT:    li a2, 9
+; CHECK-NEXT:    esp.cmul.s16.st.incp q0, a2, q5, q1, q7, 2
+; CHECK-NEXT:    esp.cmul.s8 q3, q7, q6, 3
+; CHECK-NEXT:    li a2, 1
+; CHECK-NEXT:    esp.cmul.s8.ld.incp q1, a2, q3, q5, q0, 3
+; CHECK-NEXT:    li a2, 2
+; CHECK-NEXT:    esp.cmul.s8.st.incp q1, a2, q2, q1, q3, 2
+; CHECK-NEXT:    esp.cmul.u16 q5, q1, q1, 2
+; CHECK-NEXT:    li a2, 12
+; CHECK-NEXT:    esp.cmul.u16.ld.incp q1, a2, q2, q5, q6, 2
+; CHECK-NEXT:    li a2, 14
+; CHECK-NEXT:    esp.cmul.u16.st.incp q2, a2, q4, q2, q5, 1
+; CHECK-NEXT:    esp.cmul.u8 q6, q1, q3, 1
+; CHECK-NEXT:    li a2, 14
+; CHECK-NEXT:    esp.cmul.u8.ld.incp q5, a2, q3, q2, q2, 3
+; CHECK-NEXT:    li a2, 10
+; CHECK-NEXT:    esp.cmul.u8.st.incp q7, a2, q7, q1, q7, 3
+; CHECK-NEXT:    esp.max.s16.a q0, a2
+; CHECK-NEXT:    esp.max.s32.a q1, a2
+; CHECK-NEXT:    esp.max.s8.a q3, a2
+; CHECK-NEXT:    esp.max.u16.a q6, a2
+; CHECK-NEXT:    esp.max.u32.a q7, a2
+; CHECK-NEXT:    esp.max.u8.a q5, a2
+; CHECK-NEXT:    esp.min.s16.a q3, a2
+; CHECK-NEXT:    esp.min.s32.a q6, a2
+; CHECK-NEXT:    esp.min.s8.a q0, a2
+; CHECK-NEXT:    esp.min.u16.a q1, a2
+; CHECK-NEXT:    esp.min.u32.a q0, a2
+; CHECK-NEXT:    esp.min.u8.a q3, a2
+; CHECK-NEXT:    esp.vabs.16 q5, q7
+; CHECK-NEXT:    esp.vabs.32 q1, q3
+; CHECK-NEXT:    esp.vabs.8 q4, q5
+; CHECK-NEXT:    esp.vadd.s16 q4, q1, q5
+; CHECK-NEXT:    li a2, 10
+; CHECK-NEXT:    esp.vadd.s16.ld.incp q5, a2, q7, q2, q3
+; CHECK-NEXT:    li a2, 4
+; CHECK-NEXT:    esp.vadd.s16.st.incp q0, a2, q4, q0, q7
+; CHECK-NEXT:    esp.vadd.s32 q4, q0, q5
+; CHECK-NEXT:    li a2, 1
+; CHECK-NEXT:    esp.vadd.s32.ld.incp q5, a2, q0, q3, q6
+; CHECK-NEXT:    li a2, 0
+; CHECK-NEXT:    esp.vadd.s32.st.incp q7, a2, q4, q3, q1
+; CHECK-NEXT:    esp.vadd.s8 q7, q4, q4
+; CHECK-NEXT:    li a2, 13
+; CHECK-NEXT:    esp.vadd.s8.ld.incp q6, a2, q7, q6, q4
+; CHECK-NEXT:    li a2, 0
+; CHECK-NEXT:    esp.vadd.s8.st.incp q5, a2, q1, q2, q6
+; CHECK-NEXT:    esp.vadd.u16 q0, q4, q6
+; CHECK-NEXT:    li a2, 14
+; CHECK-NEXT:    esp.vadd.u16.ld.incp q1, a2, q7, q0, q1
+; CHECK-NEXT:    li a2, 5
+; CHECK-NEXT:    esp.vadd.u16.st.incp q3, a2, q4, q0, q3
+; CHECK-NEXT:    esp.vadd.u32 q3, q7, q5
+; CHECK-NEXT:    li a2, 11
+; CHECK-NEXT:    esp.vadd.u32.ld.incp q3, a2, q7, q3, q5
+; CHECK-NEXT:    li a2, 10
+; CHECK-NEXT:    esp.vadd.u32.st.incp q0, a2, q6, q0, q6
+; CHECK-NEXT:    esp.vadd.u8 q5, q3, q0
+; CHECK-NEXT:    li a2, 12
+; CHECK-NEXT:    esp.vadd.u8.ld.incp q4, a2, q4, q4, q2
+; CHECK-NEXT:    li a2, 3
+; CHECK-NEXT:    esp.vadd.u8.st.incp q7, a2, q6, q5, q1
+; CHECK-NEXT:    esp.vclamp.s16 q6, q0, 10
+; CHECK-NEXT:    esp.vmax.s16 q5, q3, q1
+; CHECK-NEXT:    li a2, 1
+; CHECK-NEXT:    esp.vmax.s16.ld.incp q7, a2, q3, q6, q5
+; CHECK-NEXT:    li a2, 8
+; CHECK-NEXT:    esp.vmax.s16.st.incp q0, a2, q6, q5, q4
+; CHECK-NEXT:    esp.vmax.s32 q7, q1, q3
+; CHECK-NEXT:    li a2, 9
+; CHECK-NEXT:    esp.vmax.s32.ld.incp q5, a2, q0, q0, q1
+; CHECK-NEXT:    li a2, 5
+; CHECK-NEXT:    esp.vmax.s32.st.incp q3, a2, q5, q0, q3
+; CHECK-NEXT:    esp.vmax.s8 q4, q1, q6
+; CHECK-NEXT:    li a2, 0
+; CHECK-NEXT:    esp.vmax.s8.ld.incp q3, a2, q3, q6, q2
+; CHECK-NEXT:    li a2, 6
+; CHECK-NEXT:    esp.vmax.s8.st.incp q7, a2, q3, q6, q2
+; CHECK-NEXT:    esp.vmax.u16 q5, q1, q4
+; CHECK-NEXT:    li a2, 0
+; CHECK-NEXT:    esp.vmax.u16.ld.incp q0, a2, q4, q6, q1
+; CHECK-NEXT:    li a2, 10
+; CHECK-NEXT:    esp.vmax.u16.st.incp q2, a2, q3, q6, q6
+; CHECK-NEXT:    esp.vmax.u32 q0, q6, q5
+; CHECK-NEXT:    li a2, 8
+; CHECK-NEXT:    esp.vmax.u32.ld.incp q4, a2, q6, q6, q3
+; CHECK-NEXT:    li a2, 11
+; CHECK-NEXT:    esp.vmax.u32.st.incp q7, a2, q5, q3, q2
+; CHECK-NEXT:    esp.vmax.u8 q5, q6, q4
+; CHECK-NEXT:    li a2, 12
+; CHECK-NEXT:    esp.vmax.u8.ld.incp q2, a2, q2, q3, q5
+; CHECK-NEXT:    li a2, 5
+; CHECK-NEXT:    esp.vmax.u8.st.incp q7, a2, q0, q7, q1
+; CHECK-NEXT:    esp.vmin.s16 q2, q7, q6
+; CHECK-NEXT:    li a2, 7
+; CHECK-NEXT:    esp.vmin.s16.ld.incp q6, a2, q1, q0, q3
+; CHECK-NEXT:    li a2, 12
+; CHECK-NEXT:    esp.vmin.s16.st.incp q1, a2, q2, q1, q6
+; CHECK-NEXT:    esp.vmin.s32 q3, q6, q3
+; CHECK-NEXT:    li a2, 9
+; CHECK-NEXT:    esp.vmin.s32.ld.incp q3, a2, q5, q1, q4
+; CHECK-NEXT:    li a2, 1
+; CHECK-NEXT:    esp.vmin.s32.st.incp q3, a2, q3, q2, q6
+; CHECK-NEXT:    esp.vmin.s8 q4, q2, q2
+; CHECK-NEXT:    li a2, 6
+; CHECK-NEXT:    esp.vmin.s8.ld.incp q4, a2, q6, q2, q6
+; CHECK-NEXT:    li a2, 11
+; CHECK-NEXT:    esp.vmin.s8.st.incp q5, a2, q1, q5, q0
+; CHECK-NEXT:    esp.vmin.u16 q5, q1, q5
+; CHECK-NEXT:    li a2, 6
+; CHECK-NEXT:    esp.vmin.u16.ld.incp q2, a2, q2, q7, q2
+; CHECK-NEXT:    li a2, 14
+; CHECK-NEXT:    esp.vmin.u16.st.incp q0, a2, q4, q5, q5
+; CHECK-NEXT:    esp.vmin.u32 q5, q6, q0
+; CHECK-NEXT:    li a2, 11
+; CHECK-NEXT:    esp.vmin.u32.ld.incp q5, a2, q2, q3, q4
+; CHECK-NEXT:    li a2, 1
+; CHECK-NEXT:    esp.vmin.u32.st.incp q1, a2, q2, q3, q5
+; CHECK-NEXT:    esp.vmin.u8 q0, q6, q6
+; CHECK-NEXT:    li a2, 1
+; CHECK-NEXT:    esp.vmin.u8.ld.incp q3, a2, q5, q4, q7
+; CHECK-NEXT:    li a2, 6
+; CHECK-NEXT:    esp.vmin.u8.st.incp q4, a2, q7, q2, q5
+; CHECK-NEXT:    esp.vmul.s16 q6, q7, q6
+; CHECK-NEXT:    li a2, 3
+; CHECK-NEXT:    esp.vmul.s16.ld.incp q6, a2, q1, q5, q2
+; CHECK-NEXT:    esp.vmul.s16.s8xs8 q2, q3, q0, q6
+; CHECK-NEXT:    li a2, 1
+; CHECK-NEXT:    esp.vmul.s16.st.incp q6, a2, q0, q6, q5
+; CHECK-NEXT:    esp.vmul.s32.s16xs16 q4, q7, q2, q0
+; CHECK-NEXT:    esp.vmul.s8 q7, q3, q7
+; CHECK-NEXT:    li a2, 6
+; CHECK-NEXT:    esp.vmul.s8.ld.incp q5, a2, q7, q0, q5
+; CHECK-NEXT:    li a2, 6
+; CHECK-NEXT:    esp.vmul.s8.st.incp q1, a2, q3, q2, q5
+; CHECK-NEXT:    esp.vmul.u16 q6, q1, q4
+; CHECK-NEXT:    li a2, 3
+; CHECK-NEXT:    esp.vmul.u16.ld.incp q0, a2, q6, q2, q4
+; CHECK-NEXT:    li a2, 10
+; CHECK-NEXT:    esp.vmul.u16.st.incp q1, a2, q6, q1, q3
+; CHECK-NEXT:    esp.vmul.u8 q6, q7, q1
+; CHECK-NEXT:    li a2, 14
+; CHECK-NEXT:    esp.vmul.u8.ld.incp q5, a2, q4, q0, q2
+; CHECK-NEXT:    li a2, 10
+; CHECK-NEXT:    li a4, 13
+; CHECK-NEXT:    li a0, 4
+; CHECK-NEXT:    esp.vmul.u8.st.incp q1, a0, q4, q0, q5
+; CHECK-NEXT:    esp.vprelu.s16 q4, q2, q2, s0
+; CHECK-NEXT:    esp.vprelu.s8 q5, q6, q4, a3
+; CHECK-NEXT:    esp.vrelu.s16 q6, t5, s1
+; CHECK-NEXT:    li a0, 6
+; CHECK-NEXT:    esp.vrelu.s8 q0, a0, s8
+; CHECK-NEXT:    esp.vsadds.s16 q7, q4, s0
+; CHECK-NEXT:    esp.vsadds.s8 q2, q2, a1
+; CHECK-NEXT:    esp.vsadds.u16 q7, q2, t6
+; CHECK-NEXT:    esp.vsadds.u8 q4, q0, s9
+; CHECK-NEXT:    esp.vsat.s16 q1, q5, t5, t6
+; CHECK-NEXT:    esp.vsat.s32 q7, q6, s0, a0
+; CHECK-NEXT:    esp.vsat.s8 q1, q4, a0, a3
+; CHECK-NEXT:    li t4, 6
+; CHECK-NEXT:    li t3, 9
+; CHECK-NEXT:    esp.vsat.u16 q4, q5, t3, a4
+; CHECK-NEXT:    esp.vsat.u32 q6, q6, a3, a2
+; CHECK-NEXT:    esp.vsat.u8 q1, q6, a5, t6
+; CHECK-NEXT:    esp.vssubs.s16 q5, q0, s8
+; CHECK-NEXT:    esp.vssubs.s8 q5, q2, t5
+; CHECK-NEXT:    esp.vssubs.u16 q6, q7, a2
+; CHECK-NEXT:    esp.vssubs.u8 q0, q7, s0
+; CHECK-NEXT:    esp.vsub.s16 q1, q7, q1
 ; CHECK-NEXT:    li a0, 5
-; CHECK-NEXT:    esp.vmulas.u8.xacc.ld.ip q3, a0, -80, q6, q2
+; CHECK-NEXT:    esp.vsub.s16.ld.incp q2, a0, q1, q5, q2
+; CHECK-NEXT:    li a0, 8
+; CHECK-NEXT:    esp.vsub.s16.st.incp q2, a0, q2, q4, q5
+; CHECK-NEXT:    esp.vsub.s32 q0, q7, q0
+; CHECK-NEXT:    li a0, 2
+; CHECK-NEXT:    esp.vsub.s32.ld.incp q6, a0, q5, q5, q7
+; CHECK-NEXT:    li a0, 10
+; CHECK-NEXT:    esp.vsub.s32.st.incp q2, a0, q2, q3, q2
+; CHECK-NEXT:    esp.vsub.s8 q0, q7, q2
+; CHECK-NEXT:    li a0, 5
+; CHECK-NEXT:    esp.vsub.s8.ld.incp q4, a0, q6, q4, q0
 ; CHECK-NEXT:    li a0, 13
-; CHECK-NEXT:    esp.vmulas.u8.xacc.ld.xp q4, a0, a0, q5, q1
-; CHECK-NEXT:    li a0, 5
-; CHECK-NEXT:    esp.vmulas.u8.xacc.st.ip q7, a0, -128, q2, q3
-; CHECK-NEXT:    li a0, 5
-; CHECK-NEXT:    esp.vmulas.u8.xacc.st.xp q2, a0, a4, q7, q2
-; CHECK-NEXT:    li a0, 14
-; CHECK-NEXT:    esp.vmulas.s16.qacc.ldbc.incp q0, a0, q0, q2
-; CHECK-NEXT:    li a0, 0
-; CHECK-NEXT:    esp.vmulas.s8.qacc.ldbc.incp q5, a0, q2, q6
-; CHECK-NEXT:    li a0, 8
-; CHECK-NEXT:    esp.vmulas.u16.qacc.ldbc.incp q5, a0, q7, q3
-; CHECK-NEXT:    li a0, 6
-; CHECK-NEXT:    esp.vmulas.u8.qacc.ldbc.incp q3, a0, q4, q4
-; CHECK-NEXT:    esp.vsmulas.s16.qacc q1, q5, 14
-; CHECK-NEXT:    li a0, 5
-; CHECK-NEXT:    esp.vsmulas.s16.qacc.ld.incp q0, a0, q7, q4, 0
-; CHECK-NEXT:    esp.vsmulas.s8.qacc q3, q5, 0
-; CHECK-NEXT:    li a0, 8
-; CHECK-NEXT:    esp.vsmulas.s8.qacc.ld.incp q1, a0, q1, q4, 6
-; CHECK-NEXT:    esp.vsmulas.u16.qacc q6, q5, 15
-; CHECK-NEXT:    li a0, 0
-; CHECK-NEXT:    esp.vsmulas.u16.qacc.ld.incp q7, a0, q7, q1, 10
-; CHECK-NEXT:    esp.vsmulas.u8.qacc q0, q7, 2
-; CHECK-NEXT:    li a0, 10
-; CHECK-NEXT:    esp.vsmulas.u8.qacc.ld.incp q4, a0, q3, q7, 8
-; CHECK-NEXT:    esp.cmul.s16 q6, q0, q7, 3
-; CHECK-NEXT:    li a0, 6
-; CHECK-NEXT:    esp.cmul.s16.ld.incp q5, a0, q3, q0, q3, 0
-; CHECK-NEXT:    li a0, 0
-; CHECK-NEXT:    esp.cmul.s16.st.incp q5, a0, q0, q4, q5, 2
-; CHECK-NEXT:    esp.cmul.s8 q1, q1, q0, 3
-; CHECK-NEXT:    li a0, 5
-; CHECK-NEXT:    esp.cmul.s8.ld.incp q4, a0, q7, q5, q4, 1
-; CHECK-NEXT:    li a0, 14
-; CHECK-NEXT:    esp.cmul.s8.st.incp q5, a0, q0, q6, q0, 3
-; CHECK-NEXT:    esp.cmul.u16 q7, q7, q5, 2
-; CHECK-NEXT:    li a0, 2
-; CHECK-NEXT:    esp.cmul.u16.ld.incp q0, a0, q0, q0, q1, 1
-; CHECK-NEXT:    li a0, 5
-; CHECK-NEXT:    esp.cmul.u16.st.incp q2, a0, q4, q1, q4, 2
-; CHECK-NEXT:    esp.cmul.u8 q3, q7, q5, 0
+; CHECK-NEXT:    esp.vsub.s8.st.incp q2, a0, q7, q1, q6
+; CHECK-NEXT:    esp.vsub.u16 q0, q6, q7
 ; CHECK-NEXT:    li a0, 11
-; CHECK-NEXT:    esp.cmul.u8.ld.incp q4, a0, q0, q0, q2, 0
-; CHECK-NEXT:    li a0, 10
-; CHECK-NEXT:    esp.cmul.u8.st.incp q1, a0, q4, q6, q3, 2
-; CHECK-NEXT:    esp.max.s16.a q6, a0
-; CHECK-NEXT:    esp.max.s32.a q2, a0
-; CHECK-NEXT:    esp.max.s8.a q0, a0
-; CHECK-NEXT:    esp.max.u16.a q6, a0
-; CHECK-NEXT:    esp.max.u32.a q6, a0
-; CHECK-NEXT:    esp.max.u8.a q1, a0
-; CHECK-NEXT:    esp.min.s16.a q6, a0
-; CHECK-NEXT:    esp.min.s32.a q1, a0
-; CHECK-NEXT:    esp.min.s8.a q0, a0
-; CHECK-NEXT:    esp.min.u16.a q3, a0
-; CHECK-NEXT:    esp.min.u32.a q0, a0
-; CHECK-NEXT:    esp.min.u8.a q5, a0
-; CHECK-NEXT:    esp.vabs.16 q6, q0
-; CHECK-NEXT:    esp.vabs.32 q1, q4
-; CHECK-NEXT:    esp.vabs.8 q5, q2
-; CHECK-NEXT:    esp.vadd.s16 q6, q1, q5
-; CHECK-NEXT:    li a0, 10
-; CHECK-NEXT:    esp.vadd.s16.ld.incp q0, a0, q1, q0, q6
+; CHECK-NEXT:    esp.vsub.u16.ld.incp q7, a0, q5, q1, q6
+; CHECK-NEXT:    li a0, 3
+; CHECK-NEXT:    esp.vsub.u16.st.incp q1, a0, q0, q4, q7
+; CHECK-NEXT:    esp.vsub.u32 q6, q5, q7
 ; CHECK-NEXT:    li a0, 11
-; CHECK-NEXT:    esp.vadd.s16.st.incp q1, a0, q7, q0, q4
-; CHECK-NEXT:    esp.vadd.s32 q7, q7, q3
-; CHECK-NEXT:    li a0, 14
-; CHECK-NEXT:    esp.vadd.s32.ld.incp q4, a0, q4, q7, q2
-; CHECK-NEXT:    li a0, 13
-; CHECK-NEXT:    esp.vadd.s32.st.incp q2, a0, q7, q1, q7
-; CHECK-NEXT:    esp.vadd.s8 q7, q1, q7
-; CHECK-NEXT:    li a0, 14
-; CHECK-NEXT:    esp.vadd.s8.ld.incp q2, a0, q1, q5, q6
+; CHECK-NEXT:    esp.vsub.u32.ld.incp q0, a0, q4, q3, q0
+; CHECK-NEXT:    li s10, 2
 ; CHECK-NEXT:    li a0, 9
-; CHECK-NEXT:    esp.vadd.s8.st.incp q3, a0, q4, q1, q0
-; CHECK-NEXT:    esp.vadd.u16 q0, q7, q7
+; CHECK-NEXT:    esp.vsub.u32.st.incp q4, a0, q4, q0, q4
+; CHECK-NEXT:    esp.vsub.u8 q6, q6, q7
 ; CHECK-NEXT:    li a0, 8
-; CHECK-NEXT:    esp.vadd.u16.ld.incp q6, a0, q1, q7, q5
-; CHECK-NEXT:    li a0, 5
-; CHECK-NEXT:    esp.vadd.u16.st.incp q0, a0, q7, q6, q3
-; CHECK-NEXT:    esp.vadd.u32 q4, q0, q1
-; CHECK-NEXT:    li a0, 2
-; CHECK-NEXT:    esp.vadd.u32.ld.incp q1, a0, q4, q5, q0
-; CHECK-NEXT:    li a0, 1
-; CHECK-NEXT:    esp.vadd.u32.st.incp q4, a0, q6, q0, q1
-; CHECK-NEXT:    esp.vadd.u8 q5, q2, q5
-; CHECK-NEXT:    li a0, 8
-; CHECK-NEXT:    esp.vadd.u8.ld.incp q7, a0, q1, q4, q3
-; CHECK-NEXT:    li a0, 5
-; CHECK-NEXT:    esp.vadd.u8.st.incp q0, a0, q2, q0, q0
-; CHECK-NEXT:    esp.vclamp.s16 q4, q5, 14
-; CHECK-NEXT:    esp.vmax.s16 q5, q6, q5
+; CHECK-NEXT:    esp.vsub.u8.ld.incp q3, a0, q3, q3, q5
 ; CHECK-NEXT:    li a0, 11
-; CHECK-NEXT:    esp.vmax.s16.ld.incp q2, a0, q3, q5, q5
-; CHECK-NEXT:    li a0, 2
-; CHECK-NEXT:    esp.vmax.s16.st.incp q3, a0, q4, q3, q5
-; CHECK-NEXT:    esp.vmax.s32 q2, q5, q2
-; CHECK-NEXT:    li a0, 7
-; CHECK-NEXT:    esp.vmax.s32.ld.incp q0, a0, q6, q0, q1
-; CHECK-NEXT:    li a0, 14
-; CHECK-NEXT:    esp.vmax.s32.st.incp q6, a0, q1, q7, q6
-; CHECK-NEXT:    esp.vmax.s8 q7, q5, q7
-; CHECK-NEXT:    li a0, 2
-; CHECK-NEXT:    esp.vmax.s8.ld.incp q6, a0, q1, q5, q1
-; CHECK-NEXT:    li a0, 4
-; CHECK-NEXT:    esp.vmax.s8.st.incp q5, a0, q7, q1, q3
-; CHECK-NEXT:    esp.vmax.u16 q1, q4, q1
-; CHECK-NEXT:    li a0, 0
-; CHECK-NEXT:    esp.vmax.u16.ld.incp q3, a0, q5, q5, q4
-; CHECK-NEXT:    li a0, 11
-; CHECK-NEXT:    esp.vmax.u16.st.incp q5, a0, q5, q0, q7
-; CHECK-NEXT:    esp.vmax.u32 q4, q0, q2
-; CHECK-NEXT:    li a0, 4
-; CHECK-NEXT:    esp.vmax.u32.ld.incp q6, a0, q1, q0, q6
-; CHECK-NEXT:    li a0, 6
-; CHECK-NEXT:    esp.vmax.u32.st.incp q0, a0, q1, q4, q7
-; CHECK-NEXT:    esp.vmax.u8 q5, q2, q0
-; CHECK-NEXT:    li a0, 1
-; CHECK-NEXT:    esp.vmax.u8.ld.incp q0, a0, q5, q6, q1
+; CHECK-NEXT:    esp.vsub.u8.st.incp q7, a0, q0, q6, q6
+; CHECK-NEXT:    esp.addx2 zero, s8, t4
+; CHECK-NEXT:    esp.addx4 zero, s10, t3
+; CHECK-NEXT:    li t4, 9
 ; CHECK-NEXT:    li a0, 10
-; CHECK-NEXT:    esp.vmax.u8.st.incp q7, a0, q1, q6, q7
-; CHECK-NEXT:    esp.vmin.s16 q4, q1, q3
-; CHECK-NEXT:    li a0, 3
-; CHECK-NEXT:    esp.vmin.s16.ld.incp q2, a0, q2, q2, q1
-; CHECK-NEXT:    li a0, 7
-; CHECK-NEXT:    esp.vmin.s16.st.incp q2, a0, q1, q7, q6
-; CHECK-NEXT:    esp.vmin.s32 q2, q0, q3
-; CHECK-NEXT:    li a0, 14
-; CHECK-NEXT:    esp.vmin.s32.ld.incp q1, a0, q5, q7, q6
-; CHECK-NEXT:    li a0, 6
-; CHECK-NEXT:    esp.vmin.s32.st.incp q7, a0, q5, q5, q1
-; CHECK-NEXT:    esp.vmin.s8 q2, q3, q6
-; CHECK-NEXT:    li a0, 11
-; CHECK-NEXT:    esp.vmin.s8.ld.incp q7, a0, q1, q4, q3
-; CHECK-NEXT:    li a0, 6
-; CHECK-NEXT:    esp.vmin.s8.st.incp q1, a0, q4, q0, q1
-; CHECK-NEXT:    esp.vmin.u16 q4, q3, q7
-; CHECK-NEXT:    li a0, 11
-; CHECK-NEXT:    esp.vmin.u16.ld.incp q4, a0, q5, q6, q6
-; CHECK-NEXT:    li a0, 12
-; CHECK-NEXT:    esp.vmin.u16.st.incp q1, a0, q2, q6, q0
-; CHECK-NEXT:    esp.vmin.u32 q5, q0, q7
-; CHECK-NEXT:    li a0, 13
-; CHECK-NEXT:    esp.vmin.u32.ld.incp q7, a0, q6, q5, q6
-; CHECK-NEXT:    li a0, 4
-; CHECK-NEXT:    esp.vmin.u32.st.incp q5, a0, q4, q3, q7
-; CHECK-NEXT:    esp.vmin.u8 q7, q5, q5
-; CHECK-NEXT:    li a0, 0
-; CHECK-NEXT:    esp.vmin.u8.ld.incp q2, a0, q5, q0, q5
-; CHECK-NEXT:    li a0, 12
-; CHECK-NEXT:    esp.vmin.u8.st.incp q2, a0, q1, q6, q6
-; CHECK-NEXT:    esp.vmul.s16 q6, q2, q1
-; CHECK-NEXT:    li a0, 10
-; CHECK-NEXT:    esp.vmul.s16.ld.incp q0, a0, q3, q6, q7
-; CHECK-NEXT:    esp.vmul.s16.s8xs8 q7, q0, q3, q5
-; CHECK-NEXT:    li a0, 3
-; CHECK-NEXT:    esp.vmul.s16.st.incp q2, a0, q0, q7, q1
-; CHECK-NEXT:    esp.vmul.s32.s16xs16 q3, q4, q5, q2
-; CHECK-NEXT:    esp.vmul.s8 q3, q4, q0
-; CHECK-NEXT:    li a0, 0
-; CHECK-NEXT:    esp.vmul.s8.ld.incp q0, a0, q2, q2, q3
-; CHECK-NEXT:    li s1, 4
-; CHECK-NEXT:    li s8, 13
-; CHECK-NEXT:    li a0, 8
-; CHECK-NEXT:    esp.vmul.s8.st.incp q0, a0, q3, q0, q7
-; CHECK-NEXT:    esp.vmul.u16 q2, q3, q7
-; CHECK-NEXT:    li a0, 7
-; CHECK-NEXT:    esp.vmul.u16.ld.incp q5, a0, q5, q6, q6
-; CHECK-NEXT:    li a0, 3
-; CHECK-NEXT:    esp.vmul.u16.st.incp q3, a0, q2, q4, q4
-; CHECK-NEXT:    esp.vmul.u8 q7, q3, q7
-; CHECK-NEXT:    li a0, 9
-; CHECK-NEXT:    esp.vmul.u8.ld.incp q0, a0, q1, q0, q6
-; CHECK-NEXT:    li s10, 1
-; CHECK-NEXT:    li a0, 11
-; CHECK-NEXT:    li a3, 6
-; CHECK-NEXT:    esp.vmul.u8.st.incp q7, a3, q4, q0, q3
-; CHECK-NEXT:    esp.vprelu.s16 q1, q4, q3, a2
-; CHECK-NEXT:    esp.vprelu.s8 q2, q4, q5, t3
-; CHECK-NEXT:    esp.vrelu.s16 q6, s0, a2
-; CHECK-NEXT:    esp.vrelu.s8 q5, s10, s9
-; CHECK-NEXT:    esp.vsadds.s16 q3, q3, s9
-; CHECK-NEXT:    esp.vsadds.s8 q7, q1, s11
-; CHECK-NEXT:    esp.vsadds.u16 q3, q2, s1
-; CHECK-NEXT:    esp.vsadds.u8 q2, q3, a2
-; CHECK-NEXT:    esp.vsat.s16 q5, q0, s0, s10
-; CHECK-NEXT:    esp.vsat.s32 q3, q3, s9, s0
-; CHECK-NEXT:    esp.vsat.s8 q0, q7, t5, a1
-; CHECK-NEXT:    esp.vsat.u16 q3, q7, s11, s11
-; CHECK-NEXT:    esp.vsat.u32 q3, q5, a2, a1
-; CHECK-NEXT:    esp.vsat.u8 q0, q6, s10, s8
-; CHECK-NEXT:    esp.vssubs.s16 q3, q7, t3
-; CHECK-NEXT:    esp.vssubs.s8 q7, q0, t4
-; CHECK-NEXT:    esp.vssubs.u16 q5, q4, a5
-; CHECK-NEXT:    esp.vssubs.u8 q5, q1, a0
-; CHECK-NEXT:    esp.vsub.s16 q0, q0, q6
-; CHECK-NEXT:    li a3, 6
-; CHECK-NEXT:    esp.vsub.s16.ld.incp q2, a3, q2, q3, q7
-; CHECK-NEXT:    li a3, 0
-; CHECK-NEXT:    esp.vsub.s16.st.incp q7, a3, q0, q0, q3
-; CHECK-NEXT:    esp.vsub.s32 q7, q2, q7
-; CHECK-NEXT:    li a3, 7
-; CHECK-NEXT:    esp.vsub.s32.ld.incp q4, a3, q3, q2, q0
-; CHECK-NEXT:    li a3, 5
-; CHECK-NEXT:    esp.vsub.s32.st.incp q4, a3, q1, q1, q1
-; CHECK-NEXT:    esp.vsub.s8 q7, q5, q6
-; CHECK-NEXT:    li a3, 1
-; CHECK-NEXT:    esp.vsub.s8.ld.incp q4, a3, q1, q2, q6
-; CHECK-NEXT:    li a3, 4
-; CHECK-NEXT:    esp.vsub.s8.st.incp q5, a3, q4, q2, q3
-; CHECK-NEXT:    esp.vsub.u16 q5, q7, q0
-; CHECK-NEXT:    li a3, 11
-; CHECK-NEXT:    esp.vsub.u16.ld.incp q4, a3, q0, q7, q5
-; CHECK-NEXT:    li a3, 11
-; CHECK-NEXT:    esp.vsub.u16.st.incp q0, a3, q1, q3, q1
-; CHECK-NEXT:    esp.vsub.u32 q5, q4, q2
-; CHECK-NEXT:    li a3, 0
-; CHECK-NEXT:    esp.vsub.u32.ld.incp q4, a3, q2, q4, q2
-; CHECK-NEXT:    li a3, 11
-; CHECK-NEXT:    esp.vsub.u32.st.incp q0, a3, q7, q7, q4
-; CHECK-NEXT:    esp.vsub.u8 q6, q5, q4
-; CHECK-NEXT:    li a3, 0
-; CHECK-NEXT:    esp.vsub.u8.ld.incp q4, a3, q6, q2, q4
-; CHECK-NEXT:    esp.vsub.u8.st.incp q3, a0, q3, q2, q0
-; CHECK-NEXT:    esp.addx2 zero, t6, t4
-; CHECK-NEXT:    esp.addx4 zero, t4, t6
-; CHECK-NEXT:    li a0, 4
-; CHECK-NEXT:    esp.sat a0, a4, a1
-; CHECK-NEXT:    esp.subx2 zero, a1, a1
-; CHECK-NEXT:    esp.subx4 zero, a5, s0
-; CHECK-NEXT:    esp.andq q7, q6, q3
-; CHECK-NEXT:    esp.notq q6, q5
-; CHECK-NEXT:    esp.orq q1, q1, q0
-; CHECK-NEXT:    esp.xorq q5, q1, q6
-; CHECK-NEXT:    esp.vcmp.eq.s16 q1, q0, q2
-; CHECK-NEXT:    esp.vcmp.eq.s32 q5, q1, q6
-; CHECK-NEXT:    esp.vcmp.eq.s8 q2, q0, q3
-; CHECK-NEXT:    esp.vcmp.eq.u16 q7, q7, q1
-; CHECK-NEXT:    esp.vcmp.eq.u32 q2, q1, q2
-; CHECK-NEXT:    esp.vcmp.eq.u8 q3, q1, q6
-; CHECK-NEXT:    esp.vcmp.gt.s16 q4, q5, q6
-; CHECK-NEXT:    esp.vcmp.gt.s32 q0, q6, q2
-; CHECK-NEXT:    esp.vcmp.gt.s8 q2, q3, q5
-; CHECK-NEXT:    esp.vcmp.gt.u16 q7, q7, q4
-; CHECK-NEXT:    esp.vcmp.gt.u32 q2, q6, q2
-; CHECK-NEXT:    esp.vcmp.gt.u8 q0, q2, q0
-; CHECK-NEXT:    esp.vcmp.lt.s16 q7, q2, q1
-; CHECK-NEXT:    esp.vcmp.lt.s32 q4, q2, q1
-; CHECK-NEXT:    esp.vcmp.lt.s8 q6, q5, q2
-; CHECK-NEXT:    esp.vcmp.lt.u16 q4, q1, q5
-; CHECK-NEXT:    esp.vcmp.lt.u32 q2, q5, q6
-; CHECK-NEXT:    esp.vcmp.lt.u8 q5, q3, q5
-; CHECK-NEXT:    esp.mov.s16.qacc q2
-; CHECK-NEXT:    esp.mov.s8.qacc q5
-; CHECK-NEXT:    esp.mov.u16.qacc q5
-; CHECK-NEXT:    esp.mov.u8.qacc q3
-; CHECK-NEXT:    esp.movi.16.a q2, a0, 3
-; CHECK-NEXT:    esp.movi.16.q q3, s11, 13
-; CHECK-NEXT:    esp.movi.32.a q6, a0, 1
-; CHECK-NEXT:    esp.movi.32.q q5, s0, 1
-; CHECK-NEXT:    esp.movi.8.a q5, a0, 15
-; CHECK-NEXT:    esp.movi.8.q q1, a5, 6
-; CHECK-NEXT:    esp.movx.r.cfg a0
+; CHECK-NEXT:    esp.sat a0, a5, t5
+; CHECK-NEXT:    esp.subx2 zero, a2, a3
+; CHECK-NEXT:    esp.subx4 zero, t6, a4
+; CHECK-NEXT:    esp.andq q3, q6, q6
+; CHECK-NEXT:    esp.notq q0, q3
+; CHECK-NEXT:    esp.orq q6, q2, q6
+; CHECK-NEXT:    esp.xorq q6, q2, q2
+; CHECK-NEXT:    esp.vcmp.eq.s16 q2, q2, q6
+; CHECK-NEXT:    esp.vcmp.eq.s32 q5, q1, q1
+; CHECK-NEXT:    esp.vcmp.eq.s8 q7, q5, q3
+; CHECK-NEXT:    esp.vcmp.eq.u16 q5, q5, q2
+; CHECK-NEXT:    esp.vcmp.eq.u32 q5, q6, q2
+; CHECK-NEXT:    esp.vcmp.eq.u8 q0, q1, q2
+; CHECK-NEXT:    esp.vcmp.gt.s16 q5, q2, q1
+; CHECK-NEXT:    esp.vcmp.gt.s32 q4, q6, q4
+; CHECK-NEXT:    esp.vcmp.gt.s8 q6, q4, q1
+; CHECK-NEXT:    esp.vcmp.gt.u16 q5, q1, q7
+; CHECK-NEXT:    esp.vcmp.gt.u32 q5, q5, q3
+; CHECK-NEXT:    esp.vcmp.gt.u8 q2, q1, q5
+; CHECK-NEXT:    esp.vcmp.lt.s16 q1, q2, q6
+; CHECK-NEXT:    esp.vcmp.lt.s32 q3, q4, q0
+; CHECK-NEXT:    esp.vcmp.lt.s8 q7, q6, q3
+; CHECK-NEXT:    esp.vcmp.lt.u16 q3, q6, q0
+; CHECK-NEXT:    esp.vcmp.lt.u32 q2, q1, q6
+; CHECK-NEXT:    esp.vcmp.lt.u8 q0, q5, q3
+; CHECK-NEXT:    esp.mov.s16.qacc q1
+; CHECK-NEXT:    esp.mov.s8.qacc q6
+; CHECK-NEXT:    esp.mov.u16.qacc q2
+; CHECK-NEXT:    esp.mov.u8.qacc q2
+; CHECK-NEXT:    esp.movi.16.a q6, a0, 12
+; CHECK-NEXT:    esp.movi.16.q q5, t6, 6
+; CHECK-NEXT:    esp.movi.32.a q3, a0, 1
+; CHECK-NEXT:    esp.movi.32.q q7, a1, 3
+; CHECK-NEXT:    esp.movi.8.a q1, a0, 9
+; CHECK-NEXT:    esp.movi.8.q q5, a5, 9
 ; CHECK-NEXT:    esp.movx.r.fft.bit.width a0
-; CHECK-NEXT:    li a0, 33
-; CHECK-NEXT:    esp.movx.r.perf a0, a0
+; CHECK-NEXT:    esp.movx.r.perf a0, s0
 ; CHECK-NEXT:    esp.movx.r.sar a0
 ; CHECK-NEXT:    esp.movx.r.sar.bytes a0
 ; CHECK-NEXT:    esp.movx.r.xacc.h a0
 ; CHECK-NEXT:    esp.movx.r.xacc.l a0
-; CHECK-NEXT:    esp.movx.w.cfg t5
-; CHECK-NEXT:    esp.movx.w.fft.bit.width s10
-; CHECK-NEXT:    esp.movx.w.perf a2
-; CHECK-NEXT:    esp.movx.w.sar t3
-; CHECK-NEXT:    esp.movx.w.sar.bytes s1
-; CHECK-NEXT:    esp.movx.w.xacc.h a2
-; CHECK-NEXT:    esp.movx.w.xacc.l s1
-; CHECK-NEXT:    esp.vext.s16 q7, q0, q6
-; CHECK-NEXT:    esp.vext.s8 q5, q3, q3
-; CHECK-NEXT:    esp.vext.u16 q4, q2, q6
-; CHECK-NEXT:    esp.vext.u8 q4, q0, q0
-; CHECK-NEXT:    esp.vunzip.16 q1, q0
-; CHECK-NEXT:    esp.vunzip.32 q6, q4
-; CHECK-NEXT:    esp.vunzip.8 q2, q1
-; CHECK-NEXT:    esp.vunzipt.16 q7, q0, q2
-; CHECK-NEXT:    esp.vunzipt.8 q0, q6, q2
-; CHECK-NEXT:    esp.vzip.16 q1, q6
-; CHECK-NEXT:    esp.vzip.32 q4, q6
-; CHECK-NEXT:    esp.vzip.8 q4, q0
-; CHECK-NEXT:    esp.vzipt.16 q0, q3, q5
-; CHECK-NEXT:    esp.vzipt.8 q6, q1, q5
-; CHECK-NEXT:    esp.zero.q q5
+; CHECK-NEXT:    esp.movx.w.cfg s8
+; CHECK-NEXT:    esp.movx.w.fft.bit.width a2
+; CHECK-NEXT:    esp.movx.w.perf s11
+; CHECK-NEXT:    esp.movx.w.sar t4
+; CHECK-NEXT:    esp.movx.w.sar.bytes s8
+; CHECK-NEXT:    esp.movx.w.xacc.h s10
+; CHECK-NEXT:    esp.movx.w.xacc.l s8
+; CHECK-NEXT:    esp.vext.s16 q6, q1, q6
+; CHECK-NEXT:    esp.vext.s8 q6, q0, q0
+; CHECK-NEXT:    esp.vext.u16 q3, q0, q7
+; CHECK-NEXT:    esp.vext.u8 q3, q0, q3
+; CHECK-NEXT:    esp.vunzip.16 q1, q5
+; CHECK-NEXT:    esp.vunzip.32 q6, q1
+; CHECK-NEXT:    esp.vunzip.8 q5, q6
+; CHECK-NEXT:    esp.vunzipt.16 q2, q2, q5
+; CHECK-NEXT:    esp.vunzipt.8 q6, q0, q7
+; CHECK-NEXT:    esp.vzip.16 q1, q2
+; CHECK-NEXT:    esp.vzip.32 q6, q3
+; CHECK-NEXT:    esp.vzip.8 q1, q0
+; CHECK-NEXT:    esp.vzipt.16 q7, q7, q4
+; CHECK-NEXT:    esp.vzipt.8 q4, q5, q2
+; CHECK-NEXT:    esp.zero.q q0
 ; CHECK-NEXT:    esp.zero.qacc
 ; CHECK-NEXT:    esp.zero.xacc
-; CHECK-NEXT:    li a0, 3
-; CHECK-NEXT:    esp.fft.ams.s16.ld.incp q6, a0, q6, q0, q3, q0, q1, 0
-; CHECK-NEXT:    li a0, 5
-; CHECK-NEXT:    esp.fft.ams.s16.ld.incp.uaup q3, a0, q0, q2, q3, q1, q0, 0
-; CHECK-NEXT:    li a0, 3
-; CHECK-NEXT:    esp.fft.ams.s16.ld.r32.decp q7, a0, q0, q6, q3, q1, q5, 1
-; CHECK-NEXT:    li a0, 2
-; CHECK-NEXT:    li a3, 4
-; CHECK-NEXT:    esp.fft.ams.s16.st.incp q5, q7, a0, a3, q5, q3, q6, 0
-; CHECK-NEXT:    li a0, 2
-; CHECK-NEXT:    esp.fft.bitrev q7, a0
-; CHECK-NEXT:    li a0, 4
-; CHECK-NEXT:    esp.fft.cmul.s16.ld.xp q2, a0, s10, q3, q7, q7, 1
-; CHECK-NEXT:    li a0, 4
-; CHECK-NEXT:    esp.fft.cmul.s16.st.xp q7, q0, q4, a0, a1, 4, 3, 1
-; CHECK-NEXT:    esp.fft.r2bf.s16 q7, q3, q5, q1, 0
-; CHECK-NEXT:    li a0, 10
-; CHECK-NEXT:    esp.fft.r2bf.s16.st.incp q7, q7, q4, a0, 2
-; CHECK-NEXT:    li a0, 7
-; CHECK-NEXT:    esp.fft.vst.r32.decp q5, a0, 1
-; CHECK-NEXT:    li a0, 4
-; CHECK-NEXT:    esp.ld.128.usar.ip q1, a0, 608
-; CHECK-NEXT:    li a0, 1
-; CHECK-NEXT:    esp.ld.128.usar.xp q2, a0, a2
-; CHECK-NEXT:    li a0, 6
-; CHECK-NEXT:    esp.ld.xacc.ip a0, 400
 ; CHECK-NEXT:    li a0, 13
-; CHECK-NEXT:    esp.ldqa.s16.128.ip a0, 912
-; CHECK-NEXT:    li a0, 2
-; CHECK-NEXT:    esp.ldqa.s16.128.xp a0, t5
+; CHECK-NEXT:    esp.fft.ams.s16.ld.incp q6, a0, q2, q1, q7, q6, q0, 1
+; CHECK-NEXT:    li a0, 4
+; CHECK-NEXT:    esp.fft.ams.s16.ld.incp.uaup q7, a0, q6, q3, q7, q7, q0, 1
 ; CHECK-NEXT:    li a0, 1
-; CHECK-NEXT:    esp.ldqa.s8.128.ip a0, 1824
-; CHECK-NEXT:    li a0, 9
-; CHECK-NEXT:    esp.ldqa.s8.128.xp a0, s1
-; CHECK-NEXT:    li a0, 4
-; CHECK-NEXT:    esp.ldqa.u16.128.ip a0, -1904
-; CHECK-NEXT:    li a0, 6
-; CHECK-NEXT:    esp.ldqa.u16.128.xp a0, t4
-; CHECK-NEXT:    li a0, 3
-; CHECK-NEXT:    esp.ldqa.u8.128.ip a0, 1216
-; CHECK-NEXT:    li a0, 2
-; CHECK-NEXT:    esp.ldqa.u8.128.xp a0, a4
-; CHECK-NEXT:    li a0, 9
-; CHECK-NEXT:    esp.vldbc.16.ip q7, a0, -448
-; CHECK-NEXT:    li a0, 5
-; CHECK-NEXT:    esp.vldbc.16.xp q3, a0, s0
-; CHECK-NEXT:    mv a0, a5
-; CHECK-NEXT:    esp.vldbc.32.ip q3, a0, 220
-; CHECK-NEXT:    li a0, 12
-; CHECK-NEXT:    esp.vldbc.32.xp q7, a0, a1
-; CHECK-NEXT:    li a0, 12
-; CHECK-NEXT:    esp.vldbc.8.ip q2, a0, 396
-; CHECK-NEXT:    li a0, 4
-; CHECK-NEXT:    esp.vldbc.8.xp q7, a0, s0
-; CHECK-NEXT:    li a0, 13
-; CHECK-NEXT:    esp.vldext.s16.ip q7, q4, a0, 16
-; CHECK-NEXT:    mv a0, a5
-; CHECK-NEXT:    esp.vldext.s16.xp q5, q0, a0, a2
-; CHECK-NEXT:    li a0, 4
-; CHECK-NEXT:    esp.vldext.s8.ip q3, q6, a0, 80
-; CHECK-NEXT:    li a0, 3
-; CHECK-NEXT:    esp.vldext.s8.xp q1, q1, a0, a4
+; CHECK-NEXT:    esp.fft.ams.s16.ld.r32.decp q4, a0, q2, q6, q3, q7, q1, 0
+; CHECK-NEXT:    li a0, 8
+; CHECK-NEXT:    li t3, 14
+; CHECK-NEXT:    esp.fft.ams.s16.st.incp q6, q0, t3, a0, q3, q1, q7, 1
 ; CHECK-NEXT:    li a0, 14
-; CHECK-NEXT:    esp.vldext.u16.ip q2, q5, a0, 48
+; CHECK-NEXT:    esp.fft.bitrev q2, a0
 ; CHECK-NEXT:    li a0, 7
-; CHECK-NEXT:    esp.vldext.u16.xp q2, q0, a0, s9
+; CHECK-NEXT:    esp.fft.cmul.s16.ld.xp q4, a0, s11, q6, q1, q7, 2
 ; CHECK-NEXT:    li a0, 13
-; CHECK-NEXT:    esp.vldext.u8.ip q7, q2, a0, 64
-; CHECK-NEXT:    li a0, 6
-; CHECK-NEXT:    esp.vldext.u8.xp q7, q2, a0, a0
+; CHECK-NEXT:    esp.fft.cmul.s16.st.xp q0, q5, q4, a0, a2, 2, 0, 1
+; CHECK-NEXT:    esp.fft.r2bf.s16 q3, q7, q3, q0, 0
 ; CHECK-NEXT:    li a0, 1
-; CHECK-NEXT:    esp.vldhbc.16.incp q4, q7, a0
-; CHECK-NEXT:    li a0, 6
-; CHECK-NEXT:    esp.ld.qacc.h.h.128.ip a0, 512
-; CHECK-NEXT:    li a0, 5
-; CHECK-NEXT:    esp.ld.qacc.h.l.128.ip a0, -784
-; CHECK-NEXT:    li a0, 10
-; CHECK-NEXT:    esp.ld.qacc.l.h.128.ip a0, -800
-; CHECK-NEXT:    li a0, 10
-; CHECK-NEXT:    esp.ld.qacc.l.l.128.ip a0, -1952
-; CHECK-NEXT:    li a0, 8
-; CHECK-NEXT:    esp.ld.ua.state.ip a0, -752
-; CHECK-NEXT:    esp.ldxq.32 q7, q4, a5, 2, 4
+; CHECK-NEXT:    esp.fft.r2bf.s16.st.incp q1, q5, q0, a0, 0
+; CHECK-NEXT:    mv a0, s0
+; CHECK-NEXT:    esp.fft.vst.r32.decp q3, a0, 0
+; CHECK-NEXT:    li a0, 12
+; CHECK-NEXT:    esp.ld.128.usar.ip q3, a0, -1776
 ; CHECK-NEXT:    li a0, 13
-; CHECK-NEXT:    esp.st.qacc.h.h.128.ip a0, -336
-; CHECK-NEXT:    li a0, 8
-; CHECK-NEXT:    esp.st.qacc.h.l.128.ip a0, 1568
+; CHECK-NEXT:    esp.ld.128.usar.xp q0, a0, s0
+; CHECK-NEXT:    li a0, 2
+; CHECK-NEXT:    esp.ld.xacc.ip a0, -488
+; CHECK-NEXT:    li a0, 13
+; CHECK-NEXT:    esp.ldqa.s16.128.ip a0, -1488
+; CHECK-NEXT:    li a0, 13
+; CHECK-NEXT:    esp.ldqa.s16.128.xp a0, s0
+; CHECK-NEXT:    li a0, 1
+; CHECK-NEXT:    esp.ldqa.s8.128.ip a0, -256
+; CHECK-NEXT:    li a0, 14
+; CHECK-NEXT:    esp.ldqa.s8.128.xp a0, a0
+; CHECK-NEXT:    li a0, 7
+; CHECK-NEXT:    esp.ldqa.u16.128.ip a0, -1936
+; CHECK-NEXT:    li a0, 11
+; CHECK-NEXT:    esp.ldqa.u16.128.xp a0, t4
+; CHECK-NEXT:    li a0, 6
+; CHECK-NEXT:    esp.ldqa.u8.128.ip a0, 688
 ; CHECK-NEXT:    li a0, 4
-; CHECK-NEXT:    esp.st.qacc.l.h.128.ip a0, 16
+; CHECK-NEXT:    esp.ldqa.u8.128.xp a0, s1
+; CHECK-NEXT:    li a0, 10
+; CHECK-NEXT:    esp.vldbc.16.ip q1, a0, 80
+; CHECK-NEXT:    li a0, 2
+; CHECK-NEXT:    esp.vldbc.16.xp q2, a0, s1
 ; CHECK-NEXT:    li a0, 8
-; CHECK-NEXT:    esp.st.qacc.l.l.128.ip a0, 416
-; CHECK-NEXT:    li a0, 7
-; CHECK-NEXT:    esp.st.ua.state.ip a0, -1360
-; CHECK-NEXT:    esp.stxq.32 q0, q6, a4, 2, 5
+; CHECK-NEXT:    esp.vldbc.32.ip q5, a0, 396
+; CHECK-NEXT:    li a0, 6
+; CHECK-NEXT:    esp.vldbc.32.xp q3, a0, a5
+; CHECK-NEXT:    li a0, 6
+; CHECK-NEXT:    esp.vldbc.8.ip q4, a0, -492
+; CHECK-NEXT:    li a0, 9
+; CHECK-NEXT:    esp.vldbc.8.xp q6, a0, a5
+; CHECK-NEXT:    li a0, 10
+; CHECK-NEXT:    esp.vldext.s16.ip q6, q2, a0, 32
+; CHECK-NEXT:    mv a0, s0
+; CHECK-NEXT:    esp.vldext.s16.xp q2, q6, a0, a3
+; CHECK-NEXT:    li a0, 9
+; CHECK-NEXT:    esp.vldext.s8.ip q1, q0, a0, -112
+; CHECK-NEXT:    li a0, 12
+; CHECK-NEXT:    esp.vldext.s8.xp q7, q0, a0, a5
 ; CHECK-NEXT:    li a0, 8
-; CHECK-NEXT:    esp.vld.128.ip q3, a0, 784
-; CHECK-NEXT:    li a0, 7
-; CHECK-NEXT:    esp.vld.128.xp q3, a0, s0
-; CHECK-NEXT:    mv a0, a5
-; CHECK-NEXT:    esp.vld.h.64.ip q0, a0, -352
-; CHECK-NEXT:    esp.vld.h.64.xp q2, a1, t4
-; CHECK-NEXT:    li a0, 6
-; CHECK-NEXT:    esp.vld.l.64.ip q2, a0, 56
-; CHECK-NEXT:    esp.vld.l.64.xp q5, s0, s10
-; CHECK-NEXT:    li a0, 6
-; CHECK-NEXT:    esp.vst.128.ip q5, a0, -960
+; CHECK-NEXT:    esp.vldext.u16.ip q3, q1, a0, 48
+; CHECK-NEXT:    li a0, 5
+; CHECK-NEXT:    esp.vldext.u16.xp q0, q1, a0, s9
+; CHECK-NEXT:    li a0, 2
+; CHECK-NEXT:    esp.vldext.u8.ip q5, q0, a0, -48
+; CHECK-NEXT:    li a0, 14
+; CHECK-NEXT:    esp.vldext.u8.xp q0, q6, a0, s0
+; CHECK-NEXT:    li a0, 2
+; CHECK-NEXT:    esp.vldhbc.16.incp q6, q5, a0
+; CHECK-NEXT:    li a0, 14
+; CHECK-NEXT:    esp.ld.qacc.h.h.128.ip a0, -1296
+; CHECK-NEXT:    li a0, 1
+; CHECK-NEXT:    esp.ld.qacc.h.l.128.ip a0, -64
+; CHECK-NEXT:    li a0, 10
+; CHECK-NEXT:    esp.ld.qacc.l.h.128.ip a0, 608
+; CHECK-NEXT:    esp.ld.qacc.l.l.128.ip s1, 656
+; CHECK-NEXT:    li a0, 2
+; CHECK-NEXT:    esp.ld.ua.state.ip a0, 1392
+; CHECK-NEXT:    esp.ldxq.32 q5, q2, t5, 2, 2
+; CHECK-NEXT:    li a0, 1
+; CHECK-NEXT:    esp.st.qacc.h.h.128.ip a0, -432
+; CHECK-NEXT:    li a0, 14
+; CHECK-NEXT:    esp.st.qacc.h.l.128.ip a0, -1792
+; CHECK-NEXT:    esp.st.qacc.l.h.128.ip a2, 320
+; CHECK-NEXT:    li a0, 8
+; CHECK-NEXT:    esp.st.qacc.l.l.128.ip a0, -496
+; CHECK-NEXT:    li a0, 8
+; CHECK-NEXT:    esp.st.ua.state.ip a0, 1856
+; CHECK-NEXT:    esp.stxq.32 q3, q5, s9, 2, 1
+; CHECK-NEXT:    mv a0, s0
+; CHECK-NEXT:    esp.vld.128.ip q0, a0, 496
+; CHECK-NEXT:    li a0, 14
+; CHECK-NEXT:    esp.vld.128.xp q2, a0, s9
+; CHECK-NEXT:    li a0, 14
+; CHECK-NEXT:    esp.vld.h.64.ip q2, a0, -88
+; CHECK-NEXT:    esp.vld.h.64.xp q3, a3, s10
 ; CHECK-NEXT:    li a0, 13
-; CHECK-NEXT:    esp.vst.128.xp q6, a0, s11
-; CHECK-NEXT:    esp.vst.h.64.ip q7, s1, 944
-; CHECK-NEXT:    esp.vst.h.64.xp q7, s11, t5
-; CHECK-NEXT:    li a0, 3
-; CHECK-NEXT:    esp.vst.l.64.ip q5, a0, 984
-; CHECK-NEXT:    li a0, 3
-; CHECK-NEXT:    esp.vst.l.64.xp q5, a0, s9
-; CHECK-NEXT:    esp.slci.2q q1, q5, 12
-; CHECK-NEXT:    esp.slcxxp.2q q2, q3, t6, t6
-; CHECK-NEXT:    esp.src.q q2, q1, q3
-; CHECK-NEXT:    esp.src.q.ld.ip q0, a5, -272, q5, q5
-; CHECK-NEXT:    li a0, 12
-; CHECK-NEXT:    esp.src.q.ld.xp q1, a0, t3, q7, q6
-; CHECK-NEXT:    esp.src.q.qup q3, q7, q4
-; CHECK-NEXT:    esp.srci.2q q2, q3, 7
-; CHECK-NEXT:    esp.srcmb.s16.q.qacc q2, q4, 0
-; CHECK-NEXT:    esp.srcmb.s16.qacc q5, s8, 1
-; CHECK-NEXT:    esp.srcmb.s8.q.qacc q5, q4, 0
-; CHECK-NEXT:    esp.srcmb.s8.qacc q1, a2, 1
-; CHECK-NEXT:    esp.srcmb.u16.q.qacc q0, q3, 1
-; CHECK-NEXT:    esp.srcmb.u16.qacc q7, s8, 0
-; CHECK-NEXT:    esp.srcmb.u8.q.qacc q3, q5, 1
-; CHECK-NEXT:    esp.srcmb.u8.qacc q0, t6, 0
-; CHECK-NEXT:    li a0, 12
-; CHECK-NEXT:    esp.srcq.128.st.incp q0, q5, a0
-; CHECK-NEXT:    esp.srcxxp.2q q4, q6, s9, a4
-; CHECK-NEXT:    esp.srs.s.xacc a0, a4
-; CHECK-NEXT:    esp.srs.u.xacc a0, t3
-; CHECK-NEXT:    esp.vsl.32 q5, q2
-; CHECK-NEXT:    esp.vsld.16 q3, q3, q7
-; CHECK-NEXT:    esp.vsld.32 q3, q7, q1
-; CHECK-NEXT:    esp.vsld.8 q0, q1, q5
-; CHECK-NEXT:    esp.vsr.s32 q3, q0
-; CHECK-NEXT:    esp.vsr.u32 q1, q2
-; CHECK-NEXT:    esp.vsrd.16 q4, q3, q0
-; CHECK-NEXT:    esp.vsrd.32 q0, q6, q3
-; CHECK-NEXT:    esp.vsrd.8 q5, q4, q1
-; CHECK-NEXT:    esp.st.s.xacc.ip a2, 80
-; CHECK-NEXT:    esp.st.u.xacc.ip a4, -464
+; CHECK-NEXT:    esp.vld.l.64.ip q2, a0, 240
+; CHECK-NEXT:    esp.vld.l.64.xp q3, a1, s11
+; CHECK-NEXT:    li a0, 14
+; CHECK-NEXT:    esp.vst.128.ip q6, a0, -512
+; CHECK-NEXT:    li a0, 14
+; CHECK-NEXT:    esp.vst.128.xp q2, a0, s9
+; CHECK-NEXT:    li a0, 13
+; CHECK-NEXT:    esp.vst.h.64.ip q5, a0, 56
+; CHECK-NEXT:    li a0, 13
+; CHECK-NEXT:    esp.vst.h.64.xp q1, a0, a0
+; CHECK-NEXT:    li a0, 7
+; CHECK-NEXT:    esp.vst.l.64.ip q3, a0, 952
+; CHECK-NEXT:    li a0, 8
+; CHECK-NEXT:    esp.vst.l.64.xp q2, a0, t4
+; CHECK-NEXT:    esp.slci.2q q1, q3, 6
+; CHECK-NEXT:    li a1, 6
+; CHECK-NEXT:    esp.slcxxp.2q q4, q3, a1, s9
+; CHECK-NEXT:    esp.src.q q4, q1, q5
+; CHECK-NEXT:    li a0, 4
+; CHECK-NEXT:    esp.src.q.ld.ip q2, a0, -1776, q2, q1
+; CHECK-NEXT:    li a0, 5
+; CHECK-NEXT:    esp.src.q.ld.xp q1, a0, s10, q1, q6
+; CHECK-NEXT:    esp.src.q.qup q6, q0, q2
+; CHECK-NEXT:    esp.srci.2q q3, q3, 12
+; CHECK-NEXT:    esp.srcmb.s16.q.qacc q1, q5, 1
+; CHECK-NEXT:    esp.srcmb.s16.qacc q3, s9, 0
+; CHECK-NEXT:    esp.srcmb.s8.q.qacc q2, q5, 1
+; CHECK-NEXT:    esp.srcmb.s8.qacc q0, s0, 0
+; CHECK-NEXT:    esp.srcmb.u16.q.qacc q0, q4, 1
+; CHECK-NEXT:    esp.srcmb.u16.qacc q6, t5, 0
+; CHECK-NEXT:    esp.srcmb.u8.q.qacc q5, q6, 1
+; CHECK-NEXT:    esp.srcmb.u8.qacc q6, t6, 0
+; CHECK-NEXT:    esp.srcq.128.st.incp q0, q4, a5
+; CHECK-NEXT:    esp.srcxxp.2q q5, q0, s0, s8
+; CHECK-NEXT:    esp.srs.s.xacc a0, s10
+; CHECK-NEXT:    esp.srs.u.xacc a0, a1
+; CHECK-NEXT:    esp.vsl.32 q1, q6
+; CHECK-NEXT:    esp.vsld.16 q3, q0, q2
+; CHECK-NEXT:    esp.vsld.32 q0, q1, q1
+; CHECK-NEXT:    esp.vsld.8 q1, q2, q1
+; CHECK-NEXT:    esp.vsr.s32 q3, q7
+; CHECK-NEXT:    esp.vsr.u32 q4, q5
+; CHECK-NEXT:    esp.vsrd.16 q1, q5, q3
+; CHECK-NEXT:    esp.vsrd.32 q4, q1, q2
+; CHECK-NEXT:    esp.vsrd.8 q4, q7, q4
+; CHECK-NEXT:    esp.st.s.xacc.ip s11, -720
+; CHECK-NEXT:    esp.st.u.xacc.ip a4, -576
+; CHECK-NEXT:    esp.movx.r.cfg a0
+; CHECK-NEXT:    ori a0, a0, 2
+; CHECK-NEXT:    esp.movx.w.cfg a0
 ; CHECK-NEXT:    cm.popret {ra, s0-s11}, 64
-	tail call void @llvm.riscv.esp.vld.128.ip(i32 8, i32 784, i32 0)
-	tail call void @llvm.riscv.esp.vld.128.ip(i32 8, i32 784, i32 1)
-	tail call void @llvm.riscv.esp.vld.128.ip(i32 8, i32 784, i32 2)
-	tail call void @llvm.riscv.esp.vld.128.ip(i32 8, i32 784, i32 3)
-	tail call void @llvm.riscv.esp.vld.128.ip(i32 8, i32 784, i32 4)
-	tail call void @llvm.riscv.esp.vld.128.ip(i32 8, i32 784, i32 5)
-	tail call void @llvm.riscv.esp.vld.128.ip(i32 8, i32 784, i32 6)
-	tail call void @llvm.riscv.esp.vld.128.ip(i32 8, i32 784, i32 7)
-	tail call void @llvm.riscv.esp.vcmulas.s16.qacc.h(i32 0, i32 4)
-	tail call void @llvm.riscv.esp.vcmulas.s16.qacc.h.ld.ip(i32 6, i32 1, i32 10, i32 -48, i32 1)
-	tail call void @llvm.riscv.esp.vcmulas.s16.qacc.h.ld.xp(i32 12, i32 2, i32 7, i32 2, i32 1)
-	tail call void @llvm.riscv.esp.vcmulas.s16.qacc.l(i32 7, i32 6)
-	tail call void @llvm.riscv.esp.vcmulas.s16.qacc.l.ld.ip(i32 7, i32 0, i32 8, i32 48, i32 7)
-	tail call void @llvm.riscv.esp.vcmulas.s16.qacc.l.ld.xp(i32 14, i32 2, i32 7, i32 7, i32 1)
-	tail call void @llvm.riscv.esp.vcmulas.s8.qacc.h(i32 1, i32 1)
-	tail call void @llvm.riscv.esp.vcmulas.s8.qacc.h.ld.ip(i32 1, i32 6, i32 5, i32 32, i32 4)
-	tail call void @llvm.riscv.esp.vcmulas.s8.qacc.h.ld.xp(i32 7, i32 3, i32 2, i32 2, i32 6)
-	tail call void @llvm.riscv.esp.vcmulas.s8.qacc.l(i32 4, i32 5)
-	tail call void @llvm.riscv.esp.vcmulas.s8.qacc.l.ld.ip(i32 2, i32 5, i32 4, i32 -48, i32 4)
-	tail call void @llvm.riscv.esp.vcmulas.s8.qacc.l.ld.xp(i32 7, i32 6, i32 3, i32 14, i32 7)
-	tail call void @llvm.riscv.esp.vmulas.s16.qacc(i32 4, i32 2)
-	tail call void @llvm.riscv.esp.vmulas.s16.qacc.ld.ip(i32 5, i32 7, i32 4, i32 96, i32 1)
-	tail call void @llvm.riscv.esp.vmulas.s16.qacc.ld.xp(i32 3, i32 4, i32 2, i32 8, i32 6)
-	tail call void @llvm.riscv.esp.vmulas.s16.qacc.st.ip(i32 7, i32 6, i32 1, i32 0, i32 80)
-	tail call void @llvm.riscv.esp.vmulas.s16.qacc.st.xp(i32 5, i32 0, i32 7, i32 6, i32 5)
-	tail call void @llvm.riscv.esp.vmulas.s16.xacc(i32 3, i32 5)
-	tail call void @llvm.riscv.esp.vmulas.s16.xacc.ld.ip(i32 1, i32 7, i32 9, i32 96, i32 5)
-	tail call void @llvm.riscv.esp.vmulas.s16.xacc.ld.xp(i32 8, i32 5, i32 5, i32 13, i32 0)
-	tail call void @llvm.riscv.esp.vmulas.s16.xacc.st.ip(i32 4, i32 6, i32 2, i32 1, i32 16)
-	tail call void @llvm.riscv.esp.vmulas.s16.xacc.st.xp(i32 5, i32 7, i32 7, i32 7, i32 2)
-	tail call void @llvm.riscv.esp.vmulas.s8.qacc(i32 6, i32 1)
-	tail call void @llvm.riscv.esp.vmulas.s8.qacc.ld.ip(i32 3, i32 5, i32 8, i32 -128, i32 2)
-	tail call void @llvm.riscv.esp.vmulas.s8.qacc.ld.xp(i32 5, i32 0, i32 5, i32 8, i32 4)
-	tail call void @llvm.riscv.esp.vmulas.s8.qacc.st.ip(i32 6, i32 0, i32 7, i32 1, i32 16)
-	tail call void @llvm.riscv.esp.vmulas.s8.qacc.st.xp(i32 12, i32 6, i32 1, i32 4, i32 10)
-	tail call void @llvm.riscv.esp.vmulas.s8.xacc(i32 3, i32 7)
-	tail call void @llvm.riscv.esp.vmulas.s8.xacc.ld.ip(i32 4, i32 5, i32 1, i32 -16, i32 7)
-	tail call void @llvm.riscv.esp.vmulas.s8.xacc.ld.xp(i32 10, i32 7, i32 0, i32 7, i32 1)
-	tail call void @llvm.riscv.esp.vmulas.s8.xacc.st.ip(i32 6, i32 1, i32 6, i32 8, i32 -128)
-	tail call void @llvm.riscv.esp.vmulas.s8.xacc.st.xp(i32 2, i32 4, i32 1, i32 5, i32 4)
-	tail call void @llvm.riscv.esp.vmulas.u16.qacc(i32 6, i32 1)
-	tail call void @llvm.riscv.esp.vmulas.u16.qacc.ld.ip(i32 0, i32 0, i32 8, i32 -32, i32 7)
-	tail call void @llvm.riscv.esp.vmulas.u16.qacc.ld.xp(i32 7, i32 6, i32 7, i32 6, i32 2)
-	tail call void @llvm.riscv.esp.vmulas.u16.qacc.st.ip(i32 6, i32 5, i32 4, i32 8, i32 16)
-	tail call void @llvm.riscv.esp.vmulas.u16.qacc.st.xp(i32 9, i32 3, i32 7, i32 4, i32 2)
-	tail call void @llvm.riscv.esp.vmulas.u16.xacc(i32 6, i32 1)
-	tail call void @llvm.riscv.esp.vmulas.u16.xacc.ld.ip(i32 2, i32 2, i32 3, i32 -48, i32 2)
-	tail call void @llvm.riscv.esp.vmulas.u16.xacc.ld.xp(i32 6, i32 3, i32 0, i32 0, i32 7)
-	tail call void @llvm.riscv.esp.vmulas.u16.xacc.st.ip(i32 1, i32 4, i32 0, i32 9, i32 96)
-	tail call void @llvm.riscv.esp.vmulas.u16.xacc.st.xp(i32 5, i32 3, i32 7, i32 6, i32 2)
-	tail call void @llvm.riscv.esp.vmulas.u8.qacc(i32 7, i32 1)
-	tail call void @llvm.riscv.esp.vmulas.u8.qacc.ld.ip(i32 7, i32 4, i32 9, i32 -48, i32 7)
-	tail call void @llvm.riscv.esp.vmulas.u8.qacc.ld.xp(i32 12, i32 6, i32 7, i32 11, i32 4)
-	tail call void @llvm.riscv.esp.vmulas.u8.qacc.st.ip(i32 1, i32 7, i32 2, i32 14, i32 0)
-	tail call void @llvm.riscv.esp.vmulas.u8.qacc.st.xp(i32 7, i32 0, i32 0, i32 4, i32 7)
-	tail call void @llvm.riscv.esp.vmulas.u8.xacc(i32 6, i32 4)
-	tail call void @llvm.riscv.esp.vmulas.u8.xacc.ld.ip(i32 6, i32 2, i32 5, i32 -80, i32 3)
-	tail call void @llvm.riscv.esp.vmulas.u8.xacc.ld.xp(i32 13, i32 5, i32 1, i32 13, i32 4)
-	tail call void @llvm.riscv.esp.vmulas.u8.xacc.st.ip(i32 2, i32 3, i32 7, i32 5, i32 -128)
-	tail call void @llvm.riscv.esp.vmulas.u8.xacc.st.xp(i32 6, i32 7, i32 2, i32 2, i32 5)
-	tail call void @llvm.riscv.esp.vmulas.s16.qacc.ldbc.incp(i32 0, i32 2, i32 14, i32 0)
-	tail call void @llvm.riscv.esp.vmulas.s8.qacc.ldbc.incp(i32 2, i32 6, i32 0, i32 5)
-	tail call void @llvm.riscv.esp.vmulas.u16.qacc.ldbc.incp(i32 7, i32 3, i32 8, i32 5)
-	tail call void @llvm.riscv.esp.vmulas.u8.qacc.ldbc.incp(i32 4, i32 4, i32 6, i32 3)
-	tail call void @llvm.riscv.esp.vsmulas.s16.qacc(i32 1, i32 5, i32 14)
-	tail call void @llvm.riscv.esp.vsmulas.s16.qacc.ld.incp(i32 7, i32 4, i32 5, i32 0, i32 0)
-	tail call void @llvm.riscv.esp.vsmulas.s8.qacc(i32 3, i32 5, i32 0)
-	tail call void @llvm.riscv.esp.vsmulas.s8.qacc.ld.incp(i32 1, i32 4, i32 8, i32 6, i32 1)
-	tail call void @llvm.riscv.esp.vsmulas.u16.qacc(i32 6, i32 5, i32 15)
-	tail call void @llvm.riscv.esp.vsmulas.u16.qacc.ld.incp(i32 7, i32 1, i32 0, i32 10, i32 7)
-	tail call void @llvm.riscv.esp.vsmulas.u8.qacc(i32 0, i32 7, i32 2)
-	tail call void @llvm.riscv.esp.vsmulas.u8.qacc.ld.incp(i32 3, i32 7, i32 10, i32 8, i32 4)
-	tail call void @llvm.riscv.esp.cmul.s16(i32 0, i32 7, i32 3, i32 6)
-	tail call void @llvm.riscv.esp.cmul.s16.ld.incp(i32 0, i32 3, i32 6, i32 0, i32 3, i32 5)
-	tail call void @llvm.riscv.esp.cmul.s16.st.incp(i32 4, i32 5, i32 5, i32 0, i32 2, i32 0)
-	tail call void @llvm.riscv.esp.cmul.s8(i32 1, i32 0, i32 3, i32 1)
-	tail call void @llvm.riscv.esp.cmul.s8.ld.incp(i32 5, i32 4, i32 5, i32 1, i32 7, i32 4)
-	tail call void @llvm.riscv.esp.cmul.s8.st.incp(i32 6, i32 0, i32 5, i32 14, i32 3, i32 0)
-	tail call void @llvm.riscv.esp.cmul.u16(i32 7, i32 5, i32 2, i32 7)
-	tail call void @llvm.riscv.esp.cmul.u16.ld.incp(i32 0, i32 1, i32 2, i32 1, i32 0, i32 0)
-	tail call void @llvm.riscv.esp.cmul.u16.st.incp(i32 1, i32 4, i32 2, i32 5, i32 2, i32 4)
-	tail call void @llvm.riscv.esp.cmul.u8(i32 7, i32 5, i32 0, i32 3)
-	tail call void @llvm.riscv.esp.cmul.u8.ld.incp(i32 0, i32 2, i32 11, i32 0, i32 0, i32 4)
-	tail call void @llvm.riscv.esp.cmul.u8.st.incp(i32 6, i32 3, i32 1, i32 10, i32 2, i32 4)
-	tail call void @llvm.riscv.esp.max.s16.a(i32 6, i32 3)
-	tail call void @llvm.riscv.esp.max.s32.a(i32 2, i32 0)
-	tail call void @llvm.riscv.esp.max.s8.a(i32 0, i32 9)
-	tail call void @llvm.riscv.esp.max.u16.a(i32 6, i32 6)
-	tail call void @llvm.riscv.esp.max.u32.a(i32 6, i32 1)
-	tail call void @llvm.riscv.esp.max.u8.a(i32 1, i32 4)
-	tail call void @llvm.riscv.esp.min.s16.a(i32 6, i32 11)
-	tail call void @llvm.riscv.esp.min.s32.a(i32 1, i32 14)
-	tail call void @llvm.riscv.esp.min.s8.a(i32 0, i32 1)
-	tail call void @llvm.riscv.esp.min.u16.a(i32 3, i32 14)
-	tail call void @llvm.riscv.esp.min.u32.a(i32 0, i32 9)
-	tail call void @llvm.riscv.esp.min.u8.a(i32 5, i32 8)
-	tail call void @llvm.riscv.esp.vabs.16(i32 0, i32 6)
-	tail call void @llvm.riscv.esp.vabs.32(i32 4, i32 1)
-	tail call void @llvm.riscv.esp.vabs.8(i32 2, i32 5)
-	tail call void @llvm.riscv.esp.vadd.s16(i32 1, i32 5, i32 6)
-	tail call void @llvm.riscv.esp.vadd.s16.ld.incp(i32 0, i32 6, i32 10, i32 1, i32 0)
-	tail call void @llvm.riscv.esp.vadd.s16.st.incp(i32 0, i32 4, i32 1, i32 11, i32 7)
-	tail call void @llvm.riscv.esp.vadd.s32(i32 7, i32 3, i32 7)
-	tail call void @llvm.riscv.esp.vadd.s32.ld.incp(i32 7, i32 2, i32 14, i32 4, i32 4)
-	tail call void @llvm.riscv.esp.vadd.s32.st.incp(i32 1, i32 7, i32 2, i32 13, i32 7)
-	tail call void @llvm.riscv.esp.vadd.s8(i32 1, i32 7, i32 7)
-	tail call void @llvm.riscv.esp.vadd.s8.ld.incp(i32 5, i32 6, i32 14, i32 1, i32 2)
-	tail call void @llvm.riscv.esp.vadd.s8.st.incp(i32 1, i32 0, i32 3, i32 9, i32 4)
-	tail call void @llvm.riscv.esp.vadd.u16(i32 7, i32 7, i32 0)
-	tail call void @llvm.riscv.esp.vadd.u16.ld.incp(i32 7, i32 5, i32 8, i32 1, i32 6)
-	tail call void @llvm.riscv.esp.vadd.u16.st.incp(i32 6, i32 3, i32 0, i32 5, i32 7)
-	tail call void @llvm.riscv.esp.vadd.u32(i32 0, i32 1, i32 4)
-	tail call void @llvm.riscv.esp.vadd.u32.ld.incp(i32 5, i32 0, i32 2, i32 4, i32 1)
-	tail call void @llvm.riscv.esp.vadd.u32.st.incp(i32 0, i32 1, i32 4, i32 1, i32 6)
-	tail call void @llvm.riscv.esp.vadd.u8(i32 2, i32 5, i32 5)
-	tail call void @llvm.riscv.esp.vadd.u8.ld.incp(i32 4, i32 3, i32 8, i32 1, i32 7)
-	tail call void @llvm.riscv.esp.vadd.u8.st.incp(i32 0, i32 0, i32 0, i32 5, i32 2)
-	tail call void @llvm.riscv.esp.vclamp.s16(i32 5, i32 14, i32 4)
-	tail call void @llvm.riscv.esp.vmax.s16(i32 6, i32 5, i32 5)
-	tail call void @llvm.riscv.esp.vmax.s16.ld.incp(i32 5, i32 5, i32 11, i32 3, i32 2)
-	tail call void @llvm.riscv.esp.vmax.s16.st.incp(i32 3, i32 5, i32 3, i32 2, i32 4)
-	tail call void @llvm.riscv.esp.vmax.s32(i32 5, i32 2, i32 2)
-	tail call void @llvm.riscv.esp.vmax.s32.ld.incp(i32 0, i32 1, i32 7, i32 6, i32 0)
-	tail call void @llvm.riscv.esp.vmax.s32.st.incp(i32 7, i32 6, i32 6, i32 14, i32 1)
-	tail call void @llvm.riscv.esp.vmax.s8(i32 5, i32 7, i32 7)
-	tail call void @llvm.riscv.esp.vmax.s8.ld.incp(i32 5, i32 1, i32 2, i32 1, i32 6)
-	tail call void @llvm.riscv.esp.vmax.s8.st.incp(i32 1, i32 3, i32 5, i32 4, i32 7)
-	tail call void @llvm.riscv.esp.vmax.u16(i32 4, i32 1, i32 1)
-	tail call void @llvm.riscv.esp.vmax.u16.ld.incp(i32 5, i32 4, i32 0, i32 5, i32 3)
-	tail call void @llvm.riscv.esp.vmax.u16.st.incp(i32 0, i32 7, i32 5, i32 11, i32 5)
-	tail call void @llvm.riscv.esp.vmax.u32(i32 0, i32 2, i32 4)
-	tail call void @llvm.riscv.esp.vmax.u32.ld.incp(i32 0, i32 6, i32 4, i32 1, i32 6)
-	tail call void @llvm.riscv.esp.vmax.u32.st.incp(i32 4, i32 7, i32 0, i32 6, i32 1)
-	tail call void @llvm.riscv.esp.vmax.u8(i32 2, i32 0, i32 5)
-	tail call void @llvm.riscv.esp.vmax.u8.ld.incp(i32 6, i32 1, i32 1, i32 5, i32 0)
-	tail call void @llvm.riscv.esp.vmax.u8.st.incp(i32 6, i32 7, i32 7, i32 10, i32 1)
-	tail call void @llvm.riscv.esp.vmin.s16(i32 1, i32 3, i32 4)
-	tail call void @llvm.riscv.esp.vmin.s16.ld.incp(i32 2, i32 1, i32 3, i32 2, i32 2)
-	tail call void @llvm.riscv.esp.vmin.s16.st.incp(i32 7, i32 6, i32 2, i32 7, i32 1)
-	tail call void @llvm.riscv.esp.vmin.s32(i32 0, i32 3, i32 2)
-	tail call void @llvm.riscv.esp.vmin.s32.ld.incp(i32 7, i32 6, i32 14, i32 5, i32 1)
-	tail call void @llvm.riscv.esp.vmin.s32.st.incp(i32 5, i32 1, i32 7, i32 6, i32 5)
-	tail call void @llvm.riscv.esp.vmin.s8(i32 3, i32 6, i32 2)
-	tail call void @llvm.riscv.esp.vmin.s8.ld.incp(i32 4, i32 3, i32 11, i32 1, i32 7)
-	tail call void @llvm.riscv.esp.vmin.s8.st.incp(i32 0, i32 1, i32 1, i32 6, i32 4)
-	tail call void @llvm.riscv.esp.vmin.u16(i32 3, i32 7, i32 4)
-	tail call void @llvm.riscv.esp.vmin.u16.ld.incp(i32 6, i32 6, i32 11, i32 5, i32 4)
-	tail call void @llvm.riscv.esp.vmin.u16.st.incp(i32 6, i32 0, i32 1, i32 12, i32 2)
-	tail call void @llvm.riscv.esp.vmin.u32(i32 0, i32 7, i32 5)
-	tail call void @llvm.riscv.esp.vmin.u32.ld.incp(i32 5, i32 6, i32 13, i32 6, i32 7)
-	tail call void @llvm.riscv.esp.vmin.u32.st.incp(i32 3, i32 7, i32 5, i32 4, i32 4)
-	tail call void @llvm.riscv.esp.vmin.u8(i32 5, i32 5, i32 7)
-	tail call void @llvm.riscv.esp.vmin.u8.ld.incp(i32 0, i32 5, i32 0, i32 5, i32 2)
-	tail call void @llvm.riscv.esp.vmin.u8.st.incp(i32 6, i32 6, i32 2, i32 12, i32 1)
-	tail call void @llvm.riscv.esp.vmul.s16(i32 2, i32 1, i32 6)
-	tail call void @llvm.riscv.esp.vmul.s16.ld.incp(i32 6, i32 7, i32 10, i32 3, i32 0)
-	tail call void @llvm.riscv.esp.vmul.s16.s8xs8(i32 3, i32 5, i32 7, i32 0)
-	tail call void @llvm.riscv.esp.vmul.s16.st.incp(i32 7, i32 1, i32 2, i32 3, i32 0)
-	tail call void @llvm.riscv.esp.vmul.s32.s16xs16(i32 5, i32 2, i32 3, i32 4)
-	tail call void @llvm.riscv.esp.vmul.s8(i32 4, i32 0, i32 3)
-	tail call void @llvm.riscv.esp.vmul.s8.ld.incp(i32 2, i32 3, i32 0, i32 2, i32 0)
-	tail call void @llvm.riscv.esp.vmul.s8.st.incp(i32 0, i32 7, i32 0, i32 8, i32 3)
-	tail call void @llvm.riscv.esp.vmul.u16(i32 3, i32 7, i32 2)
-	tail call void @llvm.riscv.esp.vmul.u16.ld.incp(i32 6, i32 6, i32 7, i32 5, i32 5)
-	tail call void @llvm.riscv.esp.vmul.u16.st.incp(i32 4, i32 4, i32 3, i32 3, i32 2)
-	tail call void @llvm.riscv.esp.vmul.u8(i32 3, i32 7, i32 7)
-	tail call void @llvm.riscv.esp.vmul.u8.ld.incp(i32 0, i32 6, i32 9, i32 1, i32 0)
-	tail call void @llvm.riscv.esp.vmul.u8.st.incp(i32 0, i32 3, i32 7, i32 6, i32 4)
-	tail call void @llvm.riscv.esp.vprelu.s16(i32 8, i32 3, i32 4, i32 1)
-	tail call void @llvm.riscv.esp.vprelu.s8(i32 3, i32 5, i32 4, i32 2)
-	tail call void @llvm.riscv.esp.vrelu.s16(i32 8, i32 9, i32 6)
-	tail call void @llvm.riscv.esp.vrelu.s8(i32 12, i32 1, i32 5)
-	tail call void @llvm.riscv.esp.vsadds.s16(i32 12, i32 3, i32 3)
-	tail call void @llvm.riscv.esp.vsadds.s8(i32 7, i32 1, i32 7)
-	tail call void @llvm.riscv.esp.vsadds.u16(i32 4, i32 2, i32 3)
-	tail call void @llvm.riscv.esp.vsadds.u8(i32 8, i32 3, i32 2)
-	tail call void @llvm.riscv.esp.vsat.s16(i32 9, i32 1, i32 0, i32 5)
-	tail call void @llvm.riscv.esp.vsat.s32(i32 12, i32 9, i32 3, i32 3)
-	tail call void @llvm.riscv.esp.vsat.s8(i32 10, i32 2, i32 7, i32 0)
-	tail call void @llvm.riscv.esp.vsat.u16(i32 7, i32 7, i32 7, i32 3)
-	tail call void @llvm.riscv.esp.vsat.u32(i32 8, i32 2, i32 5, i32 3)
-	tail call void @llvm.riscv.esp.vsat.u8(i32 1, i32 13, i32 6, i32 0)
-	tail call void @llvm.riscv.esp.vssubs.s16(i32 3, i32 7, i32 3)
-	tail call void @llvm.riscv.esp.vssubs.s8(i32 14, i32 0, i32 7)
-	tail call void @llvm.riscv.esp.vssubs.u16(i32 0, i32 4, i32 5)
-	tail call void @llvm.riscv.esp.vssubs.u8(i32 11, i32 1, i32 5)
-	tail call void @llvm.riscv.esp.vsub.s16(i32 0, i32 6, i32 0)
-	tail call void @llvm.riscv.esp.vsub.s16.ld.incp(i32 3, i32 7, i32 6, i32 2, i32 2)
-	tail call void @llvm.riscv.esp.vsub.s16.st.incp(i32 0, i32 3, i32 7, i32 0, i32 0)
-	tail call void @llvm.riscv.esp.vsub.s32(i32 2, i32 7, i32 7)
-	tail call void @llvm.riscv.esp.vsub.s32.ld.incp(i32 2, i32 0, i32 7, i32 3, i32 4)
-	tail call void @llvm.riscv.esp.vsub.s32.st.incp(i32 1, i32 1, i32 4, i32 5, i32 1)
-	tail call void @llvm.riscv.esp.vsub.s8(i32 5, i32 6, i32 7)
-	tail call void @llvm.riscv.esp.vsub.s8.ld.incp(i32 2, i32 6, i32 1, i32 1, i32 4)
-	tail call void @llvm.riscv.esp.vsub.s8.st.incp(i32 2, i32 3, i32 5, i32 4, i32 4)
-	tail call void @llvm.riscv.esp.vsub.u16(i32 7, i32 0, i32 5)
-	tail call void @llvm.riscv.esp.vsub.u16.ld.incp(i32 7, i32 5, i32 11, i32 0, i32 4)
-	tail call void @llvm.riscv.esp.vsub.u16.st.incp(i32 3, i32 1, i32 0, i32 11, i32 1)
-	tail call void @llvm.riscv.esp.vsub.u32(i32 4, i32 2, i32 5)
-	tail call void @llvm.riscv.esp.vsub.u32.ld.incp(i32 4, i32 2, i32 0, i32 2, i32 4)
-	tail call void @llvm.riscv.esp.vsub.u32.st.incp(i32 7, i32 4, i32 0, i32 11, i32 7)
-	tail call void @llvm.riscv.esp.vsub.u8(i32 5, i32 4, i32 6)
-	tail call void @llvm.riscv.esp.vsub.u8.ld.incp(i32 2, i32 4, i32 0, i32 6, i32 4)
-	tail call void @llvm.riscv.esp.vsub.u8.st.incp(i32 2, i32 0, i32 3, i32 11, i32 3)
-	tail call void @llvm.riscv.esp.addx2(i32 5, i32 14, i32 4)
-	tail call void @llvm.riscv.esp.addx4(i32 14, i32 5, i32 4)
-	tail call void @llvm.riscv.esp.sat(i32 6, i32 2, i32 4)
-	tail call void @llvm.riscv.esp.subx2(i32 2, i32 2, i32 9)
-	tail call void @llvm.riscv.esp.subx4(i32 0, i32 9, i32 3)
-	tail call void @llvm.riscv.esp.andq(i32 6, i32 3, i32 7)
-	tail call void @llvm.riscv.esp.notq(i32 5, i32 6)
-	tail call void @llvm.riscv.esp.orq(i32 1, i32 0, i32 1)
-	tail call void @llvm.riscv.esp.xorq(i32 1, i32 6, i32 5)
-	tail call void @llvm.riscv.esp.vcmp.eq.s16(i32 0, i32 2, i32 1)
-	tail call void @llvm.riscv.esp.vcmp.eq.s32(i32 1, i32 6, i32 5)
-	tail call void @llvm.riscv.esp.vcmp.eq.s8(i32 0, i32 3, i32 2)
-	tail call void @llvm.riscv.esp.vcmp.eq.u16(i32 7, i32 1, i32 7)
-	tail call void @llvm.riscv.esp.vcmp.eq.u32(i32 1, i32 2, i32 2)
-	tail call void @llvm.riscv.esp.vcmp.eq.u8(i32 1, i32 6, i32 3)
-	tail call void @llvm.riscv.esp.vcmp.gt.s16(i32 5, i32 6, i32 4)
-	tail call void @llvm.riscv.esp.vcmp.gt.s32(i32 6, i32 2, i32 0)
-	tail call void @llvm.riscv.esp.vcmp.gt.s8(i32 3, i32 5, i32 2)
-	tail call void @llvm.riscv.esp.vcmp.gt.u16(i32 7, i32 4, i32 7)
-	tail call void @llvm.riscv.esp.vcmp.gt.u32(i32 6, i32 2, i32 2)
-	tail call void @llvm.riscv.esp.vcmp.gt.u8(i32 2, i32 0, i32 0)
-	tail call void @llvm.riscv.esp.vcmp.lt.s16(i32 2, i32 1, i32 7)
-	tail call void @llvm.riscv.esp.vcmp.lt.s32(i32 2, i32 1, i32 4)
-	tail call void @llvm.riscv.esp.vcmp.lt.s8(i32 5, i32 2, i32 6)
-	tail call void @llvm.riscv.esp.vcmp.lt.u16(i32 1, i32 5, i32 4)
-	tail call void @llvm.riscv.esp.vcmp.lt.u32(i32 5, i32 6, i32 2)
-	tail call void @llvm.riscv.esp.vcmp.lt.u8(i32 3, i32 5, i32 5)
-	tail call void @llvm.riscv.esp.mov.s16.qacc(i32 2)
-	tail call void @llvm.riscv.esp.mov.s8.qacc(i32 5)
-	tail call void @llvm.riscv.esp.mov.u16.qacc(i32 5)
-	tail call void @llvm.riscv.esp.mov.u8.qacc(i32 3)
-	tail call void @llvm.riscv.esp.movi.16.a(i32 2, i32 3, i32 1)
-	tail call void @llvm.riscv.esp.movi.16.q(i32 7, i32 13, i32 3)
-	tail call void @llvm.riscv.esp.movi.32.a(i32 6, i32 1, i32 14)
-	tail call void @llvm.riscv.esp.movi.32.q(i32 9, i32 1, i32 5)
-	tail call void @llvm.riscv.esp.movi.8.a(i32 5, i32 15, i32 14)
-	tail call void @llvm.riscv.esp.movi.8.q(i32 0, i32 6, i32 1)
-	tail call void @llvm.riscv.esp.movx.r.cfg(i32 5)
-	tail call void @llvm.riscv.esp.movx.r.fft.bit.width(i32 2)
-	tail call void @llvm.riscv.esp.movx.r.perf(i32 3, i32 33)
-	tail call void @llvm.riscv.esp.movx.r.sar(i32 5)
-	tail call void @llvm.riscv.esp.movx.r.sar.bytes(i32 6)
-	tail call void @llvm.riscv.esp.movx.r.xacc.h(i32 10)
-	tail call void @llvm.riscv.esp.movx.r.xacc.l(i32 12)
-	tail call void @llvm.riscv.esp.movx.w.cfg(i32 10)
-	tail call void @llvm.riscv.esp.movx.w.fft.bit.width(i32 1)
-	tail call void @llvm.riscv.esp.movx.w.perf(i32 8)
-	tail call void @llvm.riscv.esp.movx.w.sar(i32 3)
-	tail call void @llvm.riscv.esp.movx.w.sar.bytes(i32 4)
-	tail call void @llvm.riscv.esp.movx.w.xacc.h(i32 8)
-	tail call void @llvm.riscv.esp.movx.w.xacc.l(i32 4)
-	tail call void @llvm.riscv.esp.vext.s16(i32 6, i32 7, i32 0)
-	tail call void @llvm.riscv.esp.vext.s8(i32 3, i32 5, i32 3)
-	tail call void @llvm.riscv.esp.vext.u16(i32 6, i32 4, i32 2)
-	tail call void @llvm.riscv.esp.vext.u8(i32 0, i32 4, i32 0)
-	tail call void @llvm.riscv.esp.vunzip.16(i32 1, i32 0)
-	tail call void @llvm.riscv.esp.vunzip.32(i32 6, i32 4)
-	tail call void @llvm.riscv.esp.vunzip.8(i32 2, i32 1)
-	tail call void @llvm.riscv.esp.vunzipt.16(i32 7, i32 0, i32 2)
-	tail call void @llvm.riscv.esp.vunzipt.8(i32 0, i32 6, i32 2)
-	tail call void @llvm.riscv.esp.vzip.16(i32 1, i32 6)
-	tail call void @llvm.riscv.esp.vzip.32(i32 4, i32 6)
-	tail call void @llvm.riscv.esp.vzip.8(i32 4, i32 0)
-	tail call void @llvm.riscv.esp.vzipt.16(i32 0, i32 3, i32 5)
-	tail call void @llvm.riscv.esp.vzipt.8(i32 6, i32 1, i32 5)
-	tail call void @llvm.riscv.esp.zero.q(i32 5)
+	%1 = tail call i32 @llvm.riscv.esp.vld.128.ip(i32 8, i32 496, i32 0)
+	%2 = tail call i32 @llvm.riscv.esp.vld.128.ip(i32 %1, i32 496, i32 1)
+	%3 = tail call i32 @llvm.riscv.esp.vld.128.ip(i32 %2, i32 496, i32 2)
+	%4 = tail call i32 @llvm.riscv.esp.vld.128.ip(i32 %3, i32 496, i32 3)
+	%5 = tail call i32 @llvm.riscv.esp.vld.128.ip(i32 %4, i32 496, i32 4)
+	%6 = tail call i32 @llvm.riscv.esp.vld.128.ip(i32 %5, i32 496, i32 5)
+	%7 = tail call i32 @llvm.riscv.esp.vld.128.ip(i32 %6, i32 496, i32 6)
+	%8 = tail call i32 @llvm.riscv.esp.vld.128.ip(i32 %7, i32 496, i32 7)
+	tail call void @llvm.riscv.esp.vcmulas.s16.qacc.h(i32 0, i32 6)
+	%9 = tail call i32 @llvm.riscv.esp.vcmulas.s16.qacc.h.ld.ip(i32 0, i32 3, i32 10, i32 0, i32 2)
+	%10 = tail call i32 @llvm.riscv.esp.vcmulas.s16.qacc.h.ld.xp(i32 7, i32 2, i32 0, i32 3, i32 6)
+	tail call void @llvm.riscv.esp.vcmulas.s16.qacc.l(i32 2, i32 3)
+	%11 = tail call i32 @llvm.riscv.esp.vcmulas.s16.qacc.l.ld.ip(i32 4, i32 3, i32 8, i32 -64, i32 1)
+	%12 = tail call i32 @llvm.riscv.esp.vcmulas.s16.qacc.l.ld.xp(i32 1, i32 5, i32 4, i32 12, i32 7)
+	tail call void @llvm.riscv.esp.vcmulas.s8.qacc.h(i32 0, i32 3)
+	%13 = tail call i32 @llvm.riscv.esp.vcmulas.s8.qacc.h.ld.ip(i32 3, i32 7, i32 3, i32 -48, i32 5)
+	%14 = tail call i32 @llvm.riscv.esp.vcmulas.s8.qacc.h.ld.xp(i32 11, i32 4, i32 0, i32 6, i32 4)
+	tail call void @llvm.riscv.esp.vcmulas.s8.qacc.l(i32 4, i32 0)
+	%15 = tail call i32 @llvm.riscv.esp.vcmulas.s8.qacc.l.ld.ip(i32 7, i32 5, i32 2, i32 0, i32 0)
+	%16 = tail call i32 @llvm.riscv.esp.vcmulas.s8.qacc.l.ld.xp(i32 8, i32 3, i32 0, i32 4, i32 6)
+	tail call void @llvm.riscv.esp.vmulas.s16.qacc(i32 3, i32 0)
+	%17 = tail call i32 @llvm.riscv.esp.vmulas.s16.qacc.ld.ip(i32 0, i32 1, i32 7, i32 80, i32 4)
+	%18 = tail call i32 @llvm.riscv.esp.vmulas.s16.qacc.ld.xp(i32 7, i32 7, i32 2, i32 2, i32 7)
+	%19 = tail call i32 @llvm.riscv.esp.vmulas.s16.qacc.st.ip(i32 3, i32 4, i32 2, i32 9, i32 -32)
+	%20 = tail call i32 @llvm.riscv.esp.vmulas.s16.qacc.st.xp(i32 8, i32 6, i32 6, i32 4, i32 10)
+	tail call void @llvm.riscv.esp.vmulas.s16.xacc(i32 1, i32 0)
+	%21 = tail call i32 @llvm.riscv.esp.vmulas.s16.xacc.ld.ip(i32 1, i32 6, i32 8, i32 -16, i32 4)
+	%22 = tail call i32 @llvm.riscv.esp.vmulas.s16.xacc.ld.xp(i32 1, i32 2, i32 3, i32 12, i32 7)
+	%23 = tail call i32 @llvm.riscv.esp.vmulas.s16.xacc.st.ip(i32 4, i32 2, i32 1, i32 13, i32 16)
+	%24 = tail call i32 @llvm.riscv.esp.vmulas.s16.xacc.st.xp(i32 8, i32 7, i32 4, i32 3, i32 3)
+	tail call void @llvm.riscv.esp.vmulas.s8.qacc(i32 4, i32 3)
+	%25 = tail call i32 @llvm.riscv.esp.vmulas.s8.qacc.ld.ip(i32 5, i32 2, i32 4, i32 32, i32 4)
+	%26 = tail call i32 @llvm.riscv.esp.vmulas.s8.qacc.ld.xp(i32 14, i32 1, i32 6, i32 14, i32 7)
+	%27 = tail call i32 @llvm.riscv.esp.vmulas.s8.qacc.st.ip(i32 1, i32 6, i32 6, i32 5, i32 -112)
+	%28 = tail call i32 @llvm.riscv.esp.vmulas.s8.qacc.st.xp(i32 9, i32 3, i32 3, i32 5, i32 7)
+	tail call void @llvm.riscv.esp.vmulas.s8.xacc(i32 7, i32 0)
+	%29 = tail call i32 @llvm.riscv.esp.vmulas.s8.xacc.ld.ip(i32 7, i32 0, i32 12, i32 16, i32 7)
+	%30 = tail call i32 @llvm.riscv.esp.vmulas.s8.xacc.ld.xp(i32 6, i32 2, i32 1, i32 3, i32 0)
+	%31 = tail call i32 @llvm.riscv.esp.vmulas.s8.xacc.st.ip(i32 5, i32 6, i32 4, i32 13, i32 32)
+	%32 = tail call i32 @llvm.riscv.esp.vmulas.s8.xacc.st.xp(i32 3, i32 1, i32 7, i32 2, i32 12)
+	tail call void @llvm.riscv.esp.vmulas.u16.qacc(i32 5, i32 0)
+	%33 = tail call i32 @llvm.riscv.esp.vmulas.u16.qacc.ld.ip(i32 4, i32 4, i32 4, i32 48, i32 2)
+	%34 = tail call i32 @llvm.riscv.esp.vmulas.u16.qacc.ld.xp(i32 7, i32 1, i32 7, i32 9, i32 3)
+	%35 = tail call i32 @llvm.riscv.esp.vmulas.u16.qacc.st.ip(i32 1, i32 2, i32 1, i32 12, i32 -128)
+	%36 = tail call i32 @llvm.riscv.esp.vmulas.u16.qacc.st.xp(i32 7, i32 1, i32 6, i32 2, i32 11)
+	tail call void @llvm.riscv.esp.vmulas.u16.xacc(i32 1, i32 7)
+	%37 = tail call i32 @llvm.riscv.esp.vmulas.u16.xacc.ld.ip(i32 2, i32 4, i32 1, i32 16, i32 4)
+	%38 = tail call i32 @llvm.riscv.esp.vmulas.u16.xacc.ld.xp(i32 12, i32 1, i32 7, i32 3, i32 5)
+	%39 = tail call i32 @llvm.riscv.esp.vmulas.u16.xacc.st.ip(i32 7, i32 6, i32 1, i32 2, i32 -64)
+	%40 = tail call i32 @llvm.riscv.esp.vmulas.u16.xacc.st.xp(i32 9, i32 2, i32 4, i32 1, i32 9)
+	tail call void @llvm.riscv.esp.vmulas.u8.qacc(i32 7, i32 4)
+	%41 = tail call i32 @llvm.riscv.esp.vmulas.u8.qacc.ld.ip(i32 7, i32 6, i32 5, i32 -32, i32 1)
+	%42 = tail call i32 @llvm.riscv.esp.vmulas.u8.qacc.ld.xp(i32 14, i32 6, i32 0, i32 8, i32 6)
+	%43 = tail call i32 @llvm.riscv.esp.vmulas.u8.qacc.st.ip(i32 6, i32 4, i32 0, i32 12, i32 96)
+	%44 = tail call i32 @llvm.riscv.esp.vmulas.u8.qacc.st.xp(i32 12, i32 2, i32 6, i32 5, i32 3)
+	tail call void @llvm.riscv.esp.vmulas.u8.xacc(i32 0, i32 2)
+	%45 = tail call i32 @llvm.riscv.esp.vmulas.u8.xacc.ld.ip(i32 7, i32 6, i32 4, i32 -112, i32 2)
+	%46 = tail call i32 @llvm.riscv.esp.vmulas.u8.xacc.ld.xp(i32 4, i32 4, i32 0, i32 9, i32 3)
+	%47 = tail call i32 @llvm.riscv.esp.vmulas.u8.xacc.st.ip(i32 1, i32 5, i32 3, i32 1, i32 -48)
+	%48 = tail call i32 @llvm.riscv.esp.vmulas.u8.xacc.st.xp(i32 5, i32 5, i32 7, i32 7, i32 6)
+	%49 = tail call i32 @llvm.riscv.esp.vmulas.s16.qacc.ldbc.incp(i32 1, i32 2, i32 6, i32 7)
+	%50 = tail call i32 @llvm.riscv.esp.vmulas.s8.qacc.ldbc.incp(i32 1, i32 0, i32 1, i32 2)
+	%51 = tail call i32 @llvm.riscv.esp.vmulas.u16.qacc.ldbc.incp(i32 7, i32 6, i32 6, i32 2)
+	%52 = tail call i32 @llvm.riscv.esp.vmulas.u8.qacc.ldbc.incp(i32 7, i32 7, i32 10, i32 4)
+	tail call void @llvm.riscv.esp.vsmulas.s16.qacc(i32 4, i32 2, i32 0)
+	%53 = tail call i32 @llvm.riscv.esp.vsmulas.s16.qacc.ld.incp(i32 7, i32 7, i32 0, i32 11, i32 1)
+	tail call void @llvm.riscv.esp.vsmulas.s8.qacc(i32 4, i32 0, i32 2)
+	%54 = tail call i32 @llvm.riscv.esp.vsmulas.s8.qacc.ld.incp(i32 5, i32 1, i32 4, i32 7, i32 5)
+	tail call void @llvm.riscv.esp.vsmulas.u16.qacc(i32 5, i32 5, i32 3)
+	%55 = tail call i32 @llvm.riscv.esp.vsmulas.u16.qacc.ld.incp(i32 7, i32 5, i32 11, i32 14, i32 1)
+	tail call void @llvm.riscv.esp.vsmulas.u8.qacc(i32 2, i32 4, i32 2)
+	%56 = tail call i32 @llvm.riscv.esp.vsmulas.u8.qacc.ld.incp(i32 3, i32 1, i32 6, i32 14, i32 5)
+	tail call void @llvm.riscv.esp.cmul.s16(i32 3, i32 2, i32 1, i32 5)
+	%57 = tail call i32 @llvm.riscv.esp.cmul.s16.ld.incp(i32 6, i32 3, i32 4, i32 2, i32 0, i32 7)
+	%58 = tail call i32 @llvm.riscv.esp.cmul.s16.st.incp(i32 1, i32 7, i32 0, i32 9, i32 2, i32 5)
+	tail call void @llvm.riscv.esp.cmul.s8(i32 7, i32 6, i32 3, i32 3)
+	%59 = tail call i32 @llvm.riscv.esp.cmul.s8.ld.incp(i32 5, i32 0, i32 1, i32 3, i32 3, i32 1)
+	%60 = tail call i32 @llvm.riscv.esp.cmul.s8.st.incp(i32 1, i32 3, i32 1, i32 2, i32 2, i32 2)
+	tail call void @llvm.riscv.esp.cmul.u16(i32 1, i32 1, i32 2, i32 5)
+	%61 = tail call i32 @llvm.riscv.esp.cmul.u16.ld.incp(i32 5, i32 6, i32 12, i32 2, i32 2, i32 1)
+	%62 = tail call i32 @llvm.riscv.esp.cmul.u16.st.incp(i32 2, i32 5, i32 2, i32 14, i32 1, i32 4)
+	tail call void @llvm.riscv.esp.cmul.u8(i32 1, i32 3, i32 1, i32 6)
+	%63 = tail call i32 @llvm.riscv.esp.cmul.u8.ld.incp(i32 2, i32 2, i32 14, i32 3, i32 3, i32 5)
+	%64 = tail call i32 @llvm.riscv.esp.cmul.u8.st.incp(i32 1, i32 7, i32 7, i32 10, i32 3, i32 7)
+	tail call void @llvm.riscv.esp.max.s16.a(i32 0, i32 6)
+	tail call void @llvm.riscv.esp.max.s32.a(i32 1, i32 14)
+	tail call void @llvm.riscv.esp.max.s8.a(i32 3, i32 6)
+	tail call void @llvm.riscv.esp.max.u16.a(i32 6, i32 14)
+	tail call void @llvm.riscv.esp.max.u32.a(i32 7, i32 4)
+	tail call void @llvm.riscv.esp.max.u8.a(i32 5, i32 9)
+	tail call void @llvm.riscv.esp.min.s16.a(i32 3, i32 2)
+	tail call void @llvm.riscv.esp.min.s32.a(i32 6, i32 9)
+	tail call void @llvm.riscv.esp.min.s8.a(i32 0, i32 10)
+	tail call void @llvm.riscv.esp.min.u16.a(i32 1, i32 7)
+	tail call void @llvm.riscv.esp.min.u32.a(i32 0, i32 3)
+	tail call void @llvm.riscv.esp.min.u8.a(i32 3, i32 10)
+	tail call void @llvm.riscv.esp.vabs.16(i32 7, i32 5)
+	tail call void @llvm.riscv.esp.vabs.32(i32 3, i32 1)
+	tail call void @llvm.riscv.esp.vabs.8(i32 5, i32 4)
+	tail call void @llvm.riscv.esp.vadd.s16(i32 1, i32 5, i32 4)
+	%65 = tail call i32 @llvm.riscv.esp.vadd.s16.ld.incp(i32 2, i32 3, i32 10, i32 7, i32 5)
+	%66 = tail call i32 @llvm.riscv.esp.vadd.s16.st.incp(i32 0, i32 7, i32 0, i32 4, i32 4)
+	tail call void @llvm.riscv.esp.vadd.s32(i32 0, i32 5, i32 4)
+	%67 = tail call i32 @llvm.riscv.esp.vadd.s32.ld.incp(i32 3, i32 6, i32 1, i32 0, i32 5)
+	%68 = tail call i32 @llvm.riscv.esp.vadd.s32.st.incp(i32 3, i32 1, i32 7, i32 0, i32 4)
+	tail call void @llvm.riscv.esp.vadd.s8(i32 4, i32 4, i32 7)
+	%69 = tail call i32 @llvm.riscv.esp.vadd.s8.ld.incp(i32 6, i32 4, i32 13, i32 7, i32 6)
+	%70 = tail call i32 @llvm.riscv.esp.vadd.s8.st.incp(i32 2, i32 6, i32 5, i32 0, i32 1)
+	tail call void @llvm.riscv.esp.vadd.u16(i32 4, i32 6, i32 0)
+	%71 = tail call i32 @llvm.riscv.esp.vadd.u16.ld.incp(i32 0, i32 1, i32 14, i32 7, i32 1)
+	%72 = tail call i32 @llvm.riscv.esp.vadd.u16.st.incp(i32 0, i32 3, i32 3, i32 5, i32 4)
+	tail call void @llvm.riscv.esp.vadd.u32(i32 7, i32 5, i32 3)
+	%73 = tail call i32 @llvm.riscv.esp.vadd.u32.ld.incp(i32 3, i32 5, i32 11, i32 7, i32 3)
+	%74 = tail call i32 @llvm.riscv.esp.vadd.u32.st.incp(i32 0, i32 6, i32 0, i32 10, i32 6)
+	tail call void @llvm.riscv.esp.vadd.u8(i32 3, i32 0, i32 5)
+	%75 = tail call i32 @llvm.riscv.esp.vadd.u8.ld.incp(i32 4, i32 2, i32 12, i32 4, i32 4)
+	%76 = tail call i32 @llvm.riscv.esp.vadd.u8.st.incp(i32 5, i32 1, i32 7, i32 3, i32 6)
+	tail call void @llvm.riscv.esp.vclamp.s16(i32 0, i32 10, i32 6)
+	tail call void @llvm.riscv.esp.vmax.s16(i32 3, i32 1, i32 5)
+	%77 = tail call i32 @llvm.riscv.esp.vmax.s16.ld.incp(i32 6, i32 5, i32 1, i32 3, i32 7)
+	%78 = tail call i32 @llvm.riscv.esp.vmax.s16.st.incp(i32 5, i32 4, i32 0, i32 8, i32 6)
+	tail call void @llvm.riscv.esp.vmax.s32(i32 1, i32 3, i32 7)
+	%79 = tail call i32 @llvm.riscv.esp.vmax.s32.ld.incp(i32 0, i32 1, i32 9, i32 0, i32 5)
+	%80 = tail call i32 @llvm.riscv.esp.vmax.s32.st.incp(i32 0, i32 3, i32 3, i32 5, i32 5)
+	tail call void @llvm.riscv.esp.vmax.s8(i32 1, i32 6, i32 4)
+	%81 = tail call i32 @llvm.riscv.esp.vmax.s8.ld.incp(i32 6, i32 2, i32 0, i32 3, i32 3)
+	%82 = tail call i32 @llvm.riscv.esp.vmax.s8.st.incp(i32 6, i32 2, i32 7, i32 6, i32 3)
+	tail call void @llvm.riscv.esp.vmax.u16(i32 1, i32 4, i32 5)
+	%83 = tail call i32 @llvm.riscv.esp.vmax.u16.ld.incp(i32 6, i32 1, i32 0, i32 4, i32 0)
+	%84 = tail call i32 @llvm.riscv.esp.vmax.u16.st.incp(i32 6, i32 6, i32 2, i32 10, i32 3)
+	tail call void @llvm.riscv.esp.vmax.u32(i32 6, i32 5, i32 0)
+	%85 = tail call i32 @llvm.riscv.esp.vmax.u32.ld.incp(i32 6, i32 3, i32 8, i32 6, i32 4)
+	%86 = tail call i32 @llvm.riscv.esp.vmax.u32.st.incp(i32 3, i32 2, i32 7, i32 11, i32 5)
+	tail call void @llvm.riscv.esp.vmax.u8(i32 6, i32 4, i32 5)
+	%87 = tail call i32 @llvm.riscv.esp.vmax.u8.ld.incp(i32 3, i32 5, i32 12, i32 2, i32 2)
+	%88 = tail call i32 @llvm.riscv.esp.vmax.u8.st.incp(i32 7, i32 1, i32 7, i32 5, i32 0)
+	tail call void @llvm.riscv.esp.vmin.s16(i32 7, i32 6, i32 2)
+	%89 = tail call i32 @llvm.riscv.esp.vmin.s16.ld.incp(i32 0, i32 3, i32 7, i32 1, i32 6)
+	%90 = tail call i32 @llvm.riscv.esp.vmin.s16.st.incp(i32 1, i32 6, i32 1, i32 12, i32 2)
+	tail call void @llvm.riscv.esp.vmin.s32(i32 6, i32 3, i32 3)
+	%91 = tail call i32 @llvm.riscv.esp.vmin.s32.ld.incp(i32 1, i32 4, i32 9, i32 5, i32 3)
+	%92 = tail call i32 @llvm.riscv.esp.vmin.s32.st.incp(i32 2, i32 6, i32 3, i32 1, i32 3)
+	tail call void @llvm.riscv.esp.vmin.s8(i32 2, i32 2, i32 4)
+	%93 = tail call i32 @llvm.riscv.esp.vmin.s8.ld.incp(i32 2, i32 6, i32 6, i32 6, i32 4)
+	%94 = tail call i32 @llvm.riscv.esp.vmin.s8.st.incp(i32 5, i32 0, i32 5, i32 11, i32 1)
+	tail call void @llvm.riscv.esp.vmin.u16(i32 1, i32 5, i32 5)
+	%95 = tail call i32 @llvm.riscv.esp.vmin.u16.ld.incp(i32 7, i32 2, i32 6, i32 2, i32 2)
+	%96 = tail call i32 @llvm.riscv.esp.vmin.u16.st.incp(i32 5, i32 5, i32 0, i32 14, i32 4)
+	tail call void @llvm.riscv.esp.vmin.u32(i32 6, i32 0, i32 5)
+	%97 = tail call i32 @llvm.riscv.esp.vmin.u32.ld.incp(i32 3, i32 4, i32 11, i32 2, i32 5)
+	%98 = tail call i32 @llvm.riscv.esp.vmin.u32.st.incp(i32 3, i32 5, i32 1, i32 1, i32 2)
+	tail call void @llvm.riscv.esp.vmin.u8(i32 6, i32 6, i32 0)
+	%99 = tail call i32 @llvm.riscv.esp.vmin.u8.ld.incp(i32 4, i32 7, i32 1, i32 5, i32 3)
+	%100 = tail call i32 @llvm.riscv.esp.vmin.u8.st.incp(i32 2, i32 5, i32 4, i32 6, i32 7)
+	tail call void @llvm.riscv.esp.vmul.s16(i32 7, i32 6, i32 6)
+	%101 = tail call i32 @llvm.riscv.esp.vmul.s16.ld.incp(i32 5, i32 2, i32 3, i32 1, i32 6)
+	tail call void @llvm.riscv.esp.vmul.s16.s8xs8(i32 0, i32 6, i32 2, i32 3)
+	%102 = tail call i32 @llvm.riscv.esp.vmul.s16.st.incp(i32 6, i32 5, i32 6, i32 1, i32 0)
+	tail call void @llvm.riscv.esp.vmul.s32.s16xs16(i32 2, i32 0, i32 4, i32 7)
+	tail call void @llvm.riscv.esp.vmul.s8(i32 3, i32 7, i32 7)
+	%103 = tail call i32 @llvm.riscv.esp.vmul.s8.ld.incp(i32 0, i32 5, i32 6, i32 7, i32 5)
+	%104 = tail call i32 @llvm.riscv.esp.vmul.s8.st.incp(i32 2, i32 5, i32 1, i32 6, i32 3)
+	tail call void @llvm.riscv.esp.vmul.u16(i32 1, i32 4, i32 6)
+	%105 = tail call i32 @llvm.riscv.esp.vmul.u16.ld.incp(i32 2, i32 4, i32 3, i32 6, i32 0)
+	%106 = tail call i32 @llvm.riscv.esp.vmul.u16.st.incp(i32 1, i32 3, i32 1, i32 10, i32 6)
+	tail call void @llvm.riscv.esp.vmul.u8(i32 7, i32 1, i32 6)
+	%107 = tail call i32 @llvm.riscv.esp.vmul.u8.ld.incp(i32 0, i32 2, i32 14, i32 4, i32 5)
+	%108 = tail call i32 @llvm.riscv.esp.vmul.u8.st.incp(i32 0, i32 5, i32 1, i32 4, i32 4)
+	tail call void @llvm.riscv.esp.vprelu.s16(i32 0, i32 2, i32 2, i32 4)
+	tail call void @llvm.riscv.esp.vprelu.s8(i32 11, i32 4, i32 6, i32 5)
+	tail call void @llvm.riscv.esp.vrelu.s16(i32 3, i32 8, i32 6)
+	tail call void @llvm.riscv.esp.vrelu.s8(i32 5, i32 6, i32 0)
+	tail call void @llvm.riscv.esp.vsadds.s16(i32 0, i32 4, i32 7)
+	tail call void @llvm.riscv.esp.vsadds.s8(i32 12, i32 2, i32 2)
+	tail call void @llvm.riscv.esp.vsadds.u16(i32 7, i32 2, i32 7)
+	tail call void @llvm.riscv.esp.vsadds.u8(i32 4, i32 0, i32 4)
+	tail call void @llvm.riscv.esp.vsat.s16(i32 8, i32 7, i32 5, i32 1)
+	tail call void @llvm.riscv.esp.vsat.s32(i32 0, i32 6, i32 6, i32 7)
+	tail call void @llvm.riscv.esp.vsat.s8(i32 6, i32 11, i32 4, i32 1)
+	tail call void @llvm.riscv.esp.vsat.u16(i32 9, i32 13, i32 5, i32 4)
+	tail call void @llvm.riscv.esp.vsat.u32(i32 11, i32 10, i32 6, i32 6)
+	tail call void @llvm.riscv.esp.vsat.u8(i32 14, i32 7, i32 6, i32 1)
+	tail call void @llvm.riscv.esp.vssubs.s16(i32 5, i32 0, i32 5)
+	tail call void @llvm.riscv.esp.vssubs.s8(i32 8, i32 2, i32 5)
+	tail call void @llvm.riscv.esp.vssubs.u16(i32 10, i32 7, i32 6)
+	tail call void @llvm.riscv.esp.vssubs.u8(i32 0, i32 7, i32 0)
+	tail call void @llvm.riscv.esp.vsub.s16(i32 7, i32 1, i32 1)
+	%109 = tail call i32 @llvm.riscv.esp.vsub.s16.ld.incp(i32 5, i32 2, i32 5, i32 1, i32 2)
+	%110 = tail call i32 @llvm.riscv.esp.vsub.s16.st.incp(i32 4, i32 5, i32 2, i32 8, i32 2)
+	tail call void @llvm.riscv.esp.vsub.s32(i32 7, i32 0, i32 0)
+	%111 = tail call i32 @llvm.riscv.esp.vsub.s32.ld.incp(i32 5, i32 7, i32 2, i32 5, i32 6)
+	%112 = tail call i32 @llvm.riscv.esp.vsub.s32.st.incp(i32 3, i32 2, i32 2, i32 10, i32 2)
+	tail call void @llvm.riscv.esp.vsub.s8(i32 7, i32 2, i32 0)
+	%113 = tail call i32 @llvm.riscv.esp.vsub.s8.ld.incp(i32 4, i32 0, i32 5, i32 6, i32 4)
+	%114 = tail call i32 @llvm.riscv.esp.vsub.s8.st.incp(i32 1, i32 6, i32 2, i32 13, i32 7)
+	tail call void @llvm.riscv.esp.vsub.u16(i32 6, i32 7, i32 0)
+	%115 = tail call i32 @llvm.riscv.esp.vsub.u16.ld.incp(i32 1, i32 6, i32 11, i32 5, i32 7)
+	%116 = tail call i32 @llvm.riscv.esp.vsub.u16.st.incp(i32 4, i32 7, i32 1, i32 3, i32 0)
+	tail call void @llvm.riscv.esp.vsub.u32(i32 5, i32 7, i32 6)
+	%117 = tail call i32 @llvm.riscv.esp.vsub.u32.ld.incp(i32 3, i32 0, i32 11, i32 4, i32 0)
+	%118 = tail call i32 @llvm.riscv.esp.vsub.u32.st.incp(i32 0, i32 4, i32 4, i32 9, i32 4)
+	tail call void @llvm.riscv.esp.vsub.u8(i32 6, i32 7, i32 6)
+	%119 = tail call i32 @llvm.riscv.esp.vsub.u8.ld.incp(i32 3, i32 5, i32 8, i32 3, i32 3)
+	%120 = tail call i32 @llvm.riscv.esp.vsub.u8.st.incp(i32 6, i32 6, i32 7, i32 11, i32 0)
+	tail call void @llvm.riscv.esp.addx2(i32 5, i32 6, i32 4)
+	tail call void @llvm.riscv.esp.addx4(i32 2, i32 9, i32 4)
+	%121 = tail call i32 @llvm.riscv.esp.sat(i32 14, i32 8, i32 10)
+	tail call void @llvm.riscv.esp.subx2(i32 10, i32 11, i32 11)
+	tail call void @llvm.riscv.esp.subx4(i32 7, i32 13, i32 4)
+	tail call void @llvm.riscv.esp.andq(i32 6, i32 6, i32 3)
+	tail call void @llvm.riscv.esp.notq(i32 3, i32 0)
+	tail call void @llvm.riscv.esp.orq(i32 2, i32 6, i32 6)
+	tail call void @llvm.riscv.esp.xorq(i32 2, i32 2, i32 6)
+	tail call void @llvm.riscv.esp.vcmp.eq.s16(i32 2, i32 6, i32 2)
+	tail call void @llvm.riscv.esp.vcmp.eq.s32(i32 1, i32 1, i32 5)
+	tail call void @llvm.riscv.esp.vcmp.eq.s8(i32 5, i32 3, i32 7)
+	tail call void @llvm.riscv.esp.vcmp.eq.u16(i32 5, i32 2, i32 5)
+	tail call void @llvm.riscv.esp.vcmp.eq.u32(i32 6, i32 2, i32 5)
+	tail call void @llvm.riscv.esp.vcmp.eq.u8(i32 1, i32 2, i32 0)
+	tail call void @llvm.riscv.esp.vcmp.gt.s16(i32 2, i32 1, i32 5)
+	tail call void @llvm.riscv.esp.vcmp.gt.s32(i32 6, i32 4, i32 4)
+	tail call void @llvm.riscv.esp.vcmp.gt.s8(i32 4, i32 1, i32 6)
+	tail call void @llvm.riscv.esp.vcmp.gt.u16(i32 1, i32 7, i32 5)
+	tail call void @llvm.riscv.esp.vcmp.gt.u32(i32 5, i32 3, i32 5)
+	tail call void @llvm.riscv.esp.vcmp.gt.u8(i32 1, i32 5, i32 2)
+	tail call void @llvm.riscv.esp.vcmp.lt.s16(i32 2, i32 6, i32 1)
+	tail call void @llvm.riscv.esp.vcmp.lt.s32(i32 4, i32 0, i32 3)
+	tail call void @llvm.riscv.esp.vcmp.lt.s8(i32 6, i32 3, i32 7)
+	tail call void @llvm.riscv.esp.vcmp.lt.u16(i32 6, i32 0, i32 3)
+	tail call void @llvm.riscv.esp.vcmp.lt.u32(i32 1, i32 6, i32 2)
+	tail call void @llvm.riscv.esp.vcmp.lt.u8(i32 5, i32 3, i32 0)
+	tail call void @llvm.riscv.esp.mov.s16.qacc(i32 1)
+	tail call void @llvm.riscv.esp.mov.s8.qacc(i32 6)
+	tail call void @llvm.riscv.esp.mov.u16.qacc(i32 2)
+	tail call void @llvm.riscv.esp.mov.u8.qacc(i32 2)
+	tail call void @llvm.riscv.esp.movi.16.a(i32 6, i32 12, i32 7)
+	tail call void @llvm.riscv.esp.movi.16.q(i32 7, i32 6, i32 5)
+	tail call void @llvm.riscv.esp.movi.32.a(i32 3, i32 1, i32 4)
+	tail call void @llvm.riscv.esp.movi.32.q(i32 12, i32 3, i32 7)
+	tail call void @llvm.riscv.esp.movi.8.a(i32 1, i32 9, i32 14)
+	tail call void @llvm.riscv.esp.movi.8.q(i32 14, i32 9, i32 5)
+	tail call void @llvm.riscv.esp.movx.r.fft.bit.width(i32 8)
+	tail call void @llvm.riscv.esp.movx.r.perf(i32 0, i32 5)
+	tail call void @llvm.riscv.esp.movx.r.sar(i32 6)
+	tail call void @llvm.riscv.esp.movx.r.sar.bytes(i32 8)
+	tail call void @llvm.riscv.esp.movx.r.xacc.h(i32 0)
+	tail call void @llvm.riscv.esp.movx.r.xacc.l(i32 2)
+	tail call void @llvm.riscv.esp.movx.w.cfg(i32 5)
+	tail call void @llvm.riscv.esp.movx.w.fft.bit.width(i32 10)
+	tail call void @llvm.riscv.esp.movx.w.perf(i32 1)
+	tail call void @llvm.riscv.esp.movx.w.sar(i32 9)
+	tail call void @llvm.riscv.esp.movx.w.sar.bytes(i32 5)
+	tail call void @llvm.riscv.esp.movx.w.xacc.h(i32 2)
+	tail call void @llvm.riscv.esp.movx.w.xacc.l(i32 5)
+	tail call void @llvm.riscv.esp.vext.s16(i32 6, i32 6, i32 1)
+	tail call void @llvm.riscv.esp.vext.s8(i32 0, i32 6, i32 0)
+	tail call void @llvm.riscv.esp.vext.u16(i32 7, i32 3, i32 0)
+	tail call void @llvm.riscv.esp.vext.u8(i32 3, i32 3, i32 0)
+	tail call void @llvm.riscv.esp.vunzip.16(i32 1, i32 5)
+	tail call void @llvm.riscv.esp.vunzip.32(i32 6, i32 1)
+	tail call void @llvm.riscv.esp.vunzip.8(i32 5, i32 6)
+	tail call void @llvm.riscv.esp.vunzipt.16(i32 2, i32 2, i32 5)
+	tail call void @llvm.riscv.esp.vunzipt.8(i32 6, i32 0, i32 7)
+	tail call void @llvm.riscv.esp.vzip.16(i32 1, i32 2)
+	tail call void @llvm.riscv.esp.vzip.32(i32 6, i32 3)
+	tail call void @llvm.riscv.esp.vzip.8(i32 1, i32 0)
+	tail call void @llvm.riscv.esp.vzipt.16(i32 7, i32 7, i32 4)
+	tail call void @llvm.riscv.esp.vzipt.8(i32 4, i32 5, i32 2)
+	tail call void @llvm.riscv.esp.zero.q(i32 0)
 	tail call void @llvm.riscv.esp.zero.qacc()
 	tail call void @llvm.riscv.esp.zero.xacc()
-	tail call void @llvm.riscv.esp.fft.ams.s16.ld.incp(i32 3, i32 1, i32 0, i32 3, i32 0, i32 6, i32 6, i32 0)
-	tail call void @llvm.riscv.esp.fft.ams.s16.ld.incp.uaup(i32 3, i32 0, i32 1, i32 5, i32 0, i32 3, i32 0, i32 2)
-	tail call void @llvm.riscv.esp.fft.ams.s16.ld.r32.decp(i32 3, i32 5, i32 1, i32 3, i32 1, i32 7, i32 0, i32 6)
-	tail call void @llvm.riscv.esp.fft.ams.s16.st.incp(i32 5, i32 6, i32 3, i32 5, i32 4, i32 2, i32 0, i32 7)
-	tail call void @llvm.riscv.esp.fft.bitrev(i32 2, i32 7)
-	tail call void @llvm.riscv.esp.fft.cmul.s16.ld.xp(i32 1, i32 7, i32 7, i32 4, i32 1, i32 3, i32 2)
-	tail call void @llvm.riscv.esp.fft.cmul.s16.st.xp(i32 2, i32 0, i32 7, i32 4, i32 4, i32 1, i32 3, i32 4)
-	tail call void @llvm.riscv.esp.fft.r2bf.s16(i32 5, i32 1, i32 0, i32 7, i32 3)
-	tail call void @llvm.riscv.esp.fft.r2bf.s16.st.incp(i32 7, i32 4, i32 10, i32 2, i32 7)
-	tail call void @llvm.riscv.esp.fft.vst.r32.decp(i32 5, i32 7, i32 1)
-	tail call void @llvm.riscv.esp.ld.128.usar.ip(i32 4, i32 608, i32 1)
-	tail call void @llvm.riscv.esp.ld.128.usar.xp(i32 8, i32 1, i32 2)
-	tail call void @llvm.riscv.esp.ld.xacc.ip(i32 6, i32 400)
-	tail call void @llvm.riscv.esp.ldqa.s16.128.ip(i32 13, i32 912)
-	tail call void @llvm.riscv.esp.ldqa.s16.128.xp(i32 10, i32 2)
-	tail call void @llvm.riscv.esp.ldqa.s8.128.ip(i32 1, i32 1824)
-	tail call void @llvm.riscv.esp.ldqa.s8.128.xp(i32 4, i32 9)
-	tail call void @llvm.riscv.esp.ldqa.u16.128.ip(i32 4, i32 -1904)
-	tail call void @llvm.riscv.esp.ldqa.u16.128.xp(i32 14, i32 6)
-	tail call void @llvm.riscv.esp.ldqa.u8.128.ip(i32 3, i32 1216)
-	tail call void @llvm.riscv.esp.ldqa.u8.128.xp(i32 6, i32 2)
-	tail call void @llvm.riscv.esp.vldbc.16.ip(i32 9, i32 -448, i32 7)
-	tail call void @llvm.riscv.esp.vldbc.16.xp(i32 9, i32 5, i32 3)
-	tail call void @llvm.riscv.esp.vldbc.32.ip(i32 0, i32 220, i32 3)
-	tail call void @llvm.riscv.esp.vldbc.32.xp(i32 2, i32 12, i32 7)
-	tail call void @llvm.riscv.esp.vldbc.8.ip(i32 12, i32 396, i32 2)
-	tail call void @llvm.riscv.esp.vldbc.8.xp(i32 9, i32 4, i32 7)
-	tail call void @llvm.riscv.esp.vldext.s16.ip(i32 13, i32 16, i32 7, i32 4)
-	tail call void @llvm.riscv.esp.vldext.s16.xp(i32 8, i32 0, i32 5, i32 0)
-	tail call void @llvm.riscv.esp.vldext.s8.ip(i32 4, i32 80, i32 3, i32 6)
-	tail call void @llvm.riscv.esp.vldext.s8.xp(i32 6, i32 3, i32 1, i32 1)
-	tail call void @llvm.riscv.esp.vldext.u16.ip(i32 14, i32 48, i32 2, i32 5)
-	tail call void @llvm.riscv.esp.vldext.u16.xp(i32 12, i32 7, i32 2, i32 0)
-	tail call void @llvm.riscv.esp.vldext.u8.ip(i32 13, i32 64, i32 7, i32 2)
-	tail call void @llvm.riscv.esp.vldext.u8.xp(i32 6, i32 6, i32 7, i32 2)
-	tail call void @llvm.riscv.esp.vldhbc.16.incp(i32 1, i32 4, i32 7)
-	tail call void @llvm.riscv.esp.ld.qacc.h.h.128.ip(i32 6, i32 512)
-	tail call void @llvm.riscv.esp.ld.qacc.h.l.128.ip(i32 5, i32 -784)
-	tail call void @llvm.riscv.esp.ld.qacc.l.h.128.ip(i32 10, i32 -800)
-	tail call void @llvm.riscv.esp.ld.qacc.l.l.128.ip(i32 10, i32 -1952)
-	tail call void @llvm.riscv.esp.ld.ua.state.ip(i32 8, i32 -752)
-	tail call void @llvm.riscv.esp.ldxq.32(i32 0, i32 4, i32 2, i32 4, i32 7)
-	tail call void @llvm.riscv.esp.st.qacc.h.h.128.ip(i32 13, i32 -336)
-	tail call void @llvm.riscv.esp.st.qacc.h.l.128.ip(i32 8, i32 1568)
-	tail call void @llvm.riscv.esp.st.qacc.l.h.128.ip(i32 4, i32 16)
-	tail call void @llvm.riscv.esp.st.qacc.l.l.128.ip(i32 8, i32 416)
-	tail call void @llvm.riscv.esp.st.ua.state.ip(i32 7, i32 -1360)
-	tail call void @llvm.riscv.esp.stxq.32(i32 6, i32 6, i32 0, i32 2, i32 5)
-	tail call void @llvm.riscv.esp.vld.128.ip(i32 8, i32 784, i32 3)
-	tail call void @llvm.riscv.esp.vld.128.xp(i32 9, i32 7, i32 3)
-	tail call void @llvm.riscv.esp.vld.h.64.ip(i32 0, i32 -352, i32 0)
-	tail call void @llvm.riscv.esp.vld.h.64.xp(i32 14, i32 2, i32 2)
-	tail call void @llvm.riscv.esp.vld.l.64.ip(i32 6, i32 56, i32 2)
-	tail call void @llvm.riscv.esp.vld.l.64.xp(i32 1, i32 9, i32 5)
-	tail call void @llvm.riscv.esp.vst.128.ip(i32 5, i32 6, i32 -960)
-	tail call void @llvm.riscv.esp.vst.128.xp(i32 7, i32 6, i32 13)
-	tail call void @llvm.riscv.esp.vst.h.64.ip(i32 7, i32 4, i32 944)
-	tail call void @llvm.riscv.esp.vst.h.64.xp(i32 10, i32 7, i32 7)
-	tail call void @llvm.riscv.esp.vst.l.64.ip(i32 5, i32 3, i32 984)
-	tail call void @llvm.riscv.esp.vst.l.64.xp(i32 12, i32 5, i32 3)
-	tail call void @llvm.riscv.esp.slci.2q(i32 1, i32 5, i32 12)
-	tail call void @llvm.riscv.esp.slcxxp.2q(i32 5, i32 5, i32 2, i32 3)
-	tail call void @llvm.riscv.esp.src.q(i32 3, i32 1, i32 2)
-	tail call void @llvm.riscv.esp.src.q.ld.ip(i32 5, i32 0, i32 5, i32 -272, i32 0)
-	tail call void @llvm.riscv.esp.src.q.ld.xp(i32 3, i32 6, i32 12, i32 7, i32 1)
-	tail call void @llvm.riscv.esp.src.q.qup(i32 4, i32 7, i32 3)
-	tail call void @llvm.riscv.esp.srci.2q(i32 2, i32 3, i32 7)
-	tail call void @llvm.riscv.esp.srcmb.s16.q.qacc(i32 4, i32 0, i32 2)
-	tail call void @llvm.riscv.esp.srcmb.s16.qacc(i32 13, i32 1, i32 5)
-	tail call void @llvm.riscv.esp.srcmb.s8.q.qacc(i32 4, i32 0, i32 5)
-	tail call void @llvm.riscv.esp.srcmb.s8.qacc(i32 8, i32 1, i32 1)
-	tail call void @llvm.riscv.esp.srcmb.u16.q.qacc(i32 3, i32 1, i32 0)
-	tail call void @llvm.riscv.esp.srcmb.u16.qacc(i32 13, i32 0, i32 7)
-	tail call void @llvm.riscv.esp.srcmb.u8.q.qacc(i32 5, i32 1, i32 3)
-	tail call void @llvm.riscv.esp.srcmb.u8.qacc(i32 5, i32 0, i32 0)
-	tail call void @llvm.riscv.esp.srcq.128.st.incp(i32 5, i32 0, i32 12)
-	tail call void @llvm.riscv.esp.srcxxp.2q(i32 12, i32 6, i32 4, i32 6)
-	tail call void @llvm.riscv.esp.srs.s.xacc(i32 6, i32 13)
-	tail call void @llvm.riscv.esp.srs.u.xacc(i32 3, i32 12)
-	tail call void @llvm.riscv.esp.vsl.32(i32 2, i32 5)
-	tail call void @llvm.riscv.esp.vsld.16(i32 3, i32 7, i32 3)
-	tail call void @llvm.riscv.esp.vsld.32(i32 7, i32 1, i32 3)
-	tail call void @llvm.riscv.esp.vsld.8(i32 1, i32 5, i32 0)
-	tail call void @llvm.riscv.esp.vsr.s32(i32 0, i32 3)
-	tail call void @llvm.riscv.esp.vsr.u32(i32 2, i32 1)
-	tail call void @llvm.riscv.esp.vsrd.16(i32 3, i32 0, i32 4)
-	tail call void @llvm.riscv.esp.vsrd.32(i32 6, i32 3, i32 0)
-	tail call void @llvm.riscv.esp.vsrd.8(i32 4, i32 1, i32 5)
-	tail call void @llvm.riscv.esp.st.s.xacc.ip(i32 8, i32 80)
-	tail call void @llvm.riscv.esp.st.u.xacc.ip(i32 6, i32 -464)
+	%122 = tail call i32 @llvm.riscv.esp.fft.ams.s16.ld.incp(i32 7, i32 0, i32 6, i32 13, i32 1, i32 6, i32 2, i32 1)
+	%123 = tail call i32 @llvm.riscv.esp.fft.ams.s16.ld.incp.uaup(i32 7, i32 0, i32 7, i32 4, i32 1, i32 7, i32 6, i32 3)
+	%124 = tail call i32 @llvm.riscv.esp.fft.ams.s16.ld.r32.decp(i32 3, i32 1, i32 7, i32 1, i32 0, i32 4, i32 2, i32 6)
+	tail call void @llvm.riscv.esp.fft.ams.s16.st.incp(i32 3, i32 7, i32 1, i32 6, i32 8, i32 14, i32 1, i32 0)
+	%125 = tail call i32 @llvm.riscv.esp.fft.bitrev(i32 14, i32 2)
+	%126 = tail call i32 @llvm.riscv.esp.fft.cmul.s16.ld.xp(i32 1, i32 7, i32 1, i32 7, i32 2, i32 6, i32 4)
+	%127 = tail call i32 @llvm.riscv.esp.fft.cmul.s16.st.xp(i32 10, i32 5, i32 0, i32 4, i32 13, i32 1, i32 0, i32 2)
+	tail call void @llvm.riscv.esp.fft.r2bf.s16(i32 3, i32 0, i32 0, i32 3, i32 7)
+	%128 = tail call i32 @llvm.riscv.esp.fft.r2bf.s16.st.incp(i32 5, i32 0, i32 1, i32 0, i32 1)
+	%129 = tail call i32 @llvm.riscv.esp.fft.vst.r32.decp(i32 3, i32 0, i32 0)
+	%130 = tail call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 12, i32 -1776, i32 3)
+	%131 = tail call i32 @llvm.riscv.esp.ld.128.usar.xp(i32 0, i32 13, i32 0)
+	%132 = tail call i32 @llvm.riscv.esp.ld.xacc.ip(i32 2, i32 -488)
+	%133 = tail call i32 @llvm.riscv.esp.ldqa.s16.128.ip(i32 13, i32 -1488)
+	%134 = tail call i32 @llvm.riscv.esp.ldqa.s16.128.xp(i32 0, i32 13)
+	%135 = tail call i32 @llvm.riscv.esp.ldqa.s8.128.ip(i32 1, i32 -256)
+	%136 = tail call i32 @llvm.riscv.esp.ldqa.s8.128.xp(i32 14, i32 14)
+	%137 = tail call i32 @llvm.riscv.esp.ldqa.u16.128.ip(i32 7, i32 -1936)
+	%138 = tail call i32 @llvm.riscv.esp.ldqa.u16.128.xp(i32 9, i32 11)
+	%139 = tail call i32 @llvm.riscv.esp.ldqa.u8.128.ip(i32 6, i32 688)
+	%140 = tail call i32 @llvm.riscv.esp.ldqa.u8.128.xp(i32 3, i32 4)
+	%141 = tail call i32 @llvm.riscv.esp.vldbc.16.ip(i32 10, i32 80, i32 1)
+	%142 = tail call i32 @llvm.riscv.esp.vldbc.16.xp(i32 3, i32 2, i32 2)
+	%143 = tail call i32 @llvm.riscv.esp.vldbc.32.ip(i32 8, i32 396, i32 5)
+	%144 = tail call i32 @llvm.riscv.esp.vldbc.32.xp(i32 14, i32 6, i32 3)
+	%145 = tail call i32 @llvm.riscv.esp.vldbc.8.ip(i32 6, i32 -492, i32 4)
+	%146 = tail call i32 @llvm.riscv.esp.vldbc.8.xp(i32 14, i32 9, i32 6)
+	%147 = tail call i32 @llvm.riscv.esp.vldext.s16.ip(i32 10, i32 32, i32 6, i32 2)
+	%148 = tail call i32 @llvm.riscv.esp.vldext.s16.xp(i32 11, i32 0, i32 2, i32 6)
+	%149 = tail call i32 @llvm.riscv.esp.vldext.s8.ip(i32 9, i32 -112, i32 1, i32 0)
+	%150 = tail call i32 @llvm.riscv.esp.vldext.s8.xp(i32 14, i32 12, i32 7, i32 0)
+	%151 = tail call i32 @llvm.riscv.esp.vldext.u16.ip(i32 8, i32 48, i32 3, i32 1)
+	%152 = tail call i32 @llvm.riscv.esp.vldext.u16.xp(i32 4, i32 5, i32 0, i32 1)
+	%153 = tail call i32 @llvm.riscv.esp.vldext.u8.ip(i32 2, i32 -48, i32 5, i32 0)
+	%154 = tail call i32 @llvm.riscv.esp.vldext.u8.xp(i32 0, i32 14, i32 0, i32 6)
+	%155 = tail call i32 @llvm.riscv.esp.vldhbc.16.incp(i32 2, i32 6, i32 5)
+	%156 = tail call i32 @llvm.riscv.esp.ld.qacc.h.h.128.ip(i32 14, i32 -1296)
+	%157 = tail call i32 @llvm.riscv.esp.ld.qacc.h.l.128.ip(i32 1, i32 -64)
+	%158 = tail call i32 @llvm.riscv.esp.ld.qacc.l.h.128.ip(i32 10, i32 608)
+	%159 = tail call i32 @llvm.riscv.esp.ld.qacc.l.l.128.ip(i32 3, i32 656)
+	%160 = tail call i32 @llvm.riscv.esp.ld.ua.state.ip(i32 2, i32 1392)
+	tail call void @llvm.riscv.esp.ldxq.32(i32 8, i32 2, i32 2, i32 2, i32 5)
+	%161 = tail call i32 @llvm.riscv.esp.st.qacc.h.h.128.ip(i32 1, i32 -432)
+	%162 = tail call i32 @llvm.riscv.esp.st.qacc.h.l.128.ip(i32 14, i32 -1792)
+	%163 = tail call i32 @llvm.riscv.esp.st.qacc.l.h.128.ip(i32 10, i32 320)
+	%164 = tail call i32 @llvm.riscv.esp.st.qacc.l.l.128.ip(i32 8, i32 -496)
+	%165 = tail call i32 @llvm.riscv.esp.st.ua.state.ip(i32 8, i32 1856)
+	tail call void @llvm.riscv.esp.stxq.32(i32 4, i32 5, i32 3, i32 2, i32 1)
+	%166 = tail call i32 @llvm.riscv.esp.vld.128.ip(i32 0, i32 496, i32 0)
+	%167 = tail call i32 @llvm.riscv.esp.vld.128.xp(i32 4, i32 14, i32 2)
+	%168 = tail call i32 @llvm.riscv.esp.vld.h.64.ip(i32 14, i32 -88, i32 2)
+	%169 = tail call i32 @llvm.riscv.esp.vld.h.64.xp(i32 2, i32 11, i32 3)
+	%170 = tail call i32 @llvm.riscv.esp.vld.l.64.ip(i32 13, i32 240, i32 2)
+	%171 = tail call i32 @llvm.riscv.esp.vld.l.64.xp(i32 1, i32 12, i32 3)
+	%172 = tail call i32 @llvm.riscv.esp.vst.128.ip(i32 6, i32 14, i32 -512)
+	%173 = tail call i32 @llvm.riscv.esp.vst.128.xp(i32 4, i32 2, i32 14)
+	%174 = tail call i32 @llvm.riscv.esp.vst.h.64.ip(i32 5, i32 13, i32 56)
+	%175 = tail call i32 @llvm.riscv.esp.vst.h.64.xp(i32 13, i32 1, i32 13)
+	%176 = tail call i32 @llvm.riscv.esp.vst.l.64.ip(i32 3, i32 7, i32 952)
+	%177 = tail call i32 @llvm.riscv.esp.vst.l.64.xp(i32 9, i32 2, i32 8)
+	tail call void @llvm.riscv.esp.slci.2q(i32 1, i32 3, i32 6)
+	tail call void @llvm.riscv.esp.slcxxp.2q(i32 6, i32 4, i32 4, i32 3)
+	tail call void @llvm.riscv.esp.src.q(i32 5, i32 1, i32 4)
+	%178 = tail call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 4, i32 2, i32 -1776, i32 2)
+	%179 = tail call i32 @llvm.riscv.esp.src.q.ld.xp(i32 2, i32 6, i32 5, i32 1, i32 1)
+	tail call void @llvm.riscv.esp.src.q.qup(i32 2, i32 0, i32 6)
+	tail call void @llvm.riscv.esp.srci.2q(i32 3, i32 3, i32 12)
+	tail call void @llvm.riscv.esp.srcmb.s16.q.qacc(i32 5, i32 1, i32 1)
+	tail call void @llvm.riscv.esp.srcmb.s16.qacc(i32 4, i32 0, i32 3)
+	tail call void @llvm.riscv.esp.srcmb.s8.q.qacc(i32 5, i32 1, i32 2)
+	tail call void @llvm.riscv.esp.srcmb.s8.qacc(i32 0, i32 0, i32 0)
+	tail call void @llvm.riscv.esp.srcmb.u16.q.qacc(i32 4, i32 1, i32 0)
+	tail call void @llvm.riscv.esp.srcmb.u16.qacc(i32 8, i32 0, i32 6)
+	tail call void @llvm.riscv.esp.srcmb.u8.q.qacc(i32 6, i32 1, i32 5)
+	tail call void @llvm.riscv.esp.srcmb.u8.qacc(i32 7, i32 0, i32 6)
+	%180 = tail call i32 @llvm.riscv.esp.srcq.128.st.incp(i32 4, i32 0, i32 14)
+	tail call void @llvm.riscv.esp.srcxxp.2q(i32 0, i32 5, i32 5, i32 0)
+	tail call void @llvm.riscv.esp.srs.s.xacc(i32 2, i32 8)
+	tail call void @llvm.riscv.esp.srs.u.xacc(i32 6, i32 8)
+	tail call void @llvm.riscv.esp.vsl.32(i32 6, i32 1)
+	tail call void @llvm.riscv.esp.vsld.16(i32 0, i32 2, i32 3)
+	tail call void @llvm.riscv.esp.vsld.32(i32 1, i32 1, i32 0)
+	tail call void @llvm.riscv.esp.vsld.8(i32 2, i32 1, i32 1)
+	tail call void @llvm.riscv.esp.vsr.s32(i32 7, i32 3)
+	tail call void @llvm.riscv.esp.vsr.u32(i32 5, i32 4)
+	tail call void @llvm.riscv.esp.vsrd.16(i32 5, i32 3, i32 1)
+	tail call void @llvm.riscv.esp.vsrd.32(i32 1, i32 2, i32 4)
+	tail call void @llvm.riscv.esp.vsrd.8(i32 7, i32 4, i32 4)
+	%181 = tail call i32 @llvm.riscv.esp.st.s.xacc.ip(i32 1, i32 -720)
+	%182 = tail call i32 @llvm.riscv.esp.st.u.xacc.ip(i32 13, i32 -576)
+	%183 = tail call i32 @llvm.riscv.esp.movx.r.cfg()
+	%184 = or i32 %183, 2
+    tail call void @llvm.riscv.esp.movx.w.cfg(i32 %184)
 	ret void
 }
 
 declare void @llvm.riscv.esp.vcmulas.s16.qacc.h(i32, i32) nounwind
-declare void @llvm.riscv.esp.vcmulas.s16.qacc.h.ld.ip(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vcmulas.s16.qacc.h.ld.xp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vcmulas.s16.qacc.h.ld.ip(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vcmulas.s16.qacc.h.ld.xp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vcmulas.s16.qacc.l(i32, i32) nounwind
-declare void @llvm.riscv.esp.vcmulas.s16.qacc.l.ld.ip(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vcmulas.s16.qacc.l.ld.xp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vcmulas.s16.qacc.l.ld.ip(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vcmulas.s16.qacc.l.ld.xp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vcmulas.s8.qacc.h(i32, i32) nounwind
-declare void @llvm.riscv.esp.vcmulas.s8.qacc.h.ld.ip(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vcmulas.s8.qacc.h.ld.xp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vcmulas.s8.qacc.h.ld.ip(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vcmulas.s8.qacc.h.ld.xp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vcmulas.s8.qacc.l(i32, i32) nounwind
-declare void @llvm.riscv.esp.vcmulas.s8.qacc.l.ld.ip(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vcmulas.s8.qacc.l.ld.xp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vcmulas.s8.qacc.l.ld.ip(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vcmulas.s8.qacc.l.ld.xp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vmulas.s16.qacc(i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.s16.qacc.ld.ip(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.s16.qacc.ld.xp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.s16.qacc.st.ip(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.s16.qacc.st.xp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.s16.qacc.ld.ip(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.s16.qacc.ld.xp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.s16.qacc.st.ip(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.s16.qacc.st.xp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vmulas.s16.xacc(i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.s16.xacc.ld.ip(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.s16.xacc.ld.xp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.s16.xacc.st.ip(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.s16.xacc.st.xp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.s16.xacc.ld.ip(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.s16.xacc.ld.xp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.s16.xacc.st.ip(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.s16.xacc.st.xp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vmulas.s8.qacc(i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.s8.qacc.ld.ip(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.s8.qacc.ld.xp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.s8.qacc.st.ip(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.s8.qacc.st.xp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.s8.qacc.ld.ip(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.s8.qacc.ld.xp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.s8.qacc.st.ip(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.s8.qacc.st.xp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vmulas.s8.xacc(i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.s8.xacc.ld.ip(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.s8.xacc.ld.xp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.s8.xacc.st.ip(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.s8.xacc.st.xp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.s8.xacc.ld.ip(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.s8.xacc.ld.xp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.s8.xacc.st.ip(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.s8.xacc.st.xp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vmulas.u16.qacc(i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.u16.qacc.ld.ip(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.u16.qacc.ld.xp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.u16.qacc.st.ip(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.u16.qacc.st.xp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.u16.qacc.ld.ip(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.u16.qacc.ld.xp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.u16.qacc.st.ip(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.u16.qacc.st.xp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vmulas.u16.xacc(i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.u16.xacc.ld.ip(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.u16.xacc.ld.xp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.u16.xacc.st.ip(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.u16.xacc.st.xp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.u16.xacc.ld.ip(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.u16.xacc.ld.xp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.u16.xacc.st.ip(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.u16.xacc.st.xp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vmulas.u8.qacc(i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.u8.qacc.ld.ip(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.u8.qacc.ld.xp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.u8.qacc.st.ip(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.u8.qacc.st.xp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.u8.qacc.ld.ip(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.u8.qacc.ld.xp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.u8.qacc.st.ip(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.u8.qacc.st.xp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vmulas.u8.xacc(i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.u8.xacc.ld.ip(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.u8.xacc.ld.xp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.u8.xacc.st.ip(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.u8.xacc.st.xp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.s16.qacc.ldbc.incp(i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.s8.qacc.ldbc.incp(i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.u16.qacc.ldbc.incp(i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmulas.u8.qacc.ldbc.incp(i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.u8.xacc.ld.ip(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.u8.xacc.ld.xp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.u8.xacc.st.ip(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.u8.xacc.st.xp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.s16.qacc.ldbc.incp(i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.s8.qacc.ldbc.incp(i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.u16.qacc.ldbc.incp(i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmulas.u8.qacc.ldbc.incp(i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vsmulas.s16.qacc(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vsmulas.s16.qacc.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vsmulas.s16.qacc.ld.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vsmulas.s8.qacc(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vsmulas.s8.qacc.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vsmulas.s8.qacc.ld.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vsmulas.u16.qacc(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vsmulas.u16.qacc.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vsmulas.u16.qacc.ld.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vsmulas.u8.qacc(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vsmulas.u8.qacc.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vsmulas.u8.qacc.ld.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.cmul.s16(i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.cmul.s16.ld.incp(i32, i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.cmul.s16.st.incp(i32, i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.cmul.s16.ld.incp(i32, i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.cmul.s16.st.incp(i32, i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.cmul.s8(i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.cmul.s8.ld.incp(i32, i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.cmul.s8.st.incp(i32, i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.cmul.s8.ld.incp(i32, i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.cmul.s8.st.incp(i32, i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.cmul.u16(i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.cmul.u16.ld.incp(i32, i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.cmul.u16.st.incp(i32, i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.cmul.u16.ld.incp(i32, i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.cmul.u16.st.incp(i32, i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.cmul.u8(i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.cmul.u8.ld.incp(i32, i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.cmul.u8.st.incp(i32, i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.cmul.u8.ld.incp(i32, i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.cmul.u8.st.incp(i32, i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.max.s16.a(i32, i32) nounwind
 declare void @llvm.riscv.esp.max.s32.a(i32, i32) nounwind
 declare void @llvm.riscv.esp.max.s8.a(i32, i32) nounwind
@@ -1025,74 +1027,74 @@ declare void @llvm.riscv.esp.vabs.16(i32, i32) nounwind
 declare void @llvm.riscv.esp.vabs.32(i32, i32) nounwind
 declare void @llvm.riscv.esp.vabs.8(i32, i32) nounwind
 declare void @llvm.riscv.esp.vadd.s16(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vadd.s16.ld.incp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vadd.s16.st.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vadd.s16.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vadd.s16.st.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vadd.s32(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vadd.s32.ld.incp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vadd.s32.st.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vadd.s32.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vadd.s32.st.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vadd.s8(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vadd.s8.ld.incp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vadd.s8.st.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vadd.s8.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vadd.s8.st.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vadd.u16(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vadd.u16.ld.incp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vadd.u16.st.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vadd.u16.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vadd.u16.st.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vadd.u32(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vadd.u32.ld.incp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vadd.u32.st.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vadd.u32.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vadd.u32.st.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vadd.u8(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vadd.u8.ld.incp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vadd.u8.st.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vadd.u8.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vadd.u8.st.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vclamp.s16(i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vmax.s16(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmax.s16.ld.incp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmax.s16.st.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmax.s16.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmax.s16.st.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vmax.s32(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmax.s32.ld.incp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmax.s32.st.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmax.s32.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmax.s32.st.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vmax.s8(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmax.s8.ld.incp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmax.s8.st.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmax.s8.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmax.s8.st.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vmax.u16(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmax.u16.ld.incp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmax.u16.st.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmax.u16.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmax.u16.st.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vmax.u32(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmax.u32.ld.incp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmax.u32.st.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmax.u32.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmax.u32.st.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vmax.u8(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmax.u8.ld.incp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmax.u8.st.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmax.u8.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmax.u8.st.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vmin.s16(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmin.s16.ld.incp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmin.s16.st.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmin.s16.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmin.s16.st.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vmin.s32(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmin.s32.ld.incp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmin.s32.st.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmin.s32.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmin.s32.st.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vmin.s8(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmin.s8.ld.incp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmin.s8.st.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmin.s8.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmin.s8.st.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vmin.u16(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmin.u16.ld.incp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmin.u16.st.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmin.u16.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmin.u16.st.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vmin.u32(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmin.u32.ld.incp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmin.u32.st.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmin.u32.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmin.u32.st.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vmin.u8(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmin.u8.ld.incp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmin.u8.st.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmin.u8.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmin.u8.st.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vmul.s16(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmul.s16.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmul.s16.ld.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vmul.s16.s8xs8(i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmul.s16.st.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmul.s16.st.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vmul.s32.s16xs16(i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vmul.s8(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmul.s8.ld.incp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmul.s8.st.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmul.s8.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmul.s8.st.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vmul.u16(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmul.u16.ld.incp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmul.u16.st.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmul.u16.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmul.u16.st.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vmul.u8(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmul.u8.ld.incp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vmul.u8.st.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmul.u8.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vmul.u8.st.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vprelu.s16(i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vprelu.s8(i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vrelu.s16(i32, i32, i32) nounwind
@@ -1112,26 +1114,26 @@ declare void @llvm.riscv.esp.vssubs.s8(i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vssubs.u16(i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vssubs.u8(i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vsub.s16(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vsub.s16.ld.incp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vsub.s16.st.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vsub.s16.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vsub.s16.st.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vsub.s32(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vsub.s32.ld.incp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vsub.s32.st.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vsub.s32.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vsub.s32.st.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vsub.s8(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vsub.s8.ld.incp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vsub.s8.st.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vsub.s8.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vsub.s8.st.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vsub.u16(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vsub.u16.ld.incp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vsub.u16.st.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vsub.u16.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vsub.u16.st.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vsub.u32(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vsub.u32.ld.incp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vsub.u32.st.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vsub.u32.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vsub.u32.st.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vsub.u8(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vsub.u8.ld.incp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vsub.u8.st.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vsub.u8.ld.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vsub.u8.st.incp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.addx2(i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.addx4(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.sat(i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.sat(i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.subx2(i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.subx4(i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.andq(i32, i32, i32) nounwind
@@ -1166,7 +1168,7 @@ declare void @llvm.riscv.esp.movi.32.a(i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.movi.32.q(i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.movi.8.a(i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.movi.8.q(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.movx.r.cfg(i32) nounwind
+declare i32 @llvm.riscv.esp.movx.r.cfg() nounwind
 declare void @llvm.riscv.esp.movx.r.fft.bit.width(i32) nounwind
 declare void @llvm.riscv.esp.movx.r.perf(i32, i32) nounwind
 declare void @llvm.riscv.esp.movx.r.sar(i32) nounwind
@@ -1197,71 +1199,71 @@ declare void @llvm.riscv.esp.vzipt.8(i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.zero.q(i32) nounwind
 declare void @llvm.riscv.esp.zero.qacc() nounwind
 declare void @llvm.riscv.esp.zero.xacc() nounwind
-declare void @llvm.riscv.esp.fft.ams.s16.ld.incp(i32, i32, i32, i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.fft.ams.s16.ld.incp.uaup(i32, i32, i32, i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.fft.ams.s16.ld.r32.decp(i32, i32, i32, i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.fft.ams.s16.ld.incp(i32, i32, i32, i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.fft.ams.s16.ld.incp.uaup(i32, i32, i32, i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.fft.ams.s16.ld.r32.decp(i32, i32, i32, i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.fft.ams.s16.st.incp(i32, i32, i32, i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.fft.bitrev(i32, i32) nounwind
-declare void @llvm.riscv.esp.fft.cmul.s16.ld.xp(i32, i32, i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.fft.cmul.s16.st.xp(i32, i32, i32, i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.fft.bitrev(i32, i32) nounwind
+declare i32 @llvm.riscv.esp.fft.cmul.s16.ld.xp(i32, i32, i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.fft.cmul.s16.st.xp(i32, i32, i32, i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.fft.r2bf.s16(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.fft.r2bf.s16.st.incp(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.fft.vst.r32.decp(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.ld.128.usar.ip(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.ld.128.usar.xp(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.ld.xacc.ip(i32, i32) nounwind
-declare void @llvm.riscv.esp.ldqa.s16.128.ip(i32, i32) nounwind
-declare void @llvm.riscv.esp.ldqa.s16.128.xp(i32, i32) nounwind
-declare void @llvm.riscv.esp.ldqa.s8.128.ip(i32, i32) nounwind
-declare void @llvm.riscv.esp.ldqa.s8.128.xp(i32, i32) nounwind
-declare void @llvm.riscv.esp.ldqa.u16.128.ip(i32, i32) nounwind
-declare void @llvm.riscv.esp.ldqa.u16.128.xp(i32, i32) nounwind
-declare void @llvm.riscv.esp.ldqa.u8.128.ip(i32, i32) nounwind
-declare void @llvm.riscv.esp.ldqa.u8.128.xp(i32, i32) nounwind
-declare void @llvm.riscv.esp.vldbc.16.ip(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vldbc.16.xp(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vldbc.32.ip(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vldbc.32.xp(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vldbc.8.ip(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vldbc.8.xp(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vldext.s16.ip(i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vldext.s16.xp(i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vldext.s8.ip(i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vldext.s8.xp(i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vldext.u16.ip(i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vldext.u16.xp(i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vldext.u8.ip(i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vldext.u8.xp(i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vldhbc.16.incp(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.ld.qacc.h.h.128.ip(i32, i32) nounwind
-declare void @llvm.riscv.esp.ld.qacc.h.l.128.ip(i32, i32) nounwind
-declare void @llvm.riscv.esp.ld.qacc.l.h.128.ip(i32, i32) nounwind
-declare void @llvm.riscv.esp.ld.qacc.l.l.128.ip(i32, i32) nounwind
-declare void @llvm.riscv.esp.ld.ua.state.ip(i32, i32) nounwind
+declare i32 @llvm.riscv.esp.fft.r2bf.s16.st.incp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.fft.vst.r32.decp(i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.ld.128.usar.ip(i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.ld.128.usar.xp(i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.ld.xacc.ip(i32, i32) nounwind
+declare i32 @llvm.riscv.esp.ldqa.s16.128.ip(i32, i32) nounwind
+declare i32 @llvm.riscv.esp.ldqa.s16.128.xp(i32, i32) nounwind
+declare i32 @llvm.riscv.esp.ldqa.s8.128.ip(i32, i32) nounwind
+declare i32 @llvm.riscv.esp.ldqa.s8.128.xp(i32, i32) nounwind
+declare i32 @llvm.riscv.esp.ldqa.u16.128.ip(i32, i32) nounwind
+declare i32 @llvm.riscv.esp.ldqa.u16.128.xp(i32, i32) nounwind
+declare i32 @llvm.riscv.esp.ldqa.u8.128.ip(i32, i32) nounwind
+declare i32 @llvm.riscv.esp.ldqa.u8.128.xp(i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vldbc.16.ip(i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vldbc.16.xp(i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vldbc.32.ip(i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vldbc.32.xp(i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vldbc.8.ip(i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vldbc.8.xp(i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vldext.s16.ip(i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vldext.s16.xp(i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vldext.s8.ip(i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vldext.s8.xp(i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vldext.u16.ip(i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vldext.u16.xp(i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vldext.u8.ip(i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vldext.u8.xp(i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vldhbc.16.incp(i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.ld.qacc.h.h.128.ip(i32, i32) nounwind
+declare i32 @llvm.riscv.esp.ld.qacc.h.l.128.ip(i32, i32) nounwind
+declare i32 @llvm.riscv.esp.ld.qacc.l.h.128.ip(i32, i32) nounwind
+declare i32 @llvm.riscv.esp.ld.qacc.l.l.128.ip(i32, i32) nounwind
+declare i32 @llvm.riscv.esp.ld.ua.state.ip(i32, i32) nounwind
 declare void @llvm.riscv.esp.ldxq.32(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.st.qacc.h.h.128.ip(i32, i32) nounwind
-declare void @llvm.riscv.esp.st.qacc.h.l.128.ip(i32, i32) nounwind
-declare void @llvm.riscv.esp.st.qacc.l.h.128.ip(i32, i32) nounwind
-declare void @llvm.riscv.esp.st.qacc.l.l.128.ip(i32, i32) nounwind
-declare void @llvm.riscv.esp.st.ua.state.ip(i32, i32) nounwind
+declare i32 @llvm.riscv.esp.st.qacc.h.h.128.ip(i32, i32) nounwind
+declare i32 @llvm.riscv.esp.st.qacc.h.l.128.ip(i32, i32) nounwind
+declare i32 @llvm.riscv.esp.st.qacc.l.h.128.ip(i32, i32) nounwind
+declare i32 @llvm.riscv.esp.st.qacc.l.l.128.ip(i32, i32) nounwind
+declare i32 @llvm.riscv.esp.st.ua.state.ip(i32, i32) nounwind
 declare void @llvm.riscv.esp.stxq.32(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vld.128.ip(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vld.128.xp(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vld.h.64.ip(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vld.h.64.xp(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vld.l.64.ip(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vld.l.64.xp(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vst.128.ip(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vst.128.xp(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vst.h.64.ip(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vst.h.64.xp(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vst.l.64.ip(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.vst.l.64.xp(i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vld.128.ip(i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vld.128.xp(i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vld.h.64.ip(i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vld.h.64.xp(i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vld.l.64.ip(i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vld.l.64.xp(i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vst.128.ip(i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vst.128.xp(i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vst.h.64.ip(i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vst.h.64.xp(i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vst.l.64.ip(i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.vst.l.64.xp(i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.slci.2q(i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.slcxxp.2q(i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.src.q(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.src.q.ld.ip(i32, i32, i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.src.q.ld.xp(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.src.q.ld.ip(i32, i32, i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.src.q.ld.xp(i32, i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.src.q.qup(i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.srci.2q(i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.srcmb.s16.q.qacc(i32, i32, i32) nounwind
@@ -1272,7 +1274,7 @@ declare void @llvm.riscv.esp.srcmb.u16.q.qacc(i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.srcmb.u16.qacc(i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.srcmb.u8.q.qacc(i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.srcmb.u8.qacc(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.srcq.128.st.incp(i32, i32, i32) nounwind
+declare i32 @llvm.riscv.esp.srcq.128.st.incp(i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.srcxxp.2q(i32, i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.srs.s.xacc(i32, i32) nounwind
 declare void @llvm.riscv.esp.srs.u.xacc(i32, i32) nounwind
@@ -1285,5 +1287,5 @@ declare void @llvm.riscv.esp.vsr.u32(i32, i32) nounwind
 declare void @llvm.riscv.esp.vsrd.16(i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vsrd.32(i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vsrd.8(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.st.s.xacc.ip(i32, i32) nounwind
-declare void @llvm.riscv.esp.st.u.xacc.ip(i32, i32) nounwind
+declare i32 @llvm.riscv.esp.st.s.xacc.ip(i32, i32) nounwind
+declare i32 @llvm.riscv.esp.st.u.xacc.ip(i32, i32) nounwind
