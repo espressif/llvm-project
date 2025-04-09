@@ -16,15 +16,15 @@
 // Basic Block Labels:
 // - HND_1_7_BYTES: Handle 1-7 bytes using direct byte operations
 // - CHK_8_15_BYTES: Check if size is 8-15 bytes
-// - HND_8_15_BYTES: Handle 8-15 bytes with 64-bit load + remainder
+// - HND_8_15_BYTES: Handle 8-15 bytes with 64-bit load + Remainder
 // - HND_LARGE_COPY: Handle copies >= 16 bytes with loop-based approach
 // - MAIN_LOOP_BODY: Process 128-byte blocks (8 x 16-byte SIMD operations)
 // - MAIN_LOOP_CLEANUP: Handle remaining blocks after main loop
 // - PROCESS_REM_BLOCKS: Process remaining 16-byte blocks (0-7 blocks)
 // - BLK16_N: Handle N remaining 16-byte blocks (BLK16_1, BLK16_2, etc.)
 // - HND_8BYTE_CHUNK: Handle optional 8-byte chunk
-// - HND_FINAL_REM: Handle final byte remainder (1-7 bytes)
-// - HANDLE_REM: Handle final remainder processing
+// - HND_FINAL_REM: Handle final byte Remainder (1-7 bytes)
+// - HANDLE_REM: Handle final Remainder processing
 //
 // Variable Names:
 // - size.lt.8: Boolean check for size < 8 bytes
@@ -32,9 +32,9 @@
 // - blocks128.count: Number of 128-byte blocks for main loop (size >> 7)
 // - size.16byte.units: Size in 16-byte units (size >> 4)
 // - blocks16.count: Remaining 16-byte blocks after main loop ((size >> 4) & 7)
-// - bytes.remainder: Final byte remainder (size & 7)
+// - bytes.Remainder: Final byte Remainder (size & 7)
 // - need.main.loop: Boolean check if main loop is needed (size >= 128)
-// - remainder.after.8: Bytes remaining after 8-byte operation (size - 8)
+// - Remainder.after.8: Bytes remaining after 8-byte operation (size - 8)
 // - loop.index: Main loop iteration counter
 // - next.loop.index: Incremented loop counter
 // - main.loop.exit: Main loop exit condition
@@ -45,19 +45,19 @@
 // - src.ptr.after.blocks: Source pointer after processing 16-byte blocks
 // - dst.ptr.after.blocks: Destination pointer after processing 16-byte blocks
 // - has.8byte.chunk: Boolean check for 8-byte chunk presence
-// - has.final.remainder: Boolean check for final remainder presence
+// - has.final.Remainder: Boolean check for final Remainder presence
 // - src.ptr.final: Final source pointer
 // - dst.ptr.final: Final destination pointer
 //
 // Memory Copy Strategy:
 // For variable-size copies, the generated code follows this pattern:
 // 1. if (size < 8) -> HND_1_7_BYTES (direct byte operations)
-// 2. else if (size < 16) -> HND_8_15_BYTES (64-bit load + remainder)
+// 2. else if (size < 16) -> HND_8_15_BYTES (64-bit load + Remainder)
 // 3. else -> HND_LARGE_COPY:
 //    a. Main loop: process 128-byte blocks (if size >= 128)
 //    b. Process remaining 16-byte blocks (0-7 blocks via switch)
 //    c. Handle optional 8-byte chunk
-//    d. Handle final remainder (1-7 bytes)
+//    d. Handle final Remainder (1-7 bytes)
 //
 //===----------------------------------------------------------------------===//
 
@@ -240,7 +240,7 @@ protected:
   PostDominatorTree *PDT = nullptr;
   MemorySSA *MSSA = nullptr;
   MemorySSAUpdater *MSSAU = nullptr;
-  Module *module = nullptr;
+  Module *TheModule = nullptr;
   uint64_t SrcAlignValue = 0; // Source address alignment value
   uint64_t DstAlignValue = 0; // Destination address alignment value
   uint64_t Len = 0;           // Length of the memory copy array
@@ -386,19 +386,19 @@ public:
   bool processSrcUnalignDst16Const16(MemCpyInst *M, BasicBlock::iterator &BI);
 
   bool processSrcUnalignDst16ConstDiv48(MemCpyInst *M, BasicBlock::iterator &BI,
-                                        uint64_t quotient);
+                                        uint64_t Quotient);
   bool processSrcUnalignDst16ConstMod48From32To47(MemCpyInst *M,
                                                   BasicBlock::iterator &BI,
-                                                  uint64_t quotient,
-                                                  uint64_t remainder);
+                                                  uint64_t Quotient,
+                                                  uint64_t Remainder);
   bool processSrcUnalignDst16ConstMod48From16To31(MemCpyInst *M,
                                                   BasicBlock::iterator &BI,
-                                                  uint64_t quotient,
-                                                  uint64_t remainder);
+                                                  uint64_t Quotient,
+                                                  uint64_t Remainder);
   bool processSrcUnalignDst16ConstMod48From1To15(MemCpyInst *M,
                                                  BasicBlock::iterator &BI,
-                                                 uint64_t quotient,
-                                                 uint64_t remainder);
+                                                 uint64_t Quotient,
+                                                 uint64_t Remainder);
   bool processSrcUnalignDst16Const8(MemCpyInst *M, BasicBlock::iterator &BI);
   bool processSrcUnalignDst16OtherConst(MemCpyInst *M,
                                         BasicBlock::iterator &BI);
@@ -412,8 +412,8 @@ public:
 
   bool processSrcUnalignDstUnalignVar(MemCpyInst *M, BasicBlock::iterator &BI);
   bool processSrcUnalignDst16ConstMod48(MemCpyInst *M, BasicBlock::iterator &BI,
-                                        uint64_t quotient, uint64_t remainder,
-                                        uint64_t remainderThreshold);
+                                        uint64_t Quotient, uint64_t Remainder,
+                                        uint64_t RemainderThreshold);
 
   bool processMemCpyWithAlignment(MemCpyType Type, MemCpyInst *M,
                                   BasicBlock::iterator &BBI,
