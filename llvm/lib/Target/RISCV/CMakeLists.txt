@@ -47,6 +47,7 @@ add_llvm_target(RISCVCodeGen
   RISCVEsp32P4MemIntrin.cpp
   RISCVIndirectBranchTracking.cpp
   RISCVIntLoopUnrollAndRemainder.cpp
+  RISCVDotprodSplitter.cpp
   RISCVInsertReadWriteCSR.cpp
   RISCVInsertVSETVLI.cpp
   RISCVInsertWriteVXRM.cpp
