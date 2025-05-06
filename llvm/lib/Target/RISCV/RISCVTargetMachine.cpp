@@ -16,6 +16,7 @@
 #include "RISCVCustomLICM.h"
 #include "RISCVEsp32P4MemIntrin.h"
 #include "RISCVIntLoopUnrollAndRemainder.h"
+#include "RISCVDotprodSplitter.h"
 #include "RISCVLoopUnrollAndRemainder.h"
 #include "RISCVMachineFunctionInfo.h"
 #include "RISCVMachineScheduler.h"
@@ -701,6 +702,10 @@ void RISCVTargetMachine::registerPassBuilderCallbacks(PassBuilder &PB) {
         }
         if (Name == "riscv-int-loop-unroll-and-remainder") {
           FPM.addPass(RISCVIntLoopUnrollAndRemainderPass());
+          return true;
+        }
+        if (Name == "riscv-dotprod-splitter") {
+          FPM.addPass(RISCVDotprodSplitterPass());
           return true;
         }
         return false;
