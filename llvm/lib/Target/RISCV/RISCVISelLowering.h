@@ -891,6 +891,10 @@ public:
                               MachineBasicBlock::instr_iterator &MBBI,
                               const TargetInstrInfo *TII) const override;
 
+  MachineBasicBlock *emitDSPInstrWithCustomInserter(
+      MachineInstr &MI, MachineBasicBlock *MBB, const TargetInstrInfo &TII,
+      MachineFunction *MF, MachineRegisterInfo &MRI, DebugLoc DL) const;
+
   /// RISCVCCAssignFn - This target-specific function extends the default
   /// CCValAssign with additional information used to lower RISC-V calling
   /// conventions.

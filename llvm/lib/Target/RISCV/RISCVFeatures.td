@@ -1270,6 +1270,13 @@ def HasVendorXwchc
       AssemblerPredicate<(all_of FeatureVendorXwchc),
                          "'Xwchc' (WCH/QingKe additional compressed opcodes)">;
 
+
+def FeatureVendorESP32P4
+    : RISCVExtension<"xesppie", 1, 0,
+                     "'Espressif ESP32P4'">;
+// def FeatureVendorESP32P4 : SubtargetFeature<"xesppie", "HasVendorESP32P4", "true", "'Espressif ESP32P4'">;
+def HasVendorESP32P4 : Predicate<"Subtarget->hasVendorESP32P4()">, AssemblerPredicate<(all_of FeatureVendorESP32P4), "'Espressif ESP32P4'">;
+
 //===----------------------------------------------------------------------===//
 // LLVM specific features and extensions
 //===----------------------------------------------------------------------===//

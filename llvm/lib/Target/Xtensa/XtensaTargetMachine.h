@@ -37,6 +37,8 @@ public:
                       std::optional<CodeModel::Model> CM, CodeGenOptLevel OL,
                       bool JIT);
 
+  TargetTransformInfo getTargetTransformInfo(const Function &F) const override;
+
   const XtensaSubtarget *getSubtargetImpl(const Function &F) const override;
 
   TargetPassConfig *createPassConfig(PassManagerBase &PM) override;
@@ -44,6 +46,9 @@ public:
   TargetLoweringObjectFile *getObjFileLowering() const override {
     return TLOF.get();
   }
+  MachineFunctionInfo *
+  createMachineFunctionInfo(BumpPtrAllocator &Allocator, const Function &F,
+                            const TargetSubtargetInfo *STI) const override;
 
 protected:
   mutable StringMap<std::unique_ptr<XtensaSubtarget>> SubtargetMap;

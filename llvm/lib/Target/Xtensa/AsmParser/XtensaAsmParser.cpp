@@ -35,10 +35,27 @@ using namespace llvm;
 struct XtensaOperand;
 
 class XtensaAsmParser : public MCTargetAsmParser {
+  // Xtensa GNU assembler supports region definitions using
+  // .begin and .end directives. Currently only .literal_prefix regions are
+  // supported.
+  struct RegionInfo {
+  public:
+    SMLoc Loc;
+    StringRef RegionDirectiveName;
+    StringRef LiteralPrefixName;
+    RegionInfo() = default;
+    RegionInfo( SMLoc L, StringRef DirectiveName, StringRef Name = "")
+     : Loc(L), RegionDirectiveName(DirectiveName), LiteralPrefixName(Name) {}
+  };
+
+  // Stack of active region definitions.
+  SmallVector<RegionInfo, 1> RegionInProgress;
 
   SMLoc getLoc() const { return getParser().getTok().getLoc(); }
 
   XtensaTargetStreamer &getTargetStreamer() {
+    assert(getParser().getStreamer().getTargetStreamer() &&
+           "do not have a target streamer");
     MCTargetStreamer &TS = *getParser().getStreamer().getTargetStreamer();
     return static_cast<XtensaTargetStreamer &>(TS);
   }
@@ -62,19 +79,24 @@ class XtensaAsmParser : public MCTargetAsmParser {
 #include "XtensaGenAsmMatcher.inc"
 
   ParseStatus parseImmediate(OperandVector &Operands);
-  ParseStatus parseRegister(OperandVector &Operands, bool AllowParens = false,
-                            bool SR = false);
+  ParseStatus parseRegister(OperandVector &Operands,
+                            StringRef Mnemonic,
+                            bool AllowParens = false, bool SR = false,
+                            bool UR = false);
   ParseStatus parseOperandWithModifier(OperandVector &Operands);
   bool parseOperand(OperandVector &Operands, StringRef Mnemonic,
-                    bool SR = false);
+                    bool SR = false, bool UR = false);
   bool ParseInstructionWithSR(ParseInstructionInfo &Info, StringRef Name,
                               SMLoc NameLoc, OperandVector &Operands);
   ParseStatus tryParseRegister(MCRegister &Reg, SMLoc &StartLoc,
-                               SMLoc &EndLoc) override {
-    return ParseStatus::NoMatch;
-  }
+                               SMLoc &EndLoc) override;
   ParseStatus parsePCRelTarget(OperandVector &Operands);
+  bool checkRegister(StringRef Mnemonic, StringRef RegName, MCRegister RegNo);
   bool parseLiteralDirective(SMLoc L);
+  bool parseBeginDirective(SMLoc L);
+  bool parseEndDirective(SMLoc L);
+
+  bool checkRegister(unsigned RegNo);
 
 public:
   enum XtensaMatchResultTy {
@@ -87,7 +109,91 @@ public:
   XtensaAsmParser(const MCSubtargetInfo &STI, MCAsmParser &Parser,
                   const MCInstrInfo &MII, const MCTargetOptions &Options)
       : MCTargetAsmParser(Options, STI, MII) {
+    Parser.addAliasForDirective(".half", ".2byte");
+    Parser.addAliasForDirective(".hword", ".2byte");
+    Parser.addAliasForDirective(".word", ".4byte");
+    Parser.addAliasForDirective(".dword", ".8byte");
     setAvailableFeatures(ComputeAvailableFeatures(STI.getFeatureBits()));
+  }
+
+  bool hasWindowed() const {
+    return getSTI().getFeatureBits()[Xtensa::FeatureWindowed];
+  };
+
+  bool hasSingleFloat() const {
+    return getSTI().getFeatureBits()[Xtensa::FeatureSingleFloat];
+  };
+
+  bool hasLoop() const {
+    return getSTI().getFeatureBits()[Xtensa::FeatureLoop];
+  };
+
+  bool hasMAC16() const {
+    return getSTI().getFeatureBits()[Xtensa::FeatureMAC16];
+  };
+
+  bool hasBoolean() const {
+    return getSTI().getFeatureBits()[Xtensa::FeatureBoolean];
+  };
+
+  bool hasDFPAccel() const {
+    return getSTI().getFeatureBits()[Xtensa::FeatureDFPAccel];
+  };
+
+  bool hasS32C1I() const {
+    return getSTI().getFeatureBits()[Xtensa::FeatureS32C1I];
+  };
+
+  bool hasTHREADPTR() const {
+    return getSTI().getFeatureBits()[Xtensa::FeatureTHREADPTR];
+  };
+
+  bool hasExtendedL32R() const {
+    return getSTI().getFeatureBits()[Xtensa::FeatureExtendedL32R];
+  }
+
+  bool hasATOMCTL() const {
+    return getSTI().getFeatureBits()[Xtensa::FeatureATOMCTL];
+  }
+
+  bool hasMEMCTL() const {
+    return getSTI().getFeatureBits()[Xtensa::FeatureMEMCTL];
+  }
+
+  bool hasDebug() const {
+    return getSTI().getFeatureBits()[Xtensa::FeatureDebug];
+  }
+
+  bool hasException() const {
+    return getSTI().getFeatureBits()[Xtensa::FeatureException];
+  }
+
+  bool hasHighPriInterrupts() const {
+    return getSTI().getFeatureBits()[Xtensa::FeatureHighPriInterrupts];
+  }
+
+  bool hasCoprocessor() const {
+    return getSTI().getFeatureBits()[Xtensa::FeatureCoprocessor];
+  }
+
+  bool hasInterrupt() const {
+    return getSTI().getFeatureBits()[Xtensa::FeatureInterrupt];
+  }
+
+  bool hasRelocatableVector() const {
+    return getSTI().getFeatureBits()[Xtensa::FeatureRelocatableVector];
+  }
+
+  bool hasTimerInt() const {
+    return getSTI().getFeatureBits()[Xtensa::FeatureTimerInt];
+  }
+
+  bool hasPRID() const {
+    return getSTI().getFeatureBits()[Xtensa::FeaturePRID];
+  }
+
+  bool hasMiscSR() const {
+    return getSTI().getFeatureBits()[Xtensa::FeatureMiscSR];
   }
 };
 
@@ -148,11 +254,18 @@ public:
   bool isImm() const override { return Kind == Immediate; }
   bool isMem() const override { return false; }
 
+  template <int Lo, int Hi, int Step> bool isImmInRange() const {
+    return Kind == Immediate && inRange(getImm(), Lo, Hi);
+  }
+
   bool isImm(int64_t MinValue, int64_t MaxValue) const {
     return Kind == Immediate && inRange(getImm(), MinValue, MaxValue);
   }
 
-  bool isImm8() const { return isImm(-128, 127); }
+  bool isImm8() const {
+    //The addi instruction maybe expaned to addmi and addi.
+    return isImm((-32768 - 128), (32512 + 127));
+  }
 
   bool isImm8_sh8() const {
     return isImm(-32768, 32512) &&
@@ -181,6 +294,8 @@ public:
            ((cast<MCConstantExpr>(getImm())->getValue() & 0x3) == 0);
   }
 
+  bool isentry_imm12() const { return isImm(0, 32760); }
+
   bool isUimm4() const { return isImm(0, 15); }
 
   bool isUimm5() const { return isImm(0, 31); }
@@ -188,10 +303,21 @@ public:
   bool isImm8n_7() const { return isImm(-8, 7); }
 
   bool isShimm1_31() const { return isImm(1, 31); }
+  
+  bool isShimm0_31() const { return isImm(0, 31); }
 
   bool isImm16_31() const { return isImm(16, 31); }
 
   bool isImm1_16() const { return isImm(1, 16); }
+
+  bool isImm1n_15() const { return (isImm(1, 15) || isImm(-1, -1)); }
+
+  bool isImm32n_95() const { return isImm(-32, 95); }
+
+  bool isImm64n_4n() const {
+    return isImm(-64, -4) &&
+           ((dyn_cast<MCConstantExpr>(getImm())->getValue() & 0x3) == 0);
+  }
 
   bool isB4const() const {
     if (Kind != Immediate)
@@ -251,6 +377,50 @@ public:
       }
     }
     return false;
+  }
+
+  bool isimm7_22() const { return isImm(7, 22); }
+
+  bool isSelect_2() const { return isImm(0, 1); }
+
+  bool isSelect_4() const { return isImm(0, 3); }
+
+  bool isSelect_8() const { return isImm(0, 7); }
+
+  bool isSelect_16() const { return isImm(0, 16); }
+
+  bool isSelect_256() const { return isImm(0, 255); }
+
+  bool isOffset_16_16() const {
+    return isImm(-128, 112) &&
+           ((cast<MCConstantExpr>(getImm())->getValue() & 0xf) == 0);
+  }
+
+  bool isOffset_256_8() const {
+    return isImm(-1024, 1016) &&
+           ((cast<MCConstantExpr>(getImm())->getValue() & 0x7) == 0);
+  }
+
+  bool isOffset_256_16() const {
+    return isImm(-2048, 2032) &&
+           ((cast<MCConstantExpr>(getImm())->getValue() & 0xf) == 0);
+  }
+
+  bool isOffset_256_4() const {
+    return isImm(-512, 508) &&
+           ((cast<MCConstantExpr>(getImm())->getValue() & 0x3) == 0);
+  }
+
+  bool isOffset_128_2() const {
+    return isImm(0, 254) &&
+           ((cast<MCConstantExpr>(getImm())->getValue() & 0x1) == 0);
+  }
+
+  bool isOffset_128_1() const { return isImm(0, 127); }
+
+  bool isOffset_64_16() const {
+    return isImm(-512, 496) &&
+           ((cast<MCConstantExpr>(getImm())->getValue() & 0xf) == 0);
   }
 
   /// getStartLoc - Gets location of the first token of this operand
@@ -368,6 +538,40 @@ bool XtensaAsmParser::processInstruction(MCInst &Inst, SMLoc IDLoc,
   Inst.setLoc(IDLoc);
   const unsigned Opcode = Inst.getOpcode();
   switch (Opcode) {
+  case Xtensa::ADDI: {
+    int64_t Imm = Inst.getOperand(2).getImm();
+    // Expand 16-bit immediate in ADDI instruction:
+    // ADDI rd, rs, imm - > ADMI rd, rs, (imm & 0xff00); ADDI rd, rd, (imm & 0xff)
+    if ((Imm < -128) || (Imm > 127)) {
+      unsigned DReg = Inst.getOperand(0).getReg();
+      unsigned SReg = Inst.getOperand(1).getReg();
+      MCInst ADDMIInst;
+      MCInst ADDIInst;
+      int64_t ImmHi = Imm & (~((uint64_t)0xff));
+      int64_t ImmLo = Imm & 0xff;
+
+      if (ImmLo > 127) {
+        ImmHi += 0x100;
+        ImmLo = ImmLo - 0x100;
+      }
+
+      ADDMIInst.setOpcode(Xtensa::ADDMI);
+      ADDMIInst.addOperand(MCOperand::createReg(DReg));
+      ADDMIInst.addOperand(MCOperand::createReg(SReg));
+      ADDMIInst.addOperand(MCOperand::createImm(ImmHi));
+      ADDMIInst.setLoc(IDLoc);
+
+      Out.emitInstruction(ADDMIInst, *STI);
+
+      ADDIInst.setOpcode(Xtensa::ADDI);
+      ADDIInst.addOperand(MCOperand::createReg(DReg));
+      ADDIInst.addOperand(MCOperand::createReg(DReg));
+      ADDIInst.addOperand(MCOperand::createImm(ImmLo));
+      ADDIInst.setLoc(IDLoc);
+
+      Inst = ADDIInst;
+    }
+  } break;
   case Xtensa::L32R: {
     const MCSymbolRefExpr *OpExpr =
         static_cast<const MCSymbolRefExpr *>(Inst.getOperand(1).getExpr());
@@ -418,6 +622,33 @@ bool XtensaAsmParser::processInstruction(MCInst &Inst, SMLoc IDLoc,
     }
     break;
   }
+  case Xtensa::SRLI: {
+    uint32_t ImmOp32 = static_cast<uint32_t>(Inst.getOperand(2).getImm());
+    int64_t Imm = ImmOp32;
+    if (Imm >= 16 && Imm <= 31) {
+      MCInst TmpInst;
+      TmpInst.setLoc(IDLoc);
+      TmpInst.setOpcode(Xtensa::EXTUI);
+      TmpInst.addOperand(Inst.getOperand(0));
+      TmpInst.addOperand(Inst.getOperand(1));
+      TmpInst.addOperand(MCOperand::createImm(Imm));
+      TmpInst.addOperand(MCOperand::createImm(32 - Imm));
+      Inst = TmpInst;
+    }
+  } break;
+  case Xtensa::SLLI: {
+    uint32_t ImmOp32 = static_cast<uint32_t>(Inst.getOperand(2).getImm());
+    int64_t Imm = ImmOp32;
+    if (Imm == 0) {
+      MCInst TmpInst;
+      TmpInst.setLoc(IDLoc);
+      TmpInst.setOpcode(Xtensa::OR);
+      TmpInst.addOperand(Inst.getOperand(0));
+      TmpInst.addOperand(Inst.getOperand(1));
+      TmpInst.addOperand(Inst.getOperand(1));
+      Inst = TmpInst;
+    }
+  } break;
   default:
     break;
   }
@@ -438,9 +669,10 @@ bool XtensaAsmParser::MatchAndEmitInstruction(SMLoc IDLoc, unsigned &Opcode,
   default:
     break;
   case Match_Success:
-    processInstruction(Inst, IDLoc, Out, STI);
-    Inst.setLoc(IDLoc);
-    Out.emitInstruction(Inst, getSTI());
+    if(processInstruction(Inst, IDLoc, Out, STI)) {
+      Inst.setLoc(IDLoc);
+      Out.emitInstruction(Inst, getSTI());
+    }
     return false;
   case Match_MissingFeature:
     return Error(IDLoc, "instruction use requires an option to be enabled");
@@ -460,7 +692,7 @@ bool XtensaAsmParser::MatchAndEmitInstruction(SMLoc IDLoc, unsigned &Opcode,
   }
   case Match_InvalidImm8:
     return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
-                 "expected immediate in range [-128, 127]");
+                 "expected immediate in range [-32896, 32639]");
   case Match_InvalidImm8_sh8:
     return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
                  "expected immediate in range [-32768, 32512], first 8 bits "
@@ -480,9 +712,24 @@ bool XtensaAsmParser::MatchAndEmitInstruction(SMLoc IDLoc, unsigned &Opcode,
   case Match_InvalidImm1_16:
     return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
                  "expected immediate in range [1, 16]");
+  case Match_InvalidImm1n_15:
+    return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+                 "expected immediate in range [-1, 15] except 0");
+  case Match_InvalidImm32n_95:
+    return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+                 "expected immediate in range [-32, 95] except 0");
+  case Match_InvalidImm64n_4n:
+    return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+                 "expected immediate in range [-64, -4]");
+  case Match_InvalidImm8n_7:
+    return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+                 "expected immediate in range [-8, 7]");
   case Match_InvalidShimm1_31:
     return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
                  "expected immediate in range [1, 31]");
+  case Match_InvalidShimm0_31:
+    return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+                 "expected immediate in range [0, 31]");
   case Match_InvalidUimm4:
     return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
                  "expected immediate in range [0, 15]");
@@ -504,6 +751,54 @@ bool XtensaAsmParser::MatchAndEmitInstruction(SMLoc IDLoc, unsigned &Opcode,
     return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
                  "expected immediate in range [0, 60], first 2 bits "
                  "should be zero");
+  case Match_Invalidentry_imm12:
+    return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+                 "expected immediate in range [0, 32760]");
+  case Match_Invalidimm7_22:
+    return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+                 "expected immediate in range [7, 22]");
+  case Match_InvalidSelect_2:
+    return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+                 "expected immediate in range [0, 1]");
+  case Match_InvalidSelect_4:
+    return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+                 "expected immediate in range [0, 3]");
+  case Match_InvalidSelect_8:
+    return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+                 "expected immediate in range [0, 7]");
+  case Match_InvalidSelect_16:
+    return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+                 "expected immediate in range [0, 15]");
+  case Match_InvalidSelect_256:
+    return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+                 "expected immediate in range [0, 255]");
+  case Match_InvalidOffset_16_16:
+    return Error(
+        RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+        "expected immediate in range [-128, 112], first 4 bits should be zero");
+  case Match_InvalidOffset_256_8:
+    return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+                 "expected immediate in range [-1024, 1016], first 3 bits "
+                 "should be zero");
+  case Match_InvalidOffset_256_16:
+    return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+                 "expected immediate in range [-2048, 2032], first 4 bits "
+                 "should be zero");
+  case Match_InvalidOffset_256_4:
+    return Error(
+        RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+        "expected immediate in range [-512, 508], first 2 bits should be zero");
+  case Match_InvalidOffset_128_2:
+    return Error(
+        RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+        "expected immediate in range [0, 254], first bit should be zero");
+  case Match_InvalidOffset_128_1:
+    return Error(RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+                 "expected immediate in range [0, 127]");
+  case Match_InvalidOffset_64_16:
+    return Error(
+        RefineErrorLoc(IDLoc, Operands, ErrorInfo),
+        "expected immediate in range [-512, 496], first 4 bits should be zero");
   }
 
   report_fatal_error("Unknown match type detected!");
@@ -530,6 +825,29 @@ ParseStatus XtensaAsmParser::parsePCRelTarget(OperandVector &Operands) {
   return ParseStatus::Success;
 }
 
+// Attempts to match Name as a register (either using the default name or
+// alternative ABI names), setting RegNo to the matching register. Upon
+// failure, returns true and sets RegNo to 0
+static bool matchRegisterNameHelper(MCRegister &RegNo, StringRef Name) {
+  RegNo = MatchRegisterName(Name);
+
+  if (RegNo == Xtensa::NoRegister)
+    RegNo = MatchRegisterAltName(Name.lower());
+
+  if (RegNo == Xtensa::NoRegister)
+    RegNo = MatchRegisterAltName(Name.upper());
+
+  return RegNo == Xtensa::NoRegister;
+}
+
+ParseStatus XtensaAsmParser::tryParseRegister(MCRegister &RegNo,
+                                              SMLoc &StartLoc,
+                                              SMLoc &EndLoc) {
+  if (parseRegister(RegNo, StartLoc, EndLoc))
+    return ParseStatus::NoMatch;
+  return ParseStatus::Success;
+}
+
 bool XtensaAsmParser::parseRegister(MCRegister &Reg, SMLoc &StartLoc,
                                     SMLoc &EndLoc) {
   const AsmToken &Tok = getParser().getTok();
@@ -547,41 +865,72 @@ bool XtensaAsmParser::parseRegister(MCRegister &Reg, SMLoc &StartLoc,
 }
 
 ParseStatus XtensaAsmParser::parseRegister(OperandVector &Operands,
-                                           bool AllowParens, bool SR) {
+                                           StringRef Mnemonic,
+                                           bool AllowParens, bool SR,
+                                           bool UR) {
   SMLoc FirstS = getLoc();
   bool HadParens = false;
   AsmToken Buf[2];
-  StringRef RegName;
+  std::string RegName = "";
+  MCRegister RegNo = 0;
+  int64_t Num;
+  bool IsIdentifier = false;
 
   // If this a parenthesised register name is allowed, parse it atomically
   if (AllowParens && getLexer().is(AsmToken::LParen)) {
     size_t ReadCount = getLexer().peekTokens(Buf);
     if (ReadCount == 2 && Buf[1].getKind() == AsmToken::RParen) {
-      if ((Buf[0].getKind() == AsmToken::Integer) && (!SR))
+      if ((Buf[0].getKind() == AsmToken::Integer) && (!SR) && (!UR))
         return ParseStatus::NoMatch;
       HadParens = true;
       getParser().Lex(); // Eat '('
     }
   }
 
-  unsigned RegNo = 0;
-
   switch (getLexer().getKind()) {
   default:
     return ParseStatus::NoMatch;
   case AsmToken::Integer:
-    if (!SR)
+  case AsmToken::LParen:
+    if ((!SR) && (!UR))
       return ParseStatus::NoMatch;
-    RegName = getLexer().getTok().getString();
-    RegNo = MatchRegisterName(RegName);
-    if (RegNo == 0)
-      RegNo = MatchRegisterAltName(RegName);
+    const MCExpr *Res;
+
+    if (getParser().parseExpression(Res))
+      return ParseStatus::Failure;
+
+    if (!Res->evaluateAsAbsolute(Num))
+      return ParseStatus::NoMatch;
+
+    // Parse case when we expect UR operand as special case,
+    // because SR and UR registers may have the same number
+    // and such situation may lead to confilct
+    if (UR) {
+      if (Num == 0)
+        RegName = "GPIO_OUT";
+      if (Num == 230)
+        RegName = "EXPSTATE";
+      if (Num == 231)
+        RegName = "THREADPTR";
+      if (Num == 232)
+        RegName = "FCR";
+      if (Num == 233)
+        RegName = "FSR";
+      if (Num == 234)
+        RegName = "F64R_LO";
+      if (Num == 235)
+        RegName = "F64R_HI";
+      if (Num == 236)
+        RegName = "F64S";
+    } else
+      RegName = std::to_string(Num);
+
+    matchRegisterNameHelper(RegNo, RegName);
     break;
   case AsmToken::Identifier:
-    RegName = getLexer().getTok().getIdentifier();
-    RegNo = MatchRegisterName(RegName);
-    if (RegNo == 0)
-      RegNo = MatchRegisterAltName(RegName);
+    IsIdentifier = true;
+    RegName = getLexer().getTok().getIdentifier().str();
+    matchRegisterNameHelper(RegNo, RegName);
     break;
   }
 
@@ -590,11 +939,19 @@ ParseStatus XtensaAsmParser::parseRegister(OperandVector &Operands,
       getLexer().UnLex(Buf[0]);
     return ParseStatus::NoMatch;
   }
+
+  if (!checkRegister(Mnemonic.lower(), RegName, RegNo))
+    return ParseStatus::NoMatch;
+
+
   if (HadParens)
     Operands.push_back(XtensaOperand::createToken("(", FirstS));
   SMLoc S = getLoc();
   SMLoc E = getParser().getTok().getEndLoc();
-  getLexer().Lex();
+
+  if (IsIdentifier)
+    getLexer().Lex();
+
   Operands.push_back(XtensaOperand::createReg(RegNo, S, E));
 
   if (HadParens) {
@@ -623,12 +980,8 @@ ParseStatus XtensaAsmParser::parseImmediate(OperandVector &Operands) {
       return ParseStatus::Failure;
     break;
   case AsmToken::Identifier: {
-    StringRef Identifier;
-    if (getParser().parseIdentifier(Identifier))
+    if (getParser().parseExpression(Res))
       return ParseStatus::Failure;
-
-    MCSymbol *Sym = getContext().getOrCreateSymbol(Identifier);
-    Res = MCSymbolRefExpr::create(Sym, MCSymbolRefExpr::VK_None, getContext());
     break;
   }
   case AsmToken::Percent:
@@ -648,7 +1001,7 @@ ParseStatus XtensaAsmParser::parseOperandWithModifier(OperandVector &Operands) {
 /// from this information, adding to Operands.
 /// If operand was parsed, returns false, else true.
 bool XtensaAsmParser::parseOperand(OperandVector &Operands, StringRef Mnemonic,
-                                   bool SR) {
+                                   bool SR, bool UR) {
   // Check if the current operand has a custom associated parser, if so, try to
   // custom parse the operand, or fallback to the general approach.
   ParseStatus Res = MatchOperandParserImpl(Operands, Mnemonic);
@@ -662,7 +1015,7 @@ bool XtensaAsmParser::parseOperand(OperandVector &Operands, StringRef Mnemonic,
     return true;
 
   // Attempt to parse token as register
-  if (parseRegister(Operands, true, SR).isSuccess())
+  if (parseRegister(Operands, Mnemonic, true, SR, UR) == MatchOperand_Success)
     return false;
 
   // Attempt to parse token as an immediate
@@ -676,8 +1029,13 @@ bool XtensaAsmParser::parseOperand(OperandVector &Operands, StringRef Mnemonic,
 bool XtensaAsmParser::ParseInstructionWithSR(ParseInstructionInfo &Info,
                                              StringRef Name, SMLoc NameLoc,
                                              OperandVector &Operands) {
+  bool IsSR = Name.starts_with("wsr") || Name.starts_with("rsr") ||
+              Name.starts_with("xsr");
+  bool IsUR = Name.starts_with("wur") || Name.starts_with("rur");
+
   if ((Name.starts_with("wsr.") || Name.starts_with("rsr.") ||
-       Name.starts_with("xsr.")) &&
+       Name.starts_with("xsr.") || Name.starts_with("rur.") ||
+       Name.starts_with("wur.")) &&
       (Name.size() > 4)) {
     // Parse case when instruction name is concatenated with SR register
     // name, like "wsr.sar a1"
@@ -686,13 +1044,14 @@ bool XtensaAsmParser::ParseInstructionWithSR(ParseInstructionInfo &Info,
     Operands.push_back(XtensaOperand::createToken(Name.take_front(3), NameLoc));
 
     StringRef RegName = Name.drop_front(4);
-    unsigned RegNo = MatchRegisterName(RegName);
+    MCRegister RegNo = 0;
 
-    if (RegNo == 0)
-      RegNo = MatchRegisterAltName(RegName);
+    matchRegisterNameHelper(RegNo, RegName);
 
-    if (RegNo == 0)
-      return Error(NameLoc, "invalid register name");
+    if (!checkRegister(Name.lower(), RegName, RegNo)) {
+      Error(NameLoc, "invalid register name");
+      return true;
+    }
 
     // Parse operand
     if (parseOperand(Operands, Name))
@@ -716,7 +1075,7 @@ bool XtensaAsmParser::ParseInstructionWithSR(ParseInstructionInfo &Info,
     }
 
     // Parse second operand
-    if (parseOperand(Operands, Name, true))
+    if (parseOperand(Operands, Name, IsSR, IsUR))
       return true;
   }
 
@@ -734,7 +1093,8 @@ bool XtensaAsmParser::ParseInstruction(ParseInstructionInfo &Info,
                                        StringRef Name, SMLoc NameLoc,
                                        OperandVector &Operands) {
   if (Name.starts_with("wsr") || Name.starts_with("rsr") ||
-      Name.starts_with("xsr")) {
+      Name.starts_with("xsr") || Name.starts_with("rur") ||
+      Name.starts_with("wur")) {
     return ParseInstructionWithSR(Info, Name, NameLoc, Operands);
   }
 
@@ -798,6 +1158,84 @@ bool XtensaAsmParser::parseLiteralDirective(SMLoc L) {
   return false;
 }
 
+bool XtensaAsmParser::parseBeginDirective(SMLoc L) {
+  MCAsmParser &Parser = getParser();
+  const MCExpr *Value;
+  SMLoc BeginLoc = getLexer().getLoc();
+  XtensaTargetStreamer &TS = this->getTargetStreamer();
+
+  if (Parser.parseExpression(Value))
+    return true;
+
+  const MCSymbolRefExpr *SE = dyn_cast<MCSymbolRefExpr>(Value);
+  if (!SE)
+    return Error(BeginLoc, "region option must be a symbol");
+
+  StringRef RegionDirectiveName = SE->getSymbol().getName();
+
+  if (RegionDirectiveName == "literal_prefix") {
+
+    SMLoc OpcodeLoc = getLexer().getLoc();
+    if (parseOptionalToken(AsmToken::EndOfStatement))
+      return Error(OpcodeLoc, "expected literal section name");
+
+    if (Parser.parseExpression(Value))
+      return true;
+
+    OpcodeLoc = getLexer().getLoc();
+    SE = dyn_cast<MCSymbolRefExpr>(Value);
+    if (!SE)
+      return Error(OpcodeLoc, "literal_prefix name must be a symbol");
+
+    StringRef LiteralPrefixName = SE->getSymbol().getName();
+    TS.setLiteralSectionPrefix(LiteralPrefixName);
+    RegionInProgress.emplace_back(BeginLoc, RegionDirectiveName, LiteralPrefixName);
+  } else if (RegionDirectiveName == "schedule" || RegionDirectiveName == "no-schedule") {
+    // Behave like GNU 'as'.
+    // The schedule directive is recognized only for compatibility with Tensilica’s assembler.
+    // This directive is ignored and has no effect on 'as'.
+    RegionInProgress.emplace_back(BeginLoc, RegionDirectiveName);
+  } else {
+    return Error(BeginLoc, "unsupported region directive");
+  }
+
+  return false;
+}
+
+bool XtensaAsmParser::parseEndDirective(SMLoc L) {
+  MCAsmParser &Parser = getParser();
+  const MCExpr *Value;
+  SMLoc EndLoc = getLexer().getLoc();
+  XtensaTargetStreamer &TS = this->getTargetStreamer();
+
+  if (Parser.parseExpression(Value))
+    return true;
+
+  const MCSymbolRefExpr *SE = dyn_cast<MCSymbolRefExpr>(Value);
+  if (!SE)
+    return Error(EndLoc, "region option must be a symbol");
+
+  StringRef RegionDirectiveName = SE->getSymbol().getName();
+
+  if (RegionInProgress.empty())
+    return Error(EndLoc, ".end of the region without .begin");
+  else {
+    RegionInfo Region = RegionInProgress.pop_back_val();
+
+    if (RegionInProgress.empty())
+      TS.setLiteralSectionPrefix("");
+    else
+      TS.setLiteralSectionPrefix(Region.LiteralPrefixName);
+
+    if (RegionDirectiveName != Region.RegionDirectiveName) {
+      return Error(EndLoc, ".end directive differs from .begin directive");
+    }
+  }
+
+  // Error: does not match begin literal_prefix
+  return false;
+}
+
 ParseStatus XtensaAsmParser::parseDirective(AsmToken DirectiveID) {
   StringRef IDVal = DirectiveID.getString();
   SMLoc Loc = getLexer().getLoc();
@@ -812,7 +1250,213 @@ ParseStatus XtensaAsmParser::parseDirective(AsmToken DirectiveID) {
     return parseLiteralDirective(Loc);
   }
 
+  if (IDVal == ".literal") {
+    parseLiteralDirective(Loc);
+    return false;
+  }
+
+  if (IDVal == ".begin") {
+    parseBeginDirective(Loc);
+    return false;
+  }
+
+  if (IDVal == ".end") {
+    parseEndDirective(Loc);
+    return false;
+  }
+
   return ParseStatus::NoMatch;
+}
+ 
+// Verify SR and UR
+bool XtensaAsmParser::checkRegister(StringRef Mnemonic, StringRef RegName,
+                                    MCRegister RegNo) {
+  StringRef CPU = getSTI().getCPU();
+  unsigned NumIntLevels = 0;
+  unsigned NumTimers = 0;
+  unsigned NumMiscSR = 0;
+  bool IsESP32 = false;
+  bool IsESP32S2 = false;
+  bool IsESP32S3 = false;
+  bool Res = true;
+  bool IsWSR = Mnemonic.starts_with("wsr");
+  bool IsRSR = Mnemonic.starts_with("rsr");
+
+  // Assume that CPU is esp32 by default
+  if ((CPU == "esp32") || (CPU == "")) {
+    NumIntLevels = 6;
+    NumTimers = 3;
+    NumMiscSR = 4;
+    IsESP32 = true;
+  } else if (CPU == "esp32s2") {
+    NumIntLevels = 6;
+    NumTimers = 3;
+    NumMiscSR = 4;
+    IsESP32S2 = true;
+  } else if (CPU == "esp32s3") {
+    NumIntLevels = 6;
+    NumTimers = 3;
+    NumMiscSR = 4;
+    IsESP32S3 = true;
+  } else if (CPU == "esp8266") {
+    NumIntLevels = 2;
+    NumTimers = 1;
+  }
+
+  switch (RegNo) {
+  case Xtensa::LBEG:
+  case Xtensa::LEND:
+  case Xtensa::LCOUNT:
+    Res = hasLoop();
+    break;
+  case Xtensa::BREG:
+    Res = hasBoolean();
+    break;
+  case Xtensa::LITBASE:
+    Res = hasExtendedL32R();
+    break;
+  case Xtensa::SCOMPARE1:
+    Res = hasS32C1I();
+    break;
+  case Xtensa::ACCLO:
+  case Xtensa::ACCHI:
+  case Xtensa::M0:
+  case Xtensa::M1:
+  case Xtensa::M2:
+  case Xtensa::M3:
+    Res = hasMAC16();
+    break;
+  case Xtensa::WINDOWBASE:
+  case Xtensa::WINDOWSTART:
+    Res = hasWindowed();
+    break;
+  case Xtensa::IBREAKENABLE:
+  case Xtensa::IBREAKA0:
+  case Xtensa::IBREAKA1:
+  case Xtensa::DBREAKA0:
+  case Xtensa::DBREAKA1:
+  case Xtensa::DBREAKC0:
+  case Xtensa::DBREAKC1:
+  case Xtensa::ICOUNT:
+  case Xtensa::ICOUNTLEVEL:
+    Res = hasDebug();
+    break;
+  case Xtensa::DEBUGCAUSE:
+    Res = hasDebug();
+    Res = Res & IsRSR;
+    break;
+  case Xtensa::ATOMCTL:
+    Res = hasATOMCTL();
+    break;
+  case Xtensa::MEMCTL:
+    Res = hasMEMCTL();
+    break;
+  case Xtensa::EPC1:
+    Res = hasException();
+    break;
+  case Xtensa::EPC2:
+  case Xtensa::EPC3:
+  case Xtensa::EPC4:
+  case Xtensa::EPC5:
+  case Xtensa::EPC6:
+  case Xtensa::EPC7:
+    Res = hasHighPriInterrupts();
+    Res = Res & (NumIntLevels >= (RegNo - Xtensa::EPC1));
+    break;
+  case Xtensa::EPS2:
+  case Xtensa::EPS3:
+  case Xtensa::EPS4:
+  case Xtensa::EPS5:
+  case Xtensa::EPS6:
+  case Xtensa::EPS7:
+    Res = hasHighPriInterrupts();
+    Res = Res & (NumIntLevels > (RegNo - Xtensa::EPS2));
+    break;
+  case Xtensa::EXCSAVE1:
+    Res = hasException();
+    break;
+  case Xtensa::EXCSAVE2:
+  case Xtensa::EXCSAVE3:
+  case Xtensa::EXCSAVE4:
+  case Xtensa::EXCSAVE5:
+  case Xtensa::EXCSAVE6:
+  case Xtensa::EXCSAVE7:
+    Res = hasHighPriInterrupts();
+    Res = Res & (NumIntLevels >= (RegNo - Xtensa::EXCSAVE1));
+    break;
+  case Xtensa::DEPC:
+  case Xtensa::EXCCAUSE:
+  case Xtensa::EXCVADDR:
+    Res = hasException();
+    break;
+  case Xtensa::CPENABLE:
+    Res = hasCoprocessor();
+    break;
+  case Xtensa::VECBASE:
+    Res = hasRelocatableVector();
+    break;
+  case Xtensa::CCOUNT:
+    Res = hasTimerInt();
+    Res &= (NumTimers > 0);
+    break;
+  case Xtensa::CCOMPARE0:
+  case Xtensa::CCOMPARE1:
+  case Xtensa::CCOMPARE2:
+    Res = hasTimerInt();
+    Res &= (NumTimers > (RegNo - Xtensa::CCOMPARE0));
+    break;
+  case Xtensa::PRID:
+    Res = hasPRID();
+    Res = Res & IsRSR;
+    break;
+  case Xtensa::INTERRUPT:
+    // INTSET mnemonic is wrtite-only
+    // INTERRUPT mnemonic is read-only
+    if (RegName.starts_with("intset")) {
+      if (!IsWSR)
+        Res = false;
+    } else if (!IsRSR) {
+      Res = false;
+    }
+    Res = Res & hasInterrupt();
+    break;
+  case Xtensa::INTCLEAR:
+    Res = hasInterrupt();
+    Res = Res & IsWSR;
+    break;
+  case Xtensa::INTENABLE:
+    Res = hasInterrupt();
+    break;
+  case Xtensa::MISC0:
+  case Xtensa::MISC1:
+  case Xtensa::MISC2:
+  case Xtensa::MISC3:
+    Res = hasMiscSR();
+    Res &= (NumMiscSR > (RegNo - Xtensa::MISC0));
+    break;
+  case Xtensa::THREADPTR:
+    Res = hasTHREADPTR();
+    break;
+  case Xtensa::GPIO_OUT:
+    Res = IsESP32S2 || IsESP32S3;
+    break;
+  case Xtensa::EXPSTATE:
+    Res = IsESP32;
+    break;
+  case Xtensa::FCR:
+  case Xtensa::FSR:
+    Res = hasSingleFloat();
+    break;
+  case Xtensa::F64R_LO:
+  case Xtensa::F64R_HI:
+  case Xtensa::F64S:
+    Res = hasDFPAccel();
+    break;
+  case Xtensa::NoRegister:
+    Res = false;
+  }
+
+  return Res;
 }
 
 // Force static initialization.

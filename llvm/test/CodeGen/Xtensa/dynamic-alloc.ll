@@ -1,4 +1,4 @@
-; RUN: llc -mtriple=xtensa -disable-block-placement -verify-machineinstrs < %s \
+; RUN: llc -mtriple=xtensa --mcpu=generic -disable-block-placement -verify-machineinstrs < %s \
 ; RUN:   | FileCheck %s
 
 define ptr @test_simple_alloca(i32 %numelts) {

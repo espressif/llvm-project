@@ -1,4 +1,4 @@
-; RUN: llc -mtriple=xtensa -O0 -verify-machineinstrs < %s \
+; RUN: llc -mtriple=xtensa --mcpu=generic -O0 -verify-machineinstrs < %s \
 ; RUN:   | FileCheck %s -check-prefix=XTENSA
 
 define i8 @loadi8(i8 %a) {

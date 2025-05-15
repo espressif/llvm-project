@@ -241,6 +241,8 @@ def m_ve_Features_Group : OptionGroup<"<ve features group>">,
                           Group<m_Group>, DocName<"VE">;
 def m_loongarch_Features_Group : OptionGroup<"<loongarch features group>">,
                                  Group<m_Group>, DocName<"LoongArch">;
+def m_xtensa_Features_Group : OptionGroup<"<xtensa features group>">,
+                              Group<m_Group>, DocName<"Xtensa">;
 
 def m_libc_Group : OptionGroup<"<m libc group>">, Group<m_mips_Features_Group>,
                    Flags<[HelpHidden]>;
@@ -6396,6 +6398,20 @@ def m3dnow : Flag<["-"], "m3dnow">;
 def mno_3dnow : Flag<["-"], "mno-3dnow">;
 def m3dnowa : Flag<["-"], "m3dnowa">;
 def mno_3dnowa : Flag<["-"], "mno-3dnowa">;
+
+// Xtensa feature flags
+def malways_memw : Flag<["-"], "malways-memw">, Group<m_xtensa_Features_Group>;
+def mfix_esp32_psram_cache_issue : Flag<["-"], "mfix-esp32-psram-cache-issue">, Group<m_xtensa_Features_Group>;
+def mfix_esp32_psram_cache_strategy_EQ : Joined<["-"], "mfix-esp32-psram-cache-strategy=">, Group<m_xtensa_Features_Group>,
+    HelpText<" Psram cache fix strategies : memw, nops">,
+    Values<"memw, nops">;
+def mlongcalls : Flag<["-"], "mlongcalls">, Group<m_xtensa_Features_Group>;
+def mtext_section_literals : Flag<["-"], "mtext-section-literals">, Group<m_xtensa_Features_Group>;
+def mfast_int_min32 : Flag<["-"], "mfast-int-min32">, Group<m_xtensa_Features_Group>,
+  Flags<[NoXarchOption]>,
+  Visibility<[ClangOption, CC1Option]>,
+  HelpText<"Set bit width of the _FAST_ int type to 32">,
+  MarshallingInfoFlag<LangOpts<"FastIntMin32">>;
 
 // These are legacy user-facing driver-level option spellings. They are always
 // aliases for options that are spelled using the more common Unix / GNU flag

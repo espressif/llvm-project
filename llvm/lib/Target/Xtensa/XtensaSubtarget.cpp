@@ -22,15 +22,62 @@
 
 using namespace llvm;
 
+static cl::opt<bool> TextSectionLiterals("mtext-section-literals",
+                                         cl::init(false), cl::Hidden);
+
+bool XtensaSubtarget::useTextSectionLiterals() const
+{
+  // If code model is large then always place literals in
+  // test section.
+  if (TLInfo.getTargetMachine().getCodeModel() == CodeModel::Large)
+    return true;
+
+  return TextSectionLiterals;
+}
+
 XtensaSubtarget &
 XtensaSubtarget::initializeSubtargetDependencies(StringRef CPU, StringRef FS) {
   StringRef CPUName = CPU;
   if (CPUName.empty()) {
     // set default cpu name
-    CPUName = "generic";
+    CPUName = "esp32";
   }
 
   HasDensity = false;
+  HasSingleFloat = false;
+  HasWindowed = false;
+  HasBoolean = false;
+  HasLoop = false;
+  HasSEXT = false;
+  HasCLAMPS = false;
+  HasNSA = false;
+  HasMINMAX = false;
+  HasMul16 = false;
+  HasMul32 = false;
+  HasMul32High = false;
+  HasDiv32 = false;
+  HasMAC16 = false;
+  HasDFPAccel = false;
+  HasS32C1I = false;
+  HasTHREADPTR = false;
+  HasExtendedL32R = false;
+  HasATOMCTL = false;
+  HasMEMCTL = false;
+  HasDebug = false;
+  HasException = false;
+  HasHighPriInterrupts = false;
+  HasCoprocessor = false;
+  HasInterrupt = false;
+  HasRelocatableVector = false;
+  HasTimerInt = false;
+  HasPRID = false;
+  HasRegionProtection = false;
+  HasMiscSR = false;
+  HasESP32S2Ops = false;
+  HasESP32S3Ops = false;
+  HasHIFI3 = false;
+  HasForcedAtomics = false;
+  HasAtomicLdSt = false;
 
   // Parse features string.
   ParseSubtargetFeatures(CPUName, CPUName, FS);
