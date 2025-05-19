@@ -171,6 +171,10 @@ void XtensaAsmPrinter::emitMachineConstantPoolEntry(
 // used to print out constants which have been "spilled to memory" by
 // the code generator.
 void XtensaAsmPrinter::emitConstantPool() {
+  auto *ST = &MF->getSubtarget<XtensaSubtarget>();
+  if (ST->useTextSectionLiterals())
+    return;
+
   const Function &F = MF->getFunction();
   const MachineConstantPool *MCP = MF->getConstantPool();
   const std::vector<MachineConstantPoolEntry> &CP = MCP->getConstants();
