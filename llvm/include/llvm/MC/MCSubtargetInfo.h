@@ -253,8 +253,6 @@ public:
     return ProcFeatures;
   }
 
-  virtual unsigned getHwMode() const { return 0; }
-
   /// HwMode IDs are stored and accessed in a bit set format, enabling
   /// users to efficiently retrieve specific IDs, such as the RegInfo
   /// HwMode ID, from the set as required. Using this approach, various
@@ -275,7 +273,7 @@ public:
   virtual unsigned getHwModeSet() const { return 0; }
 
   /// HwMode ID corresponding to the 'type' parameter is retrieved from the
-  /// HwMode bit set of the current subtarget. It’s important to note that if
+  /// HwMode bit set of the current subtarget. Itï¿½s important to note that if
   /// the current subtarget possesses two HwMode IDs and both control a single
   /// attribute (such as RegInfo), this interface will result in an error.
   virtual unsigned getHwMode(enum HwModeType type = HwMode_Default) const {

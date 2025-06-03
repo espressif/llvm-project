@@ -192,8 +192,11 @@ int test__divsc3(float a, float b, float c, float d)
     
     return 0;
 }
+#endif
 
 int main() {
+// __divsc3 generates LoadStorePIFAddrErrorCause under QEMU
+#if !__xtensa__
   float x[][2] = {{1.e-6, 1.e-6},
                   {-1.e-6, 1.e-6},
                   {-1.e-6, -1.e-6},
@@ -346,12 +349,7 @@ int main() {
                   {2, INFINITY},
                   {INFINITY, INFINITY},
                   {INFINITY, fromRep32(0x7f800001) /* SNaN */}};
-#endif
 
-int main()
-{
-// __divsc3 generates LoadStorePIFAddrErrorCause under QEMU
-#if !__xtensa__
     const unsigned N = sizeof(x) / sizeof(x[0]);
     unsigned i, j;
     for (i = 0; i < N; ++i)

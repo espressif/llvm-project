@@ -1266,7 +1266,7 @@ static void sortSectionXtensa(OutputSection &osec) {
   }
 }
 
-static void sortSection(OutputSection &osec,
+static void sortSection(Ctx &ctx, OutputSection &osec,
                         const DenseMap<const InputSectionBase *, int> &order) {
   StringRef name = osec.name;
 
@@ -1281,17 +1281,17 @@ static void sortSection(OutputSection &osec,
   if (!order.empty())
     for (SectionCommand *b : osec.commands)
       if (auto *isd = dyn_cast<InputSectionDescription>(b))
-        sortISDBySectionOrder(isd, order, osec.flags & SHF_EXECINSTR);
+        sortISDBySectionOrder(ctx, isd, order, osec.flags & SHF_EXECINSTR);
 
-  if (config->emachine == EM_XTENSA) {
+  if (ctx.arg.emachine == EM_XTENSA) {
     sortSectionXtensa(osec);
   }
 
-  if (config->emachine == EM_XTENSA) {
+  if (ctx.arg.emachine == EM_XTENSA) {
     sortSectionXtensa(osec);
   }
 
-  if (script->hasSectionsCommand)
+  if (ctx.script->hasSectionsCommand)
     return;
 
   if (name == ".init_array" || name == ".fini_array") {

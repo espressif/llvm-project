@@ -106,13 +106,10 @@ else:
         base_lib = base_lib.replace("\\", "/")
     if config.host_os == "Haiku":
         config.substitutions.append(("%librt ", base_lib + " -lroot "))
+    elif config.target_triple in ['xtensa-esp-elf', 'xtensa-esp-unknown-elf', 'riscv32-esp-elf', 'riscv32-esp-unknown-elf']:
+        config.substitutions.append( ("%librt ", "-Wl,--start-group," + base_lib + ',-lc,-lm,--end-group ') )
     else:
-      config.substitutions.append( ("%librt ", base_lib + ' -lc -lm ') )
-
-    if config.target_triple in ['xtensa-esp-elf', 'xtensa-esp-unknown-elf', 'riscv32-esp-elf', 'riscv32-esp-unknown-elf']:
-      config.substitutions.append( ("%librt ", "-Wl,--start-group," + base_lib + ',-lc,-lm,--end-group ') )
-    else:
-      config.substitutions.append( ("%librt ", base_lib + ' -lc -lm ') )
+        config.substitutions.append( ("%librt ", base_lib + ' -lc -lm ') )
 
 builtins_build_crt = get_required_attr(config, "builtins_build_crt")
 if builtins_build_crt:

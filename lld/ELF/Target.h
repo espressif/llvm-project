@@ -194,6 +194,7 @@ void setSPARCV9TargetInfo(Ctx &);
 void setSystemZTargetInfo(Ctx &);
 void setX86TargetInfo(Ctx &);
 void setX86_64TargetInfo(Ctx &);
+void setXtensaTargetInfo(Ctx &);
 TargetInfo *getXtensaTargetInfo();
 template <class ELFT> TargetInfo *getMipsTargetInfo();
 

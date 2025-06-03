@@ -5,7 +5,8 @@
 // RUN: not %clang_cc1 -triple riscv32 -target-cpu not-a-cpu -fsyntax-only %s 2>&1 | FileCheck %s --check-prefix RISCV32
 // RISCV32: error: unknown target CPU 'not-a-cpu'
 // RISCV32-NEXT: note: valid target CPU values are:
-// RISCV32-SAME: {{^}} generic-rv32
+// RISCV32-SAME: {{^}} esp32p4
+// RISCV32-SAME: {{^}}, generic-rv32
 // RISCV32-SAME: {{^}}, rocket-rv32
 // RISCV32-SAME: {{^}}, rp2350-hazard3
 // RISCV32-SAME: {{^}}, sifive-e20
@@ -51,7 +52,8 @@
 // RUN: not %clang_cc1 -triple riscv32 -tune-cpu not-a-cpu -fsyntax-only %s 2>&1 | FileCheck %s --check-prefix TUNE-RISCV32
 // TUNE-RISCV32: error: unknown target CPU 'not-a-cpu'
 // TUNE-RISCV32-NEXT: note: valid target CPU values are:
-// TUNE-RISCV32-SAME: {{^}} generic-rv32
+// TUNE-RISCV32-SAME: {{^}} esp32p4
+// TUNE-RISCV32-SAME: {{^}}, generic-rv32
 // TUNE-RISCV32-SAME: {{^}}, rocket-rv32
 // TUNE-RISCV32-SAME: {{^}}, rp2350-hazard3
 // TUNE-RISCV32-SAME: {{^}}, sifive-e20

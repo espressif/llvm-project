@@ -2847,7 +2847,7 @@
 // XTENSA: #define __ATOMIC_SEQ_CST 5
 // XTENSA: #define __BIGGEST_ALIGNMENT__ 4
 // XTENSA: #define __BITINT_MAXWIDTH__ 128
-// XTENSA: #define __BOOL_WIDTH__ 8
+// XTENSA: #define __BOOL_WIDTH__ 1
 // XTENSA: #define __BYTE_ORDER__ __ORDER_LITTLE_ENDIAN__
 // XTENSA: #define __CHAR16_TYPE__ unsigned short
 // XTENSA: #define __CHAR32_TYPE__ unsigned int
@@ -3147,7 +3147,7 @@
 // XTENSA_FAST32: #define __ATOMIC_SEQ_CST 5
 // XTENSA_FAST32: #define __BIGGEST_ALIGNMENT__ 4
 // XTENSA_FAST32: #define __BITINT_MAXWIDTH__ 128
-// XTENSA_FAST32: #define __BOOL_WIDTH__ 8
+// XTENSA_FAST32: #define __BOOL_WIDTH__ 1
 // XTENSA_FAST32: #define __BYTE_ORDER__ __ORDER_LITTLE_ENDIAN__
 // XTENSA_FAST32: #define __CHAR16_TYPE__ unsigned short
 // XTENSA_FAST32: #define __CHAR32_TYPE__ unsigned int

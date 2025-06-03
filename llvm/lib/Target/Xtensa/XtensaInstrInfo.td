@@ -768,7 +768,7 @@ class ArithLogic_RRRN<bits<4> oper0, string instrAsm,
       SDPatternOperator opNode, bit isComm = 0>
   : RRRN_Inst<oper0, (outs AR:$r), (ins AR:$s, AR:$t),
               instrAsm#"\t$r, $s, $t",
-             [(set AR:$r, (opNode AR:$s, AR:$t))]>, Requires<[HasDensity]> {
+             [(set AR:$r, (opNode AR:$s, AR:$t))]> {
   let isCommutable = isComm;
   let isReMaterializable = 0;
 }
