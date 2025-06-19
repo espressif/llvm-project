@@ -14,12 +14,13 @@ default:
   interruptible: true
 
 variables:
-  ESP_LLVM_EMBEDDED_TOOLCHAIN_REF: "esp-19.1.2_20250312"
+  ESP_LLVM_EMBEDDED_TOOLCHAIN_REF: "llvm_release_19"
   ESP_GNU_TOOLCHAIN_VER: "14.2.0_20241119"
   CROSS_ARM_IMAGE: $CI_DOCKER_REGISTRY/llvm-build-cross-arm:2
   CROSS_WIN_IMAGE: $CI_DOCKER_REGISTRY/llvm-build-cross-win:2
   DIST_DIR: "dist"
   BUILD_DIR: "build"
+  GITLAB_SERVER_URL: https://gitlab-ci-token:${CI_JOB_TOKEN}@${GITLAB_HTTPS_SERVER}
 
 workflow:
   rules:
@@ -35,7 +36,7 @@ workflow:
   cit_add_ssh_key "${GITLAB_KEY}"
 
 .get_toolchain_build_scripts: &get_toolchain_build_scripts |
-  git clone -b ${ESP_LLVM_EMBEDDED_TOOLCHAIN_REF} ${GITLAB_SSH_SERVER}/${ESP_LLVM_EMBEDDED_TOOLCHAIN_REPO_PATH}.git
+  git clone -b ${ESP_LLVM_EMBEDDED_TOOLCHAIN_REF} ${GITLAB_SERVER_URL}/${ESP_LLVM_EMBEDDED_TOOLCHAIN_REPO_PATH}.git
 
 before_script:
   - *use_ci_tools
@@ -62,6 +63,8 @@ before_script:
     PACK_TOOLCHAIN: "ON"
     PACK_STANDALONE_LIBS: "ON"
     PACK_TARGET_LIBS: "OFF"
+  before_script:
+    - git config --global --add safe.directory $CI_PROJECT_DIR
   after_script:
     # help to identify that build failed due to OOM
     - >
@@ -75,7 +78,6 @@ before_script:
   script:
     - *get_toolchain_build_scripts
     - LLVM_PROJECT_PATH=$PWD
-    - git config --global --add safe.directory ${LLVM_PROJECT_PATH}
     - BUILD_PATH=$PWD/${BUILD_DIR}/build
     - INSTALL_PATH=$PWD/${BUILD_DIR}/install
     - mkdir -p ${BUILD_PATH}
@@ -107,9 +109,9 @@ before_script:
     # build toolchain core w/o any libs and GNU components
     - cmake $PWD/esp-llvm-embedded-toolchain -GNinja
       -DFETCHCONTENT_SOURCE_DIR_LLVMPROJECT=${LLVM_PROJECT_PATH}
-      -DNEWLIB_REPO_URL="${GITLAB_SSH_SERVER}/${NEWLIB_REPO_PATH}.git"
-      -DBINUTILS_REPO_URL="${GITLAB_SSH_SERVER}/${BINUTILS_REPO_PATH}.git"
-      -DXTENSA_OVERLAYS_REPO_URL="${GITLAB_SSH_SERVER}/${XTENSA_OVERLAYS_REPO_PATH}.git"
+      -DNEWLIB_REPO_URL="${GITLAB_SERVER_URL}/${NEWLIB_REPO_PATH}.git"
+      -DBINUTILS_REPO_URL="${GITLAB_SERVER_URL}/${BINUTILS_REPO_PATH}.git"
+      -DXTENSA_OVERLAYS_REPO_URL="${GITLAB_SERVER_URL}/${XTENSA_OVERLAYS_REPO_PATH}.git"
       -DFETCHCONTENT_QUIET=OFF
       -DESP_GNU_TOOLCHAIN_VER=${ESP_GNU_TOOLCHAIN_VER}
       -DLLVM_TOOLCHAIN_CROSS_BUILD_MINGW=${CROSS_BUILD_MINGW}
@@ -134,6 +136,7 @@ before_script:
         export CUR_USER=$(whoami);
         useradd -m test_runner;
         chown -R test_runner ${BUILD_PATH};
+        runuser -u test_runner -- git config --global --add safe.directory $CI_PROJECT_DIR;
         if [[ "${RUN_CORE_TESTS}" == "ON" ]]; then
           echo "Run LLVM/Clang unit tests";
           touch ${BUILD_PATH}/tests.log;
@@ -153,11 +156,12 @@ before_script:
         if [[ "${RUN_PKG_TESTS}" == "ON" ]]; then
           echo "Run package tests";
           # to avoid test failure "fatal: detected dubious ownership in repository at '/builds/llvm-project'"
-          chown -R test_runner $LLVM_PROJECT_PATH;
           touch ${BUILD_PATH}/pkg-tests.log;
           chmod o+w ${BUILD_PATH}/pkg-tests.log;
+          chown -R test_runner $PWD/esp-llvm-embedded-toolchain;
+          runuser -u test_runner -- git config --global --add safe.directory $PWD/esp-llvm-embedded-toolchain;
           runuser -u test_runner -- ninja -C ${BUILD_PATH} check-package-llvm-toolchain 2>&1 > ${BUILD_PATH}/pkg-tests.log;
-          chown -R ${CUR_USER} $LLVM_PROJECT_PATH;
+          chown -R ${CUR_USER} $PWD/esp-llvm-embedded-toolchain;
         fi
         chown -R ${CUR_USER} ${BUILD_PATH};
       fi
@@ -213,6 +217,8 @@ build_and_test:
   retry: 2
   variables:
     TEST_APP_ESP_DSP_CUSTOM_BRANCH: "llvm-19.1.2-optimization-test"
+  before_script:
+    - git config --global --add safe.directory $CI_PROJECT_DIR
   after_script:
     # help to identify that build failed due to OOM
     - >
@@ -224,22 +230,24 @@ build_and_test:
   script:
     - BUILD_PATH=$PWD/${BUILD_DIR}
     - LLVM_PROJECT_PATH=$PWD
-    - git config --global --add safe.directory ${LLVM_PROJECT_PATH}
     - mkdir -p ${BUILD_PATH}
     - cmake -G Ninja
       -S llvm
       -DLLVM_ENABLE_PROJECTS="clang;lld;clang-tools-extra"
       -DCMAKE_BUILD_TYPE=Release
       -DLLVM_ENABLE_ASSERTIONS=ON
+      -DLLVM_APPEND_VC_REV=OFF
       -DLLDB_INCLUDE_TESTS=OFF
-      -DLLVM_TOOLCHAIN_ENABLED_TARGETS="RISCV"
       -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=Xtensa
       -DLLVM_USE_LINKER="gold"
-      -DLLVM_PARALLEL_LINK_JOBS=2
+      -DLLVM_PARALLEL_LINK_JOBS=${ESP_LLVM_PARALLEL_LINK_JOBS}
+      -DLLVM_PARALLEL_COMPILE_JOBS=${ESP_LLVM_PARALLEL_COMPILE_JOBS}
+      -DLLVM_FORCE_VC_REPOSITORY="${GH_REPO_HTTPS}"
       -B ${BUILD_PATH} 2>&1 > ${BUILD_PATH}/build.log
     - export CUR_USER=$(whoami);
     - useradd -m test_runner;
     - chown -R test_runner ${BUILD_PATH};
+    - runuser -u test_runner -- git config --global --add safe.directory $CI_PROJECT_DIR
     - echo "Run LLVM/Clang unit tests";
     - touch ${BUILD_PATH}/tests.log;
     - chmod o+w ${BUILD_PATH}/tests.log;
@@ -514,7 +522,7 @@ test_xesppie:
     - pwd
     - export CC="$(pwd)/bin/clang"
     - export OBJDUMP="$(pwd)/bin/llvm-objdump"
-    - git clone -q --depth=1 "${GITLAB_SSH_SERVER}/idf/esp-compiler-tests.git"
+    - git clone -q --depth=1 "${GITLAB_SERVER_URL}/idf/esp-compiler-tests.git"
     - cd esp-compiler-tests/build-only/xesppie
     - ./test_xesppie.py
 
