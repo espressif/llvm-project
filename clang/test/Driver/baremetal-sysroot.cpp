@@ -50,7 +50,7 @@
 // CHECK-ESP-RV32IMAC-C-NEXT: "{{[^"]*}}ld{{(\.(lld|bfd|gold))?}}{{(\.exe)?}}" "-m" "elf32lriscv"
 // CHECK-ESP-RV32IMAC-C-SAME: "-o" "{{.*}}.o"
 // CHECK-ESP-RV32IMAC-C-SAME: "-L{{.*}}/baremetal_default_sysroot{{[/\\]+}}bin{{[/\\]+}}..{{[/\\]+}}lib{{[/\\]+}}clang-runtimes{{[/\\]+}}riscv32-esp-unknown-elf{{[/\\]+}}rv32imac-zicsr-zifencei_ilp32{{[/\\]+}}lib"
-// CHECK-ESP-RV32IMAC-C-SAME: "--start-group" "-lc" "-lgloss" "-lnosys" "--end-group" "{{[^"]*}}libclang_rt.builtins.a"
+// CHECK-ESP-RV32IMAC-C-SAME: "-lc" "-lnosys" "{{[^"]*}}libclang_rt.builtins.a"
 
 // RUN: rm -rf %T/baremetal_default_sysroot
 // RUN: mkdir -p %T/baremetal_default_sysroot/bin
@@ -75,4 +75,4 @@
 // CHECK-ESP-ESP32-C-NEXT: "{{[^"]*}}ld{{(\.(lld|bfd|gold))?}}{{(\.exe)?}}"
 // CHECK-ESP-ESP32-C-SAME: "-o" "{{.*}}.o"
 // CHECK-ESP-ESP32-C-SAME: "-L{{.*}}/baremetal_default_sysroot{{[/\\]+}}bin{{[/\\]+}}..{{[/\\]+}}lib{{[/\\]+}}clang-runtimes{{[/\\]+}}xtensa-esp-unknown-elf{{[/\\]+}}esp32{{[/\\]+}}lib"
-// CHECK-ESP-ESP32-C-SAME: "--start-group" "-lc" "-lgloss" "-lnosys" "--end-group" "{{[^"]*}}libclang_rt.builtins.a"
+// CHECK-ESP-ESP32-C-SAME: "-lc" "-lnosys" "{{[^"]*}}libclang_rt.builtins.a"

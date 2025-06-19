@@ -41,7 +41,7 @@
 // CHECK-ESP-RV32IMAC-SAME: "-X" "{{.*}}.o"
 // CHECK-ESP-RV32IMAC-SAME: "-Lsome{{[/\\]+}}directory{{[/\\]+}}user{{[/\\]+}}asked{{[/\\]+}}for"
 // CHECK-ESP-RV32IMAC-SAME: "-L[[SYSROOT]]{{[/\\]+}}riscv32-esp-unknown-elf{{[/\\]+}}rv32imac-zicsr-zifencei_ilp32{{[/\\]+}}lib"
-// CHECK-ESP-RV32IMAC-SAME: "-lm" "--start-group" "-lc" "-lgloss" "-lnosys" "--end-group"
+// CHECK-ESP-RV32IMAC-SAME: "-lc" "-lnosys"
 // CHECK-ESP-RV32IMAC-SAME: "{{[^"]*}}libclang_rt.builtins.a"
 
 // RUN: %t/basic_riscv32_esp_tree/bin/clang %s -### 2>&1 --target=riscv32-esp-elf -fno-integrated-as \
@@ -64,7 +64,7 @@
 // CHECK-ESP-RV32IMAC-FORCEAS-SAME: "-X" "{{.*}}.o"
 // CHECK-ESP-RV32IMAC-FORCEAS-SAME: "-Lsome{{[/\\]+}}directory{{[/\\]+}}user{{[/\\]+}}asked{{[/\\]+}}for"
 // CHECK-ESP-RV32IMAC-FORCEAS-SAME: "-L[[SYSROOT]]{{[/\\]+}}riscv32-esp-unknown-elf{{[/\\]+}}rv32imac-zicsr-zifencei_ilp32{{[/\\]+}}lib"
-// CHECK-ESP-RV32IMAC-FORCEAS-SAME: "-lm" "--start-group" "-lc" "-lgloss" "-lnosys" "--end-group"
+// CHECK-ESP-RV32IMAC-FORCEAS-SAME: "-lc" "-lnosys"
 // CHECK-ESP-RV32IMAC-FORCEAS-SAME: "{{[^"]*}}libclang_rt.builtins.a"
 
 // RUN: %t/basic_riscv32_esp_tree/bin/clang %s -### 2>&1 --target=riscv32-esp-elf --ld-path=riscv32-esp-elf-clang-ld \
@@ -80,7 +80,7 @@
 // CHECK-ESP-RV32IMAC-FORCELD-SAME: "-X" "{{.*}}.o"
 // CHECK-ESP-RV32IMAC-FORCELD-SAME: "-Lsome{{[/\\]+}}directory{{[/\\]+}}user{{[/\\]+}}asked{{[/\\]+}}for"
 // CHECK-ESP-RV32IMAC-FORCELD-SAME: "-L[[SYSROOT]]{{[/\\]+}}riscv32-esp-unknown-elf{{[/\\]+}}rv32imac-zicsr-zifencei_ilp32{{[/\\]+}}lib"
-// CHECK-ESP-RV32IMAC-FORCELD-SAME: "-lm" "--start-group" "-lc" "-lgloss" "-lnosys" "--end-group"
+// CHECK-ESP-RV32IMAC-FORCELD-SAME: "-lc" "-lnosys"
 // CHECK-ESP-RV32IMAC-FORCELD-SAME: "{{[^"]*}}libclang_rt.builtins.a"
 
 // RUN: %t/basic_riscv32_esp_tree/bin/clang %s -### 2>&1 --target=riscv32-esp-elf \
@@ -121,7 +121,7 @@
 // CHECK-ESP-RV32IMAC-DEFAULTSTDCXX-SAME: "-X" "{{.*}}.o"
 // CHECK-ESP-RV32IMAC-DEFAULTSTDCXX-SAME: "-L[[SYSROOT]]{{[/\\]+}}riscv32-esp-unknown-elf{{[/\\]+}}rv32imac-zicsr-zifencei_ilp32{{[/\\]+}}lib"
 // CHECK-ESP-RV32IMAC-DEFAULTSTDCXX-SAME: "-lstdc++"
-// CHECK-ESP-RV32IMAC-DEFAULTSTDCXX-SAME: "-lm" "--start-group" "-lc" "-lgloss" "-lnosys" "--end-group"
+// CHECK-ESP-RV32IMAC-DEFAULTSTDCXX-SAME: "-lm" "-lc" "-lnosys"
 // CHECK-ESP-RV32IMAC-DEFAULTSTDCXX-SAME: "{{[^"]*}}libclang_rt.builtins.a"
 
 // RUN: %t/basic_riscv32_esp_tree/bin/clang --driver-mode=g++ %s -### 2>&1 --target=riscv32-esp-elf \
@@ -141,7 +141,7 @@
 // CHECK-ESP-RV32IMAC-LIBCXX-SAME: "-X" "{{.*}}.o"
 // CHECK-ESP-RV32IMAC-LIBCXX-SAME: "-L[[SYSROOT]]{{[/\\]+}}riscv32-esp-unknown-elf{{[/\\]+}}rv32imac-zicsr-zifencei_ilp32{{[/\\]+}}lib"
 // CHECK-ESP-RV32IMAC-LIBCXX-SAME: "-lc++" "-lc++abi" "-lunwind"
-// CHECK-ESP-RV32IMAC-LIBCXX-SAME: "-lm" "--start-group" "-lc" "-lgloss" "-lnosys" "--end-group"
+// CHECK-ESP-RV32IMAC-LIBCXX-SAME: "-lm" "-lc" "-lnosys"
 // CHECK-ESP-RV32IMAC-LIBCXX-SAME: "{{[^"]*}}libclang_rt.builtins.a"
 
 // RUN: %t/basic_riscv32_esp_tree/bin/clang --driver-mode=g++ %s -### 2>&1 --target=riscv32-esp-elf \
@@ -354,7 +354,7 @@
 // CHECK-ESP-ESP32-SAME: "-X" "{{.*}}.o"
 // CHECK-ESP-ESP32-SAME: "-Lsome{{[/\\]+}}directory{{[/\\]+}}user{{[/\\]+}}asked{{[/\\]+}}for"
 // CHECK-ESP-ESP32-SAME: "-L[[SYSROOT]]{{[/\\]+}}xtensa-esp-unknown-elf{{[/\\]+}}esp32{{[/\\]+}}lib"
-// CHECK-ESP-ESP32-SAME: "-lm" "--start-group" "-lc" "-lgloss" "-lnosys" "--end-group"
+// CHECK-ESP-ESP32-SAME: "-lc" "-lnosys"
 // CHECK-ESP-ESP32-SAME: "{{[^"]*}}libclang_rt.builtins.a"
 
 // RUN: %t/basic_xtensa_esp_tree/bin/clang %s -### 2>&1 --target=xtensa-esp-elf -fno-integrated-as \
@@ -376,7 +376,7 @@
 // CHECK-ESP-ESP32-FORCEAS-SAME: "-X" "{{.*}}.o"
 // CHECK-ESP-ESP32-FORCEAS-SAME: "-Lsome{{[/\\]+}}directory{{[/\\]+}}user{{[/\\]+}}asked{{[/\\]+}}for"
 // CHECK-ESP-ESP32-FORCEAS-SAME: "-L[[SYSROOT]]{{[/\\]+}}xtensa-esp-unknown-elf{{[/\\]+}}esp32{{[/\\]+}}lib"
-// CHECK-ESP-ESP32-FORCEAS-SAME: "-lm" "--start-group" "-lc" "-lgloss" "-lnosys" "--end-group"
+// CHECK-ESP-ESP32-FORCEAS-SAME: "-lc" "-lnosys"
 // CHECK-ESP-ESP32-FORCEAS-SAME: "{{[^"]*}}libclang_rt.builtins.a"
 
 // RUN: %t/basic_xtensa_esp_tree/bin/clang %s -### 2>&1 --target=xtensa-esp-elf --ld-path=xtensa-esp32-elf-clang-ld    \
@@ -391,7 +391,7 @@
 // CHECK-ESP-ESP32-FORCELD-SAME: "-X" "{{.*}}.o"
 // CHECK-ESP-ESP32-FORCELD-SAME: "-Lsome{{[/\\]+}}directory{{[/\\]+}}user{{[/\\]+}}asked{{[/\\]+}}for"
 // CHECK-ESP-ESP32-FORCELD-SAME: "-L[[SYSROOT]]{{[/\\]+}}xtensa-esp-unknown-elf{{[/\\]+}}esp32{{[/\\]+}}lib"
-// CHECK-ESP-ESP32-FORCELD-SAME: "-lm" "--start-group" "-lc" "-lgloss" "-lnosys" "--end-group"
+// CHECK-ESP-ESP32-FORCELD-SAME: "-lc" "-lnosys"
 // CHECK-ESP-ESP32-FORCELD-SAME: "{{[^"]*}}libclang_rt.builtins.a"
 
 // RUN: %t/basic_xtensa_esp_tree/bin/clang %s -### 2>&1 --target=xtensa-esp-elf \
@@ -431,7 +431,7 @@
 // CHECK-ESP-ESP32-DEFAULTSTDCXX-SAME: "-X" "{{.*}}.o"
 // CHECK-ESP-ESP32-DEFAULTSTDCXX-SAME: "-L[[SYSROOT]]{{[/\\]+}}xtensa-esp-unknown-elf{{[/\\]+}}esp32{{[/\\]+}}lib"
 // CHECK-ESP-ESP32-DEFAULTSTDCXX-SAME: "-lstdc++"
-// CHECK-ESP-ESP32-DEFAULTSTDCXX-SAME: "-lm" "--start-group" "-lc" "-lgloss" "-lnosys" "--end-group"
+// CHECK-ESP-ESP32-DEFAULTSTDCXX-SAME: "-lm" "-lc" "-lnosys"
 // CHECK-ESP-ESP32-DEFAULTSTDCXX-SAME: "{{[^"]*}}libclang_rt.builtins.a"
 
 // RUN: %t/basic_xtensa_esp_tree/bin/clang --driver-mode=g++ %s -### 2>&1 --target=xtensa-esp-elf \
@@ -450,7 +450,7 @@
 // CHECK-ESP-ESP32-LIBCXX-SAME: "-X" "{{.*}}.o"
 // CHECK-ESP-ESP32-LIBCXX-SAME: "-L[[SYSROOT]]{{[/\\]+}}xtensa-esp-unknown-elf{{[/\\]+}}esp32{{[/\\]+}}lib"
 // CHECK-ESP-ESP32-LIBCXX-SAME: "-lc++" "-lc++abi" "-lunwind"
-// CHECK-ESP-ESP32-LIBCXX-SAME: "-lm" "--start-group" "-lc" "-lgloss" "-lnosys" "--end-group"
+// CHECK-ESP-ESP32-LIBCXX-SAME: "-lm" "-lc" "-lnosys"
 // CHECK-ESP-ESP32-LIBCXX-SAME: "{{[^"]*}}libclang_rt.builtins.a"
 
 // RUN: %t/basic_xtensa_esp_tree/bin/clang --driver-mode=g++ %s -### 2>&1 --target=xtensa-esp-elf \

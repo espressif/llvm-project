@@ -226,17 +226,18 @@ void baremetal::esp::Linker::ConstructJob(Compilation &C, const JobAction &JA,
 
   // TODO: add C++ includes and libs if compiling C++.
 
+  if (ToolChain.ShouldLinkCXXStdlib(Args)) {
+    ToolChain.AddCXXStdlibLibArgs(Args, CmdArgs);
+    CmdArgs.push_back("-lm");
+  }
+
   if (!Args.hasArg(options::OPT_nostdlib) &&
       !Args.hasArg(options::OPT_nodefaultlibs)) {
-    if (ToolChain.ShouldLinkCXXStdlib(Args))
-      ToolChain.AddCXXStdlibLibArgs(Args, CmdArgs);
-    CmdArgs.push_back("-lm");
-    CmdArgs.push_back("--start-group");
-    CmdArgs.push_back("-lgloss");
-    CmdArgs.push_back("-lnosys");
-    CmdArgs.push_back("--end-group");
-    AddRunTimeLibs(ToolChain, D, CmdArgs, Args);
+    // libc should be before compiler-rt (specified via abs path) otherwise ld complains on undefined refs in it
     CmdArgs.push_back("-lc");
+    // to support configuration scripts check which tries to run compiler with minimal args list
+    CmdArgs.push_back("-lnosys");
+    AddRunTimeLibs(ToolChain, D, CmdArgs, Args);
   }
 
   C.addCommand(std::make_unique<Command>(
