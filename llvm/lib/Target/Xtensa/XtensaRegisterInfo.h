@@ -38,6 +38,10 @@ public:
     return true;
   }
 
+  bool trackLivenessAfterRegAlloc(const MachineFunction &) const override {
+    return true;
+  }
+
   const uint16_t *
   getCalleeSavedRegs(const MachineFunction *MF = 0) const override;
   const uint32_t *getCallPreservedMask(const MachineFunction &MF,
@@ -49,6 +53,8 @@ public:
                            RegScavenger *RS = nullptr) const override;
 
   Register getFrameRegister(const MachineFunction &MF) const override;
+
+  bool requiresFrameIndexReplacementScavenging(const MachineFunction &MF) const override;
 };
 
 } // end namespace llvm

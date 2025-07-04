@@ -27,7 +27,9 @@ class raw_ostream;
 
 class LLVM_LIBRARY_VISIBILITY XtensaAsmPrinter : public AsmPrinter {
   const MCSubtargetInfo *STI;
-
+  /// InConstantPool - Maintain state when emitting a sequence of constant
+  /// pool entries so we can properly mark them as data regions.
+  bool InConstantPool = false;
 public:
   explicit XtensaAsmPrinter(TargetMachine &TM,
                             std::unique_ptr<MCStreamer> Streamer)
@@ -41,6 +43,14 @@ public:
   void emitMachineConstantPoolEntry(const MachineConstantPoolEntry &CPE, int i);
 
   void emitMachineConstantPoolValue(MachineConstantPoolValue *MCPV) override;
+
+  void printOperand(const MachineInstr *MI, int opNum, raw_ostream &O);
+
+  bool PrintAsmOperand(const MachineInstr *MI, unsigned OpNo,
+                       const char *ExtraCode, raw_ostream &O) override;
+
+  bool PrintAsmMemoryOperand(const MachineInstr *MI, unsigned OpNo,
+                             const char *ExtraCode, raw_ostream &OS) override;
 
   MCSymbol *GetConstantPoolIndexSymbol(const MachineOperand &MO) const;
 

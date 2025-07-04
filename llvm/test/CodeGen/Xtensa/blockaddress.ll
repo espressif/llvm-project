@@ -1,4 +1,4 @@
-; RUN: llc --mtriple=xtensa < %s | FileCheck %s
+; RUN: llc --mtriple=xtensa --mcpu=generic < %s | FileCheck %s
 
 @addr = global ptr null
 
@@ -12,7 +12,9 @@ define void @test_blockaddress() {
 ; CHECK:      # %bb.0:
 ; CHECK-NEXT: l32r a8, .LCPI0_0
 ; CHECK-NEXT: l32r a9, .LCPI0_1
+; CHECK-NEXT: memw
 ; CHECK-NEXT: s32i a9, a8, 0
+; CHECK-NEXT: memw
 ; CHECK-NEXT: l32i a8, a8, 0
 ; CHECK-NEXT: jx a8
 ; CHECK-NEXT: .Ltmp0:

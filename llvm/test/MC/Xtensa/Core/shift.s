@@ -21,6 +21,11 @@ sll a10, a11
 slli a5, a1, 15
 
 # Instruction format RRR
+# CHECK-INST: or a5, a1, a1
+# CHECK: encoding: [0x10,0x51,0x20]
+slli a5, a1, 0
+
+# Instruction format RRR
 # CHECK-INST: sra a12, a3
 # CHECK: encoding: [0x30,0xc0,0xb1]
 sra a12, a3
@@ -41,9 +46,14 @@ src a3, a4, a5
 srl a6, a7
 
 # Instruction format RRR
-# CHECK-INST: srli a3, a4, 8
-# CHECK: encoding: [0x40,0x38,0x41]
-srli a3, a4, 8
+# CHECK-INST: extui a3, a4, 18, 14
+# CHECK: encoding: [0x40,0x32,0xd5]
+srli a3, a4, 18
+
+# Instruction format RRR
+# CHECK-INST: srli a3, a4, 14
+# CHECK: encoding: [0x40,0x3e,0x41]
+_srli a3, a4, 14
 
 # Instruction format RRR
 # CHECK-INST: ssa8l a14

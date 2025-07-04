@@ -419,3 +419,17 @@ def SPACEMIT_X60 : RISCVProcessorModel<"spacemit-x60",
                                         FeatureStdExtZvkt,
                                         FeatureStdExtZvl256b]),
                                        [TuneDLenFactor2]>;
+
+def ESPRESSIF_ESP32P4 : RISCVProcessorModel<"esp32p4",
+                                       NoSchedModel,
+                                       [Feature32Bit,
+                                        FeatureVendorESP32P4,
+                                        FeatureStdExtZicsr,
+                                        FeatureStdExtZifencei,
+                                        FeatureStdExtM,
+                                        FeatureStdExtA,
+                                        FeatureStdExtF,
+                                        FeatureStdExtC,
+                                        FeatureStdExtZcb,
+                                        FeatureStdExtZcmp,
+                                        FeatureStdExtZcmt]>;
