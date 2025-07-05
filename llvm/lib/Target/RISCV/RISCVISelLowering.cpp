@@ -118,12 +118,6 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
   // Set up the register classes.
   addRegisterClass(XLenVT, &RISCV::GPRRegClass);
 
-  if (Subtarget.hasVendorXesppie()) {
-    static const MVT::SimpleValueType QRVec[] = {MVT::v16i8, MVT::v4i32};
-    for (auto st : QRVec)
-      addRegisterClass(st, &RISCV::QRRegClass);
-  }
-
   if (Subtarget.hasStdExtZfhmin())
     addRegisterClass(MVT::f16, &RISCV::FPR16RegClass);
   if (Subtarget.hasStdExtZfbfmin())
