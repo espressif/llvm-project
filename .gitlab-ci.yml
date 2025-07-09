@@ -301,6 +301,8 @@ build_x86_64-w64-mingw32:
     USE_LINKER: ""
     CONF_HOST: "x86_64-w64-mingw32"
     CROSS_BUILD_MINGW: "ON"
+    # TODO: LLVM-457
+    PACK_STANDALONE_LIBS: "OFF"
 
 build_arm-linux-gnueabihf:
   extends: .build_linux-gnu_template
