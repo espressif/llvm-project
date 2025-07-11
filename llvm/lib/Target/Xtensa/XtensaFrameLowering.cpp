@@ -12,13 +12,15 @@
 
 #include "XtensaFrameLowering.h"
 #include "XtensaInstrInfo.h"
+#include "XtensaMachineFunctionInfo.h"
 #include "XtensaSubtarget.h"
-#include "llvm/CodeGen/MachineFrameInfo.h"
 #include "llvm/CodeGen/MachineInstrBuilder.h"
 #include "llvm/CodeGen/MachineModuleInfo.h"
 #include "llvm/CodeGen/MachineRegisterInfo.h"
 #include "llvm/CodeGen/RegisterScavenging.h"
 #include "llvm/IR/Function.h"
+
+#define STACK_SIZE_THRESHOLD 100
 
 using namespace llvm;
 
@@ -33,15 +35,23 @@ bool XtensaFrameLowering::hasFP(const MachineFunction &MF) const {
          MFI.hasVarSizedObjects();
 }
 
+/* minimum frame = reg save area (4 words) plus static chain (1 word)
+   and the total number of words must be a multiple of 128 bits.  */
+/* Width of a word, in units (bytes).  */
+#define UNITS_PER_WORD 4
+#define MIN_FRAME_SIZE (8 * UNITS_PER_WORD)
+
 void XtensaFrameLowering::emitPrologue(MachineFunction &MF,
                                        MachineBasicBlock &MBB) const {
   assert(&MBB == &MF.front() && "Shrink-wrapping not yet implemented");
   MachineFrameInfo &MFI = MF.getFrameInfo();
   MachineBasicBlock::iterator MBBI = MBB.begin();
+  const XtensaSubtarget &STI = MF.getSubtarget<XtensaSubtarget>();
   DebugLoc DL = MBBI != MBB.end() ? MBBI->getDebugLoc() : DebugLoc();
   MCRegister SP = Xtensa::SP;
   MCRegister FP = TRI->getFrameRegister(MF);
   const MCRegisterInfo *MRI = MF.getContext().getRegisterInfo();
+  XtensaFunctionInfo *XtensaFI = MF.getInfo<XtensaFunctionInfo>();
 
   // First, compute final stack size.
   uint64_t StackSize = MFI.getStackSize();
@@ -50,75 +60,154 @@ void XtensaFrameLowering::emitPrologue(MachineFunction &MF,
   // Round up StackSize to 16*N
   StackSize += (16 - StackSize) & 0xf;
 
-  // No need to allocate space on the stack.
-  if (StackSize == 0 && !MFI.adjustsStack())
-    return;
+  if (STI.isWinABI()) {
+    StackSize += 32;
+    uint64_t MaxAlignment = MFI.getMaxAlign().value();
+    if(MaxAlignment > 32)
+      StackSize += MaxAlignment;
 
-  // Adjust stack.
-  TII.adjustStackPtr(SP, -StackSize, MBB, MBBI);
+    if (StackSize <= 32760) {
+      BuildMI(MBB, MBBI, DL, TII.get(Xtensa::ENTRY))
+          .addReg(SP)
+          .addImm(StackSize);
+    } else {
+      /* Use a8 as a temporary since a0-a7 may be live.  */
+      unsigned TmpReg = Xtensa::A8;
 
-  // emit ".cfi_def_cfa_offset StackSize"
-  unsigned CFIIndex =
-      MF.addFrameInst(MCCFIInstruction::cfiDefCfaOffset(nullptr, StackSize));
-  BuildMI(MBB, MBBI, DL, TII.get(TargetOpcode::CFI_INSTRUCTION))
-      .addCFIIndex(CFIIndex);
-
-  const std::vector<CalleeSavedInfo> &CSI = MFI.getCalleeSavedInfo();
-
-  if (!CSI.empty()) {
-    // Find the instruction past the last instruction that saves a
-    // callee-saved register to the stack. The callee-saved store
-    // instructions are placed at the begin of basic block, so
-    //  iterate over instruction sequence and check that
-    // save instructions are placed correctly.
-    for (unsigned i = 0, e = CSI.size(); i < e; ++i) {
-#ifndef NDEBUG
-      const CalleeSavedInfo &Info = CSI[i];
-      int FI = Info.getFrameIdx();
-      int StoreFI = 0;
-
-      // Checking that the instruction is exactly as expected
-      bool IsStoreInst = false;
-      if (MBBI->getOpcode() == TargetOpcode::COPY && Info.isSpilledToReg()) {
-        Register DstReg = MBBI->getOperand(0).getReg();
-        Register Reg = MBBI->getOperand(1).getReg();
-        IsStoreInst = (Info.getDstReg() == DstReg) && (Info.getReg() == Reg);
-      } else {
-        Register Reg = TII.isStoreToStackSlot(*MBBI, StoreFI);
-        IsStoreInst = (Reg == Info.getReg()) && (StoreFI == FI);
-      }
-      assert(IsStoreInst &&
-             "Unexpected callee-saved register store instruction");
-#endif
-      ++MBBI;
+      const XtensaInstrInfo &TII = *static_cast<const XtensaInstrInfo *>(
+          MBB.getParent()->getSubtarget().getInstrInfo());
+      BuildMI(MBB, MBBI, DL, TII.get(Xtensa::ENTRY))
+          .addReg(SP)
+          .addImm(MIN_FRAME_SIZE);
+      TII.loadImmediate(MBB, MBBI, &TmpReg, StackSize - MIN_FRAME_SIZE);
+      BuildMI(MBB, MBBI, DL, TII.get(Xtensa::SUB), TmpReg)
+          .addReg(SP)
+          .addReg(TmpReg);
+      BuildMI(MBB, MBBI, DL, TII.get(Xtensa::MOVSP), SP).addReg(TmpReg);
     }
 
-    // Iterate over list of callee-saved registers and emit .cfi_offset
-    // directives.
-    for (const auto &I : CSI) {
-      int64_t Offset = MFI.getObjectOffset(I.getFrameIdx());
-      Register Reg = I.getReg();
+    // Calculate how much is needed to have the correct alignment.
+    // Change offset to: alignment + difference.
+    // For example, in case of alignment of 128:
+    // diff_to_128_aligned_address = (128 - (SP & 127))
+    // new_offset = 128 + diff_to_128_aligned_address
+    // This is safe to do because we increased the stack size by MaxAlignment.
+    unsigned Reg, RegMisAlign;
+    if (MaxAlignment > 32){
+      TII.loadImmediate(MBB, MBBI, &RegMisAlign, MaxAlignment - 1);
+      TII.loadImmediate(MBB, MBBI, &Reg, MaxAlignment);
+      BuildMI(MBB, MBBI, DL, TII.get(Xtensa::AND))
+          .addReg(RegMisAlign, RegState::Define)
+          .addReg(FP)
+          .addReg(RegMisAlign);
+      BuildMI(MBB, MBBI, DL, TII.get(Xtensa::SUB), RegMisAlign)
+          .addReg(Reg)
+          .addReg(RegMisAlign);
+      BuildMI(MBB, MBBI, DL, TII.get(Xtensa::ADD), SP)
+          .addReg(SP)
+          .addReg(RegMisAlign, RegState::Kill);
+    }
 
-      unsigned CFIIndex = MF.addFrameInst(MCCFIInstruction::createOffset(
-          nullptr, MRI->getDwarfRegNum(Reg, 1), Offset));
+    // Store FP register in A8, because FP may be used to pass function
+    // arguments
+    if (XtensaFI->isSaveFrameRegister()) {
+      BuildMI(MBB, MBBI, DL, TII.get(Xtensa::OR), Xtensa::A8)
+          .addReg(FP)
+          .addReg(FP);
+    }
+
+    // if framepointer enabled, set it to point to the stack pointer.
+    if (hasFP(MF)) {
+      // Insert instruction "move $fp, $sp" at this location.
+      BuildMI(MBB, MBBI, DL, TII.get(Xtensa::OR), FP)
+          .addReg(SP)
+          .addReg(SP)
+          .setMIFlag(MachineInstr::FrameSetup);
+
+      MCCFIInstruction Inst = MCCFIInstruction::cfiDefCfa(
+          nullptr, MRI->getDwarfRegNum(FP, true), StackSize);
+      unsigned CFIIndex = MF.addFrameInst(Inst);
+      BuildMI(MBB, MBBI, DL, TII.get(TargetOpcode::CFI_INSTRUCTION))
+          .addCFIIndex(CFIIndex);
+    } else {
+      // emit ".cfi_def_cfa_offset StackSize"
+      unsigned CFIIndex = MF.addFrameInst(
+          MCCFIInstruction::cfiDefCfaOffset(nullptr, StackSize));
       BuildMI(MBB, MBBI, DL, TII.get(TargetOpcode::CFI_INSTRUCTION))
           .addCFIIndex(CFIIndex);
     }
-  }
+  } else {
+    // No need to allocate space on the stack.
+    if (StackSize == 0 && !MFI.adjustsStack())
+      return;
 
-  // if framepointer enabled, set it to point to the stack pointer.
-  if (hasFP(MF)) {
-    // Insert instruction "move $fp, $sp" at this location.
-    BuildMI(MBB, MBBI, DL, TII.get(Xtensa::OR), FP)
-        .addReg(SP)
-        .addReg(SP)
-        .setMIFlag(MachineInstr::FrameSetup);
+    // Adjust stack.
+    TII.adjustStackPtr(SP, -StackSize, MBB, MBBI);
 
-    // emit ".cfi_def_cfa_register $fp"
-    unsigned CFIIndex = MF.addFrameInst(MCCFIInstruction::createDefCfaRegister(
-        nullptr, MRI->getDwarfRegNum(FP, true)));
+    // emit ".cfi_def_cfa_offset StackSize"
+    unsigned CFIIndex =
+        MF.addFrameInst(MCCFIInstruction::cfiDefCfaOffset(nullptr, StackSize));
     BuildMI(MBB, MBBI, DL, TII.get(TargetOpcode::CFI_INSTRUCTION))
         .addCFIIndex(CFIIndex);
+
+    const std::vector<CalleeSavedInfo> &CSI = MFI.getCalleeSavedInfo();
+
+    if (!CSI.empty()) {
+      // Find the instruction past the last instruction that saves a
+      // callee-saved register to the stack. The callee-saved store
+      // instructions are placed at the begin of basic block, so
+      //  iterate over instruction sequence and check that
+      // save instructions are placed correctly.
+      for (unsigned i = 0, e = CSI.size(); i < e; ++i) {
+#ifndef NDEBUG
+        const CalleeSavedInfo &Info = CSI[i];
+        int FI = Info.getFrameIdx();
+        int StoreFI = 0;
+
+        // Checking that the instruction is exactly as expected
+        bool IsStoreInst = false;
+        if (MBBI->getOpcode() == TargetOpcode::COPY && Info.isSpilledToReg()) {
+          Register DstReg = MBBI->getOperand(0).getReg();
+          Register Reg = MBBI->getOperand(1).getReg();
+          IsStoreInst = (Info.getDstReg() == DstReg) && (Info.getReg() == Reg);
+        } else {
+          Register Reg = TII.isStoreToStackSlot(*MBBI, StoreFI);
+          IsStoreInst = (Reg == Info.getReg()) && (StoreFI == FI);
+        }
+        assert(IsStoreInst &&
+               "Unexpected callee-saved register store instruction");
+#endif
+        ++MBBI;
+      }
+
+      // Iterate over list of callee-saved registers and emit .cfi_offset
+      // directives.
+      for (const auto &I : CSI) {
+        int64_t Offset = MFI.getObjectOffset(I.getFrameIdx());
+        Register Reg = I.getReg();
+
+        unsigned CFIIndex = MF.addFrameInst(MCCFIInstruction::createOffset(
+            nullptr, MRI->getDwarfRegNum(Reg, 1), Offset));
+        BuildMI(MBB, MBBI, DL, TII.get(TargetOpcode::CFI_INSTRUCTION))
+            .addCFIIndex(CFIIndex);
+      }
+    }
+
+    // if framepointer enabled, set it to point to the stack pointer.
+    if (hasFP(MF)) {
+      // Insert instruction "move $fp, $sp" at this location.
+      BuildMI(MBB, MBBI, DL, TII.get(Xtensa::OR), FP)
+          .addReg(SP)
+          .addReg(SP)
+          .setMIFlag(MachineInstr::FrameSetup);
+
+      // emit ".cfi_def_cfa_register $fp"
+      unsigned CFIIndex =
+          MF.addFrameInst(MCCFIInstruction::createDefCfaRegister(
+              nullptr, MRI->getDwarfRegNum(FP, true)));
+      BuildMI(MBB, MBBI, DL, TII.get(TargetOpcode::CFI_INSTRUCTION))
+          .addCFIIndex(CFIIndex);
+    }
   }
 
   if (StackSize != PrevStackSize) {
@@ -139,6 +228,8 @@ void XtensaFrameLowering::emitEpilogue(MachineFunction &MF,
                                        MachineBasicBlock &MBB) const {
   MachineBasicBlock::iterator MBBI = MBB.getLastNonDebugInstr();
   MachineFrameInfo &MFI = MF.getFrameInfo();
+
+  const XtensaSubtarget &STI = MF.getSubtarget<XtensaSubtarget>();
   DebugLoc DL = MBBI->getDebugLoc();
   MCRegister SP = Xtensa::SP;
   MCRegister FP = TRI->getFrameRegister(MF);
@@ -177,8 +268,21 @@ void XtensaFrameLowering::emitEpilogue(MachineFunction &MF,
 #endif
     }
 
-    BuildMI(MBB, I, DL, TII.get(Xtensa::OR), SP).addReg(FP).addReg(FP);
+    if (STI.isWinABI()) {
+      // In most architectures, we need to explicitly restore the stack pointer
+      // before returning.
+      //
+      // For Xtensa Windowed Register option, it is not needed to explicitly
+      // restore the stack pointer. Reason being is that on function return,
+      // the window of the caller (including the old stack pointer) gets
+      // restored anyways.
+    } else {
+      BuildMI(MBB, I, DL, TII.get(Xtensa::OR), SP).addReg(FP).addReg(FP);
+    }
   }
+
+  if (STI.isWinABI())
+    return;
 
   // Get the number of bytes from FrameInfo
   uint64_t StackSize = MFI.getStackSize();
@@ -194,6 +298,11 @@ bool XtensaFrameLowering::spillCalleeSavedRegisters(
     MachineBasicBlock &MBB, MachineBasicBlock::iterator MI,
     ArrayRef<CalleeSavedInfo> CSI, const TargetRegisterInfo *TRI) const {
   MachineFunction *MF = MBB.getParent();
+  const XtensaSubtarget &STI = MF->getSubtarget<XtensaSubtarget>();
+
+  if (STI.isWinABI())
+    return true;
+
   MachineBasicBlock &EntryBlock = *(MF->begin());
 
   for (unsigned i = 0, e = CSI.size(); i != e; ++i) {
@@ -221,6 +330,10 @@ bool XtensaFrameLowering::spillCalleeSavedRegisters(
 bool XtensaFrameLowering::restoreCalleeSavedRegisters(
     MachineBasicBlock &MBB, MachineBasicBlock::iterator MI,
     MutableArrayRef<CalleeSavedInfo> CSI, const TargetRegisterInfo *TRI) const {
+  MachineFunction *MF = MBB.getParent();
+  const XtensaSubtarget &STI = MF->getSubtarget<XtensaSubtarget>();
+  if (STI.isWinABI())
+    return true;
   return TargetFrameLowering::restoreCalleeSavedRegisters(MBB, MI, CSI, TRI);
 }
 
@@ -246,7 +359,12 @@ MachineBasicBlock::iterator XtensaFrameLowering::eliminateCallFramePseudoInstr(
 void XtensaFrameLowering::determineCalleeSaves(MachineFunction &MF,
                                                BitVector &SavedRegs,
                                                RegScavenger *RS) const {
+  const XtensaSubtarget &STI = MF.getSubtarget<XtensaSubtarget>();
   unsigned FP = TRI->getFrameRegister(MF);
+
+  if (STI.isWinABI()) {
+    return;
+  }
 
   TargetFrameLowering::determineCalleeSaves(MF, SavedRegs, RS);
 
@@ -257,17 +375,35 @@ void XtensaFrameLowering::determineCalleeSaves(MachineFunction &MF,
 
 void XtensaFrameLowering::processFunctionBeforeFrameFinalized(
     MachineFunction &MF, RegScavenger *RS) const {
-  // Set scavenging frame index if necessary.
-  MachineFrameInfo &MFI = MF.getFrameInfo();
-  uint64_t MaxSPOffset = MFI.estimateStackSize(MF);
+  const XtensaSubtarget &STI = MF.getSubtarget<XtensaSubtarget>();
 
-  if (isInt<12>(MaxSPOffset))
-    return;
+  // Presence of SPILL_* pseudo-instructions requires spill slots
+  int NeedRegs = 0;
+  for (const MachineBasicBlock &MBB : MF) {
+    for (const MachineInstr &MI : MBB) {
+      unsigned Opcode = MI.getOpcode();
+      if (Opcode == Xtensa::SPILL_BOOL)
+        NeedRegs += 1;
 
-  const TargetRegisterClass &RC = Xtensa::ARRegClass;
-  unsigned Size = TRI->getSpillSize(RC);
-  Align Alignment = TRI->getSpillAlign(RC);
-  int FI = MF.getFrameInfo().CreateStackObject(Size, Alignment, false);
+      if (Opcode == Xtensa::RESTORE_BOOL)
+        NeedRegs += 3;
+    }
+  }
+  NeedRegs = std::min(16, NeedRegs);
 
-  RS->addScavengingFrameIndex(FI);
+  // In WinABI mode add register scavenging slot
+  // FIXME: It may be posssible to add spill slot by more optimal way
+  if (STI.isWinABI() &&
+      ((MF.getFrameInfo().estimateStackSize(MF) > STACK_SIZE_THRESHOLD) ||
+      (NeedRegs > 0))) {
+    MachineFrameInfo &MFI = MF.getFrameInfo();
+    const TargetRegisterClass &RC = Xtensa::ARRegClass;
+    const TargetRegisterInfo &TRI = *MF.getSubtarget().getRegisterInfo();
+    unsigned Size = TRI.getSpillSize(RC);
+    Align Alignment = TRI.getSpillAlign(RC);
+    // If NeedsRegs == 0, we still need a spill slot
+    for (int i = 0; i <= NeedRegs; i++)
+      RS->addScavengingFrameIndex(
+          MFI.CreateStackObject(Size, Alignment, false));
+  }
 }

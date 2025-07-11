@@ -1,4 +1,4 @@
-; RUN: llc -mtriple=xtensa -O1 -verify-machineinstrs < %s \
+; RUN: llc -mtriple=xtensa --mcpu=generic -O1 -verify-machineinstrs < %s \
 ; RUN:   | FileCheck %s -check-prefix=XTENSA
 
 ; Check placement of first 6 arguments in registers and 7th argument on stack

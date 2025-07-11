@@ -323,6 +323,7 @@ def : SysReg<"tselect", 0x7A0>;
 def : SysReg<"tdata1", 0x7A1>;
 def : SysReg<"tdata2", 0x7A2>;
 def : SysReg<"tdata3", 0x7A3>;
+def : SysReg<"tcontrol", 0x7A5>;
 def : SysReg<"mcontext", 0x7A8>;
 
 //===----------------------------------------------------------------------===//
@@ -336,6 +337,22 @@ def : SysReg<"dpc", 0x7B1>;
 let AltName = "dscratch" in
 def : SysReg<"dscratch0", 0x7B2>;
 def : SysReg<"dscratch1", 0x7B3>;
+
+//===----------------------------------------------------------------------===//
+// User Trap Setup
+//===----------------------------------------------------------------------===//
+def : SysReg<"ustatus", 0x000>;
+def : SysReg<"uie", 0x004>;
+def : SysReg<"utvec", 0x005>;
+
+//===----------------------------------------------------------------------===//
+// User Trap Handling
+//===----------------------------------------------------------------------===//
+def : SysReg<"uscratch", 0x040>;
+def : SysReg<"uepc", 0x041>;
+def : SysReg<"ucause", 0x042>;
+def : SysReg<"utval", 0x043>;
+def : SysReg<"uip", 0x044>;
 
 //===----------------------------------------------------------------------===//
 // User Vector CSRs

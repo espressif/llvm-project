@@ -1,0 +1,40 @@
+name: Clang Tests
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+  push:
+    ignore-forks: true
+    branches:
+      - '**_release_**'
+    paths:
+      - 'clang/**'
+      - '.github/workflows/esp-clang-tests.yml'
+      - '.github/workflows/llvm-project-tests.yml'
+      - '!llvm/**'
+  pull_request:
+    ignore-forks: true
+    branches:
+      - '**_release_**'
+    paths:
+      - 'clang/**'
+      - '.github/workflows/esp-clang-tests.yml'
+      - '.github/workflows/llvm-project-tests.yml'
+      - '!llvm/**'
+
+concurrency:
+  # Skip intermediate builds: always.
+  # Cancel intermediate builds: only if it is a pull request build.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+
+jobs:
+  check_clang:
+    if: github.repository_owner == 'espressif'
+    name: Test clang
+    uses: ./.github/workflows/llvm-project-tests.yml
+    with:
+      build_target: check-clang
+      projects: clang

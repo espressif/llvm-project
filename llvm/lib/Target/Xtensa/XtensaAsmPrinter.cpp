@@ -12,6 +12,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "XtensaAsmPrinter.h"
+#include "MCTargetDesc/XtensaInstPrinter.h"
 #include "MCTargetDesc/XtensaMCExpr.h"
 #include "MCTargetDesc/XtensaTargetStreamer.h"
 #include "TargetInfo/XtensaTargetInfo.h"
@@ -44,12 +45,46 @@ getModifierVariantKind(XtensaCP::XtensaCPModifier Modifier) {
 
 void XtensaAsmPrinter::emitInstruction(const MachineInstr *MI) {
   unsigned Opc = MI->getOpcode();
+  const MachineConstantPool *MCP = MF->getConstantPool();
+
+  // If we just ended a constant pool, mark it as such.
+  if (InConstantPool && Opc != Xtensa::CONSTPOOL_ENTRY) {
+    OutStreamer->emitDataRegion(MCDR_DataRegionEnd);
+    InConstantPool = false;
+  }
+
+  if (Opc == Xtensa::CONSTPOOL_ENTRY) {
+    // CONSTPOOL_ENTRY - This instruction represents a floating
+    // constant pool in the function.  The first operand is the ID#
+    // for this instruction, the second is the index into the
+    // MachineConstantPool that this is, the third is the size in
+    // bytes of this constant pool entry.
+    // The required alignment is specified on the basic block holding this MI.
+    //
+    unsigned LabelId = (unsigned)MI->getOperand(0).getImm();
+    unsigned CPIdx = (unsigned)MI->getOperand(1).getIndex();
+
+    // If this is the first entry of the pool, mark it.
+    if (!InConstantPool) {
+      if (OutStreamer->hasRawTextSupport()) {
+        OutStreamer->emitRawText(StringRef("\t.literal_position\n"));
+      }
+      OutStreamer->emitDataRegion(MCDR_DataRegion);
+      InConstantPool = true;
+    }
+    const MachineConstantPoolEntry &MCPE = MCP->getConstants()[CPIdx];
+
+    emitMachineConstantPoolEntry(MCPE, LabelId);
+    return;
+  }
 
   switch (Opc) {
   case Xtensa::BR_JT:
     EmitToStreamer(
         *OutStreamer,
         MCInstBuilder(Xtensa::JX).addReg(MI->getOperand(0).getReg()));
+    return;
+  case Xtensa::LOOPEND:
     return;
   default:
     MCInst LoweredMI;
@@ -136,6 +171,10 @@ void XtensaAsmPrinter::emitMachineConstantPoolEntry(
 // used to print out constants which have been "spilled to memory" by
 // the code generator.
 void XtensaAsmPrinter::emitConstantPool() {
+  auto *ST = &MF->getSubtarget<XtensaSubtarget>();
+  if (ST->useTextSectionLiterals())
+    return;
+
   const Function &F = MF->getFunction();
   const MachineConstantPool *MCP = MF->getConstantPool();
   const std::vector<MachineConstantPoolEntry> &CP = MCP->getConstants();
@@ -147,6 +186,7 @@ void XtensaAsmPrinter::emitConstantPool() {
   auto *TS =
       static_cast<XtensaTargetStreamer *>(OutStreamer->getTargetStreamer());
   MCSection *CS = getObjFileLowering().SectionForGlobal(&F, TM);
+ // TS->setTextSectionLiterals();
   TS->startLiteralSection(CS);
 
   int CPIdx = 0;
@@ -155,6 +195,64 @@ void XtensaAsmPrinter::emitConstantPool() {
   }
 
   OutStreamer->popSection();
+}
+
+void XtensaAsmPrinter::printOperand(const MachineInstr *MI, int OpNo,
+                                    raw_ostream &O) {
+  const MachineOperand &MO = MI->getOperand(OpNo);
+
+  switch (MO.getType()) {
+  case MachineOperand::MO_Register:
+  case MachineOperand::MO_Immediate: {
+    MCOperand MC(lowerOperand(MI->getOperand(OpNo)));
+    XtensaInstPrinter::printOperand(MC, O);
+    break;
+  }
+  case MachineOperand::MO_GlobalAddress:
+    O << *getSymbol(MO.getGlobal());
+    break;
+  default:
+    llvm_unreachable("<unknown operand type>");
+  }
+
+  if (MO.getTargetFlags()) {
+    O << ")";
+  }
+}
+
+bool XtensaAsmPrinter::PrintAsmOperand(const MachineInstr *MI, unsigned OpNo,
+                                       const char *ExtraCode, raw_ostream &O) {
+  if (ExtraCode && *ExtraCode == 'n') {
+    if (!MI->getOperand(OpNo).isImm())
+      return true;
+    O << -int64_t(MI->getOperand(OpNo).getImm());
+  } else {
+    printOperand(MI, OpNo, O);
+  }
+  return false;
+}
+
+bool XtensaAsmPrinter::PrintAsmMemoryOperand(const MachineInstr *MI,
+                                             unsigned OpNo,
+                                             const char *ExtraCode,
+                                             raw_ostream &OS) {
+  if (ExtraCode && ExtraCode[0])
+    return true; // Unknown modifier.
+
+  assert(OpNo + 1 < MI->getNumOperands() && "Insufficient operands");
+
+  const MachineOperand &Base = MI->getOperand(OpNo);
+  const MachineOperand &Offset = MI->getOperand(OpNo + 1);
+
+  assert(Base.isReg() &&
+         "Unexpected base pointer for inline asm memory operand.");
+  assert(Offset.isImm() && "Unexpected offset for inline asm memory operand.");
+
+  OS << XtensaInstPrinter::getRegisterName(Base.getReg());
+  OS << ", ";
+  OS << Offset.getImm();
+
+  return false;
 }
 
 MCSymbol *

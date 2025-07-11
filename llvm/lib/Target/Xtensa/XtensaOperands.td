@@ -21,6 +21,26 @@ class Immediate<ValueType vt, code pred, string asmop>
   let ParserMatchClass = !cast<AsmOperandClass>(asmop);
 }
 
+class ImmediateRanged<int Low, int High, int Step, string asmop> :
+  Immediate<i32, 
+  " return Imm >= " # Low # " && Imm <= " # High # " && (Imm % " # Step # " ) == 0;", 
+  asmop> {
+  let PrintMethod = "printImmOperand<" # Low #"," # High # "," # Step # ">";
+  }
+
+class ImmRangedAsmOperand<int Low, int High, int Step,string name> : 
+  ImmAsmOperand<name> { 
+  let PredicateMethod = "isImmInRange<" # Low #"," # High # "," # Step # ">";
+}
+
+multiclass ImmRangeDecl<int Low, int High, int Step> {
+
+  def _AsmOperand : ImmRangedAsmOperand<Low, High, Step, NAME>;
+  def NAME : ImmediateRanged<Low, High, Step, NAME # _AsmOperand>;
+
+}
+
+
 // imm8 predicate - Immediate in the range [-128,127]
 def Imm8_AsmOperand : ImmAsmOperand<"Imm8">;
 def imm8 : Immediate<i32, [{ return Imm >= -128 && Imm <= 127; }], "Imm8_AsmOperand"> {
@@ -35,6 +55,20 @@ def imm8_sh8 : Immediate<i32, [{ return Imm >= -32768 && Imm <= 32512 && ((Imm &
                         "Imm8_sh8_AsmOperand"> {
   let EncoderMethod = "getImm8_sh8OpValue";
   let DecoderMethod = "decodeImm8_sh8Operand";
+}
+
+// imm8n_7 predicate - Immediate in the range [-8,7]
+def Imm8n_7_AsmOperand: ImmAsmOperand<"Imm8n_7">;
+def imm8n_7: Immediate<i32, [{ return Imm >= -8 && Imm <= 7; }], "Imm8n_7_AsmOperand"> {
+  let EncoderMethod = "getImm8n_7OpValue";
+  let DecoderMethod = "decodeImm8n_7Operand";
+}
+
+// imm64n_4n predicate - Immediate in the range [-64,-4]
+def Imm64n_4n_AsmOperand: ImmAsmOperand<"Imm64n_4n">;
+def imm64n_4n: Immediate<i32, [{ return Imm >= -64 && Imm <= -4; }], "Imm64n_4n_AsmOperand"> {
+  let EncoderMethod = "getImm64n_4nOpValue";
+  let DecoderMethod = "decodeImm64n_4nOperand";
 }
 
 // imm12 predicate - Immediate in the range [-2048,2047]
@@ -72,12 +106,41 @@ def imm1_16 : Immediate<i32, [{ return Imm >= 1 && Imm <= 16; }], "Imm1_16_AsmOp
   let DecoderMethod = "decodeImm1_16Operand";
 }
 
+// imm1n_15 predicate - Immediate in the range [-1,15], except 0
+def Imm1n_15_AsmOperand: ImmAsmOperand<"Imm1n_15">;
+def imm1n_15: Immediate<i32, [{ return Imm >= -1 && Imm <= 15 && Imm != 0; }], "Imm1n_15_AsmOperand"> {
+  let EncoderMethod = "getImm1n_15OpValue";
+  let DecoderMethod = "decodeImm1n_15Operand";
+}
+
+// imm32n_95 predicate - Immediate in the range [-32,95]
+def Imm32n_95_AsmOperand: ImmAsmOperand<"Imm32n_95">;
+def imm32n_95: Immediate<i32, [{ return Imm >= -32 && Imm <= 95; }], "Imm32n_95_AsmOperand"> {
+  let EncoderMethod = "getImm32n_95OpValue";
+  let DecoderMethod = "decodeImm32n_95Operand";
+}
+
 // shimm1_31 predicate - Immediate in the range [1,31]
 def Shimm1_31_AsmOperand : ImmAsmOperand<"Shimm1_31">;
 def shimm1_31 : Immediate<i32, [{ return Imm >= 1 && Imm <= 31; }], "Shimm1_31_AsmOperand"> {
   let EncoderMethod = "getShimm1_31OpValue";
   let DecoderMethod = "decodeShimm1_31Operand";
 }
+
+// shimm0_31 predicate - Immediate in the range [0,31]
+def Shimm0_31_AsmOperand : ImmAsmOperand<"Shimm0_31">;
+def shimm0_31 : Immediate<i32, [{ return Imm >= 0 && Imm <= 31; }], "Shimm0_31_AsmOperand"> {
+  let EncoderMethod = "getShimm0_31OpValue";
+  let DecoderMethod = "decodeShimm1_31Operand";
+}
+
+defm imm32n_28: ImmRangeDecl<-32, 28, 4>;
+defm imm64n_56: ImmRangeDecl<-64, 56, 8>;
+defm imm0_56: ImmRangeDecl<0, 56, 8>;
+defm imm16n_14: ImmRangeDecl<-16, 14, 2>;
+defm imm16n_47: ImmRangeDecl<-16, 47, 1>;
+defm uimm2: ImmRangeDecl<0, 3, 1>;
+defm uimm6: ImmRangeDecl<0, 63, 1>;
 
 // Memory offset 0..255 for 8-bit memory accesses
 def Offset8m8_AsmOperand : ImmAsmOperand<"Offset8m8">;
@@ -95,13 +158,23 @@ def offset8m16 : Immediate<i32,
 def Offset8m32_AsmOperand : ImmAsmOperand<"Offset8m32">;
 def offset8m32 : Immediate<i32,
     [{ return Imm >= 0 && Imm <= 1020 && (Imm & 0x3 == 0); }],
-    "Offset8m32_AsmOperand">;
+    "Offset8m32_AsmOperand"> {
+  let EncoderMethod = "getOffset8m32OpValue";
+  let DecoderMethod = "decodeOffset8m32Operand";
+}
 
 // Memory offset 0..60 for 32-bit memory accesses
 def Offset4m32_AsmOperand : ImmAsmOperand<"Offset4m32">;
 def offset4m32 : Immediate<i32,
     [{ return Imm >= 0 && Imm <= 60 && (Imm & 0x3 == 0); }],
     "Offset4m32_AsmOperand">;
+
+// entry_imm12 predicate - Immediate in the range [0,32760], ENTRY parameter
+def Entry_Imm12_AsmOperand: ImmAsmOperand<"entry_imm12">;
+def entry_imm12: Immediate<i32, [{ return Imm >= 0 && Imm <= 32760 && (Imm & 0x3 == 0); }], "Entry_Imm12_AsmOperand"> {
+  let EncoderMethod = "getEntry_Imm12OpValue";
+  let DecoderMethod = "decodeEntry_Imm12OpValue";
+}
 
 // b4const predicate - Branch Immediate 4-bit signed operand
 def B4const_AsmOperand: ImmAsmOperand<"B4const">;
@@ -132,6 +205,104 @@ def b4constu: Immediate<i32,
   let EncoderMethod = "getB4constuOpValue";
   let DecoderMethod = "decodeB4constuOperand";
 }
+
+// imm7_22 predicate - Immediate in the range [7,22] for sign extend and clamps
+def Imm7_22_AsmOperand: ImmAsmOperand<"imm7_22">;
+def imm7_22: Immediate<i32, [{ return Imm >= 7 && Imm <= 22; }], "Imm7_22_AsmOperand"> {
+  let EncoderMethod = "getImm7_22OpValue";
+  let DecoderMethod = "decodeImm7_22Operand";
+}
+
+// select_256 predicate - Immediate in the range [0,255]
+def Select_256_AsmOperand: ImmAsmOperand<"Select_256">;
+def select_256: Immediate<i32, [{ return Imm >= 0 && Imm <= 255; }], "Select_256_AsmOperand"> {
+  let EncoderMethod = "getSelect_256OpValue";
+  let DecoderMethod = "decodeSelect_256Operand";
+}
+
+// select_2 predicate - Immediate in the range [0,1]
+def Select_2_AsmOperand: ImmAsmOperand<"Select_2">;
+def select_2: Immediate<i32, [{ return Imm >= 0 && Imm <= 1; }], "Select_2_AsmOperand"> {
+  let EncoderMethod = "getSelect_2OpValue";
+  let DecoderMethod = "decodeSelect_2Operand";
+}
+
+// select_4 predicate - Immediate in the range [0,3]
+def Select_4_AsmOperand: ImmAsmOperand<"Select_4">;
+def select_4: Immediate<i32, [{ return Imm >= 0 && Imm <= 3; }], "Select_4_AsmOperand"> {
+  let EncoderMethod = "getSelect_4OpValue";
+  let DecoderMethod = "decodeSelect_4Operand";
+}
+
+// select_8 predicate - Immediate in the range [0,7]
+def Select_8_AsmOperand: ImmAsmOperand<"Select_8">;
+def select_8: Immediate<i32, [{ return Imm >= 0 && Imm <= 7; }], "Select_8_AsmOperand"> {
+  let EncoderMethod = "getSelect_8OpValue";
+  let DecoderMethod = "decodeSelect_8Operand";
+}
+
+// select_16 predicate - Immediate in the range [0,15]
+def Select_16_AsmOperand: ImmAsmOperand<"Select_16">;
+def select_16: Immediate<i32, [{ return Imm >= 0 && Imm <= 15; }], "Select_16_AsmOperand"> {
+  let EncoderMethod = "getSelect_16OpValue";
+  let DecoderMethod = "decodeSelect_16Operand";
+}
+/// --------------------------- ///
+// offset_16_16 predicate - 4-bit signed immediate in the range [-128,112] with an interval
+// of 16.
+def Offset_16_16_AsmOperand: ImmAsmOperand<"Offset_16_16">;
+def offset_16_16: Immediate<i32, [{ return (Imm >= -128 && Imm <= 112) && (Imm & 0xf == 0); }], "Offset_16_16_AsmOperand"> {
+  let EncoderMethod = "getOffset_16_16OpValue";
+  let DecoderMethod = "decodeOffset_16_16Operand";
+}
+
+// offset_256_8 predicate - 4-bit signed immediate in the range [-1024,1016] with an interval
+// of 8.
+def Offset_256_8_AsmOperand: ImmAsmOperand<"Offset_256_8">;
+def offset_256_8: Immediate<i32, [{ return (Imm >= -1024 && Imm <= 1016) && (Imm & 0x7 == 0); }], "Offset_256_8_AsmOperand"> {
+  let EncoderMethod = "getOffset_256_8OpValue";
+  let DecoderMethod = "decodeOffset_256_8Operand";
+}
+
+// offset_256_16 predicate - 8-bit signed immediate in the range [-2048,2032] with an interval
+// of 16.
+def Offset_256_16_AsmOperand: ImmAsmOperand<"Offset_256_16">;
+def offset_256_16: Immediate<i32, [{ return (Imm >= -2048 && Imm <= 2032) && (Imm & 0xf == 0); }], "Offset_256_16_AsmOperand"> {
+  let EncoderMethod = "getOffset_256_16OpValue";
+  let DecoderMethod = "decodeOffset_256_16Operand";
+}
+
+// offset_256_4 predicate - 4-bit signed immediate in the range [-512,508] with an interval
+// of 4.
+def Offset_256_4_AsmOperand: ImmAsmOperand<"Offset_256_4">;
+def offset_256_4: Immediate<i32, [{ return (Imm >= -512 && Imm <= 508) && (Imm & 0x3 == 0); }], "Offset_256_4_AsmOperand"> {
+  let EncoderMethod = "getOffset_256_4OpValue";
+  let DecoderMethod = "decodeOffset_256_4Operand";
+}
+
+// offset_128_2 predicate - 4-bit signed immediate in the range [0,254] with an interval
+// of 2.
+def Offset_128_2_AsmOperand: ImmAsmOperand<"Offset_128_2">;
+def offset_128_2: Immediate<i32, [{ return (Imm >= 0 && Imm <= 254) && (Imm & 0x1 == 0); }], "Offset_128_2_AsmOperand"> {
+  let EncoderMethod = "getOffset_128_2OpValue";
+  let DecoderMethod = "decodeOffset_128_2Operand";
+}
+
+// offset_128_1 predicate - 4-bit signed immediate in the range [0,127]
+def Offset_128_1_AsmOperand: ImmAsmOperand<"Offset_128_1">;
+def offset_128_1: Immediate<i32, [{ return Imm >= 0 && Imm <= 127; }], "Offset_128_1_AsmOperand"> {
+  let EncoderMethod = "getOffset_128_1OpValue";
+  let DecoderMethod = "decodeOffset_128_1Operand";
+}
+
+// offset_64_16 predicate - 4-bit signed immediate in the range [-512,496] with an interval
+// of 16.
+def Offset_64_16_AsmOperand: ImmAsmOperand<"Offset_64_16">;
+def offset_64_16: Immediate<i32, [{ return (Imm >= -512 && Imm <= 496) && (Imm & 0xf == 0); }], "Offset_64_16_AsmOperand"> {
+  let EncoderMethod = "getOffset_64_16OpValue";
+  let DecoderMethod = "decodeOffset_64_16Operand";
+}
+
 //===----------------------------------------------------------------------===//
 // Memory address operands
 //===----------------------------------------------------------------------===//
@@ -195,7 +366,14 @@ def jumptarget : Operand<OtherVT> {
   let ParserMatchClass = XtensaPCRelTargetAsmOperand;
 }
 
-def L32Rtarget : Operand<i32> {
+def ltarget : Operand<OtherVT> {
+  let PrintMethod = "printLoopTarget";
+  let EncoderMethod = "getLoopTargetEncoding";
+  let DecoderMethod = "decodeLoopOperand";
+  let ParserMatchClass = XtensaPCRelTargetAsmOperand;
+}
+
+def L32Rtarget: Operand<i32> {
   let PrintMethod = "printL32RTarget";
   let EncoderMethod = "getL32RTargetEncoding";
   let DecoderMethod = "decodeL32ROperand";

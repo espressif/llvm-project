@@ -502,6 +502,7 @@ def llvm_aarch64_svcount_ty : LLVMType<aarch64svcount>;
 
 def llvm_x86amx_ty     : LLVMType<x86amx>;
 
+def llvm_v1i1_ty       : LLVMType<v1i1>;     //   1 x i1
 def llvm_v2i1_ty       : LLVMType<v2i1>;     //   2 x i1
 def llvm_v4i1_ty       : LLVMType<v4i1>;     //   4 x i1
 def llvm_v8i1_ty       : LLVMType<v8i1>;     //   8 x i1
@@ -2764,5 +2765,6 @@ include "llvm/IR/IntrinsicsSPIRV.td"
 include "llvm/IR/IntrinsicsVE.td"
 include "llvm/IR/IntrinsicsDirectX.td"
 include "llvm/IR/IntrinsicsLoongArch.td"
+include "llvm/IR/IntrinsicsXtensa.td"
 
 #endif // TEST_INTRINSICS_SUPPRESS_DEFS

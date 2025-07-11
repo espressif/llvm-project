@@ -17,6 +17,8 @@ namespace llvm {
 class formatted_raw_ostream;
 
 class XtensaTargetStreamer : public MCTargetStreamer {
+  StringRef LiteralSectionPrefix = "";
+  bool TextSectionLiterals = false;
 public:
   XtensaTargetStreamer(MCStreamer &S);
 
@@ -24,13 +26,21 @@ public:
   // section is not switched yet (SwitchLiteralSection is true) then switch to
   // literal section.
   virtual void emitLiteral(MCSymbol *LblSym, const MCExpr *Value,
-                           bool SwitchLiteralSection, SMLoc L = SMLoc()) = 0;
+                           bool SwitchLiteralSection, SMLoc L = SMLoc()) {};
 
-  virtual void emitLiteralPosition() = 0;
+  virtual void emitLiteralPosition() {};
 
   // Switch to the literal section. The BaseSection name is used to construct
   // literal section name.
-  virtual void startLiteralSection(MCSection *BaseSection) = 0;
+  virtual void startLiteralSection(MCSection *BaseSection) {};
+
+  void setLiteralSectionPrefix(StringRef Name) { LiteralSectionPrefix = Name; }
+
+  StringRef getLiteralSectionPrefix() { return LiteralSectionPrefix; }
+
+  void setTextSectionLiterals() { TextSectionLiterals = true; }
+
+  bool getTextSectionLiterals() { return TextSectionLiterals; }
 };
 
 class XtensaTargetAsmStreamer : public XtensaTargetStreamer {
@@ -50,7 +60,6 @@ public:
   MCELFStreamer &getStreamer();
   void emitLiteral(MCSymbol *LblSym, const MCExpr *Value,
                    bool SwitchLiteralSection, SMLoc L) override;
-  void emitLiteralPosition() override {}
   void startLiteralSection(MCSection *Section) override;
 };
 } // end namespace llvm

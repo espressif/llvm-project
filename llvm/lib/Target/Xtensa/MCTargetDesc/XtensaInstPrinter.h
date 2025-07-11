@@ -16,7 +16,9 @@
 #define LLVM_LIB_TARGET_XTENSA_MCTARGETDESC_XTENSAINSTPRINTER_H
 
 #include "llvm/MC/MCInstPrinter.h"
+#include "llvm/MC/MCInst.h"
 #include "llvm/Support/Compiler.h"
+#include "llvm/Support/raw_ostream.h"
 
 namespace llvm {
 class MCOperand;
@@ -45,6 +47,7 @@ private:
   void printOperand(const MCInst *MI, int OpNum, raw_ostream &O);
   void printMemOperand(const MCInst *MI, int OpNUm, raw_ostream &O);
   void printBranchTarget(const MCInst *MI, int OpNum, raw_ostream &O);
+  void printLoopTarget(const MCInst *MI, int OpNum, raw_ostream &O);
   void printJumpTarget(const MCInst *MI, int OpNum, raw_ostream &O);
   void printCallOperand(const MCInst *MI, int OpNum, raw_ostream &O);
   void printL32RTarget(const MCInst *MI, int OpNum, raw_ostream &O);
@@ -56,13 +59,44 @@ private:
   void printUimm4_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
   void printUimm5_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
   void printShimm1_31_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
+  void printShimm0_31_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
   void printImm1_16_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
+  void printImm1n_15_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
+  void printImm32n_95_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
+  void printImm8n_7_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
+  void printImm64n_4n_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
   void printOffset8m8_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
   void printOffset8m16_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
   void printOffset8m32_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
   void printOffset4m32_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
+  void printEntry_Imm12_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
   void printB4const_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
   void printB4constu_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
+  void printImm7_22_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
+  void printSelect_2_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
+  void printSelect_4_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
+  void printSelect_8_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
+  void printSelect_16_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
+  void printSelect_256_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
+  void printOffset_16_16_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
+  void printOffset_256_8_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
+  void printOffset_256_16_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
+  void printOffset_256_4_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
+  void printOffset_128_2_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
+  void printOffset_128_1_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
+  void printOffset_64_16_AsmOperand(const MCInst *MI, int OpNum, raw_ostream &O);
+
+  template <int lo, int hi, int step>
+  void printImmOperand(const MCInst *MI, int OpNum, raw_ostream &O) {
+    if (MI->getOperand(OpNum).isImm()) {
+      int64_t Value = MI->getOperand(OpNum).getImm();
+      assert((Value >= lo && Value <= hi && ((Value % step) == 0)) &&
+             "Invalid argument");
+      O << Value;
+    } else {
+      printOperand(MI, OpNum, O);
+    }
+  }
 };
 } // end namespace llvm
 
