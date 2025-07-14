@@ -14,6 +14,7 @@
 #include "MCTargetDesc/RISCVBaseInfo.h"
 #include "RISCV.h"
 #include "RISCVCustomLICM.h"
+#include "RISCVEsp32P4MemIntrin.h"
 #include "RISCVLoopUnrollAndRemainder.h"
 #include "RISCVMachineFunctionInfo.h"
 #include "RISCVSplitLoopByLength.h"
@@ -102,7 +103,8 @@ static cl::opt<bool> EnableMISchedLoadStoreClustering(
 
 static cl::opt<bool> EnablePostMISchedLoadStoreClustering(
     "riscv-postmisched-load-store-clustering", cl::Hidden,
-    cl::desc("Enable PostRA load and store clustering in the machine scheduler"),
+    cl::desc(
+        "Enable PostRA load and store clustering in the machine scheduler"),
     cl::init(true));
 
 static cl::opt<bool>
@@ -399,7 +401,7 @@ public:
 
     return DAG;
   }
-  
+
   void addIRPasses() override;
   bool addPreISel() override;
   void addCodeGenPrepare() override;
@@ -626,7 +628,6 @@ void RISCVPassConfig::addFastRegAlloc() {
   TargetPassConfig::addFastRegAlloc();
 }
 
-
 void RISCVPassConfig::addPostRegAlloc() {
   if (TM->getOptLevel() != CodeGenOptLevel::None &&
       EnableRedundantCopyElimination)
@@ -654,22 +655,34 @@ void RISCVTargetMachine::registerPassBuilderCallbacks(PassBuilder &PB) {
           FPM.addPass(RISCVLoopUnrollAndRemainderPass());
           return true;
         }
+        if (Name == "riscv-esp32-p4-mem-intrin") {
+          FPM.addPass(RISCVEsp32P4MemIntrinPass());
+          return true;
+        }
         return false;
       });
 
-  PB.registerOptimizerLastEPCallback(
-      [](ModulePassManager &PM, OptimizationLevel Level, ThinOrFullLTOPhase) {
-        if(EnableEsp32P4Optimize && (Level == OptimizationLevel::O3 || Level == OptimizationLevel::O2)){
-          EnableRISCVSplitLoopByLength = true;
-          EnableRISCVCustomLICM = true;
-          EnableRISCVLoopUnrollAndRemainder = true;
-          FunctionPassManager FPM;
-          FPM.addPass(RISCVSplitLoopByLengthPass());
-          FPM.addPass(RISCVCustomLICMPass());
-          FPM.addPass(RISCVLoopUnrollAndRemainderPass());
-          PM.addPass(createModuleToFunctionPassAdaptor(std::move(FPM)));
-        }
-      });
+  PB.registerOptimizerLastEPCallback([](ModulePassManager &PM,
+                                        OptimizationLevel Level,
+                                        ThinOrFullLTOPhase Phase) {
+    if (EnableEsp32P4Optimize &&
+        (Level == OptimizationLevel::O3 || Level == OptimizationLevel::O2)) {
+      EnableRISCVSplitLoopByLength = true;
+      EnableRISCVCustomLICM = true;
+      EnableRISCVLoopUnrollAndRemainder = true;
+      FunctionPassManager FPM;
+      FPM.addPass(RISCVSplitLoopByLengthPass());
+      FPM.addPass(RISCVCustomLICMPass());
+      FPM.addPass(RISCVLoopUnrollAndRemainderPass());
+      PM.addPass(createModuleToFunctionPassAdaptor(std::move(FPM)));
+    }
+    if (EnableRISCVEsp32P4MemIntrin &&
+        (Level == OptimizationLevel::O3 || Level == OptimizationLevel::O2)) {
+      FunctionPassManager FPM;
+      FPM.addPass(RISCVEsp32P4MemIntrinPass());
+      PM.addPass(createModuleToFunctionPassAdaptor(std::move(FPM)));
+    }
+  });
 }
 
 yaml::MachineFunctionInfo *
