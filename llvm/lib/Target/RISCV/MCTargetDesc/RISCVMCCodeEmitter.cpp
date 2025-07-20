@@ -135,6 +135,10 @@ public:
   int16_t getOffset_256_8OpValue(const MCInst &MI, unsigned OpNo,
                                  SmallVectorImpl<MCFixup> &Fixups,
                                  const MCSubtargetInfo &STI) const;
+  
+  int16_t getOffset_256_2OpValue(const MCInst &MI, unsigned OpNo,
+                                  SmallVectorImpl<MCFixup> &Fixups,
+                                  const MCSubtargetInfo &STI) const;
 
   int16_t getOffset_256_4OpValue(const MCInst &MI, unsigned OpNo,
                                  SmallVectorImpl<MCFixup> &Fixups,
@@ -727,6 +731,19 @@ RISCVMCCodeEmitter::getOffset_256_16OpValue(const MCInst &MI, unsigned OpNo,
          "Unexpected operand value!");
 
   return Res / 16;
+}
+
+int16_t
+RISCVMCCodeEmitter::getOffset_256_2OpValue(const MCInst &MI, unsigned OpNo,
+                                           SmallVectorImpl<MCFixup> &Fixups,
+                                           const MCSubtargetInfo &STI) const {
+  const MCOperand &MO = MI.getOperand(OpNo);
+  int16_t Res = static_cast<int16_t>(MO.getImm());
+
+  assert(((Res >= -256) && (Res <= 254) && ((Res & 0x1) == 0)) &&
+         "Unexpected operand value!");
+
+  return Res / 2;
 }
 
 int16_t

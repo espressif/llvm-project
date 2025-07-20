@@ -415,6 +415,19 @@ void RISCVInstPrinter::printOffset_256_16_AsmOperand(const MCInst *MI,
   }
 }
 
+void RISCVInstPrinter::printOffset_256_2_AsmOperand(const MCInst *MI, int OpNum,
+  const MCSubtargetInfo &STI,
+  raw_ostream &O) {
+if (MI->getOperand(OpNum).isImm()) {
+int64_t Value = MI->getOperand(OpNum).getImm();
+assert((Value >= -256 && Value <= 254 && (Value & 0x1) == 0) &&
+       "Invalid argument, value must be in range [-256,254], first 1 bits "
+       "should be zero");
+O << Value;
+} else
+printOperand(MI, OpNum, STI, O);
+}
+
 void RISCVInstPrinter::printOffset_256_4_AsmOperand(const MCInst *MI, int OpNum,
                                                     const MCSubtargetInfo &STI,
                                                     raw_ostream &O) {

@@ -516,6 +516,11 @@ public:
            ((cast<MCConstantExpr>(getImm())->getValue() & 0xf) == 0);
   }
 
+  bool isOffset_256_2() const {
+    return isImm(-256, 254) &&
+           ((cast<MCConstantExpr>(getImm())->getValue() & 0x1) == 0);
+  }
+
   bool isOffset_256_4() const {
     return isImm(-512, 508) &&
            ((cast<MCConstantExpr>(getImm())->getValue() & 0x3) == 0);

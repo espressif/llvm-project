@@ -511,6 +511,14 @@ static DecodeStatus decodeOffset_256_16Operand(MCInst &Inst, int64_t Imm,
                                                int64_t Address,
                                                const void *Decoder);
 
+static DecodeStatus decodeImm8Operand(MCInst &Inst, uint64_t Imm,
+                                              int64_t Address,
+                                              const void *Decoder);
+
+static DecodeStatus decodeOffset_256_2Operand(MCInst &Inst, int64_t Imm,
+                                              int64_t Address,
+                                              const void *Decoder);
+
 static DecodeStatus decodeOffset_256_4Operand(MCInst &Inst, int64_t Imm,
                                               int64_t Address,
                                               const void *Decoder);
@@ -701,11 +709,27 @@ static DecodeStatus decodeOffset_256_16Operand(MCInst &Inst, int64_t Imm,
   return MCDisassembler::Success;
 }
 
-static DecodeStatus decodeOffset_256_4Operand(MCInst &Inst, int64_t Imm,
+static DecodeStatus decodeImm8Operand(MCInst &Inst, uint64_t Imm,
+                                      int64_t Address, const void *Decoder) {
+  assert(isUInt<8>(Imm) && "Invalid immediate");
+  Inst.addOperand(MCOperand::createImm(SignExtend64<8>(Imm)));
+  return MCDisassembler::Success;
+}
+
+static DecodeStatus decodeOffset_256_2Operand(MCInst &Inst, int64_t Imm,
                                               int64_t Address,
                                               const void *Decoder) {
   assert(isInt<16>(Imm) && "Invalid immediate");
-  auto ImmSigned = SignExtend64<4>(Imm);
+  auto ImmSigned = SignExtend64<8>(Imm);
+  Inst.addOperand(MCOperand::createImm(ImmSigned * 2));
+  return MCDisassembler::Success;
+}
+
+static DecodeStatus decodeOffset_256_4Operand(MCInst &Inst, int64_t Imm,
+                                              int64_t Address,
+                                              const void *Decoder) {
+  assert(isInt<32>(Imm) && "Invalid immediate");
+  auto ImmSigned = SignExtend64<8>(Imm);
   Inst.addOperand(MCOperand::createImm(ImmSigned * 4));
   return MCDisassembler::Success;
 }

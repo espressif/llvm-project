@@ -91,6 +91,8 @@ public:
   void printOffset_256_16_AsmOperand(const MCInst *MI, int OpNum,
                                      const MCSubtargetInfo &STI,
                                      raw_ostream &O);
+  void printOffset_256_2_AsmOperand(const MCInst *MI, int OpNum,
+                                    const MCSubtargetInfo &STI, raw_ostream &O);
   void printOffset_256_4_AsmOperand(const MCInst *MI, int OpNum,
                                     const MCSubtargetInfo &STI, raw_ostream &O);
 };
