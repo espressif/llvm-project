@@ -29,6 +29,16 @@ beqz.n  a3, LBL1
 # CHECK: encoding: [0xcc'A',0x03'A']
 bnez.n  a3, LBL1
 
+# Instruction format BRI6
+# CHECK-INST:  bnez.n    a5, LBL0
+# CHECK: encoding: [0xcc'A',0x05'A']
+_bnez.n a5, LBL0
+
+# Instruction format BRI6
+# CHECK-INST:  beqz.n    a5, LBL0
+# CHECK: encoding: [0x8c'A',0x05'A']
+_beqz.n a5, LBL0
+
 # Instruction format RRRN
 # CHECK-INST: ill.n
 # CHECK: encoding: [0x6d,0xf0]
