@@ -804,6 +804,9 @@ let isBranch = 1, isTerminator = 1 in {
   }
 }
 
+def : InstAlias<"_beqz.n\t$s, $target", (BEQZ_N AR:$s, brtarget:$target)>, Requires<[HasDensity]>;
+def : InstAlias<"_bnez.n\t$s, $target", (BNEZ_N AR:$s, brtarget:$target)>, Requires<[HasDensity]>;
+
 def ILL_N : RRRN_Inst<0x0D, (outs), (ins),
                      "ill.n", []>, Requires<[HasDensity]> {
   let r = 0xF;
