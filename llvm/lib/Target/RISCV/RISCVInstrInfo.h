@@ -167,6 +167,10 @@ public:
   bool
   reverseBranchCondition(SmallVectorImpl<MachineOperand> &Cond) const override;
 
+  bool isSchedulingBoundary(const MachineInstr &MI,
+                            const MachineBasicBlock *MBB,
+                            const MachineFunction &MF) const override;
+
   bool optimizeCondBranch(MachineInstr &MI) const override;
 
   MachineBasicBlock *getBranchDestBlock(const MachineInstr &MI) const override;
