@@ -255,20 +255,20 @@ void RISCVEsp32P4MemIntrin::processDataBlock(IRBuilder<> &Builder,
   Value *CurrentDst = DstAddr;
 
   // Load loop:每次调用都使用上一次返回的地址
-  for (int j = 0; j < blockSize; j++) {
-    if (j == 0) {
-      CurrentSrc = generateLoadInstructions(Builder, SrcAddr, Type, j);
+  for (int J = 0; J < blockSize; J++) {
+    if (J == 0) {
+      CurrentSrc = generateLoadInstructions(Builder, SrcAddr, Type, J);
     } else {
-      CurrentSrc = generateLoadInstructions(Builder, CurrentSrc, Type, j);
+      CurrentSrc = generateLoadInstructions(Builder, CurrentSrc, Type, J);
     }
   }
 
   // Store loop:每次调用都使用上一次返回的地址
-  for (int j = 0; j < blockSize; j++) {
-    if (j == 0) {
-      CurrentDst = generateStoreInstructions(Builder, DstAddr, Type, j);
+  for (int J = 0; J < blockSize; J++) {
+    if (J == 0) {
+      CurrentDst = generateStoreInstructions(Builder, DstAddr, Type, J);
     } else {
-      CurrentDst = generateStoreInstructions(Builder, CurrentDst, Type, j);
+      CurrentDst = generateStoreInstructions(Builder, CurrentDst, Type, J);
     }
   }
 
@@ -606,7 +606,7 @@ bool RISCVEsp32P4MemIntrinPass::processMemCpyWithAlignment(
 
     } else {
       // Fully expand
-      for (uint64_t i = 0; i < totalBlocks; i++) {
+      for (uint64_t I = 0; I < totalBlocks; I++) {
         processDataBlock(Builder, SrcAddr, DstAddr, Type, 8);
       }
 
@@ -744,23 +744,13 @@ bool RISCVEsp32P4MemIntrinPass::processSrc16Dst16From1To15Const(
 
   // Handle remaining 4 bytes
   if (Len - BytesCopied >= 4) {
-    // Note: No need to calculate Offset here, as CurrentSrc/CurrentDst
-    // already point to the correct position
-    Value *LoadVal = Builder.CreateAlignedLoad(I32Ty, CurrentSrc, Align(4));
-    Builder.CreateAlignedStore(LoadVal, CurrentDst, Align(4));
-    // Update pointers and counter
-    CurrentSrc = Builder.CreateGEP(I8Ty, CurrentSrc, Builder.getInt32(4));
-    CurrentDst = Builder.CreateGEP(I8Ty, CurrentDst, Builder.getInt32(4));
+    handleRemainingBytes(Builder, I32Ty, I8Ty, CurrentSrc, CurrentDst, 4);
     BytesCopied += 4;
   }
 
   // Handle remaining 2 bytes
   if (Len - BytesCopied >= 2) {
-    Value *LoadVal = Builder.CreateAlignedLoad(I16Ty, CurrentSrc, Align(2));
-    Builder.CreateAlignedStore(LoadVal, CurrentDst, Align(2));
-    // Update pointers and counter
-    CurrentSrc = Builder.CreateGEP(I8Ty, CurrentSrc, Builder.getInt32(2));
-    CurrentDst = Builder.CreateGEP(I8Ty, CurrentDst, Builder.getInt32(2));
+    handleRemainingBytes(Builder, I16Ty, I8Ty, CurrentSrc, CurrentDst, 2);
     BytesCopied += 2;
   }
 
@@ -776,11 +766,72 @@ bool RISCVEsp32P4MemIntrinPass::processSrc16Dst16From1To15Const(
   return true;
 }
 
+void RISCVEsp32P4MemIntrinPass::handleRemainingBytes(
+    IRBuilder<> &Builder, Type *I16TimesTy, Type *I8Ty, Value *&CurrentSrc,
+    Value *&CurrentDst, int BytesNum) {
+  Value *LoadVal =
+      Builder.CreateAlignedLoad(I16TimesTy, CurrentSrc, Align(BytesNum));
+  Builder.CreateAlignedStore(LoadVal, CurrentDst, Align(BytesNum));
+  // Update pointers and counter
+  CurrentSrc = Builder.CreateGEP(I8Ty, CurrentSrc, Builder.getInt32(BytesNum));
+  CurrentDst = Builder.CreateGEP(I8Ty, CurrentDst, Builder.getInt32(BytesNum));
+}
+
 // it supports 1-15 bytes
 // src  unalign and dst  unalign
 bool RISCVEsp32P4MemIntrinPass::processFromSrcUnalignDstUnalign1To15Const(
     MemCpyInst *M, BasicBlock::iterator &BBI) {
-  return false;
+  IRBuilder<> Builder(M);
+  Value *OrigSrc = M->getSource(); // Keep original pointers
+  Value *OrigDst = M->getDest();
+  Value *CurrentSrc = OrigSrc; // Pointers to use for copying
+  Value *CurrentDst = OrigDst;
+
+  ConstantInt *LenCI = dyn_cast<ConstantInt>(M->getLength());
+  if (!LenCI)
+    return false;
+  uint64_t Len = LenCI->getZExtValue();
+
+  assert(Len > 0 && Len < 16 && "Len must be between 1 and 15");
+
+  Type *I8Ty = Builder.getInt8Ty();
+  Type *I16Ty = Builder.getInt16Ty();
+  Type *I32Ty = Builder.getInt32Ty();
+  Type *I64Ty = Builder.getInt64Ty();
+  Type *I32PtrTy = Builder.getInt32Ty(); // Type for asm operands
+
+  uint64_t BytesCopied = 0;
+
+  // Handle remaining 8 bytes
+  if (Len - BytesCopied >= 8) {
+    handleRemainingBytes(Builder, I64Ty, I8Ty, CurrentSrc, CurrentDst, 8);
+    BytesCopied += 8;
+  }
+
+  // --- Use LLVM IR to handle remaining bytes (Len - BytesCopied) ---
+
+  // Handle remaining 4 bytes
+  if (Len - BytesCopied >= 4) {
+    handleRemainingBytes(Builder, I32Ty, I8Ty, CurrentSrc, CurrentDst, 4);
+    BytesCopied += 4;
+  }
+
+  // Handle remaining 2 bytes
+  if (Len - BytesCopied >= 2) {
+    handleRemainingBytes(Builder, I16Ty, I8Ty, CurrentSrc, CurrentDst, 2);
+    BytesCopied += 2;
+  }
+
+  // Handle remaining 1 byte
+  if (Len - BytesCopied >= 1) {
+    Value *LoadVal = Builder.CreateAlignedLoad(I8Ty, CurrentSrc, Align(1));
+    Builder.CreateAlignedStore(LoadVal, CurrentDst, Align(1));
+    BytesCopied += 1;
+  }
+
+  // Remove the original memcpy instruction
+  M->eraseFromParent();
+  return true;
 }
 
 // Split len into multiples of 16 and remainder
@@ -835,13 +886,13 @@ bool RISCVEsp32P4MemIntrinPass::processSrc8Dst16OtherConst(
 // src unalign, dst 16-byte aligned, size is other constant
 bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst16OtherConst(
     MemCpyInst *M, BasicBlock::iterator &BBI) {
-  return false;
+  return processOtherConstAlign(M, BBI, 16, M->getSourceAlign()->value());
 }
 
 // src unalign, dst 8-byte aligned, size is other constant
 bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst8OtherConst(
     MemCpyInst *M, BasicBlock::iterator &BBI) {
-  return false;
+  return processOtherConstAlign(M, BBI, 8, M->getSourceAlign()->value());
 }
 
 // src 16| 8 align, dst 16|8 align , var 1-15
@@ -873,9 +924,9 @@ void RISCVEsp32P4MemIntrinPass::processMemCpyVarFrom1To15(
 
   // Create basic blocks for each case in the switch
   std::vector<BasicBlock *> SwitchBBs;
-  for (int i = 1; i <= 15; i++) {
+  for (int I = 1; I <= 15; I++) {
     SwitchBBs.push_back(
-        BasicBlock::Create(ctx, "sw.bb" + std::to_string(i), MemCpyFunc));
+        BasicBlock::Create(ctx, "sw.bb" + std::to_string(I), MemCpyFunc));
   }
 
   // --- Populate Entry Basic Block ---
@@ -892,9 +943,9 @@ void RISCVEsp32P4MemIntrinPass::processMemCpyVarFrom1To15(
   // Create switch statement in the entry block
   SwitchInst *SI =
       FuncBuilder.CreateSwitch(SizeArg, ReturnBB, 15); // Default to return
-  for (int i = 1; i <= 15; i++) {
+  for (int I = 1; I <= 15; I++) {
     // Add case: if SizeArg == i, jump to SwitchBBs[i-1]
-    SI->addCase(FuncBuilder.getInt32(i), SwitchBBs[i - 1]);
+    SI->addCase(FuncBuilder.getInt32(I), SwitchBBs[I - 1]);
   }
 
   // --- Populate Switch Case Basic Blocks with LLVM IR ---
@@ -902,10 +953,10 @@ void RISCVEsp32P4MemIntrinPass::processMemCpyVarFrom1To15(
   llvm::Type *I16Ty = FuncBuilder.getInt16Ty();
   llvm::Type *I32Ty = FuncBuilder.getInt32Ty();
 
-  for (int i = 1; i <= 15; i++) {
+  for (int I = 1; I <= 15; I++) {
     FuncBuilder.SetInsertPoint(
-        SwitchBBs[i - 1]); // Set builder to the correct case block
-    uint64_t BytesToCopy = i;
+        SwitchBBs[I - 1]); // Set builder to the correct case block
+    uint64_t BytesToCopy = I;
     uint64_t BytesCopied = 0;
     if (Type == MemCpyType::Src16_Dst16_Var ||
         Type == MemCpyType::Src16_Dst8_Var ||
@@ -998,9 +1049,9 @@ void RISCVEsp32P4MemIntrinPass::processMemCpyVarFrom1To7(
 
   // Create basic blocks for each case in the switch
   std::vector<BasicBlock *> SwitchBBs;
-  for (int i = 1; i <= 7; i++) {
+  for (int I = 1; I <= 7; I++) {
     SwitchBBs.push_back(
-        BasicBlock::Create(ctx, "sw.bb" + std::to_string(i), MemCpyFunc));
+        BasicBlock::Create(ctx, "sw.bb" + std::to_string(I), MemCpyFunc));
   }
 
   // --- Populate Entry Basic Block ---
@@ -1017,9 +1068,9 @@ void RISCVEsp32P4MemIntrinPass::processMemCpyVarFrom1To7(
   // Create switch statement in the entry block
   SwitchInst *SI =
       FuncBuilder.CreateSwitch(SizeArg, ReturnBB, 7); // Default to return
-  for (int i = 1; i <= 7; i++) {
+  for (int I = 1; I <= 7; I++) {
     // Add case: if SizeArg == i, jump to SwitchBBs[i-1]
-    SI->addCase(FuncBuilder.getInt32(i), SwitchBBs[i - 1]);
+    SI->addCase(FuncBuilder.getInt32(I), SwitchBBs[I - 1]);
   }
 
   // --- Populate Switch Case Basic Blocks with LLVM IR ---
@@ -1027,10 +1078,10 @@ void RISCVEsp32P4MemIntrinPass::processMemCpyVarFrom1To7(
   llvm::Type *I16Ty = FuncBuilder.getInt16Ty();
   llvm::Type *I32Ty = FuncBuilder.getInt32Ty();
 
-  for (int i = 1; i <= 7; i++) {
+  for (int I = 1; I <= 7; I++) {
     FuncBuilder.SetInsertPoint(
-        SwitchBBs[i - 1]); // Set builder to the correct case block
-    uint64_t BytesToCopy = i;
+        SwitchBBs[I - 1]); // Set builder to the correct case block
+    uint64_t BytesToCopy = I;
     uint64_t BytesCopied = 0;
     // Generate load/store sequence for copying 'i' bytes
     // Prioritize 4-byte copies
@@ -1089,7 +1140,235 @@ bool RISCVEsp32P4MemIntrinPass::processSrc16Dst16Var(MemCpyInst *M) {
 bool RISCVEsp32P4MemIntrinPass::processMemCpyWithAlignmentVar(
     MemCpyInst *M, std::string srcdstcase, unsigned SrcAlign,
     unsigned DstAlign) {
-  return false;
+  IRBuilder<> Builder(M);
+  Value *Src = M->getSource();
+  Value *Dst = M->getDest();
+  Value *Size = M->getLength();
+  Value *SrcAddr = Builder.CreatePtrToInt(Src, Builder.getInt32Ty());
+  Value *DstAddr = Builder.CreatePtrToInt(Dst, Builder.getInt32Ty());
+
+  std::string FuncName = "esp32p4MemCpy" + srcdstcase + "Var";
+
+  if (useExistingHelperFunction(M, Builder, FuncName, DstAddr, SrcAddr, Size)) {
+    return true;
+  }
+
+  Function *MemCpyFunc = createMemCpyHelperFunction(Builder, FuncName, DstAddr,
+                                                    SrcAddr, Size, false);
+
+  Value *DstArg = MemCpyFunc->arg_begin();
+  Value *SrcArg = MemCpyFunc->arg_begin() + 1;
+  Value *SizeArg = MemCpyFunc->arg_begin() + 2;
+  Value *DstArgOrg = DstArg;
+  Value *SrcArgOrg = SrcArg;
+
+  BasicBlock *EntryBB =
+      BasicBlock::Create(M->getContext(), "entry", MemCpyFunc);
+  BasicBlock *HandleSmallSize =
+      BasicBlock::Create(M->getContext(), "handle.small.size", MemCpyFunc);
+  BasicBlock *CheckMidSizeRange =
+      BasicBlock::Create(M->getContext(), "check.mid.range", MemCpyFunc);
+  BasicBlock *HandleMidSize =
+      BasicBlock::Create(M->getContext(), "handle.mid.size", MemCpyFunc);
+  BasicBlock *HandleLargeSizeLoop =
+      BasicBlock::Create(M->getContext(), "handle.large.loop", MemCpyFunc);
+  BasicBlock *ReturnBB =
+      BasicBlock::Create(M->getContext(), "return", MemCpyFunc);
+
+  IRBuilder<> FuncBuilder(EntryBB);
+  Value *IsLT8 =
+      FuncBuilder.CreateICmpULT(SizeArg, FuncBuilder.getInt32(8), "is.lt.8");
+  FuncBuilder.CreateCondBr(IsLT8, HandleSmallSize, CheckMidSizeRange);
+
+  FuncBuilder.SetInsertPoint(HandleSmallSize);
+  Value *DstPtr = FuncBuilder.CreateIntToPtr(DstArg, Builder.getPtrTy());
+  Value *SrcPtr = FuncBuilder.CreateIntToPtr(SrcArg, Builder.getPtrTy());
+  std::string FuncName1_7 = "esp32p4MemCpy" + srcdstcase + "From1To7Opt";
+  processMemCpyVarFrom1To7(FuncBuilder, FuncName1_7, DstPtr, SrcPtr, SizeArg,
+                           false);
+  FuncBuilder.CreateBr(ReturnBB);
+
+  FuncBuilder.SetInsertPoint(CheckMidSizeRange);
+  Value *IsLT16 =
+      FuncBuilder.CreateICmpULT(SizeArg, FuncBuilder.getInt32(16), "is.lt.16");
+  FuncBuilder.CreateCondBr(IsLT16, HandleMidSize, HandleLargeSizeLoop);
+
+  FuncBuilder.SetInsertPoint(HandleMidSize);
+  SrcArg = createEspVldL64Ip(FuncBuilder, SrcArg, 0);
+  DstArg = createEspVstL64Ip(FuncBuilder, DstArg, 0);
+  LLVMContext &ctx = M->getContext();
+  PointerType *ptrTy = PointerType::getUnqual(ctx);
+  Value *DstPtr2 = FuncBuilder.CreateIntToPtr(DstArg, ptrTy);
+  Value *SrcPtr2 = FuncBuilder.CreateIntToPtr(SrcArg, ptrTy);
+  Value *SizeMinus8 = FuncBuilder.CreateAdd(SizeArg, FuncBuilder.getInt32(-8),
+                                            "size.minus.8", false, true);
+  processMemCpyVarFrom1To7(FuncBuilder, FuncName1_7, DstPtr2, SrcPtr2,
+                           SizeMinus8, true);
+  FuncBuilder.CreateBr(ReturnBB);
+
+  FuncBuilder.SetInsertPoint(HandleLargeSizeLoop);
+  Value *Num128BBlocks = FuncBuilder.CreateLShr(
+      SizeArg, FuncBuilder.getInt32(7), "num.128B.blocks");
+  Value *Num16BBlocks = FuncBuilder.CreateLShr(SizeArg, FuncBuilder.getInt32(4),
+                                               "num.16B.blocks");
+  Value *Remaining16B = FuncBuilder.CreateAnd(
+      Num16BBlocks, FuncBuilder.getInt32(7), "remaining.16B.blocks");
+  Value *RemainingBytes = FuncBuilder.CreateAnd(
+      SizeArg, FuncBuilder.getInt32(7), "remaining.bytes");
+  Value *IsSmallSize128 = FuncBuilder.CreateICmpULT(
+      SizeArg, FuncBuilder.getInt32(128), "is.lt.128");
+
+  BasicBlock *LoopExitCleanup =
+      BasicBlock::Create(M->getContext(), "loop.exit.cleanup", MemCpyFunc);
+  BasicBlock *LoopBody128B =
+      BasicBlock::Create(M->getContext(), "loop.body.128B", MemCpyFunc);
+  BasicBlock *HandleTailBlockSwitch =
+      BasicBlock::Create(M->getContext(), "handle.tail.switch", MemCpyFunc);
+  BasicBlock *InvalidCaseTrap =
+      BasicBlock::Create(M->getContext(), "invalid.switch.trap", MemCpyFunc);
+
+  FuncBuilder.CreateCondBr(IsSmallSize128, LoopExitCleanup, LoopBody128B);
+
+  FuncBuilder.SetInsertPoint(InvalidCaseTrap);
+  FuncBuilder.CreateUnreachable();
+
+  FuncBuilder.SetInsertPoint(LoopBody128B);
+  PHINode *LoopIndex =
+      FuncBuilder.CreatePHI(FuncBuilder.getInt32Ty(), 2, "loop.index");
+  LoopIndex->addIncoming(FuncBuilder.getInt32(0), HandleLargeSizeLoop);
+  PHINode *SrcPtrInLoop =
+      FuncBuilder.CreatePHI(FuncBuilder.getInt32Ty(), 2, "src.ptr.loop");
+  SrcPtrInLoop->addIncoming(SrcArgOrg, HandleLargeSizeLoop);
+  PHINode *DstPtrInLoop =
+      FuncBuilder.CreatePHI(FuncBuilder.getInt32Ty(), 2, "dst.ptr.loop");
+  DstPtrInLoop->addIncoming(DstArgOrg, HandleLargeSizeLoop);
+
+  for (int I = 0; I < 8; I++) {
+    if (SrcAlign == 16) {
+      SrcArg =
+          createEspVld128Ip(FuncBuilder, I == 0 ? SrcPtrInLoop : SrcArg, I);
+    } else {
+      SrcArg =
+          createEspVldL64Ip(FuncBuilder, I == 0 ? SrcPtrInLoop : SrcArg, I);
+      SrcArg = createEspVldH64Ip(FuncBuilder, SrcArg, I);
+    }
+  }
+  SrcPtrInLoop->addIncoming(SrcArg, LoopBody128B);
+
+  for (int I = 0; I < 8; I++) {
+    if (DstAlign == 16) {
+      DstArg =
+          createEspVst128Ip(FuncBuilder, I == 0 ? DstPtrInLoop : DstArg, I);
+    } else {
+      DstArg =
+          createEspVstL64Ip(FuncBuilder, I == 0 ? DstPtrInLoop : DstArg, I);
+      DstArg = createEspVstH64Ip(FuncBuilder, DstArg, I);
+    }
+  }
+  DstPtrInLoop->addIncoming(DstArg, LoopBody128B);
+
+  Value *LoopNext = FuncBuilder.CreateAdd(LoopIndex, FuncBuilder.getInt32(1),
+                                          "loop.inc", true, true);
+  LoopIndex->addIncoming(LoopNext, LoopBody128B);
+  Value *IsLoopDone =
+      FuncBuilder.CreateICmpEQ(LoopNext, Num128BBlocks, "loop.done");
+  FuncBuilder.CreateCondBr(IsLoopDone, LoopExitCleanup, LoopBody128B);
+
+  FuncBuilder.SetInsertPoint(LoopExitCleanup);
+  PHINode *SrcPtrAfterLoop =
+      FuncBuilder.CreatePHI(FuncBuilder.getInt32Ty(), 2, "src.ptr.after.loop");
+  SrcPtrAfterLoop->addIncoming(SrcArgOrg, HandleLargeSizeLoop);
+  SrcPtrAfterLoop->addIncoming(SrcArg, LoopBody128B);
+  PHINode *DstPtrAfterLoop =
+      FuncBuilder.CreatePHI(FuncBuilder.getInt32Ty(), 2, "dst.ptr.after.loop");
+  DstPtrAfterLoop->addIncoming(DstArgOrg, HandleLargeSizeLoop);
+  DstPtrAfterLoop->addIncoming(DstArg, LoopBody128B);
+
+  SwitchInst *Switch = FuncBuilder.CreateSwitch(Remaining16B, InvalidCaseTrap);
+  FuncBuilder.SetInsertPoint(HandleTailBlockSwitch);
+
+  PHINode *SrcPtrInTailSwitch =
+      FuncBuilder.CreatePHI(FuncBuilder.getInt32Ty(), 2, "src.ptr.tail");
+  SrcPtrInTailSwitch->addIncoming(SrcPtrAfterLoop, LoopExitCleanup);
+  PHINode *DstPtrInTailSwitch =
+      FuncBuilder.CreatePHI(FuncBuilder.getInt32Ty(), 2, "dst.ptr.tail");
+  DstPtrInTailSwitch->addIncoming(DstPtrAfterLoop, LoopExitCleanup);
+
+  BasicBlock *Handle8ByteTail =
+      BasicBlock::Create(M->getContext(), "handle.8B.tail", MemCpyFunc);
+  BasicBlock *After8ByteTail =
+      BasicBlock::Create(M->getContext(), "after.8B.tail", MemCpyFunc);
+
+  Value *Has8ByteTail = FuncBuilder.CreateICmpEQ(
+      FuncBuilder.CreateAnd(SizeArg, FuncBuilder.getInt32(8)),
+      FuncBuilder.getInt32(0));
+  FuncBuilder.CreateCondBr(Has8ByteTail, After8ByteTail, Handle8ByteTail);
+
+  for (int I = 1; I <= 7; I++) {
+    BasicBlock *CaseBB = BasicBlock::Create(
+        M->getContext(), "tail.case." + std::to_string(I), MemCpyFunc);
+    Switch->addCase(FuncBuilder.getInt32(I), CaseBB);
+    FuncBuilder.SetInsertPoint(CaseBB);
+
+    for (int J = 0; J < I; J++) {
+      SrcArg = (SrcAlign == 16)
+                   ? createEspVld128Ip(FuncBuilder,
+                                       J == 0 ? SrcPtrAfterLoop : SrcArg, J)
+                   : createEspVldH64Ip(
+                         FuncBuilder,
+                         createEspVldL64Ip(
+                             FuncBuilder, J == 0 ? SrcPtrAfterLoop : SrcArg, J),
+                         J);
+    }
+    SrcPtrInTailSwitch->addIncoming(SrcArg, CaseBB);
+
+    for (int J = 0; J < I; J++) {
+      DstArg = (DstAlign == 16)
+                   ? createEspVst128Ip(FuncBuilder,
+                                       J == 0 ? DstPtrAfterLoop : DstArg, J)
+                   : createEspVstH64Ip(
+                         FuncBuilder,
+                         createEspVstL64Ip(
+                             FuncBuilder, J == 0 ? DstPtrAfterLoop : DstArg, J),
+                         J);
+    }
+    DstPtrInTailSwitch->addIncoming(DstArg, CaseBB);
+    FuncBuilder.CreateBr(HandleTailBlockSwitch);
+  }
+  Switch->addCase(FuncBuilder.getInt32(0), HandleTailBlockSwitch);
+
+  FuncBuilder.SetInsertPoint(Handle8ByteTail);
+  SrcArg = createEspVldL64Ip(FuncBuilder, SrcPtrInTailSwitch, 0);
+  DstArg = createEspVstL64Ip(FuncBuilder, DstPtrInTailSwitch, 0);
+  FuncBuilder.CreateBr(After8ByteTail);
+
+  FuncBuilder.SetInsertPoint(After8ByteTail);
+  PHINode *SrcPtrAfter8B =
+      FuncBuilder.CreatePHI(FuncBuilder.getInt32Ty(), 2, "src.ptr.after.8B");
+  SrcPtrAfter8B->addIncoming(SrcPtrInTailSwitch, HandleTailBlockSwitch);
+  SrcPtrAfter8B->addIncoming(SrcArg, Handle8ByteTail);
+  PHINode *DstPtrAfter8B =
+      FuncBuilder.CreatePHI(FuncBuilder.getInt32Ty(), 2, "dst.ptr.after.8B");
+  DstPtrAfter8B->addIncoming(DstPtrInTailSwitch, HandleTailBlockSwitch);
+  DstPtrAfter8B->addIncoming(DstArg, Handle8ByteTail);
+  Value *HasRemainingBytes =
+      FuncBuilder.CreateICmpEQ(RemainingBytes, FuncBuilder.getInt32(0));
+  BasicBlock *HandleRemainingBytes =
+      BasicBlock::Create(M->getContext(), "handle.remaining.bytes", MemCpyFunc);
+  FuncBuilder.CreateCondBr(HasRemainingBytes, ReturnBB, HandleRemainingBytes);
+
+  FuncBuilder.SetInsertPoint(HandleRemainingBytes);
+  Value *SrcFinal = FuncBuilder.CreateIntToPtr(SrcPtrAfter8B, ptrTy);
+  Value *DstFinal = FuncBuilder.CreateIntToPtr(DstPtrAfter8B, ptrTy);
+  processMemCpyVarFrom1To7(FuncBuilder, FuncName1_7, DstFinal, SrcFinal,
+                           RemainingBytes, true);
+  FuncBuilder.CreateBr(ReturnBB);
+
+  FuncBuilder.SetInsertPoint(ReturnBB);
+  FuncBuilder.CreateRetVoid();
+
+  M->eraseFromParent();
+  return true;
 }
 
 bool RISCVEsp32P4MemIntrinPass::processSrc16Dst8Var(MemCpyInst *M) {
@@ -1106,97 +1385,97 @@ bool RISCVEsp32P4MemIntrinPass::processSrc8Dst8Var(MemCpyInst *M) {
 
 bool RISCVEsp32P4MemIntrinPass::processSrc16DstUnalignVar(
     MemCpyInst *M, BasicBlock::iterator &BBI) {
+
   IRBuilder<> Builder(M);
   Value *Src = M->getSource();
   Value *Dst = M->getDest();
   Value *Size = M->getLength();
-  // Generate unique function name
+
   std::string FuncName = "esp32p4MemCpySrc16DstunalignVar";
 
   if (Function *ExistingFunc = module->getFunction(FuncName)) {
-    // If function exists, create call directly
     Builder.CreateCall(ExistingFunc,
                        {Dst, Src, Size, Builder.getInt32(DstAlignValue)});
     M->eraseFromParent();
     return true;
   }
 
-  // Create new function type
   FunctionType *FuncTy =
       FunctionType::get(Builder.getVoidTy(),
                         {Builder.getPtrTy(), Builder.getPtrTy(),
                          Builder.getInt32Ty(), Builder.getInt32Ty()},
                         false);
 
-  Function *MemCpyFunc = Function::Create(FuncTy, GlobalValue::InternalLinkage,
+  Function *HelperFunc = Function::Create(FuncTy, GlobalValue::InternalLinkage,
                                           FuncName, M->getModule());
 
-  Value *Args[] = {Dst, Src, Size, Builder.getInt32(DstAlignValue)}; // TODO
-
-  // Create a tail call to MemCpyFunction
-  CallInst *TailCall =
-      CallInst::Create(MemCpyFunc->getFunctionType(), MemCpyFunc, Args, "",
-                       /*InsertBefore=*/nullptr);
+  Value *CallArgs[] = {Dst, Src, Size, Builder.getInt32(DstAlignValue)};
+  CallInst *TailCall = CallInst::Create(HelperFunc->getFunctionType(),
+                                        HelperFunc, CallArgs, "", nullptr);
   TailCall->setTailCallKind(CallInst::TCK_Tail);
   Builder.Insert(TailCall);
-  // Get Function* from FunctionCallee
-  assert(MemCpyFunc && "esp32p4MemCpySrc16DstunalignVar must be a function!");
 
-  // Set function attributes
-  MemCpyFunc->addFnAttr(Attribute::NoUnwind);
-  MemCpyFunc->addFnAttr(Attribute::NoInline);
+  HelperFunc->addFnAttr(Attribute::NoUnwind);
+  HelperFunc->addFnAttr(Attribute::NoInline);
 
-  // Create entry block
   BasicBlock *EntryBB =
-      BasicBlock::Create(M->getContext(), "entry", MemCpyFunc);
+      BasicBlock::Create(M->getContext(), "entry", HelperFunc);
+  BasicBlock *HandleAlignedHead =
+      BasicBlock::Create(M->getContext(), "handle.head", HelperFunc);
+  BasicBlock *HandleAlignedTail =
+      BasicBlock::Create(M->getContext(), "handle.tail", HelperFunc);
+  BasicBlock *ReturnBB =
+      BasicBlock::Create(M->getContext(), "return", HelperFunc);
+
   IRBuilder<> FuncBuilder(EntryBB);
 
-  // Extract function arguments
-  Value *DstArg = MemCpyFunc->arg_begin();
+  auto ArgIter = HelperFunc->arg_begin();
+  Value *DstArg = ArgIter++;
   DstArg->setName("dst");
-  Value *SrcArg = MemCpyFunc->arg_begin() + 1;
+  Value *SrcArg = ArgIter++;
   SrcArg->setName("src");
-  Value *SizeArg = MemCpyFunc->arg_begin() + 2;
+  Value *SizeArg = ArgIter++;
   SizeArg->setName("size");
-  Value *DstValueArg = MemCpyFunc->arg_begin() + 3;
-  DstValueArg->setName("dst_align");
-  // Create basic blocks
-  BasicBlock *IfThenBB =
-      BasicBlock::Create(M->getContext(), "if.then", MemCpyFunc);
-  BasicBlock *IfEndBB =
-      BasicBlock::Create(M->getContext(), "if.end", MemCpyFunc);
-  BasicBlock *CleanupBB =
-      BasicBlock::Create(M->getContext(), "cleanup", MemCpyFunc);
+  Value *DstAlignArg = ArgIter++;
+  DstAlignArg->setName("dst_align");
 
-  // Entry block
-  Value *Sub =
-      FuncBuilder.CreateSub(FuncBuilder.getInt32(16), DstValueArg, "sub");
-  Value *Cmp = FuncBuilder.CreateICmpULT(Sub, SizeArg, "cmp.not");
-  FuncBuilder.CreateCondBr(Cmp, IfEndBB, IfThenBB);
+  Value *HeadSize =
+      FuncBuilder.CreateSub(FuncBuilder.getInt32(16), DstAlignArg, "head.size");
 
-  // if.then block
-  FuncBuilder.SetInsertPoint(IfThenBB);
+  Value *NeedSplit = FuncBuilder.CreateICmpULT(HeadSize, SizeArg, "need.split");
+  FuncBuilder.CreateCondBr(NeedSplit, HandleAlignedTail, HandleAlignedHead);
+
+  FuncBuilder.SetInsertPoint(HandleAlignedHead);
   processMemCpyVarFrom1To15(
       FuncBuilder, "esp32p4MemCpySrcUnalignDstUnalignFrom1To15Opt", DstArg,
-      SrcArg, SizeArg, true, MemCpyType::SrcUnalign_DstUnalign_Var);
-  FuncBuilder.CreateBr(CleanupBB);
+      SrcArg, SizeArg,
+      /*isDstUnaligned*/ true, MemCpyType::SrcUnalign_DstUnalign_Var);
+  FuncBuilder.CreateBr(ReturnBB);
 
-  // if.end block
-  FuncBuilder.SetInsertPoint(IfEndBB);
+  FuncBuilder.SetInsertPoint(HandleAlignedTail);
+
   processMemCpyVarFrom1To15(
       FuncBuilder, "esp32p4MemCpySrcUnalignDstUnalignFrom1To15Opt", DstArg,
-      SrcArg, Sub, true, MemCpyType::SrcUnalign_DstUnalign_Var);
-  Value *Sub2 = FuncBuilder.CreateSub(SizeArg, Sub, "sub2");
-  Value *AddPtr1 =
-      FuncBuilder.CreateGEP(FuncBuilder.getInt8Ty(), DstArg, Sub, "add.ptr1");
-  Value *AddPtr =
-      FuncBuilder.CreateGEP(FuncBuilder.getInt8Ty(), SrcArg, Sub, "add.ptr");
+      SrcArg, HeadSize,
+      /*isDstUnaligned*/ true, MemCpyType::SrcUnalign_DstUnalign_Var);
 
-  FuncBuilder.CreateMemCpy(AddPtr1, Align(16), AddPtr, Align(1), Sub2);
-  FuncBuilder.CreateBr(CleanupBB);
+  Value *RemainingBytes =
+      FuncBuilder.CreateSub(SizeArg, HeadSize, "remaining.size");
 
-  // Return block
-  FuncBuilder.SetInsertPoint(CleanupBB);
+  Value *DstAlignedPtr = FuncBuilder.CreateGEP(FuncBuilder.getInt8Ty(), DstArg,
+                                               HeadSize, "dst.aligned.ptr");
+  Value *SrcAlignedPtr = FuncBuilder.CreateGEP(FuncBuilder.getInt8Ty(), SrcArg,
+                                               HeadSize, "src.aligned.ptr");
+
+  // Use the standard LLVM MemCpy Intrinsic to copy the remaining part (src
+  // 16-byte aligned, dst unaligned)
+  FuncBuilder.CreateMemCpy(DstAlignedPtr, Align(16), SrcAlignedPtr, Align(1),
+                           RemainingBytes);
+
+  FuncBuilder.CreateBr(ReturnBB);
+
+  // --- [3] return block
+  FuncBuilder.SetInsertPoint(ReturnBB);
   FuncBuilder.CreateRetVoid();
 
   M->eraseFromParent();
