@@ -1,0 +1,82 @@
+stages:
+  - upstream_sync
+
+image: ${CI_DOCKER_REGISTRY}/llvm-build:5
+
+default:
+  interruptible: true
+
+variables:
+  REBASE_PUSH_REMOTE: "https://gitlab-ci-token:${ESP_MAIN_MAINT_TOKEN}@${GITLAB_HTTPS_SERVER}/${CI_PROJECT_PATH}.git"
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_TYPE == "rebase_on_main"
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $SCHED_REBASE_BR
+
+.use_ci_tools: &use_ci_tools |
+  curl -sSL ${CIT_LOADER_URL} -o cit_loader.sh && sh cit_loader.sh
+  source citools/import_functions
+
+.add_gitlab_key: &add_gitlab_key |
+  cit_add_ssh_key "${GITLAB_KEY}"
+
+.rules:scheduled-rebase-on-main:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_TYPE == "rebase_on_main"
+      variables:
+        PUSH_RESULT: "ON"
+
+.rules:not-scheduled-rebase-on-main:
+  rules:
+    - if: $CI_PIPELINE_SOURCE != "schedule" || $SCHEDULE_TYPE != "rebase_on_main"
+
+before_script:
+  - *use_ci_tools
+  - *add_gitlab_key
+
+rebase_on_main:
+  stage: upstream_sync
+  extends:
+    - .rules:scheduled-rebase-on-main
+  tags: [ "amd64", "build" ]
+  dependencies: []
+  variables:
+    PUSH_RESULT: "OFF"
+  script:
+    - | 
+      set -euxo pipefail
+      git config --global user.email "llwm-project-ci-rebase@espressif.com"
+      git config --global user.name "LLVM Project CI Rebase"
+      GIT_DIR=$( git rev-parse --git-dir )
+      git fetch origin $SCHED_REBASE_ONTO_BR
+      git remote add push-remote ${REBASE_PUSH_REMOTE}
+      git remote -v
+      BRANCH_NAME=${CI_COMMIT_REF_NAME}
+      git branch -D $BRANCH_NAME || true
+      git checkout -b $BRANCH_NAME
+      rc=0
+      echo "Rebase branch '$BRANCH_NAME' on 'origin/$SCHED_REBASE_ONTO_BR'"
+      if git rebase origin/$SCHED_REBASE_ONTO_BR ; then
+        echo "Successfully rebased branch '$BRANCH_NAME'"
+        if [[ "${PUSH_RESULT}" == "ON" ]]; then
+          # --force-with-lease doesn't work on shallow clones
+          echo "Push rebased branch '$BRANCH_NAME' to '$REBASE_PUSH_REMOTE'"
+          git push push-remote $BRANCH_NAME --force
+        else
+          echo "Skip pushing rebased branch '$BRANCH_NAME'"
+        fi
+      else
+        rc=$?
+        echo "Rebasing branch '$BRANCH_NAME' on 'origin/$SCHED_REBASE_ONTO_BR' failed!"
+        echo “Please rebase '$BRANCH_NAME' onto 'origin/$SCHED_REBASE_ONTO_BR' branch manually.”
+        if [ -d "${GIT_DIR}/rebase-merge" ] || [ -d "${GIT_DIR}/rebase-apply" ] ; then
+            echo "Abort rebase"
+            git rebase --abort
+        fi
+      fi
+      git status
+      exit $rc
