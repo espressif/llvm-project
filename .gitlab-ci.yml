@@ -1,4 +1,5 @@
 stages:
+  - test_build
   - upstream_sync
 
 image: ${CI_DOCKER_REGISTRY}/llvm-build:5
@@ -7,6 +8,13 @@ default:
   interruptible: true
 
 variables:
+  ESP_LLVM_EMBEDDED_TOOLCHAIN_REF: "llvm_release_19"
+  ESP_GNU_TOOLCHAIN_VER: "14.2.0_20241119"
+  CROSS_ARM_IMAGE: $CI_DOCKER_REGISTRY/llvm-build-cross-arm:2
+  CROSS_WIN_IMAGE: $CI_DOCKER_REGISTRY/llvm-build-cross-win:3
+  DIST_DIR: "dist"
+  BUILD_DIR: "build"
+  GITLAB_SERVER_URL: https://gitlab-ci-token:${CI_JOB_TOKEN}@${GITLAB_HTTPS_SERVER}
   REBASE_PUSH_REMOTE: "https://gitlab-ci-token:${ESP_MAIN_MAINT_TOKEN}@${GITLAB_HTTPS_SERVER}/${CI_PROJECT_PATH}.git"
 
 workflow:
@@ -23,6 +31,9 @@ workflow:
 
 .add_gitlab_key: &add_gitlab_key |
   cit_add_ssh_key "${GITLAB_KEY}"
+
+.get_toolchain_build_scripts: &get_toolchain_build_scripts |
+  git clone -b ${ESP_LLVM_EMBEDDED_TOOLCHAIN_REF} ${GITLAB_SERVER_URL}/${ESP_LLVM_EMBEDDED_TOOLCHAIN_REPO_PATH}.git
 
 .rules:scheduled-rebase-on-main:
   rules:
@@ -80,3 +91,56 @@ rebase_on_main:
       fi
       git status
       exit $rc
+
+# some Clang/LLVM unit tests fail if we build Clang for RISCV+Xtensa only
+# this job is intended to run unit tests only, so it builds Clang with all backends
+# TODO: LLVM-326 and LLVM-401
+build_and_test:
+  tags: [ "amd64", "build" ]
+  stage: test_build
+  artifacts:
+    paths:
+      - ${BUILD_DIR}/*.log
+    when: always
+    expire_in: 1 day
+  retry: 2
+  before_script:
+    - git config --global --add safe.directory $CI_PROJECT_DIR
+  after_script:
+    # help to identify that build failed due to OOM
+    - >
+      if [ $CI_JOB_STATUS == 'failed' ]; then
+        [ ! -f "${BUILD_DIR}/build.log" ] || grep -i "internal compiler error\|Killed" ${BUILD_DIR}/build.log || true
+        [ ! -f "${BUILD_DIR}/tests.log" ] || grep -i "internal compiler error\|Killed" ${BUILD_DIR}/tests.log || true
+        [ ! -f "${BUILD_DIR}/lld-tests.log" ] || grep -i "internal compiler error\|Killed" ${BUILD_DIR}/lld-tests.log || true
+      fi
+  script:
+    - BUILD_PATH=$PWD/${BUILD_DIR}
+    - LLVM_PROJECT_PATH=$PWD
+    - mkdir -p ${BUILD_PATH}
+    - cmake -G Ninja
+      -S llvm
+      -DLLVM_ENABLE_PROJECTS="clang;lld;clang-tools-extra"
+      -DCMAKE_BUILD_TYPE=Release
+      -DLLVM_ENABLE_ASSERTIONS=ON
+      -DLLVM_APPEND_VC_REV=OFF
+      -DLLDB_INCLUDE_TESTS=OFF
+      -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=Xtensa
+      -DLLVM_USE_LINKER="gold"
+      -DLLVM_PARALLEL_LINK_JOBS=${ESP_LLVM_PARALLEL_LINK_JOBS}
+      -DLLVM_PARALLEL_COMPILE_JOBS=${ESP_LLVM_PARALLEL_COMPILE_JOBS}
+      -DLLVM_FORCE_VC_REPOSITORY="${GH_REPO_HTTPS}"
+      -B ${BUILD_PATH} 2>&1 > ${BUILD_PATH}/build.log
+    - export CUR_USER=$(whoami);
+    - useradd -m test_runner;
+    - chown -R test_runner ${BUILD_PATH};
+    - runuser -u test_runner -- git config --global --add safe.directory $CI_PROJECT_DIR
+    - echo "Run LLVM/Clang unit tests";
+    - touch ${BUILD_PATH}/tests.log;
+    - chmod o+w ${BUILD_PATH}/tests.log;
+    - runuser -u test_runner -- ninja -C ${BUILD_PATH} check-all 2>&1 | tee ${BUILD_PATH}/tests.log;
+    - echo "Run LLD unit tests";
+    - touch ${BUILD_PATH}/lld-tests.log;
+    - chmod o+w ${BUILD_PATH}/lld-tests.log;
+    - runuser -u test_runner -- ninja -C ${BUILD_PATH} check-lld 2>&1 | tee ${BUILD_PATH}/lld-tests.log;
+    - chown -R ${CUR_USER} ${BUILD_PATH};
