@@ -108,11 +108,12 @@ define void @vararg_fixed_1(i32 %a1, ...) nounwind {
 ; CHECK-NEXT:    s32i.n a5, a1, 12
 ; CHECK-NEXT:    s32i.n a4, a1, 8
 ; CHECK-NEXT:    s32i.n a3, a1, 4
-; CHECK-NEXT:    addi a10, a1, 4
-; CHECK-NEXT:    s32i.n a10, a1, 4
 ; CHECK-NEXT:    addi a8, a1, 64
 ; CHECK-NEXT:    addi a8, a8, -32
 ; CHECK-NEXT:    s32i.n a8, a1, 0
+; CHECK-NEXT:    addi a9, a1, 4
+; CHECK-NEXT:    addi a10, a9, -4
+; CHECK-NEXT:    s32i.n a10, a1, 4
 ; CHECK-NEXT:    movi.n a9, 8
 ; CHECK-NEXT:    movi.n a7, 24
 ; CHECK-NEXT:    blt a7, a9, .LBB2_2
@@ -185,11 +186,12 @@ define void @vararg_fixed_4(i32 %a1, i32 %a2, i32 %a3, i32 %a4, ...) nounwind {
 ; CHECK-NEXT:    entry a1, 48
 ; CHECK-NEXT:    s32i.n a7, a1, 8
 ; CHECK-NEXT:    s32i.n a6, a1, 4
-; CHECK-NEXT:    addi a10, a1, 4
-; CHECK-NEXT:    s32i.n a10, a1, 4
 ; CHECK-NEXT:    addi a8, a1, 48
 ; CHECK-NEXT:    addi a8, a8, -32
 ; CHECK-NEXT:    s32i.n a8, a1, 0
+; CHECK-NEXT:    addi a9, a1, 4
+; CHECK-NEXT:    addi a10, a9, -16
+; CHECK-NEXT:    s32i.n a10, a1, 4
 ; CHECK-NEXT:    movi.n a9, 20
 ; CHECK-NEXT:    movi.n a7, 24
 ; CHECK-NEXT:    blt a7, a9, .LBB3_2
@@ -261,11 +263,12 @@ define void @vararg_fixed_5(i32 %a1, i32 %a2, i32 %a3, i32 %a4, i32 %a5, ...) no
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    entry a1, 48
 ; CHECK-NEXT:    s32i.n a7, a1, 4
-; CHECK-NEXT:    addi a9, a1, 4
-; CHECK-NEXT:    s32i.n a9, a1, 4
 ; CHECK-NEXT:    addi a8, a1, 48
 ; CHECK-NEXT:    addi a8, a8, -32
 ; CHECK-NEXT:    s32i.n a8, a1, 0
+; CHECK-NEXT:    addi a9, a1, 4
+; CHECK-NEXT:    addi a9, a9, -20
+; CHECK-NEXT:    s32i.n a9, a1, 4
 ; CHECK-NEXT:    movi.n a7, 24
 ; CHECK-NEXT:    blt a7, a7, .LBB4_2
 ; CHECK-NEXT:  # %bb.1: # %entry
@@ -338,23 +341,28 @@ define void @vararg_fixed_6(i32 %a1, i32 %a2, i32 %a3, i32 %a4, i32 %a5, i32 %a6
 ; CHECK-LABEL: vararg_fixed_6:
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    entry a1, 48
-; CHECK-NEXT:    addi a10, a1, 48
-; CHECK-NEXT:    s32i.n a10, a1, 4
-; CHECK-NEXT:    addi a8, a1, 48
-; CHECK-NEXT:    addi a8, a8, -32
-; CHECK-NEXT:    s32i.n a8, a1, 0
-; CHECK-NEXT:    movi.n a9, 36
+; CHECK-NEXT:    movi.n a8, 12
+; CHECK-NEXT:    addi a9, a1, 48
+; CHECK-NEXT:    and a10, a9, a8
+; CHECK-NEXT:    addi a8, a10, 36
+; CHECK-NEXT:    movi.n a11, 32
+; CHECK-NEXT:    or a11, a10, a11
+; CHECK-NEXT:    sub a9, a9, a11
+; CHECK-NEXT:    s32i.n a9, a1, 0
+; CHECK-NEXT:    addi a11, a1, 48
+; CHECK-NEXT:    addi a11, a11, -24
+; CHECK-NEXT:    s32i.n a11, a1, 4
 ; CHECK-NEXT:    movi.n a7, 24
-; CHECK-NEXT:    blt a7, a9, .LBB5_2
+; CHECK-NEXT:    blt a7, a8, .LBB5_2
 ; CHECK-NEXT:  # %bb.1: # %entry
-; CHECK-NEXT:    mov.n a8, a10
+; CHECK-NEXT:    mov.n a9, a11
 ; CHECK-NEXT:  .LBB5_2: # %entry
-; CHECK-NEXT:    bge a7, a9, .LBB5_4
+; CHECK-NEXT:    bge a7, a8, .LBB5_4
 ; CHECK-NEXT:  # %bb.3:
-; CHECK-NEXT:    movi.n a9, 72
+; CHECK-NEXT:    addi a8, a10, 72
 ; CHECK-NEXT:  .LBB5_4: # %entry
-; CHECK-NEXT:    s32i.n a9, a1, 8
-; CHECK-NEXT:    add.n a8, a9, a8
+; CHECK-NEXT:    s32i.n a8, a1, 8
+; CHECK-NEXT:    add.n a8, a8, a9
 ; CHECK-NEXT:    addi a8, a8, -4
 ; CHECK-NEXT:    l32i.n a8, a8, 0
 ; CHECK-NEXT:    add.n a10, a8, a2
@@ -413,23 +421,28 @@ define void @vararg_fixed_7(i32 %a1, i32 %a2, i32 %a3, i32 %a4, i32 %a5, i32 %a6
 ; CHECK-LABEL: vararg_fixed_7:
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    entry a1, 48
-; CHECK-NEXT:    addi a10, a1, 52
-; CHECK-NEXT:    s32i.n a10, a1, 4
-; CHECK-NEXT:    addi a8, a1, 52
-; CHECK-NEXT:    addi a8, a8, -32
-; CHECK-NEXT:    s32i.n a8, a1, 0
-; CHECK-NEXT:    movi.n a9, 36
+; CHECK-NEXT:    movi.n a8, 12
+; CHECK-NEXT:    addi a9, a1, 52
+; CHECK-NEXT:    and a10, a9, a8
+; CHECK-NEXT:    addi a8, a10, 36
+; CHECK-NEXT:    movi.n a11, 32
+; CHECK-NEXT:    or a11, a10, a11
+; CHECK-NEXT:    sub a9, a9, a11
+; CHECK-NEXT:    s32i.n a9, a1, 0
+; CHECK-NEXT:    addi a11, a1, 52
+; CHECK-NEXT:    addi a11, a11, -24
+; CHECK-NEXT:    s32i.n a11, a1, 4
 ; CHECK-NEXT:    movi.n a7, 24
-; CHECK-NEXT:    blt a7, a9, .LBB6_2
+; CHECK-NEXT:    blt a7, a8, .LBB6_2
 ; CHECK-NEXT:  # %bb.1: # %entry
-; CHECK-NEXT:    mov.n a8, a10
+; CHECK-NEXT:    mov.n a9, a11
 ; CHECK-NEXT:  .LBB6_2: # %entry
-; CHECK-NEXT:    bge a7, a9, .LBB6_4
+; CHECK-NEXT:    bge a7, a8, .LBB6_4
 ; CHECK-NEXT:  # %bb.3:
-; CHECK-NEXT:    movi.n a9, 72
+; CHECK-NEXT:    addi a8, a10, 72
 ; CHECK-NEXT:  .LBB6_4: # %entry
-; CHECK-NEXT:    s32i.n a9, a1, 8
-; CHECK-NEXT:    add.n a8, a9, a8
+; CHECK-NEXT:    s32i.n a8, a1, 8
+; CHECK-NEXT:    add.n a8, a8, a9
 ; CHECK-NEXT:    addi a8, a8, -4
 ; CHECK-NEXT:    l32i.n a8, a8, 0
 ; CHECK-NEXT:    add.n a10, a8, a2
