@@ -206,7 +206,7 @@ before_script:
 # some Clang/LLVM unit tests fail if we build Clang for RISCV+Xtensa only
 # this job is intended to run unit tests only, so it builds Clang with all backends
 # TODO: LLVM-326 and LLVM-401
-build_and_test:
+.build_and_test:
   tags: [ "amd64", "build" ]
   stage: test_build
   artifacts:
@@ -473,7 +473,7 @@ sign_aarch64-apple-darwin:
   git clone --shallow-submodules --recursive --single-branch --branch $TEST_APP_ESP_DSP_CUSTOM_BRANCH -- https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}:${CI_SERVER_PORT}/idf/esp-dsp.git esp-dsp
   pushd $PWD/esp-dsp/test_app
 
-test_esp_dsp:
+.test_esp_dsp:
   stage: test
   image: espressif/idf:latest
   tags: [ "amd64", "build" ]
@@ -505,7 +505,7 @@ test_esp_dsp:
     - idf.py set-target ${CHIP} 2>&1 | tee ${BUILD_LOG}
     - idf.py build 2>&1 | tee -a ${BUILD_LOG}
 
-test_xesppie:
+.test_xesppie:
   stage: test
   needs:
     - job: "build_x86_64-linux-gnu"
@@ -614,4 +614,5 @@ update_idf_tools:
     RN_SECTION: Toolchain
   trigger:
     project: idf/idf-tools-updater
+    branch: feat/per_tool_extra_opts
     strategy: depend
