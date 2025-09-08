@@ -98,6 +98,8 @@ rebase_on_main:
 build_and_test:
   tags: [ "amd64", "build" ]
   stage: test_build
+  extends:
+    - .rules:not-scheduled-rebase-on-main
   artifacts:
     paths:
       - ${BUILD_DIR}/*.log
