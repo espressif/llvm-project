@@ -99,6 +99,7 @@ add_clang_library(clangSema
   SemaTypeTraits.cpp
   SemaWasm.cpp
   SemaX86.cpp
+  SemaXtensa.cpp
   TypeLocBuilder.cpp
 
   DEPENDS
