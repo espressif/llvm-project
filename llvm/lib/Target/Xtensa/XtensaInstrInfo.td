@@ -1235,6 +1235,10 @@ def MSUB_S : RRR_Inst<0x00, 0x0A, 0x05, (outs FPR:$r), (ins FPR:$a, FPR:$s, FPR:
   let Constraints = "$r = $a";
 }
 
+// fmadd: (-r1) * r2 + r3
+def : Pat<(fma (fneg FPR:$r1), FPR:$r2, FPR:$r3),
+          (MSUB_S $r3, $r1, $r2)>;
+
 def NEXP01_S : RRR_Inst<0x00, 0x0A, 0x0F, (outs FPR:$r), (ins FPR:$s),
                        "nexp01.s\t$r, $s", []>, Requires<[HasSingleFloat]> {
   let t = 0x0B;
