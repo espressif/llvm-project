@@ -26,5 +26,7 @@ class XtensaTargetMachine;
 FunctionPass *createXtensaISelDag(XtensaTargetMachine &TM,
                                   CodeGenOptLevel OptLevel);
 void initializeXtensaAsmPrinterPass(PassRegistry &);
+
+FunctionPass *createXtensaSizeReductionPass();
 } // namespace llvm
 #endif // LLVM_LIB_TARGET_XTENSA_XTENSA_H
