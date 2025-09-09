@@ -47,6 +47,9 @@ public:
   Register
   getExceptionSelectorRegister(const Constant *PersonalityFn) const override;
 
+  bool isFMAFasterThanFMulAndFAdd(const MachineFunction &MF,
+                                  EVT VT) const override;
+
   bool isOffsetFoldingLegal(const GlobalAddressSDNode *GA) const override;
 
   bool isFPImmLegal(const APFloat &Imm, EVT VT,
