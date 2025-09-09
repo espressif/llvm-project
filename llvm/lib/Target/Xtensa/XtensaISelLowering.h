@@ -41,6 +41,9 @@ public:
     return VT.changeVectorElementTypeToInteger();
   }
 
+  bool isFMAFasterThanFMulAndFAdd(const MachineFunction &MF,
+                                  EVT VT) const override;
+
   bool isOffsetFoldingLegal(const GlobalAddressSDNode *GA) const override;
 
   bool isFPImmLegal(const APFloat &Imm, EVT VT,
