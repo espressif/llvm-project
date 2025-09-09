@@ -64,7 +64,16 @@ public:
                                     std::vector<SDValue> &Ops,
                                     SelectionDAG &DAG) const override;
 
-  SDValue LowerOperation(SDValue Op, SelectionDAG &DAG) const override;
+  InlineAsm::ConstraintCode
+  getInlineAsmMemConstraint(StringRef ConstraintCode) const override {
+    if (ConstraintCode == "R")
+      return InlineAsm::ConstraintCode::R;
+    else if (ConstraintCode == "ZC")
+      return InlineAsm::ConstraintCode::ZC;
+    return TargetLowering::getInlineAsmMemConstraint(ConstraintCode);
+  }
+
+SDValue LowerOperation(SDValue Op, SelectionDAG &DAG) const override;
 
   SDValue LowerFormalArguments(SDValue Chain, CallingConv::ID CallConv,
                                bool isVarArg,
