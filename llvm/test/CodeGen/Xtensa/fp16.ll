@@ -17,7 +17,7 @@ define void @foo() nounwind {
 ; CHECK-ESP32-NEXT:    l16ui a10, a6, 0
 ; CHECK-ESP32-NEXT:    l32r a8, .LCPI0_1
 ; CHECK-ESP32-NEXT:    callx8 a8
-; CHECK-ESP32-NEXT:    or a7, a10, a10
+; CHECK-ESP32-NEXT:    mov.n a7, a10
 ; CHECK-ESP32-NEXT:    l32r a8, .LCPI0_2
 ; CHECK-ESP32-NEXT:    l16ui a10, a8, 0
 ; CHECK-ESP32-NEXT:    l32r a8, .LCPI0_3
@@ -38,14 +38,14 @@ define void @foo() nounwind {
 ; CHECK-ESP32S2-NEXT:    l16ui a10, a6, 0
 ; CHECK-ESP32S2-NEXT:    l32r a8, .LCPI0_1
 ; CHECK-ESP32S2-NEXT:    callx8 a8
-; CHECK-ESP32S2-NEXT:    or a7, a10, a10
+; CHECK-ESP32S2-NEXT:    mov.n a7, a10
 ; CHECK-ESP32S2-NEXT:    l32r a8, .LCPI0_2
 ; CHECK-ESP32S2-NEXT:    l16ui a10, a8, 0
 ; CHECK-ESP32S2-NEXT:    l32r a8, .LCPI0_3
 ; CHECK-ESP32S2-NEXT:    callx8 a8
-; CHECK-ESP32S2-NEXT:    or a11, a10, a10
+; CHECK-ESP32S2-NEXT:    mov.n a11, a10
 ; CHECK-ESP32S2-NEXT:    l32r a8, .LCPI0_4
-; CHECK-ESP32S2-NEXT:    or a10, a7, a7
+; CHECK-ESP32S2-NEXT:    mov.n a10, a7
 ; CHECK-ESP32S2-NEXT:    callx8 a8
 ; CHECK-ESP32S2-NEXT:    l32r a8, .LCPI0_5
 ; CHECK-ESP32S2-NEXT:    callx8 a8
@@ -68,13 +68,13 @@ define double @test_from_fp16(i16 %in) {
 ; CHECK-ESP32-NEXT:  # %bb.0:
 ; CHECK-ESP32-NEXT:    entry a1, 32
 ; CHECK-ESP32-NEXT:    .cfi_def_cfa_offset 32
-; CHECK-ESP32-NEXT:    or a10, a2, a2
+; CHECK-ESP32-NEXT:    mov.n a10, a2
 ; CHECK-ESP32-NEXT:    l32r a8, .LCPI1_0
 ; CHECK-ESP32-NEXT:    callx8 a8
 ; CHECK-ESP32-NEXT:    l32r a8, .LCPI1_1
 ; CHECK-ESP32-NEXT:    callx8 a8
-; CHECK-ESP32-NEXT:    or a2, a10, a10
-; CHECK-ESP32-NEXT:    or a3, a11, a11
+; CHECK-ESP32-NEXT:    mov.n a2, a10
+; CHECK-ESP32-NEXT:    mov.n a3, a11
 ; CHECK-ESP32-NEXT:    retw.n
 ;
 ; CHECK-ESP32S2-LABEL: test_from_fp16:
@@ -88,8 +88,8 @@ define double @test_from_fp16(i16 %in) {
 ; CHECK-ESP32S2-NEXT:    callx8 a8
 ; CHECK-ESP32S2-NEXT:    l32r a8, .LCPI1_2
 ; CHECK-ESP32S2-NEXT:    callx8 a8
-; CHECK-ESP32S2-NEXT:    or a2, a10, a10
-; CHECK-ESP32S2-NEXT:    or a3, a11, a11
+; CHECK-ESP32S2-NEXT:    mov.n a2, a10
+; CHECK-ESP32S2-NEXT:    mov.n a3, a11
 ; CHECK-ESP32S2-NEXT:    retw.n
   %val = call double @llvm.convert.from.fp16.f64(i16 %in)
   ret double %val
@@ -101,11 +101,11 @@ define i16 @test_to_fp16(double %in) {
 ; CHECK-ESP32-NEXT:  # %bb.0:
 ; CHECK-ESP32-NEXT:    entry a1, 32
 ; CHECK-ESP32-NEXT:    .cfi_def_cfa_offset 32
-; CHECK-ESP32-NEXT:    or a11, a3, a3
-; CHECK-ESP32-NEXT:    or a10, a2, a2
+; CHECK-ESP32-NEXT:    mov.n a11, a3
+; CHECK-ESP32-NEXT:    mov.n a10, a2
 ; CHECK-ESP32-NEXT:    l32r a8, .LCPI2_0
 ; CHECK-ESP32-NEXT:    callx8 a8
-; CHECK-ESP32-NEXT:    or a2, a10, a10
+; CHECK-ESP32-NEXT:    mov.n a2, a10
 ; CHECK-ESP32-NEXT:    retw.n
 ;
 ; CHECK-ESP32S2-LABEL: test_to_fp16:
@@ -113,11 +113,11 @@ define i16 @test_to_fp16(double %in) {
 ; CHECK-ESP32S2-NEXT:  # %bb.0:
 ; CHECK-ESP32S2-NEXT:    entry a1, 32
 ; CHECK-ESP32S2-NEXT:    .cfi_def_cfa_offset 32
-; CHECK-ESP32S2-NEXT:    or a11, a3, a3
-; CHECK-ESP32S2-NEXT:    or a10, a2, a2
+; CHECK-ESP32S2-NEXT:    mov.n a11, a3
+; CHECK-ESP32S2-NEXT:    mov.n a10, a2
 ; CHECK-ESP32S2-NEXT:    l32r a8, .LCPI2_0
 ; CHECK-ESP32S2-NEXT:    callx8 a8
-; CHECK-ESP32S2-NEXT:    or a2, a10, a10
+; CHECK-ESP32S2-NEXT:    mov.n a2, a10
 ; CHECK-ESP32S2-NEXT:    retw.n
   %val = call i16 @llvm.convert.to.fp16.f64(double %in)
   ret i16 %val
@@ -130,10 +130,10 @@ define dso_local float @cvt(half %a) unnamed_addr #0 {
 ; CHECK-ESP32-NEXT:  # %bb.0: # %start
 ; CHECK-ESP32-NEXT:    entry a1, 32
 ; CHECK-ESP32-NEXT:    .cfi_def_cfa_offset 32
-; CHECK-ESP32-NEXT:    or a10, a2, a2
+; CHECK-ESP32-NEXT:    mov.n a10, a2
 ; CHECK-ESP32-NEXT:    l32r a8, .LCPI3_0
 ; CHECK-ESP32-NEXT:    callx8 a8
-; CHECK-ESP32-NEXT:    or a2, a10, a10
+; CHECK-ESP32-NEXT:    mov.n a2, a10
 ; CHECK-ESP32-NEXT:    retw.n
 ;
 ; CHECK-ESP32S2-LABEL: cvt:
@@ -145,7 +145,7 @@ define dso_local float @cvt(half %a) unnamed_addr #0 {
 ; CHECK-ESP32S2-NEXT:    and a10, a2, a8
 ; CHECK-ESP32S2-NEXT:    l32r a8, .LCPI3_1
 ; CHECK-ESP32S2-NEXT:    callx8 a8
-; CHECK-ESP32S2-NEXT:    or a2, a10, a10
+; CHECK-ESP32S2-NEXT:    mov.n a2, a10
 ; CHECK-ESP32S2-NEXT:    retw.n
 start:
   %val = fpext half %a to float
