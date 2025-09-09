@@ -317,6 +317,8 @@ XtensaTargetLowering::getSingleConstraintMatchWeight(
   default:
     Weight = TargetLowering::getSingleConstraintMatchWeight(Info, Constraint);
     break;
+  case 'a':
+  case 'd':
   case 'r':
     if (Ty->isIntegerTy())
       Weight = CW_Register;
@@ -333,6 +335,8 @@ XtensaTargetLowering::getRegForInlineAsmConstraint(
     switch (Constraint[0]) {
     default:
       break;
+    case 'a': // Address register
+    case 'd': // Data register (equivalent to 'r')
     case 'r': // General-purpose register
       return std::make_pair(0U, &Xtensa::ARRegClass);
     }
