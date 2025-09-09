@@ -9,15 +9,15 @@ define i32 @f(i32 %z) {
 ; XTENSA-ESP8266-LABEL: f:
 ; XTENSA-ESP8266:         .cfi_startproc
 ; XTENSA-ESP8266-NEXT:  # %bb.0:
-; XTENSA-ESP8266-NEXT:    movi a2, 0
-; XTENSA-ESP8266-NEXT:    ret
+; XTENSA-ESP8266-NEXT:    movi.n a2, 0
+; XTENSA-ESP8266-NEXT:    ret.n
 ;
 ; XTENSA-ESP32-LABEL: f:
 ; XTENSA-ESP32:         .cfi_startproc
 ; XTENSA-ESP32-NEXT:  # %bb.0:
 ; XTENSA-ESP32-NEXT:    entry a1, 32
 ; XTENSA-ESP32-NEXT:    .cfi_def_cfa_offset 32
-; XTENSA-ESP32-NEXT:    movi a2, 0
+; XTENSA-ESP32-NEXT:    movi.n a2, 0
 ; XTENSA-ESP32-NEXT:    retw.n
 ;
 ; XTENSA-GENERIC-LABEL: f:
