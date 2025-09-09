@@ -114,7 +114,10 @@ void XtensaPassConfig::addIRPasses() {
   TargetPassConfig::addIRPasses();
 }
 
-void XtensaPassConfig::addPreEmitPass() { addPass(&BranchRelaxationPassID); }
+void XtensaPassConfig::addPreEmitPass() {
+  addPass(createXtensaSizeReductionPass());
+  addPass(&BranchRelaxationPassID);
+}
 
 TargetPassConfig *XtensaTargetMachine::createPassConfig(PassManagerBase &PM) {
   return new XtensaPassConfig(*this, PM);
