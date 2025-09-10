@@ -37,6 +37,12 @@ enum {
   // of the field [1..16]
   EXTUI,
 
+  // Branch at the end of the loop, uses result of the LOOPDEC
+  LOOPBR,
+  // Decrement loop counter
+  LOOPDEC,
+  LOOPEND,
+
   MOVSP,
 
   // Wraps a TargetGlobalAddress that should be loaded using PC-relative
@@ -145,7 +151,9 @@ public:
     return TargetLowering::getInlineAsmMemConstraint(ConstraintCode);
   }
 
-SDValue LowerOperation(SDValue Op, SelectionDAG &DAG) const override;
+  SDValue PerformDAGCombine(SDNode *N, DAGCombinerInfo &DCI) const override;
+
+  SDValue LowerOperation(SDValue Op, SelectionDAG &DAG) const override;
 
   SDValue LowerFormalArguments(SDValue Chain, CallingConv::ID CallConv,
                                bool isVarArg,
