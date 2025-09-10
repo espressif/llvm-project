@@ -168,6 +168,10 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
   setOperationAction(ISD::SRA_PARTS, MVT::i32, Custom);
   setOperationAction(ISD::SRL_PARTS, MVT::i32, Custom);
 
+  // Funnel shifts
+  setOperationAction(ISD::FSHR, MVT::i32, Custom);
+  setOperationAction(ISD::FSHL, MVT::i32, Custom);
+
   setOperationAction(ISD::BSWAP, MVT::i32, Expand);
   setOperationAction(ISD::ROTL, MVT::i32, Expand);
   setOperationAction(ISD::ROTR, MVT::i32, Expand);
@@ -1468,6 +1472,21 @@ SDValue XtensaTargetLowering::LowerCTPOP(SDValue Op, SelectionDAG &DAG) const {
   return TLI.expandCTPOP(Op.getNode(), DAG);
 }
 
+SDValue XtensaTargetLowering::LowerFunnelShift(SDValue Op,
+                                               SelectionDAG &DAG) const {
+  SDLoc DL(Op);
+  SDValue Op0 = Op.getOperand(0);
+  SDValue Op1 = Op.getOperand(1);
+  SDValue Shamt = Op.getOperand(2);
+  MVT VT = Op.getSimpleValueType();
+
+  bool IsFSHR = Op.getOpcode() == ISD::FSHR;
+  assert((VT == MVT::i32) && "Unexpected funnel shift type!");
+
+  return DAG.getNode(IsFSHR ? XtensaISD::SRCR : XtensaISD::SRCL, DL, VT, Op0,
+                     Op1, Shamt);
+}
+
 bool XtensaTargetLowering::decomposeMulByConstant(LLVMContext &Context, EVT VT,
                                                   SDValue C) const {
   APInt Imm;
@@ -1539,6 +1558,9 @@ SDValue XtensaTargetLowering::LowerOperation(SDValue Op,
     return LowerShiftRightParts(Op, DAG, true);
   case ISD::SRL_PARTS:
     return LowerShiftRightParts(Op, DAG, false);
+  case ISD::FSHL:
+  case ISD::FSHR:
+    return LowerFunnelShift(Op, DAG);
   default:
     report_fatal_error("Unexpected node to lower");
   }
