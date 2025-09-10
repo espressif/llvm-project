@@ -142,6 +142,7 @@ void XtensaPassConfig::addPreRegAlloc() {
 }
 
 void XtensaPassConfig::addPreEmitPass() {
+  addPass(createXtensaPSRAMCacheFixPass());
   addPass(createXtensaSizeReductionPass());
   addPass(createXtensaFixupHwLoops());
   addPass(&BranchRelaxationPassID);
