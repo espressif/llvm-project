@@ -222,6 +222,8 @@ private:
 
   SDValue LowerShiftRightParts(SDValue Op, SelectionDAG &DAG, bool IsSRA) const;
 
+  SDValue LowerFunnelShift(SDValue Op, SelectionDAG &DAG) const;
+
   SDValue getAddrPCRel(SDValue Op, SelectionDAG &DAG) const;
 
   CCAssignFn *CCAssignFnForCall(CallingConv::ID CC, bool IsVarArg) const;
