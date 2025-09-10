@@ -17,6 +17,7 @@ add_public_tablegen_target(XtensaCommonTableGen)
 add_llvm_target(XtensaCodeGen
   XtensaAsmPrinter.cpp
   XtensaConstantPoolValue.cpp
+  XtensaESP32PSRAMFix.cpp
   XtensaFixupHWLoops.cpp
   XtensaFrameLowering.cpp
   XtensaHardwareLoops.cpp
