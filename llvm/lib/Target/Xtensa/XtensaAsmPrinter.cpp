@@ -52,6 +52,8 @@ void XtensaAsmPrinter::emitInstruction(const MachineInstr *MI) {
         *OutStreamer,
         MCInstBuilder(Xtensa::JX).addReg(MI->getOperand(0).getReg()));
     return;
+  case Xtensa::LOOPEND:
+    return;
   default:
     MCInst LoweredMI;
     lowerToMCInst(MI, LoweredMI);
