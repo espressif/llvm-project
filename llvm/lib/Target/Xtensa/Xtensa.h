@@ -30,5 +30,6 @@ void initializeXtensaAsmPrinterPass(PassRegistry &);
 FunctionPass *createXtensaSizeReductionPass();
 FunctionPass *createXtensaHardwareLoops();
 FunctionPass *createXtensaFixupHwLoops();
+FunctionPass *createXtensaPSRAMCacheFixPass();
 } // namespace llvm
 #endif // LLVM_LIB_TARGET_XTENSA_XTENSA_H
