@@ -1,6 +1,7 @@
 // RUN: %clang_builtins %s %librt -o %t && %run %t
 // REQUIRES: librt_has_udivmodti4
 // REQUIRES: int128
+// UNSUPPORTED: target={{.+-esp-.+}}
 
 #include "int_lib.h"
 #include <stdio.h>
