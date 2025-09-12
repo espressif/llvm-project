@@ -8,16 +8,17 @@ stages:
   - public_deploy
   - update_idf_tools
 
-image: ${CI_DOCKER_REGISTRY}/llvm-build:5
+image: ${CI_DOCKER_REGISTRY}/llvm-build:6
 
 default:
   interruptible: true
 
 variables:
-  ESP_LLVM_EMBEDDED_TOOLCHAIN_REF: "esp-20.1.1_20250829"
+  ESP_LLVM_EMBEDDED_TOOLCHAIN_REF: "esp_dev_on_llvm19"
   ESP_GNU_TOOLCHAIN_VER: "14.2.0_20241119"
   CROSS_ARM_IMAGE: $CI_DOCKER_REGISTRY/llvm-build-cross-arm:2
   CROSS_WIN_IMAGE: $CI_DOCKER_REGISTRY/llvm-build-cross-win:3
+  CROSS_MACOS_IMAGE: $CI_DOCKER_REGISTRY/llvm-build-cross-macos:1
   DIST_DIR: "dist"
   BUILD_DIR: "build"
   GITLAB_SERVER_URL: https://gitlab-ci-token:${CI_JOB_TOKEN}@${GITLAB_HTTPS_SERVER}
@@ -59,7 +60,7 @@ before_script:
     BUILD_TARGET_LIBS: "OFF"
     RUN_CORE_TESTS: "OFF"
     RUN_PKG_TESTS: "OFF"
-    RUN_TARGET_LIB_TESTS: "OFF"
+    RUN_TOOLCHAIN_TESTS: "OFF"
     PACK_TOOLCHAIN: "ON"
     PACK_STANDALONE_LIBS: "ON"
     PACK_TARGET_LIBS: "OFF"
@@ -113,15 +114,16 @@ before_script:
       -DBINUTILS_REPO_URL="${GITLAB_SERVER_URL}/${BINUTILS_REPO_PATH}.git"
       -DXTENSA_OVERLAYS_REPO_URL="${GITLAB_SERVER_URL}/${XTENSA_OVERLAYS_REPO_PATH}.git"
       -DFETCHCONTENT_QUIET=OFF
-      -DESP_GNU_TOOLCHAIN_VER=${ESP_GNU_TOOLCHAIN_VER}
+      -DLLVM_TOOLCHAIN_ESP_GNU_TOOLCHAIN_VER=${ESP_GNU_TOOLCHAIN_VER}
       -DLLVM_TOOLCHAIN_CROSS_BUILD_MINGW=${CROSS_BUILD_MINGW}
-      -DUSE_LIBC=${USE_LIBC}
-      -DUSE_LIBCXX=${USE_LIBCXX}
-      -DUSE_RTLIB=${USE_RTLIB}
-      -DUSE_BINUTILS=ON
-      -DESP_TOOLCHAIN=ON
-      -DHOST_TRIPLE=${CONF_HOST}
+      -DLLVM_TOOLCHAIN_C_LIBRARY=${USE_LIBC}
+      -DLLVM_TOOLCHAIN_CXX_LIBRARIES=${USE_LIBCXX}
+      -DLLVM_TOOLCHAIN_RT_LIBRARIES=${USE_RTLIB}
+      -DLLVM_TOOLCHAIN_INCLUDE_GNU_BINUTILS=ON
+      -DLLVM_TOOLCHAIN_ESPRESSIF=ON
+      -DLLVM_TOOLCHAIN_HOST_TRIPLE=${CONF_HOST}
       -DLLVM_TOOLCHAIN_ENABLED_TARGETS="${TARGET}"
+      -DLLVM_TOOLCHAIN_PACKAGE_NAME="esp-clang"
       -DLLVM_USE_LINKER=${USE_LINKER}
       -DLLVM_PARALLEL_LINK_JOBS=${ESP_LLVM_PARALLEL_LINK_JOBS}
       -DLLVM_PARALLEL_COMPILE_JOBS=${ESP_LLVM_PARALLEL_COMPILE_JOBS}
@@ -137,6 +139,8 @@ before_script:
         useradd -m test_runner;
         chown -R test_runner ${BUILD_PATH};
         runuser -u test_runner -- git config --global --add safe.directory $CI_PROJECT_DIR;
+        chown -R test_runner $PWD/esp-llvm-embedded-toolchain;
+        runuser -u test_runner -- git config --global --add safe.directory $PWD/esp-llvm-embedded-toolchain;
         if [[ "${RUN_CORE_TESTS}" == "ON" ]]; then
           echo "Run LLVM/Clang unit tests";
           touch ${BUILD_PATH}/tests.log;
@@ -147,22 +151,20 @@ before_script:
           chmod o+w ${BUILD_PATH}/lld-tests.log;
           runuser -u test_runner -- ninja -C ${BUILD_PATH} check-lld 2>&1 > ${BUILD_PATH}/lld-tests.log;
         fi
-        if [[ "${RUN_TARGET_LIB_TESTS}" == "ON" ]]; then
-          echo "Run Compiler-RT unit tests";
-          touch ${BUILD_PATH}/compiler-rt-tests.log;
-          chmod o+w ${BUILD_PATH}/compiler-rt-tests.log;
-          runuser -u test_runner -- ninja -C ${BUILD_PATH} check-compiler-rt 2>&1 > ${BUILD_PATH}/compiler-rt-tests.log;
+        if [[ "${RUN_TOOLCHAIN_TESTS}" == "ON" ]]; then
+          echo "Run toolchain unit tests";
+          touch ${BUILD_PATH}/toolchain-tests.log;
+          chmod o+w ${BUILD_PATH}/toolchain-tests.log;
+          runuser -u test_runner -- ninja -C ${BUILD_PATH} check-llvm-toolchain 2>&1 > ${BUILD_PATH}/toolchain-tests.log;
         fi
         if [[ "${RUN_PKG_TESTS}" == "ON" ]]; then
-          echo "Run package tests";
+          echo "Run toolchain package tests";
           # to avoid test failure "fatal: detected dubious ownership in repository at '/builds/llvm-project'"
           touch ${BUILD_PATH}/pkg-tests.log;
           chmod o+w ${BUILD_PATH}/pkg-tests.log;
-          chown -R test_runner $PWD/esp-llvm-embedded-toolchain;
-          runuser -u test_runner -- git config --global --add safe.directory $PWD/esp-llvm-embedded-toolchain;
           runuser -u test_runner -- ninja -C ${BUILD_PATH} check-package-llvm-toolchain 2>&1 > ${BUILD_PATH}/pkg-tests.log;
-          chown -R ${CUR_USER} $PWD/esp-llvm-embedded-toolchain;
         fi
+        chown -R ${CUR_USER} $PWD/esp-llvm-embedded-toolchain;
         chown -R ${CUR_USER} ${BUILD_PATH};
       fi
     # pack distro
@@ -277,10 +279,11 @@ build_x86_64-linux-gnu:
     CONF_HOST: "x86_64-linux-gnu"
     # Build complete distro it is necessary for running package tests
     BUILD_TARGET_LIBS: "ON"
+    RUN_TOOLCHAIN_TESTS: "ON"
     RUN_PKG_TESTS: "ON"
 
 # Target libs are built in build_x86_64-linux-gnu, but due to artifacts
-# size limit we have to produce target libs archive in this job.
+# size limit we have to produce target libs archive in this job too.
 # Archive with target libs from this job will be used in pack jobs
 # for all platform except for x86_64-linux-gnu.
 build_target_libs:
@@ -288,7 +291,6 @@ build_target_libs:
   stage: build
   variables:
     CONF_HOST: "x86_64-linux-gnu"
-    RUN_TARGET_LIB_TESTS: "ON"
     PACK_TARGET_LIBS: "ON"
     PACK_TOOLCHAIN: "OFF"
     PACK_STANDALONE_LIBS: "OFF"
@@ -319,12 +321,14 @@ build_aarch64-linux-gnu:
 build_x86_64-apple-darwin:
   extends: .build_toolchain_template
   stage: build
+  image: ${CROSS_MACOS_IMAGE}
   variables:
     CONF_HOST: "x86_64-apple-darwin21.1"
 
 build_aarch64-apple-darwin:
   extends: .build_toolchain_template
   stage: build
+  image: ${CROSS_MACOS_IMAGE}
   variables:
     CONF_HOST: "aarch64-apple-darwin21.1"
 
@@ -351,7 +355,6 @@ build_aarch64-apple-darwin:
     PACK_TOOL: "tar cJf"
     UNPACK_TOOL: "tar xJf"
   script:
-    - *get_toolchain_build_scripts
     # update distro
     - *unpack_distro
     - TARGET_LIBS_PACK_FILE=$(cat target_libs_arch_name)
