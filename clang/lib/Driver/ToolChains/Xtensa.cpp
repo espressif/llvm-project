@@ -152,6 +152,11 @@ XtensaToolChain::GetCXXStdlibType(const ArgList &Args) const {
   return ToolChain::CST_Libstdcxx;
 }
 
+ToolChain::UnwindLibType
+XtensaToolChain::GetUnwindLibType(const llvm::opt::ArgList &Args) const {
+  return ToolChain::UNW_None;
+}
+
 const StringRef XtensaToolChain::GetTargetCPUVersion(const ArgList &Args) {
   if (Arg *A = Args.getLastArg(clang::driver::options::OPT_mcpu_EQ)) {
     StringRef CPUName = A->getValue();
@@ -209,33 +214,62 @@ void xtensa::Linker::ConstructJob(Compilation &C, const JobAction &JA,
                                   const InputInfoList &Inputs,
                                   const ArgList &Args,
                                   const char *LinkingOutput) const {
-  const auto &TC =
-      static_cast<const toolchains::XtensaToolChain &>(getToolChain());
+  ArgStringList CmdArgs;
+  bool WantCRTs =
+      !Args.hasArg(options::OPT_nostdlib, options::OPT_nostartfiles);
+  const auto &ToolChain =
+      static_cast<const toolchains::XtensaToolChain &>(getToolChain());  
 
-  if (TC.GCCToolchainName == "")
+  if (ToolChain.GCCToolchainName == "")
     llvm_unreachable("Unable to find Xtensa GCC linker");
 
-  SmallString<128> Linker(TC.GCCToolchainDir);
+  SmallString<128> Linker(ToolChain.GCCToolchainDir);
   llvm::sys::path::append(Linker, "bin",
-                          TC.GCCToolchainName + "-" + getShortName());
-  ArgStringList CmdArgs;
+                          ToolChain.GCCToolchainName + "-" + getShortName());
 
-  Args.AddAllArgs(CmdArgs, options::OPT_L);
-  TC.AddFilePathLibArgs(Args, CmdArgs);
+  const char *crtbegin, *crtend;
+  auto RuntimeLib = ToolChain.GetRuntimeLibType(Args);
+  if (RuntimeLib == ToolChain::RLT_Libgcc) {
+    crtbegin = "crtbegin.o";
+    crtend = "crtend.o";
+  } else {
+    assert (RuntimeLib == ToolChain::RLT_CompilerRT);
+    crtbegin = ToolChain.getCompilerRTArgString(Args, "crtbegin",
+                                                ToolChain::FT_Object);
+    crtend = ToolChain.getCompilerRTArgString(Args, "crtend",
+                                              ToolChain::FT_Object);
+  }
 
-  Args.addAllArgs(CmdArgs,
-                  {options::OPT_T_Group, options::OPT_e, options::OPT_s,
-                   options::OPT_t, options::OPT_u_Group});
+  if (WantCRTs) {
+    // TODO: The crt0.o is not used for esp targets, but maybe used in
+    // future for other vendors
+    //CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath("crt0.o")));
+    CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath(crtbegin)));
+  }
 
   AddLinkerInputs(getToolChain(), Inputs, Args, CmdArgs, JA);
 
-  CmdArgs.push_back("-lgcc");
+  Args.AddAllArgs(CmdArgs, options::OPT_L);
+  ToolChain.AddFilePathLibArgs(Args, CmdArgs);
+  Args.addAllArgs(CmdArgs,
+                  {options::OPT_T_Group, options::OPT_e, options::OPT_s,
+                   options::OPT_t, options::OPT_u_Group});
+  
+  if (!Args.hasArg(options::OPT_nostdlib) &&
+      !Args.hasArg(options::OPT_nodefaultlibs)) {
+    if (ToolChain.ShouldLinkCXXStdlib(Args))
+      ToolChain.AddCXXStdlibLibArgs(Args, CmdArgs);
+    AddRunTimeLibs(ToolChain, ToolChain.getDriver(), CmdArgs, Args);
+  }
+
+  if (WantCRTs)
+    CmdArgs.push_back(Args.MakeArgString(ToolChain.GetFilePath(crtend)));
 
   CmdArgs.push_back("-o");
   CmdArgs.push_back(Output.getFilename());
-  C.addCommand(
-      std::make_unique<Command>(JA, *this, ResponseFileSupport::AtFileCurCP(),
-                                Args.MakeArgString(Linker), CmdArgs, Inputs));
+  C.addCommand(std::make_unique<Command>(
+      JA, *this, ResponseFileSupport::AtFileCurCP(), Args.MakeArgString(Linker), 
+      CmdArgs, Inputs));
 }
 
 // Get features by CPU name
