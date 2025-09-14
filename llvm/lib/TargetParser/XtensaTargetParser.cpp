@@ -13,7 +13,7 @@
 #include "llvm/TargetParser/XtensaTargetParser.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/StringSwitch.h"
-#include <vector>
+#include "llvm/ADT/SmallVector.h"
 
 namespace llvm {
 
@@ -65,7 +65,7 @@ CPUKind parseCPUKind(StringRef CPU) {
 }
 
 // Get all features for the CPU
-void getCPUFeatures(StringRef CPU, std::vector<StringRef> &Features) {
+void getCPUFeatures(StringRef CPU, SmallVectorImpl<StringRef> &Features) {
   CPU = getBaseName(CPU);
   auto I = llvm::find_if(XtensaCPUInfo,
                          [&](const CPUInfo &CI) { return CI.Name == CPU; });
@@ -79,7 +79,7 @@ void getCPUFeatures(StringRef CPU, std::vector<StringRef> &Features) {
 }
 
 // Find all valid CPUs
-void fillValidCPUList(std::vector<StringRef> &Values) {
+void fillValidCPUList(SmallVectorImpl<StringRef> &Values) {
   for (const auto &C : XtensaCPUInfo) {
     if (C.Kind != CK_INVALID) {
       Values.emplace_back(C.Name);
