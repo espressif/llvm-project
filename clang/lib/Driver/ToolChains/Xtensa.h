@@ -20,19 +20,6 @@ namespace clang {
 namespace driver {
 namespace toolchains {
 
-class XtensaGCCToolchainDetector {
-public:
-  std::string GCCLibAndIncVersion;
-  std::string GCCToolchainName;
-  std::string GCCToolchainDir;
-  std::string Slash;
-
-  XtensaGCCToolchainDetector(const Driver &D, const llvm::Triple &HostTriple,
-                             const llvm::opt::ArgList &Args);
-
-  bool IsValid() const { return GCCToolchainName != ""; }
-};
-
 class LLVM_LIBRARY_VISIBILITY XtensaToolChain : public Generic_ELF {
 protected:
   Tool *buildLinker() const override;
@@ -49,13 +36,15 @@ public:
                            llvm::opt::ArgStringList &CC1Args) const override;
   CXXStdlibType GetCXXStdlibType(const llvm::opt::ArgList &Args) const override;
   bool IsIntegratedAssemblerDefault() const override {
-    return (IsIntegratedAsm || (XtensaGCCToolchain.GCCToolchainName == ""));
+    return (IsIntegratedAsm || (GCCToolchainName == ""));
   }
 
   static const StringRef GetTargetCPUVersion(const llvm::opt::ArgList &Args);
 
-  XtensaGCCToolchainDetector XtensaGCCToolchain;
   bool IsIntegratedAsm = true;
+  std::string GCCLibAndIncVersion = "";
+  std::string GCCToolchainName = "";
+  std::string GCCToolchainDir = "";
 };
 
 } // end namespace toolchains
@@ -65,7 +54,7 @@ namespace xtensa {
 class LLVM_LIBRARY_VISIBILITY Linker : public Tool {
 public:
   Linker(const ToolChain &TC)
-      : Tool("Xtensa::Linker", "xtensa-esp32-elf-ld", TC) {}
+      : Tool("Xtensa::Linker", "ld", TC) {}
   bool hasIntegratedCPP() const override { return false; }
   bool isLinkJob() const override { return true; }
   void ConstructJob(Compilation &C, const JobAction &JA,
@@ -77,7 +66,7 @@ public:
 class LLVM_LIBRARY_VISIBILITY Assembler : public Tool {
 public:
   Assembler(const ToolChain &TC)
-      : Tool("Xtensa::Assembler", "xtensa-esp32-elf-as", TC) {}
+      : Tool("Xtensa::Assembler", "as", TC) {}
 
   bool hasIntegratedCPP() const override { return false; }
   void ConstructJob(Compilation &C, const JobAction &JA,
