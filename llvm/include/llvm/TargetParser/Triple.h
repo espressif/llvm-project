@@ -291,6 +291,7 @@ public:
     Mesa,
     SUSE,
     OpenEmbedded,
+    Espressif,
     Intel,
     Meta,
     LastVendorType = Meta
