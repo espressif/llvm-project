@@ -880,6 +880,7 @@ set(s390x_SOURCES
   ${GENERIC_TF_SOURCES}
 )
 
+set(xtensa_SOURCES ${GENERIC_SOURCES} ${GENERIC_TF_SOURCES})
 
 set(wasm_SOURCES
   wasm/__c_longjmp.S
