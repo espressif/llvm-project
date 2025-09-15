@@ -302,6 +302,11 @@ void setComplexRange(const Driver &D, StringRef NewOpt,
                      LangOptions::ComplexRangeKind NewRange, StringRef &LastOpt,
                      LangOptions::ComplexRangeKind &Range);
 
+void addEspMultilibsPaths(const Driver &D, const MultilibSet &Multilibs,
+                                const Multilib &Multilib,
+                                StringRef CPU,
+                                StringRef InstallPath,
+                                ToolChain::path_list &Paths);
 } // end namespace tools
 } // end namespace driver
 } // end namespace clang
