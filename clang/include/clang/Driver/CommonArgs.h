@@ -318,6 +318,11 @@ void constructLLVMLinkCommand(Compilation &C, const Tool &T,
                               const llvm::opt::ArgList &Args,
                               const char *OutputFilename = nullptr);
 
+void addEspMultilibsPaths(const Driver &D, const MultilibSet &Multilibs,
+                                const Multilib &Multilib,
+                                StringRef CPU,
+                                StringRef InstallPath,
+                                ToolChain::path_list &Paths);
 } // end namespace tools
 } // end namespace driver
 } // end namespace clang
