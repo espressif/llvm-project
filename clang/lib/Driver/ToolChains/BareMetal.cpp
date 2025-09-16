@@ -216,7 +216,7 @@ static void addMultilibsFilePaths(const Driver &D, const MultilibSet &Multilibs,
 // AArch64, RISCV and PPC and of these only RISCV have GCC multilibs hardcoded
 // in GCCInstallation.
 BareMetal::BareMetal(const Driver &D, const llvm::Triple &Triple,
-                     const ArgList &Args)
+                     const ArgList &Args, bool detectMultilibs)
     : Generic_ELF(D, Triple, Args) {
   IsGCCInstallationValid = initGCCInstallation(Triple, Args);
   std::string ComputedSysRoot = computeSysRoot();
@@ -245,9 +245,10 @@ BareMetal::BareMetal(const Driver &D, const llvm::Triple &Triple,
     PPaths.push_back((GCCInstallation.getParentLibPath() + "/../bin").str());
   } else {
     getProgramPaths().push_back(getDriver().Dir);
-    findMultilibs(D, Triple, Args);
+    if (detectMultilibs)
+      findMultilibs(D, Triple, Args);
     const SmallString<128> SysRootDir(computeSysRoot());
-    if (!SysRootDir.empty()) {
+    if (!SysRootDir.empty() && detectMultilibs) {
       for (const Multilib &M : getOrderedMultilibs()) {
         SmallString<128> Dir(SysRootDir);
         llvm::sys::path::append(Dir, M.osSuffix(), "lib");
@@ -449,6 +450,28 @@ void BareMetal::addLibStdCxxIncludePaths(
                            CC1Args);
 }
 
+void BareMetal::DetectAndAppendGCCVersion(const Driver &D,
+                                      SmallString<128> &Dir) const {
+    std::error_code EC;
+    Generic_GCC::GCCVersion Version = {"", -1, -1, -1, "", "", ""};
+
+    // Walk the subdirs, and find the one with the newest gcc version:
+    for (llvm::vfs::directory_iterator LI = D.getVFS().dir_begin(Dir.str(), EC),
+                                       LE;
+         !EC && LI != LE; LI = LI.increment(EC)) {
+      StringRef VersionText = llvm::sys::path::filename(LI->path());
+      auto CandidateVersion = Generic_GCC::GCCVersion::Parse(VersionText);
+      if (CandidateVersion.Major == -1)
+        continue;
+      if (CandidateVersion <= Version)
+        continue;
+      Version = CandidateVersion;
+    }
+    if (Version.Major == -1)
+      return; // no GCC version found, do not append it
+    llvm::sys::path::append(Dir, Version.Text);
+}
+
 void BareMetal::AddClangCXXStdlibIncludeArgs(const ArgList &DriverArgs,
                                              ArgStringList &CC1Args) const {
   if (DriverArgs.hasArg(options::OPT_nostdinc, options::OPT_nostdlibinc,
@@ -513,25 +536,8 @@ void BareMetal::AddClangCXXStdlibIncludeArgs(const ArgList &DriverArgs,
     }
     case ToolChain::CST_Libstdcxx: {
       llvm::sys::path::append(Dir, "include", "c++");
-      std::error_code EC;
-      Generic_GCC::GCCVersion Version = {"", -1, -1, -1, "", "", ""};
-      // Walk the subdirs, and find the one with the newest gcc version:
-      for (llvm::vfs::directory_iterator
-               LI = D.getVFS().dir_begin(Dir.str(), EC),
-               LE;
-           !EC && LI != LE; LI = LI.increment(EC)) {
-        StringRef VersionText = llvm::sys::path::filename(LI->path());
-        auto CandidateVersion = Generic_GCC::GCCVersion::Parse(VersionText);
-        if (CandidateVersion.Major == -1)
-          continue;
-        if (CandidateVersion <= Version)
-          continue;
-        Version = CandidateVersion;
-      }
-      if (Version.Major != -1) {
-        llvm::sys::path::append(Dir, Version.Text);
-        addSystemInclude(DriverArgs, CC1Args, Dir.str());
-      }
+      DetectAndAppendGCCVersion(D, Dir);
+      addSystemInclude(DriverArgs, CC1Args, Dir.str());
       break;
     }
     }
