@@ -20,6 +20,7 @@
 #include "ToolChains/Cygwin.h"
 #include "ToolChains/Darwin.h"
 #include "ToolChains/DragonFly.h"
+#include "ToolChains/EspBareMetal.h"
 #include "ToolChains/FreeBSD.h"
 #include "ToolChains/Fuchsia.h"
 #include "ToolChains/Gnu.h"
@@ -52,7 +53,6 @@
 #include "ToolChains/VEToolchain.h"
 #include "ToolChains/WebAssembly.h"
 #include "ToolChains/XCore.h"
-#include "ToolChains/Xtensa.h"
 #include "ToolChains/ZOS.h"
 #include "clang/Basic/DiagnosticDriver.h"
 #include "clang/Basic/TargetID.h"
@@ -7089,7 +7089,10 @@ const ToolChain &Driver::getToolChain(const ArgList &Args,
         TC = std::make_unique<toolchains::CSKYToolChain>(*this, Target, Args);
         break;
       case llvm::Triple::xtensa:
-        TC = std::make_unique<toolchains::XtensaToolChain>(*this, Target, Args);
+        if (Target.getVendor() == llvm::Triple::Espressif)
+          TC = std::make_unique<toolchains::EspBareMetal>(*this, Target, Args);
+        else
+          TC = std::make_unique<toolchains::BareMetal>(*this, Target, Args);
         break;
       default:
         if (toolchains::BareMetal::handlesTarget(Target))
