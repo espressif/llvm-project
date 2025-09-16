@@ -23,7 +23,7 @@ namespace toolchains {
 class LLVM_LIBRARY_VISIBILITY BareMetal : public Generic_ELF {
 public:
   BareMetal(const Driver &D, const llvm::Triple &Triple,
-            const llvm::opt::ArgList &Args);
+            const llvm::opt::ArgList &Args, bool detectMultilibs = true);
   ~BareMetal() override = default;
 
   static bool handlesTarget(const llvm::Triple &Triple);
@@ -32,6 +32,8 @@ public:
                      const llvm::opt::ArgList &Args);
 
 protected:
+  void DetectAndAppendGCCVersion(const Driver &D,
+                                      SmallString<128> &Dir) const;
   Tool *buildLinker() const override;
   Tool *buildStaticLibTool() const override;
 
@@ -69,7 +71,7 @@ public:
   addClangTargetOptions(const llvm::opt::ArgList &DriverArgs,
                         llvm::opt::ArgStringList &CC1Args,
                         Action::OffloadKind DeviceOffloadKind) const override;
-  void AddClangCXXStdlibIncludeArgs(
+  virtual void AddClangCXXStdlibIncludeArgs(
       const llvm::opt::ArgList &DriverArgs,
       llvm::opt::ArgStringList &CC1Args) const override;
   void
@@ -79,7 +81,7 @@ public:
   std::string getCompilerRTPath() const override;
   SanitizerMask getSupportedSanitizers() const override;
 
-private:
+protected:
   std::string SysRoot;
 
   bool IsGCCInstallationValid;
