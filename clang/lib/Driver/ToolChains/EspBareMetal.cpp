@@ -11,6 +11,7 @@
 #include "Gnu.h"
 #include "clang/Driver/InputInfo.h"
 
+#include "Arch/RISCV.h"
 #include "clang/Driver/CommonArgs.h"
 #include "clang/Driver/Compilation.h"
 #include "clang/Driver/Driver.h"
@@ -110,6 +111,14 @@ void EspBareMetal::AddCXXStdlibLibArgs(const ArgList &Args,
   }
 }
 
+static void getRISCV32MultilibFlags(const llvm::Triple &Triple,
+                                          const llvm::opt::ArgList &Args,
+                                          Multilib::flags_list &Result) {
+
+  Result.push_back("-march=" + riscv::getRISCVArch(Args, Triple));
+  Result.push_back("-mabi=" + riscv::getRISCVABI(Args, Triple).str());
+}
+
 static void getXtensaMultilibFlags(const llvm::Triple &Triple,
                                           const llvm::opt::ArgList &Args,
                                           Multilib::flags_list &Result) {
@@ -138,6 +147,9 @@ EspBareMetal::getMultilibFlags(const llvm::opt::ArgList &Args) const {
     Result.push_back("-fno-rtti");
 
   switch (Triple.getArch()) {
+  case llvm::Triple::riscv32:
+    getRISCV32MultilibFlags(Triple, Args, Result);
+    break;
   case llvm::Triple::xtensa:
     getXtensaMultilibFlags(Triple, Args, Result);
     break;
@@ -265,10 +277,25 @@ void baremetal::esp::Assembler::ConstructJob(Compilation &C, const JobAction &JA
     CmdArgs.push_back(II.getFilename());
 
   std::string AsmPrefix;
-  StringRef cpu = Args.getLastArgValue(options::OPT_mcpu_EQ, "esp32");
-  // xtensa-esp32-elf
-  AsmPrefix = TC.getTriple().getArchName().str() + "-" + cpu.str() + "-" + 
-            TC.getTriple().getEnvironmentName().str();
+  if (TC.getTriple().getArch() == llvm::Triple::xtensa) {
+    StringRef cpu = Args.getLastArgValue(options::OPT_mcpu_EQ, "esp32");
+    // xtensa-esp32-elf
+    AsmPrefix = TC.getTriple().getArchName().str() + "-" + cpu.str() + "-" +
+              TC.getTriple().getEnvironmentName().str();
+  } else {
+    // riscv32-esp-elf
+    if (Args.hasArg(options::OPT_march_EQ))
+      Args.AddAllArgs(CmdArgs, options::OPT_march_EQ);
+    else
+      CmdArgs.push_back("-march=rv32imac");
+    if (Args.hasArg(options::OPT_mabi_EQ))
+      Args.AddAllArgs(CmdArgs, options::OPT_mabi_EQ);
+    else
+      CmdArgs.push_back("-mabi=ilp32");
+    AsmPrefix = TC.getTriple().getArchName().str() + "-" +
+              TC.getTriple().getVendorName().str() + "-" +
+              TC.getTriple().getEnvironmentName().str();
+  }
   SmallString<128> Asm(AsmPrefix + "-" + getShortName());
   C.addCommand(
       std::make_unique<Command>(JA, *this, ResponseFileSupport::AtFileCurCP(),
