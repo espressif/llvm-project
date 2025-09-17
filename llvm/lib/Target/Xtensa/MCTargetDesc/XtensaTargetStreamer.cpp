@@ -85,8 +85,15 @@ void XtensaTargetELFStreamer::emitLiteral(MCSymbol *LblSym, const MCExpr *Value,
   MCStreamer &OutStreamer = getStreamer();
   if (SwitchLiteralSection) {
     MCContext &Context = OutStreamer.getContext();
+    StringRef LiteralSectionPrefix = getLiteralSectionPrefix();
+    std::string SectionName;
+
     auto *CS = static_cast<MCSectionELF *>(OutStreamer.getCurrentSectionOnly());
-    std::string SectionName = getLiteralSectionName(CS->getName());
+    if (LiteralSectionPrefix != "") {
+      SectionName = LiteralSectionPrefix.str() + ".literal";
+    } else {
+      SectionName = getLiteralSectionName(CS->getName());
+    }
 
     MCSection *ConstSection = Context.getELFSection(
         SectionName, ELF::SHT_PROGBITS, ELF::SHF_EXECINSTR | ELF::SHF_ALLOC);
@@ -106,7 +113,14 @@ void XtensaTargetELFStreamer::emitLiteral(MCSymbol *LblSym, const MCExpr *Value,
 void XtensaTargetELFStreamer::startLiteralSection(MCSection *BaseSection) {
   MCContext &Context = getStreamer().getContext();
 
-  std::string SectionName = getLiteralSectionName(BaseSection->getName());
+  StringRef LiteralSectionPrefix = getLiteralSectionPrefix();
+  std::string SectionName;
+
+  if (LiteralSectionPrefix != "") {
+    SectionName = LiteralSectionPrefix.str() + ".literal";
+  } else {
+    SectionName = getLiteralSectionName(BaseSection->getName());
+  }
 
   MCSection *ConstSection = Context.getELFSection(
       SectionName, ELF::SHT_PROGBITS, ELF::SHF_EXECINSTR | ELF::SHF_ALLOC);
