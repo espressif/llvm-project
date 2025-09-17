@@ -102,6 +102,8 @@ void XtensaTargetELFStreamer::emitLiteral(MCSymbol *LblSym, const MCExpr *Value,
     OutStreamer.switchSection(ConstSection);
   }
 
+  OutStreamer.emitCodeAlignment(Align(4),
+                                 OutStreamer.getContext().getSubtargetInfo());
   OutStreamer.emitLabel(LblSym, L);
   OutStreamer.emitValue(Value, 4, L);
 
@@ -128,6 +130,8 @@ void XtensaTargetELFStreamer::startLiteralSection(MCSection *BaseSection) {
       SectionName, ELF::SHT_PROGBITS, ELF::SHF_EXECINSTR | ELF::SHF_ALLOC);
 
   ConstSection->setAlignment(Align(4));
+  MCStreamer &OutStreamer = getStreamer();
+  OutStreamer.switchSection(ConstSection);
 }
 
 MCELFStreamer &XtensaTargetELFStreamer::getStreamer() {
