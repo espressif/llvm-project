@@ -1729,11 +1729,16 @@ static void findRISCVBareMetalMultilibs(const Driver &D,
   // currently only support the set of multilibs like riscv-gnu-toolchain does.
   // TODO: support MULTILIB_REUSE
   constexpr RiscvMultilib RISCVMultilibSet[] = {
-      {"rv32i", "ilp32"},     {"rv32im", "ilp32"},     {"rv32iac", "ilp32"},
-      {"rv32imac", "ilp32"},  {"rv32imafc", "ilp32f"}, {"rv64imac", "lp64"},
-      {"rv64imafdc", "lp64d"}};
+      {"rv32i", "ilp32"},   {"rv32im", "ilp32"},    {"rv32iac", "ilp32"},
+      {"rv32imc", "ilp32"}, {"rv32imac", "ilp32"},  {"rv32imafc", "ilp32f"},
+      {"rv64imac", "lp64"}, {"rv64imafdc", "lp64d"},
+      // Add ISA 2.1 naming variants to support more modern GCC installations
+      {"rv32i_zicsr_zifencei", "ilp32"},   {"rv32im_zicsr_zifencei", "ilp32"},    {"rv32iac_zicsr_zifencei", "ilp32"},
+      {"rv32imc_zicsr_zifencei", "ilp32"}, {"rv32imac_zicsr_zifencei", "ilp32"},  {"rv32imafc_zicsr_zifencei", "ilp32f"},
+      {"rv64imac_zicsr_zifencei", "lp64"}, {"rv64imafdc_zicsr_zifencei", "lp64d"}};
 
   std::vector<MultilibBuilder> Ms;
+
   for (auto Element : RISCVMultilibSet) {
     // multilib path rule is ${march}/${mabi}
     Ms.emplace_back(
@@ -1744,25 +1749,53 @@ static void findRISCVBareMetalMultilibs(const Driver &D,
   }
 
   StringRef EndiannessSuffix = TargetTriple.isLittleEndian() ? "" : "be";
-  MultilibSet RISCVMultilibs =
-      MultilibSetBuilder()
-          .Either(Ms)
-          .makeMultilibSet()
-          .FilterOut(NonExistent)
-          .setFilePathsCallback([EndiannessSuffix](const Multilib &M) {
-            return std::vector<std::string>(
-                {M.gccSuffix(),
-                 "/../../../../riscv64" + EndiannessSuffix.str() +
-                     "-unknown-elf/lib" + M.gccSuffix(),
-                 "/../../../../riscv32" + EndiannessSuffix.str() +
-                     "-unknown-elf/lib" + M.gccSuffix()});
-          });
+  MultilibSet RISCVMultilibs;
+  if (TargetTriple.getVendor() == llvm::Triple::Espressif) {
+    MultilibBuilder NoRTTI = MultilibBuilder("/no-rtti").flag("-fno-rtti");
+    RISCVMultilibs = MultilibSetBuilder()
+                         .Either(Ms)
+                         .Maybe(NoRTTI)
+                         .makeMultilibSet()
+                         .FilterOut(NonExistent);
+  } else {
+    RISCVMultilibs =
+        MultilibSetBuilder().Either(Ms).makeMultilibSet().FilterOut(
+            NonExistent);
+  }
+
+  if (TargetTriple.getVendor() == llvm::Triple::Espressif) {
+    RISCVMultilibs.setFilePathsCallback([](const Multilib &M) {
+      return std::vector<std::string>(
+          {M.gccSuffix(), "/../../../../riscv32-esp-elf/lib" + M.gccSuffix()});
+    });
+  } else {
+    RISCVMultilibs.setFilePathsCallback([EndiannessSuffix](const Multilib &M) {
+      return std::vector<std::string>(
+          {M.gccSuffix(),
+          "/../../../../riscv64" + EndiannessSuffix.str() +
+              "-unknown-elf/lib" + M.gccSuffix(),
+          "/../../../../riscv32" + EndiannessSuffix.str() +
+              "-unknown-elf/lib" + M.gccSuffix()});
+    });
+  }
 
   Multilib::flags_list Flags;
   StringRef ABIName = tools::riscv::getRISCVABI(Args, TargetTriple);
   std::string MArch = tools::riscv::getRISCVArch(Args, TargetTriple);
   Flags.push_back("-march=" + MArch);
   Flags.push_back("-mabi=" + ABIName.str());
+
+  if (TargetTriple.getVendor() == llvm::Triple::Espressif) {
+    addMultilibFlag(
+        Args.hasFlag(options::OPT_fno_rtti, options::OPT_frtti, false),
+        "-fno-rtti", Flags);
+  }
+
+  if (TargetTriple.getVendor() == llvm::Triple::Espressif) {
+    addMultilibFlag(
+        Args.hasFlag(options::OPT_frtti, options::OPT_fno_rtti, true), "frtti",
+        Flags);
+  }
 
   if (selectRISCVMultilib(D, RISCVMultilibs, Flags, Result.SelectedMultilibs))
     Result.Multilibs = std::move(RISCVMultilibs);
@@ -2436,7 +2469,9 @@ void Generic_GCC::GCCInstallationDetector::AddDefaultGCCPrefixes(
 
   static const char *const RISCV32LibDirs[] = {"/lib32", "/lib"};
   static const char *const RISCV32Triples[] = {"riscv32-unknown-linux-gnu",
-                                               "riscv32-unknown-elf"};
+                                               "riscv32-unknown-elf",
+                                               "riscv32-esp-elf",
+                                               "riscv32-esp-unknown-elf"};
   static const char *const RISCV64LibDirs[] = {"/lib64", "/lib"};
   static const char *const RISCV64Triples[] = {"riscv64-unknown-linux-gnu",
                                                "riscv64-unknown-elf"};
