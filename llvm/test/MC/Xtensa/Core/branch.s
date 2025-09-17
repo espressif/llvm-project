@@ -29,6 +29,10 @@ bbci a3, 16, LBL0
 # CHECK: encoding: [0x07,0x73,A]
 bbci a3, (16), LBL0
 
+# CHECK-INST:  bbci    a3, 16, LBL0
+# CHECK: encoding: [0x07,0x73,A]
+bbci.l a3, 16, LBL0
+
 # Instruction format RRI8
 # CHECK-INST:  bbs     a12, a5, LBL0
 # CHECK: encoding: [0x57,0xdc,A]
@@ -38,6 +42,10 @@ bbs a12, a5, LBL0
 # CHECK-INST:  bbsi    a3, 16, LBL0
 # CHECK: encoding: [0x07,0xf3,A]
 bbsi a3, 16, LBL0
+
+# CHECK-INST:  bbsi    a3, 16, LBL0
+# CHECK: encoding: [0x07,0xf3,A]
+bbsi.l a3, 16, LBL0
 
 # Instruction format RRI8
 # CHECK-INST:  bnall   a7, a3, LBL0
