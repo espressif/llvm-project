@@ -156,6 +156,7 @@ void XtensaPassConfig::addPreEmitPass() {
   addPass(createXtensaSizeReductionPass());
   addPass(createXtensaFixupHwLoops());
   addPass(&BranchRelaxationPassID);
+  addPass(createXtensaConstantIslandPass());
 }
 
 TargetPassConfig *XtensaTargetMachine::createPassConfig(PassManagerBase &PM) {
