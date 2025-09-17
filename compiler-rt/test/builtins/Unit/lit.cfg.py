@@ -106,6 +106,8 @@ else:
         base_lib = base_lib.replace("\\", "/")
     if config.target_os == "Haiku":
         config.substitutions.append(("%librt ", base_lib + " -lroot "))
+    elif config.target_triple in ['xtensa-esp-elf', 'xtensa-esp-unknown-elf', 'riscv32-esp-elf', 'riscv32-esp-unknown-elf']:
+        config.substitutions.append( ("%librt ", "-Wl,--start-group," + base_lib + ',-lc,-lm,--end-group ') )
     else:
         linker_supports_start_group = get_required_attr(
             config, "linker_supports_start_group"
