@@ -37,7 +37,7 @@ call0 LBL0
 
 call0 LBL2
 # CHECK-FIXUP: fixup A - offset: 0, value: LBL2, kind: fixup_xtensa_call_18
-# CHECK-INSTR: call0 0x830
+# CHECK-INSTR: call0 0x824
 
 j LBL0
 # CHECK-FIXUP: fixup A - offset: 0, value: LBL0, kind: fixup_xtensa_jump_18
@@ -45,7 +45,7 @@ j LBL0
 
 j LBL2
 # CHECK-FIXUP: fixup A - offset: 0, value: LBL2, kind: fixup_xtensa_jump_18
-# CHECK-INSTR: j 0x830
+# CHECK-INSTR: j 0x824
 
 l32r a1, LBL0
 # CHECK-FIXUP: fixup A - offset: 0, value: LBL0, kind: fixup_xtensa_l32r_16
@@ -60,7 +60,7 @@ LBL2:
 
 loop a3, LBL3
 # CHECK-FIXUP: fixup A - offset: 0, value: LBL3, kind: fixup_xtensa_loop_8
-# CHECK-INSTR: loop a3, 0x8fb
+# CHECK-INSTR: loop a3, 0x8ef
 
 .fill 200
 
