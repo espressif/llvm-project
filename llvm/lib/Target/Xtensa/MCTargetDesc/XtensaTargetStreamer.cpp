@@ -116,7 +116,9 @@ void XtensaTargetELFStreamer::startLiteralSection(MCSection *BaseSection) {
   StringRef LiteralSectionPrefix = getLiteralSectionPrefix();
   std::string SectionName;
 
-  if (LiteralSectionPrefix != "") {
+  if (getTextSectionLiterals()) {
+    SectionName = BaseSection->getName();
+  } else if (LiteralSectionPrefix != "") {
     SectionName = LiteralSectionPrefix.str() + ".literal";
   } else {
     SectionName = getLiteralSectionName(BaseSection->getName());
