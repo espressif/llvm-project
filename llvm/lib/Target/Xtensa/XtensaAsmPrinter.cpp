@@ -138,6 +138,10 @@ void XtensaAsmPrinter::emitMachineConstantPoolEntry(
 // used to print out constants which have been "spilled to memory" by
 // the code generator.
 void XtensaAsmPrinter::emitConstantPool() {
+  auto *ST = &MF->getSubtarget<XtensaSubtarget>();
+  if (ST->useTextSectionLiterals())
+    return;
+
   const Function &F = MF->getFunction();
   const MachineConstantPool *MCP = MF->getConstantPool();
   const std::vector<MachineConstantPoolEntry> &CP = MCP->getConstants();
@@ -149,7 +153,6 @@ void XtensaAsmPrinter::emitConstantPool() {
   auto *TS =
       static_cast<XtensaTargetStreamer *>(OutStreamer->getTargetStreamer());
   MCSection *CS = getObjFileLowering().SectionForGlobal(&F, TM);
-  TS->setTextSectionLiterals();
   TS->startLiteralSection(CS);
 
   int CPIdx = 0;

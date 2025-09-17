@@ -108,6 +108,8 @@ void XtensaTargetELFStreamer::emitLiteral(MCSymbol *LblSym, const MCExpr *Value,
     OutStreamer.switchSection(ConstSection);
   }
 
+  OutStreamer.emitCodeAlignment(
+      Align(4), *OutStreamer.getContext().getSubtargetInfo());
   OutStreamer.emitLabel(LblSym, L);
   OutStreamer.emitValue(Value, 4, L);
 
