@@ -2,7 +2,7 @@
 # RUN:     | FileCheck -check-prefixes=CHECK %s
 
 .align	4
-// CHECK: .p2align	4
+// CHECK: .p2align	2
 
 LBL0:
 // CHECK: LBL0:
