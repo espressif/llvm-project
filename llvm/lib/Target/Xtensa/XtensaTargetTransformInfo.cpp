@@ -20,6 +20,12 @@ bool XtensaTTIImpl::isHardwareLoopProfitable(Loop *L, ScalarEvolution &SE,
                                              AssumptionCache &AC,
                                              TargetLibraryInfo *LibInfo,
                                              HardwareLoopInfo &HWLoopInfo) {
+  // Disable hw loops when literals are placed in text section.
+  // TODO: Implement support of hw loops in ConstantIslands pass
+  if (ST->useTextSectionLiterals()) {
+    return false;
+  }
+
   if (DisableLowOverheadLoops)
     return false;
 
