@@ -2202,6 +2202,6 @@ MachineBasicBlock *XtensaTargetLowering::EmitInstrWithCustomInserter(
     return MBB;
   }
   default:
-    llvm_unreachable("Unexpected instr type to insert");
+    return EmitDSPInstrWithCustomInserter(MI, MBB, TII, MF, MRI, DL);
   }
 }
