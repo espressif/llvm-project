@@ -113,6 +113,8 @@ def EE_CMUL_S16_LD_INCP:  EE_Inst32<(outs QR:$qu, AR:$asr, QR:$qz), (ins AR:$as,
   let Inst{10-6} = 0x3;
   let Inst{5-4} = sel4{1-0};
   let Inst{3-0} = as{3-0};
+  
+  let Constraints = "$asr = $as";
 }
 
 let usesCustomInserter = 1 in
@@ -140,6 +142,8 @@ def EE_CMUL_S16_ST_INCP:  EE_Inst32<(outs AR:$asr, QR:$qz), (ins QR:$qv, AR:$as,
   let Inst{7-6} = 0x0;
   let Inst{5-4} = sel4{1-0};
   let Inst{3-0} = as{3-0};
+
+  let Constraints = "$asr = $as";
 }
 
 let usesCustomInserter = 1 in
