@@ -1,4 +1,4 @@
-; RUN: llc -O1 -mtriple=xtensa -mcpu=esp32s3 %s -o - | FileCheck %s
+; RUN: llc -O1 -mtriple=xtensa -mcpu=esp32s3 -verify-machineinstrs %s -o - | FileCheck %s
 
 ; CHECK: @test
 define void @test(){
