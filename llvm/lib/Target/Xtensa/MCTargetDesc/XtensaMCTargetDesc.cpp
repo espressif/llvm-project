@@ -205,9 +205,15 @@ bool Xtensa::checkRegister(MCRegister RegNo, const FeatureBitset &FeatureBits,
   case Xtensa::SCOMPARE1:
     return FeatureBits[Xtensa::FeatureS32C1I];
     return FeatureBits[Xtensa::FeatureWindowed];
-  case Xtensa::GPIO_OUT:
   case Xtensa::EXPSTATE:
-    return FeatureBits[Xtensa::FeatureESP32S2Ops];
+  case Xtensa::GPIO_OUT:
+    return FeatureBits[Xtensa::FeatureESP32S2Ops] || FeatureBits[Xtensa::FeatureESP32S3Ops];
+  case Xtensa::ACCX:
+  case Xtensa::QACC:
+  case Xtensa::FFT_BIT_WIDTH:
+  case Xtensa::SAR_BYTE:
+  case Xtensa::UA_STATE:
+     return FeatureBits[Xtensa::FeatureESP32S3Ops];
   case Xtensa::NoRegister:
     return false;
   }
@@ -235,6 +241,16 @@ MCRegister Xtensa::getUserRegister(unsigned Code, const MCRegisterInfo &MRI) {
     UserReg = Xtensa::GPIO_OUT;
   } else if (MRI.getEncodingValue(Xtensa::EXPSTATE) == Code) {
     UserReg = Xtensa::EXPSTATE;
+  } else if (MRI.getEncodingValue(Xtensa::ACCX) == Code) {
+    UserReg = Xtensa::ACCX;
+  } else if (MRI.getEncodingValue(Xtensa::QACC) == Code) {
+    UserReg = Xtensa::QACC;
+  } else if (MRI.getEncodingValue(Xtensa::FFT_BIT_WIDTH) == Code) {
+    UserReg = Xtensa::FFT_BIT_WIDTH;
+  } else if (MRI.getEncodingValue(Xtensa::SAR_BYTE) == Code) {
+    UserReg = Xtensa::SAR_BYTE;
+  } else if (MRI.getEncodingValue(Xtensa::UA_STATE) == Code) {
+    UserReg = Xtensa::UA_STATE;
   }
 
   return UserReg;
