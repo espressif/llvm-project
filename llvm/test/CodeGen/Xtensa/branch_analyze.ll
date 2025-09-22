@@ -8,7 +8,9 @@ declare void @foo() noreturn
 
 define i32 @eq(i32 %a, ptr %bptr) {
 ; XTENSA-LABEL: eq:
-; XTENSA:         addi a8, a1, -16
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0: # %entry
+; XTENSA-NEXT:    addi a8, a1, -16
 ; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
@@ -39,7 +41,9 @@ return:
 
 define i32 @eq_reverse(i32 %a, ptr %bptr) {
 ; XTENSA-LABEL: eq_reverse:
-; XTENSA:         addi a8, a1, -16
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0: # %entry
+; XTENSA-NEXT:    addi a8, a1, -16
 ; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
@@ -70,7 +74,9 @@ return:
 
 define i32 @ne(i32 %a, ptr %bptr) {
 ; XTENSA-LABEL: ne:
-; XTENSA:         addi a8, a1, -16
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0: # %entry
+; XTENSA-NEXT:    addi a8, a1, -16
 ; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
@@ -101,7 +107,9 @@ return:
 
 define i32 @ne_reverse(i32 %a, ptr %bptr) {
 ; XTENSA-LABEL: ne_reverse:
-; XTENSA:         addi a8, a1, -16
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0: # %entry
+; XTENSA-NEXT:    addi a8, a1, -16
 ; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
@@ -132,7 +140,9 @@ return:
 
 define i32 @ult(i32 %a, ptr %bptr) {
 ; XTENSA-LABEL: ult:
-; XTENSA:         addi a8, a1, -16
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0: # %entry
+; XTENSA-NEXT:    addi a8, a1, -16
 ; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
@@ -163,7 +173,9 @@ return:
 
 define i32 @ult_reverse(i32 %a, ptr %bptr) {
 ; XTENSA-LABEL: ult_reverse:
-; XTENSA:         addi a8, a1, -16
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0: # %entry
+; XTENSA-NEXT:    addi a8, a1, -16
 ; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
@@ -194,7 +206,9 @@ return:
 
 define i32 @uge(i32 %a, ptr %bptr) {
 ; XTENSA-LABEL: uge:
-; XTENSA:         addi a8, a1, -16
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0: # %entry
+; XTENSA-NEXT:    addi a8, a1, -16
 ; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
@@ -225,7 +239,9 @@ return:
 
 define i32 @uge_reverse(i32 %a, ptr %bptr) {
 ; XTENSA-LABEL: uge_reverse:
-; XTENSA:         addi a8, a1, -16
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0: # %entry
+; XTENSA-NEXT:    addi a8, a1, -16
 ; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
@@ -256,7 +272,9 @@ return:
 
 define i32 @slt(i32 %a, ptr %bptr) {
 ; XTENSA-LABEL: slt:
-; XTENSA:         addi a8, a1, -16
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0: # %entry
+; XTENSA-NEXT:    addi a8, a1, -16
 ; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
@@ -287,7 +305,9 @@ return:
 
 define i32 @slt_reverse(i32 %a, ptr %bptr) {
 ; XTENSA-LABEL: slt_reverse:
-; XTENSA:         addi a8, a1, -16
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0: # %entry
+; XTENSA-NEXT:    addi a8, a1, -16
 ; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
@@ -318,7 +338,9 @@ return:
 
 define i32 @sle(i32 %a, ptr %bptr) {
 ; XTENSA-LABEL: sle:
-; XTENSA:         addi a8, a1, -16
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0: # %entry
+; XTENSA-NEXT:    addi a8, a1, -16
 ; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
@@ -349,7 +371,9 @@ return:
 
 define i32 @sle_reverse(i32 %a, ptr %bptr) {
 ; XTENSA-LABEL: sle_reverse:
-; XTENSA:         addi a8, a1, -16
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0: # %entry
+; XTENSA-NEXT:    addi a8, a1, -16
 ; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
@@ -380,7 +404,9 @@ return:
 
 define i32 @sgt(i32 %a, ptr %bptr) {
 ; XTENSA-LABEL: sgt:
-; XTENSA:         addi a8, a1, -16
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0: # %entry
+; XTENSA-NEXT:    addi a8, a1, -16
 ; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
@@ -411,7 +437,9 @@ return:
 
 define i32 @sgt_reverse(i32 %a, ptr %bptr) {
 ; XTENSA-LABEL: sgt_reverse:
-; XTENSA:         addi a8, a1, -16
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0: # %entry
+; XTENSA-NEXT:    addi a8, a1, -16
 ; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
@@ -442,7 +470,9 @@ return:
 
 define i32 @sge(i32 %a, ptr %bptr) {
 ; XTENSA-LABEL: sge:
-; XTENSA:         addi a8, a1, -16
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0: # %entry
+; XTENSA-NEXT:    addi a8, a1, -16
 ; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
@@ -473,7 +503,9 @@ return:
 
 define i32 @sge_reverse(i32 %a, ptr %bptr) {
 ; XTENSA-LABEL: sge_reverse:
-; XTENSA:         addi a8, a1, -16
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0: # %entry
+; XTENSA-NEXT:    addi a8, a1, -16
 ; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
@@ -506,7 +538,9 @@ return:
 
 define i32 @eq_zero(ptr %aptr) {
 ; XTENSA-LABEL: eq_zero:
-; XTENSA:         addi a8, a1, -16
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0: # %entry
+; XTENSA-NEXT:    addi a8, a1, -16
 ; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
@@ -538,7 +572,9 @@ return:
 
 define i32 @eq_zero_reverse(ptr %aptr) {
 ; XTENSA-LABEL: eq_zero_reverse:
-; XTENSA:         addi a8, a1, -16
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0: # %entry
+; XTENSA-NEXT:    addi a8, a1, -16
 ; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
@@ -570,7 +606,9 @@ return:
 
 define i32 @ne_zero(ptr %aptr) {
 ; XTENSA-LABEL: ne_zero:
-; XTENSA:         addi a8, a1, -16
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0: # %entry
+; XTENSA-NEXT:    addi a8, a1, -16
 ; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
@@ -602,7 +640,9 @@ return:
 
 define i32 @ne_zero_reverse(ptr %aptr) {
 ; XTENSA-LABEL: ne_zero_reverse:
-; XTENSA:         addi a8, a1, -16
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0: # %entry
+; XTENSA-NEXT:    addi a8, a1, -16
 ; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
@@ -634,7 +674,9 @@ return:
 
 define i32 @slt_zero(ptr %aptr) {
 ; XTENSA-LABEL: slt_zero:
-; XTENSA:         addi a8, a1, -16
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0: # %entry
+; XTENSA-NEXT:    addi a8, a1, -16
 ; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
@@ -666,7 +708,9 @@ return:
 
 define i32 @eq_imm(i32 %a) {
 ; XTENSA-LABEL: eq_imm:
-; XTENSA:         addi a8, a1, -16
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0: # %entry
+; XTENSA-NEXT:    addi a8, a1, -16
 ; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
@@ -695,7 +739,9 @@ return:
 
 define i32 @eq_imm_reverse(i32 %a) {
 ; XTENSA-LABEL: eq_imm_reverse:
-; XTENSA:         addi a8, a1, -16
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0: # %entry
+; XTENSA-NEXT:    addi a8, a1, -16
 ; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
@@ -724,7 +770,9 @@ return:
 
 define i32 @ne_imm(i32 %a) {
 ; XTENSA-LABEL: ne_imm:
-; XTENSA:         addi a8, a1, -16
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0: # %entry
+; XTENSA-NEXT:    addi a8, a1, -16
 ; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
@@ -753,7 +801,9 @@ return:
 
 define i32 @ne_imm_reverse(i32 %a) {
 ; XTENSA-LABEL: ne_imm_reverse:
-; XTENSA:         addi a8, a1, -16
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0: # %entry
+; XTENSA-NEXT:    addi a8, a1, -16
 ; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
@@ -782,7 +832,9 @@ return:
 
 define i32 @slt_imm(i32 %a) {
 ; XTENSA-LABEL: slt_imm:
-; XTENSA:         addi a8, a1, -16
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0: # %entry
+; XTENSA-NEXT:    addi a8, a1, -16
 ; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
@@ -811,7 +863,9 @@ return:
 
 define i32 @sge_imm(i32 %a) {
 ; XTENSA-LABEL: sge_imm:
-; XTENSA:         addi a8, a1, -16
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0: # %entry
+; XTENSA-NEXT:    addi a8, a1, -16
 ; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
@@ -840,7 +894,9 @@ return:
 
 define i32 @uge_imm(ptr %aptr) {
 ; XTENSA-LABEL: uge_imm:
-; XTENSA:         addi a8, a1, -16
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0: # %entry
+; XTENSA-NEXT:    addi a8, a1, -16
 ; XTENSA-NEXT:    or a1, a8, a8
 ; XTENSA-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
