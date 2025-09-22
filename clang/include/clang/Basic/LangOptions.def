@@ -478,6 +478,8 @@ LANGOPT(PointerFieldProtectionABI, 1, 0, NotCompatible,
 LANGOPT(PointerFieldProtectionTagged, 1, 0, NotCompatible,
         "Use pointer identity (tag) to discriminate pointers of non-trivially-copyable types")
 
+LANGOPT(FastIntMin32, 1, 0, NotCompatible, "Minimum width of _FAST_ int type")
+
 LANGOPT(VScaleMin, 32, 0, NotCompatible, "Minimum vscale value")
 LANGOPT(VScaleMax, 32, 0, NotCompatible, "Maximum vscale value")
 
