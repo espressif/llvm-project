@@ -18,7 +18,7 @@ define void @test_saverestore(i64 %n) {
 ; CHECK-NEXT:    s32i a0, a1, 8 # 4-byte Folded Spill
 ; CHECK-NEXT:    s32i a12, a1, 4 # 4-byte Folded Spill
 ; CHECK-NEXT:    s32i a15, a1, 0 # 4-byte Folded Spill
-; CHECK-NEXT:    .cfi_offset a0, -4
+; CHECK-NEXT:    .cfi_offset q0, -4
 ; CHECK-NEXT:    .cfi_offset a12, -8
 ; CHECK-NEXT:    .cfi_offset a15, -12
 ; CHECK-NEXT:    or a15, a1, a1
@@ -48,7 +48,7 @@ define void @test_saverestore(i64 %n) {
 ; CHECK-WINDOWED-NEXT:  # %bb.0:
 ; CHECK-WINDOWED-NEXT:    entry a1, 32
 ; CHECK-WINDOWED-NEXT:    or a7, a1, a1
-; CHECK-WINDOWED-NEXT:    .cfi_def_cfa a7, 32
+; CHECK-WINDOWED-NEXT:    .cfi_def_cfa q7, 32
 ; CHECK-WINDOWED-NEXT:    addi a8, a2, 3
 ; CHECK-WINDOWED-NEXT:    movi a9, -4
 ; CHECK-WINDOWED-NEXT:    and a8, a8, a9
