@@ -20,7 +20,7 @@ define dso_local void @normal() "frame-pointer"="all" {
 ; CHECK-NEXT:    .cfi_def_cfa_offset 16
 ; CHECK-NEXT:    s32i a0, a1, 4 # 4-byte Folded Spill
 ; CHECK-NEXT:    s32i a15, a1, 0 # 4-byte Folded Spill
-; CHECK-NEXT:    .cfi_offset a0, -4
+; CHECK-NEXT:    .cfi_offset q0, -4
 ; CHECK-NEXT:    .cfi_offset a15, -8
 ; CHECK-NEXT:    or a15, a1, a1
 ; CHECK-NEXT:    .cfi_def_cfa_register a15
