@@ -36,6 +36,7 @@ protected:
   std::string CPU;
   bool HasFP = false;
   bool HasWindowed = false;
+  bool HasBoolean = false;
 
 public:
   XtensaTargetInfo(const llvm::Triple &Triple, const TargetOptions &)
@@ -53,7 +54,7 @@ public:
     WIntType = UnsignedInt;
     UseZeroLengthBitfieldAlignment = true;
     MaxAtomicPromoteWidth = MaxAtomicInlineWidth = 32;
-    resetDataLayout("e-m:e-p:32:32-i64:64-i128:128-n32");
+    resetDataLayout("e-m:e-p:32:32-v1:8:8-i64:64-i128:128-n32");
   }
 
   void getTargetDefines(const LangOptions &Opts,
