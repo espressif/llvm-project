@@ -36,6 +36,7 @@ protected:
   std::string CPU;
   bool HasFP = false;
   bool HasWindowed = false;
+  bool HasBoolean = false;
 
 public:
   XtensaTargetInfo(const llvm::Triple &Triple, const TargetOptions &)
