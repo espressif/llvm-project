@@ -128,7 +128,54 @@ BUILTIN(__builtin_xtensa_xsr_m3, "vUi*", "n")
 
 // float __builtin_xtensa_xt_movt_s(float frr, float frs, xtbool bt)
 BUILTIN(__builtin_xtensa_xt_movt_s, "fffE1b", "n")
+
+// float __builtin_xtensa_xt_movf_s(float frr, float frs, xtbool bt)
 BUILTIN(__builtin_xtensa_xt_movf_s, "fffE1b", "n")
+
+// xtbool __builtin_xtensa_xt_oeq_s(xtfloat frs,xtfloat frt)
+BUILTIN(__builtin_xtensa_xt_oeq_s, "E1bff", "n")
+
+// xtbool __builtin_xtensa_xt_ole_s(xtfloat frs,xtfloat frt)
+BUILTIN(__builtin_xtensa_xt_ole_s, "E1bff", "n")
+
+// xtbool __builtin_xtensa_xt_olt_s(xtfloat frs,xtfloat frt)
+BUILTIN(__builtin_xtensa_xt_olt_s, "E1bff", "n")
+
+// xtbool __builtin_xtensa_xt_ueq_s(xtfloat frs,xtfloat frt)
+BUILTIN(__builtin_xtensa_xt_ueq_s, "E1bff", "n")
+
+// xtbool __builtin_xtensa_xt_ule_s(xtfloat frs,xtfloat frt)
+BUILTIN(__builtin_xtensa_xt_ule_s, "E1bff", "n")
+
+// xtbool __builtin_xtensa_xt_ult_s(xtfloat frs,xtfloat frt)
+BUILTIN(__builtin_xtensa_xt_ult_s, "E1bff", "n")
+
+// xtbool __builtin_xtensa_xt_un_s(xtfloat frs,xtfloat frt)
+BUILTIN(__builtin_xtensa_xt_un_s, "E1bff", "n")
+
+// xtfloat __builtin_xtensa_xt_sub_s(xtfloat frs,xtfloat frt)
+BUILTIN(__builtin_xtensa_xt_sub_s, "fff", "n")
+
+// xtfloat __builtin_xtensa_xt_add_s(xtfloat frs,xtfloat frt)
+BUILTIN(__builtin_xtensa_xt_add_s, "fff", "n")
+
+// xtfloat __builtin_xtensa_xt_abs_s(xtfloat frs)
+BUILTIN(__builtin_xtensa_xt_abs_s, "ff", "n")
+
+// xtfloat __builtin_xtensa_xt_mul_s(xtfloat frs,xtfloat frt)
+BUILTIN(__builtin_xtensa_xt_mul_s, "fff", "n")
+
+// int __builtin_xtensa_xt_trunc_s(xtfloat frs,immediate imm_t)
+BUILTIN(__builtin_xtensa_xt_trunc_s, "ifi", "n")
+
+// int __builtin_xtensa_xt_utrunc_s(xtfloat frs,immediate imm_t)
+BUILTIN(__builtin_xtensa_xt_utrunc_s, "ifi", "n")
+
+// xtfloat __builtin_xtensa_xt_float_s(int ars,immediate imm_t)
+BUILTIN(__builtin_xtensa_xt_float_s, "fii", "n")
+
+// xtfloat __builtin_xtensa_xt_ufloat_s(int ars,immediate imm_t)
+BUILTIN(__builtin_xtensa_xt_ufloat_s, "fii", "n")
 
 // generated code
 #include "clang/Basic/BuiltinsXtensaESP32S3.def"
