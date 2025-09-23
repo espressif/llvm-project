@@ -845,6 +845,10 @@ def ROTW : RRR_Inst<0x00, 0x00, 0x04, (outs), (ins imm8n_7:$imm),
 //===----------------------------------------------------------------------===//
 // Boolean Instructions
 //===----------------------------------------------------------------------===//
+class BIN_PAT<SDPatternOperator node, Instruction inst,
+  ValueType src_vt, ValueType dst_vt = src_vt>
+  : Pat<(dst_vt (node src_vt:$f1, src_vt:$f2)),
+        (inst src_vt:$f1, src_vt:$f2)>;
 
 def ALL4 : RRR_Inst<0x00, 0x00, 0x00, (outs BR:$t), (ins BR:$s),
                    "all4\t$t, $s", []>, Requires<[HasBoolean]> {
@@ -910,6 +914,53 @@ let Constraints = "$dr = $r,@earlyclobber $dr" in {
 
   def MOVT : RRR_Inst<0x00, 0x03, 0x0D, (outs AR:$dr), (ins AR:$r, AR:$s, BR:$t),
                    "movt\t$r, $s, $t", []>, Requires<[HasBoolean]>;
+}
+
+let Predicates = [HasBoolean] in {
+  def OR_BR_PAT: BIN_PAT<or,ORB,v1i1>;
+  def XOR_BR_PAT: BIN_PAT<xor,XORB,v1i1>;
+  def AND_BR_PAT: BIN_PAT<and,ANDB,v1i1>;
+
+  // vselect C T F = C * T + ~C * F
+  def : Pat<(v1i1 (vselect v1i1:$c, v1i1:$t, v1i1:$f)),
+          (ORB (ANDB $t, $f), (ANDBC $f, $c))>;
+
+  def MOVBA_P2: Pseudo<(outs BR:$r, AR:$x, AR:$y), (ins AR:$s),
+                        "!movba $r, $x, $y, $s", []> {
+    let Defs = [BREG];
+  }
+
+  def MOVBA_P: Pseudo<(outs BR:$r), (ins AR:$s),
+                        "!movba $r, $s", []> {
+    let usesCustomInserter = 1;
+    let Defs = [BREG];
+    //let Uses = [BREG];
+  }
+
+  def EXTUI_BR_P: Pseudo<(outs AR:$r), (ins AR:$s, BR:$b),
+                        "!extui_br $r, $s, $b", []>;
+  def SLLI_BR_P: Pseudo<(outs AR:$r), (ins AR:$s, BR:$b),
+                        "!slli_br $r, $s, $b", []>;
+
+  def : Pat<(v1i1 (build_vector AR:$a)), (MOVBA_P AR:$a)>;
+
+  def : Pat<(i32 (vector_extract (v1i1 BR:$b), (i32 0))),
+            (EXTUI_BR_P (RSR BREG), BR:$b)>;
+
+  def : Pat<(v1i1 (load addr_ish1:$addr)), (MOVBA_P (L8UI mem8:$addr))>;
+
+  def : Pat<(store BR:$b, addr_ish1:$addr), (S8I (EXTUI_BR_P (RSR BREG), BR:$b), mem32:$addr)>;
+
+  def SPILL_BOOL: Pseudo<(outs), (ins BR:$b, mem8:$mem),
+                            "!spill_bool $b, $mem",[]> {
+    let mayStore = 1;
+  }
+
+  def RESTORE_BOOL: Pseudo<(outs BR:$out), (ins mem8:$mem),
+                            "!restore_bool $out, $mem",[]> {
+    let mayLoad = 1;
+    let Defs = [BREG];
+  }
 }
 
 //===----------------------------------------------------------------------===//
