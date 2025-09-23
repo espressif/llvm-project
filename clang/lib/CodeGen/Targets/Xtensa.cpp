@@ -98,6 +98,13 @@ ABIArgInfo XtensaABIInfo::classifyArgumentType(QualType Ty,
     return ABIArgInfo::getDirect(llvm::IntegerType::get(getVMContext(), Size));
   }
 
+  // xtbool
+  if (getTarget().hasFeature("bool") && Size == 1 && Ty->isVectorType()) {
+    llvm::Type *ResType =
+        llvm::FixedVectorType::get(llvm::Type::getInt1Ty(getVMContext()), 1);
+    return ABIArgInfo::getDirect(ResType);
+  }
+
   // Aggregates which are <= 6*32 will be passed in registers if possible,
   // so coerce to integers.
   if ((Size <= (MaxNumArgGPRs * 32)) && (!MustUseStack)) {
