@@ -73,12 +73,12 @@ define signext i32 @mul_constant(i32 %a) nounwind {
 define i32 @mul_pow2(i32 %a) nounwind {
 ; XTENSA-LABEL: mul_pow2:
 ; XTENSA:       # %bb.0:
-; XTENSA-NEXT:    slli a2, a2, 3
+; XTENSA-NEXT:    _slli a2, a2, 3
 ; XTENSA-NEXT:    ret
 ;
 ; XTENSA-MUL-LABEL: mul_pow2:
 ; XTENSA-MUL:       # %bb.0:
-; XTENSA-MUL-NEXT:    slli a2, a2, 3
+; XTENSA-MUL-NEXT:    _slli a2, a2, 3
 ; XTENSA-MUL-NEXT:    ret
   %1 = mul i32 %a, 8
   ret i32 %1
@@ -1379,7 +1379,7 @@ define i64 @mulhsu_i64(i64 %a, i64 %b) nounwind {
 define i8 @muladd_demand(i8 %x, i8 %y) nounwind {
 ; XTENSA-LABEL: muladd_demand:
 ; XTENSA:       # %bb.0:
-; XTENSA-NEXT:    slli a8, a2, 1
+; XTENSA-NEXT:    _slli a8, a2, 1
 ; XTENSA-NEXT:    sub a8, a3, a8
 ; XTENSA-NEXT:    movi a9, 15
 ; XTENSA-NEXT:    and a2, a8, a9
@@ -1387,7 +1387,7 @@ define i8 @muladd_demand(i8 %x, i8 %y) nounwind {
 ;
 ; XTENSA-MUL-LABEL: muladd_demand:
 ; XTENSA-MUL:       # %bb.0:
-; XTENSA-MUL-NEXT:    slli a8, a2, 1
+; XTENSA-MUL-NEXT:    _slli a8, a2, 1
 ; XTENSA-MUL-NEXT:    sub a8, a3, a8
 ; XTENSA-MUL-NEXT:    movi a9, 15
 ; XTENSA-MUL-NEXT:    and a2, a8, a9
@@ -1421,7 +1421,7 @@ define i8 @mulsub_demand(i8 %x, i8 %y) nounwind {
 define i8 @muladd_demand_2(i8 %x, i8 %y) nounwind {
 ; XTENSA-LABEL: muladd_demand_2:
 ; XTENSA:       # %bb.0:
-; XTENSA-NEXT:    slli a8, a2, 1
+; XTENSA-NEXT:    _slli a8, a2, 1
 ; XTENSA-NEXT:    sub a8, a3, a8
 ; XTENSA-NEXT:    movi a9, -16
 ; XTENSA-NEXT:    or a2, a8, a9
@@ -1429,7 +1429,7 @@ define i8 @muladd_demand_2(i8 %x, i8 %y) nounwind {
 ;
 ; XTENSA-MUL-LABEL: muladd_demand_2:
 ; XTENSA-MUL:       # %bb.0:
-; XTENSA-MUL-NEXT:    slli a8, a2, 1
+; XTENSA-MUL-NEXT:    _slli a8, a2, 1
 ; XTENSA-MUL-NEXT:    sub a8, a3, a8
 ; XTENSA-MUL-NEXT:    movi a9, -16
 ; XTENSA-MUL-NEXT:    or a2, a8, a9
@@ -1463,12 +1463,12 @@ define i8 @mulsub_demand_2(i8 %x, i8 %y) nounwind {
 define signext i32 @mul_imm_2(i32 %a) nounwind {
 ; XTENSA-LABEL: mul_imm_2:
 ; XTENSA:       # %bb.0:
-; XTENSA-NEXT:    slli a2, a2, 1
+; XTENSA-NEXT:    _slli a2, a2, 1
 ; XTENSA-NEXT:    ret
 ;
 ; XTENSA-MUL-LABEL: mul_imm_2:
 ; XTENSA-MUL:       # %bb.0:
-; XTENSA-MUL-NEXT:    slli a2, a2, 1
+; XTENSA-MUL-NEXT:    _slli a2, a2, 1
 ; XTENSA-MUL-NEXT:    ret
   %1 = mul i32 %a, 2
   ret i32 %1
@@ -1477,12 +1477,12 @@ define signext i32 @mul_imm_2(i32 %a) nounwind {
 define signext i32 @mul_imm_1024(i32 %a) nounwind {
 ; XTENSA-LABEL: mul_imm_1024:
 ; XTENSA:       # %bb.0:
-; XTENSA-NEXT:    slli a2, a2, 10
+; XTENSA-NEXT:    _slli a2, a2, 10
 ; XTENSA-NEXT:    ret
 ;
 ; XTENSA-MUL-LABEL: mul_imm_1024:
 ; XTENSA-MUL:       # %bb.0:
-; XTENSA-MUL-NEXT:    slli a2, a2, 10
+; XTENSA-MUL-NEXT:    _slli a2, a2, 10
 ; XTENSA-MUL-NEXT:    ret
   %1 = mul i32 %a, 1024
   ret i32 %1
@@ -1491,12 +1491,12 @@ define signext i32 @mul_imm_1024(i32 %a) nounwind {
 define signext i32 @mul_imm_16384(i32 %a) nounwind {
 ; XTENSA-LABEL: mul_imm_16384:
 ; XTENSA:       # %bb.0:
-; XTENSA-NEXT:    slli a2, a2, 14
+; XTENSA-NEXT:    _slli a2, a2, 14
 ; XTENSA-NEXT:    ret
 ;
 ; XTENSA-MUL-LABEL: mul_imm_16384:
 ; XTENSA-MUL:       # %bb.0:
-; XTENSA-MUL-NEXT:    slli a2, a2, 14
+; XTENSA-MUL-NEXT:    _slli a2, a2, 14
 ; XTENSA-MUL-NEXT:    ret
   %1 = mul i32 %a, 16384
   ret i32 %1
@@ -1506,19 +1506,19 @@ define <4 x i32> @mul_vec_splat_constant(<4 x i32> %a) {
 ; XTENSA-LABEL: mul_vec_splat_constant:
 ; XTENSA:         .cfi_startproc
 ; XTENSA-NEXT:  # %bb.0:
-; XTENSA-NEXT:    slli a2, a2, 2
-; XTENSA-NEXT:    slli a3, a3, 2
-; XTENSA-NEXT:    slli a4, a4, 2
-; XTENSA-NEXT:    slli a5, a5, 2
+; XTENSA-NEXT:    _slli a2, a2, 2
+; XTENSA-NEXT:    _slli a3, a3, 2
+; XTENSA-NEXT:    _slli a4, a4, 2
+; XTENSA-NEXT:    _slli a5, a5, 2
 ; XTENSA-NEXT:    ret
 ;
 ; XTENSA-MUL-LABEL: mul_vec_splat_constant:
 ; XTENSA-MUL:         .cfi_startproc
 ; XTENSA-MUL-NEXT:  # %bb.0:
-; XTENSA-MUL-NEXT:    slli a2, a2, 2
-; XTENSA-MUL-NEXT:    slli a3, a3, 2
-; XTENSA-MUL-NEXT:    slli a4, a4, 2
-; XTENSA-MUL-NEXT:    slli a5, a5, 2
+; XTENSA-MUL-NEXT:    _slli a2, a2, 2
+; XTENSA-MUL-NEXT:    _slli a3, a3, 2
+; XTENSA-MUL-NEXT:    _slli a4, a4, 2
+; XTENSA-MUL-NEXT:    _slli a5, a5, 2
 ; XTENSA-MUL-NEXT:    ret
   %mul = mul <4 x i32> %a, <i32 4, i32 4, i32 4, i32 4>
   ret <4 x i32> %mul
