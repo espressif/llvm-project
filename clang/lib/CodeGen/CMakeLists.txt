@@ -129,6 +129,7 @@ add_clang_library(clangCodeGen
   TargetBuiltins/SystemZ.cpp
   TargetBuiltins/WebAssembly.cpp
   TargetBuiltins/X86.cpp
+  TargetBuiltins/Xtensa.cpp
   TargetInfo.cpp
   Targets/AArch64.cpp
   Targets/AMDGPU.cpp
