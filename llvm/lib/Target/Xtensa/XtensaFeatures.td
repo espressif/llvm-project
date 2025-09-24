@@ -169,7 +169,12 @@ def FeatureESP32S2Ops : SubtargetFeature<"esp32s2ops", "HasESP32S2Ops", "true",
 def HasESP32S2Ops : Predicate<"Subtarget->hasESP32S2Ops()">,
                                AssemblerPredicate<(all_of FeatureESP32S2Ops)>;
 
-def FeatureESP32S3Ops        : SubtargetFeature<"esp32s3ops", "HasESP32S3Ops", "true",
-                                                "Support Xtensa esp32-s3 ISA extension">;
-def HasESP32S3Ops            : Predicate<"Subtarget->hasESP32S3Ops()">,
-                                          AssemblerPredicate<(all_of FeatureESP32S3Ops)>;
+def FeatureESP32S3Ops : SubtargetFeature<"esp32s3ops", "HasESP32S3Ops", "true",
+                                         "Support Xtensa esp32-s3 ISA extension">;
+def HasESP32S3Ops : Predicate<"Subtarget->hasESP32S3Ops()">,
+                               AssemblerPredicate<(all_of FeatureESP32S3Ops)>;
+
+def FeatureHIFI3 : SubtargetFeature<"hifi3", "HasHIFI3", "true",
+                                    "Enable Xtensa HIFI3 instructions">;
+def HasHIFI3 : Predicate<"Subtarget->hasHIFI3()">,
+                          AssemblerPredicate<(all_of FeatureHIFI3)>;
