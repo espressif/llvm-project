@@ -5075,6 +5075,9 @@ public:
   /// Emits a reference binding to the passed in expression.
   RValue EmitReferenceBindingToExpr(const Expr *E);
 
+  llvm::Value *EmitXtensaBuiltinExpr(unsigned BuiltinID, const CallExpr *E,
+                                     ReturnValueSlot ReturnValue,
+                                     llvm::Triple::ArchType Arch);
   //===--------------------------------------------------------------------===//
   //                           Expression Emission
   //===--------------------------------------------------------------------===//
