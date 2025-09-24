@@ -3,11 +3,9 @@
 
 define void @vararg(...) {
 ; CHECK-LABEL: vararg:
-; CHECK:         .cfi_startproc
-; CHECK-NEXT:  # %bb.0: # %entry
+; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    addi a8, a1, -32
 ; CHECK-NEXT:    or a1, a8, a8
-; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    s32i a7, a1, 20
 ; CHECK-NEXT:    s32i a6, a1, 16
 ; CHECK-NEXT:    s32i a5, a1, 12
