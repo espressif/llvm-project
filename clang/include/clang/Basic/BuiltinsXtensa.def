@@ -177,6 +177,112 @@ BUILTIN(__builtin_xtensa_xt_float_s, "fii", "n")
 // xtfloat __builtin_xtensa_xt_ufloat_s(int ars,immediate imm_t)
 BUILTIN(__builtin_xtensa_xt_ufloat_s, "fii", "n")
 
+// xtfloat __builtin_xtensa___builtin_xtensa_xt_addexp_s(xtfloat,xtfloat)
+BUILTIN(__builtin_xtensa_xt_addexp_s, "fff", "n")
+
+// xtfloat __builtin_xtensa___builtin_xtensa_xt_addexpm_s(xtfloat,xtfloat)
+BUILTIN(__builtin_xtensa_xt_addexpm_s, "fff", "n")
+
+// int __builtin_xtensa___builtin_xtensa_xt_ceil_s(xtfloat,immediate)
+BUILTIN(__builtin_xtensa_xt_ceil_s, "ifi", "n")
+
+// xtfloat __builtin_xtensa___builtin_xtensa_xt_div0_s(xtfloat)
+BUILTIN(__builtin_xtensa_xt_div0_s, "ff", "n")
+
+// xtfloat __builtin_xtensa___builtin_xtensa_xt_divn_s(xtfloat,xtfloat,xtfloat)
+BUILTIN(__builtin_xtensa_xt_divn_s, "ffff", "n")
+
+// int __builtin_xtensa___builtin_xtensa_xt_floor_s(xtfloat,immediate)
+BUILTIN(__builtin_xtensa_xt_floor_s, "ifi", "n")
+
+// xtfloat __builtin_xtensa___builtin_xtensa_xt_lsi(const xtfloat*,immediate)
+BUILTIN(__builtin_xtensa_xt_lsi, "ff*i", "n")
+
+BUILTIN(__builtin_xtensa_xt_lsip, "ff**i", "n")
+
+// xtfloat __builtin_xtensa___builtin_xtensa_xt_lsx(const xtfloat*,int)
+BUILTIN(__builtin_xtensa_xt_lsx, "ff*i", "n")
+
+BUILTIN(__builtin_xtensa_xt_lsxp, "ff*i", "n")
+
+// xtfloat __builtin_xtensa___builtin_xtensa_xt_madd_s(xtfloat,xtfloat,xtfloat)
+BUILTIN(__builtin_xtensa_xt_madd_s, "ffff", "n")
+
+// xtfloat __builtin_xtensa___builtin_xtensa_xt_maddn_s(xtfloat,xtfloat,xtfloat)
+BUILTIN(__builtin_xtensa_xt_maddn_s, "ffff", "n")
+
+// xtfloat __builtin_xtensa___builtin_xtensa_xt_mkdadj_s(xtfloat,xtfloat)
+BUILTIN(__builtin_xtensa_xt_mkdadj_s, "fff", "n")
+
+// xtfloat __builtin_xtensa___builtin_xtensa_xt_mksadj_s(xtfloat)
+BUILTIN(__builtin_xtensa_xt_mksadj_s, "ff", "n")
+
+// xtfloat __builtin_xtensa___builtin_xtensa_xt_mov_s(xtfloat)
+BUILTIN(__builtin_xtensa_xt_mov_s, "ff", "n")
+
+// xtfloat __builtin_xtensa___builtin_xtensa_xt_moveqz_s(xtfloat,xtfloat,int)
+BUILTIN(__builtin_xtensa_xt_moveqz_s, "fffi", "n")
+
+// xtfloat __builtin_xtensa___builtin_xtensa_xt_movgez_s(xtfloat,xtfloat,int)
+BUILTIN(__builtin_xtensa_xt_movgez_s, "fffi", "n")
+
+// xtfloat __builtin_xtensa___builtin_xtensa_xt_movltz_s(xtfloat,xtfloat,int)
+BUILTIN(__builtin_xtensa_xt_movltz_s, "fffi", "n")
+
+// xtfloat __builtin_xtensa___builtin_xtensa_xt_movnez_s(xtfloat,xtfloat,int)
+BUILTIN(__builtin_xtensa_xt_movnez_s, "fffi", "n")
+
+// xtfloat __builtin_xtensa___builtin_xtensa_xt_msub_s(xtfloat,xtfloat,xtfloat)
+BUILTIN(__builtin_xtensa_xt_msub_s, "ffff", "n")
+
+// xtfloat __builtin_xtensa___builtin_xtensa_xt_neg_s(xtfloat)
+BUILTIN(__builtin_xtensa_xt_neg_s, "ff", "n")
+
+// xtfloat __builtin_xtensa___builtin_xtensa_xt_nexp01_s(xtfloat)
+BUILTIN(__builtin_xtensa_xt_nexp01_s, "ff", "n")
+
+// xtfloat __builtin_xtensa___builtin_xtensa_xt_recip0_s(xtfloat)
+BUILTIN(__builtin_xtensa_xt_recip0_s, "ff", "n")
+
+// int __builtin_xtensa___builtin_xtensa_xt_rfr(xtfloat)
+BUILTIN(__builtin_xtensa_xt_rfr, "if", "n")
+
+// int __builtin_xtensa___builtin_xtensa_xt_round_s(xtfloat,immediate)
+BUILTIN(__builtin_xtensa_xt_round_s, "ifi", "n")
+
+// xtfloat __builtin_xtensa___builtin_xtensa_xt_rsqrt0_s(xtfloat)
+BUILTIN(__builtin_xtensa_xt_rsqrt0_s, "ff", "n")
+
+// int __builtin_xtensa___builtin_xtensa_xt_rur_fcr()
+BUILTIN(__builtin_xtensa_xt_rur_fcr, "i", "n")
+
+// int __builtin_xtensa___builtin_xtensa_xt_rur_fsr()
+BUILTIN(__builtin_xtensa_xt_rur_fsr, "i", "n")
+
+// xtfloat __builtin_xtensa___builtin_xtensa_xt_sqrt0_s(xtfloat)
+BUILTIN(__builtin_xtensa_xt_sqrt0_s, "ff", "n")
+
+// void __builtin_xtensa___builtin_xtensa_xt_ssi(xtfloat,xtfloat*,immediate)
+BUILTIN(__builtin_xtensa_xt_ssi, "vff*i", "n")
+
+// xtfloat* __builtin_xtensa___builtin_xtensa_xt_ssip(xtfloat,xtfloat*,immediate)
+BUILTIN(__builtin_xtensa_xt_ssip, "f*ff*i", "n")
+
+// void __builtin_xtensa___builtin_xtensa_xt_ssx(xtfloat,xtfloat*,int)
+BUILTIN(__builtin_xtensa_xt_ssx, "vff*i", "n")
+
+// xtfloat* __builtin_xtensa___builtin_xtensa_xt_ssxp(xtfloat,xtfloat*,int)
+BUILTIN(__builtin_xtensa_xt_ssxp, "f*ff*i", "n")
+
+// xtfloat __builtin_xtensa___builtin_xtensa_xt_wfr(int)
+BUILTIN(__builtin_xtensa_xt_wfr, "fi", "n")
+
+// void __builtin_xtensa___builtin_xtensa_xt_wur_fcr(int)
+BUILTIN(__builtin_xtensa_xt_wur_fcr, "vi", "n")
+
+// void __builtin_xtensa___builtin_xtensa_xt_wur_fsr(int)
+BUILTIN(__builtin_xtensa_xt_wur_fsr, "vi", "n")
+
 // generated code
 #include "clang/Basic/BuiltinsXtensaESP32S3.def"
 

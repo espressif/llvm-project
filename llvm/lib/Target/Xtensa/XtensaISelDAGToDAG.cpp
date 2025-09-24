@@ -466,6 +466,41 @@ void XtensaDAGToDAGISel::Select(SDNode *Node) {
     }
     break;
   }
+
+  case ISD::INTRINSIC_W_CHAIN: {
+    unsigned IntNo = cast<ConstantSDNode>(Node->getOperand(1))->getZExtValue();
+    unsigned OpCode = 0;
+    bool Skip = false;
+
+    switch (IntNo) {
+    default:
+      Skip = true;
+      break;
+    case Intrinsic::xtensa_xt_lsxp:
+      OpCode = Xtensa::LSXP;
+      break;
+    case Intrinsic::xtensa_xt_lsip:
+      OpCode = Xtensa::LSIP;
+      break;
+    }
+    if (Skip)
+      break;
+
+    SDValue Chain = Node->getOperand(0);
+
+    auto ResTys = Node->getVTList();
+
+    SmallVector<SDValue, 5> Ops;
+    for (unsigned i = 2; i < Node->getNumOperands(); i++)
+      Ops.push_back(Node->getOperand(i));
+    Ops.push_back(Chain);
+
+    SDNode *NewNode = CurDAG->getMachineNode(OpCode, DL, ResTys, Ops);
+
+    ReplaceNode(Node, NewNode);
+    return;
+  }
+
   default:
     break;
   }
