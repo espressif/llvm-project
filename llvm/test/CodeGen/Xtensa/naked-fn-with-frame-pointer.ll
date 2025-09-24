@@ -17,13 +17,9 @@ define dso_local void @normal() "frame-pointer"="all" {
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    addi a8, a1, -16
 ; CHECK-NEXT:    or a1, a8, a8
-; CHECK-NEXT:    .cfi_def_cfa_offset 16
 ; CHECK-NEXT:    s32i a0, a1, 4 # 4-byte Folded Spill
 ; CHECK-NEXT:    s32i a15, a1, 0 # 4-byte Folded Spill
-; CHECK-NEXT:    .cfi_offset q0, -4
-; CHECK-NEXT:    .cfi_offset a15, -8
 ; CHECK-NEXT:    or a15, a1, a1
-; CHECK-NEXT:    .cfi_def_cfa_register a15
 ; CHECK-NEXT:    l32r a8, {{\.?LCPI[0-9]+_[0-9]+}}
 ; CHECK-NEXT:    callx0 a8
   call void @main()

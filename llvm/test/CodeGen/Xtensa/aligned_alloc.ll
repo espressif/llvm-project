@@ -4,13 +4,10 @@
 
 define i8 @loadi8_128(i8 %a) {
 ; XTENSA-LABEL: loadi8_128:
-; XTENSA:         .cfi_startproc
-; XTENSA-NEXT:  # %bb.0:
+; XTENSA:       # %bb.0:
 ; XTENSA-NEXT:    addi a8, a1, -128
 ; XTENSA-NEXT:    or a1, a8, a8
-; XTENSA-NEXT:    .cfi_def_cfa_offset 128
 ; XTENSA-NEXT:    s32i a0, a1, 124 # 4-byte Folded Spill
-; XTENSA-NEXT:    .cfi_offset q0, -4
 ; XTENSA-NEXT:    l32r a8, .LCPI0_0
 ; XTENSA-NEXT:    addi a2, a1, 0
 ; XTENSA-NEXT:    movi a3, 0
