@@ -42,4 +42,4 @@ def : Proc<"cnl", [FeatureDensity, FeatureSingleFloat, FeatureLoop,  FeatureWind
                     FeatureTHREADPTR, FeatureDiv32, FeatureDataCache, FeatureDebug, 
                     FeatureException, FeatureHighPriInterrupts, FeatureCoprocessor,
                     FeatureInterrupt, FeatureRelocatableVector, FeatureTimers1, FeaturePRID,
-                    FeatureRegionProtection, FeatureMiscSR]>; 
+                    FeatureRegionProtection, FeatureMiscSR, FeatureHIFI3]>; 
