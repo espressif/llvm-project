@@ -84,6 +84,8 @@ enum {
   MSUB,
   // FP move
   MOVS,
+
+  TRUNC
 };
 }
 
