@@ -15,6 +15,7 @@
 #ifndef LLVM_LIB_TARGET_XTENSA_MCTARGETDESC_XTENSAINSTPRINTER_H
 #define LLVM_LIB_TARGET_XTENSA_MCTARGETDESC_XTENSAINSTPRINTER_H
 
+#include "llvm/MC/MCInst.h"
 #include "llvm/MC/MCInstPrinter.h"
 #include "llvm/Support/Compiler.h"
 
@@ -96,6 +97,18 @@ private:
                                     raw_ostream &O);
   void printOffset_64_16_AsmOperand(const MCInst *MI, int OpNum,
                                     raw_ostream &O);
+
+  template <int lo, int hi, int step>
+  void printImmOperand(const MCInst *MI, int OpNum, raw_ostream &O) {
+    if (MI->getOperand(OpNum).isImm()) {
+      int64_t Value = MI->getOperand(OpNum).getImm();
+      assert((Value >= lo && Value <= hi && ((Value % step) == 0)) &&
+             "Invalid argument");
+      O << Value;
+    } else {
+      printOperand(MI, OpNum, O);
+    }
+  }
 };
 } // end namespace llvm
 
