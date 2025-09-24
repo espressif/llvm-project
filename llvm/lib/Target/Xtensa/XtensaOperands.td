@@ -21,6 +21,26 @@ class Immediate<ValueType vt, code pred, string asmop>
   let ParserMatchClass = !cast<AsmOperandClass>(asmop);
 }
 
+class ImmediateRanged<int Low, int High, int Step, string asmop> :
+  Immediate<i32, 
+  " return Imm >= " # Low # " && Imm <= " # High # " && (Imm % " # Step # " ) == 0;", 
+  asmop> {
+  let PrintMethod = "printImmOperand<" # Low #"," # High # "," # Step # ">";
+  }
+
+class ImmRangedAsmOperand<int Low, int High, int Step,string name> : 
+  ImmAsmOperand<name> { 
+  let PredicateMethod = "isImmInRange<" # Low #"," # High # "," # Step # ">";
+}
+
+multiclass ImmRangeDecl<int Low, int High, int Step> {
+
+  def _AsmOperand : ImmRangedAsmOperand<Low, High, Step, NAME>;
+  def NAME : ImmediateRanged<Low, High, Step, NAME # _AsmOperand>;
+
+}
+
+
 // imm8 predicate - Immediate in the range [-128,127]
 def Imm8_AsmOperand : ImmAsmOperand<"Imm8">;
 def imm8 : Immediate<i32, [{ return Imm >= -128 && Imm <= 127; }], "Imm8_AsmOperand"> {
@@ -106,6 +126,14 @@ def shimm1_31 : Immediate<i32, [{ return Imm >= 1 && Imm <= 31; }], "Shimm1_31_A
   let EncoderMethod = "getShimm1_31OpValue";
   let DecoderMethod = "decodeShimm1_31Operand";
 }
+
+defm imm32n_28: ImmRangeDecl<-32, 28, 4>;
+defm imm64n_56: ImmRangeDecl<-64, 56, 8>;
+defm imm0_56: ImmRangeDecl<0, 56, 8>;
+defm imm16n_14: ImmRangeDecl<-16, 14, 2>;
+defm imm16n_47: ImmRangeDecl<-16, 47, 1>;
+defm uimm2: ImmRangeDecl<0, 3, 1>;
+defm uimm6: ImmRangeDecl<0, 63, 1>;
 
 // Memory offset 0..255 for 8-bit memory accesses
 def Offset8m8_AsmOperand : ImmAsmOperand<"Offset8m8">;
