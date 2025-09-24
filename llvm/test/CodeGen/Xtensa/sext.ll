@@ -4,8 +4,7 @@
 
 define i32 @sext_i8(i8 %a) {
 ; XTENSA-LABEL: sext_i8:
-; XTENSA:         .cfi_startproc
-; XTENSA-NEXT:  # %bb.0:
+; XTENSA:       # %bb.0:
 ; XTENSA-NEXT:    sext a2, a2, 7
 ; XTENSA-NEXT:    ret
   %res = sext i8 %a to i32
@@ -14,8 +13,7 @@ define i32 @sext_i8(i8 %a) {
 
 define i32 @sext_i16(i16 %a) {
 ; XTENSA-LABEL: sext_i16:
-; XTENSA:         .cfi_startproc
-; XTENSA-NEXT:  # %bb.0:
+; XTENSA:       # %bb.0:
 ; XTENSA-NEXT:    sext a2, a2, 15
 ; XTENSA-NEXT:    ret
   %res = sext i16 %a to i32

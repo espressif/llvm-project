@@ -1,4 +1,4 @@
-# RUN: python3 %s > %t && ( llc -O0 -mtriple=xtensa -mcpu=esp32 %t -o - | FileCheck %t )
+# RUN: %python %s > %t && llc -O0 -mtriple=xtensa -mcpu=esp32 %t -o - | FileCheck %t
 
 from dataclasses import dataclass
 
@@ -51,7 +51,7 @@ FIXTURES = [
 template = """
 define {ret} @test_{fun}({fun_args})  {{
   ; CHECK-LABEL: {fun}
-  ; CHECK: {instr} 
+  ; CHECK: {instr}
   {ret_var} {assign} call {ret} @llvm.xtensa.{builtin}({call_args})
   ret {ret} {ret_var}
 }}
@@ -73,7 +73,7 @@ for f in FIXTURES:
     f.call_types = ",".join([a if isinstance(a,str) else 'i32' for a in args])
     if f.ret == 'void':
       f.assign = ""
-      f.ret_var = ""  
+      f.ret_var = ""
     else:
       f.assign = "="
       f.ret_var = "%r"

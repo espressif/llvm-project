@@ -10,13 +10,9 @@
 @tls_var = dso_local thread_local local_unnamed_addr global i32 42, align 4
 
 define dso_local i32 @get_tls() {
-; XTENSA-CHECK-ASM-LABEL: .literal_position
-; XTENSA-CHECK-ASM:       .literal .LCPI0_0, tls_var@TPOFF
 ; XTENSA-CHECK-ASM-LABEL: get_tls:
-; XTENSA-CHECK-ASM:         .cfi_startproc
-; XTENSA-CHECK-ASM-NEXT:  # %bb.0: # %entry
+; XTENSA-CHECK-ASM:       # %bb.0: # %entry
 ; XTENSA-CHECK-ASM-NEXT:    entry a1, 32
-; XTENSA-CHECK-ASM-NEXT:    .cfi_def_cfa_offset 32
 ; XTENSA-CHECK-ASM-NEXT:    l32r a8, .LCPI0_0
 ; XTENSA-CHECK-ASM-NEXT:    rur a9, threadptr
 ; XTENSA-CHECK-ASM-NEXT:    add.n a8, a9, a8

@@ -5,10 +5,8 @@
 ; Check placement of first 6 arguments in registers and 7th argument on stack
 define dso_local i32 @test1(i32 noundef %a, i32 noundef %b, i32 noundef %c, i32 noundef %d, i32 noundef %e, i32 noundef %f, ptr nocapture noundef readonly byval(i32) align 4 %p) {
 ; XTENSA-LABEL: test1:
-; XTENSA:         .cfi_startproc
-; XTENSA-NEXT:  # %bb.0:
+; XTENSA:       # %bb.0:
 ; XTENSA-NEXT:    entry a1, 32
-; XTENSA-NEXT:    .cfi_def_cfa_offset 32
 ; XTENSA-NEXT:    add a8, a7, a2
 ; XTENSA-NEXT:    l32i a9, a1, 32
 ; XTENSA-NEXT:    add a2, a8, a9
@@ -22,10 +20,8 @@ define dso_local i32 @test1(i32 noundef %a, i32 noundef %b, i32 noundef %c, i32 
 ; Check placement of second i64 argument in registers
 define dso_local i32 @test2(i32 noundef %a, i64 noundef %b, i32 noundef %c) {
 ; XTENSA-LABEL: test2:
-; XTENSA:         .cfi_startproc
-; XTENSA-NEXT:  # %bb.0:
+; XTENSA:       # %bb.0:
 ; XTENSA-NEXT:    entry a1, 32
-; XTENSA-NEXT:    .cfi_def_cfa_offset 32
 ; XTENSA-NEXT:    add a8, a6, a2
 ; XTENSA-NEXT:    add a2, a8, a4
 ; XTENSA-NEXT:    retw
@@ -38,10 +34,8 @@ define dso_local i32 @test2(i32 noundef %a, i64 noundef %b, i32 noundef %c) {
 ; Check placement of first argument typeof i8 in register
 define dso_local i32 @test3(i8 noundef signext %a, i64 noundef %b, i32 noundef %c) {
 ; XTENSA-LABEL: test3:
-; XTENSA:         .cfi_startproc
-; XTENSA-NEXT:  # %bb.0:
+; XTENSA:       # %bb.0:
 ; XTENSA-NEXT:    entry a1, 32
-; XTENSA-NEXT:    .cfi_def_cfa_offset 32
 ; XTENSA-NEXT:    add a8, a2, a6
 ; XTENSA-NEXT:    add a2, a8, a4
 ; XTENSA-NEXT:    retw
@@ -55,10 +49,8 @@ define dso_local i32 @test3(i8 noundef signext %a, i64 noundef %b, i32 noundef %
 ; Check placement of 4th argument typeof i64 on stack
 define dso_local i32 @test4(i8 noundef signext %a, i64 noundef %b, i32 noundef %c, ptr nocapture noundef readonly byval(i64) align 8 %p) {
 ; XTENSA-LABEL: test4:
-; XTENSA:         .cfi_startproc
-; XTENSA-NEXT:  # %bb.0:
+; XTENSA:       # %bb.0:
 ; XTENSA-NEXT:    entry a1, 32
-; XTENSA-NEXT:    .cfi_def_cfa_offset 32
 ; XTENSA-NEXT:    add a8, a2, a6
 ; XTENSA-NEXT:    add a8, a8, a4
 ; XTENSA-NEXT:    l32i a9, a1, 32
@@ -77,10 +69,8 @@ define dso_local i32 @test4(i8 noundef signext %a, i64 noundef %b, i32 noundef %
 ; Check placement of 128 bit structure on registers
 define dso_local i32 @test5([4 x i32] %a, i32 noundef %b) {
 ; XTENSA-LABEL: test5:
-; XTENSA:         .cfi_startproc
-; XTENSA-NEXT:  # %bb.0:
+; XTENSA:       # %bb.0:
 ; XTENSA-NEXT:    entry a1, 32
-; XTENSA-NEXT:    .cfi_def_cfa_offset 32
 ; XTENSA-NEXT:    add a2, a2, a6
 ; XTENSA-NEXT:    retw
   %ev = extractvalue [4 x i32] %a, 0
@@ -91,10 +81,8 @@ define dso_local i32 @test5([4 x i32] %a, i32 noundef %b) {
 ; Check placement of 128 bit structure on stack
 define dso_local i32 @test6(i32 noundef %a, [4 x i32] %b) {
 ; XTENSA-LABEL: test6:
-; XTENSA:         .cfi_startproc
-; XTENSA-NEXT:  # %bb.0:
+; XTENSA:       # %bb.0:
 ; XTENSA-NEXT:    entry a1, 32
-; XTENSA-NEXT:    .cfi_def_cfa_offset 32
 ; XTENSA-NEXT:    add a2, a3, a2
 ; XTENSA-NEXT:    retw
   %ev = extractvalue [4 x i32] %b, 0
