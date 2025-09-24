@@ -97,10 +97,21 @@ bool SemaXtensa::CheckXtensaBuiltinFunctionCall(const TargetInfo &TI,
   case Xtensa::BI__builtin_xtensa_xt_utrunc_s:
   case Xtensa::BI__builtin_xtensa_xt_float_s:
   case Xtensa::BI__builtin_xtensa_xt_ufloat_s:
+  case Xtensa::BI__builtin_xtensa_xt_ceil_s:
+  case Xtensa::BI__builtin_xtensa_xt_floor_s:
+  case Xtensa::BI__builtin_xtensa_xt_round_s:
     i = 1;
     l = 0;
     u = 15;
     break;
+  case Xtensa::BI__builtin_xtensa_xt_lsi:
+  case Xtensa::BI__builtin_xtensa_xt_lsip:
+    return SemaRef.BuiltinConstantArgRange(TheCall, 1, 0, 1020) ||
+           SemaRef.BuiltinConstantArgMultiple(TheCall, 1, 4);
+  case Xtensa::BI__builtin_xtensa_xt_ssi:
+  case Xtensa::BI__builtin_xtensa_xt_ssip:
+    return SemaRef.BuiltinConstantArgRange(TheCall, 2, 0, 1020) ||
+           SemaRef.BuiltinConstantArgMultiple(TheCall, 2, 4);
   case Xtensa::BI__builtin_xtensa_ee_andq:
   case Xtensa::BI__builtin_xtensa_ee_cmul_s16:
   case Xtensa::BI__builtin_xtensa_ee_fft_cmul_s16_st_xp:

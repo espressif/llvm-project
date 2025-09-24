@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -no-opaque-pointers -triple xtensa -O0 -emit-llvm %s -o - | FileCheck %s
+// RUN: %clang_cc1  -triple xtensa -O0 -emit-llvm %s -o - | FileCheck %s
 
 typedef __attribute__((ext_vector_type(1))) _Bool xtbool;
 
@@ -35,4 +35,14 @@ float test_sub_s(float a, float b) {
 float test_mul_s(float a, float b) {
   // CHECK: %{{.*}} = call float @llvm.xtensa.xt.mul.s(float %{{.*}}, float %{{.*}})
   return __builtin_xtensa_xt_mul_s(a, b);
+}
+
+float test_xt_lsip(float * a0) {
+  // CHECK: %{{.*}} = call { float, ptr } @llvm.xtensa.xt.lsip(ptr %{{.*}}, i32 0)
+  return __builtin_xtensa_xt_lsip(&a0, 0);
+}
+
+float test_xt_lsxp(float * a0, int a1) {
+  // CHECK: %{{.*}} = call { float, ptr } @llvm.xtensa.xt.lsxp(ptr %{{.*}}, i32 %{{.*}})
+  return __builtin_xtensa_xt_lsxp(&a0, a1);
 }
