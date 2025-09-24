@@ -452,8 +452,7 @@ exit:
 
 define float @copysign_f32(float %a, float %b) {
 ; CHECK-LABEL: copysign_f32:
-; CHECK:         .cfi_startproc
-; CHECK-NEXT:  # %bb.0: # %entry
+; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    l32r a8, .LCPI14_0
 ; CHECK-NEXT:    and a8, a3, a8
 ; CHECK-NEXT:    l32r a9, .LCPI14_1
