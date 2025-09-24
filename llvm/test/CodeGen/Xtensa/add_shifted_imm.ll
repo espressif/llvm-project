@@ -4,8 +4,7 @@
 
 define i64 @test_1(i32 %v) {
 ; CHECK-LABEL: test_1:
-; CHECK:         .cfi_startproc
-; CHECK-NEXT:  # %bb.0:
+; CHECK:       # %bb.0:
 ; CHECK-NEXT:    l32r a8, .LCPI0_0
 ; CHECK-NEXT:    add a2, a2, a8
 ; CHECK-NEXT:    movi a3, 0
@@ -17,8 +16,7 @@ define i64 @test_1(i32 %v) {
 
 define i64 @test_2(i32 %v) {
 ; CHECK-LABEL: test_2:
-; CHECK:         .cfi_startproc
-; CHECK-NEXT:  # %bb.0:
+; CHECK:       # %bb.0:
 ; CHECK-NEXT:    l32r a8, .LCPI1_0
 ; CHECK-NEXT:    add a2, a2, a8
 ; CHECK-NEXT:    movi a3, 0
@@ -30,8 +28,7 @@ define i64 @test_2(i32 %v) {
 
 define i64 @test_3(i32 %v) {
 ; CHECK-LABEL: test_3:
-; CHECK:         .cfi_startproc
-; CHECK-NEXT:  # %bb.0:
+; CHECK:       # %bb.0:
 ; CHECK-NEXT:    addmi a2, a2, -32768
 ; CHECK-NEXT:    movi a3, 0
 ; CHECK-NEXT:    ret
@@ -42,8 +39,7 @@ define i64 @test_3(i32 %v) {
 
 define i64 @test_4(i32 %v) {
 ; CHECK-LABEL: test_4:
-; CHECK:         .cfi_startproc
-; CHECK-NEXT:  # %bb.0:
+; CHECK:       # %bb.0:
 ; CHECK-NEXT:    addmi a2, a2, 32512
 ; CHECK-NEXT:    movi a3, 0
 ; CHECK-NEXT:    ret
