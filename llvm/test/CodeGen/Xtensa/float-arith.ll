@@ -573,8 +573,7 @@ define float @fneg_s(float %a) nounwind {
 
 define i32 @fptosi(float %f) {
 ; XTENSA-LABEL: fptosi:
-; XTENSA:         .cfi_startproc
-; XTENSA-NEXT:  # %bb.0:
+; XTENSA:       # %bb.0:
 ; XTENSA-NEXT:    wfr f8, a2
 ; XTENSA-NEXT:    trunc.s a2, f8, 0
 ; XTENSA-NEXT:    ret
@@ -584,8 +583,7 @@ define i32 @fptosi(float %f) {
 
 define i32 @fptoui(float %f) {
 ; XTENSA-LABEL: fptoui:
-; XTENSA:         .cfi_startproc
-; XTENSA-NEXT:  # %bb.0:
+; XTENSA:       # %bb.0:
 ; XTENSA-NEXT:    wfr f8, a2
 ; XTENSA-NEXT:    utrunc.s a2, f8, 0
 ; XTENSA-NEXT:    ret
@@ -595,8 +593,7 @@ define i32 @fptoui(float %f) {
 
 define float @copysign_f32(float %a, float %b) {
 ; XTENSA-LABEL: copysign_f32:
-; XTENSA:         .cfi_startproc
-; XTENSA-NEXT:  # %bb.0: # %entry
+; XTENSA:       # %bb.0: # %entry
 ; XTENSA-NEXT:    l32r a8, .LCPI35_0
 ; XTENSA-NEXT:    and a8, a3, a8
 ; XTENSA-NEXT:    l32r a9, .LCPI35_1
