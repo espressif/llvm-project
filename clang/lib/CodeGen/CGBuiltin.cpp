@@ -32,6 +32,7 @@
 #include "llvm/IR/Instruction.h"
 #include "llvm/IR/Intrinsics.h"
 #include "llvm/IR/IntrinsicsX86.h"
+#include "llvm/IR/IntrinsicsXtensa.h"
 #include "llvm/IR/MatrixBuilder.h"
 #include "llvm/Support/ConvertUTF.h"
 #include "llvm/Support/ScopedPrinter.h"
@@ -131,6 +132,8 @@ static Value *EmitTargetArchBuiltinExpr(CodeGenFunction *CGF,
     [[fallthrough]];
   case llvm::Triple::spirv:
     return CGF->EmitSPIRVBuiltinExpr(BuiltinID, E);
+  case llvm::Triple::xtensa:
+    return CGF->EmitXtensaBuiltinExpr(BuiltinID, E, ReturnValue, Arch);
   default:
     return nullptr;
   }
