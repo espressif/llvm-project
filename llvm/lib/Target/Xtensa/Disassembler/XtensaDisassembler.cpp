@@ -390,6 +390,14 @@ static DecodeStatus decodeImm64n_4nOperand(MCInst &Inst, uint64_t Imm,
   return MCDisassembler::Success;
 }
 
+static DecodeStatus decodeOffset8m32Operand(MCInst &Inst, uint64_t Imm,
+                                            int64_t Address,
+                                            const void *Decoder) {
+  assert(isUInt<10>(Imm) && ((Imm & 0x3) == 0) && "Invalid immediate");
+  Inst.addOperand(MCOperand::createImm(Imm));
+  return MCDisassembler::Success;
+}
+
 static DecodeStatus decodeEntry_Imm12OpValue(MCInst &Inst, uint64_t Imm,
                                              int64_t Address,
                                              const void *Decoder) {
