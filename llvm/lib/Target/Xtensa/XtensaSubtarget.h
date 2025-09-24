@@ -96,6 +96,7 @@ public:
   bool hasTHREADPTR() const { return HasTHREADPTR; }
   bool hasESP32S2Ops() const { return HasESP32S2Ops; }
   bool hasESP32S3Ops() const { return HasESP32S3Ops; }
+  bool hasHIFI3() const { return HasHIFI3; }
   bool isWindowedABI() const { return hasWindowed(); }
   bool useTextSectionLiterals() const;
 

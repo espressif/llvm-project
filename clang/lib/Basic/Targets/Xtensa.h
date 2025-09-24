@@ -37,6 +37,7 @@ protected:
   bool HasFP = false;
   bool HasWindowed = false;
   bool HasBoolean = false;
+  bool HasHIFI3 = false;
 
 public:
   XtensaTargetInfo(const llvm::Triple &Triple, const TargetOptions &)
