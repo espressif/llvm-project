@@ -1901,3 +1901,4 @@ include "llvm/IR/IntrinsicsRISCVXAndes.td"
 // Generated code
 // --------------
 include "llvm/IR/IntrinsicsRISCVESP32P4.td"
+include "llvm/IR/IntrinsicsRISCVESP32H4.td"
