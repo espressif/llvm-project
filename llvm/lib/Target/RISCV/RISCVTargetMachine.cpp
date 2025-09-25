@@ -14,6 +14,7 @@
 #include "MCTargetDesc/RISCVBaseInfo.h"
 #include "RISCV.h"
 #include "RISCVCustomLICM.h"
+#include "RISCVESP32P4LoopVersioning.h"
 #include "RISCVEsp32P4MemIntrin.h"
 #include "RISCVIntLoopUnrollAndRemainder.h"
 #include "RISCVDotprodSplitter.h"
@@ -706,6 +707,10 @@ void RISCVTargetMachine::registerPassBuilderCallbacks(PassBuilder &PB) {
         }
         if (Name == "riscv-dotprod-splitter") {
           FPM.addPass(RISCVDotprodSplitterPass());
+          return true;
+        }
+        if (Name == "riscv-esp32p4-loop-versioning") {
+          FPM.addPass(RISCVESP32P4LoopVersioningPass());
           return true;
         }
         return false;
