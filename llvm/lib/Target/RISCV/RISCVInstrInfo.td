@@ -2137,6 +2137,7 @@ include "RISCVInstrInfoSFB.td"
 include "RISCVInstrInfoXCV.td"
 include "RISCVInstrInfoXwch.td"
 include "RISCVInstrInfoESP32P4.td"
+include "RISCVInstrInfoESP32H4.td"
 include "RISCVInstrInfoXqci.td"
 include "RISCVInstrInfoXMips.td"
 

@@ -157,6 +157,7 @@
 // CHECK-NEXT:     xcvmac               1.0       'XCVmac' (CORE-V Multiply-Accumulate)
 // CHECK-NEXT:     xcvmem               1.0       'XCVmem' (CORE-V Post-incrementing Load & Store)
 // CHECK-NEXT:     xcvsimd              1.0       'XCVsimd' (CORE-V SIMD ALU)
+// CHECK-NEXT:     xespdsp              1.0       'Xespdsp' ('Espressif ESP32H4')
 // CHECK-NEXT:     xesppie              1.0       'Xesppie' ('Espressif ESP32P4')
 // CHECK-NEXT:     xmipscmove           1.0       'XMIPSCMove' (MIPS conditional move instruction(s) (ccmov))
 // CHECK-NEXT:     xmipslsp             1.0       'XMIPSLSP' (MIPS optimization for hardware load-store bonding)
