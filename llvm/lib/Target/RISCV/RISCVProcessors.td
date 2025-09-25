@@ -1042,4 +1042,18 @@ def ESPRESSIF_ESP32P4 : RISCVProcessorModel<"esp32p4",
                                         FeatureStdExtZcb,
                                         FeatureStdExtZcmp,
                                         FeatureStdExtZcmt]>;
+
+def ESPRESSIF_ESP32H4 : RISCVProcessorModel<"esp32h4",
+                                       NoSchedModel,
+                                       [Feature32Bit,
+                                        FeatureVendorXespdsp,
+                                        FeatureStdExtZicsr,
+                                        FeatureStdExtZifencei,
+                                        FeatureStdExtM,
+                                        FeatureStdExtA,
+                                        FeatureStdExtF,
+                                        FeatureStdExtC,
+                                        FeatureStdExtZcb,
+                                        FeatureStdExtZcmp,
+                                        FeatureStdExtZcmt]>;
 // clang-format on
