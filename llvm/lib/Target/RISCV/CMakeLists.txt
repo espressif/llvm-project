@@ -44,6 +44,7 @@ add_llvm_target(RISCVCodeGen
   RISCVCustomLICM.cpp
   RISCVLoopUnrollAndRemainder.cpp
   RISCVESP32P4ConditionSplit.cpp
+  RISCVESP32P4FunctionSpecialization.cpp
   RISCVEsp32P4MemIntrin.cpp
   RISCVESP32P4LoopVectorizeExtractor.cpp
   RISCVIndirectBranchTracking.cpp
