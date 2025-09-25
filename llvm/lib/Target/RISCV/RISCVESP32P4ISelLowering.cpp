@@ -8115,5 +8115,42 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
     MI.eraseFromParent();
     return MBB;
   }
+  case RISCV::ESP_MULS16IX2_P:{
+    unsigned Opc = RISCV::ESP_MULS16IX2;
+    MachineBasicBlock *MBB = MI.getParent();
+    MachineOperand &RS1 = MI.getOperand(0);
+    MachineOperand &RS2 = MI.getOperand(1);
+    MachineOperand &SHAMT = MI.getOperand(2);
+    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
+    unsigned R1 = MRI.createVirtualRegister(RC);
+    unsigned R2 = MRI.createVirtualRegister(RC);
+    BuildMI(*MBB, MI, DL, TII.get(Opc))
+      .addReg(R1, RegState::Define)
+      .addReg(R2, RegState::Define)
+      .addReg(RS1.getReg())
+      .addReg(RS2.getReg())
+      .addImm(SHAMT.getImm());
+    
+    MI.eraseFromParent();
+    return MBB;
+  }
+  case RISCV::ESP_MULS16X2_P:{
+    unsigned Opc = RISCV::ESP_MULS16X2;
+    MachineBasicBlock *MBB = MI.getParent();
+    MachineOperand &RS1 = MI.getOperand(0);
+    MachineOperand &RS2 = MI.getOperand(1);
+    const TargetRegisterClass *RC = &RISCV::GPRPIERegClass;
+    unsigned R1 = MRI.createVirtualRegister(RC);
+    unsigned R2 = MRI.createVirtualRegister(RC);
+    BuildMI(*MBB, MI, DL, TII.get(Opc))
+      .addReg(R1, RegState::Define)
+      .addReg(R2, RegState::Define)
+      .addReg(RS1.getReg())
+      .addReg(RS2.getReg());
+    
+    MI.eraseFromParent();
+    return MBB;
+  } 
+   
   }
 }
