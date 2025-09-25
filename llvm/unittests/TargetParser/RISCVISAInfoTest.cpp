@@ -1328,6 +1328,7 @@ R"(All available -march extensions for RISC-V
     xcvmac               1.0
     xcvmem               1.0
     xcvsimd              1.0
+    xespdsp              1.0
     xesppie              1.0
     xmipscbop            1.0
     xmipscmov            1.0
