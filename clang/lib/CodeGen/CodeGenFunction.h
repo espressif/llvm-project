@@ -5063,6 +5063,9 @@ public:
   llvm::Value *EmitXtensaBuiltinExpr(unsigned BuiltinID, const CallExpr *E,
                                      ReturnValueSlot ReturnValue,
                                      llvm::Triple::ArchType Arch);
+  llvm::Value *EmitXtensaConversionExpr(unsigned BuiltinID, const CallExpr *E,
+                                        ReturnValueSlot ReturnValue,
+                                        llvm::Triple::ArchType Arch);
   //===--------------------------------------------------------------------===//
   //                           Expression Emission
   //===--------------------------------------------------------------------===//
