@@ -24,6 +24,8 @@ public:
 
   bool CheckXtensaBuiltinFunctionCall(const TargetInfo &TI, unsigned BuiltinID,
                                      CallExpr *TheCall);
+
+  bool SemaBuiltinXtensaConversion(unsigned BuiltinID, CallExpr *TheCall);
 };
 } // namespace clang
 
