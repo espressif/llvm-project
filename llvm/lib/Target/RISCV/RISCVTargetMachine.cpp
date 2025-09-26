@@ -21,6 +21,7 @@
 #include "RISCVLoopUnrollAndRemainder.h"
 #include "RISCVESP32P4LoopVectorizeExtractor.h"
 #include "RISCVESP32P4FunctionSpecialization.h"
+#include "RISCVESP32P4LoopPatternToIntrinsic.h"
 #include "RISCVMachineFunctionInfo.h"
 #include "RISCVESP32P4ConditionSplit.h"
 #include "RISCVTargetObjectFile.h"
@@ -704,6 +705,10 @@ void RISCVTargetMachine::registerPassBuilderCallbacks(PassBuilder &PB) {
         }
         if (Name == "riscv-esp32p4-condition-split") {
           FPM.addPass(RISCVESP32P4ConditionSplitPass());
+          return true;
+        }
+        if (Name == "riscv-esp32p4-loop-pattern-to-intrinsic") {
+          FPM.addPass(RISCVESP32P4LoopPatternToIntrinsicPass());
           return true;
         }
         return false;
