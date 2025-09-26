@@ -341,8 +341,50 @@ bool SemaXtensa::CheckXtensaBuiltinFunctionCall(const TargetInfo &TI,
            SemaRef.BuiltinConstantArgRange(TheCall, 3, 0, 7) &&
            SemaRef.BuiltinConstantArgRange(TheCall, 4, 0, 7) &&
            SemaRef.BuiltinConstantArgRange(TheCall, 5, 0, 7);
+  case Xtensa::BI__builtin_xtensa_ae_int32x2:
+  case Xtensa::BI__builtin_xtensa_ae_int32:
+    return SemaBuiltinXtensaConversion(BuiltinID, TheCall);
   }
   return SemaRef.BuiltinConstantArgRange(TheCall, i, l, u);
+}
+
+bool SemaXtensa::SemaBuiltinXtensaConversion(unsigned BuiltinID, CallExpr *TheCall) {
+  ASTContext &Context = getASTContext();
+  unsigned MaxElems;
+  switch (BuiltinID) {
+  case Xtensa::BI__builtin_xtensa_ae_int32x2:
+    MaxElems = 2;
+    break;
+  case Xtensa::BI__builtin_xtensa_ae_int32:
+    MaxElems = 1;
+    break;
+  default:
+    llvm_unreachable("Unknown intrinsic ID");
+  }
+  if (SemaRef.checkArgCount(TheCall, 1))
+    return true;
+  Expr *Arg = TheCall->getArg(0);
+  QualType QT = Arg->getType();
+  if (auto *VecTy = QT->getAs<VectorType>()) {
+    unsigned NumEl = VecTy->getNumElements();
+    QualType ElType = VecTy->getElementType();
+    unsigned ElWidth = Context.getIntWidth(ElType);
+    QualType VecType = Context.getVectorType(Context.IntTy, MaxElems,
+                                             VectorKind::Generic);
+    if (ElWidth != 32 || NumEl > MaxElems)
+      return Diag(TheCall->getBeginLoc(),
+                  diag::err_typecheck_convert_incompatible)
+             << QT << VecType << 1 << 0 << 0;
+    return false;
+  } else {
+    if (!QT->isIntegerType())
+      return Diag(TheCall->getBeginLoc(),
+                  diag::err_typecheck_convert_incompatible)
+             << QT << Context.IntTy << 1 << 0 << 0;
+
+    return false;
+  }
+  return false;
 }
 
 } // namespace clang
