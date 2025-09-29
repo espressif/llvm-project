@@ -59,6 +59,7 @@
 #include "clang/Sema/SemaSwift.h"
 #include "clang/Sema/SemaWasm.h"
 #include "clang/Sema/SemaX86.h"
+#include "clang/Sema/SemaXtensa.h"
 #include "llvm/ADT/APSInt.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/StringExtras.h"
@@ -7108,6 +7109,20 @@ static bool MustDelayAttributeArguments(const ParsedAttr &AL) {
   return false;
 }
 
+static void handleShortCallAttr(Sema &S, Decl *D, const ParsedAttr &AL) {
+  switch (S.Context.getTargetInfo().getTriple().getArch()) {
+  case llvm::Triple::xtensa:
+    S.Xtensa().handleXtensaShortCall(D, AL);
+    break;
+  case llvm::Triple::mips64:
+  case llvm::Triple::mips:
+    S.MIPS().handleMipsShortCall(D, AL);
+    break;
+  default:
+    break;
+  }
+}
+
 /// ProcessDeclAttribute - Apply the specific attribute to the specified decl if
 /// the attribute applies to decls.  If the attribute is a type attribute, just
 /// silently ignore it if a GNU attribute.
@@ -8027,6 +8042,10 @@ ProcessDeclAttribute(Sema &S, Scope *scope, Decl *D, const ParsedAttr &AL,
 
   case ParsedAttr::AT_GCCStruct:
     handleGCCStructAttr(S, D, AL);
+    break;
+
+  case ParsedAttr::AT_ShortCall:
+    handleShortCallAttr(S, D, AL);
     break;
   }
 }
