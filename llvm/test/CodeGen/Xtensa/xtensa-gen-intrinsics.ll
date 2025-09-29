@@ -1,4 +1,4 @@
-# RUN: python3 %s > %t && ( llc -O0 -mtriple=xtensa -mcpu=esp32 %t -o - | FileCheck %t )
+# RUN: %python %s > %t && llc -O0 -mtriple=xtensa -mcpu=esp32 %t -o - | FileCheck %t
 
 from dataclasses import dataclass
 
