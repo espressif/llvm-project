@@ -15,6 +15,7 @@
 
 #include "clang/AST/Expr.h"
 #include "clang/Basic/TargetInfo.h"
+#include "clang/Sema/Attr.h"
 #include "clang/Sema/SemaBase.h"
 
 namespace clang {
@@ -26,6 +27,8 @@ public:
                                      CallExpr *TheCall);
 
   bool SemaBuiltinXtensaConversion(unsigned BuiltinID, CallExpr *TheCall);
+
+  void handleXtensaShortCall(Decl *D, const ParsedAttr &AL);
 };
 } // namespace clang
 
