@@ -1,5 +1,4 @@
-# RUN: llc -mtriple=xtensa -mcpu=cnl %t -o - | FileCheck %t
-
+# RUN: %python %s > %t && llc -mtriple=xtensa -mcpu=cnl %t -o - | FileCheck %t
 
 FIXTURES = [
     ('add','ae_add64','<1 x i64>'),
