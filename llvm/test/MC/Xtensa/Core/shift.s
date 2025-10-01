@@ -21,6 +21,11 @@ sll a10, a11
 slli a5, a1, 15
 
 # Instruction format RRR
+# CHECK-INST: or a5, a1, a1
+# CHECK: encoding: [0x10,0x51,0x20]
+slli a5, a1, 0
+
+# Instruction format RRR
 # CHECK-INST: sra a12, a3
 # CHECK: encoding: [0x30,0xc0,0xb1]
 sra a12, a3
