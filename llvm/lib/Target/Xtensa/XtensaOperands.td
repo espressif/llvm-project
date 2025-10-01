@@ -127,6 +127,13 @@ def shimm1_31 : Immediate<i32, [{ return Imm >= 1 && Imm <= 31; }], "Shimm1_31_A
   let DecoderMethod = "decodeShimm1_31Operand";
 }
 
+// shimm0_31 predicate - Immediate in the range [0,31]
+def Shimm0_31_AsmOperand : ImmAsmOperand<"Shimm0_31">;
+def shimm0_31 : Immediate<i32, [{ return Imm >= 0 && Imm <= 31; }], "Shimm0_31_AsmOperand"> {
+  let EncoderMethod = "getShimm0_31OpValue";
+  let DecoderMethod = "decodeShimm1_31Operand";
+}
+
 defm imm32n_28: ImmRangeDecl<-32, 28, 4>;
 defm imm64n_56: ImmRangeDecl<-64, 56, 8>;
 defm imm0_56: ImmRangeDecl<0, 56, 8>;
