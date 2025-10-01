@@ -15,6 +15,11 @@ abs a5, a6
 # CHECK: encoding: [0x40,0x39,0x80]
 add a3, a9, a4
 
+# Instruction format RRR
+# CHECK-INST: add a3, a9, a4
+# CHECK: encoding: [0x40,0x39,0x80]
+_add a3, a9, a4
+
 # CHECK-INST: add a15, a9, a1
 # CHECK: encoding: [0x10,0xf9,0x80]
 add a15, a9, sp
@@ -23,6 +28,11 @@ add a15, a9, sp
 # CHECK-INST: addi a8, a1, -128
 # CHECK: encoding: [0x82,0xc1,0x80]
 addi a8, sp, -128
+
+# Instruction format RRI8
+# CHECK-INST: addi a8, a1, -128
+# CHECK: encoding: [0x82,0xc1,0x80]
+_addi a8, sp, -128
 
 # CHECK-INST: addi a8, a1, -12
 # CHECK: encoding: [0x82,0xc1,0xf4]
