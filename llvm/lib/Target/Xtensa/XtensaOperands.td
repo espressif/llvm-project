@@ -107,6 +107,13 @@ def shimm1_31 : Immediate<i32, [{ return Imm >= 1 && Imm <= 31; }], "Shimm1_31_A
   let DecoderMethod = "decodeShimm1_31Operand";
 }
 
+// shimm0_31 predicate - Immediate in the range [0,31]
+def Shimm0_31_AsmOperand : ImmAsmOperand<"Shimm0_31">;
+def shimm0_31 : Immediate<i32, [{ return Imm >= 0 && Imm <= 31; }], "Shimm0_31_AsmOperand"> {
+  let EncoderMethod = "getShimm0_31OpValue";
+  let DecoderMethod = "decodeShimm1_31Operand";
+}
+
 // Memory offset 0..255 for 8-bit memory accesses
 def Offset8m8_AsmOperand : ImmAsmOperand<"Offset8m8">;
 def offset8m8 : Immediate<i32,
