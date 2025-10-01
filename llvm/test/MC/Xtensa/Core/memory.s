@@ -26,6 +26,11 @@ l16ui a4, sp, 6
 l32i a5, sp, 8
 
 # Instruction format RRI8
+# CHECK-INST: l32i a5, a1, 8
+# CHECK: encoding: [0x52,0x21,0x08]
+_l32i a5, sp, 8
+
+# Instruction format RRI8
 # CHECK-INST: s8i a2, a1, 3
 # CHECK: encoding: [0x22,0x41,0x03]
 s8i a2, sp, 3
@@ -39,3 +44,8 @@ s16i a3, sp, 4
 # CHECK-INST: s32i a5, a1, 8
 # CHECK: encoding: [0x52,0x61,0x02]
 s32i a5, sp, 8
+
+# Instruction format RRI8
+# CHECK-INST: s32i a5, a1, 8
+# CHECK: encoding: [0x52,0x61,0x08]
+_s32i a5, sp, 8
