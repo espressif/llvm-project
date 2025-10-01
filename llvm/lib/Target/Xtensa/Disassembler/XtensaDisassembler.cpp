@@ -480,6 +480,14 @@ static DecodeStatus decodeShimm1_31Operand(MCInst &Inst, uint64_t Imm,
   return MCDisassembler::Success;
 }
 
+static DecodeStatus decodeShimm0_31Operand(MCInst &Inst, uint64_t Imm,
+                                           int64_t Address,
+                                           const void *Decoder) {
+  assert(isUInt<5>(Imm) && "Invalid immediate");
+  Inst.addOperand(MCOperand::createImm(32 - Imm));
+  return MCDisassembler::Success;
+}
+
 static int64_t TableB4const[16] = {-1, 1,  2,  3,  4,  5,  6,   7,
                                    8,  10, 12, 16, 32, 64, 128, 256};
 static DecodeStatus decodeB4constOperand(MCInst &Inst, uint64_t Imm,

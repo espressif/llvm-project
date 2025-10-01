@@ -17,8 +17,8 @@ addmi a1, a2, 33
 # CHECK: :[[#@LINE-1]]:15: error: expected immediate in range [-32768, 32512], first 8 bits should be zero
 
 # shimm1_31
-slli a1, a2, 0
-# CHECK: :[[#@LINE-1]]:14: error: expected immediate in range [1, 31]
+_slli a1, a2, 0
+# CHECK: :[[#@LINE-1]]:15: error: expected immediate in range [1, 31]
 
 # uimm4
 _srli a1, a2, 16
@@ -122,3 +122,6 @@ bltui 16, a7, LBL0
 # CHECK: :[[#@LINE-1]]:7: error: invalid operand for instruction
 bltui a7, LBL0, 16
 # CHECK: :[[#@LINE-1]]:19: error: unknown operand
+
+_movi a1, -2059
+# CHECK: :[[#@LINE-1]]:11: error: expected immediate in range [-2048, 2047]
