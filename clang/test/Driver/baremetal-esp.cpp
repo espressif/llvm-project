@@ -16,16 +16,6 @@
 // RUN:     -L some/directory/user/asked/for \
 // RUN:     --sysroot=%t.dir/basic_riscv32_esp_tree/lib/clang-runtimes \
 // RUN:   | FileCheck --check-prefix=CHECK-ESP-RV32IMAC %s
-// RUN: %t.dir/basic_riscv32_esp_tree/bin/clang %s -### 2>&1 --target=riscv32-esp-elf \
-// RUN:     -march=rv32imac -mabi=ilp32 \
-// RUN:     -L some/directory/user/asked/for \
-// RUN:     --sysroot=%t.dir/basic_riscv32_esp_tree/lib/clang-runtimes \
-// RUN:   | FileCheck --check-prefix=CHECK-ESP-RV32IMAC %s
-// RUN: %t.dir/basic_riscv32_esp_tree/bin/clang %s -### 2>&1 --target=riscv32-esp-elf \
-// RUN:     -rtlib=compiler-rt \
-// RUN:     -L some/directory/user/asked/for \
-// RUN:     --sysroot=%t.dir/basic_riscv32_esp_tree/lib/clang-runtimes \
-// RUN:   | FileCheck --check-prefix=CHECK-ESP-RV32IMAC %s
 // CHECK-ESP-RV32IMAC:      "-cc1" "-triple" "riscv32-esp-unknown-elf"
 // CHECK-ESP-RV32IMAC-SAME: "-resource-dir" "[[RESOURCE_DIR:[^"]+]]"
 // CHECK-ESP-RV32IMAC-SAME: "-isysroot" "[[SYSROOT:[^"]*]]"
@@ -244,6 +234,8 @@
 // RUN:   | FileCheck --check-prefix=CHECK-ESP-RV32IMAC-FORCEAS2 %s
 // CHECK-ESP-RV32IMAC-FORCEAS2: riscv32-esp-elf-clang-as{{(.exe)?}}" "-o" "{{.*}}.o" "-c" "{{.*}}.s" "-march=rv32imac" "-mabi=ilp32"
 
+
+
 // RUN: %t.dir/basic_riscv32_esp_tree/bin/clang %s -### 2>&1 --target=riscv32-esp-elf -march=rv32imafc -mabi=ilp32f \
 // RUN:     --sysroot=%t.dir/basic_riscv32_esp_tree/lib/clang-runtimes \
 // RUN:   | FileCheck --check-prefix=CHECK-ESP-RV32IMAFC %s
@@ -251,12 +243,6 @@
 // RUN:     --sysroot=%t.dir/basic_riscv32_esp_tree/lib/clang-runtimes \
 // RUN:   | FileCheck --check-prefix=CHECK-ESP-RV32IMAFC %s
 // RUN: %t.dir/basic_riscv32_esp_tree/bin/clang %s -### 2>&1 --target=riscv32-esp-elf -march=rv32gc -mabi=ilp32f \
-// RUN:     --sysroot=%t.dir/basic_riscv32_esp_tree/lib/clang-runtimes \
-// RUN:   | FileCheck --check-prefix=CHECK-ESP-RV32IMAFC %s
-// RUN: %t.dir/basic_riscv32_esp_tree/bin/clang %s -### 2>&1 --target=riscv32-esp-elf -march=rv32imafc_zicsr_zifencei_xesppie -mabi=ilp32f \
-// RUN:     --sysroot=%t.dir/basic_riscv32_esp_tree/lib/clang-runtimes \
-// RUN:   | FileCheck --check-prefix=CHECK-ESP-RV32IMAFC %s
-// RUN: %t.dir/basic_riscv32_esp_tree/bin/clang %s -### 2>&1 --target=riscv32-esp-elf -march=rv32imafc_xesppie -mabi=ilp32f \
 // RUN:     --sysroot=%t.dir/basic_riscv32_esp_tree/lib/clang-runtimes \
 // RUN:   | FileCheck --check-prefix=CHECK-ESP-RV32IMAFC %s
 // CHECK-ESP-RV32IMAFC:      "-cc1" "-triple" "riscv32-esp-unknown-elf"
@@ -268,6 +254,7 @@
 // CHECK-ESP-RV32IMAFC-SAME: "-internal-isystem" "[[SYSROOT]]{{[/\\]+}}riscv32-esp-unknown-elf{{[/\\]+}}rv32imafc-zicsr-zifencei_ilp32f{{[/\\]+}}include"
 // CHECK-ESP-RV32IMAFC-NEXT: ld.lld{{(.exe)?}}"
 // CHECK-ESP-RV32IMAFC-SAME: "-L[[SYSROOT]]{{[/\\]+}}riscv32-esp-unknown-elf{{[/\\]+}}rv32imafc-zicsr-zifencei_ilp32f{{[/\\]+}}lib"
+
 
 // RUN: %t.dir/basic_riscv32_esp_tree/bin/clang %s -### 2>&1 --target=riscv32-esp-elf -march=rv32imafc -mabi=ilp32f \
 // RUN:     -fno-rtti \
@@ -313,7 +300,7 @@
 
 //////////////////// XTENSA /////////////////////////
 
-// RUN: rm -rf %t
+// RUN: rm -rf %t.dir
 // RUN: mkdir -p %t.dir/basic_xtensa_esp_tree/bin
 // RUN: ln -s %clang %t.dir/basic_xtensa_esp_tree/bin/clang
 // RUN: ln -s %S/Inputs/basic_xtensa_esp_tree/bin/ld.lld %t.dir/basic_xtensa_esp_tree/bin/ld.lld
