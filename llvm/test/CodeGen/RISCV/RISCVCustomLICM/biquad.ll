@@ -2,7 +2,7 @@
 ; RUN: opt -S -mtriple=riscv32-esp-unknown-elf -passes=riscv-custom-licm -riscv-custom-licm=true < %s | FileCheck %s
 define dso_local noundef i32 @dsps_biquad_f32_ansi(ptr nocapture noundef readonly %input, ptr nocapture noundef writeonly %output, i32 noundef %len, ptr nocapture noundef readonly %coef, ptr nocapture noundef %w) local_unnamed_addr {
 ; CHECK-LABEL: define dso_local noundef i32 @dsps_biquad_f32_ansi(
-; CHECK-SAME: ptr nocapture noundef readonly [[INPUT:%.*]], ptr nocapture noundef writeonly [[OUTPUT:%.*]], i32 noundef [[LEN:%.*]], ptr nocapture noundef readonly [[COEF:%.*]], ptr nocapture noundef [[W:%.*]]) local_unnamed_addr {
+; CHECK-SAME: ptr noundef readonly captures(none) [[INPUT:%.*]], ptr noundef writeonly captures(none) [[OUTPUT:%.*]], i32 noundef [[LEN:%.*]], ptr noundef readonly captures(none) [[COEF:%.*]], ptr noundef captures(none) [[W:%.*]]) local_unnamed_addr {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    [[TMP0:%.*]] = icmp sgt i32 [[LEN]], 2
 ; CHECK-NEXT:    br i1 [[TMP0]], label [[FOR_COND_PREHEADER:%.*]], label [[FOR_BODY_LR_PH_CLONE:%.*]]
