@@ -4,7 +4,7 @@
 ; Function Attrs: nofree norecurse nosync nounwind memory(readwrite, inaccessiblemem: none)
 define dso_local noundef i32 @dsps_fir_f32_ansi(ptr nocapture noundef %fir, ptr nocapture noundef readonly %input, ptr nocapture noundef writeonly %output, i32 noundef %len) local_unnamed_addr {
 ; CHECK-LABEL: define dso_local noundef i32 @dsps_fir_f32_ansi(
-; CHECK-SAME: ptr nocapture noundef [[FIR:%.*]], ptr nocapture noundef readonly [[INPUT:%.*]], ptr nocapture noundef writeonly [[OUTPUT:%.*]], i32 noundef [[LEN:%.*]]) local_unnamed_addr {
+; CHECK-SAME: ptr noundef captures(none) [[FIR:%.*]], ptr noundef readonly captures(none) [[INPUT:%.*]], ptr noundef writeonly captures(none) [[OUTPUT:%.*]], i32 noundef [[LEN:%.*]]) local_unnamed_addr {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    [[TMP0:%.*]] = icmp sgt i32 [[LEN]], 2
 ; CHECK-NEXT:    br i1 [[TMP0]], label [[FOR_COND_PREHEADER:%.*]], label [[FOR_BODY_LR_PH_CLONE:%.*]]
