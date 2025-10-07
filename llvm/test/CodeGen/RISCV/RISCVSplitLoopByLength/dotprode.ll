@@ -3,7 +3,7 @@
 ; Function Attrs: nofree norecurse nosync nounwind memory(argmem: readwrite)
 define dso_local noundef i32 @dsps_dotprode_f32_ansi(ptr nocapture noundef readonly %src1, ptr nocapture noundef readonly %src2, ptr nocapture noundef writeonly %dest, i32 noundef %len, i32 noundef %step1, i32 noundef %step2) local_unnamed_addr {
 ; CHECK-LABEL: define dso_local noundef i32 @dsps_dotprode_f32_ansi(
-; CHECK-SAME: ptr nocapture noundef readonly [[SRC1:%.*]], ptr nocapture noundef readonly [[SRC2:%.*]], ptr nocapture noundef writeonly [[DEST:%.*]], i32 noundef [[LEN:%.*]], i32 noundef [[STEP1:%.*]], i32 noundef [[STEP2:%.*]]) local_unnamed_addr {
+; CHECK-SAME: ptr noundef readonly captures(none) [[SRC1:%.*]], ptr noundef readonly captures(none) [[SRC2:%.*]], ptr noundef writeonly captures(none) [[DEST:%.*]], i32 noundef [[LEN:%.*]], i32 noundef [[STEP1:%.*]], i32 noundef [[STEP2:%.*]]) local_unnamed_addr {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    [[TMP0:%.*]] = icmp sgt i32 [[LEN]], 2
 ; CHECK-NEXT:    br i1 [[TMP0]], label [[FOR_BODY:%.*]], label [[FOR_COND_PREHEADER:%.*]]
