@@ -9,7 +9,7 @@ define void @test_src16_dst16_variable_size(ptr %a, ptr %b, i32 %size) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
 ; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    call void @esp32p4MemCpySrc16dst16Var(i32 [[TMP1]], i32 [[TMP0]], i32 [[SIZE]])
+; CHECK-NEXT:    call void @esp32p4MemCpySrc16Dst16Var(i32 [[TMP1]], i32 [[TMP0]], i32 [[SIZE]])
 ; CHECK-NEXT:    ret void
 ;
 entry:
@@ -21,17 +21,9 @@ define void @test_src16_dst8_variable_size(ptr %a, ptr %b, i32 %size) {
 ; CHECK-LABEL: define void @test_src16_dst8_variable_size(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]], i32 [[SIZE:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = icmp ult i32 [[SIZE]], 16
-; CHECK-NEXT:    br i1 [[TMP0]], label %[[IF_SMALL:.*]], label %[[IF_LARGE:.*]]
-; CHECK:       [[IF_SMALL]]:
-; CHECK-NEXT:    call void @esp32p4MemCpySrcUnalignedDstUnalignedVarFrom0To15Opt(ptr [[A]], ptr [[B]], i32 [[SIZE]])
-; CHECK-NEXT:    br label %[[CONTINUE:.*]]
-; CHECK:       [[IF_LARGE]]:
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[B]] to i32
 ; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[A]] to i32
 ; CHECK-NEXT:    call void @esp32p4MemCpySrc16Dst8Var(i32 [[TMP2]], i32 [[TMP1]], i32 [[SIZE]])
-; CHECK-NEXT:    br label %[[CONTINUE]]
-; CHECK:       [[CONTINUE]]:
 ; CHECK-NEXT:    ret void
 ;
 entry:
@@ -43,17 +35,9 @@ define void @test_src8_dst16_variable_size(ptr %a, ptr %b, i32 %size) {
 ; CHECK-LABEL: define void @test_src8_dst16_variable_size(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]], i32 [[SIZE:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = icmp ult i32 [[SIZE]], 16
-; CHECK-NEXT:    br i1 [[TMP0]], label %[[IF_SMALL:.*]], label %[[IF_LARGE:.*]]
-; CHECK:       [[IF_SMALL]]:
-; CHECK-NEXT:    call void @esp32p4MemCpySrcUnalignedDstUnalignedVarFrom0To15Opt(ptr [[A]], ptr [[B]], i32 [[SIZE]])
-; CHECK-NEXT:    br label %[[CONTINUE:.*]]
-; CHECK:       [[IF_LARGE]]:
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[B]] to i32
 ; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[A]] to i32
 ; CHECK-NEXT:    call void @esp32p4MemCpySrc8Dst16Var(i32 [[TMP2]], i32 [[TMP1]], i32 [[SIZE]])
-; CHECK-NEXT:    br label %[[CONTINUE]]
-; CHECK:       [[CONTINUE]]:
 ; CHECK-NEXT:    ret void
 ;
 entry:
@@ -65,17 +49,9 @@ define void @test_src8_dst8_variable_size(ptr %a, ptr %b, i32 %size) {
 ; CHECK-LABEL: define void @test_src8_dst8_variable_size(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]], i32 [[SIZE:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = icmp ult i32 [[SIZE]], 16
-; CHECK-NEXT:    br i1 [[TMP0]], label %[[IF_SMALL:.*]], label %[[IF_LARGE:.*]]
-; CHECK:       [[IF_SMALL]]:
-; CHECK-NEXT:    call void @esp32p4MemCpySrcUnalignedDstUnalignedVarFrom0To15Opt(ptr [[A]], ptr [[B]], i32 [[SIZE]])
-; CHECK-NEXT:    br label %[[CONTINUE:.*]]
-; CHECK:       [[IF_LARGE]]:
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[B]] to i32
 ; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[A]] to i32
 ; CHECK-NEXT:    call void @esp32p4MemCpySrc8Dst8Var(i32 [[TMP2]], i32 [[TMP1]], i32 [[SIZE]])
-; CHECK-NEXT:    br label %[[CONTINUE]]
-; CHECK:       [[CONTINUE]]:
 ; CHECK-NEXT:    ret void
 ;
 entry:
@@ -83,2202 +59,11 @@ entry:
   ret void
 }
 
-; Function Attrs: noinline nounwind
-define internal void @esp32p4MemCpySrc16dst16Var(i32 %0, i32 %1, i32 %2) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrc16dst16Var(
-; CHECK-SAME: i32 [[TMP0:%.*]], i32 [[TMP1:%.*]], i32 [[TMP2:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[CMP:%.*]] = icmp ult i32 [[TMP2]], 8
-; CHECK-NEXT:    br i1 [[CMP]], label %[[IF_THEN:.*]], label %[[IF_ELSE:.*]]
-; CHECK:       [[IF_THEN]]:
-; CHECK-NEXT:    [[TMP3:%.*]] = inttoptr i32 [[TMP0]] to ptr
-; CHECK-NEXT:    [[TMP4:%.*]] = inttoptr i32 [[TMP1]] to ptr
-; CHECK-NEXT:    call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr [[TMP3]], ptr [[TMP4]], i32 [[TMP2]])
-; CHECK-NEXT:    br label %[[RETURN:.*]]
-; CHECK:       [[IF_ELSE]]:
-; CHECK-NEXT:    [[CMP1:%.*]] = icmp ult i32 [[TMP2]], 16
-; CHECK-NEXT:    br i1 [[CMP1]], label %[[IF_THEN2:.*]], label %[[IF_END3:.*]]
-; CHECK:       [[IF_THEN2]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    [[TMP5:%.*]] = inttoptr i32 [[TMP0]] to ptr
-; CHECK-NEXT:    [[TMP6:%.*]] = inttoptr i32 [[TMP1]] to ptr
-; CHECK-NEXT:    [[SUB:%.*]] = add nsw i32 [[TMP2]], -8
-; CHECK-NEXT:    call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr [[TMP5]], ptr [[TMP6]], i32 [[SUB]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[IF_END3]]:
-; CHECK-NEXT:    [[DIV94:%.*]] = lshr i32 [[TMP2]], 7
-; CHECK-NEXT:    [[REM:%.*]] = lshr i32 [[TMP2]], 4
-; CHECK-NEXT:    [[DIV195:%.*]] = and i32 [[REM]], 7
-; CHECK-NEXT:    [[REM4:%.*]] = and i32 [[TMP2]], 7
-; CHECK-NEXT:    [[CMP97_NOT:%.*]] = icmp ult i32 [[TMP2]], 128
-; CHECK-NEXT:    br i1 [[CMP97_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY:.*]]
-; CHECK:       [[RETURN]]:
-; CHECK-NEXT:    ret void
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    switch i32 [[DIV195]], label %[[DEFAULT_UNREACHABLE:.*]] [
-; CHECK-NEXT:      i32 1, label %[[SW_BB1:.*]]
-; CHECK-NEXT:      i32 2, label %[[SW_BB2:.*]]
-; CHECK-NEXT:      i32 3, label %[[SW_BB3:.*]]
-; CHECK-NEXT:      i32 4, label %[[SW_BB4:.*]]
-; CHECK-NEXT:      i32 5, label %[[SW_BB5:.*]]
-; CHECK-NEXT:      i32 6, label %[[SW_BB6:.*]]
-; CHECK-NEXT:      i32 7, label %[[SW_BB7:.*]]
-; CHECK-NEXT:      i32 0, label %[[SW_EPILOG:.*]]
-; CHECK-NEXT:    ]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_098:%.*]] = phi i32 [ 0, %[[IF_END3]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q2, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q3, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q4, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q5, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q6, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q7, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q2, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q3, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q4, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q5, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q6, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q7, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_098]], 1
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], [[DIV94]]
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP]], label %[[FOR_BODY]]
-; CHECK:       [[SW_EPILOG]]:
-; CHECK-NEXT:    [[TMP7:%.*]] = and i32 [[TMP2]], 8
-; CHECK-NEXT:    [[TMP8:%.*]] = icmp eq i32 [[TMP7]], 0
-; CHECK-NEXT:    br i1 [[TMP8]], label %[[IF_END17:.*]], label %[[IF_THEN16:.*]]
-; CHECK:       [[DEFAULT_UNREACHABLE]]:
-; CHECK-NEXT:    unreachable
-; CHECK:       [[SW_BB1]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[SW_EPILOG]]
-; CHECK:       [[SW_BB2]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[SW_EPILOG]]
-; CHECK:       [[SW_BB3]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q2, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q2, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[SW_EPILOG]]
-; CHECK:       [[SW_BB4]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q2, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q3, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q2, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q3, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[SW_EPILOG]]
-; CHECK:       [[SW_BB5]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q2, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q3, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q4, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q2, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q3, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q4, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[SW_EPILOG]]
-; CHECK:       [[SW_BB6]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q2, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q3, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q4, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q5, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q2, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q3, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q4, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q5, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[SW_EPILOG]]
-; CHECK:       [[SW_BB7]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q2, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q3, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q4, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q5, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q6, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q2, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q3, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q4, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q5, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q6, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[SW_EPILOG]]
-; CHECK:       [[IF_THEN16]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[IF_END17]]
-; CHECK:       [[IF_END17]]:
-; CHECK-NEXT:    [[TMP9:%.*]] = icmp eq i32 [[REM4]], 0
-; CHECK-NEXT:    br i1 [[TMP9]], label %[[RETURN]], label %[[IF_THEN13:.*]]
-; CHECK:       [[IF_THEN13]]:
-; CHECK-NEXT:    [[TMP10:%.*]] = inttoptr i32 [[TMP0]] to ptr
-; CHECK-NEXT:    [[TMP11:%.*]] = inttoptr i32 [[TMP1]] to ptr
-; CHECK-NEXT:    call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr [[TMP10]], ptr [[TMP11]], i32 [[REM4]])
-; CHECK-NEXT:    br label %[[RETURN]]
-;
-entry:
-  %cmp = icmp ult i32 %2, 8
-  br i1 %cmp, label %if.then, label %if.else
-
-if.then:                                          ; preds = %entry
-  %3 = inttoptr i32 %0 to ptr
-  %4 = inttoptr i32 %1 to ptr
-  call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr %3, ptr %4, i32 %2)
-  br label %return
-
-if.else:                                          ; preds = %entry
-  %cmp1 = icmp ult i32 %2, 16
-  br i1 %cmp1, label %if.then2, label %if.end3
-
-if.then2:                                         ; preds = %if.else
-  call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  %5 = inttoptr i32 %0 to ptr
-  %6 = inttoptr i32 %1 to ptr
-  %sub = add nsw i32 %2, -8
-  call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr %5, ptr %6, i32 %sub)
-  br label %return
-
-if.end3:                                          ; preds = %if.else
-  %div94 = lshr i32 %2, 7
-  %rem = lshr i32 %2, 4
-  %div195 = and i32 %rem, 7
-  %rem4 = and i32 %2, 7
-  %cmp97.not = icmp ult i32 %2, 128
-  br i1 %cmp97.not, label %for.cond.cleanup, label %for.body
-
-return:                                           ; preds = %if.then13, %if.end17, %if.then2, %if.then
-  ret void
-
-for.cond.cleanup:                                 ; preds = %for.body, %if.end3
-  switch i32 %div195, label %default.unreachable [
-  i32 1, label %sw.bb1
-  i32 2, label %sw.bb2
-  i32 3, label %sw.bb3
-  i32 4, label %sw.bb4
-  i32 5, label %sw.bb5
-  i32 6, label %sw.bb6
-  i32 7, label %sw.bb7
-  i32 0, label %sw.epilog
-  ]
-
-for.body:                                         ; preds = %for.body, %if.end3
-  %i.098 = phi i32 [ 0, %if.end3 ], [ %inc, %for.body ]
-  call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q2, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q3, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q4, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q5, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q6, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q7, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q2, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q3, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q4, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q5, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q6, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q7, $0, 16", "+{a0}"(i32 %0)
-  %inc = add nuw nsw i32 %i.098, 1
-  %exitcond.not = icmp eq i32 %inc, %div94
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-sw.epilog:                                        ; preds = %for.cond.cleanup, %sw.bb7, %sw.bb6, %sw.bb5, %sw.bb4, %sw.bb3, %sw.bb2, %sw.bb1
-  %7 = and i32 %2, 8
-  %8 = icmp eq i32 %7, 0
-  br i1 %8, label %if.end17, label %if.then16
-
-default.unreachable:                              ; preds = %for.cond.cleanup
-  unreachable
-
-sw.bb1:                                           ; preds = %for.cond.cleanup
-  call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 %0)
-  br label %sw.epilog
-
-sw.bb2:                                           ; preds = %for.cond.cleanup
-  call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 %0)
-  br label %sw.epilog
-
-sw.bb3:                                           ; preds = %for.cond.cleanup
-  call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q2, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q2, $0, 16", "+{a0}"(i32 %0)
-  br label %sw.epilog
-
-sw.bb4:                                           ; preds = %for.cond.cleanup
-  call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q2, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q3, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q2, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q3, $0, 16", "+{a0}"(i32 %0)
-  br label %sw.epilog
-
-sw.bb5:                                           ; preds = %for.cond.cleanup
-  call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q2, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q3, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q4, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q2, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q3, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q4, $0, 16", "+{a0}"(i32 %0)
-  br label %sw.epilog
-
-sw.bb6:                                           ; preds = %for.cond.cleanup
-  call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q2, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q3, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q4, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q5, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q2, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q3, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q4, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q5, $0, 16", "+{a0}"(i32 %0)
-  br label %sw.epilog
-
-sw.bb7:                                           ; preds = %for.cond.cleanup
-  call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q2, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q3, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q4, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q5, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q6, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q2, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q3, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q4, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q5, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q6, $0, 16", "+{a0}"(i32 %0)
-  br label %sw.epilog
-
-if.then16:                                        ; preds = %sw.epilog
-  call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  br label %if.end17
-
-if.end17:                                         ; preds = %if.then16, %sw.epilog
-  %9 = icmp eq i32 %rem4, 0
-  br i1 %9, label %return, label %if.then13
-
-if.then13:                                        ; preds = %if.end17
-  %10 = inttoptr i32 %0 to ptr
-  %11 = inttoptr i32 %1 to ptr
-  call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr %10, ptr %11, i32 %rem4)
-  br label %return
-}
-
-; Function Attrs: noinline nounwind
-define internal void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr %0, ptr %1, i32 %2) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrc16Dst16From0To15Opt(
-; CHECK-SAME: ptr [[TMP0:%.*]], ptr [[TMP1:%.*]], i32 [[TMP2:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    switch i32 [[TMP2]], label %[[RETURN:.*]] [
-; CHECK-NEXT:      i32 1, label %[[SW_BB0:.*]]
-; CHECK-NEXT:      i32 2, label %[[SW_BB1:.*]]
-; CHECK-NEXT:      i32 3, label %[[SW_BB2:.*]]
-; CHECK-NEXT:      i32 4, label %[[SW_BB3:.*]]
-; CHECK-NEXT:      i32 5, label %[[SW_BB4:.*]]
-; CHECK-NEXT:      i32 6, label %[[SW_BB5:.*]]
-; CHECK-NEXT:      i32 7, label %[[SW_BB6:.*]]
-; CHECK-NEXT:      i32 8, label %[[SW_BB7:.*]]
-; CHECK-NEXT:      i32 9, label %[[SW_BB8:.*]]
-; CHECK-NEXT:      i32 10, label %[[SW_BB9:.*]]
-; CHECK-NEXT:      i32 11, label %[[SW_BB10:.*]]
-; CHECK-NEXT:      i32 12, label %[[SW_BB11:.*]]
-; CHECK-NEXT:      i32 13, label %[[SW_BB12:.*]]
-; CHECK-NEXT:      i32 14, label %[[SW_BB13:.*]]
-; CHECK-NEXT:      i32 15, label %[[SW_BB14:.*]]
-; CHECK-NEXT:    ]
-; CHECK:       [[RETURN]]:
-; CHECK-NEXT:    ret void
-; CHECK:       [[SW_BB0]]:
-; CHECK-NEXT:    call void asm sideeffect "lb t0, 0($0)\0A\09sb t0, 0($1)\0A\09", "r,r,~{x5}"(ptr [[TMP1]], ptr [[TMP0]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[SW_BB1]]:
-; CHECK-NEXT:    call void asm sideeffect "lh t0, 0($0)\0A\09sh t0, 0($1)\0A\09", "r,r,~{x5}"(ptr [[TMP1]], ptr [[TMP0]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[SW_BB2]]:
-; CHECK-NEXT:    call void asm sideeffect "lh t0, 0($0)\0A\09sh t0, 0($1)\0A\09lb t0, 2($0)\0A\09sb t0, 2($1)\0A\09", "r,r,~{x5}"(ptr [[TMP1]], ptr [[TMP0]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[SW_BB3]]:
-; CHECK-NEXT:    call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09", "r,r,~{x5}"(ptr [[TMP1]], ptr [[TMP0]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[SW_BB4]]:
-; CHECK-NEXT:    call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lb t0, 4($0)\0A\09sb t0, 4($1)\0A\09", "r,r,~{x5}"(ptr [[TMP1]], ptr [[TMP0]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[SW_BB5]]:
-; CHECK-NEXT:    call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lh t0, 4($0)\0A\09sh t0, 4($1)\0A\09", "r,r,~{x5}"(ptr [[TMP1]], ptr [[TMP0]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[SW_BB6]]:
-; CHECK-NEXT:    call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lh t0, 4($0)\0A\09sh t0, 4($1)\0A\09lb t0, 6($0)\0A\09sb t0, 6($1)\0A\09", "r,r,~{x5}"(ptr [[TMP1]], ptr [[TMP0]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[SW_BB7]]:
-; CHECK-NEXT:    call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09", "r,r,~{x5}"(ptr [[TMP1]], ptr [[TMP0]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[SW_BB8]]:
-; CHECK-NEXT:    call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09lb t0, 8($0)\0A\09sb t0, 8($1)\0A\09", "r,r,~{x5}"(ptr [[TMP1]], ptr [[TMP0]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[SW_BB9]]:
-; CHECK-NEXT:    call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09lh t0, 8($0)\0A\09sh t0, 8($1)\0A\09", "r,r,~{x5}"(ptr [[TMP1]], ptr [[TMP0]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[SW_BB10]]:
-; CHECK-NEXT:    call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09lh t0, 8($0)\0A\09sh t0, 8($1)\0A\09lb t0, 10($0)\0A\09sb t0, 10($1)\0A\09", "r,r,~{x5}"(ptr [[TMP1]], ptr [[TMP0]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[SW_BB11]]:
-; CHECK-NEXT:    call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09lw t0, 8($0)\0A\09sw t0, 8($1)\0A\09", "r,r,~{x5}"(ptr [[TMP1]], ptr [[TMP0]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[SW_BB12]]:
-; CHECK-NEXT:    call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09lw t0, 8($0)\0A\09sw t0, 8($1)\0A\09lb t0, 12($0)\0A\09sb t0, 12($1)\0A\09", "r,r,~{x5}"(ptr [[TMP1]], ptr [[TMP0]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[SW_BB13]]:
-; CHECK-NEXT:    call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09lw t0, 8($0)\0A\09sw t0, 8($1)\0A\09lh t0, 12($0)\0A\09sh t0, 12($1)\0A\09", "r,r,~{x5}"(ptr [[TMP1]], ptr [[TMP0]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[SW_BB14]]:
-; CHECK-NEXT:    call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09lw t0, 8($0)\0A\09sw t0, 8($1)\0A\09lh t0, 12($0)\0A\09sh t0, 12($1)\0A\09lb t0, 14($0)\0A\09sb t0, 14($1)\0A\09", "r,r,~{x5}"(ptr [[TMP1]], ptr [[TMP0]])
-; CHECK-NEXT:    br label %[[RETURN]]
-;
-entry:
-  switch i32 %2, label %return [
-  i32 1, label %sw.bb0
-  i32 2, label %sw.bb1
-  i32 3, label %sw.bb2
-  i32 4, label %sw.bb3
-  i32 5, label %sw.bb4
-  i32 6, label %sw.bb5
-  i32 7, label %sw.bb6
-  i32 8, label %sw.bb7
-  i32 9, label %sw.bb8
-  i32 10, label %sw.bb9
-  i32 11, label %sw.bb10
-  i32 12, label %sw.bb11
-  i32 13, label %sw.bb12
-  i32 14, label %sw.bb13
-  i32 15, label %sw.bb14
-  ]
-
-return:                                           ; preds = %sw.bb14, %sw.bb13, %sw.bb12, %sw.bb11, %sw.bb10, %sw.bb9, %sw.bb8, %sw.bb7, %sw.bb6, %sw.bb5, %sw.bb4, %sw.bb3, %sw.bb2, %sw.bb1, %sw.bb0, %entry
-  ret void
-
-sw.bb0:                                           ; preds = %entry
-  call void asm sideeffect "lb t0, 0($0)\0A\09sb t0, 0($1)\0A\09", "r,r,~{x5}"(ptr %1, ptr %0)
-  br label %return
-
-sw.bb1:                                           ; preds = %entry
-  call void asm sideeffect "lh t0, 0($0)\0A\09sh t0, 0($1)\0A\09", "r,r,~{x5}"(ptr %1, ptr %0)
-  br label %return
-
-sw.bb2:                                           ; preds = %entry
-  call void asm sideeffect "lh t0, 0($0)\0A\09sh t0, 0($1)\0A\09lb t0, 2($0)\0A\09sb t0, 2($1)\0A\09", "r,r,~{x5}"(ptr %1, ptr %0)
-  br label %return
-
-sw.bb3:                                           ; preds = %entry
-  call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09", "r,r,~{x5}"(ptr %1, ptr %0)
-  br label %return
-
-sw.bb4:                                           ; preds = %entry
-  call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lb t0, 4($0)\0A\09sb t0, 4($1)\0A\09", "r,r,~{x5}"(ptr %1, ptr %0)
-  br label %return
-
-sw.bb5:                                           ; preds = %entry
-  call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lh t0, 4($0)\0A\09sh t0, 4($1)\0A\09", "r,r,~{x5}"(ptr %1, ptr %0)
-  br label %return
-
-sw.bb6:                                           ; preds = %entry
-  call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lh t0, 4($0)\0A\09sh t0, 4($1)\0A\09lb t0, 6($0)\0A\09sb t0, 6($1)\0A\09", "r,r,~{x5}"(ptr %1, ptr %0)
-  br label %return
-
-sw.bb7:                                           ; preds = %entry
-  call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09", "r,r,~{x5}"(ptr %1, ptr %0)
-  br label %return
-
-sw.bb8:                                           ; preds = %entry
-  call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09lb t0, 8($0)\0A\09sb t0, 8($1)\0A\09", "r,r,~{x5}"(ptr %1, ptr %0)
-  br label %return
-
-sw.bb9:                                           ; preds = %entry
-  call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09lh t0, 8($0)\0A\09sh t0, 8($1)\0A\09", "r,r,~{x5}"(ptr %1, ptr %0)
-  br label %return
-
-sw.bb10:                                          ; preds = %entry
-  call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09lh t0, 8($0)\0A\09sh t0, 8($1)\0A\09lb t0, 10($0)\0A\09sb t0, 10($1)\0A\09", "r,r,~{x5}"(ptr %1, ptr %0)
-  br label %return
-
-sw.bb11:                                          ; preds = %entry
-  call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09lw t0, 8($0)\0A\09sw t0, 8($1)\0A\09", "r,r,~{x5}"(ptr %1, ptr %0)
-  br label %return
-
-sw.bb12:                                          ; preds = %entry
-  call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09lw t0, 8($0)\0A\09sw t0, 8($1)\0A\09lb t0, 12($0)\0A\09sb t0, 12($1)\0A\09", "r,r,~{x5}"(ptr %1, ptr %0)
-  br label %return
-
-sw.bb13:                                          ; preds = %entry
-  call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09lw t0, 8($0)\0A\09sw t0, 8($1)\0A\09lh t0, 12($0)\0A\09sh t0, 12($1)\0A\09", "r,r,~{x5}"(ptr %1, ptr %0)
-  br label %return
-
-sw.bb14:                                          ; preds = %entry
-  call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09lw t0, 8($0)\0A\09sw t0, 8($1)\0A\09lh t0, 12($0)\0A\09sh t0, 12($1)\0A\09lb t0, 14($0)\0A\09sb t0, 14($1)\0A\09", "r,r,~{x5}"(ptr %1, ptr %0)
-  br label %return
-}
-
-; Function Attrs: noinline nounwind
-define internal void @esp32p4MemCpySrcUnalignedDstUnalignedVarFrom0To15Opt(ptr %0, ptr %1, i32 %2) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcUnalignedDstUnalignedVarFrom0To15Opt(
-; CHECK-SAME: ptr [[TMP0:%.*]], ptr [[TMP1:%.*]], i32 [[TMP2:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    switch i32 [[TMP2]], label %[[RETURN:.*]] [
-; CHECK-NEXT:      i32 1, label %[[SW_BB0:.*]]
-; CHECK-NEXT:      i32 2, label %[[SW_BB1:.*]]
-; CHECK-NEXT:      i32 3, label %[[SW_BB2:.*]]
-; CHECK-NEXT:      i32 4, label %[[SW_BB3:.*]]
-; CHECK-NEXT:      i32 5, label %[[SW_BB4:.*]]
-; CHECK-NEXT:      i32 6, label %[[SW_BB5:.*]]
-; CHECK-NEXT:      i32 7, label %[[SW_BB6:.*]]
-; CHECK-NEXT:      i32 8, label %[[SW_BB7:.*]]
-; CHECK-NEXT:      i32 9, label %[[SW_BB8:.*]]
-; CHECK-NEXT:      i32 10, label %[[SW_BB9:.*]]
-; CHECK-NEXT:      i32 11, label %[[SW_BB10:.*]]
-; CHECK-NEXT:      i32 12, label %[[SW_BB11:.*]]
-; CHECK-NEXT:      i32 13, label %[[SW_BB12:.*]]
-; CHECK-NEXT:      i32 14, label %[[SW_BB13:.*]]
-; CHECK-NEXT:      i32 15, label %[[SW_BB14:.*]]
-; CHECK-NEXT:    ]
-; CHECK:       [[RETURN]]:
-; CHECK-NEXT:    ret void
-; CHECK:       [[SW_BB0]]:
-; CHECK-NEXT:    call void asm sideeffect "lb t0, 0($0)\0A\09sb t0, 0($1)\0A\09", "r,r,~{x5}"(ptr [[TMP1]], ptr [[TMP0]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[SW_BB1]]:
-; CHECK-NEXT:    call void asm sideeffect "lh t0, 0($0)\0A\09sh t0, 0($1)\0A\09", "r,r,~{x5}"(ptr [[TMP1]], ptr [[TMP0]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[SW_BB2]]:
-; CHECK-NEXT:    call void asm sideeffect "lh t0, 0($0)\0A\09sh t0, 0($1)\0A\09lb t0, 2($0)\0A\09sb t0, 2($1)\0A\09", "r,r,~{x5}"(ptr [[TMP1]], ptr [[TMP0]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[SW_BB3]]:
-; CHECK-NEXT:    call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09", "r,r,~{x5}"(ptr [[TMP1]], ptr [[TMP0]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[SW_BB4]]:
-; CHECK-NEXT:    call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lb t0, 4($0)\0A\09sb t0, 4($1)\0A\09", "r,r,~{x5}"(ptr [[TMP1]], ptr [[TMP0]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[SW_BB5]]:
-; CHECK-NEXT:    call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lh t0, 4($0)\0A\09sh t0, 4($1)\0A\09", "r,r,~{x5}"(ptr [[TMP1]], ptr [[TMP0]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[SW_BB6]]:
-; CHECK-NEXT:    call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lh t0, 4($0)\0A\09sh t0, 4($1)\0A\09lb t0, 6($0)\0A\09sb t0, 6($1)\0A\09", "r,r,~{x5}"(ptr [[TMP1]], ptr [[TMP0]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[SW_BB7]]:
-; CHECK-NEXT:    call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09", "r,r,~{x5}"(ptr [[TMP1]], ptr [[TMP0]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[SW_BB8]]:
-; CHECK-NEXT:    call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09lb t0, 8($0)\0A\09sb t0, 8($1)\0A\09", "r,r,~{x5}"(ptr [[TMP1]], ptr [[TMP0]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[SW_BB9]]:
-; CHECK-NEXT:    call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09lh t0, 8($0)\0A\09sh t0, 8($1)\0A\09", "r,r,~{x5}"(ptr [[TMP1]], ptr [[TMP0]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[SW_BB10]]:
-; CHECK-NEXT:    call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09lh t0, 8($0)\0A\09sh t0, 8($1)\0A\09lb t0, 10($0)\0A\09sb t0, 10($1)\0A\09", "r,r,~{x5}"(ptr [[TMP1]], ptr [[TMP0]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[SW_BB11]]:
-; CHECK-NEXT:    call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09lw t0, 8($0)\0A\09sw t0, 8($1)\0A\09", "r,r,~{x5}"(ptr [[TMP1]], ptr [[TMP0]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[SW_BB12]]:
-; CHECK-NEXT:    call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09lw t0, 8($0)\0A\09sw t0, 8($1)\0A\09lb t0, 12($0)\0A\09sb t0, 12($1)\0A\09", "r,r,~{x5}"(ptr [[TMP1]], ptr [[TMP0]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[SW_BB13]]:
-; CHECK-NEXT:    call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09lw t0, 8($0)\0A\09sw t0, 8($1)\0A\09lh t0, 12($0)\0A\09sh t0, 12($1)\0A\09", "r,r,~{x5}"(ptr [[TMP1]], ptr [[TMP0]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[SW_BB14]]:
-; CHECK-NEXT:    call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09lw t0, 8($0)\0A\09sw t0, 8($1)\0A\09lh t0, 12($0)\0A\09sh t0, 12($1)\0A\09lb t0, 14($0)\0A\09sb t0, 14($1)\0A\09", "r,r,~{x5}"(ptr [[TMP1]], ptr [[TMP0]])
-; CHECK-NEXT:    br label %[[RETURN]]
-;
-entry:
-  switch i32 %2, label %return [
-  i32 1, label %sw.bb0
-  i32 2, label %sw.bb1
-  i32 3, label %sw.bb2
-  i32 4, label %sw.bb3
-  i32 5, label %sw.bb4
-  i32 6, label %sw.bb5
-  i32 7, label %sw.bb6
-  i32 8, label %sw.bb7
-  i32 9, label %sw.bb8
-  i32 10, label %sw.bb9
-  i32 11, label %sw.bb10
-  i32 12, label %sw.bb11
-  i32 13, label %sw.bb12
-  i32 14, label %sw.bb13
-  i32 15, label %sw.bb14
-  ]
-
-return:                                           ; preds = %sw.bb14, %sw.bb13, %sw.bb12, %sw.bb11, %sw.bb10, %sw.bb9, %sw.bb8, %sw.bb7, %sw.bb6, %sw.bb5, %sw.bb4, %sw.bb3, %sw.bb2, %sw.bb1, %sw.bb0, %entry
-  ret void
-
-sw.bb0:                                           ; preds = %entry
-  call void asm sideeffect "lb t0, 0($0)\0A\09sb t0, 0($1)\0A\09", "r,r,~{x5}"(ptr %1, ptr %0)
-  br label %return
-
-sw.bb1:                                           ; preds = %entry
-  call void asm sideeffect "lh t0, 0($0)\0A\09sh t0, 0($1)\0A\09", "r,r,~{x5}"(ptr %1, ptr %0)
-  br label %return
-
-sw.bb2:                                           ; preds = %entry
-  call void asm sideeffect "lh t0, 0($0)\0A\09sh t0, 0($1)\0A\09lb t0, 2($0)\0A\09sb t0, 2($1)\0A\09", "r,r,~{x5}"(ptr %1, ptr %0)
-  br label %return
-
-sw.bb3:                                           ; preds = %entry
-  call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09", "r,r,~{x5}"(ptr %1, ptr %0)
-  br label %return
-
-sw.bb4:                                           ; preds = %entry
-  call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lb t0, 4($0)\0A\09sb t0, 4($1)\0A\09", "r,r,~{x5}"(ptr %1, ptr %0)
-  br label %return
-
-sw.bb5:                                           ; preds = %entry
-  call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lh t0, 4($0)\0A\09sh t0, 4($1)\0A\09", "r,r,~{x5}"(ptr %1, ptr %0)
-  br label %return
-
-sw.bb6:                                           ; preds = %entry
-  call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lh t0, 4($0)\0A\09sh t0, 4($1)\0A\09lb t0, 6($0)\0A\09sb t0, 6($1)\0A\09", "r,r,~{x5}"(ptr %1, ptr %0)
-  br label %return
-
-sw.bb7:                                           ; preds = %entry
-  call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09", "r,r,~{x5}"(ptr %1, ptr %0)
-  br label %return
-
-sw.bb8:                                           ; preds = %entry
-  call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09lb t0, 8($0)\0A\09sb t0, 8($1)\0A\09", "r,r,~{x5}"(ptr %1, ptr %0)
-  br label %return
-
-sw.bb9:                                           ; preds = %entry
-  call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09lh t0, 8($0)\0A\09sh t0, 8($1)\0A\09", "r,r,~{x5}"(ptr %1, ptr %0)
-  br label %return
-
-sw.bb10:                                          ; preds = %entry
-  call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09lh t0, 8($0)\0A\09sh t0, 8($1)\0A\09lb t0, 10($0)\0A\09sb t0, 10($1)\0A\09", "r,r,~{x5}"(ptr %1, ptr %0)
-  br label %return
-
-sw.bb11:                                          ; preds = %entry
-  call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09lw t0, 8($0)\0A\09sw t0, 8($1)\0A\09", "r,r,~{x5}"(ptr %1, ptr %0)
-  br label %return
-
-sw.bb12:                                          ; preds = %entry
-  call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09lw t0, 8($0)\0A\09sw t0, 8($1)\0A\09lb t0, 12($0)\0A\09sb t0, 12($1)\0A\09", "r,r,~{x5}"(ptr %1, ptr %0)
-  br label %return
-
-sw.bb13:                                          ; preds = %entry
-  call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09lw t0, 8($0)\0A\09sw t0, 8($1)\0A\09lh t0, 12($0)\0A\09sh t0, 12($1)\0A\09", "r,r,~{x5}"(ptr %1, ptr %0)
-  br label %return
-
-sw.bb14:                                          ; preds = %entry
-  call void asm sideeffect "lw t0, 0($0)\0A\09sw t0, 0($1)\0A\09lw t0, 4($0)\0A\09sw t0, 4($1)\0A\09lw t0, 8($0)\0A\09sw t0, 8($1)\0A\09lh t0, 12($0)\0A\09sh t0, 12($1)\0A\09lb t0, 14($0)\0A\09sb t0, 14($1)\0A\09", "r,r,~{x5}"(ptr %1, ptr %0)
-  br label %return
-}
-
-; Function Attrs: noinline nounwind
-define internal void @esp32p4MemCpySrc16Dst8Var(i32 %0, i32 %1, i32 %2) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrc16Dst8Var(
-; CHECK-SAME: i32 [[TMP0:%.*]], i32 [[TMP1:%.*]], i32 [[TMP2:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[CMP:%.*]] = icmp ult i32 [[TMP2]], 8
-; CHECK-NEXT:    br i1 [[CMP]], label %[[IF_THEN:.*]], label %[[IF_END:.*]]
-; CHECK:       [[IF_THEN]]:
-; CHECK-NEXT:    [[TMP3:%.*]] = inttoptr i32 [[TMP0]] to ptr
-; CHECK-NEXT:    [[TMP4:%.*]] = inttoptr i32 [[TMP1]] to ptr
-; CHECK-NEXT:    call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr [[TMP3]], ptr [[TMP4]], i32 [[TMP2]])
-; CHECK-NEXT:    br label %[[RETURN:.*]]
-; CHECK:       [[IF_END]]:
-; CHECK-NEXT:    [[CMP1:%.*]] = icmp ult i32 [[TMP2]], 16
-; CHECK-NEXT:    br i1 [[CMP1]], label %[[IF_THEN2:.*]], label %[[IF_END3:.*]]
-; CHECK:       [[IF_THEN2]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    [[TMP5:%.*]] = inttoptr i32 [[TMP0]] to ptr
-; CHECK-NEXT:    [[TMP6:%.*]] = inttoptr i32 [[TMP1]] to ptr
-; CHECK-NEXT:    [[SUB:%.*]] = add nsw i32 [[TMP2]], -8
-; CHECK-NEXT:    call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr [[TMP5]], ptr [[TMP6]], i32 [[SUB]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[IF_END3]]:
-; CHECK-NEXT:    [[CMP4:%.*]] = icmp ult i32 [[TMP2]], 32
-; CHECK-NEXT:    br i1 [[CMP4]], label %[[IF_THEN5:.*]], label %[[IF_END7:.*]]
-; CHECK:       [[IF_THEN5]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    [[TMP7:%.*]] = inttoptr i32 [[TMP0]] to ptr
-; CHECK-NEXT:    [[TMP8:%.*]] = inttoptr i32 [[TMP1]] to ptr
-; CHECK-NEXT:    [[SUBM:%.*]] = add nsw i32 [[TMP2]], -16
-; CHECK-NEXT:    call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr [[TMP7]], ptr [[TMP8]], i32 [[SUBM]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[IF_END7]]:
-; CHECK-NEXT:    [[CMP8:%.*]] = icmp ult i32 [[TMP2]], 48
-; CHECK-NEXT:    br i1 [[CMP8]], label %[[IF_THEN9:.*]], label %[[IF_END11:.*]]
-; CHECK:       [[IF_THEN9]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    [[TMP9:%.*]] = inttoptr i32 [[TMP0]] to ptr
-; CHECK-NEXT:    [[TMP10:%.*]] = inttoptr i32 [[TMP1]] to ptr
-; CHECK-NEXT:    [[SUBM1:%.*]] = add nsw i32 [[TMP2]], -32
-; CHECK-NEXT:    call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr [[TMP9]], ptr [[TMP10]], i32 [[SUBM1]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[IF_END11]]:
-; CHECK-NEXT:    [[CMP12:%.*]] = icmp ult i32 [[TMP2]], 64
-; CHECK-NEXT:    br i1 [[CMP12]], label %[[IF_THEN13:.*]], label %[[IF_END15:.*]]
-; CHECK:       [[IF_THEN13]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q2, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q2, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q2, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    [[TMP11:%.*]] = inttoptr i32 [[TMP0]] to ptr
-; CHECK-NEXT:    [[TMP12:%.*]] = inttoptr i32 [[TMP1]] to ptr
-; CHECK-NEXT:    [[SUBM2:%.*]] = add nsw i32 [[TMP2]], -48
-; CHECK-NEXT:    call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr [[TMP11]], ptr [[TMP12]], i32 [[SUBM2]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[IF_END15]]:
-; CHECK-NEXT:    [[DIV94:%.*]] = lshr i32 [[TMP2]], 7
-; CHECK-NEXT:    [[REM:%.*]] = lshr i32 [[TMP2]], 4
-; CHECK-NEXT:    [[DIV195:%.*]] = and i32 [[REM]], 7
-; CHECK-NEXT:    [[REM4:%.*]] = and i32 [[TMP2]], 7
-; CHECK-NEXT:    [[CMP97_NOT:%.*]] = icmp ult i32 [[TMP2]], 128
-; CHECK-NEXT:    br i1 [[CMP97_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY:.*]]
-; CHECK:       [[RETURN]]:
-; CHECK-NEXT:    ret void
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    switch i32 [[DIV195]], label %[[DEFAULT_UNREACHABLE:.*]] [
-; CHECK-NEXT:      i32 1, label %[[SW_BB1:.*]]
-; CHECK-NEXT:      i32 2, label %[[SW_BB2:.*]]
-; CHECK-NEXT:      i32 3, label %[[SW_BB3:.*]]
-; CHECK-NEXT:      i32 4, label %[[SW_BB4:.*]]
-; CHECK-NEXT:      i32 5, label %[[SW_BB5:.*]]
-; CHECK-NEXT:      i32 6, label %[[SW_BB6:.*]]
-; CHECK-NEXT:      i32 7, label %[[SW_BB7:.*]]
-; CHECK-NEXT:      i32 0, label %[[SW_EPILOG:.*]]
-; CHECK-NEXT:    ]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_098:%.*]] = phi i32 [ 0, %[[IF_END15]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q2, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q3, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q4, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q5, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q6, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q7, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q2, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q2, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q3, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q3, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q4, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q4, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q5, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q5, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q6, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q6, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q7, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q7, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_098]], 1
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], [[DIV94]]
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP]], label %[[FOR_BODY]]
-; CHECK:       [[SW_EPILOG]]:
-; CHECK-NEXT:    [[TMP13:%.*]] = and i32 [[TMP2]], 8
-; CHECK-NEXT:    [[TMP14:%.*]] = icmp eq i32 [[TMP13]], 0
-; CHECK-NEXT:    br i1 [[TMP14]], label %[[IF_END17:.*]], label %[[IF_THEN16:.*]]
-; CHECK:       [[DEFAULT_UNREACHABLE]]:
-; CHECK-NEXT:    unreachable
-; CHECK:       [[SW_BB1]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[SW_EPILOG]]
-; CHECK:       [[SW_BB2]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[SW_EPILOG]]
-; CHECK:       [[SW_BB3]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q2, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q2, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q2, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[SW_EPILOG]]
-; CHECK:       [[SW_BB4]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q2, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q3, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q2, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q2, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q3, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q3, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[SW_EPILOG]]
-; CHECK:       [[SW_BB5]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q2, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q3, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q4, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q2, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q2, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q3, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q3, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q4, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q4, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[SW_EPILOG]]
-; CHECK:       [[SW_BB6]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q2, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q3, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q4, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q5, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q2, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q2, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q3, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q3, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q4, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q4, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q5, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q5, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[SW_EPILOG]]
-; CHECK:       [[SW_BB7]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q2, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q3, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q4, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q5, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.128.ip q6, $0, 16", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q2, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q2, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q3, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q3, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q4, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q4, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q5, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q5, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q6, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q6, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[SW_EPILOG]]
-; CHECK:       [[IF_THEN16]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[IF_END17]]
-; CHECK:       [[IF_END17]]:
-; CHECK-NEXT:    [[TMP15:%.*]] = icmp eq i32 [[REM4]], 0
-; CHECK-NEXT:    br i1 [[TMP15]], label %[[RETURN]], label %[[IF_THEN31:.*]]
-; CHECK:       [[IF_THEN31]]:
-; CHECK-NEXT:    [[TMP16:%.*]] = inttoptr i32 [[TMP0]] to ptr
-; CHECK-NEXT:    [[TMP17:%.*]] = inttoptr i32 [[TMP1]] to ptr
-; CHECK-NEXT:    call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr [[TMP16]], ptr [[TMP17]], i32 [[REM4]])
-; CHECK-NEXT:    br label %[[RETURN]]
-;
-entry:
-  %cmp = icmp ult i32 %2, 8
-  br i1 %cmp, label %if.then, label %if.end
-
-if.then:                                          ; preds = %entry
-  %3 = inttoptr i32 %0 to ptr
-  %4 = inttoptr i32 %1 to ptr
-  call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr %3, ptr %4, i32 %2)
-  br label %return
-
-if.end:                                           ; preds = %entry
-  %cmp1 = icmp ult i32 %2, 16
-  br i1 %cmp1, label %if.then2, label %if.end3
-
-if.then2:                                         ; preds = %if.end
-  call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  %5 = inttoptr i32 %0 to ptr
-  %6 = inttoptr i32 %1 to ptr
-  %sub = add nsw i32 %2, -8
-  call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr %5, ptr %6, i32 %sub)
-  br label %return
-
-if.end3:                                          ; preds = %if.end
-  %cmp4 = icmp ult i32 %2, 32
-  br i1 %cmp4, label %if.then5, label %if.end7
-
-if.then5:                                         ; preds = %if.end3
-  call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  %7 = inttoptr i32 %0 to ptr
-  %8 = inttoptr i32 %1 to ptr
-  %subm = add nsw i32 %2, -16
-  call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr %7, ptr %8, i32 %subm)
-  br label %return
-
-if.end7:                                          ; preds = %if.end3
-  %cmp8 = icmp ult i32 %2, 48
-  br i1 %cmp8, label %if.then9, label %if.end11
-
-if.then9:                                         ; preds = %if.end7
-  call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  %9 = inttoptr i32 %0 to ptr
-  %10 = inttoptr i32 %1 to ptr
-  %subm1 = add nsw i32 %2, -32
-  call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr %9, ptr %10, i32 %subm1)
-  br label %return
-
-if.end11:                                         ; preds = %if.end7
-  %cmp12 = icmp ult i32 %2, 64
-  br i1 %cmp12, label %if.then13, label %if.end15
-
-if.then13:                                        ; preds = %if.end11
-  call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q2, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q2, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q2, $0, 8", "+{a0}"(i32 %0)
-  %11 = inttoptr i32 %0 to ptr
-  %12 = inttoptr i32 %1 to ptr
-  %subm2 = add nsw i32 %2, -48
-  call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr %11, ptr %12, i32 %subm2)
-  br label %return
-
-if.end15:                                         ; preds = %if.end11
-  %div94 = lshr i32 %2, 7
-  %rem = lshr i32 %2, 4
-  %div195 = and i32 %rem, 7
-  %rem4 = and i32 %2, 7
-  %cmp97.not = icmp ult i32 %2, 128
-  br i1 %cmp97.not, label %for.cond.cleanup, label %for.body
-
-return:                                           ; preds = %if.then31, %if.end17, %if.then13, %if.then9, %if.then5, %if.then2, %if.then
-  ret void
-
-for.cond.cleanup:                                 ; preds = %for.body, %if.end15
-  switch i32 %div195, label %default.unreachable [
-  i32 1, label %sw.bb1
-  i32 2, label %sw.bb2
-  i32 3, label %sw.bb3
-  i32 4, label %sw.bb4
-  i32 5, label %sw.bb5
-  i32 6, label %sw.bb6
-  i32 7, label %sw.bb7
-  i32 0, label %sw.epilog
-  ]
-
-for.body:                                         ; preds = %for.body, %if.end15
-  %i.098 = phi i32 [ 0, %if.end15 ], [ %inc, %for.body ]
-  call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q2, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q3, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q4, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q5, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q6, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q7, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q2, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q2, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q3, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q3, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q4, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q4, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q5, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q5, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q6, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q6, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q7, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q7, $0, 8", "+{a0}"(i32 %0)
-  %inc = add nuw nsw i32 %i.098, 1
-  %exitcond.not = icmp eq i32 %inc, %div94
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-sw.epilog:                                        ; preds = %for.cond.cleanup, %sw.bb7, %sw.bb6, %sw.bb5, %sw.bb4, %sw.bb3, %sw.bb2, %sw.bb1
-  %13 = and i32 %2, 8
-  %14 = icmp eq i32 %13, 0
-  br i1 %14, label %if.end17, label %if.then16
-
-default.unreachable:                              ; preds = %for.cond.cleanup
-  unreachable
-
-sw.bb1:                                           ; preds = %for.cond.cleanup
-  call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  br label %sw.epilog
-
-sw.bb2:                                           ; preds = %for.cond.cleanup
-  call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  br label %sw.epilog
-
-sw.bb3:                                           ; preds = %for.cond.cleanup
-  call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q2, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q2, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q2, $0, 8", "+{a0}"(i32 %0)
-  br label %sw.epilog
-
-sw.bb4:                                           ; preds = %for.cond.cleanup
-  call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q2, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q3, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q2, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q2, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q3, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q3, $0, 8", "+{a0}"(i32 %0)
-  br label %sw.epilog
-
-sw.bb5:                                           ; preds = %for.cond.cleanup
-  call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q2, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q3, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q4, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q2, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q2, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q3, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q3, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q4, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q4, $0, 8", "+{a0}"(i32 %0)
-  br label %sw.epilog
-
-sw.bb6:                                           ; preds = %for.cond.cleanup
-  call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q2, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q3, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q4, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q5, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q2, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q2, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q3, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q3, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q4, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q4, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q5, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q5, $0, 8", "+{a0}"(i32 %0)
-  br label %sw.epilog
-
-sw.bb7:                                           ; preds = %for.cond.cleanup
-  call void asm sideeffect "esp.vld.128.ip q0, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q1, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q2, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q3, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q4, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q5, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.128.ip q6, $0, 16", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q2, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q2, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q3, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q3, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q4, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q4, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q5, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q5, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q6, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q6, $0, 8", "+{a0}"(i32 %0)
-  br label %sw.epilog
-
-if.then16:                                        ; preds = %sw.epilog
-  call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  br label %if.end17
-
-if.end17:                                         ; preds = %if.then16, %sw.epilog
-  %15 = icmp eq i32 %rem4, 0
-  br i1 %15, label %return, label %if.then31
-
-if.then31:                                        ; preds = %if.end17
-  %16 = inttoptr i32 %0 to ptr
-  %17 = inttoptr i32 %1 to ptr
-  call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr %16, ptr %17, i32 %rem4)
-  br label %return
-}
-
-; Function Attrs: noinline nounwind
-define internal void @esp32p4MemCpySrc8Dst16Var(i32 %0, i32 %1, i32 %2) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrc8Dst16Var(
-; CHECK-SAME: i32 [[TMP0:%.*]], i32 [[TMP1:%.*]], i32 [[TMP2:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[CMP:%.*]] = icmp ult i32 [[TMP2]], 8
-; CHECK-NEXT:    br i1 [[CMP]], label %[[IF_THEN:.*]], label %[[IF_END:.*]]
-; CHECK:       [[IF_THEN]]:
-; CHECK-NEXT:    [[TMP3:%.*]] = inttoptr i32 [[TMP0]] to ptr
-; CHECK-NEXT:    [[TMP4:%.*]] = inttoptr i32 [[TMP1]] to ptr
-; CHECK-NEXT:    call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr [[TMP3]], ptr [[TMP4]], i32 [[TMP2]])
-; CHECK-NEXT:    br label %[[RETURN:.*]]
-; CHECK:       [[IF_END]]:
-; CHECK-NEXT:    [[CMP1:%.*]] = icmp ult i32 [[TMP2]], 16
-; CHECK-NEXT:    br i1 [[CMP1]], label %[[IF_THEN2:.*]], label %[[IF_END3:.*]]
-; CHECK:       [[IF_THEN2]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    [[TMP5:%.*]] = inttoptr i32 [[TMP0]] to ptr
-; CHECK-NEXT:    [[TMP6:%.*]] = inttoptr i32 [[TMP1]] to ptr
-; CHECK-NEXT:    [[SUB:%.*]] = add nsw i32 [[TMP2]], -8
-; CHECK-NEXT:    call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr [[TMP5]], ptr [[TMP6]], i32 [[SUB]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[IF_END3]]:
-; CHECK-NEXT:    [[CMP4:%.*]] = icmp ult i32 [[TMP2]], 32
-; CHECK-NEXT:    br i1 [[CMP4]], label %[[IF_THEN5:.*]], label %[[IF_END7:.*]]
-; CHECK:       [[IF_THEN5]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    [[TMP7:%.*]] = inttoptr i32 [[TMP0]] to ptr
-; CHECK-NEXT:    [[TMP8:%.*]] = inttoptr i32 [[TMP1]] to ptr
-; CHECK-NEXT:    [[SUBM:%.*]] = add nsw i32 [[TMP2]], -16
-; CHECK-NEXT:    call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr [[TMP7]], ptr [[TMP8]], i32 [[SUBM]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[IF_END7]]:
-; CHECK-NEXT:    [[CMP8:%.*]] = icmp ult i32 [[TMP2]], 48
-; CHECK-NEXT:    br i1 [[CMP8]], label %[[IF_THEN9:.*]], label %[[IF_END11:.*]]
-; CHECK:       [[IF_THEN9]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    [[TMP9:%.*]] = inttoptr i32 [[TMP0]] to ptr
-; CHECK-NEXT:    [[TMP10:%.*]] = inttoptr i32 [[TMP1]] to ptr
-; CHECK-NEXT:    [[SUBM1:%.*]] = add nsw i32 [[TMP2]], -32
-; CHECK-NEXT:    call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr [[TMP9]], ptr [[TMP10]], i32 [[SUBM1]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[IF_END11]]:
-; CHECK-NEXT:    [[CMP12:%.*]] = icmp ult i32 [[TMP2]], 64
-; CHECK-NEXT:    br i1 [[CMP12]], label %[[IF_THEN13:.*]], label %[[IF_END15:.*]]
-; CHECK:       [[IF_THEN13]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q2, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q2, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q2, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    [[TMP11:%.*]] = inttoptr i32 [[TMP0]] to ptr
-; CHECK-NEXT:    [[TMP12:%.*]] = inttoptr i32 [[TMP1]] to ptr
-; CHECK-NEXT:    [[SUBM2:%.*]] = add nsw i32 [[TMP2]], -48
-; CHECK-NEXT:    call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr [[TMP11]], ptr [[TMP12]], i32 [[SUBM2]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[IF_END15]]:
-; CHECK-NEXT:    [[DIV94:%.*]] = lshr i32 [[TMP2]], 7
-; CHECK-NEXT:    [[REM:%.*]] = lshr i32 [[TMP2]], 4
-; CHECK-NEXT:    [[DIV195:%.*]] = and i32 [[REM]], 7
-; CHECK-NEXT:    [[REM4:%.*]] = and i32 [[TMP2]], 7
-; CHECK-NEXT:    [[CMP97_NOT:%.*]] = icmp ult i32 [[TMP2]], 128
-; CHECK-NEXT:    br i1 [[CMP97_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY:.*]]
-; CHECK:       [[RETURN]]:
-; CHECK-NEXT:    ret void
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    switch i32 [[DIV195]], label %[[DEFAULT_UNREACHABLE:.*]] [
-; CHECK-NEXT:      i32 1, label %[[SW_BB1:.*]]
-; CHECK-NEXT:      i32 2, label %[[SW_BB2:.*]]
-; CHECK-NEXT:      i32 3, label %[[SW_BB3:.*]]
-; CHECK-NEXT:      i32 4, label %[[SW_BB4:.*]]
-; CHECK-NEXT:      i32 5, label %[[SW_BB5:.*]]
-; CHECK-NEXT:      i32 6, label %[[SW_BB6:.*]]
-; CHECK-NEXT:      i32 7, label %[[SW_BB7:.*]]
-; CHECK-NEXT:      i32 0, label %[[SW_EPILOG:.*]]
-; CHECK-NEXT:    ]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_098:%.*]] = phi i32 [ 0, %[[IF_END15]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q2, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q2, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q3, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q3, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q4, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q4, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q5, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q5, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q6, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q6, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q7, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q7, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q2, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q3, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q4, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q5, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q6, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q7, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_098]], 1
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], [[DIV94]]
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP]], label %[[FOR_BODY]]
-; CHECK:       [[SW_EPILOG]]:
-; CHECK-NEXT:    [[TMP13:%.*]] = and i32 [[TMP2]], 8
-; CHECK-NEXT:    [[TMP14:%.*]] = icmp eq i32 [[TMP13]], 0
-; CHECK-NEXT:    br i1 [[TMP14]], label %[[IF_END17:.*]], label %[[IF_THEN16:.*]]
-; CHECK:       [[DEFAULT_UNREACHABLE]]:
-; CHECK-NEXT:    unreachable
-; CHECK:       [[SW_BB1]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[SW_EPILOG]]
-; CHECK:       [[SW_BB2]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[SW_EPILOG]]
-; CHECK:       [[SW_BB3]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q2, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q2, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q2, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[SW_EPILOG]]
-; CHECK:       [[SW_BB4]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q2, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q2, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q3, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q3, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q2, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q3, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[SW_EPILOG]]
-; CHECK:       [[SW_BB5]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q2, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q2, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q3, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q3, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q4, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q4, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q2, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q3, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q4, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[SW_EPILOG]]
-; CHECK:       [[SW_BB6]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q2, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q2, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q3, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q3, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q4, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q4, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q5, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q5, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q2, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q3, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q4, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q5, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[SW_EPILOG]]
-; CHECK:       [[SW_BB7]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q2, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q2, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q3, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q3, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q4, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q4, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q5, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q5, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q6, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q6, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q2, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q3, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q4, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q5, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q6, $0, 16", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[SW_EPILOG]]
-; CHECK:       [[IF_THEN16]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[IF_END17]]
-; CHECK:       [[IF_END17]]:
-; CHECK-NEXT:    [[TMP15:%.*]] = icmp eq i32 [[REM4]], 0
-; CHECK-NEXT:    br i1 [[TMP15]], label %[[RETURN]], label %[[IF_THEN31:.*]]
-; CHECK:       [[IF_THEN31]]:
-; CHECK-NEXT:    [[TMP16:%.*]] = inttoptr i32 [[TMP0]] to ptr
-; CHECK-NEXT:    [[TMP17:%.*]] = inttoptr i32 [[TMP1]] to ptr
-; CHECK-NEXT:    call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr [[TMP16]], ptr [[TMP17]], i32 [[REM4]])
-; CHECK-NEXT:    br label %[[RETURN]]
-;
-entry:
-  %cmp = icmp ult i32 %2, 8
-  br i1 %cmp, label %if.then, label %if.end
-
-if.then:                                          ; preds = %entry
-  %3 = inttoptr i32 %0 to ptr
-  %4 = inttoptr i32 %1 to ptr
-  call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr %3, ptr %4, i32 %2)
-  br label %return
-
-if.end:                                           ; preds = %entry
-  %cmp1 = icmp ult i32 %2, 16
-  br i1 %cmp1, label %if.then2, label %if.end3
-
-if.then2:                                         ; preds = %if.end
-  call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  %5 = inttoptr i32 %0 to ptr
-  %6 = inttoptr i32 %1 to ptr
-  %sub = add nsw i32 %2, -8
-  call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr %5, ptr %6, i32 %sub)
-  br label %return
-
-if.end3:                                          ; preds = %if.end
-  %cmp4 = icmp ult i32 %2, 32
-  br i1 %cmp4, label %if.then5, label %if.end7
-
-if.then5:                                         ; preds = %if.end3
-  call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 %0)
-  %7 = inttoptr i32 %0 to ptr
-  %8 = inttoptr i32 %1 to ptr
-  %subm = add nsw i32 %2, -16
-  call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr %7, ptr %8, i32 %subm)
-  br label %return
-
-if.end7:                                          ; preds = %if.end3
-  %cmp8 = icmp ult i32 %2, 48
-  br i1 %cmp8, label %if.then9, label %if.end11
-
-if.then9:                                         ; preds = %if.end7
-  call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 %0)
-  %9 = inttoptr i32 %0 to ptr
-  %10 = inttoptr i32 %1 to ptr
-  %subm1 = add nsw i32 %2, -32
-  call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr %9, ptr %10, i32 %subm1)
-  br label %return
-
-if.end11:                                         ; preds = %if.end7
-  %cmp12 = icmp ult i32 %2, 64
-  br i1 %cmp12, label %if.then13, label %if.end15
-
-if.then13:                                        ; preds = %if.end11
-  call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q2, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q2, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q2, $0, 16", "+{a0}"(i32 %0)
-  %11 = inttoptr i32 %0 to ptr
-  %12 = inttoptr i32 %1 to ptr
-  %subm2 = add nsw i32 %2, -48
-  call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr %11, ptr %12, i32 %subm2)
-  br label %return
-
-if.end15:                                         ; preds = %if.end11
-  %div94 = lshr i32 %2, 7
-  %rem = lshr i32 %2, 4
-  %div195 = and i32 %rem, 7
-  %rem4 = and i32 %2, 7
-  %cmp97.not = icmp ult i32 %2, 128
-  br i1 %cmp97.not, label %for.cond.cleanup, label %for.body
-
-return:                                           ; preds = %if.then31, %if.end17, %if.then13, %if.then9, %if.then5, %if.then2, %if.then
-  ret void
-
-for.cond.cleanup:                                 ; preds = %for.body, %if.end15
-  switch i32 %div195, label %default.unreachable [
-  i32 1, label %sw.bb1
-  i32 2, label %sw.bb2
-  i32 3, label %sw.bb3
-  i32 4, label %sw.bb4
-  i32 5, label %sw.bb5
-  i32 6, label %sw.bb6
-  i32 7, label %sw.bb7
-  i32 0, label %sw.epilog
-  ]
-
-for.body:                                         ; preds = %for.body, %if.end15
-  %i.098 = phi i32 [ 0, %if.end15 ], [ %inc, %for.body ]
-  call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q2, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q2, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q3, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q3, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q4, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q4, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q5, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q5, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q6, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q6, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q7, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q7, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q2, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q3, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q4, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q5, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q6, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q7, $0, 16", "+{a0}"(i32 %0)
-  %inc = add nuw nsw i32 %i.098, 1
-  %exitcond.not = icmp eq i32 %inc, %div94
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-sw.epilog:                                        ; preds = %for.cond.cleanup, %sw.bb7, %sw.bb6, %sw.bb5, %sw.bb4, %sw.bb3, %sw.bb2, %sw.bb1
-  %13 = and i32 %2, 8
-  %14 = icmp eq i32 %13, 0
-  br i1 %14, label %if.end17, label %if.then16
-
-default.unreachable:                              ; preds = %for.cond.cleanup
-  unreachable
-
-sw.bb1:                                           ; preds = %for.cond.cleanup
-  call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 %0)
-  br label %sw.epilog
-
-sw.bb2:                                           ; preds = %for.cond.cleanup
-  call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 %0)
-  br label %sw.epilog
-
-sw.bb3:                                           ; preds = %for.cond.cleanup
-  call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q2, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q2, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q2, $0, 16", "+{a0}"(i32 %0)
-  br label %sw.epilog
-
-sw.bb4:                                           ; preds = %for.cond.cleanup
-  call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q2, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q2, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q3, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q3, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q2, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q3, $0, 16", "+{a0}"(i32 %0)
-  br label %sw.epilog
-
-sw.bb5:                                           ; preds = %for.cond.cleanup
-  call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q2, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q2, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q3, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q3, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q4, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q4, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q2, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q3, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q4, $0, 16", "+{a0}"(i32 %0)
-  br label %sw.epilog
-
-sw.bb6:                                           ; preds = %for.cond.cleanup
-  call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q2, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q2, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q3, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q3, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q4, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q4, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q5, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q5, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q2, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q3, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q4, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q5, $0, 16", "+{a0}"(i32 %0)
-  br label %sw.epilog
-
-sw.bb7:                                           ; preds = %for.cond.cleanup
-  call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q2, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q2, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q3, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q3, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q4, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q4, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q5, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q5, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q6, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q6, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q2, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q3, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q4, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q5, $0, 16", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.128.ip q6, $0, 16", "+{a0}"(i32 %0)
-  br label %sw.epilog
-
-if.then16:                                        ; preds = %sw.epilog
-  call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  br label %if.end17
-
-if.end17:                                         ; preds = %if.then16, %sw.epilog
-  %15 = icmp eq i32 %rem4, 0
-  br i1 %15, label %return, label %if.then31
-
-if.then31:                                        ; preds = %if.end17
-  %16 = inttoptr i32 %0 to ptr
-  %17 = inttoptr i32 %1 to ptr
-  call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr %16, ptr %17, i32 %rem4)
-  br label %return
-}
-
-; Function Attrs: noinline nounwind
-define internal void @esp32p4MemCpySrc8Dst8Var(i32 %0, i32 %1, i32 %2) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrc8Dst8Var(
-; CHECK-SAME: i32 [[TMP0:%.*]], i32 [[TMP1:%.*]], i32 [[TMP2:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[CMP:%.*]] = icmp ult i32 [[TMP2]], 8
-; CHECK-NEXT:    br i1 [[CMP]], label %[[IF_THEN:.*]], label %[[IF_END:.*]]
-; CHECK:       [[IF_THEN]]:
-; CHECK-NEXT:    [[TMP3:%.*]] = inttoptr i32 [[TMP0]] to ptr
-; CHECK-NEXT:    [[TMP4:%.*]] = inttoptr i32 [[TMP1]] to ptr
-; CHECK-NEXT:    call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr [[TMP3]], ptr [[TMP4]], i32 [[TMP2]])
-; CHECK-NEXT:    br label %[[RETURN:.*]]
-; CHECK:       [[IF_END]]:
-; CHECK-NEXT:    [[CMP1:%.*]] = icmp ult i32 [[TMP2]], 16
-; CHECK-NEXT:    br i1 [[CMP1]], label %[[IF_THEN2:.*]], label %[[IF_END3:.*]]
-; CHECK:       [[IF_THEN2]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    [[TMP5:%.*]] = inttoptr i32 [[TMP0]] to ptr
-; CHECK-NEXT:    [[TMP6:%.*]] = inttoptr i32 [[TMP1]] to ptr
-; CHECK-NEXT:    [[SUB:%.*]] = add nsw i32 [[TMP2]], -8
-; CHECK-NEXT:    call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr [[TMP5]], ptr [[TMP6]], i32 [[SUB]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[IF_END3]]:
-; CHECK-NEXT:    [[CMP4:%.*]] = icmp ult i32 [[TMP2]], 32
-; CHECK-NEXT:    br i1 [[CMP4]], label %[[IF_THEN5:.*]], label %[[IF_END7:.*]]
-; CHECK:       [[IF_THEN5]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    [[TMP7:%.*]] = inttoptr i32 [[TMP0]] to ptr
-; CHECK-NEXT:    [[TMP8:%.*]] = inttoptr i32 [[TMP1]] to ptr
-; CHECK-NEXT:    [[SUBM:%.*]] = add nsw i32 [[TMP2]], -16
-; CHECK-NEXT:    call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr [[TMP7]], ptr [[TMP8]], i32 [[SUBM]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[IF_END7]]:
-; CHECK-NEXT:    [[CMP8:%.*]] = icmp ult i32 [[TMP2]], 48
-; CHECK-NEXT:    br i1 [[CMP8]], label %[[IF_THEN9:.*]], label %[[IF_END11:.*]]
-; CHECK:       [[IF_THEN9]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    [[TMP9:%.*]] = inttoptr i32 [[TMP0]] to ptr
-; CHECK-NEXT:    [[TMP10:%.*]] = inttoptr i32 [[TMP1]] to ptr
-; CHECK-NEXT:    [[SUBM1:%.*]] = add nsw i32 [[TMP2]], -32
-; CHECK-NEXT:    call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr [[TMP9]], ptr [[TMP10]], i32 [[SUBM1]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[IF_END11]]:
-; CHECK-NEXT:    [[CMP12:%.*]] = icmp ult i32 [[TMP2]], 64
-; CHECK-NEXT:    br i1 [[CMP12]], label %[[IF_THEN13:.*]], label %[[IF_END15:.*]]
-; CHECK:       [[IF_THEN13]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q2, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q2, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q2, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q2, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    [[TMP11:%.*]] = inttoptr i32 [[TMP0]] to ptr
-; CHECK-NEXT:    [[TMP12:%.*]] = inttoptr i32 [[TMP1]] to ptr
-; CHECK-NEXT:    [[SUBM2:%.*]] = add nsw i32 [[TMP2]], -48
-; CHECK-NEXT:    call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr [[TMP11]], ptr [[TMP12]], i32 [[SUBM2]])
-; CHECK-NEXT:    br label %[[RETURN]]
-; CHECK:       [[IF_END15]]:
-; CHECK-NEXT:    [[DIV94:%.*]] = lshr i32 [[TMP2]], 7
-; CHECK-NEXT:    [[REM:%.*]] = lshr i32 [[TMP2]], 4
-; CHECK-NEXT:    [[DIV195:%.*]] = and i32 [[REM]], 7
-; CHECK-NEXT:    [[REM4:%.*]] = and i32 [[TMP2]], 7
-; CHECK-NEXT:    [[CMP97_NOT:%.*]] = icmp ult i32 [[TMP2]], 128
-; CHECK-NEXT:    br i1 [[CMP97_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY:.*]]
-; CHECK:       [[RETURN]]:
-; CHECK-NEXT:    ret void
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    switch i32 [[DIV195]], label %[[DEFAULT_UNREACHABLE:.*]] [
-; CHECK-NEXT:      i32 1, label %[[SW_BB1:.*]]
-; CHECK-NEXT:      i32 2, label %[[SW_BB2:.*]]
-; CHECK-NEXT:      i32 3, label %[[SW_BB3:.*]]
-; CHECK-NEXT:      i32 4, label %[[SW_BB4:.*]]
-; CHECK-NEXT:      i32 5, label %[[SW_BB5:.*]]
-; CHECK-NEXT:      i32 6, label %[[SW_BB6:.*]]
-; CHECK-NEXT:      i32 7, label %[[SW_BB7:.*]]
-; CHECK-NEXT:      i32 0, label %[[SW_EPILOG:.*]]
-; CHECK-NEXT:    ]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_098:%.*]] = phi i32 [ 0, %[[IF_END15]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q2, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q2, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q3, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q3, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q4, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q4, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q5, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q5, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q6, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q6, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q7, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q7, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q2, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q2, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q3, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q3, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q4, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q4, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q5, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q5, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q6, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q6, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q7, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q7, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_098]], 1
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], [[DIV94]]
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP]], label %[[FOR_BODY]]
-; CHECK:       [[SW_EPILOG]]:
-; CHECK-NEXT:    [[TMP13:%.*]] = and i32 [[TMP2]], 8
-; CHECK-NEXT:    [[TMP14:%.*]] = icmp eq i32 [[TMP13]], 0
-; CHECK-NEXT:    br i1 [[TMP14]], label %[[IF_END17:.*]], label %[[IF_THEN16:.*]]
-; CHECK:       [[DEFAULT_UNREACHABLE]]:
-; CHECK-NEXT:    unreachable
-; CHECK:       [[SW_BB1]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[SW_EPILOG]]
-; CHECK:       [[SW_BB2]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[SW_EPILOG]]
-; CHECK:       [[SW_BB3]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q2, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q2, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q2, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q2, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[SW_EPILOG]]
-; CHECK:       [[SW_BB4]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q2, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q2, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q3, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q3, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q2, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q2, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q3, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q3, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[SW_EPILOG]]
-; CHECK:       [[SW_BB5]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q2, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q2, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q3, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q3, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q4, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q4, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q2, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q2, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q3, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q3, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q4, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q4, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[SW_EPILOG]]
-; CHECK:       [[SW_BB6]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q2, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q2, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q3, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q3, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q4, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q4, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q5, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q5, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q2, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q2, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q3, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q3, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q4, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q4, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q5, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q5, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[SW_EPILOG]]
-; CHECK:       [[SW_BB7]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q2, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q2, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q3, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q3, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q4, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q4, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q5, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q5, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q6, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.h.64.ip q6, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q2, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q2, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q3, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q3, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q4, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q4, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q5, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q5, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q6, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.h.64.ip q6, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[SW_EPILOG]]
-; CHECK:       [[IF_THEN16]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 [[TMP1]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 [[TMP0]])
-; CHECK-NEXT:    br label %[[IF_END17]]
-; CHECK:       [[IF_END17]]:
-; CHECK-NEXT:    [[TMP15:%.*]] = icmp eq i32 [[REM4]], 0
-; CHECK-NEXT:    br i1 [[TMP15]], label %[[RETURN]], label %[[IF_THEN31:.*]]
-; CHECK:       [[IF_THEN31]]:
-; CHECK-NEXT:    [[TMP16:%.*]] = inttoptr i32 [[TMP0]] to ptr
-; CHECK-NEXT:    [[TMP17:%.*]] = inttoptr i32 [[TMP1]] to ptr
-; CHECK-NEXT:    call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr [[TMP16]], ptr [[TMP17]], i32 [[REM4]])
-; CHECK-NEXT:    br label %[[RETURN]]
-;
-entry:
-  %cmp = icmp ult i32 %2, 8
-  br i1 %cmp, label %if.then, label %if.end
-
-if.then:                                          ; preds = %entry
-  %3 = inttoptr i32 %0 to ptr
-  %4 = inttoptr i32 %1 to ptr
-  call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr %3, ptr %4, i32 %2)
-  br label %return
-
-if.end:                                           ; preds = %entry
-  %cmp1 = icmp ult i32 %2, 16
-  br i1 %cmp1, label %if.then2, label %if.end3
-
-if.then2:                                         ; preds = %if.end
-  call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  %5 = inttoptr i32 %0 to ptr
-  %6 = inttoptr i32 %1 to ptr
-  %sub = add nsw i32 %2, -8
-  call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr %5, ptr %6, i32 %sub)
-  br label %return
-
-if.end3:                                          ; preds = %if.end
-  %cmp4 = icmp ult i32 %2, 32
-  br i1 %cmp4, label %if.then5, label %if.end7
-
-if.then5:                                         ; preds = %if.end3
-  call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  %7 = inttoptr i32 %0 to ptr
-  %8 = inttoptr i32 %1 to ptr
-  %subm = add nsw i32 %2, -16
-  call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr %7, ptr %8, i32 %subm)
-  br label %return
-
-if.end7:                                          ; preds = %if.end3
-  %cmp8 = icmp ult i32 %2, 48
-  br i1 %cmp8, label %if.then9, label %if.end11
-
-if.then9:                                         ; preds = %if.end7
-  call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  %9 = inttoptr i32 %0 to ptr
-  %10 = inttoptr i32 %1 to ptr
-  %subm1 = add nsw i32 %2, -32
-  call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr %9, ptr %10, i32 %subm1)
-  br label %return
-
-if.end11:                                         ; preds = %if.end7
-  %cmp12 = icmp ult i32 %2, 64
-  br i1 %cmp12, label %if.then13, label %if.end15
-
-if.then13:                                        ; preds = %if.end11
-  call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q2, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q2, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q2, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q2, $0, 8", "+{a0}"(i32 %0)
-  %11 = inttoptr i32 %0 to ptr
-  %12 = inttoptr i32 %1 to ptr
-  %subm2 = add nsw i32 %2, -48
-  call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr %11, ptr %12, i32 %subm2)
-  br label %return
-
-if.end15:                                         ; preds = %if.end11
-  %div94 = lshr i32 %2, 7
-  %rem = lshr i32 %2, 4
-  %div195 = and i32 %rem, 7
-  %rem4 = and i32 %2, 7
-  %cmp97.not = icmp ult i32 %2, 128
-  br i1 %cmp97.not, label %for.cond.cleanup, label %for.body
-
-return:                                           ; preds = %if.then31, %if.end17, %if.then13, %if.then9, %if.then5, %if.then2, %if.then
-  ret void
-
-for.cond.cleanup:                                 ; preds = %for.body, %if.end15
-  switch i32 %div195, label %default.unreachable [
-  i32 1, label %sw.bb1
-  i32 2, label %sw.bb2
-  i32 3, label %sw.bb3
-  i32 4, label %sw.bb4
-  i32 5, label %sw.bb5
-  i32 6, label %sw.bb6
-  i32 7, label %sw.bb7
-  i32 0, label %sw.epilog
-  ]
-
-for.body:                                         ; preds = %for.body, %if.end15
-  %i.098 = phi i32 [ 0, %if.end15 ], [ %inc, %for.body ]
-  call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q2, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q2, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q3, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q3, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q4, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q4, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q5, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q5, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q6, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q6, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q7, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q7, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q2, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q2, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q3, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q3, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q4, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q4, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q5, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q5, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q6, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q6, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q7, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q7, $0, 8", "+{a0}"(i32 %0)
-  %inc = add nuw nsw i32 %i.098, 1
-  %exitcond.not = icmp eq i32 %inc, %div94
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-sw.epilog:                                        ; preds = %for.cond.cleanup, %sw.bb7, %sw.bb6, %sw.bb5, %sw.bb4, %sw.bb3, %sw.bb2, %sw.bb1
-  %13 = and i32 %2, 8
-  %14 = icmp eq i32 %13, 0
-  br i1 %14, label %if.end17, label %if.then16
-
-default.unreachable:                              ; preds = %for.cond.cleanup
-  unreachable
-
-sw.bb1:                                           ; preds = %for.cond.cleanup
-  call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  br label %sw.epilog
-
-sw.bb2:                                           ; preds = %for.cond.cleanup
-  call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  br label %sw.epilog
-
-sw.bb3:                                           ; preds = %for.cond.cleanup
-  call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q2, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q2, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q2, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q2, $0, 8", "+{a0}"(i32 %0)
-  br label %sw.epilog
-
-sw.bb4:                                           ; preds = %for.cond.cleanup
-  call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q2, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q2, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q3, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q3, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q2, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q2, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q3, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q3, $0, 8", "+{a0}"(i32 %0)
-  br label %sw.epilog
-
-sw.bb5:                                           ; preds = %for.cond.cleanup
-  call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q2, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q2, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q3, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q3, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q4, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q4, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q2, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q2, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q3, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q3, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q4, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q4, $0, 8", "+{a0}"(i32 %0)
-  br label %sw.epilog
-
-sw.bb6:                                           ; preds = %for.cond.cleanup
-  call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q2, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q2, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q3, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q3, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q4, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q4, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q5, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q5, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q2, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q2, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q3, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q3, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q4, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q4, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q5, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q5, $0, 8", "+{a0}"(i32 %0)
-  br label %sw.epilog
-
-sw.bb7:                                           ; preds = %for.cond.cleanup
-  call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q1, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q2, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q2, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q3, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q3, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q4, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q4, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q5, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q5, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.l.64.ip q6, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vld.h.64.ip q6, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q1, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q2, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q2, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q3, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q3, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q4, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q4, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q5, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q5, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.l.64.ip q6, $0, 8", "+{a0}"(i32 %0)
-  call void asm sideeffect "esp.vst.h.64.ip q6, $0, 8", "+{a0}"(i32 %0)
-  br label %sw.epilog
-
-if.then16:                                        ; preds = %sw.epilog
-  call void asm sideeffect "esp.vld.l.64.ip q0, $0, 8", "+{a1}"(i32 %1)
-  call void asm sideeffect "esp.vst.l.64.ip q0, $0, 8", "+{a0}"(i32 %0)
-  br label %if.end17
-
-if.end17:                                         ; preds = %if.then16, %sw.epilog
-  %15 = icmp eq i32 %rem4, 0
-  br i1 %15, label %return, label %if.then31
-
-if.then31:                                        ; preds = %if.end17
-  %16 = inttoptr i32 %0 to ptr
-  %17 = inttoptr i32 %1 to ptr
-  call void @esp32p4MemCpySrc16Dst16From0To15Opt(ptr %16, ptr %17, i32 %rem4)
-  br label %return
-}
-
-
 define void @test_src16_dstunalign_variable_size(ptr %a, ptr %b, i32 %size) {
 ; CHECK-LABEL: define void @test_src16_dstunalign_variable_size(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]], i32 [[SIZE:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = icmp ult i32 [[SIZE]], 16
-; CHECK-NEXT:    br i1 [[TMP0]], label %[[IF_SMALL:.*]], label %[[IF_LARGE:.*]]
-; CHECK:       [[IF_SMALL]]:
-; CHECK-NEXT:    call void @esp32p4MemCpySrcUnalignedDstUnalignedVarFrom0To15Opt(ptr [[A]], ptr [[B]], i32 [[SIZE]])
-; CHECK-NEXT:    br label %[[CONTINUE:.*]]
-; CHECK:       [[IF_LARGE]]:
-; CHECK-NEXT:    call void @esp32p4MemCpySrc16DstunalignedVar(ptr [[A]], ptr [[B]], i32 [[SIZE]], i32 1)
-; CHECK-NEXT:    br label %[[CONTINUE]]
-; CHECK:       [[CONTINUE]]:
+; CHECK-NEXT:    call void @esp32p4MemCpySrc16DstunalignVar(ptr [[A]], ptr [[B]], i32 [[SIZE]], i32 1)
 ; CHECK-NEXT:    ret void
 ;
 entry:
@@ -2290,15 +75,7 @@ define void @test_src8_dstunalign_variable_size(ptr %a, ptr %b, i32 %size) {
 ; CHECK-LABEL: define void @test_src8_dstunalign_variable_size(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]], i32 [[SIZE:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = icmp ult i32 [[SIZE]], 16
-; CHECK-NEXT:    br i1 [[TMP0]], label %[[IF_SMALL:.*]], label %[[IF_LARGE:.*]]
-; CHECK:       [[IF_SMALL]]:
-; CHECK-NEXT:    call void @esp32p4MemCpySrcUnalignedDstUnalignedVarFrom0To15Opt(ptr [[A]], ptr [[B]], i32 [[SIZE]])
-; CHECK-NEXT:    br label %[[CONTINUE:.*]]
-; CHECK:       [[IF_LARGE]]:
-; CHECK-NEXT:    call void @esp32p4MemCpySrc16DstunalignedVar(ptr [[A]], ptr [[B]], i32 [[SIZE]], i32 1)
-; CHECK-NEXT:    br label %[[CONTINUE]]
-; CHECK:       [[CONTINUE]]:
+; CHECK-NEXT:    call void @esp32p4MemCpySrc16DstunalignVar(ptr [[A]], ptr [[B]], i32 [[SIZE]], i32 1)
 ; CHECK-NEXT:    ret void
 ;
 entry:
@@ -2309,18 +86,243 @@ entry:
 define void @test_srcunalign_dst16_variable_size(ptr %a, ptr %b, i32 %size) {
 ; CHECK-LABEL: define void @test_srcunalign_dst16_variable_size(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]], i32 [[SIZE:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = icmp ult i32 [[SIZE]], 16
-; CHECK-NEXT:    br i1 [[TMP0]], label %[[IF_SMALL:.*]], label %[[IF_LARGE:.*]]
-; CHECK:       [[IF_SMALL]]:
-; CHECK-NEXT:    call void @esp32p4MemCpySrcUnalignedDstUnalignedVarFrom0To15Opt(ptr [[A]], ptr [[B]], i32 [[SIZE]])
-; CHECK-NEXT:    br label %[[CONTINUE:.*]]
-; CHECK:       [[IF_LARGE]]:
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    call void @esp32p4MemCpySrcunalignedDst16Var(i32 [[TMP2]], i32 [[TMP1]], i32 [[SIZE]])
-; CHECK-NEXT:    br label %[[CONTINUE]]
-; CHECK:       [[CONTINUE]]:
+; CHECK-NEXT:  [[ENTRY:.*]]:
+; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
+; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
+; CHECK-NEXT:    [[CMP_I:%.*]] = icmp ult i32 [[SIZE]], 16
+; CHECK-NEXT:    br i1 [[CMP_I]], label %[[FINAL_CLEANUP_I:.*]], label %[[PROCESS_MAIN_LOOP_I:.*]]
+; CHECK:       [[PROCESS_MAIN_LOOP_I]]:
+; CHECK-NEXT:    [[DIV_I:%.*]] = udiv i32 [[SIZE]], 48
+; CHECK-NEXT:    [[DOTNEG:%.*]] = mul i32 [[DIV_I]], -48
+; CHECK-NEXT:    [[REM_DECOMPOSED_I:%.*]] = add i32 [[DOTNEG]], [[SIZE]]
+; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
+; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
+; CHECK-NEXT:    [[CMP21_NOT_I:%.*]] = icmp ult i32 [[SIZE]], 48
+; CHECK-NEXT:    br i1 [[CMP21_NOT_I]], label %[[HANDLE_REMAINDER_I:.*]], label %[[MAIN_LOOP_BODY_I:.*]]
+; CHECK:       [[HANDLE_REMAINDER_I]]:
+; CHECK-NEXT:    [[SRC_PTR_AFTERLOOP_I:%.*]] = phi i32 [ [[LD128USARIP1_I]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[SRCQLDIP4_FINAL_I:%.*]], %[[MAIN_LOOP_BODY_I]] ]
+; CHECK-NEXT:    [[DST_PTR_AFTERLOOP_I:%.*]] = phi i32 [ [[TMP1]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[VST128IP5_FINAL_I:%.*]], %[[MAIN_LOOP_BODY_I]] ]
+; CHECK-NEXT:    [[TOBOOL_NOT_I:%.*]] = icmp ult i32 [[REM_DECOMPOSED_I]], 32
+; CHECK-NEXT:    br i1 [[TOBOOL_NOT_I]], label %[[CHECK_16BYTE_TAIL_I:.*]], label %[[PROCESS_32BYTE_TAIL_I:.*]]
+; CHECK:       [[MAIN_LOOP_BODY_I]]:
+; CHECK-NEXT:    [[I_022_I:%.*]] = phi i32 [ 0, %[[PROCESS_MAIN_LOOP_I]] ], [ [[INC_I:%.*]], %[[MAIN_LOOP_BODY_I]] ]
+; CHECK-NEXT:    [[SRC_PTR_PHI_I:%.*]] = phi i32 [ [[LD128USARIP1_I]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[SRCQLDIP4_FINAL_I]], %[[MAIN_LOOP_BODY_I]] ]
+; CHECK-NEXT:    [[DST_PTR_PHI_I:%.*]] = phi i32 [ [[TMP1]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[VST128IP5_FINAL_I]], %[[MAIN_LOOP_BODY_I]] ]
+; CHECK-NEXT:    [[SRCQLDIP_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_PHI_I]], i32 0, i32 16, i32 2)
+; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_PHI_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP2_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP_I]], i32 1, i32 16, i32 0)
+; CHECK-NEXT:    [[VST128IP3_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP4_FINAL_I]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2_I]], i32 2, i32 16, i32 1)
+; CHECK-NEXT:    [[VST128IP5_FINAL_I]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3_I]], i32 16)
+; CHECK-NEXT:    [[INC_I]] = add nuw nsw i32 [[I_022_I]], 1
+; CHECK-NEXT:    [[EXITCOND_NOT_I:%.*]] = icmp eq i32 [[INC_I]], [[DIV_I]]
+; CHECK-NEXT:    br i1 [[EXITCOND_NOT_I]], label %[[HANDLE_REMAINDER_I]], label %[[MAIN_LOOP_BODY_I]]
+; CHECK:       [[PROCESS_32BYTE_TAIL_I]]:
+; CHECK-NEXT:    [[SRCQLDIP6_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_AFTERLOOP_I]], i32 0, i32 0, i32 2)
+; CHECK-NEXT:    [[VST128IP7_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_AFTERLOOP_I]], i32 16)
+; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
+; CHECK-NEXT:    [[VST128IP8_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP7_I]], i32 16)
+; CHECK-NEXT:    [[SUB1_I:%.*]] = add nsw i32 [[REM_DECOMPOSED_I]], -32
+; CHECK-NEXT:    br label %[[FINAL_CLEANUP_I]]
+; CHECK:       [[CHECK_16BYTE_TAIL_I]]:
+; CHECK-NEXT:    [[TOBOOL5_NOT_I:%.*]] = icmp ult i32 [[REM_DECOMPOSED_I]], 16
+; CHECK-NEXT:    br i1 [[TOBOOL5_NOT_I]], label %[[SKIP_TAIL_PROCESSING_I:.*]], label %[[PROCESS_16BYTE_TAIL_I:.*]]
+; CHECK:       [[PROCESS_16BYTE_TAIL_I]]:
+; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
+; CHECK-NEXT:    [[VST128IP9_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_AFTERLOOP_I]], i32 16)
+; CHECK-NEXT:    [[SUB_SRC_I:%.*]] = add i32 [[SRC_PTR_AFTERLOOP_I]], -16
+; CHECK-NEXT:    [[SUB9_I:%.*]] = add nsw i32 [[REM_DECOMPOSED_I]], -16
+; CHECK-NEXT:    br label %[[FINAL_CLEANUP_I]]
+; CHECK:       [[SKIP_TAIL_PROCESSING_I]]:
+; CHECK-NEXT:    [[SRC_END7_I:%.*]] = add i32 [[SRC_PTR_AFTERLOOP_I]], -32
+; CHECK-NEXT:    br label %[[FINAL_CLEANUP_I]]
+; CHECK:       [[FINAL_CLEANUP_I]]:
+; CHECK-NEXT:    [[SRC_FINAL_I:%.*]] = phi i32 [ [[SRCQLDIP6_I]], %[[PROCESS_32BYTE_TAIL_I]] ], [ [[SUB_SRC_I]], %[[PROCESS_16BYTE_TAIL_I]] ], [ [[TMP0]], %[[ENTRY]] ], [ [[SRC_END7_I]], %[[SKIP_TAIL_PROCESSING_I]] ]
+; CHECK-NEXT:    [[DST_FINAL_I:%.*]] = phi i32 [ [[VST128IP8_I]], %[[PROCESS_32BYTE_TAIL_I]] ], [ [[VST128IP9_I]], %[[PROCESS_16BYTE_TAIL_I]] ], [ [[TMP1]], %[[ENTRY]] ], [ [[DST_PTR_AFTERLOOP_I]], %[[SKIP_TAIL_PROCESSING_I]] ]
+; CHECK-NEXT:    [[REM_FINAL_I:%.*]] = phi i32 [ [[SUB1_I]], %[[PROCESS_32BYTE_TAIL_I]] ], [ [[SUB9_I]], %[[PROCESS_16BYTE_TAIL_I]] ], [ [[SIZE]], %[[ENTRY]] ], [ [[REM_DECOMPOSED_I]], %[[SKIP_TAIL_PROCESSING_I]] ]
+; CHECK-NEXT:    [[CMP_FINAL_I:%.*]] = icmp eq i32 [[REM_FINAL_I]], 0
+; CHECK-NEXT:    br i1 [[CMP_FINAL_I]], label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT:.*]], label %[[CALL_SMALL_SIZE_CLEANUP_I:.*]]
+; CHECK:       [[CALL_SMALL_SIZE_CLEANUP_I]]:
+; CHECK-NEXT:    [[DST_PTR_FINAL_I:%.*]] = inttoptr i32 [[DST_FINAL_I]] to ptr
+; CHECK-NEXT:    [[SRC_PTR_FINAL_I:%.*]] = inttoptr i32 [[SRC_FINAL_I]] to ptr
+; CHECK-NEXT:    switch i32 [[REM_FINAL_I]], label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]] [
+; CHECK-NEXT:      i32 1, label %[[SW_BB1_I:.*]]
+; CHECK-NEXT:      i32 2, label %[[SW_BB2_I:.*]]
+; CHECK-NEXT:      i32 3, label %[[SW_BB3_I:.*]]
+; CHECK-NEXT:      i32 4, label %[[SW_BB4_I:.*]]
+; CHECK-NEXT:      i32 5, label %[[SW_BB5_I:.*]]
+; CHECK-NEXT:      i32 6, label %[[SW_BB6_I:.*]]
+; CHECK-NEXT:      i32 7, label %[[SW_BB7_I:.*]]
+; CHECK-NEXT:      i32 8, label %[[SW_BB8_I:.*]]
+; CHECK-NEXT:      i32 9, label %[[SW_BB9_I:.*]]
+; CHECK-NEXT:      i32 10, label %[[SW_BB10_I:.*]]
+; CHECK-NEXT:      i32 11, label %[[SW_BB11_I:.*]]
+; CHECK-NEXT:      i32 12, label %[[SW_BB12_I:.*]]
+; CHECK-NEXT:      i32 13, label %[[SW_BB13_I:.*]]
+; CHECK-NEXT:      i32 14, label %[[SW_BB14_I:.*]]
+; CHECK-NEXT:      i32 15, label %[[SW_BB15_I:.*]]
+; CHECK-NEXT:    ]
+; CHECK:       [[SW_BB1_I]]:
+; CHECK-NEXT:    [[TMP2:%.*]] = load i8, ptr [[SRC_PTR_FINAL_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP2]], ptr [[DST_PTR_FINAL_I]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]
+; CHECK:       [[SW_BB2_I]]:
+; CHECK-NEXT:    [[TMP3:%.*]] = load i16, ptr [[SRC_PTR_FINAL_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP3]], ptr [[DST_PTR_FINAL_I]], align 2
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]
+; CHECK:       [[SW_BB3_I]]:
+; CHECK-NEXT:    [[TMP4:%.*]] = load i16, ptr [[SRC_PTR_FINAL_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP4]], ptr [[DST_PTR_FINAL_I]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I83_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 2
+; CHECK-NEXT:    [[DST_GEP_I84_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 2
+; CHECK-NEXT:    [[TMP5:%.*]] = load i8, ptr [[SRC_GEP_I83_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP5]], ptr [[DST_GEP_I84_I]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]
+; CHECK:       [[SW_BB4_I]]:
+; CHECK-NEXT:    [[TMP6:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP6]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]
+; CHECK:       [[SW_BB5_I]]:
+; CHECK-NEXT:    [[TMP7:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP7]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I87_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I88_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP8:%.*]] = load i8, ptr [[SRC_GEP_I87_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP8]], ptr [[DST_GEP_I88_I]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]
+; CHECK:       [[SW_BB6_I]]:
+; CHECK-NEXT:    [[TMP9:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP9]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1611_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I1612_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP10:%.*]] = load i16, ptr [[SRC_GEP_I1611_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP10]], ptr [[DST_GEP_I1612_I]], align 2
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]
+; CHECK:       [[SW_BB7_I]]:
+; CHECK-NEXT:    [[TMP11:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP11]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1615_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I1616_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP12:%.*]] = load i16, ptr [[SRC_GEP_I1615_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP12]], ptr [[DST_GEP_I1616_I]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I817_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 6
+; CHECK-NEXT:    [[DST_GEP_I818_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 6
+; CHECK-NEXT:    [[TMP13:%.*]] = load i8, ptr [[SRC_GEP_I817_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP13]], ptr [[DST_GEP_I818_I]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]
+; CHECK:       [[SW_BB8_I]]:
+; CHECK-NEXT:    [[TMP14:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP14]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3221_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3222_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP15:%.*]] = load i32, ptr [[SRC_GEP_I3221_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP15]], ptr [[DST_GEP_I3222_I]], align 4
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]
+; CHECK:       [[SW_BB9_I]]:
+; CHECK-NEXT:    [[TMP16:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP16]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3225_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3226_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP17:%.*]] = load i32, ptr [[SRC_GEP_I3225_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP17]], ptr [[DST_GEP_I3226_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I827_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I828_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[TMP18:%.*]] = load i8, ptr [[SRC_GEP_I827_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP18]], ptr [[DST_GEP_I828_I]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]
+; CHECK:       [[SW_BB10_I]]:
+; CHECK-NEXT:    [[TMP19:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP19]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3231_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3232_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP20:%.*]] = load i32, ptr [[SRC_GEP_I3231_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP20]], ptr [[DST_GEP_I3232_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1633_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I1634_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[TMP21:%.*]] = load i16, ptr [[SRC_GEP_I1633_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP21]], ptr [[DST_GEP_I1634_I]], align 2
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]
+; CHECK:       [[SW_BB11_I]]:
+; CHECK-NEXT:    [[TMP22:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP22]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3237_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3238_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP23:%.*]] = load i32, ptr [[SRC_GEP_I3237_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP23]], ptr [[DST_GEP_I3238_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1639_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I1640_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[TMP24:%.*]] = load i16, ptr [[SRC_GEP_I1639_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP24]], ptr [[DST_GEP_I1640_I]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I841_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 10
+; CHECK-NEXT:    [[DST_GEP_I842_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 10
+; CHECK-NEXT:    [[TMP25:%.*]] = load i8, ptr [[SRC_GEP_I841_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP25]], ptr [[DST_GEP_I842_I]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]
+; CHECK:       [[SW_BB12_I]]:
+; CHECK-NEXT:    [[TMP26:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP26]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3245_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3246_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP27:%.*]] = load i32, ptr [[SRC_GEP_I3245_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP27]], ptr [[DST_GEP_I3246_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3247_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I3248_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[TMP28:%.*]] = load i32, ptr [[SRC_GEP_I3247_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP28]], ptr [[DST_GEP_I3248_I]], align 4
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]
+; CHECK:       [[SW_BB13_I]]:
+; CHECK-NEXT:    [[TMP29:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP29]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3251_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3252_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP30:%.*]] = load i32, ptr [[SRC_GEP_I3251_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP30]], ptr [[DST_GEP_I3252_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3253_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I3254_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[TMP31:%.*]] = load i32, ptr [[SRC_GEP_I3253_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP31]], ptr [[DST_GEP_I3254_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I855_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 12
+; CHECK-NEXT:    [[DST_GEP_I856_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 12
+; CHECK-NEXT:    [[TMP32:%.*]] = load i8, ptr [[SRC_GEP_I855_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP32]], ptr [[DST_GEP_I856_I]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]
+; CHECK:       [[SW_BB14_I]]:
+; CHECK-NEXT:    [[TMP33:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP33]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3259_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3260_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP34:%.*]] = load i32, ptr [[SRC_GEP_I3259_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP34]], ptr [[DST_GEP_I3260_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3261_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I3262_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[TMP35:%.*]] = load i32, ptr [[SRC_GEP_I3261_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP35]], ptr [[DST_GEP_I3262_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1663_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 12
+; CHECK-NEXT:    [[DST_GEP_I1664_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 12
+; CHECK-NEXT:    [[TMP36:%.*]] = load i16, ptr [[SRC_GEP_I1663_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP36]], ptr [[DST_GEP_I1664_I]], align 2
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]
+; CHECK:       [[SW_BB15_I]]:
+; CHECK-NEXT:    [[TMP37:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP37]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3267_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3268_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP38:%.*]] = load i32, ptr [[SRC_GEP_I3267_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP38]], ptr [[DST_GEP_I3268_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3269_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I3270_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[TMP39:%.*]] = load i32, ptr [[SRC_GEP_I3269_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP39]], ptr [[DST_GEP_I3270_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1671_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 12
+; CHECK-NEXT:    [[DST_GEP_I1672_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 12
+; CHECK-NEXT:    [[TMP40:%.*]] = load i16, ptr [[SRC_GEP_I1671_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP40]], ptr [[DST_GEP_I1672_I]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I873_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 14
+; CHECK-NEXT:    [[DST_GEP_I874_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 14
+; CHECK-NEXT:    [[TMP41:%.*]] = load i8, ptr [[SRC_GEP_I873_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP41]], ptr [[DST_GEP_I874_I]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]
+; CHECK:       [[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]:
 ; CHECK-NEXT:    ret void
 ;
 entry:
@@ -2332,22 +334,308 @@ define void @test_srcunalign_dst8_variable_size(ptr %a, ptr %b, i32 %size) {
 ; CHECK-LABEL: define void @test_srcunalign_dst8_variable_size(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]], i32 [[SIZE:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = icmp ult i32 [[SIZE]], 16
-; CHECK-NEXT:    br i1 [[TMP0]], label %[[IF_SMALL:.*]], label %[[IF_END_I:.*]]
-; CHECK:       [[IF_SMALL]]:
-; CHECK-NEXT:    call void @esp32p4MemCpySrcUnalignedDstUnalignedVarFrom0To15Opt(ptr [[A]], ptr [[B]], i32 [[SIZE]])
-; CHECK-NEXT:    br label %[[CONTINUE:.*]]
+; CHECK-NEXT:    [[TMP0:%.*]] = icmp ult i32 [[SIZE]], 8
+; CHECK-NEXT:    br i1 [[TMP0]], label %[[IF_THEN_I:.*]], label %[[IF_END_I:.*]]
+; CHECK:       [[IF_THEN_I]]:
+; CHECK-NEXT:    switch i32 [[SIZE]], label %[[ESP32P4MEMCPYSRCUNALIGNDST8VAR_EXIT:.*]] [
+; CHECK-NEXT:      i32 1, label %[[SW_BB1_I:.*]]
+; CHECK-NEXT:      i32 2, label %[[SW_BB2_I:.*]]
+; CHECK-NEXT:      i32 3, label %[[SW_BB3_I:.*]]
+; CHECK-NEXT:      i32 4, label %[[SW_BB4_I:.*]]
+; CHECK-NEXT:      i32 5, label %[[SW_BB5_I:.*]]
+; CHECK-NEXT:      i32 6, label %[[SW_BB6_I:.*]]
+; CHECK-NEXT:      i32 7, label %[[SW_BB7_I:.*]]
+; CHECK-NEXT:    ]
+; CHECK:       [[SW_BB1_I]]:
+; CHECK-NEXT:    [[TMP1:%.*]] = load i8, ptr [[B]], align 1
+; CHECK-NEXT:    store i8 [[TMP1]], ptr [[A]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDST8VAR_EXIT]]
+; CHECK:       [[SW_BB2_I]]:
+; CHECK-NEXT:    [[TMP2:%.*]] = load i16, ptr [[B]], align 2
+; CHECK-NEXT:    store i16 [[TMP2]], ptr [[A]], align 2
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDST8VAR_EXIT]]
+; CHECK:       [[SW_BB3_I]]:
+; CHECK-NEXT:    [[TMP3:%.*]] = load i16, ptr [[B]], align 2
+; CHECK-NEXT:    store i16 [[TMP3]], ptr [[A]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I83_I:%.*]] = getelementptr i8, ptr [[B]], i32 2
+; CHECK-NEXT:    [[DST_GEP_I84_I:%.*]] = getelementptr i8, ptr [[A]], i32 2
+; CHECK-NEXT:    [[TMP4:%.*]] = load i8, ptr [[SRC_GEP_I83_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP4]], ptr [[DST_GEP_I84_I]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDST8VAR_EXIT]]
+; CHECK:       [[SW_BB4_I]]:
+; CHECK-NEXT:    [[TMP5:%.*]] = load i32, ptr [[B]], align 4
+; CHECK-NEXT:    store i32 [[TMP5]], ptr [[A]], align 4
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDST8VAR_EXIT]]
+; CHECK:       [[SW_BB5_I]]:
+; CHECK-NEXT:    [[TMP6:%.*]] = load i32, ptr [[B]], align 4
+; CHECK-NEXT:    store i32 [[TMP6]], ptr [[A]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I87_I:%.*]] = getelementptr i8, ptr [[B]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I88_I:%.*]] = getelementptr i8, ptr [[A]], i32 4
+; CHECK-NEXT:    [[TMP7:%.*]] = load i8, ptr [[SRC_GEP_I87_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP7]], ptr [[DST_GEP_I88_I]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDST8VAR_EXIT]]
+; CHECK:       [[SW_BB6_I]]:
+; CHECK-NEXT:    [[TMP8:%.*]] = load i32, ptr [[B]], align 4
+; CHECK-NEXT:    store i32 [[TMP8]], ptr [[A]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1611_I:%.*]] = getelementptr i8, ptr [[B]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I1612_I:%.*]] = getelementptr i8, ptr [[A]], i32 4
+; CHECK-NEXT:    [[TMP9:%.*]] = load i16, ptr [[SRC_GEP_I1611_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP9]], ptr [[DST_GEP_I1612_I]], align 2
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDST8VAR_EXIT]]
+; CHECK:       [[SW_BB7_I]]:
+; CHECK-NEXT:    [[TMP10:%.*]] = load i32, ptr [[B]], align 4
+; CHECK-NEXT:    store i32 [[TMP10]], ptr [[A]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1615_I:%.*]] = getelementptr i8, ptr [[B]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I1616_I:%.*]] = getelementptr i8, ptr [[A]], i32 4
+; CHECK-NEXT:    [[TMP11:%.*]] = load i16, ptr [[SRC_GEP_I1615_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP11]], ptr [[DST_GEP_I1616_I]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I817_I:%.*]] = getelementptr i8, ptr [[B]], i32 6
+; CHECK-NEXT:    [[DST_GEP_I818_I:%.*]] = getelementptr i8, ptr [[A]], i32 6
+; CHECK-NEXT:    [[TMP12:%.*]] = load i8, ptr [[SRC_GEP_I817_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP12]], ptr [[DST_GEP_I818_I]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDST8VAR_EXIT]]
 ; CHECK:       [[IF_END_I]]:
-; CHECK-NEXT:    [[TMP1:%.*]] = load i64, ptr [[B]], align 1
-; CHECK-NEXT:    store i64 [[TMP1]], ptr [[A]], align 1
-; CHECK-NEXT:    [[TMP2:%.*]] = add i32 [[SIZE]], -8
-; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[A]], i32 8
-; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[B]], i32 8
-; CHECK-NEXT:    [[TMP5:%.*]] = ptrtoint ptr [[TMP4]] to i32
-; CHECK-NEXT:    [[TMP6:%.*]] = ptrtoint ptr [[TMP3]] to i32
-; CHECK-NEXT:    call void @esp32p4MemCpySrcunalignedDst16Var(i32 [[TMP6]], i32 [[TMP5]], i32 [[TMP2]])
-; CHECK-NEXT:    br label %[[CONTINUE]]
-; CHECK:       [[CONTINUE]]:
+; CHECK-NEXT:    [[TMP13:%.*]] = load i64, ptr [[B]], align 1
+; CHECK-NEXT:    store i64 [[TMP13]], ptr [[A]], align 1
+; CHECK-NEXT:    [[TMP14:%.*]] = add i32 [[SIZE]], -8
+; CHECK-NEXT:    [[TMP15:%.*]] = getelementptr i8, ptr [[A]], i32 8
+; CHECK-NEXT:    [[TMP16:%.*]] = getelementptr i8, ptr [[B]], i32 8
+; CHECK-NEXT:    [[TMP17:%.*]] = ptrtoint ptr [[TMP16]] to i32
+; CHECK-NEXT:    [[TMP18:%.*]] = ptrtoint ptr [[TMP15]] to i32
+; CHECK-NEXT:    [[CMP_I:%.*]] = icmp ult i32 [[TMP14]], 16
+; CHECK-NEXT:    br i1 [[CMP_I]], label %[[FINAL_CLEANUP_I:.*]], label %[[PROCESS_MAIN_LOOP_I:.*]]
+; CHECK:       [[PROCESS_MAIN_LOOP_I]]:
+; CHECK-NEXT:    [[DIV_I:%.*]] = udiv i32 [[TMP14]], 48
+; CHECK-NEXT:    [[DOTNEG:%.*]] = mul i32 [[DIV_I]], -48
+; CHECK-NEXT:    [[REM_DECOMPOSED_I:%.*]] = add i32 [[DOTNEG]], [[TMP14]]
+; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP17]], i32 16, i32 0)
+; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
+; CHECK-NEXT:    [[CMP21_NOT_I:%.*]] = icmp ult i32 [[TMP14]], 48
+; CHECK-NEXT:    br i1 [[CMP21_NOT_I]], label %[[HANDLE_REMAINDER_I:.*]], label %[[MAIN_LOOP_BODY_I:.*]]
+; CHECK:       [[HANDLE_REMAINDER_I]]:
+; CHECK-NEXT:    [[SRC_PTR_AFTERLOOP_I:%.*]] = phi i32 [ [[LD128USARIP1_I]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[SRCQLDIP4_FINAL_I:%.*]], %[[MAIN_LOOP_BODY_I]] ]
+; CHECK-NEXT:    [[DST_PTR_AFTERLOOP_I:%.*]] = phi i32 [ [[TMP18]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[VST128IP5_FINAL_I:%.*]], %[[MAIN_LOOP_BODY_I]] ]
+; CHECK-NEXT:    [[TOBOOL_NOT_I:%.*]] = icmp ult i32 [[REM_DECOMPOSED_I]], 32
+; CHECK-NEXT:    br i1 [[TOBOOL_NOT_I]], label %[[CHECK_16BYTE_TAIL_I:.*]], label %[[PROCESS_32BYTE_TAIL_I:.*]]
+; CHECK:       [[MAIN_LOOP_BODY_I]]:
+; CHECK-NEXT:    [[I_022_I:%.*]] = phi i32 [ 0, %[[PROCESS_MAIN_LOOP_I]] ], [ [[INC_I:%.*]], %[[MAIN_LOOP_BODY_I]] ]
+; CHECK-NEXT:    [[SRC_PTR_PHI_I:%.*]] = phi i32 [ [[LD128USARIP1_I]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[SRCQLDIP4_FINAL_I]], %[[MAIN_LOOP_BODY_I]] ]
+; CHECK-NEXT:    [[DST_PTR_PHI_I:%.*]] = phi i32 [ [[TMP18]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[VST128IP5_FINAL_I]], %[[MAIN_LOOP_BODY_I]] ]
+; CHECK-NEXT:    [[SRCQLDIP_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_PHI_I]], i32 0, i32 16, i32 2)
+; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_PHI_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP2_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP_I]], i32 1, i32 16, i32 0)
+; CHECK-NEXT:    [[VST128IP3_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP4_FINAL_I]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2_I]], i32 2, i32 16, i32 1)
+; CHECK-NEXT:    [[VST128IP5_FINAL_I]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3_I]], i32 16)
+; CHECK-NEXT:    [[INC_I]] = add nuw nsw i32 [[I_022_I]], 1
+; CHECK-NEXT:    [[EXITCOND_NOT_I:%.*]] = icmp eq i32 [[INC_I]], [[DIV_I]]
+; CHECK-NEXT:    br i1 [[EXITCOND_NOT_I]], label %[[HANDLE_REMAINDER_I]], label %[[MAIN_LOOP_BODY_I]]
+; CHECK:       [[PROCESS_32BYTE_TAIL_I]]:
+; CHECK-NEXT:    [[SRCQLDIP6_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_AFTERLOOP_I]], i32 0, i32 0, i32 2)
+; CHECK-NEXT:    [[VST128IP7_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_AFTERLOOP_I]], i32 16)
+; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
+; CHECK-NEXT:    [[VST128IP8_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP7_I]], i32 16)
+; CHECK-NEXT:    [[SUB1_I:%.*]] = add nsw i32 [[REM_DECOMPOSED_I]], -32
+; CHECK-NEXT:    br label %[[FINAL_CLEANUP_I]]
+; CHECK:       [[CHECK_16BYTE_TAIL_I]]:
+; CHECK-NEXT:    [[TOBOOL5_NOT_I:%.*]] = icmp ult i32 [[REM_DECOMPOSED_I]], 16
+; CHECK-NEXT:    br i1 [[TOBOOL5_NOT_I]], label %[[SKIP_TAIL_PROCESSING_I:.*]], label %[[PROCESS_16BYTE_TAIL_I:.*]]
+; CHECK:       [[PROCESS_16BYTE_TAIL_I]]:
+; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
+; CHECK-NEXT:    [[VST128IP9_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_AFTERLOOP_I]], i32 16)
+; CHECK-NEXT:    [[SUB_SRC_I:%.*]] = add i32 [[SRC_PTR_AFTERLOOP_I]], -16
+; CHECK-NEXT:    [[SUB9_I:%.*]] = add nsw i32 [[REM_DECOMPOSED_I]], -16
+; CHECK-NEXT:    br label %[[FINAL_CLEANUP_I]]
+; CHECK:       [[SKIP_TAIL_PROCESSING_I]]:
+; CHECK-NEXT:    [[SRC_END7_I:%.*]] = add i32 [[SRC_PTR_AFTERLOOP_I]], -32
+; CHECK-NEXT:    br label %[[FINAL_CLEANUP_I]]
+; CHECK:       [[FINAL_CLEANUP_I]]:
+; CHECK-NEXT:    [[SRC_FINAL_I:%.*]] = phi i32 [ [[SRCQLDIP6_I]], %[[PROCESS_32BYTE_TAIL_I]] ], [ [[SUB_SRC_I]], %[[PROCESS_16BYTE_TAIL_I]] ], [ [[TMP17]], %[[IF_END_I]] ], [ [[SRC_END7_I]], %[[SKIP_TAIL_PROCESSING_I]] ]
+; CHECK-NEXT:    [[DST_FINAL_I:%.*]] = phi i32 [ [[VST128IP8_I]], %[[PROCESS_32BYTE_TAIL_I]] ], [ [[VST128IP9_I]], %[[PROCESS_16BYTE_TAIL_I]] ], [ [[TMP18]], %[[IF_END_I]] ], [ [[DST_PTR_AFTERLOOP_I]], %[[SKIP_TAIL_PROCESSING_I]] ]
+; CHECK-NEXT:    [[REM_FINAL_I:%.*]] = phi i32 [ [[SUB1_I]], %[[PROCESS_32BYTE_TAIL_I]] ], [ [[SUB9_I]], %[[PROCESS_16BYTE_TAIL_I]] ], [ [[TMP14]], %[[IF_END_I]] ], [ [[REM_DECOMPOSED_I]], %[[SKIP_TAIL_PROCESSING_I]] ]
+; CHECK-NEXT:    [[CMP_FINAL_I:%.*]] = icmp eq i32 [[REM_FINAL_I]], 0
+; CHECK-NEXT:    br i1 [[CMP_FINAL_I]], label %[[ESP32P4MEMCPYSRCUNALIGNDST8VAR_EXIT]], label %[[CALL_SMALL_SIZE_CLEANUP_I:.*]]
+; CHECK:       [[CALL_SMALL_SIZE_CLEANUP_I]]:
+; CHECK-NEXT:    [[DST_PTR_FINAL_I:%.*]] = inttoptr i32 [[DST_FINAL_I]] to ptr
+; CHECK-NEXT:    [[SRC_PTR_FINAL_I:%.*]] = inttoptr i32 [[SRC_FINAL_I]] to ptr
+; CHECK-NEXT:    switch i32 [[REM_FINAL_I]], label %[[ESP32P4MEMCPYSRCUNALIGNDST8VAR_EXIT]] [
+; CHECK-NEXT:      i32 1, label %[[SW_BB1_I17:.*]]
+; CHECK-NEXT:      i32 2, label %[[SW_BB2_I16:.*]]
+; CHECK-NEXT:      i32 3, label %[[SW_BB3_I13:.*]]
+; CHECK-NEXT:      i32 4, label %[[SW_BB4_I12:.*]]
+; CHECK-NEXT:      i32 5, label %[[SW_BB5_I9:.*]]
+; CHECK-NEXT:      i32 6, label %[[SW_BB6_I6:.*]]
+; CHECK-NEXT:      i32 7, label %[[SW_BB7_I1:.*]]
+; CHECK-NEXT:      i32 8, label %[[SW_BB8_I:.*]]
+; CHECK-NEXT:      i32 9, label %[[SW_BB9_I:.*]]
+; CHECK-NEXT:      i32 10, label %[[SW_BB10_I:.*]]
+; CHECK-NEXT:      i32 11, label %[[SW_BB11_I:.*]]
+; CHECK-NEXT:      i32 12, label %[[SW_BB12_I:.*]]
+; CHECK-NEXT:      i32 13, label %[[SW_BB13_I:.*]]
+; CHECK-NEXT:      i32 14, label %[[SW_BB14_I:.*]]
+; CHECK-NEXT:      i32 15, label %[[SW_BB15_I:.*]]
+; CHECK-NEXT:    ]
+; CHECK:       [[SW_BB1_I17]]:
+; CHECK-NEXT:    [[TMP19:%.*]] = load i8, ptr [[SRC_PTR_FINAL_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP19]], ptr [[DST_PTR_FINAL_I]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDST8VAR_EXIT]]
+; CHECK:       [[SW_BB2_I16]]:
+; CHECK-NEXT:    [[TMP20:%.*]] = load i16, ptr [[SRC_PTR_FINAL_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP20]], ptr [[DST_PTR_FINAL_I]], align 2
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDST8VAR_EXIT]]
+; CHECK:       [[SW_BB3_I13]]:
+; CHECK-NEXT:    [[TMP21:%.*]] = load i16, ptr [[SRC_PTR_FINAL_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP21]], ptr [[DST_PTR_FINAL_I]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I83_I15:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 2
+; CHECK-NEXT:    [[DST_GEP_I84_I16:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 2
+; CHECK-NEXT:    [[TMP22:%.*]] = load i8, ptr [[SRC_GEP_I83_I15]], align 1
+; CHECK-NEXT:    store i8 [[TMP22]], ptr [[DST_GEP_I84_I16]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDST8VAR_EXIT]]
+; CHECK:       [[SW_BB4_I12]]:
+; CHECK-NEXT:    [[TMP23:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP23]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDST8VAR_EXIT]]
+; CHECK:       [[SW_BB5_I9]]:
+; CHECK-NEXT:    [[TMP24:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP24]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I87_I11:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I88_I12:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP25:%.*]] = load i8, ptr [[SRC_GEP_I87_I11]], align 1
+; CHECK-NEXT:    store i8 [[TMP25]], ptr [[DST_GEP_I88_I12]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDST8VAR_EXIT]]
+; CHECK:       [[SW_BB6_I6]]:
+; CHECK-NEXT:    [[TMP26:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP26]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1611_I8:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I1612_I9:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP27:%.*]] = load i16, ptr [[SRC_GEP_I1611_I8]], align 2
+; CHECK-NEXT:    store i16 [[TMP27]], ptr [[DST_GEP_I1612_I9]], align 2
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDST8VAR_EXIT]]
+; CHECK:       [[SW_BB7_I1]]:
+; CHECK-NEXT:    [[TMP28:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP28]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1615_I3:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I1616_I4:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP29:%.*]] = load i16, ptr [[SRC_GEP_I1615_I3]], align 2
+; CHECK-NEXT:    store i16 [[TMP29]], ptr [[DST_GEP_I1616_I4]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I817_I5:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 6
+; CHECK-NEXT:    [[DST_GEP_I818_I6:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 6
+; CHECK-NEXT:    [[TMP30:%.*]] = load i8, ptr [[SRC_GEP_I817_I5]], align 1
+; CHECK-NEXT:    store i8 [[TMP30]], ptr [[DST_GEP_I818_I6]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDST8VAR_EXIT]]
+; CHECK:       [[SW_BB8_I]]:
+; CHECK-NEXT:    [[TMP31:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP31]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3221_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3222_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP32:%.*]] = load i32, ptr [[SRC_GEP_I3221_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP32]], ptr [[DST_GEP_I3222_I]], align 4
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDST8VAR_EXIT]]
+; CHECK:       [[SW_BB9_I]]:
+; CHECK-NEXT:    [[TMP33:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP33]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3225_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3226_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP34:%.*]] = load i32, ptr [[SRC_GEP_I3225_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP34]], ptr [[DST_GEP_I3226_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I827_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I828_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[TMP35:%.*]] = load i8, ptr [[SRC_GEP_I827_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP35]], ptr [[DST_GEP_I828_I]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDST8VAR_EXIT]]
+; CHECK:       [[SW_BB10_I]]:
+; CHECK-NEXT:    [[TMP36:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP36]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3231_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3232_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP37:%.*]] = load i32, ptr [[SRC_GEP_I3231_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP37]], ptr [[DST_GEP_I3232_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1633_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I1634_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[TMP38:%.*]] = load i16, ptr [[SRC_GEP_I1633_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP38]], ptr [[DST_GEP_I1634_I]], align 2
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDST8VAR_EXIT]]
+; CHECK:       [[SW_BB11_I]]:
+; CHECK-NEXT:    [[TMP39:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP39]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3237_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3238_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP40:%.*]] = load i32, ptr [[SRC_GEP_I3237_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP40]], ptr [[DST_GEP_I3238_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1639_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I1640_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[TMP41:%.*]] = load i16, ptr [[SRC_GEP_I1639_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP41]], ptr [[DST_GEP_I1640_I]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I841_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 10
+; CHECK-NEXT:    [[DST_GEP_I842_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 10
+; CHECK-NEXT:    [[TMP42:%.*]] = load i8, ptr [[SRC_GEP_I841_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP42]], ptr [[DST_GEP_I842_I]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDST8VAR_EXIT]]
+; CHECK:       [[SW_BB12_I]]:
+; CHECK-NEXT:    [[TMP43:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP43]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3245_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3246_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP44:%.*]] = load i32, ptr [[SRC_GEP_I3245_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP44]], ptr [[DST_GEP_I3246_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3247_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I3248_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[TMP45:%.*]] = load i32, ptr [[SRC_GEP_I3247_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP45]], ptr [[DST_GEP_I3248_I]], align 4
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDST8VAR_EXIT]]
+; CHECK:       [[SW_BB13_I]]:
+; CHECK-NEXT:    [[TMP46:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP46]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3251_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3252_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP47:%.*]] = load i32, ptr [[SRC_GEP_I3251_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP47]], ptr [[DST_GEP_I3252_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3253_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I3254_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[TMP48:%.*]] = load i32, ptr [[SRC_GEP_I3253_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP48]], ptr [[DST_GEP_I3254_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I855_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 12
+; CHECK-NEXT:    [[DST_GEP_I856_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 12
+; CHECK-NEXT:    [[TMP49:%.*]] = load i8, ptr [[SRC_GEP_I855_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP49]], ptr [[DST_GEP_I856_I]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDST8VAR_EXIT]]
+; CHECK:       [[SW_BB14_I]]:
+; CHECK-NEXT:    [[TMP50:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP50]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3259_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3260_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP51:%.*]] = load i32, ptr [[SRC_GEP_I3259_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP51]], ptr [[DST_GEP_I3260_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3261_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I3262_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[TMP52:%.*]] = load i32, ptr [[SRC_GEP_I3261_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP52]], ptr [[DST_GEP_I3262_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1663_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 12
+; CHECK-NEXT:    [[DST_GEP_I1664_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 12
+; CHECK-NEXT:    [[TMP53:%.*]] = load i16, ptr [[SRC_GEP_I1663_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP53]], ptr [[DST_GEP_I1664_I]], align 2
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDST8VAR_EXIT]]
+; CHECK:       [[SW_BB15_I]]:
+; CHECK-NEXT:    [[TMP54:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP54]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3267_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3268_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP55:%.*]] = load i32, ptr [[SRC_GEP_I3267_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP55]], ptr [[DST_GEP_I3268_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3269_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I3270_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[TMP56:%.*]] = load i32, ptr [[SRC_GEP_I3269_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP56]], ptr [[DST_GEP_I3270_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1671_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 12
+; CHECK-NEXT:    [[DST_GEP_I1672_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 12
+; CHECK-NEXT:    [[TMP57:%.*]] = load i16, ptr [[SRC_GEP_I1671_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP57]], ptr [[DST_GEP_I1672_I]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I873_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 14
+; CHECK-NEXT:    [[DST_GEP_I874_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 14
+; CHECK-NEXT:    [[TMP58:%.*]] = load i8, ptr [[SRC_GEP_I873_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP58]], ptr [[DST_GEP_I874_I]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDST8VAR_EXIT]]
+; CHECK:       [[ESP32P4MEMCPYSRCUNALIGNDST8VAR_EXIT]]:
 ; CHECK-NEXT:    ret void
 ;
 entry:
@@ -2355,21 +643,246 @@ entry:
   ret void
 }
 
-define void @test_srcunalign1_dstunalign1_variable_size(ptr %a, ptr %b, i32 %size) {
-; CHECK-LABEL: define void @test_srcunalign1_dstunalign1_variable_size(
+define void @test_srcunalign_dstunalign_variable_size(ptr %a, ptr %b, i32 %size) {
+; CHECK-LABEL: define void @test_srcunalign_dstunalign_variable_size(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]], i32 [[SIZE:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = icmp ult i32 [[SIZE]], 16
-; CHECK-NEXT:    br i1 [[TMP0]], label %[[IF_SMALL:.*]], label %[[IF_LARGE:.*]]
-; CHECK:       [[IF_SMALL]]:
-; CHECK-NEXT:    call void @esp32p4MemCpySrcUnalignedDstUnalignedVarFrom0To15Opt(ptr [[A]], ptr [[B]], i32 [[SIZE]])
-; CHECK-NEXT:    br label %[[CONTINUE:.*]]
-; CHECK:       [[IF_LARGE]]:
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    call void @esp32p4MemCpySrcunalignedDst16Var(i32 [[TMP2]], i32 [[TMP1]], i32 [[SIZE]])
-; CHECK-NEXT:    br label %[[CONTINUE]]
-; CHECK:       [[CONTINUE]]:
+; CHECK-NEXT:  [[ENTRY:.*]]:
+; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
+; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
+; CHECK-NEXT:    [[CMP_I:%.*]] = icmp ult i32 [[SIZE]], 16
+; CHECK-NEXT:    br i1 [[CMP_I]], label %[[FINAL_CLEANUP_I:.*]], label %[[PROCESS_MAIN_LOOP_I:.*]]
+; CHECK:       [[PROCESS_MAIN_LOOP_I]]:
+; CHECK-NEXT:    [[DIV_I:%.*]] = udiv i32 [[SIZE]], 48
+; CHECK-NEXT:    [[DOTNEG:%.*]] = mul i32 [[DIV_I]], -48
+; CHECK-NEXT:    [[REM_DECOMPOSED_I:%.*]] = add i32 [[DOTNEG]], [[SIZE]]
+; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
+; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
+; CHECK-NEXT:    [[CMP21_NOT_I:%.*]] = icmp ult i32 [[SIZE]], 48
+; CHECK-NEXT:    br i1 [[CMP21_NOT_I]], label %[[HANDLE_REMAINDER_I:.*]], label %[[MAIN_LOOP_BODY_I:.*]]
+; CHECK:       [[HANDLE_REMAINDER_I]]:
+; CHECK-NEXT:    [[SRC_PTR_AFTERLOOP_I:%.*]] = phi i32 [ [[LD128USARIP1_I]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[SRCQLDIP4_FINAL_I:%.*]], %[[MAIN_LOOP_BODY_I]] ]
+; CHECK-NEXT:    [[DST_PTR_AFTERLOOP_I:%.*]] = phi i32 [ [[TMP1]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[VST128IP5_FINAL_I:%.*]], %[[MAIN_LOOP_BODY_I]] ]
+; CHECK-NEXT:    [[TOBOOL_NOT_I:%.*]] = icmp ult i32 [[REM_DECOMPOSED_I]], 32
+; CHECK-NEXT:    br i1 [[TOBOOL_NOT_I]], label %[[CHECK_16BYTE_TAIL_I:.*]], label %[[PROCESS_32BYTE_TAIL_I:.*]]
+; CHECK:       [[MAIN_LOOP_BODY_I]]:
+; CHECK-NEXT:    [[I_022_I:%.*]] = phi i32 [ 0, %[[PROCESS_MAIN_LOOP_I]] ], [ [[INC_I:%.*]], %[[MAIN_LOOP_BODY_I]] ]
+; CHECK-NEXT:    [[SRC_PTR_PHI_I:%.*]] = phi i32 [ [[LD128USARIP1_I]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[SRCQLDIP4_FINAL_I]], %[[MAIN_LOOP_BODY_I]] ]
+; CHECK-NEXT:    [[DST_PTR_PHI_I:%.*]] = phi i32 [ [[TMP1]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[VST128IP5_FINAL_I]], %[[MAIN_LOOP_BODY_I]] ]
+; CHECK-NEXT:    [[SRCQLDIP_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_PHI_I]], i32 0, i32 16, i32 2)
+; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_PHI_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP2_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP_I]], i32 1, i32 16, i32 0)
+; CHECK-NEXT:    [[VST128IP3_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP4_FINAL_I]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2_I]], i32 2, i32 16, i32 1)
+; CHECK-NEXT:    [[VST128IP5_FINAL_I]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3_I]], i32 16)
+; CHECK-NEXT:    [[INC_I]] = add nuw nsw i32 [[I_022_I]], 1
+; CHECK-NEXT:    [[EXITCOND_NOT_I:%.*]] = icmp eq i32 [[INC_I]], [[DIV_I]]
+; CHECK-NEXT:    br i1 [[EXITCOND_NOT_I]], label %[[HANDLE_REMAINDER_I]], label %[[MAIN_LOOP_BODY_I]]
+; CHECK:       [[PROCESS_32BYTE_TAIL_I]]:
+; CHECK-NEXT:    [[SRCQLDIP6_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_AFTERLOOP_I]], i32 0, i32 0, i32 2)
+; CHECK-NEXT:    [[VST128IP7_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_AFTERLOOP_I]], i32 16)
+; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
+; CHECK-NEXT:    [[VST128IP8_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP7_I]], i32 16)
+; CHECK-NEXT:    [[SUB1_I:%.*]] = add nsw i32 [[REM_DECOMPOSED_I]], -32
+; CHECK-NEXT:    br label %[[FINAL_CLEANUP_I]]
+; CHECK:       [[CHECK_16BYTE_TAIL_I]]:
+; CHECK-NEXT:    [[TOBOOL5_NOT_I:%.*]] = icmp ult i32 [[REM_DECOMPOSED_I]], 16
+; CHECK-NEXT:    br i1 [[TOBOOL5_NOT_I]], label %[[SKIP_TAIL_PROCESSING_I:.*]], label %[[PROCESS_16BYTE_TAIL_I:.*]]
+; CHECK:       [[PROCESS_16BYTE_TAIL_I]]:
+; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
+; CHECK-NEXT:    [[VST128IP9_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_AFTERLOOP_I]], i32 16)
+; CHECK-NEXT:    [[SUB_SRC_I:%.*]] = add i32 [[SRC_PTR_AFTERLOOP_I]], -16
+; CHECK-NEXT:    [[SUB9_I:%.*]] = add nsw i32 [[REM_DECOMPOSED_I]], -16
+; CHECK-NEXT:    br label %[[FINAL_CLEANUP_I]]
+; CHECK:       [[SKIP_TAIL_PROCESSING_I]]:
+; CHECK-NEXT:    [[SRC_END7_I:%.*]] = add i32 [[SRC_PTR_AFTERLOOP_I]], -32
+; CHECK-NEXT:    br label %[[FINAL_CLEANUP_I]]
+; CHECK:       [[FINAL_CLEANUP_I]]:
+; CHECK-NEXT:    [[SRC_FINAL_I:%.*]] = phi i32 [ [[SRCQLDIP6_I]], %[[PROCESS_32BYTE_TAIL_I]] ], [ [[SUB_SRC_I]], %[[PROCESS_16BYTE_TAIL_I]] ], [ [[TMP0]], %[[ENTRY]] ], [ [[SRC_END7_I]], %[[SKIP_TAIL_PROCESSING_I]] ]
+; CHECK-NEXT:    [[DST_FINAL_I:%.*]] = phi i32 [ [[VST128IP8_I]], %[[PROCESS_32BYTE_TAIL_I]] ], [ [[VST128IP9_I]], %[[PROCESS_16BYTE_TAIL_I]] ], [ [[TMP1]], %[[ENTRY]] ], [ [[DST_PTR_AFTERLOOP_I]], %[[SKIP_TAIL_PROCESSING_I]] ]
+; CHECK-NEXT:    [[REM_FINAL_I:%.*]] = phi i32 [ [[SUB1_I]], %[[PROCESS_32BYTE_TAIL_I]] ], [ [[SUB9_I]], %[[PROCESS_16BYTE_TAIL_I]] ], [ [[SIZE]], %[[ENTRY]] ], [ [[REM_DECOMPOSED_I]], %[[SKIP_TAIL_PROCESSING_I]] ]
+; CHECK-NEXT:    [[CMP_FINAL_I:%.*]] = icmp eq i32 [[REM_FINAL_I]], 0
+; CHECK-NEXT:    br i1 [[CMP_FINAL_I]], label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT:.*]], label %[[CALL_SMALL_SIZE_CLEANUP_I:.*]]
+; CHECK:       [[CALL_SMALL_SIZE_CLEANUP_I]]:
+; CHECK-NEXT:    [[DST_PTR_FINAL_I:%.*]] = inttoptr i32 [[DST_FINAL_I]] to ptr
+; CHECK-NEXT:    [[SRC_PTR_FINAL_I:%.*]] = inttoptr i32 [[SRC_FINAL_I]] to ptr
+; CHECK-NEXT:    switch i32 [[REM_FINAL_I]], label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]] [
+; CHECK-NEXT:      i32 1, label %[[SW_BB1_I:.*]]
+; CHECK-NEXT:      i32 2, label %[[SW_BB2_I:.*]]
+; CHECK-NEXT:      i32 3, label %[[SW_BB3_I:.*]]
+; CHECK-NEXT:      i32 4, label %[[SW_BB4_I:.*]]
+; CHECK-NEXT:      i32 5, label %[[SW_BB5_I:.*]]
+; CHECK-NEXT:      i32 6, label %[[SW_BB6_I:.*]]
+; CHECK-NEXT:      i32 7, label %[[SW_BB7_I:.*]]
+; CHECK-NEXT:      i32 8, label %[[SW_BB8_I:.*]]
+; CHECK-NEXT:      i32 9, label %[[SW_BB9_I:.*]]
+; CHECK-NEXT:      i32 10, label %[[SW_BB10_I:.*]]
+; CHECK-NEXT:      i32 11, label %[[SW_BB11_I:.*]]
+; CHECK-NEXT:      i32 12, label %[[SW_BB12_I:.*]]
+; CHECK-NEXT:      i32 13, label %[[SW_BB13_I:.*]]
+; CHECK-NEXT:      i32 14, label %[[SW_BB14_I:.*]]
+; CHECK-NEXT:      i32 15, label %[[SW_BB15_I:.*]]
+; CHECK-NEXT:    ]
+; CHECK:       [[SW_BB1_I]]:
+; CHECK-NEXT:    [[TMP2:%.*]] = load i8, ptr [[SRC_PTR_FINAL_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP2]], ptr [[DST_PTR_FINAL_I]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]
+; CHECK:       [[SW_BB2_I]]:
+; CHECK-NEXT:    [[TMP3:%.*]] = load i16, ptr [[SRC_PTR_FINAL_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP3]], ptr [[DST_PTR_FINAL_I]], align 2
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]
+; CHECK:       [[SW_BB3_I]]:
+; CHECK-NEXT:    [[TMP4:%.*]] = load i16, ptr [[SRC_PTR_FINAL_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP4]], ptr [[DST_PTR_FINAL_I]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I83_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 2
+; CHECK-NEXT:    [[DST_GEP_I84_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 2
+; CHECK-NEXT:    [[TMP5:%.*]] = load i8, ptr [[SRC_GEP_I83_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP5]], ptr [[DST_GEP_I84_I]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]
+; CHECK:       [[SW_BB4_I]]:
+; CHECK-NEXT:    [[TMP6:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP6]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]
+; CHECK:       [[SW_BB5_I]]:
+; CHECK-NEXT:    [[TMP7:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP7]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I87_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I88_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP8:%.*]] = load i8, ptr [[SRC_GEP_I87_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP8]], ptr [[DST_GEP_I88_I]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]
+; CHECK:       [[SW_BB6_I]]:
+; CHECK-NEXT:    [[TMP9:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP9]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1611_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I1612_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP10:%.*]] = load i16, ptr [[SRC_GEP_I1611_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP10]], ptr [[DST_GEP_I1612_I]], align 2
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]
+; CHECK:       [[SW_BB7_I]]:
+; CHECK-NEXT:    [[TMP11:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP11]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1615_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I1616_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP12:%.*]] = load i16, ptr [[SRC_GEP_I1615_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP12]], ptr [[DST_GEP_I1616_I]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I817_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 6
+; CHECK-NEXT:    [[DST_GEP_I818_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 6
+; CHECK-NEXT:    [[TMP13:%.*]] = load i8, ptr [[SRC_GEP_I817_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP13]], ptr [[DST_GEP_I818_I]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]
+; CHECK:       [[SW_BB8_I]]:
+; CHECK-NEXT:    [[TMP14:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP14]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3221_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3222_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP15:%.*]] = load i32, ptr [[SRC_GEP_I3221_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP15]], ptr [[DST_GEP_I3222_I]], align 4
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]
+; CHECK:       [[SW_BB9_I]]:
+; CHECK-NEXT:    [[TMP16:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP16]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3225_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3226_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP17:%.*]] = load i32, ptr [[SRC_GEP_I3225_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP17]], ptr [[DST_GEP_I3226_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I827_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I828_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[TMP18:%.*]] = load i8, ptr [[SRC_GEP_I827_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP18]], ptr [[DST_GEP_I828_I]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]
+; CHECK:       [[SW_BB10_I]]:
+; CHECK-NEXT:    [[TMP19:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP19]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3231_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3232_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP20:%.*]] = load i32, ptr [[SRC_GEP_I3231_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP20]], ptr [[DST_GEP_I3232_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1633_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I1634_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[TMP21:%.*]] = load i16, ptr [[SRC_GEP_I1633_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP21]], ptr [[DST_GEP_I1634_I]], align 2
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]
+; CHECK:       [[SW_BB11_I]]:
+; CHECK-NEXT:    [[TMP22:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP22]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3237_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3238_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP23:%.*]] = load i32, ptr [[SRC_GEP_I3237_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP23]], ptr [[DST_GEP_I3238_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1639_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I1640_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[TMP24:%.*]] = load i16, ptr [[SRC_GEP_I1639_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP24]], ptr [[DST_GEP_I1640_I]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I841_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 10
+; CHECK-NEXT:    [[DST_GEP_I842_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 10
+; CHECK-NEXT:    [[TMP25:%.*]] = load i8, ptr [[SRC_GEP_I841_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP25]], ptr [[DST_GEP_I842_I]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]
+; CHECK:       [[SW_BB12_I]]:
+; CHECK-NEXT:    [[TMP26:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP26]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3245_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3246_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP27:%.*]] = load i32, ptr [[SRC_GEP_I3245_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP27]], ptr [[DST_GEP_I3246_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3247_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I3248_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[TMP28:%.*]] = load i32, ptr [[SRC_GEP_I3247_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP28]], ptr [[DST_GEP_I3248_I]], align 4
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]
+; CHECK:       [[SW_BB13_I]]:
+; CHECK-NEXT:    [[TMP29:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP29]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3251_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3252_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP30:%.*]] = load i32, ptr [[SRC_GEP_I3251_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP30]], ptr [[DST_GEP_I3252_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3253_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I3254_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[TMP31:%.*]] = load i32, ptr [[SRC_GEP_I3253_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP31]], ptr [[DST_GEP_I3254_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I855_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 12
+; CHECK-NEXT:    [[DST_GEP_I856_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 12
+; CHECK-NEXT:    [[TMP32:%.*]] = load i8, ptr [[SRC_GEP_I855_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP32]], ptr [[DST_GEP_I856_I]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]
+; CHECK:       [[SW_BB14_I]]:
+; CHECK-NEXT:    [[TMP33:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP33]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3259_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3260_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP34:%.*]] = load i32, ptr [[SRC_GEP_I3259_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP34]], ptr [[DST_GEP_I3260_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3261_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I3262_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[TMP35:%.*]] = load i32, ptr [[SRC_GEP_I3261_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP35]], ptr [[DST_GEP_I3262_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1663_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 12
+; CHECK-NEXT:    [[DST_GEP_I1664_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 12
+; CHECK-NEXT:    [[TMP36:%.*]] = load i16, ptr [[SRC_GEP_I1663_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP36]], ptr [[DST_GEP_I1664_I]], align 2
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]
+; CHECK:       [[SW_BB15_I]]:
+; CHECK-NEXT:    [[TMP37:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP37]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3267_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3268_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP38:%.*]] = load i32, ptr [[SRC_GEP_I3267_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP38]], ptr [[DST_GEP_I3268_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3269_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I3270_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[TMP39:%.*]] = load i32, ptr [[SRC_GEP_I3269_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP39]], ptr [[DST_GEP_I3270_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1671_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 12
+; CHECK-NEXT:    [[DST_GEP_I1672_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 12
+; CHECK-NEXT:    [[TMP40:%.*]] = load i16, ptr [[SRC_GEP_I1671_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP40]], ptr [[DST_GEP_I1672_I]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I873_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 14
+; CHECK-NEXT:    [[DST_GEP_I874_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 14
+; CHECK-NEXT:    [[TMP41:%.*]] = load i8, ptr [[SRC_GEP_I873_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP41]], ptr [[DST_GEP_I874_I]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]
+; CHECK:       [[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]:
 ; CHECK-NEXT:    ret void
 ;
 entry:
@@ -2377,248 +890,3581 @@ entry:
   ret void
 }
 
-define void @test_srcunalign2_dstunalign2_variable_size(ptr %a, ptr %b, i32 %size) {
-; CHECK-LABEL: define void @test_srcunalign2_dstunalign2_variable_size(
-; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]], i32 [[SIZE:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = icmp ult i32 [[SIZE]], 16
-; CHECK-NEXT:    br i1 [[TMP0]], label %[[IF_SMALL:.*]], label %[[IF_LARGE:.*]]
-; CHECK:       [[IF_SMALL]]:
-; CHECK-NEXT:    call void @esp32p4MemCpySrcUnalignedDstUnalignedVarFrom0To15Opt(ptr [[A]], ptr [[B]], i32 [[SIZE]])
-; CHECK-NEXT:    br label %[[CONTINUE:.*]]
-; CHECK:       [[IF_LARGE]]:
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    call void @esp32p4MemCpySrcunalignedDst16Var(i32 [[TMP2]], i32 [[TMP1]], i32 [[SIZE]])
-; CHECK-NEXT:    br label %[[CONTINUE]]
-; CHECK:       [[CONTINUE]]:
-; CHECK-NEXT:    ret void
-;
-entry:
-  tail call void @llvm.memcpy.p0.p0.i32(ptr noundef nonnull align 2 %a, ptr noundef nonnull align 2 %b, i32 %size, i1 false)
-  ret void
-}
+declare void @llvm.memcpy.p0.p0.i32(ptr noalias nocapture writeonly, ptr noalias nocapture readonly, i32, i1 immarg)
 
-define void @test_srcunalign1_dstunalign2_variable_size(ptr %a, ptr %b, i32 %size) {
-; CHECK-LABEL: define void @test_srcunalign1_dstunalign2_variable_size(
-; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]], i32 [[SIZE:%.*]]) {
+; Function Attrs: noinline nounwind
+define internal void @esp32p4MemCpySrc16Dst16Var(i32 %0, i32 %1, i32 %2)  {
+; CHECK-LABEL: define internal void @esp32p4MemCpySrc16Dst16Var(
+; CHECK-SAME: i32 [[TMP0:%.*]], i32 [[TMP1:%.*]], i32 [[TMP2:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = icmp ult i32 [[SIZE]], 16
-; CHECK-NEXT:    br i1 [[TMP0]], label %[[IF_SMALL:.*]], label %[[IF_LARGE:.*]]
-; CHECK:       [[IF_SMALL]]:
-; CHECK-NEXT:    call void @esp32p4MemCpySrcUnalignedDstUnalignedVarFrom0To15Opt(ptr [[A]], ptr [[B]], i32 [[SIZE]])
-; CHECK-NEXT:    br label %[[CONTINUE:.*]]
-; CHECK:       [[IF_LARGE]]:
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    call void @esp32p4MemCpySrcunalignedDst16Var(i32 [[TMP2]], i32 [[TMP1]], i32 [[SIZE]])
-; CHECK-NEXT:    br label %[[CONTINUE]]
-; CHECK:       [[CONTINUE]]:
+; CHECK-NEXT:    [[CMP:%.*]] = icmp ult i32 [[TMP2]], 8
+; CHECK-NEXT:    br i1 [[CMP]], label %[[HANDLE_SMALL_SIZE:.*]], label %[[CHECK_MID_RANGE:.*]]
+; CHECK:       [[HANDLE_SMALL_SIZE]]:
+; CHECK-NEXT:    [[TMP3:%.*]] = inttoptr i32 [[TMP0]] to ptr
+; CHECK-NEXT:    [[TMP4:%.*]] = inttoptr i32 [[TMP1]] to ptr
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrc16Dst16From1To7Opt(ptr [[TMP3]], ptr [[TMP4]], i32 [[TMP2]])
+; CHECK-NEXT:    br label %[[RETURN:.*]]
+; CHECK:       [[CHECK_MID_RANGE]]:
+; CHECK-NEXT:    [[CMP1:%.*]] = icmp ult i32 [[TMP2]], 16
+; CHECK-NEXT:    br i1 [[CMP1]], label %[[HANDLE_MID_SIZE:.*]], label %[[HANDLE_LARGE_LOOP:.*]]
+; CHECK:       [[HANDLE_MID_SIZE]]:
+; CHECK-NEXT:    [[VLDL64IP:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[TMP1]], i32 8, i32 0)
+; CHECK-NEXT:    [[VSTL64IP:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 [[TMP0]], i32 8)
+; CHECK-NEXT:    [[TMP5:%.*]] = inttoptr i32 [[VSTL64IP]] to ptr
+; CHECK-NEXT:    [[TMP6:%.*]] = inttoptr i32 [[VLDL64IP]] to ptr
+; CHECK-NEXT:    [[SUB:%.*]] = add nsw i32 [[TMP2]], -8
+; CHECK-NEXT:    call void @esp32p4MemCpySrc16Dst16From1To7Opt(ptr [[TMP5]], ptr [[TMP6]], i32 [[SUB]])
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[HANDLE_LARGE_LOOP]]:
+; CHECK-NEXT:    [[DIV94:%.*]] = lshr i32 [[TMP2]], 7
+; CHECK-NEXT:    [[REM:%.*]] = lshr i32 [[TMP2]], 4
+; CHECK-NEXT:    [[DIV195:%.*]] = and i32 [[REM]], 7
+; CHECK-NEXT:    [[REM4:%.*]] = and i32 [[TMP2]], 7
+; CHECK-NEXT:    [[CMP97_NOT:%.*]] = icmp ult i32 [[TMP2]], 128
+; CHECK-NEXT:    br i1 [[CMP97_NOT]], label %[[LOOP_EXIT_CLEANUP:.*]], label %[[LOOP_BODY_128B:.*]]
+; CHECK:       [[RETURN]]:
 ; CHECK-NEXT:    ret void
+; CHECK:       [[LOOP_EXIT_CLEANUP]]:
+; CHECK-NEXT:    [[SRC_PTR_AT_CLEANUP:%.*]] = phi i32 [ [[TMP1]], %[[HANDLE_LARGE_LOOP]] ], [ [[VLD128IP7:%.*]], %[[LOOP_BODY_128B]] ]
+; CHECK-NEXT:    [[DST_PTR_AT_CLEANUP:%.*]] = phi i32 [ [[TMP0]], %[[HANDLE_LARGE_LOOP]] ], [ [[VST128IP14:%.*]], %[[LOOP_BODY_128B]] ]
+; CHECK-NEXT:    switch i32 [[DIV195]], label %[[INVALID_SWITCH_TRAP:.*]] [
+; CHECK-NEXT:      i32 1, label %[[TAIL_CASE_1:.*]]
+; CHECK-NEXT:      i32 2, label %[[TAIL_CASE_2:.*]]
+; CHECK-NEXT:      i32 3, label %[[TAIL_CASE_3:.*]]
+; CHECK-NEXT:      i32 4, label %[[TAIL_CASE_4:.*]]
+; CHECK-NEXT:      i32 5, label %[[TAIL_CASE_5:.*]]
+; CHECK-NEXT:      i32 6, label %[[TAIL_CASE_6:.*]]
+; CHECK-NEXT:      i32 7, label %[[TAIL_CASE_7:.*]]
+; CHECK-NEXT:      i32 0, label %[[HANDLE_TAIL_SWITCH:.*]]
+; CHECK-NEXT:    ]
+; CHECK:       [[LOOP_BODY_128B]]:
+; CHECK-NEXT:    [[I_098:%.*]] = phi i32 [ 0, %[[HANDLE_LARGE_LOOP]] ], [ [[INC:%.*]], %[[LOOP_BODY_128B]] ]
+; CHECK-NEXT:    [[SRC_PTR_PHI:%.*]] = phi i32 [ [[TMP1]], %[[HANDLE_LARGE_LOOP]] ], [ [[VLD128IP7]], %[[LOOP_BODY_128B]] ]
+; CHECK-NEXT:    [[DST_PTR_PHI:%.*]] = phi i32 [ [[TMP0]], %[[HANDLE_LARGE_LOOP]] ], [ [[VST128IP14]], %[[LOOP_BODY_128B]] ]
+; CHECK-NEXT:    [[VLD128IP:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[SRC_PTR_PHI]], i32 16, i32 0)
+; CHECK-NEXT:    [[VLD128IP1:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP]], i32 16, i32 1)
+; CHECK-NEXT:    [[VLD128IP2:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP1]], i32 16, i32 2)
+; CHECK-NEXT:    [[VLD128IP3:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP2]], i32 16, i32 3)
+; CHECK-NEXT:    [[VLD128IP4:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP3]], i32 16, i32 4)
+; CHECK-NEXT:    [[VLD128IP5:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP4]], i32 16, i32 5)
+; CHECK-NEXT:    [[VLD128IP6:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP5]], i32 16, i32 6)
+; CHECK-NEXT:    [[VLD128IP7]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP6]], i32 16, i32 7)
+; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_PHI]], i32 16)
+; CHECK-NEXT:    [[VST128IP8:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
+; CHECK-NEXT:    [[VST128IP9:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP8]], i32 16)
+; CHECK-NEXT:    [[VST128IP10:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 3, i32 [[VST128IP9]], i32 16)
+; CHECK-NEXT:    [[VST128IP11:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 4, i32 [[VST128IP10]], i32 16)
+; CHECK-NEXT:    [[VST128IP12:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 5, i32 [[VST128IP11]], i32 16)
+; CHECK-NEXT:    [[VST128IP13:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 6, i32 [[VST128IP12]], i32 16)
+; CHECK-NEXT:    [[VST128IP14]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 7, i32 [[VST128IP13]], i32 16)
+; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_098]], 1
+; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], [[DIV94]]
+; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[LOOP_EXIT_CLEANUP]], label %[[LOOP_BODY_128B]]
+; CHECK:       [[HANDLE_TAIL_SWITCH]]:
+; CHECK-NEXT:    [[SRC_PTR_EPILOG:%.*]] = phi i32 [ [[SRC_PTR_AT_CLEANUP]], %[[LOOP_EXIT_CLEANUP]] ], [ [[VLD128IP15:%.*]], %[[TAIL_CASE_1]] ], [ [[VLD128IP18:%.*]], %[[TAIL_CASE_2]] ], [ [[VLD128IP23:%.*]], %[[TAIL_CASE_3]] ], [ [[VLD128IP30:%.*]], %[[TAIL_CASE_4]] ], [ [[VLD128IP39:%.*]], %[[TAIL_CASE_5]] ], [ [[VLD128IP50:%.*]], %[[TAIL_CASE_6]] ], [ [[VLD128IP63:%.*]], %[[TAIL_CASE_7]] ]
+; CHECK-NEXT:    [[DST_PTR_EPILOG:%.*]] = phi i32 [ [[DST_PTR_AT_CLEANUP]], %[[LOOP_EXIT_CLEANUP]] ], [ [[VST128IP16:%.*]], %[[TAIL_CASE_1]] ], [ [[VST128IP20:%.*]], %[[TAIL_CASE_2]] ], [ [[VST128IP26:%.*]], %[[TAIL_CASE_3]] ], [ [[VST128IP34:%.*]], %[[TAIL_CASE_4]] ], [ [[VST128IP44:%.*]], %[[TAIL_CASE_5]] ], [ [[VST128IP56:%.*]], %[[TAIL_CASE_6]] ], [ [[VST128IP70:%.*]], %[[TAIL_CASE_7]] ]
+; CHECK-NEXT:    [[TMP7:%.*]] = and i32 [[TMP2]], 8
+; CHECK-NEXT:    [[TMP8:%.*]] = icmp eq i32 [[TMP7]], 0
+; CHECK-NEXT:    br i1 [[TMP8]], label %[[AFTER_8B_TAIL:.*]], label %[[HANDLE_8B_TAIL:.*]]
+; CHECK:       [[INVALID_SWITCH_TRAP]]:
+; CHECK-NEXT:    unreachable
+; CHECK:       [[HANDLE_8B_TAIL]]:
+; CHECK-NEXT:    [[VLDL64IP71:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[SRC_PTR_EPILOG]], i32 8, i32 0)
+; CHECK-NEXT:    [[VSTL64IP72:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 [[DST_PTR_EPILOG]], i32 8)
+; CHECK-NEXT:    br label %[[AFTER_8B_TAIL]]
+; CHECK:       [[AFTER_8B_TAIL]]:
+; CHECK-NEXT:    [[SRC_PTR_END17:%.*]] = phi i32 [ [[SRC_PTR_EPILOG]], %[[HANDLE_TAIL_SWITCH]] ], [ [[VLDL64IP71]], %[[HANDLE_8B_TAIL]] ]
+; CHECK-NEXT:    [[DST_PTR_END17:%.*]] = phi i32 [ [[DST_PTR_EPILOG]], %[[HANDLE_TAIL_SWITCH]] ], [ [[VSTL64IP72]], %[[HANDLE_8B_TAIL]] ]
+; CHECK-NEXT:    [[TMP9:%.*]] = icmp eq i32 [[REM4]], 0
+; CHECK-NEXT:    br i1 [[TMP9]], label %[[RETURN]], label %[[HANDLE_REMAINING_BYTES:.*]]
+; CHECK:       [[TAIL_CASE_1]]:
+; CHECK-NEXT:    [[VLD128IP15]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[SRC_PTR_AT_CLEANUP]], i32 16, i32 0)
+; CHECK-NEXT:    [[VST128IP16]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_AT_CLEANUP]], i32 16)
+; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
+; CHECK:       [[TAIL_CASE_2]]:
+; CHECK-NEXT:    [[VLD128IP17:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[SRC_PTR_AT_CLEANUP]], i32 16, i32 0)
+; CHECK-NEXT:    [[VLD128IP18]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP17]], i32 16, i32 1)
+; CHECK-NEXT:    [[VST128IP19:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_AT_CLEANUP]], i32 16)
+; CHECK-NEXT:    [[VST128IP20]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP19]], i32 16)
+; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
+; CHECK:       [[TAIL_CASE_3]]:
+; CHECK-NEXT:    [[VLD128IP21:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[SRC_PTR_AT_CLEANUP]], i32 16, i32 0)
+; CHECK-NEXT:    [[VLD128IP22:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP21]], i32 16, i32 1)
+; CHECK-NEXT:    [[VLD128IP23]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP22]], i32 16, i32 2)
+; CHECK-NEXT:    [[VST128IP24:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_AT_CLEANUP]], i32 16)
+; CHECK-NEXT:    [[VST128IP25:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP24]], i32 16)
+; CHECK-NEXT:    [[VST128IP26]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP25]], i32 16)
+; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
+; CHECK:       [[TAIL_CASE_4]]:
+; CHECK-NEXT:    [[VLD128IP27:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[SRC_PTR_AT_CLEANUP]], i32 16, i32 0)
+; CHECK-NEXT:    [[VLD128IP28:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP27]], i32 16, i32 1)
+; CHECK-NEXT:    [[VLD128IP29:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP28]], i32 16, i32 2)
+; CHECK-NEXT:    [[VLD128IP30]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP29]], i32 16, i32 3)
+; CHECK-NEXT:    [[VST128IP31:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_AT_CLEANUP]], i32 16)
+; CHECK-NEXT:    [[VST128IP32:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP31]], i32 16)
+; CHECK-NEXT:    [[VST128IP33:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP32]], i32 16)
+; CHECK-NEXT:    [[VST128IP34]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 3, i32 [[VST128IP33]], i32 16)
+; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
+; CHECK:       [[TAIL_CASE_5]]:
+; CHECK-NEXT:    [[VLD128IP35:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[SRC_PTR_AT_CLEANUP]], i32 16, i32 0)
+; CHECK-NEXT:    [[VLD128IP36:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP35]], i32 16, i32 1)
+; CHECK-NEXT:    [[VLD128IP37:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP36]], i32 16, i32 2)
+; CHECK-NEXT:    [[VLD128IP38:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP37]], i32 16, i32 3)
+; CHECK-NEXT:    [[VLD128IP39]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP38]], i32 16, i32 4)
+; CHECK-NEXT:    [[VST128IP40:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_AT_CLEANUP]], i32 16)
+; CHECK-NEXT:    [[VST128IP41:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP40]], i32 16)
+; CHECK-NEXT:    [[VST128IP42:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP41]], i32 16)
+; CHECK-NEXT:    [[VST128IP43:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 3, i32 [[VST128IP42]], i32 16)
+; CHECK-NEXT:    [[VST128IP44]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 4, i32 [[VST128IP43]], i32 16)
+; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
+; CHECK:       [[TAIL_CASE_6]]:
+; CHECK-NEXT:    [[VLD128IP45:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[SRC_PTR_AT_CLEANUP]], i32 16, i32 0)
+; CHECK-NEXT:    [[VLD128IP46:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP45]], i32 16, i32 1)
+; CHECK-NEXT:    [[VLD128IP47:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP46]], i32 16, i32 2)
+; CHECK-NEXT:    [[VLD128IP48:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP47]], i32 16, i32 3)
+; CHECK-NEXT:    [[VLD128IP49:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP48]], i32 16, i32 4)
+; CHECK-NEXT:    [[VLD128IP50]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP49]], i32 16, i32 5)
+; CHECK-NEXT:    [[VST128IP51:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_AT_CLEANUP]], i32 16)
+; CHECK-NEXT:    [[VST128IP52:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP51]], i32 16)
+; CHECK-NEXT:    [[VST128IP53:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP52]], i32 16)
+; CHECK-NEXT:    [[VST128IP54:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 3, i32 [[VST128IP53]], i32 16)
+; CHECK-NEXT:    [[VST128IP55:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 4, i32 [[VST128IP54]], i32 16)
+; CHECK-NEXT:    [[VST128IP56]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 5, i32 [[VST128IP55]], i32 16)
+; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
+; CHECK:       [[TAIL_CASE_7]]:
+; CHECK-NEXT:    [[VLD128IP57:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[SRC_PTR_AT_CLEANUP]], i32 16, i32 0)
+; CHECK-NEXT:    [[VLD128IP58:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP57]], i32 16, i32 1)
+; CHECK-NEXT:    [[VLD128IP59:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP58]], i32 16, i32 2)
+; CHECK-NEXT:    [[VLD128IP60:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP59]], i32 16, i32 3)
+; CHECK-NEXT:    [[VLD128IP61:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP60]], i32 16, i32 4)
+; CHECK-NEXT:    [[VLD128IP62:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP61]], i32 16, i32 5)
+; CHECK-NEXT:    [[VLD128IP63]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP62]], i32 16, i32 6)
+; CHECK-NEXT:    [[VST128IP64:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_AT_CLEANUP]], i32 16)
+; CHECK-NEXT:    [[VST128IP65:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP64]], i32 16)
+; CHECK-NEXT:    [[VST128IP66:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP65]], i32 16)
+; CHECK-NEXT:    [[VST128IP67:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 3, i32 [[VST128IP66]], i32 16)
+; CHECK-NEXT:    [[VST128IP68:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 4, i32 [[VST128IP67]], i32 16)
+; CHECK-NEXT:    [[VST128IP69:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 5, i32 [[VST128IP68]], i32 16)
+; CHECK-NEXT:    [[VST128IP70]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 6, i32 [[VST128IP69]], i32 16)
+; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
+; CHECK:       [[HANDLE_REMAINING_BYTES]]:
+; CHECK-NEXT:    [[TMP10:%.*]] = inttoptr i32 [[SRC_PTR_END17]] to ptr
+; CHECK-NEXT:    [[TMP11:%.*]] = inttoptr i32 [[DST_PTR_END17]] to ptr
+; CHECK-NEXT:    call void @esp32p4MemCpySrc16Dst16From1To7Opt(ptr [[TMP11]], ptr [[TMP10]], i32 [[REM4]])
+; CHECK-NEXT:    br label %[[RETURN]]
 ;
 entry:
-  tail call void @llvm.memcpy.p0.p0.i32(ptr noundef nonnull align 1 %a, ptr noundef nonnull align 2 %b, i32 %size, i1 false)
-  ret void
-}
+  %is.lt.8 = icmp ult i32 %2, 8
+  br i1 %is.lt.8, label %handle.small.size, label %check.mid.range
 
-define void @test_srcunalign2_dstunalign1_variable_size(ptr %a, ptr %b, i32 %size) {
-; CHECK-LABEL: define void @test_srcunalign2_dstunalign1_variable_size(
-; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]], i32 [[SIZE:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = icmp ult i32 [[SIZE]], 16
-; CHECK-NEXT:    br i1 [[TMP0]], label %[[IF_SMALL:.*]], label %[[IF_LARGE:.*]]
-; CHECK:       [[IF_SMALL]]:
-; CHECK-NEXT:    call void @esp32p4MemCpySrcUnalignedDstUnalignedVarFrom0To15Opt(ptr [[A]], ptr [[B]], i32 [[SIZE]])
-; CHECK-NEXT:    br label %[[CONTINUE:.*]]
-; CHECK:       [[IF_LARGE]]:
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    call void @esp32p4MemCpySrcunalignedDst16Var(i32 [[TMP2]], i32 [[TMP1]], i32 [[SIZE]])
-; CHECK-NEXT:    br label %[[CONTINUE]]
-; CHECK:       [[CONTINUE]]:
-; CHECK-NEXT:    ret void
-;
-entry:
-  tail call void @llvm.memcpy.p0.p0.i32(ptr noundef nonnull align 2 %a, ptr noundef nonnull align 1 %b, i32 %size, i1 false)
+handle.small.size:                                ; preds = %entry
+  %3 = inttoptr i32 %0 to ptr
+  %4 = inttoptr i32 %1 to ptr
+  tail call void @esp32p4MemCpySrc16Dst16From1To7Opt(ptr %3, ptr %4, i32 %2)
+  br label %return
+
+check.mid.range:                                  ; preds = %entry
+  %is.lt.16 = icmp ult i32 %2, 16
+  br i1 %is.lt.16, label %handle.mid.size, label %handle.large.loop
+
+handle.mid.size:                                  ; preds = %check.mid.range
+  %vldl64ip = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %1, i32 8, i32 0)
+  %vstl64ip = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 %0, i32 8)
+  %5 = inttoptr i32 %vstl64ip to ptr
+  %6 = inttoptr i32 %vldl64ip to ptr
+  %size.minus.8 = add nsw i32 %2, -8
+  call void @esp32p4MemCpySrc16Dst16From1To7Opt(ptr %5, ptr %6, i32 %size.minus.8)
+  br label %return
+
+handle.large.loop:                                ; preds = %check.mid.range
+  %num.128B.blocks = lshr i32 %2, 7
+  %num.16B.blocks = lshr i32 %2, 4
+  %remaining.16B.blocks = and i32 %num.16B.blocks, 7
+  %remaining.bytes = and i32 %2, 7
+  %is.lt.128 = icmp ult i32 %2, 128
+  br i1 %is.lt.128, label %loop.exit.cleanup, label %loop.body.128B
+
+return:                                           ; preds = %handle.remaining.bytes, %after.8B.tail, %handle.mid.size, %handle.small.size
   ret void
+
+loop.exit.cleanup:                                ; preds = %loop.body.128B, %handle.large.loop
+  %src.ptr.after.loop = phi i32 [ %1, %handle.large.loop ], [ %vld128ip7, %loop.body.128B ]
+  %dst.ptr.after.loop = phi i32 [ %0, %handle.large.loop ], [ %vst128ip14, %loop.body.128B ]
+  switch i32 %remaining.16B.blocks, label %invalid.switch.trap [
+  i32 1, label %tail.case.1
+  i32 2, label %tail.case.2
+  i32 3, label %tail.case.3
+  i32 4, label %tail.case.4
+  i32 5, label %tail.case.5
+  i32 6, label %tail.case.6
+  i32 7, label %tail.case.7
+  i32 0, label %handle.tail.switch
+  ]
+
+loop.body.128B:                                   ; preds = %loop.body.128B, %handle.large.loop
+  %loop.index = phi i32 [ 0, %handle.large.loop ], [ %loop.inc, %loop.body.128B ]
+  %src.ptr.loop = phi i32 [ %1, %handle.large.loop ], [ %vld128ip7, %loop.body.128B ]
+  %dst.ptr.loop = phi i32 [ %0, %handle.large.loop ], [ %vst128ip14, %loop.body.128B ]
+  %vld128ip = call i32 @llvm.riscv.esp.vld.128.ip(i32 %src.ptr.loop, i32 16, i32 0)
+  %vld128ip1 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip, i32 16, i32 1)
+  %vld128ip2 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip1, i32 16, i32 2)
+  %vld128ip3 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip2, i32 16, i32 3)
+  %vld128ip4 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip3, i32 16, i32 4)
+  %vld128ip5 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip4, i32 16, i32 5)
+  %vld128ip6 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip5, i32 16, i32 6)
+  %vld128ip7 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip6, i32 16, i32 7)
+  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
+  %vst128ip8 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
+  %vst128ip9 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip8, i32 16)
+  %vst128ip10 = call i32 @llvm.riscv.esp.vst.128.ip(i32 3, i32 %vst128ip9, i32 16)
+  %vst128ip11 = call i32 @llvm.riscv.esp.vst.128.ip(i32 4, i32 %vst128ip10, i32 16)
+  %vst128ip12 = call i32 @llvm.riscv.esp.vst.128.ip(i32 5, i32 %vst128ip11, i32 16)
+  %vst128ip13 = call i32 @llvm.riscv.esp.vst.128.ip(i32 6, i32 %vst128ip12, i32 16)
+  %vst128ip14 = call i32 @llvm.riscv.esp.vst.128.ip(i32 7, i32 %vst128ip13, i32 16)
+  %loop.inc = add nuw nsw i32 %loop.index, 1
+  %loop.done = icmp eq i32 %loop.inc, %num.128B.blocks
+  br i1 %loop.done, label %loop.exit.cleanup, label %loop.body.128B
+
+handle.tail.switch:                               ; preds = %loop.exit.cleanup, %tail.case.7, %tail.case.6, %tail.case.5, %tail.case.4, %tail.case.3, %tail.case.2, %tail.case.1
+  %src.ptr.tail = phi i32 [ %src.ptr.after.loop, %loop.exit.cleanup ], [ %vld128ip15, %tail.case.1 ], [ %vld128ip18, %tail.case.2 ], [ %vld128ip23, %tail.case.3 ], [ %vld128ip30, %tail.case.4 ], [ %vld128ip39, %tail.case.5 ], [ %vld128ip50, %tail.case.6 ], [ %vld128ip63, %tail.case.7 ]
+  %dst.ptr.tail = phi i32 [ %dst.ptr.after.loop, %loop.exit.cleanup ], [ %vst128ip16, %tail.case.1 ], [ %vst128ip20, %tail.case.2 ], [ %vst128ip26, %tail.case.3 ], [ %vst128ip34, %tail.case.4 ], [ %vst128ip44, %tail.case.5 ], [ %vst128ip56, %tail.case.6 ], [ %vst128ip70, %tail.case.7 ]
+  %7 = and i32 %2, 8
+  %8 = icmp eq i32 %7, 0
+  br i1 %8, label %after.8B.tail, label %handle.8B.tail
+
+invalid.switch.trap:                              ; preds = %loop.exit.cleanup
+  unreachable
+
+handle.8B.tail:                                   ; preds = %handle.tail.switch
+  %vldl64ip71 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %src.ptr.tail, i32 8, i32 0)
+  %vstl64ip72 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 %dst.ptr.tail, i32 8)
+  br label %after.8B.tail
+
+after.8B.tail:                                    ; preds = %handle.8B.tail, %handle.tail.switch
+  %src.ptr.after.8B = phi i32 [ %src.ptr.tail, %handle.tail.switch ], [ %vldl64ip71, %handle.8B.tail ]
+  %dst.ptr.after.8B = phi i32 [ %dst.ptr.tail, %handle.tail.switch ], [ %vstl64ip72, %handle.8B.tail ]
+  %9 = icmp eq i32 %remaining.bytes, 0
+  br i1 %9, label %return, label %handle.remaining.bytes
+
+tail.case.1:                                      ; preds = %loop.exit.cleanup
+  %vld128ip15 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %src.ptr.after.loop, i32 16, i32 0)
+  %vst128ip16 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.after.loop, i32 16)
+  br label %handle.tail.switch
+
+tail.case.2:                                      ; preds = %loop.exit.cleanup
+  %vld128ip17 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %src.ptr.after.loop, i32 16, i32 0)
+  %vld128ip18 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip17, i32 16, i32 1)
+  %vst128ip19 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.after.loop, i32 16)
+  %vst128ip20 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip19, i32 16)
+  br label %handle.tail.switch
+
+tail.case.3:                                      ; preds = %loop.exit.cleanup
+  %vld128ip21 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %src.ptr.after.loop, i32 16, i32 0)
+  %vld128ip22 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip21, i32 16, i32 1)
+  %vld128ip23 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip22, i32 16, i32 2)
+  %vst128ip24 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.after.loop, i32 16)
+  %vst128ip25 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip24, i32 16)
+  %vst128ip26 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip25, i32 16)
+  br label %handle.tail.switch
+
+tail.case.4:                                      ; preds = %loop.exit.cleanup
+  %vld128ip27 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %src.ptr.after.loop, i32 16, i32 0)
+  %vld128ip28 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip27, i32 16, i32 1)
+  %vld128ip29 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip28, i32 16, i32 2)
+  %vld128ip30 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip29, i32 16, i32 3)
+  %vst128ip31 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.after.loop, i32 16)
+  %vst128ip32 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip31, i32 16)
+  %vst128ip33 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip32, i32 16)
+  %vst128ip34 = call i32 @llvm.riscv.esp.vst.128.ip(i32 3, i32 %vst128ip33, i32 16)
+  br label %handle.tail.switch
+
+tail.case.5:                                      ; preds = %loop.exit.cleanup
+  %vld128ip35 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %src.ptr.after.loop, i32 16, i32 0)
+  %vld128ip36 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip35, i32 16, i32 1)
+  %vld128ip37 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip36, i32 16, i32 2)
+  %vld128ip38 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip37, i32 16, i32 3)
+  %vld128ip39 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip38, i32 16, i32 4)
+  %vst128ip40 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.after.loop, i32 16)
+  %vst128ip41 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip40, i32 16)
+  %vst128ip42 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip41, i32 16)
+  %vst128ip43 = call i32 @llvm.riscv.esp.vst.128.ip(i32 3, i32 %vst128ip42, i32 16)
+  %vst128ip44 = call i32 @llvm.riscv.esp.vst.128.ip(i32 4, i32 %vst128ip43, i32 16)
+  br label %handle.tail.switch
+
+tail.case.6:                                      ; preds = %loop.exit.cleanup
+  %vld128ip45 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %src.ptr.after.loop, i32 16, i32 0)
+  %vld128ip46 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip45, i32 16, i32 1)
+  %vld128ip47 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip46, i32 16, i32 2)
+  %vld128ip48 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip47, i32 16, i32 3)
+  %vld128ip49 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip48, i32 16, i32 4)
+  %vld128ip50 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip49, i32 16, i32 5)
+  %vst128ip51 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.after.loop, i32 16)
+  %vst128ip52 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip51, i32 16)
+  %vst128ip53 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip52, i32 16)
+  %vst128ip54 = call i32 @llvm.riscv.esp.vst.128.ip(i32 3, i32 %vst128ip53, i32 16)
+  %vst128ip55 = call i32 @llvm.riscv.esp.vst.128.ip(i32 4, i32 %vst128ip54, i32 16)
+  %vst128ip56 = call i32 @llvm.riscv.esp.vst.128.ip(i32 5, i32 %vst128ip55, i32 16)
+  br label %handle.tail.switch
+
+tail.case.7:                                      ; preds = %loop.exit.cleanup
+  %vld128ip57 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %src.ptr.after.loop, i32 16, i32 0)
+  %vld128ip58 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip57, i32 16, i32 1)
+  %vld128ip59 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip58, i32 16, i32 2)
+  %vld128ip60 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip59, i32 16, i32 3)
+  %vld128ip61 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip60, i32 16, i32 4)
+  %vld128ip62 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip61, i32 16, i32 5)
+  %vld128ip63 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip62, i32 16, i32 6)
+  %vst128ip64 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.after.loop, i32 16)
+  %vst128ip65 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip64, i32 16)
+  %vst128ip66 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip65, i32 16)
+  %vst128ip67 = call i32 @llvm.riscv.esp.vst.128.ip(i32 3, i32 %vst128ip66, i32 16)
+  %vst128ip68 = call i32 @llvm.riscv.esp.vst.128.ip(i32 4, i32 %vst128ip67, i32 16)
+  %vst128ip69 = call i32 @llvm.riscv.esp.vst.128.ip(i32 5, i32 %vst128ip68, i32 16)
+  %vst128ip70 = call i32 @llvm.riscv.esp.vst.128.ip(i32 6, i32 %vst128ip69, i32 16)
+  br label %handle.tail.switch
+
+handle.remaining.bytes:                           ; preds = %after.8B.tail
+  %10 = inttoptr i32 %src.ptr.after.8B to ptr
+  %11 = inttoptr i32 %dst.ptr.after.8B to ptr
+  call void @esp32p4MemCpySrc16Dst16From1To7Opt(ptr %11, ptr %10, i32 %remaining.bytes)
+  br label %return
 }
 
 ; Function Attrs: noinline nounwind
-define internal void @esp32p4MemCpySrcunalignedDst16Var(i32 %dst, i32 %src, i32 %size) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16Var(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]], i32 [[SIZE:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[CMP:%.*]] = icmp ult i32 [[SIZE]], 16
-; CHECK-NEXT:    br i1 [[CMP]], label %[[CLEANUP_OUT:.*]], label %[[IF_END:.*]]
-; CHECK:       [[IF_END]]:
-; CHECK-NEXT:    [[DIV:%.*]] = udiv i32 [[SIZE]], 48
-; CHECK-NEXT:    [[TMP0:%.*]] = mul i32 [[DIV]], 48
-; CHECK-NEXT:    [[REM_DECOMPOSED:%.*]] = sub i32 [[SIZE]], [[TMP0]]
-; CHECK-NEXT:    call void asm sideeffect "esp.ld.128.usar.ip q0, $0, 16", "+{a1}"(i32 [[SRC]])
-; CHECK-NEXT:    call void asm sideeffect "esp.ld.128.usar.ip q1, $0, 16", "+{a1}"(i32 [[SRC]])
-; CHECK-NEXT:    [[CMP21_NOT:%.*]] = icmp ult i32 [[SIZE]], 48
-; CHECK-NEXT:    br i1 [[CMP21_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    [[TOBOOL_NOT:%.*]] = icmp ult i32 [[REM_DECOMPOSED]], 32
-; CHECK-NEXT:    br i1 [[TOBOOL_NOT]], label %[[IF_END3:.*]], label %[[IF_THEN2:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_022:%.*]] = phi i32 [ 0, %[[IF_END]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    call void asm sideeffect "esp.src.q.ld.ip q2, $0, 16, q0, q1", "+{a1}"(i32 [[SRC]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 [[DST]])
-; CHECK-NEXT:    call void asm sideeffect "esp.src.q.ld.ip q0, $0, 16, q1, q2", "+{a1}"(i32 [[SRC]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 [[DST]])
-; CHECK-NEXT:    call void asm sideeffect "esp.src.q.ld.ip q1, $0, 16, q2, q0", "+{a1}"(i32 [[SRC]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q2, $0, 16", "+{a0}"(i32 [[DST]])
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_022]], 1
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], [[DIV]]
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP]], label %[[FOR_BODY]]
-; CHECK:       [[IF_THEN2]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.src.q.ld.ip q2, $0, 0, q0, q1", "+{a1}"(i32 [[SRC]])
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 [[DST]])
-; CHECK-NEXT:    call void asm sideeffect "esp.src.q q1, q1, q2", ""()
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 [[DST]])
-; CHECK-NEXT:    [[SUB1:%.*]] = add nsw i32 [[REM_DECOMPOSED]], -32
-; CHECK-NEXT:    br label %[[CLEANUP_OUT]]
-; CHECK:       [[IF_END3]]:
-; CHECK-NEXT:    [[TOBOOL5_NOT:%.*]] = icmp ult i32 [[REM_DECOMPOSED]], 16
-; CHECK-NEXT:    br i1 [[TOBOOL5_NOT]], label %[[IF_END7:.*]], label %[[IF_THEN6:.*]]
-; CHECK:       [[IF_THEN6]]:
-; CHECK-NEXT:    call void asm sideeffect "esp.src.q q0, q0, q1", ""()
-; CHECK-NEXT:    call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 [[DST]])
-; CHECK-NEXT:    [[SUB:%.*]] = add i32 [[SRC]], -16
-; CHECK-NEXT:    [[SUB9:%.*]] = add nsw i32 [[REM_DECOMPOSED]], -16
-; CHECK-NEXT:    br label %[[CLEANUP_OUT]]
-; CHECK:       [[IF_END7]]:
-; CHECK-NEXT:    [[SUB8:%.*]] = add nsw i32 [[SRC]], -32
-; CHECK-NEXT:    br label %[[CLEANUP_OUT]]
-; CHECK:       [[CLEANUP_OUT]]:
-; CHECK-NEXT:    [[SRC_SINK:%.*]] = phi i32 [ [[SRC]], %[[IF_THEN2]] ], [ [[SUB]], %[[IF_THEN6]] ], [ [[SRC]], %[[ENTRY]] ], [ [[SUB8]], %[[IF_END7]] ]
-; CHECK-NEXT:    [[REM_SINK:%.*]] = phi i32 [ [[SIZE]], %[[ENTRY]] ], [ [[SUB1]], %[[IF_THEN2]] ], [ [[SUB9]], %[[IF_THEN6]] ], [ [[REM_DECOMPOSED]], %[[IF_END7]] ]
-; CHECK-NEXT:    [[TMP1:%.*]] = inttoptr i32 [[DST]] to ptr
-; CHECK-NEXT:    [[TMP2:%.*]] = inttoptr i32 [[SRC_SINK]] to ptr
-; CHECK-NEXT:    call void @esp32p4MemCpySrcUnalignedDstUnalignedVarFrom0To15Opt(ptr [[TMP1]], ptr [[TMP2]], i32 [[REM_SINK]])
+define internal void @esp32p4MemCpySrc16Dst16From1To7Opt(ptr %dst, ptr %src, i32 %size)  {
+; CHECK-LABEL: define internal void @esp32p4MemCpySrc16Dst16From1To7Opt(
+; CHECK-SAME: ptr [[DST:%.*]], ptr [[SRC:%.*]], i32 [[SIZE:%.*]]) {
+; CHECK-NEXT:  [[ENTRY:.*:]]
+; CHECK-NEXT:    switch i32 [[SIZE]], label %[[RETURN:.*]] [
+; CHECK-NEXT:      i32 1, label %[[SW_BB1:.*]]
+; CHECK-NEXT:      i32 2, label %[[SW_BB2:.*]]
+; CHECK-NEXT:      i32 3, label %[[SW_BB3:.*]]
+; CHECK-NEXT:      i32 4, label %[[SW_BB4:.*]]
+; CHECK-NEXT:      i32 5, label %[[SW_BB5:.*]]
+; CHECK-NEXT:      i32 6, label %[[SW_BB6:.*]]
+; CHECK-NEXT:      i32 7, label %[[SW_BB7:.*]]
+; CHECK-NEXT:    ]
+; CHECK:       [[RETURN]]:
 ; CHECK-NEXT:    ret void
+; CHECK:       [[SW_BB1]]:
+; CHECK-NEXT:    [[SRC_GEP_I8:%.*]] = getelementptr i8, ptr [[SRC]], i32 0
+; CHECK-NEXT:    [[DST_GEP_I8:%.*]] = getelementptr i8, ptr [[DST]], i32 0
+; CHECK-NEXT:    [[TMP0:%.*]] = load i8, ptr [[SRC_GEP_I8]], align 1
+; CHECK-NEXT:    store i8 [[TMP0]], ptr [[DST_GEP_I8]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB2]]:
+; CHECK-NEXT:    [[SRC_GEP_I16:%.*]] = getelementptr i8, ptr [[SRC]], i32 0
+; CHECK-NEXT:    [[DST_GEP_I16:%.*]] = getelementptr i8, ptr [[DST]], i32 0
+; CHECK-NEXT:    [[TMP1:%.*]] = load i16, ptr [[SRC_GEP_I16]], align 2
+; CHECK-NEXT:    store i16 [[TMP1]], ptr [[DST_GEP_I16]], align 2
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB3]]:
+; CHECK-NEXT:    [[SRC_GEP_I161:%.*]] = getelementptr i8, ptr [[SRC]], i32 0
+; CHECK-NEXT:    [[DST_GEP_I162:%.*]] = getelementptr i8, ptr [[DST]], i32 0
+; CHECK-NEXT:    [[TMP2:%.*]] = load i16, ptr [[SRC_GEP_I161]], align 2
+; CHECK-NEXT:    store i16 [[TMP2]], ptr [[DST_GEP_I162]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I83:%.*]] = getelementptr i8, ptr [[SRC]], i32 2
+; CHECK-NEXT:    [[DST_GEP_I84:%.*]] = getelementptr i8, ptr [[DST]], i32 2
+; CHECK-NEXT:    [[TMP3:%.*]] = load i8, ptr [[SRC_GEP_I83]], align 1
+; CHECK-NEXT:    store i8 [[TMP3]], ptr [[DST_GEP_I84]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB4]]:
+; CHECK-NEXT:    [[SRC_GEP_I32:%.*]] = getelementptr i8, ptr [[SRC]], i32 0
+; CHECK-NEXT:    [[DST_GEP_I32:%.*]] = getelementptr i8, ptr [[DST]], i32 0
+; CHECK-NEXT:    [[TMP4:%.*]] = load i32, ptr [[SRC_GEP_I32]], align 4
+; CHECK-NEXT:    store i32 [[TMP4]], ptr [[DST_GEP_I32]], align 4
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB5]]:
+; CHECK-NEXT:    [[SRC_GEP_I325:%.*]] = getelementptr i8, ptr [[SRC]], i32 0
+; CHECK-NEXT:    [[DST_GEP_I326:%.*]] = getelementptr i8, ptr [[DST]], i32 0
+; CHECK-NEXT:    [[TMP5:%.*]] = load i32, ptr [[SRC_GEP_I325]], align 4
+; CHECK-NEXT:    store i32 [[TMP5]], ptr [[DST_GEP_I326]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I87:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I88:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP6:%.*]] = load i8, ptr [[SRC_GEP_I87]], align 1
+; CHECK-NEXT:    store i8 [[TMP6]], ptr [[DST_GEP_I88]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB6]]:
+; CHECK-NEXT:    [[SRC_GEP_I329:%.*]] = getelementptr i8, ptr [[SRC]], i32 0
+; CHECK-NEXT:    [[DST_GEP_I3210:%.*]] = getelementptr i8, ptr [[DST]], i32 0
+; CHECK-NEXT:    [[TMP7:%.*]] = load i32, ptr [[SRC_GEP_I329]], align 4
+; CHECK-NEXT:    store i32 [[TMP7]], ptr [[DST_GEP_I3210]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1611:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I1612:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP8:%.*]] = load i16, ptr [[SRC_GEP_I1611]], align 2
+; CHECK-NEXT:    store i16 [[TMP8]], ptr [[DST_GEP_I1612]], align 2
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB7]]:
+; CHECK-NEXT:    [[SRC_GEP_I3213:%.*]] = getelementptr i8, ptr [[SRC]], i32 0
+; CHECK-NEXT:    [[DST_GEP_I3214:%.*]] = getelementptr i8, ptr [[DST]], i32 0
+; CHECK-NEXT:    [[TMP9:%.*]] = load i32, ptr [[SRC_GEP_I3213]], align 4
+; CHECK-NEXT:    store i32 [[TMP9]], ptr [[DST_GEP_I3214]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1615:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I1616:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP10:%.*]] = load i16, ptr [[SRC_GEP_I1615]], align 2
+; CHECK-NEXT:    store i16 [[TMP10]], ptr [[DST_GEP_I1616]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I817:%.*]] = getelementptr i8, ptr [[SRC]], i32 6
+; CHECK-NEXT:    [[DST_GEP_I818:%.*]] = getelementptr i8, ptr [[DST]], i32 6
+; CHECK-NEXT:    [[TMP11:%.*]] = load i8, ptr [[SRC_GEP_I817]], align 1
+; CHECK-NEXT:    store i8 [[TMP11]], ptr [[DST_GEP_I818]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
 ;
 entry:
-  %cmp = icmp ult i32 %size, 16
-  br i1 %cmp, label %cleanup.out, label %if.end
+  switch i32 %size, label %return [
+  i32 1, label %sw.bb1
+  i32 2, label %sw.bb2
+  i32 3, label %sw.bb3
+  i32 4, label %sw.bb4
+  i32 5, label %sw.bb5
+  i32 6, label %sw.bb6
+  i32 7, label %sw.bb7
+  ]
 
-if.end:                                           ; preds = %entry
-  %div = udiv i32 %size, 48
-  %0 = mul i32 %div, 48
-  %rem.decomposed = sub i32 %size, %0
-  call void asm sideeffect "esp.ld.128.usar.ip q0, $0, 16", "+{a1}"(i32 %src)
-  call void asm sideeffect "esp.ld.128.usar.ip q1, $0, 16", "+{a1}"(i32 %src)
-  %cmp21.not = icmp ult i32 %size, 48
-  br i1 %cmp21.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body, %if.end
-  %tobool.not = icmp ult i32 %rem.decomposed, 32
-  br i1 %tobool.not, label %if.end3, label %if.then2
-
-for.body:                                         ; preds = %for.body, %if.end
-  %i.022 = phi i32 [ 0, %if.end ], [ %inc, %for.body ]
-  call void asm sideeffect "esp.src.q.ld.ip q2, $0, 16, q0, q1", "+{a1}"(i32 %src)
-  call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 %dst)
-  call void asm sideeffect "esp.src.q.ld.ip q0, $0, 16, q1, q2", "+{a1}"(i32 %src)
-  call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 %dst)
-  call void asm sideeffect "esp.src.q.ld.ip q1, $0, 16, q2, q0", "+{a1}"(i32 %src)
-  call void asm sideeffect "esp.vst.128.ip q2, $0, 16", "+{a0}"(i32 %dst)
-  %inc = add nuw nsw i32 %i.022, 1
-  %exitcond.not = icmp eq i32 %inc, %div
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-if.then2:                                         ; preds = %for.cond.cleanup
-  call void asm sideeffect "esp.src.q.ld.ip q2, $0, 0, q0, q1", "+{a1}"(i32 %src)
-  call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 %dst)
-  call void asm sideeffect "esp.src.q q1, q1, q2", ""()
-  call void asm sideeffect "esp.vst.128.ip q1, $0, 16", "+{a0}"(i32 %dst)
-  %sub1 = add nsw i32 %rem.decomposed, -32
-  br label %cleanup.out
-
-if.end3:                                          ; preds = %for.cond.cleanup
-  %tobool5.not = icmp ult i32 %rem.decomposed, 16
-  br i1 %tobool5.not, label %if.end7, label %if.then6
-
-if.then6:                                         ; preds = %if.end3
-  call void asm sideeffect "esp.src.q q0, q0, q1", ""()
-  call void asm sideeffect "esp.vst.128.ip q0, $0, 16", "+{a0}"(i32 %dst)
-  %sub = add i32 %src, -16
-  %sub9 = add nsw i32 %rem.decomposed, -16
-  br label %cleanup.out
-
-if.end7:                                          ; preds = %if.end3
-  %sub8 = add nsw i32 %src, -32
-  br label %cleanup.out
-
-cleanup.out:                                      ; preds = %if.end7, %if.then6, %if.then2, %entry
-  %src.sink = phi i32 [ %src, %if.then2 ], [ %sub, %if.then6 ], [ %src, %entry ], [ %sub8, %if.end7 ]
-  %rem.sink = phi i32 [ %size, %entry ], [ %sub1, %if.then2 ], [ %sub9, %if.then6 ], [ %rem.decomposed, %if.end7 ]
-  %1 = inttoptr i32 %dst to ptr
-  %2 = inttoptr i32 %src.sink to ptr
-  call void @esp32p4MemCpySrcUnalignedDstUnalignedVarFrom0To15Opt(ptr %1, ptr %2, i32 %rem.sink)
+return:                                           ; preds = %sw.bb7, %sw.bb6, %sw.bb5, %sw.bb4, %sw.bb3, %sw.bb2, %sw.bb1, %entry
   ret void
+
+sw.bb1:                                           ; preds = %entry
+  %src.gep.i8 = getelementptr i8, ptr %src, i32 0
+  %dst.gep.i8 = getelementptr i8, ptr %dst, i32 0
+  %0 = load i8, ptr %src.gep.i8, align 1
+  store i8 %0, ptr %dst.gep.i8, align 1
+  br label %return
+
+sw.bb2:                                           ; preds = %entry
+  %src.gep.i16 = getelementptr i8, ptr %src, i32 0
+  %dst.gep.i16 = getelementptr i8, ptr %dst, i32 0
+  %1 = load i16, ptr %src.gep.i16, align 2
+  store i16 %1, ptr %dst.gep.i16, align 2
+  br label %return
+
+sw.bb3:                                           ; preds = %entry
+  %src.gep.i161 = getelementptr i8, ptr %src, i32 0
+  %dst.gep.i162 = getelementptr i8, ptr %dst, i32 0
+  %2 = load i16, ptr %src.gep.i161, align 2
+  store i16 %2, ptr %dst.gep.i162, align 2
+  %src.gep.i83 = getelementptr i8, ptr %src, i32 2
+  %dst.gep.i84 = getelementptr i8, ptr %dst, i32 2
+  %3 = load i8, ptr %src.gep.i83, align 1
+  store i8 %3, ptr %dst.gep.i84, align 1
+  br label %return
+
+sw.bb4:                                           ; preds = %entry
+  %src.gep.i32 = getelementptr i8, ptr %src, i32 0
+  %dst.gep.i32 = getelementptr i8, ptr %dst, i32 0
+  %4 = load i32, ptr %src.gep.i32, align 4
+  store i32 %4, ptr %dst.gep.i32, align 4
+  br label %return
+
+sw.bb5:                                           ; preds = %entry
+  %src.gep.i325 = getelementptr i8, ptr %src, i32 0
+  %dst.gep.i326 = getelementptr i8, ptr %dst, i32 0
+  %5 = load i32, ptr %src.gep.i325, align 4
+  store i32 %5, ptr %dst.gep.i326, align 4
+  %src.gep.i87 = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i88 = getelementptr i8, ptr %dst, i32 4
+  %6 = load i8, ptr %src.gep.i87, align 1
+  store i8 %6, ptr %dst.gep.i88, align 1
+  br label %return
+
+sw.bb6:                                           ; preds = %entry
+  %src.gep.i329 = getelementptr i8, ptr %src, i32 0
+  %dst.gep.i3210 = getelementptr i8, ptr %dst, i32 0
+  %7 = load i32, ptr %src.gep.i329, align 4
+  store i32 %7, ptr %dst.gep.i3210, align 4
+  %src.gep.i1611 = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i1612 = getelementptr i8, ptr %dst, i32 4
+  %8 = load i16, ptr %src.gep.i1611, align 2
+  store i16 %8, ptr %dst.gep.i1612, align 2
+  br label %return
+
+sw.bb7:                                           ; preds = %entry
+  %src.gep.i3213 = getelementptr i8, ptr %src, i32 0
+  %dst.gep.i3214 = getelementptr i8, ptr %dst, i32 0
+  %9 = load i32, ptr %src.gep.i3213, align 4
+  store i32 %9, ptr %dst.gep.i3214, align 4
+  %src.gep.i1615 = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i1616 = getelementptr i8, ptr %dst, i32 4
+  %10 = load i16, ptr %src.gep.i1615, align 2
+  store i16 %10, ptr %dst.gep.i1616, align 2
+  %src.gep.i817 = getelementptr i8, ptr %src, i32 6
+  %dst.gep.i818 = getelementptr i8, ptr %dst, i32 6
+  %11 = load i8, ptr %src.gep.i817, align 1
+  store i8 %11, ptr %dst.gep.i818, align 1
+  br label %return
+}
+
+; Function Attrs: nounwind
+declare i32 @llvm.riscv.esp.vld.l.64.ip(i32, i32 immarg, i32 immarg)
+
+; Function Attrs: nounwind
+declare i32 @llvm.riscv.esp.vst.l.64.ip(i32 immarg, i32, i32 immarg)
+
+; Function Attrs: nounwind
+declare i32 @llvm.riscv.esp.vld.128.ip(i32, i32 immarg, i32 immarg)
+
+; Function Attrs: nounwind
+declare i32 @llvm.riscv.esp.vst.128.ip(i32 immarg, i32, i32 immarg)
+
+; Function Attrs: noinline nounwind
+define internal void @esp32p4MemCpySrc16Dst8Var(i32 %0, i32 %1, i32 %2)  {
+; CHECK-LABEL: define internal void @esp32p4MemCpySrc16Dst8Var(
+; CHECK-SAME: i32 [[TMP0:%.*]], i32 [[TMP1:%.*]], i32 [[TMP2:%.*]]) {
+; CHECK-NEXT:  [[ENTRY:.*:]]
+; CHECK-NEXT:    [[CMP:%.*]] = icmp ult i32 [[TMP2]], 8
+; CHECK-NEXT:    br i1 [[CMP]], label %[[HANDLE_SMALL_SIZE:.*]], label %[[CHECK_MID_RANGE:.*]]
+; CHECK:       [[HANDLE_SMALL_SIZE]]:
+; CHECK-NEXT:    [[TMP3:%.*]] = inttoptr i32 [[TMP0]] to ptr
+; CHECK-NEXT:    [[TMP4:%.*]] = inttoptr i32 [[TMP1]] to ptr
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrc16Dst8From1To7Opt(ptr [[TMP3]], ptr [[TMP4]], i32 [[TMP2]])
+; CHECK-NEXT:    br label %[[RETURN:.*]]
+; CHECK:       [[CHECK_MID_RANGE]]:
+; CHECK-NEXT:    [[CMP1:%.*]] = icmp ult i32 [[TMP2]], 16
+; CHECK-NEXT:    br i1 [[CMP1]], label %[[HANDLE_MID_SIZE:.*]], label %[[HANDLE_LARGE_LOOP:.*]]
+; CHECK:       [[HANDLE_MID_SIZE]]:
+; CHECK-NEXT:    [[VLDL64IP:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[TMP1]], i32 8, i32 0)
+; CHECK-NEXT:    [[VSTL64IP:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 [[TMP0]], i32 8)
+; CHECK-NEXT:    [[TMP5:%.*]] = inttoptr i32 [[VSTL64IP]] to ptr
+; CHECK-NEXT:    [[TMP6:%.*]] = inttoptr i32 [[VLDL64IP]] to ptr
+; CHECK-NEXT:    [[SUB:%.*]] = add nsw i32 [[TMP2]], -8
+; CHECK-NEXT:    call void @esp32p4MemCpySrc16Dst8From1To7Opt(ptr [[TMP5]], ptr [[TMP6]], i32 [[SUB]])
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[HANDLE_LARGE_LOOP]]:
+; CHECK-NEXT:    [[DIV94:%.*]] = lshr i32 [[TMP2]], 7
+; CHECK-NEXT:    [[REM:%.*]] = lshr i32 [[TMP2]], 4
+; CHECK-NEXT:    [[DIV195:%.*]] = and i32 [[REM]], 7
+; CHECK-NEXT:    [[REM4:%.*]] = and i32 [[TMP2]], 7
+; CHECK-NEXT:    [[CMP97_NOT:%.*]] = icmp ult i32 [[TMP2]], 128
+; CHECK-NEXT:    br i1 [[CMP97_NOT]], label %[[LOOP_EXIT_CLEANUP:.*]], label %[[LOOP_BODY_128B:.*]]
+; CHECK:       [[RETURN]]:
+; CHECK-NEXT:    ret void
+; CHECK:       [[LOOP_EXIT_CLEANUP]]:
+; CHECK-NEXT:    [[SRC_PTR_AT_CLEANUP:%.*]] = phi i32 [ [[TMP1]], %[[HANDLE_LARGE_LOOP]] ], [ [[VLD128IP7:%.*]], %[[LOOP_BODY_128B]] ]
+; CHECK-NEXT:    [[DST_PTR_AT_CLEANUP:%.*]] = phi i32 [ [[TMP0]], %[[HANDLE_LARGE_LOOP]] ], [ [[VSTH64IP22:%.*]], %[[LOOP_BODY_128B]] ]
+; CHECK-NEXT:    switch i32 [[DIV195]], label %[[INVALID_SWITCH_TRAP:.*]] [
+; CHECK-NEXT:      i32 1, label %[[TAIL_CASE_1:.*]]
+; CHECK-NEXT:      i32 2, label %[[TAIL_CASE_2:.*]]
+; CHECK-NEXT:      i32 3, label %[[TAIL_CASE_3:.*]]
+; CHECK-NEXT:      i32 4, label %[[TAIL_CASE_4:.*]]
+; CHECK-NEXT:      i32 5, label %[[TAIL_CASE_5:.*]]
+; CHECK-NEXT:      i32 6, label %[[TAIL_CASE_6:.*]]
+; CHECK-NEXT:      i32 7, label %[[TAIL_CASE_7:.*]]
+; CHECK-NEXT:      i32 0, label %[[HANDLE_TAIL_SWITCH:.*]]
+; CHECK-NEXT:    ]
+; CHECK:       [[LOOP_BODY_128B]]:
+; CHECK-NEXT:    [[I_098:%.*]] = phi i32 [ 0, %[[HANDLE_LARGE_LOOP]] ], [ [[INC:%.*]], %[[LOOP_BODY_128B]] ]
+; CHECK-NEXT:    [[SRC_PTR_PHI:%.*]] = phi i32 [ [[TMP1]], %[[HANDLE_LARGE_LOOP]] ], [ [[VLD128IP7]], %[[LOOP_BODY_128B]] ]
+; CHECK-NEXT:    [[DST_PTR_PHI:%.*]] = phi i32 [ [[TMP0]], %[[HANDLE_LARGE_LOOP]] ], [ [[VSTH64IP22]], %[[LOOP_BODY_128B]] ]
+; CHECK-NEXT:    [[VLD128IP:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[SRC_PTR_PHI]], i32 16, i32 0)
+; CHECK-NEXT:    [[VLD128IP1:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP]], i32 16, i32 1)
+; CHECK-NEXT:    [[VLD128IP2:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP1]], i32 16, i32 2)
+; CHECK-NEXT:    [[VLD128IP3:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP2]], i32 16, i32 3)
+; CHECK-NEXT:    [[VLD128IP4:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP3]], i32 16, i32 4)
+; CHECK-NEXT:    [[VLD128IP5:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP4]], i32 16, i32 5)
+; CHECK-NEXT:    [[VLD128IP6:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP5]], i32 16, i32 6)
+; CHECK-NEXT:    [[VLD128IP7]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP6]], i32 16, i32 7)
+; CHECK-NEXT:    [[VSTL64IP8:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 [[DST_PTR_PHI]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 [[VSTL64IP8]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP9:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 1, i32 [[VSTH64IP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP10:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 1, i32 [[VSTL64IP9]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP11:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 2, i32 [[VSTH64IP10]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP12:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 2, i32 [[VSTL64IP11]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP13:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 3, i32 [[VSTH64IP12]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP14:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 3, i32 [[VSTL64IP13]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP15:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 4, i32 [[VSTH64IP14]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP16:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 4, i32 [[VSTL64IP15]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP17:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 5, i32 [[VSTH64IP16]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP18:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 5, i32 [[VSTL64IP17]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP19:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 6, i32 [[VSTH64IP18]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP20:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 6, i32 [[VSTL64IP19]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP21:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 7, i32 [[VSTH64IP20]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP22]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 7, i32 [[VSTL64IP21]], i32 8)
+; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_098]], 1
+; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], [[DIV94]]
+; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[LOOP_EXIT_CLEANUP]], label %[[LOOP_BODY_128B]]
+; CHECK:       [[HANDLE_TAIL_SWITCH]]:
+; CHECK-NEXT:    [[SRC_PTR_EPILOG:%.*]] = phi i32 [ [[SRC_PTR_AT_CLEANUP]], %[[LOOP_EXIT_CLEANUP]] ], [ [[VLD128IP23:%.*]], %[[TAIL_CASE_1]] ], [ [[VLD128IP27:%.*]], %[[TAIL_CASE_2]] ], [ [[VLD128IP34:%.*]], %[[TAIL_CASE_3]] ], [ [[VLD128IP44:%.*]], %[[TAIL_CASE_4]] ], [ [[VLD128IP57:%.*]], %[[TAIL_CASE_5]] ], [ [[VLD128IP73:%.*]], %[[TAIL_CASE_6]] ], [ [[VLD128IP92:%.*]], %[[TAIL_CASE_7]] ]
+; CHECK-NEXT:    [[DST_PTR_EPILOG:%.*]] = phi i32 [ [[DST_PTR_AT_CLEANUP]], %[[LOOP_EXIT_CLEANUP]] ], [ [[VSTH64IP25:%.*]], %[[TAIL_CASE_1]] ], [ [[VSTH64IP31:%.*]], %[[TAIL_CASE_2]] ], [ [[VSTH64IP40:%.*]], %[[TAIL_CASE_3]] ], [ [[VSTH64IP52:%.*]], %[[TAIL_CASE_4]] ], [ [[VSTH64IP67:%.*]], %[[TAIL_CASE_5]] ], [ [[VSTH64IP85:%.*]], %[[TAIL_CASE_6]] ], [ [[VSTH64IP106:%.*]], %[[TAIL_CASE_7]] ]
+; CHECK-NEXT:    [[TMP7:%.*]] = and i32 [[TMP2]], 8
+; CHECK-NEXT:    [[TMP8:%.*]] = icmp eq i32 [[TMP7]], 0
+; CHECK-NEXT:    br i1 [[TMP8]], label %[[AFTER_8B_TAIL:.*]], label %[[HANDLE_8B_TAIL:.*]]
+; CHECK:       [[INVALID_SWITCH_TRAP]]:
+; CHECK-NEXT:    unreachable
+; CHECK:       [[HANDLE_8B_TAIL]]:
+; CHECK-NEXT:    [[VLDL64IP107:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[SRC_PTR_EPILOG]], i32 8, i32 0)
+; CHECK-NEXT:    [[VSTL64IP108:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 [[DST_PTR_EPILOG]], i32 8)
+; CHECK-NEXT:    br label %[[AFTER_8B_TAIL]]
+; CHECK:       [[AFTER_8B_TAIL]]:
+; CHECK-NEXT:    [[SRC_PTR_END17:%.*]] = phi i32 [ [[SRC_PTR_EPILOG]], %[[HANDLE_TAIL_SWITCH]] ], [ [[VLDL64IP107]], %[[HANDLE_8B_TAIL]] ]
+; CHECK-NEXT:    [[DST_PTR_END17:%.*]] = phi i32 [ [[DST_PTR_EPILOG]], %[[HANDLE_TAIL_SWITCH]] ], [ [[VSTL64IP108]], %[[HANDLE_8B_TAIL]] ]
+; CHECK-NEXT:    [[TMP9:%.*]] = icmp eq i32 [[REM4]], 0
+; CHECK-NEXT:    br i1 [[TMP9]], label %[[RETURN]], label %[[HANDLE_REMAINING_BYTES:.*]]
+; CHECK:       [[TAIL_CASE_1]]:
+; CHECK-NEXT:    [[VLD128IP23]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[SRC_PTR_AT_CLEANUP]], i32 16, i32 0)
+; CHECK-NEXT:    [[VSTL64IP24:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 [[DST_PTR_AT_CLEANUP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP25]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 [[VSTL64IP24]], i32 8)
+; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
+; CHECK:       [[TAIL_CASE_2]]:
+; CHECK-NEXT:    [[VLD128IP26:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[SRC_PTR_AT_CLEANUP]], i32 16, i32 0)
+; CHECK-NEXT:    [[VLD128IP27]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP26]], i32 16, i32 1)
+; CHECK-NEXT:    [[VSTL64IP28:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 [[DST_PTR_AT_CLEANUP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP29:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 [[VSTL64IP28]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP30:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 1, i32 [[VSTH64IP29]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP31]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 1, i32 [[VSTL64IP30]], i32 8)
+; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
+; CHECK:       [[TAIL_CASE_3]]:
+; CHECK-NEXT:    [[VLD128IP32:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[SRC_PTR_AT_CLEANUP]], i32 16, i32 0)
+; CHECK-NEXT:    [[VLD128IP33:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP32]], i32 16, i32 1)
+; CHECK-NEXT:    [[VLD128IP34]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP33]], i32 16, i32 2)
+; CHECK-NEXT:    [[VSTL64IP35:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 [[DST_PTR_AT_CLEANUP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP36:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 [[VSTL64IP35]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP37:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 1, i32 [[VSTH64IP36]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP38:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 1, i32 [[VSTL64IP37]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP39:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 2, i32 [[VSTH64IP38]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP40]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 2, i32 [[VSTL64IP39]], i32 8)
+; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
+; CHECK:       [[TAIL_CASE_4]]:
+; CHECK-NEXT:    [[VLD128IP41:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[SRC_PTR_AT_CLEANUP]], i32 16, i32 0)
+; CHECK-NEXT:    [[VLD128IP42:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP41]], i32 16, i32 1)
+; CHECK-NEXT:    [[VLD128IP43:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP42]], i32 16, i32 2)
+; CHECK-NEXT:    [[VLD128IP44]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP43]], i32 16, i32 3)
+; CHECK-NEXT:    [[VSTL64IP45:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 [[DST_PTR_AT_CLEANUP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP46:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 [[VSTL64IP45]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP47:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 1, i32 [[VSTH64IP46]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP48:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 1, i32 [[VSTL64IP47]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP49:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 2, i32 [[VSTH64IP48]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP50:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 2, i32 [[VSTL64IP49]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP51:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 3, i32 [[VSTH64IP50]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP52]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 3, i32 [[VSTL64IP51]], i32 8)
+; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
+; CHECK:       [[TAIL_CASE_5]]:
+; CHECK-NEXT:    [[VLD128IP53:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[SRC_PTR_AT_CLEANUP]], i32 16, i32 0)
+; CHECK-NEXT:    [[VLD128IP54:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP53]], i32 16, i32 1)
+; CHECK-NEXT:    [[VLD128IP55:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP54]], i32 16, i32 2)
+; CHECK-NEXT:    [[VLD128IP56:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP55]], i32 16, i32 3)
+; CHECK-NEXT:    [[VLD128IP57]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP56]], i32 16, i32 4)
+; CHECK-NEXT:    [[VSTL64IP58:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 [[DST_PTR_AT_CLEANUP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP59:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 [[VSTL64IP58]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP60:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 1, i32 [[VSTH64IP59]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP61:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 1, i32 [[VSTL64IP60]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP62:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 2, i32 [[VSTH64IP61]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP63:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 2, i32 [[VSTL64IP62]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP64:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 3, i32 [[VSTH64IP63]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP65:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 3, i32 [[VSTL64IP64]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP66:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 4, i32 [[VSTH64IP65]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP67]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 4, i32 [[VSTL64IP66]], i32 8)
+; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
+; CHECK:       [[TAIL_CASE_6]]:
+; CHECK-NEXT:    [[VLD128IP68:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[SRC_PTR_AT_CLEANUP]], i32 16, i32 0)
+; CHECK-NEXT:    [[VLD128IP69:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP68]], i32 16, i32 1)
+; CHECK-NEXT:    [[VLD128IP70:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP69]], i32 16, i32 2)
+; CHECK-NEXT:    [[VLD128IP71:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP70]], i32 16, i32 3)
+; CHECK-NEXT:    [[VLD128IP72:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP71]], i32 16, i32 4)
+; CHECK-NEXT:    [[VLD128IP73]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP72]], i32 16, i32 5)
+; CHECK-NEXT:    [[VSTL64IP74:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 [[DST_PTR_AT_CLEANUP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP75:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 [[VSTL64IP74]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP76:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 1, i32 [[VSTH64IP75]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP77:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 1, i32 [[VSTL64IP76]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP78:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 2, i32 [[VSTH64IP77]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP79:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 2, i32 [[VSTL64IP78]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP80:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 3, i32 [[VSTH64IP79]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP81:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 3, i32 [[VSTL64IP80]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP82:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 4, i32 [[VSTH64IP81]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP83:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 4, i32 [[VSTL64IP82]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP84:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 5, i32 [[VSTH64IP83]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP85]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 5, i32 [[VSTL64IP84]], i32 8)
+; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
+; CHECK:       [[TAIL_CASE_7]]:
+; CHECK-NEXT:    [[VLD128IP86:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[SRC_PTR_AT_CLEANUP]], i32 16, i32 0)
+; CHECK-NEXT:    [[VLD128IP87:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP86]], i32 16, i32 1)
+; CHECK-NEXT:    [[VLD128IP88:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP87]], i32 16, i32 2)
+; CHECK-NEXT:    [[VLD128IP89:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP88]], i32 16, i32 3)
+; CHECK-NEXT:    [[VLD128IP90:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP89]], i32 16, i32 4)
+; CHECK-NEXT:    [[VLD128IP91:%.*]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP90]], i32 16, i32 5)
+; CHECK-NEXT:    [[VLD128IP92]] = call i32 @llvm.riscv.esp.vld.128.ip(i32 [[VLD128IP91]], i32 16, i32 6)
+; CHECK-NEXT:    [[VSTL64IP93:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 [[DST_PTR_AT_CLEANUP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP94:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 [[VSTL64IP93]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP95:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 1, i32 [[VSTH64IP94]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP96:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 1, i32 [[VSTL64IP95]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP97:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 2, i32 [[VSTH64IP96]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP98:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 2, i32 [[VSTL64IP97]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP99:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 3, i32 [[VSTH64IP98]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP100:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 3, i32 [[VSTL64IP99]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP101:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 4, i32 [[VSTH64IP100]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP102:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 4, i32 [[VSTL64IP101]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP103:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 5, i32 [[VSTH64IP102]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP104:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 5, i32 [[VSTL64IP103]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP105:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 6, i32 [[VSTH64IP104]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP106]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 6, i32 [[VSTL64IP105]], i32 8)
+; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
+; CHECK:       [[HANDLE_REMAINING_BYTES]]:
+; CHECK-NEXT:    [[TMP10:%.*]] = inttoptr i32 [[SRC_PTR_END17]] to ptr
+; CHECK-NEXT:    [[TMP11:%.*]] = inttoptr i32 [[DST_PTR_END17]] to ptr
+; CHECK-NEXT:    call void @esp32p4MemCpySrc16Dst8From1To7Opt(ptr [[TMP11]], ptr [[TMP10]], i32 [[REM4]])
+; CHECK-NEXT:    br label %[[RETURN]]
+;
+entry:
+  %is.lt.8 = icmp ult i32 %2, 8
+  br i1 %is.lt.8, label %handle.small.size, label %check.mid.range
+
+handle.small.size:                                ; preds = %entry
+  %3 = inttoptr i32 %0 to ptr
+  %4 = inttoptr i32 %1 to ptr
+  tail call void @esp32p4MemCpySrc16Dst8From1To7Opt(ptr %3, ptr %4, i32 %2)
+  br label %return
+
+check.mid.range:                                  ; preds = %entry
+  %is.lt.16 = icmp ult i32 %2, 16
+  br i1 %is.lt.16, label %handle.mid.size, label %handle.large.loop
+
+handle.mid.size:                                  ; preds = %check.mid.range
+  %vldl64ip = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %1, i32 8, i32 0)
+  %vstl64ip = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 %0, i32 8)
+  %5 = inttoptr i32 %vstl64ip to ptr
+  %6 = inttoptr i32 %vldl64ip to ptr
+  %size.minus.8 = add nsw i32 %2, -8
+  call void @esp32p4MemCpySrc16Dst8From1To7Opt(ptr %5, ptr %6, i32 %size.minus.8)
+  br label %return
+
+handle.large.loop:                                ; preds = %check.mid.range
+  %num.128B.blocks = lshr i32 %2, 7
+  %num.16B.blocks = lshr i32 %2, 4
+  %remaining.16B.blocks = and i32 %num.16B.blocks, 7
+  %remaining.bytes = and i32 %2, 7
+  %is.lt.128 = icmp ult i32 %2, 128
+  br i1 %is.lt.128, label %loop.exit.cleanup, label %loop.body.128B
+
+return:                                           ; preds = %handle.remaining.bytes, %after.8B.tail, %handle.mid.size, %handle.small.size
+  ret void
+
+loop.exit.cleanup:                                ; preds = %loop.body.128B, %handle.large.loop
+  %src.ptr.after.loop = phi i32 [ %1, %handle.large.loop ], [ %vld128ip7, %loop.body.128B ]
+  %dst.ptr.after.loop = phi i32 [ %0, %handle.large.loop ], [ %vsth64ip22, %loop.body.128B ]
+  switch i32 %remaining.16B.blocks, label %invalid.switch.trap [
+  i32 1, label %tail.case.1
+  i32 2, label %tail.case.2
+  i32 3, label %tail.case.3
+  i32 4, label %tail.case.4
+  i32 5, label %tail.case.5
+  i32 6, label %tail.case.6
+  i32 7, label %tail.case.7
+  i32 0, label %handle.tail.switch
+  ]
+
+loop.body.128B:                                   ; preds = %loop.body.128B, %handle.large.loop
+  %loop.index = phi i32 [ 0, %handle.large.loop ], [ %loop.inc, %loop.body.128B ]
+  %src.ptr.loop = phi i32 [ %1, %handle.large.loop ], [ %vld128ip7, %loop.body.128B ]
+  %dst.ptr.loop = phi i32 [ %0, %handle.large.loop ], [ %vsth64ip22, %loop.body.128B ]
+  %vld128ip = call i32 @llvm.riscv.esp.vld.128.ip(i32 %src.ptr.loop, i32 16, i32 0)
+  %vld128ip1 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip, i32 16, i32 1)
+  %vld128ip2 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip1, i32 16, i32 2)
+  %vld128ip3 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip2, i32 16, i32 3)
+  %vld128ip4 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip3, i32 16, i32 4)
+  %vld128ip5 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip4, i32 16, i32 5)
+  %vld128ip6 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip5, i32 16, i32 6)
+  %vld128ip7 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip6, i32 16, i32 7)
+  %vstl64ip8 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 %dst.ptr.loop, i32 8)
+  %vsth64ip = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 %vstl64ip8, i32 8)
+  %vstl64ip9 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 1, i32 %vsth64ip, i32 8)
+  %vsth64ip10 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 1, i32 %vstl64ip9, i32 8)
+  %vstl64ip11 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 2, i32 %vsth64ip10, i32 8)
+  %vsth64ip12 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 2, i32 %vstl64ip11, i32 8)
+  %vstl64ip13 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 3, i32 %vsth64ip12, i32 8)
+  %vsth64ip14 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 3, i32 %vstl64ip13, i32 8)
+  %vstl64ip15 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 4, i32 %vsth64ip14, i32 8)
+  %vsth64ip16 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 4, i32 %vstl64ip15, i32 8)
+  %vstl64ip17 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 5, i32 %vsth64ip16, i32 8)
+  %vsth64ip18 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 5, i32 %vstl64ip17, i32 8)
+  %vstl64ip19 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 6, i32 %vsth64ip18, i32 8)
+  %vsth64ip20 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 6, i32 %vstl64ip19, i32 8)
+  %vstl64ip21 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 7, i32 %vsth64ip20, i32 8)
+  %vsth64ip22 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 7, i32 %vstl64ip21, i32 8)
+  %loop.inc = add nuw nsw i32 %loop.index, 1
+  %loop.done = icmp eq i32 %loop.inc, %num.128B.blocks
+  br i1 %loop.done, label %loop.exit.cleanup, label %loop.body.128B
+
+handle.tail.switch:                               ; preds = %loop.exit.cleanup, %tail.case.7, %tail.case.6, %tail.case.5, %tail.case.4, %tail.case.3, %tail.case.2, %tail.case.1
+  %src.ptr.tail = phi i32 [ %src.ptr.after.loop, %loop.exit.cleanup ], [ %vld128ip23, %tail.case.1 ], [ %vld128ip27, %tail.case.2 ], [ %vld128ip34, %tail.case.3 ], [ %vld128ip44, %tail.case.4 ], [ %vld128ip57, %tail.case.5 ], [ %vld128ip73, %tail.case.6 ], [ %vld128ip92, %tail.case.7 ]
+  %dst.ptr.tail = phi i32 [ %dst.ptr.after.loop, %loop.exit.cleanup ], [ %vsth64ip25, %tail.case.1 ], [ %vsth64ip31, %tail.case.2 ], [ %vsth64ip40, %tail.case.3 ], [ %vsth64ip52, %tail.case.4 ], [ %vsth64ip67, %tail.case.5 ], [ %vsth64ip85, %tail.case.6 ], [ %vsth64ip106, %tail.case.7 ]
+  %7 = and i32 %2, 8
+  %8 = icmp eq i32 %7, 0
+  br i1 %8, label %after.8B.tail, label %handle.8B.tail
+
+invalid.switch.trap:                              ; preds = %loop.exit.cleanup
+  unreachable
+
+handle.8B.tail:                                   ; preds = %handle.tail.switch
+  %vldl64ip107 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %src.ptr.tail, i32 8, i32 0)
+  %vstl64ip108 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 %dst.ptr.tail, i32 8)
+  br label %after.8B.tail
+
+after.8B.tail:                                    ; preds = %handle.8B.tail, %handle.tail.switch
+  %src.ptr.after.8B = phi i32 [ %src.ptr.tail, %handle.tail.switch ], [ %vldl64ip107, %handle.8B.tail ]
+  %dst.ptr.after.8B = phi i32 [ %dst.ptr.tail, %handle.tail.switch ], [ %vstl64ip108, %handle.8B.tail ]
+  %9 = icmp eq i32 %remaining.bytes, 0
+  br i1 %9, label %return, label %handle.remaining.bytes
+
+tail.case.1:                                      ; preds = %loop.exit.cleanup
+  %vld128ip23 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %src.ptr.after.loop, i32 16, i32 0)
+  %vstl64ip24 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 %dst.ptr.after.loop, i32 8)
+  %vsth64ip25 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 %vstl64ip24, i32 8)
+  br label %handle.tail.switch
+
+tail.case.2:                                      ; preds = %loop.exit.cleanup
+  %vld128ip26 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %src.ptr.after.loop, i32 16, i32 0)
+  %vld128ip27 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip26, i32 16, i32 1)
+  %vstl64ip28 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 %dst.ptr.after.loop, i32 8)
+  %vsth64ip29 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 %vstl64ip28, i32 8)
+  %vstl64ip30 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 1, i32 %vsth64ip29, i32 8)
+  %vsth64ip31 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 1, i32 %vstl64ip30, i32 8)
+  br label %handle.tail.switch
+
+tail.case.3:                                      ; preds = %loop.exit.cleanup
+  %vld128ip32 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %src.ptr.after.loop, i32 16, i32 0)
+  %vld128ip33 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip32, i32 16, i32 1)
+  %vld128ip34 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip33, i32 16, i32 2)
+  %vstl64ip35 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 %dst.ptr.after.loop, i32 8)
+  %vsth64ip36 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 %vstl64ip35, i32 8)
+  %vstl64ip37 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 1, i32 %vsth64ip36, i32 8)
+  %vsth64ip38 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 1, i32 %vstl64ip37, i32 8)
+  %vstl64ip39 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 2, i32 %vsth64ip38, i32 8)
+  %vsth64ip40 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 2, i32 %vstl64ip39, i32 8)
+  br label %handle.tail.switch
+
+tail.case.4:                                      ; preds = %loop.exit.cleanup
+  %vld128ip41 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %src.ptr.after.loop, i32 16, i32 0)
+  %vld128ip42 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip41, i32 16, i32 1)
+  %vld128ip43 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip42, i32 16, i32 2)
+  %vld128ip44 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip43, i32 16, i32 3)
+  %vstl64ip45 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 %dst.ptr.after.loop, i32 8)
+  %vsth64ip46 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 %vstl64ip45, i32 8)
+  %vstl64ip47 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 1, i32 %vsth64ip46, i32 8)
+  %vsth64ip48 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 1, i32 %vstl64ip47, i32 8)
+  %vstl64ip49 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 2, i32 %vsth64ip48, i32 8)
+  %vsth64ip50 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 2, i32 %vstl64ip49, i32 8)
+  %vstl64ip51 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 3, i32 %vsth64ip50, i32 8)
+  %vsth64ip52 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 3, i32 %vstl64ip51, i32 8)
+  br label %handle.tail.switch
+
+tail.case.5:                                      ; preds = %loop.exit.cleanup
+  %vld128ip53 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %src.ptr.after.loop, i32 16, i32 0)
+  %vld128ip54 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip53, i32 16, i32 1)
+  %vld128ip55 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip54, i32 16, i32 2)
+  %vld128ip56 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip55, i32 16, i32 3)
+  %vld128ip57 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip56, i32 16, i32 4)
+  %vstl64ip58 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 %dst.ptr.after.loop, i32 8)
+  %vsth64ip59 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 %vstl64ip58, i32 8)
+  %vstl64ip60 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 1, i32 %vsth64ip59, i32 8)
+  %vsth64ip61 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 1, i32 %vstl64ip60, i32 8)
+  %vstl64ip62 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 2, i32 %vsth64ip61, i32 8)
+  %vsth64ip63 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 2, i32 %vstl64ip62, i32 8)
+  %vstl64ip64 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 3, i32 %vsth64ip63, i32 8)
+  %vsth64ip65 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 3, i32 %vstl64ip64, i32 8)
+  %vstl64ip66 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 4, i32 %vsth64ip65, i32 8)
+  %vsth64ip67 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 4, i32 %vstl64ip66, i32 8)
+  br label %handle.tail.switch
+
+tail.case.6:                                      ; preds = %loop.exit.cleanup
+  %vld128ip68 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %src.ptr.after.loop, i32 16, i32 0)
+  %vld128ip69 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip68, i32 16, i32 1)
+  %vld128ip70 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip69, i32 16, i32 2)
+  %vld128ip71 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip70, i32 16, i32 3)
+  %vld128ip72 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip71, i32 16, i32 4)
+  %vld128ip73 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip72, i32 16, i32 5)
+  %vstl64ip74 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 %dst.ptr.after.loop, i32 8)
+  %vsth64ip75 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 %vstl64ip74, i32 8)
+  %vstl64ip76 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 1, i32 %vsth64ip75, i32 8)
+  %vsth64ip77 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 1, i32 %vstl64ip76, i32 8)
+  %vstl64ip78 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 2, i32 %vsth64ip77, i32 8)
+  %vsth64ip79 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 2, i32 %vstl64ip78, i32 8)
+  %vstl64ip80 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 3, i32 %vsth64ip79, i32 8)
+  %vsth64ip81 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 3, i32 %vstl64ip80, i32 8)
+  %vstl64ip82 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 4, i32 %vsth64ip81, i32 8)
+  %vsth64ip83 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 4, i32 %vstl64ip82, i32 8)
+  %vstl64ip84 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 5, i32 %vsth64ip83, i32 8)
+  %vsth64ip85 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 5, i32 %vstl64ip84, i32 8)
+  br label %handle.tail.switch
+
+tail.case.7:                                      ; preds = %loop.exit.cleanup
+  %vld128ip86 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %src.ptr.after.loop, i32 16, i32 0)
+  %vld128ip87 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip86, i32 16, i32 1)
+  %vld128ip88 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip87, i32 16, i32 2)
+  %vld128ip89 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip88, i32 16, i32 3)
+  %vld128ip90 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip89, i32 16, i32 4)
+  %vld128ip91 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip90, i32 16, i32 5)
+  %vld128ip92 = call i32 @llvm.riscv.esp.vld.128.ip(i32 %vld128ip91, i32 16, i32 6)
+  %vstl64ip93 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 %dst.ptr.after.loop, i32 8)
+  %vsth64ip94 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 %vstl64ip93, i32 8)
+  %vstl64ip95 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 1, i32 %vsth64ip94, i32 8)
+  %vsth64ip96 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 1, i32 %vstl64ip95, i32 8)
+  %vstl64ip97 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 2, i32 %vsth64ip96, i32 8)
+  %vsth64ip98 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 2, i32 %vstl64ip97, i32 8)
+  %vstl64ip99 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 3, i32 %vsth64ip98, i32 8)
+  %vsth64ip100 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 3, i32 %vstl64ip99, i32 8)
+  %vstl64ip101 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 4, i32 %vsth64ip100, i32 8)
+  %vsth64ip102 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 4, i32 %vstl64ip101, i32 8)
+  %vstl64ip103 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 5, i32 %vsth64ip102, i32 8)
+  %vsth64ip104 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 5, i32 %vstl64ip103, i32 8)
+  %vstl64ip105 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 6, i32 %vsth64ip104, i32 8)
+  %vsth64ip106 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 6, i32 %vstl64ip105, i32 8)
+  br label %handle.tail.switch
+
+handle.remaining.bytes:                           ; preds = %after.8B.tail
+  %10 = inttoptr i32 %src.ptr.after.8B to ptr
+  %11 = inttoptr i32 %dst.ptr.after.8B to ptr
+  call void @esp32p4MemCpySrc16Dst8From1To7Opt(ptr %11, ptr %10, i32 %remaining.bytes)
+  br label %return
 }
 
 ; Function Attrs: noinline nounwind
-define internal void @esp32p4MemCpySrc16DstunalignedVar(ptr %dst, ptr %src, i32 %size, i32 %dst_align) #12 {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrc16DstunalignedVar(
+define internal void @esp32p4MemCpySrc16Dst8From1To7Opt(ptr %dst, ptr %src, i32 %size)  {
+; CHECK-LABEL: define internal void @esp32p4MemCpySrc16Dst8From1To7Opt(
+; CHECK-SAME: ptr [[DST:%.*]], ptr [[SRC:%.*]], i32 [[SIZE:%.*]]) {
+; CHECK-NEXT:  [[ENTRY:.*:]]
+; CHECK-NEXT:    switch i32 [[SIZE]], label %[[RETURN:.*]] [
+; CHECK-NEXT:      i32 1, label %[[SW_BB1:.*]]
+; CHECK-NEXT:      i32 2, label %[[SW_BB2:.*]]
+; CHECK-NEXT:      i32 3, label %[[SW_BB3:.*]]
+; CHECK-NEXT:      i32 4, label %[[SW_BB4:.*]]
+; CHECK-NEXT:      i32 5, label %[[SW_BB5:.*]]
+; CHECK-NEXT:      i32 6, label %[[SW_BB6:.*]]
+; CHECK-NEXT:      i32 7, label %[[SW_BB7:.*]]
+; CHECK-NEXT:    ]
+; CHECK:       [[RETURN]]:
+; CHECK-NEXT:    ret void
+; CHECK:       [[SW_BB1]]:
+; CHECK-NEXT:    [[SRC_GEP_I8:%.*]] = getelementptr i8, ptr [[SRC]], i32 0
+; CHECK-NEXT:    [[DST_GEP_I8:%.*]] = getelementptr i8, ptr [[DST]], i32 0
+; CHECK-NEXT:    [[TMP0:%.*]] = load i8, ptr [[SRC_GEP_I8]], align 1
+; CHECK-NEXT:    store i8 [[TMP0]], ptr [[DST_GEP_I8]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB2]]:
+; CHECK-NEXT:    [[SRC_GEP_I16:%.*]] = getelementptr i8, ptr [[SRC]], i32 0
+; CHECK-NEXT:    [[DST_GEP_I16:%.*]] = getelementptr i8, ptr [[DST]], i32 0
+; CHECK-NEXT:    [[TMP1:%.*]] = load i16, ptr [[SRC_GEP_I16]], align 2
+; CHECK-NEXT:    store i16 [[TMP1]], ptr [[DST_GEP_I16]], align 2
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB3]]:
+; CHECK-NEXT:    [[SRC_GEP_I161:%.*]] = getelementptr i8, ptr [[SRC]], i32 0
+; CHECK-NEXT:    [[DST_GEP_I162:%.*]] = getelementptr i8, ptr [[DST]], i32 0
+; CHECK-NEXT:    [[TMP2:%.*]] = load i16, ptr [[SRC_GEP_I161]], align 2
+; CHECK-NEXT:    store i16 [[TMP2]], ptr [[DST_GEP_I162]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I83:%.*]] = getelementptr i8, ptr [[SRC]], i32 2
+; CHECK-NEXT:    [[DST_GEP_I84:%.*]] = getelementptr i8, ptr [[DST]], i32 2
+; CHECK-NEXT:    [[TMP3:%.*]] = load i8, ptr [[SRC_GEP_I83]], align 1
+; CHECK-NEXT:    store i8 [[TMP3]], ptr [[DST_GEP_I84]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB4]]:
+; CHECK-NEXT:    [[SRC_GEP_I32:%.*]] = getelementptr i8, ptr [[SRC]], i32 0
+; CHECK-NEXT:    [[DST_GEP_I32:%.*]] = getelementptr i8, ptr [[DST]], i32 0
+; CHECK-NEXT:    [[TMP4:%.*]] = load i32, ptr [[SRC_GEP_I32]], align 4
+; CHECK-NEXT:    store i32 [[TMP4]], ptr [[DST_GEP_I32]], align 4
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB5]]:
+; CHECK-NEXT:    [[SRC_GEP_I325:%.*]] = getelementptr i8, ptr [[SRC]], i32 0
+; CHECK-NEXT:    [[DST_GEP_I326:%.*]] = getelementptr i8, ptr [[DST]], i32 0
+; CHECK-NEXT:    [[TMP5:%.*]] = load i32, ptr [[SRC_GEP_I325]], align 4
+; CHECK-NEXT:    store i32 [[TMP5]], ptr [[DST_GEP_I326]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I87:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I88:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP6:%.*]] = load i8, ptr [[SRC_GEP_I87]], align 1
+; CHECK-NEXT:    store i8 [[TMP6]], ptr [[DST_GEP_I88]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB6]]:
+; CHECK-NEXT:    [[SRC_GEP_I329:%.*]] = getelementptr i8, ptr [[SRC]], i32 0
+; CHECK-NEXT:    [[DST_GEP_I3210:%.*]] = getelementptr i8, ptr [[DST]], i32 0
+; CHECK-NEXT:    [[TMP7:%.*]] = load i32, ptr [[SRC_GEP_I329]], align 4
+; CHECK-NEXT:    store i32 [[TMP7]], ptr [[DST_GEP_I3210]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1611:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I1612:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP8:%.*]] = load i16, ptr [[SRC_GEP_I1611]], align 2
+; CHECK-NEXT:    store i16 [[TMP8]], ptr [[DST_GEP_I1612]], align 2
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB7]]:
+; CHECK-NEXT:    [[SRC_GEP_I3213:%.*]] = getelementptr i8, ptr [[SRC]], i32 0
+; CHECK-NEXT:    [[DST_GEP_I3214:%.*]] = getelementptr i8, ptr [[DST]], i32 0
+; CHECK-NEXT:    [[TMP9:%.*]] = load i32, ptr [[SRC_GEP_I3213]], align 4
+; CHECK-NEXT:    store i32 [[TMP9]], ptr [[DST_GEP_I3214]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1615:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I1616:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP10:%.*]] = load i16, ptr [[SRC_GEP_I1615]], align 2
+; CHECK-NEXT:    store i16 [[TMP10]], ptr [[DST_GEP_I1616]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I817:%.*]] = getelementptr i8, ptr [[SRC]], i32 6
+; CHECK-NEXT:    [[DST_GEP_I818:%.*]] = getelementptr i8, ptr [[DST]], i32 6
+; CHECK-NEXT:    [[TMP11:%.*]] = load i8, ptr [[SRC_GEP_I817]], align 1
+; CHECK-NEXT:    store i8 [[TMP11]], ptr [[DST_GEP_I818]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
+;
+entry:
+  switch i32 %size, label %return [
+  i32 1, label %sw.bb1
+  i32 2, label %sw.bb2
+  i32 3, label %sw.bb3
+  i32 4, label %sw.bb4
+  i32 5, label %sw.bb5
+  i32 6, label %sw.bb6
+  i32 7, label %sw.bb7
+  ]
+
+return:                                           ; preds = %sw.bb7, %sw.bb6, %sw.bb5, %sw.bb4, %sw.bb3, %sw.bb2, %sw.bb1, %entry
+  ret void
+
+sw.bb1:                                           ; preds = %entry
+  %src.gep.i8 = getelementptr i8, ptr %src, i32 0
+  %dst.gep.i8 = getelementptr i8, ptr %dst, i32 0
+  %0 = load i8, ptr %src.gep.i8, align 1
+  store i8 %0, ptr %dst.gep.i8, align 1
+  br label %return
+
+sw.bb2:                                           ; preds = %entry
+  %src.gep.i16 = getelementptr i8, ptr %src, i32 0
+  %dst.gep.i16 = getelementptr i8, ptr %dst, i32 0
+  %1 = load i16, ptr %src.gep.i16, align 2
+  store i16 %1, ptr %dst.gep.i16, align 2
+  br label %return
+
+sw.bb3:                                           ; preds = %entry
+  %src.gep.i161 = getelementptr i8, ptr %src, i32 0
+  %dst.gep.i162 = getelementptr i8, ptr %dst, i32 0
+  %2 = load i16, ptr %src.gep.i161, align 2
+  store i16 %2, ptr %dst.gep.i162, align 2
+  %src.gep.i83 = getelementptr i8, ptr %src, i32 2
+  %dst.gep.i84 = getelementptr i8, ptr %dst, i32 2
+  %3 = load i8, ptr %src.gep.i83, align 1
+  store i8 %3, ptr %dst.gep.i84, align 1
+  br label %return
+
+sw.bb4:                                           ; preds = %entry
+  %src.gep.i32 = getelementptr i8, ptr %src, i32 0
+  %dst.gep.i32 = getelementptr i8, ptr %dst, i32 0
+  %4 = load i32, ptr %src.gep.i32, align 4
+  store i32 %4, ptr %dst.gep.i32, align 4
+  br label %return
+
+sw.bb5:                                           ; preds = %entry
+  %src.gep.i325 = getelementptr i8, ptr %src, i32 0
+  %dst.gep.i326 = getelementptr i8, ptr %dst, i32 0
+  %5 = load i32, ptr %src.gep.i325, align 4
+  store i32 %5, ptr %dst.gep.i326, align 4
+  %src.gep.i87 = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i88 = getelementptr i8, ptr %dst, i32 4
+  %6 = load i8, ptr %src.gep.i87, align 1
+  store i8 %6, ptr %dst.gep.i88, align 1
+  br label %return
+
+sw.bb6:                                           ; preds = %entry
+  %src.gep.i329 = getelementptr i8, ptr %src, i32 0
+  %dst.gep.i3210 = getelementptr i8, ptr %dst, i32 0
+  %7 = load i32, ptr %src.gep.i329, align 4
+  store i32 %7, ptr %dst.gep.i3210, align 4
+  %src.gep.i1611 = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i1612 = getelementptr i8, ptr %dst, i32 4
+  %8 = load i16, ptr %src.gep.i1611, align 2
+  store i16 %8, ptr %dst.gep.i1612, align 2
+  br label %return
+
+sw.bb7:                                           ; preds = %entry
+  %src.gep.i3213 = getelementptr i8, ptr %src, i32 0
+  %dst.gep.i3214 = getelementptr i8, ptr %dst, i32 0
+  %9 = load i32, ptr %src.gep.i3213, align 4
+  store i32 %9, ptr %dst.gep.i3214, align 4
+  %src.gep.i1615 = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i1616 = getelementptr i8, ptr %dst, i32 4
+  %10 = load i16, ptr %src.gep.i1615, align 2
+  store i16 %10, ptr %dst.gep.i1616, align 2
+  %src.gep.i817 = getelementptr i8, ptr %src, i32 6
+  %dst.gep.i818 = getelementptr i8, ptr %dst, i32 6
+  %11 = load i8, ptr %src.gep.i817, align 1
+  store i8 %11, ptr %dst.gep.i818, align 1
+  br label %return
+}
+
+; Function Attrs: nounwind
+declare i32 @llvm.riscv.esp.vst.h.64.ip(i32 immarg, i32, i32 immarg)
+
+; Function Attrs: noinline nounwind
+define internal void @esp32p4MemCpySrc16DstunalignVar(ptr %dst, ptr %src, i32 %size, i32 %dst_align)  {
+; CHECK-LABEL: define internal void @esp32p4MemCpySrc16DstunalignVar(
 ; CHECK-SAME: ptr [[DST:%.*]], ptr [[SRC:%.*]], i32 [[SIZE:%.*]], i32 [[DST_ALIGN:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
 ; CHECK-NEXT:    [[SUB:%.*]] = sub i32 16, [[DST_ALIGN]]
 ; CHECK-NEXT:    [[CMP_NOT:%.*]] = icmp ult i32 [[SUB]], [[SIZE]]
-; CHECK-NEXT:    br i1 [[CMP_NOT]], label %[[IF_END:.*]], label %[[IF_THEN:.*]]
-; CHECK:       [[IF_THEN]]:
-; CHECK-NEXT:    call void @esp32p4MemCpySrcUnalignedDstUnalignedVarFrom0To15Opt(ptr [[DST]], ptr [[SRC]], i32 [[SIZE]])
-; CHECK-NEXT:    br label %[[CLEANUP:.*]]
-; CHECK:       [[IF_END]]:
-; CHECK-NEXT:    call void @esp32p4MemCpySrcUnalignedDstUnalignedVarFrom0To15Opt(ptr [[DST]], ptr [[SRC]], i32 [[SUB]])
+; CHECK-NEXT:    br i1 [[CMP_NOT]], label %[[HANDLE_TAIL:.*]], label %[[HANDLE_HEAD:.*]]
+; CHECK:       [[HANDLE_HEAD]]:
+; CHECK-NEXT:    switch i32 [[SIZE]], label %[[RETURN:.*]] [
+; CHECK-NEXT:      i32 1, label %[[SW_BB1_I65:.*]]
+; CHECK-NEXT:      i32 2, label %[[SW_BB2_I64:.*]]
+; CHECK-NEXT:      i32 3, label %[[SW_BB3_I61:.*]]
+; CHECK-NEXT:      i32 4, label %[[SW_BB4_I60:.*]]
+; CHECK-NEXT:      i32 5, label %[[SW_BB5_I57:.*]]
+; CHECK-NEXT:      i32 6, label %[[SW_BB6_I54:.*]]
+; CHECK-NEXT:      i32 7, label %[[SW_BB7_I49:.*]]
+; CHECK-NEXT:      i32 8, label %[[SW_BB8_I46:.*]]
+; CHECK-NEXT:      i32 9, label %[[SW_BB9_I41:.*]]
+; CHECK-NEXT:      i32 10, label %[[SW_BB10_I36:.*]]
+; CHECK-NEXT:      i32 11, label %[[SW_BB11_I29:.*]]
+; CHECK-NEXT:      i32 12, label %[[SW_BB12_I24:.*]]
+; CHECK-NEXT:      i32 13, label %[[SW_BB13_I17:.*]]
+; CHECK-NEXT:      i32 14, label %[[SW_BB14_I10:.*]]
+; CHECK-NEXT:      i32 15, label %[[SW_BB15_I1:.*]]
+; CHECK-NEXT:    ]
+; CHECK:       [[SW_BB1_I65]]:
+; CHECK-NEXT:    [[TMP0:%.*]] = load i8, ptr [[SRC]], align 1
+; CHECK-NEXT:    store i8 [[TMP0]], ptr [[DST]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB2_I64]]:
+; CHECK-NEXT:    [[TMP1:%.*]] = load i16, ptr [[SRC]], align 2
+; CHECK-NEXT:    store i16 [[TMP1]], ptr [[DST]], align 2
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB3_I61]]:
+; CHECK-NEXT:    [[TMP2:%.*]] = load i16, ptr [[SRC]], align 2
+; CHECK-NEXT:    store i16 [[TMP2]], ptr [[DST]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I83_I62:%.*]] = getelementptr i8, ptr [[SRC]], i32 2
+; CHECK-NEXT:    [[DST_GEP_I84_I63:%.*]] = getelementptr i8, ptr [[DST]], i32 2
+; CHECK-NEXT:    [[TMP3:%.*]] = load i8, ptr [[SRC_GEP_I83_I62]], align 1
+; CHECK-NEXT:    store i8 [[TMP3]], ptr [[DST_GEP_I84_I63]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB4_I60]]:
+; CHECK-NEXT:    [[TMP4:%.*]] = load i32, ptr [[SRC]], align 4
+; CHECK-NEXT:    store i32 [[TMP4]], ptr [[DST]], align 4
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB5_I57]]:
+; CHECK-NEXT:    [[TMP5:%.*]] = load i32, ptr [[SRC]], align 4
+; CHECK-NEXT:    store i32 [[TMP5]], ptr [[DST]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I87_I58:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I88_I59:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP6:%.*]] = load i8, ptr [[SRC_GEP_I87_I58]], align 1
+; CHECK-NEXT:    store i8 [[TMP6]], ptr [[DST_GEP_I88_I59]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB6_I54]]:
+; CHECK-NEXT:    [[TMP7:%.*]] = load i32, ptr [[SRC]], align 4
+; CHECK-NEXT:    store i32 [[TMP7]], ptr [[DST]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1611_I55:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I1612_I56:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP8:%.*]] = load i16, ptr [[SRC_GEP_I1611_I55]], align 2
+; CHECK-NEXT:    store i16 [[TMP8]], ptr [[DST_GEP_I1612_I56]], align 2
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB7_I49]]:
+; CHECK-NEXT:    [[TMP9:%.*]] = load i32, ptr [[SRC]], align 4
+; CHECK-NEXT:    store i32 [[TMP9]], ptr [[DST]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1615_I50:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I1616_I51:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP10:%.*]] = load i16, ptr [[SRC_GEP_I1615_I50]], align 2
+; CHECK-NEXT:    store i16 [[TMP10]], ptr [[DST_GEP_I1616_I51]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I817_I52:%.*]] = getelementptr i8, ptr [[SRC]], i32 6
+; CHECK-NEXT:    [[DST_GEP_I818_I53:%.*]] = getelementptr i8, ptr [[DST]], i32 6
+; CHECK-NEXT:    [[TMP11:%.*]] = load i8, ptr [[SRC_GEP_I817_I52]], align 1
+; CHECK-NEXT:    store i8 [[TMP11]], ptr [[DST_GEP_I818_I53]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB8_I46]]:
+; CHECK-NEXT:    [[TMP12:%.*]] = load i32, ptr [[SRC]], align 4
+; CHECK-NEXT:    store i32 [[TMP12]], ptr [[DST]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3221_I47:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3222_I48:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP13:%.*]] = load i32, ptr [[SRC_GEP_I3221_I47]], align 4
+; CHECK-NEXT:    store i32 [[TMP13]], ptr [[DST_GEP_I3222_I48]], align 4
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB9_I41]]:
+; CHECK-NEXT:    [[TMP14:%.*]] = load i32, ptr [[SRC]], align 4
+; CHECK-NEXT:    store i32 [[TMP14]], ptr [[DST]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3225_I42:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3226_I43:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP15:%.*]] = load i32, ptr [[SRC_GEP_I3225_I42]], align 4
+; CHECK-NEXT:    store i32 [[TMP15]], ptr [[DST_GEP_I3226_I43]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I827_I44:%.*]] = getelementptr i8, ptr [[SRC]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I828_I45:%.*]] = getelementptr i8, ptr [[DST]], i32 8
+; CHECK-NEXT:    [[TMP16:%.*]] = load i8, ptr [[SRC_GEP_I827_I44]], align 1
+; CHECK-NEXT:    store i8 [[TMP16]], ptr [[DST_GEP_I828_I45]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB10_I36]]:
+; CHECK-NEXT:    [[TMP17:%.*]] = load i32, ptr [[SRC]], align 4
+; CHECK-NEXT:    store i32 [[TMP17]], ptr [[DST]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3231_I37:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3232_I38:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP18:%.*]] = load i32, ptr [[SRC_GEP_I3231_I37]], align 4
+; CHECK-NEXT:    store i32 [[TMP18]], ptr [[DST_GEP_I3232_I38]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1633_I39:%.*]] = getelementptr i8, ptr [[SRC]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I1634_I40:%.*]] = getelementptr i8, ptr [[DST]], i32 8
+; CHECK-NEXT:    [[TMP19:%.*]] = load i16, ptr [[SRC_GEP_I1633_I39]], align 2
+; CHECK-NEXT:    store i16 [[TMP19]], ptr [[DST_GEP_I1634_I40]], align 2
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB11_I29]]:
+; CHECK-NEXT:    [[TMP20:%.*]] = load i32, ptr [[SRC]], align 4
+; CHECK-NEXT:    store i32 [[TMP20]], ptr [[DST]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3237_I30:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3238_I31:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP21:%.*]] = load i32, ptr [[SRC_GEP_I3237_I30]], align 4
+; CHECK-NEXT:    store i32 [[TMP21]], ptr [[DST_GEP_I3238_I31]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1639_I32:%.*]] = getelementptr i8, ptr [[SRC]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I1640_I33:%.*]] = getelementptr i8, ptr [[DST]], i32 8
+; CHECK-NEXT:    [[TMP22:%.*]] = load i16, ptr [[SRC_GEP_I1639_I32]], align 2
+; CHECK-NEXT:    store i16 [[TMP22]], ptr [[DST_GEP_I1640_I33]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I841_I34:%.*]] = getelementptr i8, ptr [[SRC]], i32 10
+; CHECK-NEXT:    [[DST_GEP_I842_I35:%.*]] = getelementptr i8, ptr [[DST]], i32 10
+; CHECK-NEXT:    [[TMP23:%.*]] = load i8, ptr [[SRC_GEP_I841_I34]], align 1
+; CHECK-NEXT:    store i8 [[TMP23]], ptr [[DST_GEP_I842_I35]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB12_I24]]:
+; CHECK-NEXT:    [[TMP24:%.*]] = load i32, ptr [[SRC]], align 4
+; CHECK-NEXT:    store i32 [[TMP24]], ptr [[DST]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3245_I25:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3246_I26:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP25:%.*]] = load i32, ptr [[SRC_GEP_I3245_I25]], align 4
+; CHECK-NEXT:    store i32 [[TMP25]], ptr [[DST_GEP_I3246_I26]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3247_I27:%.*]] = getelementptr i8, ptr [[SRC]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I3248_I28:%.*]] = getelementptr i8, ptr [[DST]], i32 8
+; CHECK-NEXT:    [[TMP26:%.*]] = load i32, ptr [[SRC_GEP_I3247_I27]], align 4
+; CHECK-NEXT:    store i32 [[TMP26]], ptr [[DST_GEP_I3248_I28]], align 4
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB13_I17]]:
+; CHECK-NEXT:    [[TMP27:%.*]] = load i32, ptr [[SRC]], align 4
+; CHECK-NEXT:    store i32 [[TMP27]], ptr [[DST]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3251_I18:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3252_I19:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP28:%.*]] = load i32, ptr [[SRC_GEP_I3251_I18]], align 4
+; CHECK-NEXT:    store i32 [[TMP28]], ptr [[DST_GEP_I3252_I19]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3253_I20:%.*]] = getelementptr i8, ptr [[SRC]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I3254_I21:%.*]] = getelementptr i8, ptr [[DST]], i32 8
+; CHECK-NEXT:    [[TMP29:%.*]] = load i32, ptr [[SRC_GEP_I3253_I20]], align 4
+; CHECK-NEXT:    store i32 [[TMP29]], ptr [[DST_GEP_I3254_I21]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I855_I22:%.*]] = getelementptr i8, ptr [[SRC]], i32 12
+; CHECK-NEXT:    [[DST_GEP_I856_I23:%.*]] = getelementptr i8, ptr [[DST]], i32 12
+; CHECK-NEXT:    [[TMP30:%.*]] = load i8, ptr [[SRC_GEP_I855_I22]], align 1
+; CHECK-NEXT:    store i8 [[TMP30]], ptr [[DST_GEP_I856_I23]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB14_I10]]:
+; CHECK-NEXT:    [[TMP31:%.*]] = load i32, ptr [[SRC]], align 4
+; CHECK-NEXT:    store i32 [[TMP31]], ptr [[DST]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3259_I11:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3260_I12:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP32:%.*]] = load i32, ptr [[SRC_GEP_I3259_I11]], align 4
+; CHECK-NEXT:    store i32 [[TMP32]], ptr [[DST_GEP_I3260_I12]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3261_I13:%.*]] = getelementptr i8, ptr [[SRC]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I3262_I14:%.*]] = getelementptr i8, ptr [[DST]], i32 8
+; CHECK-NEXT:    [[TMP33:%.*]] = load i32, ptr [[SRC_GEP_I3261_I13]], align 4
+; CHECK-NEXT:    store i32 [[TMP33]], ptr [[DST_GEP_I3262_I14]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1663_I15:%.*]] = getelementptr i8, ptr [[SRC]], i32 12
+; CHECK-NEXT:    [[DST_GEP_I1664_I16:%.*]] = getelementptr i8, ptr [[DST]], i32 12
+; CHECK-NEXT:    [[TMP34:%.*]] = load i16, ptr [[SRC_GEP_I1663_I15]], align 2
+; CHECK-NEXT:    store i16 [[TMP34]], ptr [[DST_GEP_I1664_I16]], align 2
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB15_I1]]:
+; CHECK-NEXT:    [[TMP35:%.*]] = load i32, ptr [[SRC]], align 4
+; CHECK-NEXT:    store i32 [[TMP35]], ptr [[DST]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3267_I2:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3268_I3:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP36:%.*]] = load i32, ptr [[SRC_GEP_I3267_I2]], align 4
+; CHECK-NEXT:    store i32 [[TMP36]], ptr [[DST_GEP_I3268_I3]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3269_I4:%.*]] = getelementptr i8, ptr [[SRC]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I3270_I5:%.*]] = getelementptr i8, ptr [[DST]], i32 8
+; CHECK-NEXT:    [[TMP37:%.*]] = load i32, ptr [[SRC_GEP_I3269_I4]], align 4
+; CHECK-NEXT:    store i32 [[TMP37]], ptr [[DST_GEP_I3270_I5]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1671_I6:%.*]] = getelementptr i8, ptr [[SRC]], i32 12
+; CHECK-NEXT:    [[DST_GEP_I1672_I7:%.*]] = getelementptr i8, ptr [[DST]], i32 12
+; CHECK-NEXT:    [[TMP38:%.*]] = load i16, ptr [[SRC_GEP_I1671_I6]], align 2
+; CHECK-NEXT:    store i16 [[TMP38]], ptr [[DST_GEP_I1672_I7]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I873_I8:%.*]] = getelementptr i8, ptr [[SRC]], i32 14
+; CHECK-NEXT:    [[DST_GEP_I874_I9:%.*]] = getelementptr i8, ptr [[DST]], i32 14
+; CHECK-NEXT:    [[TMP39:%.*]] = load i8, ptr [[SRC_GEP_I873_I8]], align 1
+; CHECK-NEXT:    store i8 [[TMP39]], ptr [[DST_GEP_I874_I9]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[HANDLE_TAIL]]:
+; CHECK-NEXT:    switch i32 [[DST_ALIGN]], label %[[ESP32P4MEMCPYSRCUNALIGNDSTUNALIGNFROM1TO15OPT_EXIT:.*]] [
+; CHECK-NEXT:      i32 15, label %[[SW_BB1_I:.*]]
+; CHECK-NEXT:      i32 14, label %[[SW_BB2_I:.*]]
+; CHECK-NEXT:      i32 13, label %[[SW_BB3_I:.*]]
+; CHECK-NEXT:      i32 12, label %[[SW_BB4_I:.*]]
+; CHECK-NEXT:      i32 11, label %[[SW_BB5_I:.*]]
+; CHECK-NEXT:      i32 10, label %[[SW_BB6_I:.*]]
+; CHECK-NEXT:      i32 9, label %[[SW_BB7_I:.*]]
+; CHECK-NEXT:      i32 8, label %[[SW_BB8_I:.*]]
+; CHECK-NEXT:      i32 7, label %[[SW_BB9_I:.*]]
+; CHECK-NEXT:      i32 6, label %[[SW_BB10_I:.*]]
+; CHECK-NEXT:      i32 5, label %[[SW_BB11_I:.*]]
+; CHECK-NEXT:      i32 4, label %[[SW_BB12_I:.*]]
+; CHECK-NEXT:      i32 3, label %[[SW_BB13_I:.*]]
+; CHECK-NEXT:      i32 2, label %[[SW_BB14_I:.*]]
+; CHECK-NEXT:      i32 1, label %[[SW_BB15_I:.*]]
+; CHECK-NEXT:    ]
+; CHECK:       [[SW_BB1_I]]:
+; CHECK-NEXT:    [[TMP40:%.*]] = load i8, ptr [[SRC]], align 1
+; CHECK-NEXT:    store i8 [[TMP40]], ptr [[DST]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDSTUNALIGNFROM1TO15OPT_EXIT]]
+; CHECK:       [[SW_BB2_I]]:
+; CHECK-NEXT:    [[TMP41:%.*]] = load i16, ptr [[SRC]], align 2
+; CHECK-NEXT:    store i16 [[TMP41]], ptr [[DST]], align 2
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDSTUNALIGNFROM1TO15OPT_EXIT]]
+; CHECK:       [[SW_BB3_I]]:
+; CHECK-NEXT:    [[TMP42:%.*]] = load i16, ptr [[SRC]], align 2
+; CHECK-NEXT:    store i16 [[TMP42]], ptr [[DST]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I83_I:%.*]] = getelementptr i8, ptr [[SRC]], i32 2
+; CHECK-NEXT:    [[DST_GEP_I84_I:%.*]] = getelementptr i8, ptr [[DST]], i32 2
+; CHECK-NEXT:    [[TMP43:%.*]] = load i8, ptr [[SRC_GEP_I83_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP43]], ptr [[DST_GEP_I84_I]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDSTUNALIGNFROM1TO15OPT_EXIT]]
+; CHECK:       [[SW_BB4_I]]:
+; CHECK-NEXT:    [[TMP44:%.*]] = load i32, ptr [[SRC]], align 4
+; CHECK-NEXT:    store i32 [[TMP44]], ptr [[DST]], align 4
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDSTUNALIGNFROM1TO15OPT_EXIT]]
+; CHECK:       [[SW_BB5_I]]:
+; CHECK-NEXT:    [[TMP45:%.*]] = load i32, ptr [[SRC]], align 4
+; CHECK-NEXT:    store i32 [[TMP45]], ptr [[DST]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I87_I:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I88_I:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP46:%.*]] = load i8, ptr [[SRC_GEP_I87_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP46]], ptr [[DST_GEP_I88_I]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDSTUNALIGNFROM1TO15OPT_EXIT]]
+; CHECK:       [[SW_BB6_I]]:
+; CHECK-NEXT:    [[TMP47:%.*]] = load i32, ptr [[SRC]], align 4
+; CHECK-NEXT:    store i32 [[TMP47]], ptr [[DST]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1611_I:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I1612_I:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP48:%.*]] = load i16, ptr [[SRC_GEP_I1611_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP48]], ptr [[DST_GEP_I1612_I]], align 2
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDSTUNALIGNFROM1TO15OPT_EXIT]]
+; CHECK:       [[SW_BB7_I]]:
+; CHECK-NEXT:    [[TMP49:%.*]] = load i32, ptr [[SRC]], align 4
+; CHECK-NEXT:    store i32 [[TMP49]], ptr [[DST]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1615_I:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I1616_I:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP50:%.*]] = load i16, ptr [[SRC_GEP_I1615_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP50]], ptr [[DST_GEP_I1616_I]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I817_I:%.*]] = getelementptr i8, ptr [[SRC]], i32 6
+; CHECK-NEXT:    [[DST_GEP_I818_I:%.*]] = getelementptr i8, ptr [[DST]], i32 6
+; CHECK-NEXT:    [[TMP51:%.*]] = load i8, ptr [[SRC_GEP_I817_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP51]], ptr [[DST_GEP_I818_I]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDSTUNALIGNFROM1TO15OPT_EXIT]]
+; CHECK:       [[SW_BB8_I]]:
+; CHECK-NEXT:    [[TMP52:%.*]] = load i32, ptr [[SRC]], align 4
+; CHECK-NEXT:    store i32 [[TMP52]], ptr [[DST]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3221_I:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3222_I:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP53:%.*]] = load i32, ptr [[SRC_GEP_I3221_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP53]], ptr [[DST_GEP_I3222_I]], align 4
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDSTUNALIGNFROM1TO15OPT_EXIT]]
+; CHECK:       [[SW_BB9_I]]:
+; CHECK-NEXT:    [[TMP54:%.*]] = load i32, ptr [[SRC]], align 4
+; CHECK-NEXT:    store i32 [[TMP54]], ptr [[DST]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3225_I:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3226_I:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP55:%.*]] = load i32, ptr [[SRC_GEP_I3225_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP55]], ptr [[DST_GEP_I3226_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I827_I:%.*]] = getelementptr i8, ptr [[SRC]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I828_I:%.*]] = getelementptr i8, ptr [[DST]], i32 8
+; CHECK-NEXT:    [[TMP56:%.*]] = load i8, ptr [[SRC_GEP_I827_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP56]], ptr [[DST_GEP_I828_I]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDSTUNALIGNFROM1TO15OPT_EXIT]]
+; CHECK:       [[SW_BB10_I]]:
+; CHECK-NEXT:    [[TMP57:%.*]] = load i32, ptr [[SRC]], align 4
+; CHECK-NEXT:    store i32 [[TMP57]], ptr [[DST]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3231_I:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3232_I:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP58:%.*]] = load i32, ptr [[SRC_GEP_I3231_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP58]], ptr [[DST_GEP_I3232_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1633_I:%.*]] = getelementptr i8, ptr [[SRC]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I1634_I:%.*]] = getelementptr i8, ptr [[DST]], i32 8
+; CHECK-NEXT:    [[TMP59:%.*]] = load i16, ptr [[SRC_GEP_I1633_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP59]], ptr [[DST_GEP_I1634_I]], align 2
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDSTUNALIGNFROM1TO15OPT_EXIT]]
+; CHECK:       [[SW_BB11_I]]:
+; CHECK-NEXT:    [[TMP60:%.*]] = load i32, ptr [[SRC]], align 4
+; CHECK-NEXT:    store i32 [[TMP60]], ptr [[DST]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3237_I:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3238_I:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP61:%.*]] = load i32, ptr [[SRC_GEP_I3237_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP61]], ptr [[DST_GEP_I3238_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1639_I:%.*]] = getelementptr i8, ptr [[SRC]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I1640_I:%.*]] = getelementptr i8, ptr [[DST]], i32 8
+; CHECK-NEXT:    [[TMP62:%.*]] = load i16, ptr [[SRC_GEP_I1639_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP62]], ptr [[DST_GEP_I1640_I]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I841_I:%.*]] = getelementptr i8, ptr [[SRC]], i32 10
+; CHECK-NEXT:    [[DST_GEP_I842_I:%.*]] = getelementptr i8, ptr [[DST]], i32 10
+; CHECK-NEXT:    [[TMP63:%.*]] = load i8, ptr [[SRC_GEP_I841_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP63]], ptr [[DST_GEP_I842_I]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDSTUNALIGNFROM1TO15OPT_EXIT]]
+; CHECK:       [[SW_BB12_I]]:
+; CHECK-NEXT:    [[TMP64:%.*]] = load i32, ptr [[SRC]], align 4
+; CHECK-NEXT:    store i32 [[TMP64]], ptr [[DST]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3245_I:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3246_I:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP65:%.*]] = load i32, ptr [[SRC_GEP_I3245_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP65]], ptr [[DST_GEP_I3246_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3247_I:%.*]] = getelementptr i8, ptr [[SRC]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I3248_I:%.*]] = getelementptr i8, ptr [[DST]], i32 8
+; CHECK-NEXT:    [[TMP66:%.*]] = load i32, ptr [[SRC_GEP_I3247_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP66]], ptr [[DST_GEP_I3248_I]], align 4
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDSTUNALIGNFROM1TO15OPT_EXIT]]
+; CHECK:       [[SW_BB13_I]]:
+; CHECK-NEXT:    [[TMP67:%.*]] = load i32, ptr [[SRC]], align 4
+; CHECK-NEXT:    store i32 [[TMP67]], ptr [[DST]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3251_I:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3252_I:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP68:%.*]] = load i32, ptr [[SRC_GEP_I3251_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP68]], ptr [[DST_GEP_I3252_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3253_I:%.*]] = getelementptr i8, ptr [[SRC]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I3254_I:%.*]] = getelementptr i8, ptr [[DST]], i32 8
+; CHECK-NEXT:    [[TMP69:%.*]] = load i32, ptr [[SRC_GEP_I3253_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP69]], ptr [[DST_GEP_I3254_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I855_I:%.*]] = getelementptr i8, ptr [[SRC]], i32 12
+; CHECK-NEXT:    [[DST_GEP_I856_I:%.*]] = getelementptr i8, ptr [[DST]], i32 12
+; CHECK-NEXT:    [[TMP70:%.*]] = load i8, ptr [[SRC_GEP_I855_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP70]], ptr [[DST_GEP_I856_I]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDSTUNALIGNFROM1TO15OPT_EXIT]]
+; CHECK:       [[SW_BB14_I]]:
+; CHECK-NEXT:    [[TMP71:%.*]] = load i32, ptr [[SRC]], align 4
+; CHECK-NEXT:    store i32 [[TMP71]], ptr [[DST]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3259_I:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3260_I:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP72:%.*]] = load i32, ptr [[SRC_GEP_I3259_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP72]], ptr [[DST_GEP_I3260_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3261_I:%.*]] = getelementptr i8, ptr [[SRC]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I3262_I:%.*]] = getelementptr i8, ptr [[DST]], i32 8
+; CHECK-NEXT:    [[TMP73:%.*]] = load i32, ptr [[SRC_GEP_I3261_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP73]], ptr [[DST_GEP_I3262_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1663_I:%.*]] = getelementptr i8, ptr [[SRC]], i32 12
+; CHECK-NEXT:    [[DST_GEP_I1664_I:%.*]] = getelementptr i8, ptr [[DST]], i32 12
+; CHECK-NEXT:    [[TMP74:%.*]] = load i16, ptr [[SRC_GEP_I1663_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP74]], ptr [[DST_GEP_I1664_I]], align 2
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDSTUNALIGNFROM1TO15OPT_EXIT]]
+; CHECK:       [[SW_BB15_I]]:
+; CHECK-NEXT:    [[TMP75:%.*]] = load i32, ptr [[SRC]], align 4
+; CHECK-NEXT:    store i32 [[TMP75]], ptr [[DST]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3267_I:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3268_I:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP76:%.*]] = load i32, ptr [[SRC_GEP_I3267_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP76]], ptr [[DST_GEP_I3268_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3269_I:%.*]] = getelementptr i8, ptr [[SRC]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I3270_I:%.*]] = getelementptr i8, ptr [[DST]], i32 8
+; CHECK-NEXT:    [[TMP77:%.*]] = load i32, ptr [[SRC_GEP_I3269_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP77]], ptr [[DST_GEP_I3270_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1671_I:%.*]] = getelementptr i8, ptr [[SRC]], i32 12
+; CHECK-NEXT:    [[DST_GEP_I1672_I:%.*]] = getelementptr i8, ptr [[DST]], i32 12
+; CHECK-NEXT:    [[TMP78:%.*]] = load i16, ptr [[SRC_GEP_I1671_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP78]], ptr [[DST_GEP_I1672_I]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I873_I:%.*]] = getelementptr i8, ptr [[SRC]], i32 14
+; CHECK-NEXT:    [[DST_GEP_I874_I:%.*]] = getelementptr i8, ptr [[DST]], i32 14
+; CHECK-NEXT:    [[TMP79:%.*]] = load i8, ptr [[SRC_GEP_I873_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP79]], ptr [[DST_GEP_I874_I]], align 1
+; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDSTUNALIGNFROM1TO15OPT_EXIT]]
+; CHECK:       [[ESP32P4MEMCPYSRCUNALIGNDSTUNALIGNFROM1TO15OPT_EXIT]]:
 ; CHECK-NEXT:    [[SUB2:%.*]] = sub i32 [[SIZE]], [[SUB]]
 ; CHECK-NEXT:    [[ADD_PTR1:%.*]] = getelementptr i8, ptr [[DST]], i32 [[SUB]]
 ; CHECK-NEXT:    [[ADD_PTR:%.*]] = getelementptr i8, ptr [[SRC]], i32 [[SUB]]
-; CHECK-NEXT:    [[TMP0:%.*]] = icmp ult i32 [[SUB2]], 16
-; CHECK-NEXT:    br i1 [[TMP0]], label %[[IF_SMALL:.*]], label %[[IF_LARGE:.*]]
-; CHECK:       [[IF_SMALL]]:
-; CHECK-NEXT:    call void @esp32p4MemCpySrcUnalignedDstUnalignedVarFrom0To15Opt(ptr [[ADD_PTR1]], ptr [[ADD_PTR]], i32 [[SUB2]])
-; CHECK-NEXT:    br label %[[CLEANUP]]
-; CHECK:       [[IF_LARGE]]:
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR]] to i32
-; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1]] to i32
-; CHECK-NEXT:    call void @esp32p4MemCpySrcunalignedDst16Var(i32 [[TMP2]], i32 [[TMP1]], i32 [[SUB2]])
-; CHECK-NEXT:    br label %[[CLEANUP]]
-; CHECK:       [[CLEANUP]]:
+; CHECK-NEXT:    [[TMP80:%.*]] = ptrtoint ptr [[ADD_PTR]] to i32
+; CHECK-NEXT:    [[TMP81:%.*]] = ptrtoint ptr [[ADD_PTR1]] to i32
+; CHECK-NEXT:    [[CMP_I:%.*]] = icmp ult i32 [[SUB2]], 16
+; CHECK-NEXT:    br i1 [[CMP_I]], label %[[FINAL_CLEANUP_I:.*]], label %[[PROCESS_MAIN_LOOP_I:.*]]
+; CHECK:       [[PROCESS_MAIN_LOOP_I]]:
+; CHECK-NEXT:    [[DIV_I:%.*]] = udiv i32 [[SUB2]], 48
+; CHECK-NEXT:    [[DOTNEG:%.*]] = mul i32 [[DIV_I]], -48
+; CHECK-NEXT:    [[REM_DECOMPOSED_I:%.*]] = add i32 [[DOTNEG]], [[SUB2]]
+; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP80]], i32 16, i32 0)
+; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
+; CHECK-NEXT:    [[CMP21_NOT_I:%.*]] = icmp ult i32 [[SUB2]], 48
+; CHECK-NEXT:    br i1 [[CMP21_NOT_I]], label %[[HANDLE_REMAINDER_I:.*]], label %[[MAIN_LOOP_BODY_I:.*]]
+; CHECK:       [[HANDLE_REMAINDER_I]]:
+; CHECK-NEXT:    [[SRC_PTR_AFTERLOOP_I:%.*]] = phi i32 [ [[LD128USARIP1_I]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[SRCQLDIP4_FINAL_I:%.*]], %[[MAIN_LOOP_BODY_I]] ]
+; CHECK-NEXT:    [[DST_PTR_AFTERLOOP_I:%.*]] = phi i32 [ [[TMP81]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[VST128IP5_FINAL_I:%.*]], %[[MAIN_LOOP_BODY_I]] ]
+; CHECK-NEXT:    [[TOBOOL_NOT_I:%.*]] = icmp ult i32 [[REM_DECOMPOSED_I]], 32
+; CHECK-NEXT:    br i1 [[TOBOOL_NOT_I]], label %[[CHECK_16BYTE_TAIL_I:.*]], label %[[PROCESS_32BYTE_TAIL_I:.*]]
+; CHECK:       [[MAIN_LOOP_BODY_I]]:
+; CHECK-NEXT:    [[I_022_I:%.*]] = phi i32 [ 0, %[[PROCESS_MAIN_LOOP_I]] ], [ [[INC_I:%.*]], %[[MAIN_LOOP_BODY_I]] ]
+; CHECK-NEXT:    [[SRC_PTR_PHI_I:%.*]] = phi i32 [ [[LD128USARIP1_I]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[SRCQLDIP4_FINAL_I]], %[[MAIN_LOOP_BODY_I]] ]
+; CHECK-NEXT:    [[DST_PTR_PHI_I:%.*]] = phi i32 [ [[TMP81]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[VST128IP5_FINAL_I]], %[[MAIN_LOOP_BODY_I]] ]
+; CHECK-NEXT:    [[SRCQLDIP_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_PHI_I]], i32 0, i32 16, i32 2)
+; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_PHI_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP2_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP_I]], i32 1, i32 16, i32 0)
+; CHECK-NEXT:    [[VST128IP3_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP4_FINAL_I]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2_I]], i32 2, i32 16, i32 1)
+; CHECK-NEXT:    [[VST128IP5_FINAL_I]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3_I]], i32 16)
+; CHECK-NEXT:    [[INC_I]] = add nuw nsw i32 [[I_022_I]], 1
+; CHECK-NEXT:    [[EXITCOND_NOT_I:%.*]] = icmp eq i32 [[INC_I]], [[DIV_I]]
+; CHECK-NEXT:    br i1 [[EXITCOND_NOT_I]], label %[[HANDLE_REMAINDER_I]], label %[[MAIN_LOOP_BODY_I]]
+; CHECK:       [[PROCESS_32BYTE_TAIL_I]]:
+; CHECK-NEXT:    [[SRCQLDIP6_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_AFTERLOOP_I]], i32 0, i32 0, i32 2)
+; CHECK-NEXT:    [[VST128IP7_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_AFTERLOOP_I]], i32 16)
+; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
+; CHECK-NEXT:    [[VST128IP8_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP7_I]], i32 16)
+; CHECK-NEXT:    [[SUB1_I:%.*]] = add nsw i32 [[REM_DECOMPOSED_I]], -32
+; CHECK-NEXT:    br label %[[FINAL_CLEANUP_I]]
+; CHECK:       [[CHECK_16BYTE_TAIL_I]]:
+; CHECK-NEXT:    [[TOBOOL5_NOT_I:%.*]] = icmp ult i32 [[REM_DECOMPOSED_I]], 16
+; CHECK-NEXT:    br i1 [[TOBOOL5_NOT_I]], label %[[SKIP_TAIL_PROCESSING_I:.*]], label %[[PROCESS_16BYTE_TAIL_I:.*]]
+; CHECK:       [[PROCESS_16BYTE_TAIL_I]]:
+; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
+; CHECK-NEXT:    [[VST128IP9_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_AFTERLOOP_I]], i32 16)
+; CHECK-NEXT:    [[SUB_SRC_I:%.*]] = add i32 [[SRC_PTR_AFTERLOOP_I]], -16
+; CHECK-NEXT:    [[SUB9_I:%.*]] = add nsw i32 [[REM_DECOMPOSED_I]], -16
+; CHECK-NEXT:    br label %[[FINAL_CLEANUP_I]]
+; CHECK:       [[SKIP_TAIL_PROCESSING_I]]:
+; CHECK-NEXT:    [[SRC_END7_I:%.*]] = add i32 [[SRC_PTR_AFTERLOOP_I]], -32
+; CHECK-NEXT:    br label %[[FINAL_CLEANUP_I]]
+; CHECK:       [[FINAL_CLEANUP_I]]:
+; CHECK-NEXT:    [[SRC_FINAL_I:%.*]] = phi i32 [ [[SRCQLDIP6_I]], %[[PROCESS_32BYTE_TAIL_I]] ], [ [[SUB_SRC_I]], %[[PROCESS_16BYTE_TAIL_I]] ], [ [[TMP80]], %[[ESP32P4MEMCPYSRCUNALIGNDSTUNALIGNFROM1TO15OPT_EXIT]] ], [ [[SRC_END7_I]], %[[SKIP_TAIL_PROCESSING_I]] ]
+; CHECK-NEXT:    [[DST_FINAL_I:%.*]] = phi i32 [ [[VST128IP8_I]], %[[PROCESS_32BYTE_TAIL_I]] ], [ [[VST128IP9_I]], %[[PROCESS_16BYTE_TAIL_I]] ], [ [[TMP81]], %[[ESP32P4MEMCPYSRCUNALIGNDSTUNALIGNFROM1TO15OPT_EXIT]] ], [ [[DST_PTR_AFTERLOOP_I]], %[[SKIP_TAIL_PROCESSING_I]] ]
+; CHECK-NEXT:    [[REM_FINAL_I:%.*]] = phi i32 [ [[SUB1_I]], %[[PROCESS_32BYTE_TAIL_I]] ], [ [[SUB9_I]], %[[PROCESS_16BYTE_TAIL_I]] ], [ [[SUB2]], %[[ESP32P4MEMCPYSRCUNALIGNDSTUNALIGNFROM1TO15OPT_EXIT]] ], [ [[REM_DECOMPOSED_I]], %[[SKIP_TAIL_PROCESSING_I]] ]
+; CHECK-NEXT:    [[CMP_FINAL_I:%.*]] = icmp eq i32 [[REM_FINAL_I]], 0
+; CHECK-NEXT:    br i1 [[CMP_FINAL_I]], label %[[RETURN]], label %[[CALL_SMALL_SIZE_CLEANUP_I:.*]]
+; CHECK:       [[CALL_SMALL_SIZE_CLEANUP_I]]:
+; CHECK-NEXT:    [[DST_PTR_FINAL_I:%.*]] = inttoptr i32 [[DST_FINAL_I]] to ptr
+; CHECK-NEXT:    [[SRC_PTR_FINAL_I:%.*]] = inttoptr i32 [[SRC_FINAL_I]] to ptr
+; CHECK-NEXT:    switch i32 [[REM_FINAL_I]], label %[[RETURN]] [
+; CHECK-NEXT:      i32 1, label %[[SW_BB1_I131:.*]]
+; CHECK-NEXT:      i32 2, label %[[SW_BB2_I130:.*]]
+; CHECK-NEXT:      i32 3, label %[[SW_BB3_I127:.*]]
+; CHECK-NEXT:      i32 4, label %[[SW_BB4_I126:.*]]
+; CHECK-NEXT:      i32 5, label %[[SW_BB5_I123:.*]]
+; CHECK-NEXT:      i32 6, label %[[SW_BB6_I120:.*]]
+; CHECK-NEXT:      i32 7, label %[[SW_BB7_I115:.*]]
+; CHECK-NEXT:      i32 8, label %[[SW_BB8_I112:.*]]
+; CHECK-NEXT:      i32 9, label %[[SW_BB9_I107:.*]]
+; CHECK-NEXT:      i32 10, label %[[SW_BB10_I102:.*]]
+; CHECK-NEXT:      i32 11, label %[[SW_BB11_I95:.*]]
+; CHECK-NEXT:      i32 12, label %[[SW_BB12_I90:.*]]
+; CHECK-NEXT:      i32 13, label %[[SW_BB13_I83:.*]]
+; CHECK-NEXT:      i32 14, label %[[SW_BB14_I76:.*]]
+; CHECK-NEXT:      i32 15, label %[[SW_BB15_I67:.*]]
+; CHECK-NEXT:    ]
+; CHECK:       [[SW_BB1_I131]]:
+; CHECK-NEXT:    [[TMP82:%.*]] = load i8, ptr [[SRC_PTR_FINAL_I]], align 1
+; CHECK-NEXT:    store i8 [[TMP82]], ptr [[DST_PTR_FINAL_I]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB2_I130]]:
+; CHECK-NEXT:    [[TMP83:%.*]] = load i16, ptr [[SRC_PTR_FINAL_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP83]], ptr [[DST_PTR_FINAL_I]], align 2
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB3_I127]]:
+; CHECK-NEXT:    [[TMP84:%.*]] = load i16, ptr [[SRC_PTR_FINAL_I]], align 2
+; CHECK-NEXT:    store i16 [[TMP84]], ptr [[DST_PTR_FINAL_I]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I83_I128:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 2
+; CHECK-NEXT:    [[DST_GEP_I84_I129:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 2
+; CHECK-NEXT:    [[TMP85:%.*]] = load i8, ptr [[SRC_GEP_I83_I128]], align 1
+; CHECK-NEXT:    store i8 [[TMP85]], ptr [[DST_GEP_I84_I129]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB4_I126]]:
+; CHECK-NEXT:    [[TMP86:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP86]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB5_I123]]:
+; CHECK-NEXT:    [[TMP87:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP87]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I87_I124:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I88_I125:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP88:%.*]] = load i8, ptr [[SRC_GEP_I87_I124]], align 1
+; CHECK-NEXT:    store i8 [[TMP88]], ptr [[DST_GEP_I88_I125]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB6_I120]]:
+; CHECK-NEXT:    [[TMP89:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP89]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1611_I121:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I1612_I122:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP90:%.*]] = load i16, ptr [[SRC_GEP_I1611_I121]], align 2
+; CHECK-NEXT:    store i16 [[TMP90]], ptr [[DST_GEP_I1612_I122]], align 2
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB7_I115]]:
+; CHECK-NEXT:    [[TMP91:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP91]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1615_I116:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I1616_I117:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP92:%.*]] = load i16, ptr [[SRC_GEP_I1615_I116]], align 2
+; CHECK-NEXT:    store i16 [[TMP92]], ptr [[DST_GEP_I1616_I117]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I817_I118:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 6
+; CHECK-NEXT:    [[DST_GEP_I818_I119:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 6
+; CHECK-NEXT:    [[TMP93:%.*]] = load i8, ptr [[SRC_GEP_I817_I118]], align 1
+; CHECK-NEXT:    store i8 [[TMP93]], ptr [[DST_GEP_I818_I119]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB8_I112]]:
+; CHECK-NEXT:    [[TMP94:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP94]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3221_I113:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3222_I114:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP95:%.*]] = load i32, ptr [[SRC_GEP_I3221_I113]], align 4
+; CHECK-NEXT:    store i32 [[TMP95]], ptr [[DST_GEP_I3222_I114]], align 4
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB9_I107]]:
+; CHECK-NEXT:    [[TMP96:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP96]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3225_I108:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3226_I109:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP97:%.*]] = load i32, ptr [[SRC_GEP_I3225_I108]], align 4
+; CHECK-NEXT:    store i32 [[TMP97]], ptr [[DST_GEP_I3226_I109]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I827_I110:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I828_I111:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[TMP98:%.*]] = load i8, ptr [[SRC_GEP_I827_I110]], align 1
+; CHECK-NEXT:    store i8 [[TMP98]], ptr [[DST_GEP_I828_I111]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB10_I102]]:
+; CHECK-NEXT:    [[TMP99:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP99]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3231_I103:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3232_I104:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP100:%.*]] = load i32, ptr [[SRC_GEP_I3231_I103]], align 4
+; CHECK-NEXT:    store i32 [[TMP100]], ptr [[DST_GEP_I3232_I104]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1633_I105:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I1634_I106:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[TMP101:%.*]] = load i16, ptr [[SRC_GEP_I1633_I105]], align 2
+; CHECK-NEXT:    store i16 [[TMP101]], ptr [[DST_GEP_I1634_I106]], align 2
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB11_I95]]:
+; CHECK-NEXT:    [[TMP102:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP102]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3237_I96:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3238_I97:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP103:%.*]] = load i32, ptr [[SRC_GEP_I3237_I96]], align 4
+; CHECK-NEXT:    store i32 [[TMP103]], ptr [[DST_GEP_I3238_I97]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1639_I98:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I1640_I99:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[TMP104:%.*]] = load i16, ptr [[SRC_GEP_I1639_I98]], align 2
+; CHECK-NEXT:    store i16 [[TMP104]], ptr [[DST_GEP_I1640_I99]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I841_I100:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 10
+; CHECK-NEXT:    [[DST_GEP_I842_I101:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 10
+; CHECK-NEXT:    [[TMP105:%.*]] = load i8, ptr [[SRC_GEP_I841_I100]], align 1
+; CHECK-NEXT:    store i8 [[TMP105]], ptr [[DST_GEP_I842_I101]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB12_I90]]:
+; CHECK-NEXT:    [[TMP106:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP106]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3245_I91:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3246_I92:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP107:%.*]] = load i32, ptr [[SRC_GEP_I3245_I91]], align 4
+; CHECK-NEXT:    store i32 [[TMP107]], ptr [[DST_GEP_I3246_I92]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3247_I93:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I3248_I94:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[TMP108:%.*]] = load i32, ptr [[SRC_GEP_I3247_I93]], align 4
+; CHECK-NEXT:    store i32 [[TMP108]], ptr [[DST_GEP_I3248_I94]], align 4
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB13_I83]]:
+; CHECK-NEXT:    [[TMP109:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP109]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3251_I84:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3252_I85:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP110:%.*]] = load i32, ptr [[SRC_GEP_I3251_I84]], align 4
+; CHECK-NEXT:    store i32 [[TMP110]], ptr [[DST_GEP_I3252_I85]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3253_I86:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I3254_I87:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[TMP111:%.*]] = load i32, ptr [[SRC_GEP_I3253_I86]], align 4
+; CHECK-NEXT:    store i32 [[TMP111]], ptr [[DST_GEP_I3254_I87]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I855_I88:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 12
+; CHECK-NEXT:    [[DST_GEP_I856_I89:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 12
+; CHECK-NEXT:    [[TMP112:%.*]] = load i8, ptr [[SRC_GEP_I855_I88]], align 1
+; CHECK-NEXT:    store i8 [[TMP112]], ptr [[DST_GEP_I856_I89]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB14_I76]]:
+; CHECK-NEXT:    [[TMP113:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP113]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3259_I77:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3260_I78:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP114:%.*]] = load i32, ptr [[SRC_GEP_I3259_I77]], align 4
+; CHECK-NEXT:    store i32 [[TMP114]], ptr [[DST_GEP_I3260_I78]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3261_I79:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I3262_I80:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[TMP115:%.*]] = load i32, ptr [[SRC_GEP_I3261_I79]], align 4
+; CHECK-NEXT:    store i32 [[TMP115]], ptr [[DST_GEP_I3262_I80]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1663_I81:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 12
+; CHECK-NEXT:    [[DST_GEP_I1664_I82:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 12
+; CHECK-NEXT:    [[TMP116:%.*]] = load i16, ptr [[SRC_GEP_I1663_I81]], align 2
+; CHECK-NEXT:    store i16 [[TMP116]], ptr [[DST_GEP_I1664_I82]], align 2
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB15_I67]]:
+; CHECK-NEXT:    [[TMP117:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    store i32 [[TMP117]], ptr [[DST_PTR_FINAL_I]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3267_I68:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I3268_I69:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[TMP118:%.*]] = load i32, ptr [[SRC_GEP_I3267_I68]], align 4
+; CHECK-NEXT:    store i32 [[TMP118]], ptr [[DST_GEP_I3268_I69]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I3269_I70:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[DST_GEP_I3270_I71:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[TMP119:%.*]] = load i32, ptr [[SRC_GEP_I3269_I70]], align 4
+; CHECK-NEXT:    store i32 [[TMP119]], ptr [[DST_GEP_I3270_I71]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1671_I72:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 12
+; CHECK-NEXT:    [[DST_GEP_I1672_I73:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 12
+; CHECK-NEXT:    [[TMP120:%.*]] = load i16, ptr [[SRC_GEP_I1671_I72]], align 2
+; CHECK-NEXT:    store i16 [[TMP120]], ptr [[DST_GEP_I1672_I73]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I873_I74:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 14
+; CHECK-NEXT:    [[DST_GEP_I874_I75:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 14
+; CHECK-NEXT:    [[TMP121:%.*]] = load i8, ptr [[SRC_GEP_I873_I74]], align 1
+; CHECK-NEXT:    store i8 [[TMP121]], ptr [[DST_GEP_I874_I75]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[RETURN]]:
 ; CHECK-NEXT:    ret void
 ;
 entry:
-  %sub = sub i32 16, %dst_align
-  %cmp.not = icmp ult i32 %sub, %size
-  br i1 %cmp.not, label %if.end, label %if.then
+  %head.size = sub i32 16, %dst_align
+  %need.split = icmp ult i32 %head.size, %size
+  br i1 %need.split, label %handle.tail, label %handle.head
 
-if.then:                                          ; preds = %entry
-  call void @esp32p4MemCpySrcUnalignedDstUnalignedVarFrom0To15Opt(ptr %dst, ptr %src, i32 %size)
-  br label %cleanup
+handle.head:                                      ; preds = %entry
+  switch i32 %size, label %return [
+  i32 1, label %sw.bb1.i65
+  i32 2, label %sw.bb2.i64
+  i32 3, label %sw.bb3.i61
+  i32 4, label %sw.bb4.i60
+  i32 5, label %sw.bb5.i57
+  i32 6, label %sw.bb6.i54
+  i32 7, label %sw.bb7.i49
+  i32 8, label %sw.bb8.i46
+  i32 9, label %sw.bb9.i41
+  i32 10, label %sw.bb10.i36
+  i32 11, label %sw.bb11.i29
+  i32 12, label %sw.bb12.i24
+  i32 13, label %sw.bb13.i17
+  i32 14, label %sw.bb14.i10
+  i32 15, label %sw.bb15.i1
+  ]
 
-if.end:                                           ; preds = %entry
-  call void @esp32p4MemCpySrcUnalignedDstUnalignedVarFrom0To15Opt(ptr %dst, ptr %src, i32 %sub)
-  %sub2 = sub i32 %size, %sub
-  %add.ptr1 = getelementptr i8, ptr %dst, i32 %sub
-  %add.ptr = getelementptr i8, ptr %src, i32 %sub
-  %0 = icmp ult i32 %sub2, 16
-  br i1 %0, label %if.small, label %if.large
+sw.bb1.i65:                                       ; preds = %handle.head
+  %0 = load i8, ptr %src, align 1
+  store i8 %0, ptr %dst, align 1
+  br label %return
 
-if.small:                                         ; preds = %if.end
-  call void @esp32p4MemCpySrcUnalignedDstUnalignedVarFrom0To15Opt(ptr %add.ptr1, ptr %add.ptr, i32 %sub2)
-  br label %cleanup
+sw.bb2.i64:                                       ; preds = %handle.head
+  %1 = load i16, ptr %src, align 2
+  store i16 %1, ptr %dst, align 2
+  br label %return
 
-if.large:                                         ; preds = %if.end
-  %1 = ptrtoint ptr %add.ptr to i32
-  %2 = ptrtoint ptr %add.ptr1 to i32
-  call void @esp32p4MemCpySrcunalignedDst16Var(i32 %2, i32 %1, i32 %sub2)
-  br label %cleanup
+sw.bb3.i61:                                       ; preds = %handle.head
+  %2 = load i16, ptr %src, align 2
+  store i16 %2, ptr %dst, align 2
+  %src.gep.i83.i62 = getelementptr i8, ptr %src, i32 2
+  %dst.gep.i84.i63 = getelementptr i8, ptr %dst, i32 2
+  %3 = load i8, ptr %src.gep.i83.i62, align 1
+  store i8 %3, ptr %dst.gep.i84.i63, align 1
+  br label %return
 
-cleanup:                                          ; preds = %if.small, %if.large, %if.then
+sw.bb4.i60:                                       ; preds = %handle.head
+  %4 = load i32, ptr %src, align 4
+  store i32 %4, ptr %dst, align 4
+  br label %return
+
+sw.bb5.i57:                                       ; preds = %handle.head
+  %5 = load i32, ptr %src, align 4
+  store i32 %5, ptr %dst, align 4
+  %src.gep.i87.i58 = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i88.i59 = getelementptr i8, ptr %dst, i32 4
+  %6 = load i8, ptr %src.gep.i87.i58, align 1
+  store i8 %6, ptr %dst.gep.i88.i59, align 1
+  br label %return
+
+sw.bb6.i54:                                       ; preds = %handle.head
+  %7 = load i32, ptr %src, align 4
+  store i32 %7, ptr %dst, align 4
+  %src.gep.i1611.i55 = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i1612.i56 = getelementptr i8, ptr %dst, i32 4
+  %8 = load i16, ptr %src.gep.i1611.i55, align 2
+  store i16 %8, ptr %dst.gep.i1612.i56, align 2
+  br label %return
+
+sw.bb7.i49:                                       ; preds = %handle.head
+  %9 = load i32, ptr %src, align 4
+  store i32 %9, ptr %dst, align 4
+  %src.gep.i1615.i50 = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i1616.i51 = getelementptr i8, ptr %dst, i32 4
+  %10 = load i16, ptr %src.gep.i1615.i50, align 2
+  store i16 %10, ptr %dst.gep.i1616.i51, align 2
+  %src.gep.i817.i52 = getelementptr i8, ptr %src, i32 6
+  %dst.gep.i818.i53 = getelementptr i8, ptr %dst, i32 6
+  %11 = load i8, ptr %src.gep.i817.i52, align 1
+  store i8 %11, ptr %dst.gep.i818.i53, align 1
+  br label %return
+
+sw.bb8.i46:                                       ; preds = %handle.head
+  %12 = load i32, ptr %src, align 4
+  store i32 %12, ptr %dst, align 4
+  %src.gep.i3221.i47 = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i3222.i48 = getelementptr i8, ptr %dst, i32 4
+  %13 = load i32, ptr %src.gep.i3221.i47, align 4
+  store i32 %13, ptr %dst.gep.i3222.i48, align 4
+  br label %return
+
+sw.bb9.i41:                                       ; preds = %handle.head
+  %14 = load i32, ptr %src, align 4
+  store i32 %14, ptr %dst, align 4
+  %src.gep.i3225.i42 = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i3226.i43 = getelementptr i8, ptr %dst, i32 4
+  %15 = load i32, ptr %src.gep.i3225.i42, align 4
+  store i32 %15, ptr %dst.gep.i3226.i43, align 4
+  %src.gep.i827.i44 = getelementptr i8, ptr %src, i32 8
+  %dst.gep.i828.i45 = getelementptr i8, ptr %dst, i32 8
+  %16 = load i8, ptr %src.gep.i827.i44, align 1
+  store i8 %16, ptr %dst.gep.i828.i45, align 1
+  br label %return
+
+sw.bb10.i36:                                      ; preds = %handle.head
+  %17 = load i32, ptr %src, align 4
+  store i32 %17, ptr %dst, align 4
+  %src.gep.i3231.i37 = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i3232.i38 = getelementptr i8, ptr %dst, i32 4
+  %18 = load i32, ptr %src.gep.i3231.i37, align 4
+  store i32 %18, ptr %dst.gep.i3232.i38, align 4
+  %src.gep.i1633.i39 = getelementptr i8, ptr %src, i32 8
+  %dst.gep.i1634.i40 = getelementptr i8, ptr %dst, i32 8
+  %19 = load i16, ptr %src.gep.i1633.i39, align 2
+  store i16 %19, ptr %dst.gep.i1634.i40, align 2
+  br label %return
+
+sw.bb11.i29:                                      ; preds = %handle.head
+  %20 = load i32, ptr %src, align 4
+  store i32 %20, ptr %dst, align 4
+  %src.gep.i3237.i30 = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i3238.i31 = getelementptr i8, ptr %dst, i32 4
+  %21 = load i32, ptr %src.gep.i3237.i30, align 4
+  store i32 %21, ptr %dst.gep.i3238.i31, align 4
+  %src.gep.i1639.i32 = getelementptr i8, ptr %src, i32 8
+  %dst.gep.i1640.i33 = getelementptr i8, ptr %dst, i32 8
+  %22 = load i16, ptr %src.gep.i1639.i32, align 2
+  store i16 %22, ptr %dst.gep.i1640.i33, align 2
+  %src.gep.i841.i34 = getelementptr i8, ptr %src, i32 10
+  %dst.gep.i842.i35 = getelementptr i8, ptr %dst, i32 10
+  %23 = load i8, ptr %src.gep.i841.i34, align 1
+  store i8 %23, ptr %dst.gep.i842.i35, align 1
+  br label %return
+
+sw.bb12.i24:                                      ; preds = %handle.head
+  %24 = load i32, ptr %src, align 4
+  store i32 %24, ptr %dst, align 4
+  %src.gep.i3245.i25 = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i3246.i26 = getelementptr i8, ptr %dst, i32 4
+  %25 = load i32, ptr %src.gep.i3245.i25, align 4
+  store i32 %25, ptr %dst.gep.i3246.i26, align 4
+  %src.gep.i3247.i27 = getelementptr i8, ptr %src, i32 8
+  %dst.gep.i3248.i28 = getelementptr i8, ptr %dst, i32 8
+  %26 = load i32, ptr %src.gep.i3247.i27, align 4
+  store i32 %26, ptr %dst.gep.i3248.i28, align 4
+  br label %return
+
+sw.bb13.i17:                                      ; preds = %handle.head
+  %27 = load i32, ptr %src, align 4
+  store i32 %27, ptr %dst, align 4
+  %src.gep.i3251.i18 = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i3252.i19 = getelementptr i8, ptr %dst, i32 4
+  %28 = load i32, ptr %src.gep.i3251.i18, align 4
+  store i32 %28, ptr %dst.gep.i3252.i19, align 4
+  %src.gep.i3253.i20 = getelementptr i8, ptr %src, i32 8
+  %dst.gep.i3254.i21 = getelementptr i8, ptr %dst, i32 8
+  %29 = load i32, ptr %src.gep.i3253.i20, align 4
+  store i32 %29, ptr %dst.gep.i3254.i21, align 4
+  %src.gep.i855.i22 = getelementptr i8, ptr %src, i32 12
+  %dst.gep.i856.i23 = getelementptr i8, ptr %dst, i32 12
+  %30 = load i8, ptr %src.gep.i855.i22, align 1
+  store i8 %30, ptr %dst.gep.i856.i23, align 1
+  br label %return
+
+sw.bb14.i10:                                      ; preds = %handle.head
+  %31 = load i32, ptr %src, align 4
+  store i32 %31, ptr %dst, align 4
+  %src.gep.i3259.i11 = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i3260.i12 = getelementptr i8, ptr %dst, i32 4
+  %32 = load i32, ptr %src.gep.i3259.i11, align 4
+  store i32 %32, ptr %dst.gep.i3260.i12, align 4
+  %src.gep.i3261.i13 = getelementptr i8, ptr %src, i32 8
+  %dst.gep.i3262.i14 = getelementptr i8, ptr %dst, i32 8
+  %33 = load i32, ptr %src.gep.i3261.i13, align 4
+  store i32 %33, ptr %dst.gep.i3262.i14, align 4
+  %src.gep.i1663.i15 = getelementptr i8, ptr %src, i32 12
+  %dst.gep.i1664.i16 = getelementptr i8, ptr %dst, i32 12
+  %34 = load i16, ptr %src.gep.i1663.i15, align 2
+  store i16 %34, ptr %dst.gep.i1664.i16, align 2
+  br label %return
+
+sw.bb15.i1:                                       ; preds = %handle.head
+  %35 = load i32, ptr %src, align 4
+  store i32 %35, ptr %dst, align 4
+  %src.gep.i3267.i2 = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i3268.i3 = getelementptr i8, ptr %dst, i32 4
+  %36 = load i32, ptr %src.gep.i3267.i2, align 4
+  store i32 %36, ptr %dst.gep.i3268.i3, align 4
+  %src.gep.i3269.i4 = getelementptr i8, ptr %src, i32 8
+  %dst.gep.i3270.i5 = getelementptr i8, ptr %dst, i32 8
+  %37 = load i32, ptr %src.gep.i3269.i4, align 4
+  store i32 %37, ptr %dst.gep.i3270.i5, align 4
+  %src.gep.i1671.i6 = getelementptr i8, ptr %src, i32 12
+  %dst.gep.i1672.i7 = getelementptr i8, ptr %dst, i32 12
+  %38 = load i16, ptr %src.gep.i1671.i6, align 2
+  store i16 %38, ptr %dst.gep.i1672.i7, align 2
+  %src.gep.i873.i8 = getelementptr i8, ptr %src, i32 14
+  %dst.gep.i874.i9 = getelementptr i8, ptr %dst, i32 14
+  %39 = load i8, ptr %src.gep.i873.i8, align 1
+  store i8 %39, ptr %dst.gep.i874.i9, align 1
+  br label %return
+
+handle.tail:                                      ; preds = %entry
+  switch i32 %dst_align, label %esp32p4MemCpySrcUnalignDstUnalignFrom1To15Opt.exit [
+  i32 15, label %sw.bb1.i
+  i32 14, label %sw.bb2.i
+  i32 13, label %sw.bb3.i
+  i32 12, label %sw.bb4.i
+  i32 11, label %sw.bb5.i
+  i32 10, label %sw.bb6.i
+  i32 9, label %sw.bb7.i
+  i32 8, label %sw.bb8.i
+  i32 7, label %sw.bb9.i
+  i32 6, label %sw.bb10.i
+  i32 5, label %sw.bb11.i
+  i32 4, label %sw.bb12.i
+  i32 3, label %sw.bb13.i
+  i32 2, label %sw.bb14.i
+  i32 1, label %sw.bb15.i
+  ]
+
+sw.bb1.i:                                         ; preds = %handle.tail
+  %40 = load i8, ptr %src, align 1
+  store i8 %40, ptr %dst, align 1
+  br label %esp32p4MemCpySrcUnalignDstUnalignFrom1To15Opt.exit
+
+sw.bb2.i:                                         ; preds = %handle.tail
+  %41 = load i16, ptr %src, align 2
+  store i16 %41, ptr %dst, align 2
+  br label %esp32p4MemCpySrcUnalignDstUnalignFrom1To15Opt.exit
+
+sw.bb3.i:                                         ; preds = %handle.tail
+  %42 = load i16, ptr %src, align 2
+  store i16 %42, ptr %dst, align 2
+  %src.gep.i83.i = getelementptr i8, ptr %src, i32 2
+  %dst.gep.i84.i = getelementptr i8, ptr %dst, i32 2
+  %43 = load i8, ptr %src.gep.i83.i, align 1
+  store i8 %43, ptr %dst.gep.i84.i, align 1
+  br label %esp32p4MemCpySrcUnalignDstUnalignFrom1To15Opt.exit
+
+sw.bb4.i:                                         ; preds = %handle.tail
+  %44 = load i32, ptr %src, align 4
+  store i32 %44, ptr %dst, align 4
+  br label %esp32p4MemCpySrcUnalignDstUnalignFrom1To15Opt.exit
+
+sw.bb5.i:                                         ; preds = %handle.tail
+  %45 = load i32, ptr %src, align 4
+  store i32 %45, ptr %dst, align 4
+  %src.gep.i87.i = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i88.i = getelementptr i8, ptr %dst, i32 4
+  %46 = load i8, ptr %src.gep.i87.i, align 1
+  store i8 %46, ptr %dst.gep.i88.i, align 1
+  br label %esp32p4MemCpySrcUnalignDstUnalignFrom1To15Opt.exit
+
+sw.bb6.i:                                         ; preds = %handle.tail
+  %47 = load i32, ptr %src, align 4
+  store i32 %47, ptr %dst, align 4
+  %src.gep.i1611.i = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i1612.i = getelementptr i8, ptr %dst, i32 4
+  %48 = load i16, ptr %src.gep.i1611.i, align 2
+  store i16 %48, ptr %dst.gep.i1612.i, align 2
+  br label %esp32p4MemCpySrcUnalignDstUnalignFrom1To15Opt.exit
+
+sw.bb7.i:                                         ; preds = %handle.tail
+  %49 = load i32, ptr %src, align 4
+  store i32 %49, ptr %dst, align 4
+  %src.gep.i1615.i = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i1616.i = getelementptr i8, ptr %dst, i32 4
+  %50 = load i16, ptr %src.gep.i1615.i, align 2
+  store i16 %50, ptr %dst.gep.i1616.i, align 2
+  %src.gep.i817.i = getelementptr i8, ptr %src, i32 6
+  %dst.gep.i818.i = getelementptr i8, ptr %dst, i32 6
+  %51 = load i8, ptr %src.gep.i817.i, align 1
+  store i8 %51, ptr %dst.gep.i818.i, align 1
+  br label %esp32p4MemCpySrcUnalignDstUnalignFrom1To15Opt.exit
+
+sw.bb8.i:                                         ; preds = %handle.tail
+  %52 = load i32, ptr %src, align 4
+  store i32 %52, ptr %dst, align 4
+  %src.gep.i3221.i = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i3222.i = getelementptr i8, ptr %dst, i32 4
+  %53 = load i32, ptr %src.gep.i3221.i, align 4
+  store i32 %53, ptr %dst.gep.i3222.i, align 4
+  br label %esp32p4MemCpySrcUnalignDstUnalignFrom1To15Opt.exit
+
+sw.bb9.i:                                         ; preds = %handle.tail
+  %54 = load i32, ptr %src, align 4
+  store i32 %54, ptr %dst, align 4
+  %src.gep.i3225.i = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i3226.i = getelementptr i8, ptr %dst, i32 4
+  %55 = load i32, ptr %src.gep.i3225.i, align 4
+  store i32 %55, ptr %dst.gep.i3226.i, align 4
+  %src.gep.i827.i = getelementptr i8, ptr %src, i32 8
+  %dst.gep.i828.i = getelementptr i8, ptr %dst, i32 8
+  %56 = load i8, ptr %src.gep.i827.i, align 1
+  store i8 %56, ptr %dst.gep.i828.i, align 1
+  br label %esp32p4MemCpySrcUnalignDstUnalignFrom1To15Opt.exit
+
+sw.bb10.i:                                        ; preds = %handle.tail
+  %57 = load i32, ptr %src, align 4
+  store i32 %57, ptr %dst, align 4
+  %src.gep.i3231.i = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i3232.i = getelementptr i8, ptr %dst, i32 4
+  %58 = load i32, ptr %src.gep.i3231.i, align 4
+  store i32 %58, ptr %dst.gep.i3232.i, align 4
+  %src.gep.i1633.i = getelementptr i8, ptr %src, i32 8
+  %dst.gep.i1634.i = getelementptr i8, ptr %dst, i32 8
+  %59 = load i16, ptr %src.gep.i1633.i, align 2
+  store i16 %59, ptr %dst.gep.i1634.i, align 2
+  br label %esp32p4MemCpySrcUnalignDstUnalignFrom1To15Opt.exit
+
+sw.bb11.i:                                        ; preds = %handle.tail
+  %60 = load i32, ptr %src, align 4
+  store i32 %60, ptr %dst, align 4
+  %src.gep.i3237.i = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i3238.i = getelementptr i8, ptr %dst, i32 4
+  %61 = load i32, ptr %src.gep.i3237.i, align 4
+  store i32 %61, ptr %dst.gep.i3238.i, align 4
+  %src.gep.i1639.i = getelementptr i8, ptr %src, i32 8
+  %dst.gep.i1640.i = getelementptr i8, ptr %dst, i32 8
+  %62 = load i16, ptr %src.gep.i1639.i, align 2
+  store i16 %62, ptr %dst.gep.i1640.i, align 2
+  %src.gep.i841.i = getelementptr i8, ptr %src, i32 10
+  %dst.gep.i842.i = getelementptr i8, ptr %dst, i32 10
+  %63 = load i8, ptr %src.gep.i841.i, align 1
+  store i8 %63, ptr %dst.gep.i842.i, align 1
+  br label %esp32p4MemCpySrcUnalignDstUnalignFrom1To15Opt.exit
+
+sw.bb12.i:                                        ; preds = %handle.tail
+  %64 = load i32, ptr %src, align 4
+  store i32 %64, ptr %dst, align 4
+  %src.gep.i3245.i = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i3246.i = getelementptr i8, ptr %dst, i32 4
+  %65 = load i32, ptr %src.gep.i3245.i, align 4
+  store i32 %65, ptr %dst.gep.i3246.i, align 4
+  %src.gep.i3247.i = getelementptr i8, ptr %src, i32 8
+  %dst.gep.i3248.i = getelementptr i8, ptr %dst, i32 8
+  %66 = load i32, ptr %src.gep.i3247.i, align 4
+  store i32 %66, ptr %dst.gep.i3248.i, align 4
+  br label %esp32p4MemCpySrcUnalignDstUnalignFrom1To15Opt.exit
+
+sw.bb13.i:                                        ; preds = %handle.tail
+  %67 = load i32, ptr %src, align 4
+  store i32 %67, ptr %dst, align 4
+  %src.gep.i3251.i = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i3252.i = getelementptr i8, ptr %dst, i32 4
+  %68 = load i32, ptr %src.gep.i3251.i, align 4
+  store i32 %68, ptr %dst.gep.i3252.i, align 4
+  %src.gep.i3253.i = getelementptr i8, ptr %src, i32 8
+  %dst.gep.i3254.i = getelementptr i8, ptr %dst, i32 8
+  %69 = load i32, ptr %src.gep.i3253.i, align 4
+  store i32 %69, ptr %dst.gep.i3254.i, align 4
+  %src.gep.i855.i = getelementptr i8, ptr %src, i32 12
+  %dst.gep.i856.i = getelementptr i8, ptr %dst, i32 12
+  %70 = load i8, ptr %src.gep.i855.i, align 1
+  store i8 %70, ptr %dst.gep.i856.i, align 1
+  br label %esp32p4MemCpySrcUnalignDstUnalignFrom1To15Opt.exit
+
+sw.bb14.i:                                        ; preds = %handle.tail
+  %71 = load i32, ptr %src, align 4
+  store i32 %71, ptr %dst, align 4
+  %src.gep.i3259.i = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i3260.i = getelementptr i8, ptr %dst, i32 4
+  %72 = load i32, ptr %src.gep.i3259.i, align 4
+  store i32 %72, ptr %dst.gep.i3260.i, align 4
+  %src.gep.i3261.i = getelementptr i8, ptr %src, i32 8
+  %dst.gep.i3262.i = getelementptr i8, ptr %dst, i32 8
+  %73 = load i32, ptr %src.gep.i3261.i, align 4
+  store i32 %73, ptr %dst.gep.i3262.i, align 4
+  %src.gep.i1663.i = getelementptr i8, ptr %src, i32 12
+  %dst.gep.i1664.i = getelementptr i8, ptr %dst, i32 12
+  %74 = load i16, ptr %src.gep.i1663.i, align 2
+  store i16 %74, ptr %dst.gep.i1664.i, align 2
+  br label %esp32p4MemCpySrcUnalignDstUnalignFrom1To15Opt.exit
+
+sw.bb15.i:                                        ; preds = %handle.tail
+  %75 = load i32, ptr %src, align 4
+  store i32 %75, ptr %dst, align 4
+  %src.gep.i3267.i = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i3268.i = getelementptr i8, ptr %dst, i32 4
+  %76 = load i32, ptr %src.gep.i3267.i, align 4
+  store i32 %76, ptr %dst.gep.i3268.i, align 4
+  %src.gep.i3269.i = getelementptr i8, ptr %src, i32 8
+  %dst.gep.i3270.i = getelementptr i8, ptr %dst, i32 8
+  %77 = load i32, ptr %src.gep.i3269.i, align 4
+  store i32 %77, ptr %dst.gep.i3270.i, align 4
+  %src.gep.i1671.i = getelementptr i8, ptr %src, i32 12
+  %dst.gep.i1672.i = getelementptr i8, ptr %dst, i32 12
+  %78 = load i16, ptr %src.gep.i1671.i, align 2
+  store i16 %78, ptr %dst.gep.i1672.i, align 2
+  %src.gep.i873.i = getelementptr i8, ptr %src, i32 14
+  %dst.gep.i874.i = getelementptr i8, ptr %dst, i32 14
+  %79 = load i8, ptr %src.gep.i873.i, align 1
+  store i8 %79, ptr %dst.gep.i874.i, align 1
+  br label %esp32p4MemCpySrcUnalignDstUnalignFrom1To15Opt.exit
+
+esp32p4MemCpySrcUnalignDstUnalignFrom1To15Opt.exit: ; preds = %handle.tail, %sw.bb1.i, %sw.bb2.i, %sw.bb3.i, %sw.bb4.i, %sw.bb5.i, %sw.bb6.i, %sw.bb7.i, %sw.bb8.i, %sw.bb9.i, %sw.bb10.i, %sw.bb11.i, %sw.bb12.i, %sw.bb13.i, %sw.bb14.i, %sw.bb15.i
+  %remaining.size = sub i32 %size, %head.size
+  %dst.aligned.ptr = getelementptr i8, ptr %dst, i32 %head.size
+  %src.aligned.ptr = getelementptr i8, ptr %src, i32 %head.size
+  %80 = ptrtoint ptr %src.aligned.ptr to i32
+  %81 = ptrtoint ptr %dst.aligned.ptr to i32
+  %size.is.small.i = icmp ult i32 %remaining.size, 16
+  br i1 %size.is.small.i, label %final.cleanup.i, label %process.main.loop.i
+
+process.main.loop.i:                              ; preds = %esp32p4MemCpySrcUnalignDstUnalignFrom1To15Opt.exit
+  %blocks.48.count.i = udiv i32 %remaining.size, 48
+  %.neg = mul i32 %blocks.48.count.i, -48
+  %remainder.after.48blocks.i = add i32 %.neg, %remaining.size
+  %ld128usarip.i = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %80, i32 16, i32 0)
+  %ld128usarip1.i = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip.i, i32 16, i32 1)
+  %no.48byte.blocks.i = icmp ult i32 %remaining.size, 48
+  br i1 %no.48byte.blocks.i, label %handle.remainder.i, label %main.loop.body.i
+
+handle.remainder.i:                               ; preds = %main.loop.body.i, %process.main.loop.i
+  %src.ptr.after.main.loop.i = phi i32 [ %ld128usarip1.i, %process.main.loop.i ], [ %srcqldip4.after.block.i, %main.loop.body.i ]
+  %dst.ptr.after.main.loop.i = phi i32 [ %81, %process.main.loop.i ], [ %vst128ip5.after.block.i, %main.loop.body.i ]
+  %remainder.has.no.32bytes.i = icmp ult i32 %remainder.after.48blocks.i, 32
+  br i1 %remainder.has.no.32bytes.i, label %check.16byte.tail.i, label %process.32byte.tail.i
+
+main.loop.body.i:                                 ; preds = %main.loop.body.i, %process.main.loop.i
+  %loop.index.i = phi i32 [ 0, %process.main.loop.i ], [ %loop.index.incremented.i, %main.loop.body.i ]
+  %src.ptr.in.loop.i = phi i32 [ %ld128usarip1.i, %process.main.loop.i ], [ %srcqldip4.after.block.i, %main.loop.body.i ]
+  %dst.ptr.in.loop.i = phi i32 [ %81, %process.main.loop.i ], [ %vst128ip5.after.block.i, %main.loop.body.i ]
+  %srcqldip.i = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.in.loop.i, i32 0, i32 16, i32 2)
+  %vst128ip.i = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.in.loop.i, i32 16)
+  %srcqldip2.i = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip.i, i32 1, i32 16, i32 0)
+  %vst128ip3.i = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip.i, i32 16)
+  %srcqldip4.after.block.i = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2.i, i32 2, i32 16, i32 1)
+  %vst128ip5.after.block.i = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3.i, i32 16)
+  %loop.index.incremented.i = add nuw nsw i32 %loop.index.i, 1
+  %loop.completed.i = icmp eq i32 %loop.index.incremented.i, %blocks.48.count.i
+  br i1 %loop.completed.i, label %handle.remainder.i, label %main.loop.body.i
+
+process.32byte.tail.i:                            ; preds = %handle.remainder.i
+  %srcqldip6.i = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.after.main.loop.i, i32 0, i32 0, i32 2)
+  %vst128ip7.i = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.after.main.loop.i, i32 16)
+  call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
+  %vst128ip8.i = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip7.i, i32 16)
+  %remainder.after.32byte.processing.i = add nsw i32 %remainder.after.48blocks.i, -32
+  br label %final.cleanup.i
+
+check.16byte.tail.i:                              ; preds = %handle.remainder.i
+  %remainder.has.no.16bytes.i = icmp ult i32 %remainder.after.48blocks.i, 16
+  br i1 %remainder.has.no.16bytes.i, label %skip.tail.processing.i, label %process.16byte.tail.i
+
+process.16byte.tail.i:                            ; preds = %check.16byte.tail.i
+  call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
+  %vst128ip9.i = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.after.main.loop.i, i32 16)
+  %src.after.16byte.processing.i = add i32 %src.ptr.after.main.loop.i, -16
+  %remainder.after.16byte.processing.i = add nsw i32 %remainder.after.48blocks.i, -16
+  br label %final.cleanup.i
+
+skip.tail.processing.i:                           ; preds = %check.16byte.tail.i
+  %src.adjusted.for.unaligned.i = add i32 %src.ptr.after.main.loop.i, -32
+  br label %final.cleanup.i
+
+final.cleanup.i:                                  ; preds = %skip.tail.processing.i, %process.16byte.tail.i, %process.32byte.tail.i, %esp32p4MemCpySrcUnalignDstUnalignFrom1To15Opt.exit
+  %src.for.final.processing.i = phi i32 [ %srcqldip6.i, %process.32byte.tail.i ], [ %src.after.16byte.processing.i, %process.16byte.tail.i ], [ %80, %esp32p4MemCpySrcUnalignDstUnalignFrom1To15Opt.exit ], [ %src.adjusted.for.unaligned.i, %skip.tail.processing.i ]
+  %dst.for.final.processing.i = phi i32 [ %vst128ip8.i, %process.32byte.tail.i ], [ %vst128ip9.i, %process.16byte.tail.i ], [ %81, %esp32p4MemCpySrcUnalignDstUnalignFrom1To15Opt.exit ], [ %dst.ptr.after.main.loop.i, %skip.tail.processing.i ]
+  %remainder.for.final.processing.i = phi i32 [ %remainder.after.32byte.processing.i, %process.32byte.tail.i ], [ %remainder.after.16byte.processing.i, %process.16byte.tail.i ], [ %remaining.size, %esp32p4MemCpySrcUnalignDstUnalignFrom1To15Opt.exit ], [ %remainder.after.48blocks.i, %skip.tail.processing.i ]
+  %has.no.remaining.bytes.i = icmp eq i32 %remainder.for.final.processing.i, 0
+  br i1 %has.no.remaining.bytes.i, label %return, label %call.small.size.cleanup.i
+
+call.small.size.cleanup.i:                        ; preds = %final.cleanup.i
+  %dst.ptr.for.small.size.cleanup.i = inttoptr i32 %dst.for.final.processing.i to ptr
+  %src.ptr.for.small.size.cleanup.i = inttoptr i32 %src.for.final.processing.i to ptr
+  switch i32 %remainder.for.final.processing.i, label %return [
+  i32 1, label %sw.bb1.i131
+  i32 2, label %sw.bb2.i130
+  i32 3, label %sw.bb3.i127
+  i32 4, label %sw.bb4.i126
+  i32 5, label %sw.bb5.i123
+  i32 6, label %sw.bb6.i120
+  i32 7, label %sw.bb7.i115
+  i32 8, label %sw.bb8.i112
+  i32 9, label %sw.bb9.i107
+  i32 10, label %sw.bb10.i102
+  i32 11, label %sw.bb11.i95
+  i32 12, label %sw.bb12.i90
+  i32 13, label %sw.bb13.i83
+  i32 14, label %sw.bb14.i76
+  i32 15, label %sw.bb15.i67
+  ]
+
+sw.bb1.i131:                                      ; preds = %call.small.size.cleanup.i
+  %82 = load i8, ptr %src.ptr.for.small.size.cleanup.i, align 1
+  store i8 %82, ptr %dst.ptr.for.small.size.cleanup.i, align 1
+  br label %return
+
+sw.bb2.i130:                                      ; preds = %call.small.size.cleanup.i
+  %83 = load i16, ptr %src.ptr.for.small.size.cleanup.i, align 2
+  store i16 %83, ptr %dst.ptr.for.small.size.cleanup.i, align 2
+  br label %return
+
+sw.bb3.i127:                                      ; preds = %call.small.size.cleanup.i
+  %84 = load i16, ptr %src.ptr.for.small.size.cleanup.i, align 2
+  store i16 %84, ptr %dst.ptr.for.small.size.cleanup.i, align 2
+  %src.gep.i83.i128 = getelementptr i8, ptr %src.ptr.for.small.size.cleanup.i, i32 2
+  %dst.gep.i84.i129 = getelementptr i8, ptr %dst.ptr.for.small.size.cleanup.i, i32 2
+  %85 = load i8, ptr %src.gep.i83.i128, align 1
+  store i8 %85, ptr %dst.gep.i84.i129, align 1
+  br label %return
+
+sw.bb4.i126:                                      ; preds = %call.small.size.cleanup.i
+  %86 = load i32, ptr %src.ptr.for.small.size.cleanup.i, align 4
+  store i32 %86, ptr %dst.ptr.for.small.size.cleanup.i, align 4
+  br label %return
+
+sw.bb5.i123:                                      ; preds = %call.small.size.cleanup.i
+  %87 = load i32, ptr %src.ptr.for.small.size.cleanup.i, align 4
+  store i32 %87, ptr %dst.ptr.for.small.size.cleanup.i, align 4
+  %src.gep.i87.i124 = getelementptr i8, ptr %src.ptr.for.small.size.cleanup.i, i32 4
+  %dst.gep.i88.i125 = getelementptr i8, ptr %dst.ptr.for.small.size.cleanup.i, i32 4
+  %88 = load i8, ptr %src.gep.i87.i124, align 1
+  store i8 %88, ptr %dst.gep.i88.i125, align 1
+  br label %return
+
+sw.bb6.i120:                                      ; preds = %call.small.size.cleanup.i
+  %89 = load i32, ptr %src.ptr.for.small.size.cleanup.i, align 4
+  store i32 %89, ptr %dst.ptr.for.small.size.cleanup.i, align 4
+  %src.gep.i1611.i121 = getelementptr i8, ptr %src.ptr.for.small.size.cleanup.i, i32 4
+  %dst.gep.i1612.i122 = getelementptr i8, ptr %dst.ptr.for.small.size.cleanup.i, i32 4
+  %90 = load i16, ptr %src.gep.i1611.i121, align 2
+  store i16 %90, ptr %dst.gep.i1612.i122, align 2
+  br label %return
+
+sw.bb7.i115:                                      ; preds = %call.small.size.cleanup.i
+  %91 = load i32, ptr %src.ptr.for.small.size.cleanup.i, align 4
+  store i32 %91, ptr %dst.ptr.for.small.size.cleanup.i, align 4
+  %src.gep.i1615.i116 = getelementptr i8, ptr %src.ptr.for.small.size.cleanup.i, i32 4
+  %dst.gep.i1616.i117 = getelementptr i8, ptr %dst.ptr.for.small.size.cleanup.i, i32 4
+  %92 = load i16, ptr %src.gep.i1615.i116, align 2
+  store i16 %92, ptr %dst.gep.i1616.i117, align 2
+  %src.gep.i817.i118 = getelementptr i8, ptr %src.ptr.for.small.size.cleanup.i, i32 6
+  %dst.gep.i818.i119 = getelementptr i8, ptr %dst.ptr.for.small.size.cleanup.i, i32 6
+  %93 = load i8, ptr %src.gep.i817.i118, align 1
+  store i8 %93, ptr %dst.gep.i818.i119, align 1
+  br label %return
+
+sw.bb8.i112:                                      ; preds = %call.small.size.cleanup.i
+  %94 = load i32, ptr %src.ptr.for.small.size.cleanup.i, align 4
+  store i32 %94, ptr %dst.ptr.for.small.size.cleanup.i, align 4
+  %src.gep.i3221.i113 = getelementptr i8, ptr %src.ptr.for.small.size.cleanup.i, i32 4
+  %dst.gep.i3222.i114 = getelementptr i8, ptr %dst.ptr.for.small.size.cleanup.i, i32 4
+  %95 = load i32, ptr %src.gep.i3221.i113, align 4
+  store i32 %95, ptr %dst.gep.i3222.i114, align 4
+  br label %return
+
+sw.bb9.i107:                                      ; preds = %call.small.size.cleanup.i
+  %96 = load i32, ptr %src.ptr.for.small.size.cleanup.i, align 4
+  store i32 %96, ptr %dst.ptr.for.small.size.cleanup.i, align 4
+  %src.gep.i3225.i108 = getelementptr i8, ptr %src.ptr.for.small.size.cleanup.i, i32 4
+  %dst.gep.i3226.i109 = getelementptr i8, ptr %dst.ptr.for.small.size.cleanup.i, i32 4
+  %97 = load i32, ptr %src.gep.i3225.i108, align 4
+  store i32 %97, ptr %dst.gep.i3226.i109, align 4
+  %src.gep.i827.i110 = getelementptr i8, ptr %src.ptr.for.small.size.cleanup.i, i32 8
+  %dst.gep.i828.i111 = getelementptr i8, ptr %dst.ptr.for.small.size.cleanup.i, i32 8
+  %98 = load i8, ptr %src.gep.i827.i110, align 1
+  store i8 %98, ptr %dst.gep.i828.i111, align 1
+  br label %return
+
+sw.bb10.i102:                                     ; preds = %call.small.size.cleanup.i
+  %99 = load i32, ptr %src.ptr.for.small.size.cleanup.i, align 4
+  store i32 %99, ptr %dst.ptr.for.small.size.cleanup.i, align 4
+  %src.gep.i3231.i103 = getelementptr i8, ptr %src.ptr.for.small.size.cleanup.i, i32 4
+  %dst.gep.i3232.i104 = getelementptr i8, ptr %dst.ptr.for.small.size.cleanup.i, i32 4
+  %100 = load i32, ptr %src.gep.i3231.i103, align 4
+  store i32 %100, ptr %dst.gep.i3232.i104, align 4
+  %src.gep.i1633.i105 = getelementptr i8, ptr %src.ptr.for.small.size.cleanup.i, i32 8
+  %dst.gep.i1634.i106 = getelementptr i8, ptr %dst.ptr.for.small.size.cleanup.i, i32 8
+  %101 = load i16, ptr %src.gep.i1633.i105, align 2
+  store i16 %101, ptr %dst.gep.i1634.i106, align 2
+  br label %return
+
+sw.bb11.i95:                                      ; preds = %call.small.size.cleanup.i
+  %102 = load i32, ptr %src.ptr.for.small.size.cleanup.i, align 4
+  store i32 %102, ptr %dst.ptr.for.small.size.cleanup.i, align 4
+  %src.gep.i3237.i96 = getelementptr i8, ptr %src.ptr.for.small.size.cleanup.i, i32 4
+  %dst.gep.i3238.i97 = getelementptr i8, ptr %dst.ptr.for.small.size.cleanup.i, i32 4
+  %103 = load i32, ptr %src.gep.i3237.i96, align 4
+  store i32 %103, ptr %dst.gep.i3238.i97, align 4
+  %src.gep.i1639.i98 = getelementptr i8, ptr %src.ptr.for.small.size.cleanup.i, i32 8
+  %dst.gep.i1640.i99 = getelementptr i8, ptr %dst.ptr.for.small.size.cleanup.i, i32 8
+  %104 = load i16, ptr %src.gep.i1639.i98, align 2
+  store i16 %104, ptr %dst.gep.i1640.i99, align 2
+  %src.gep.i841.i100 = getelementptr i8, ptr %src.ptr.for.small.size.cleanup.i, i32 10
+  %dst.gep.i842.i101 = getelementptr i8, ptr %dst.ptr.for.small.size.cleanup.i, i32 10
+  %105 = load i8, ptr %src.gep.i841.i100, align 1
+  store i8 %105, ptr %dst.gep.i842.i101, align 1
+  br label %return
+
+sw.bb12.i90:                                      ; preds = %call.small.size.cleanup.i
+  %106 = load i32, ptr %src.ptr.for.small.size.cleanup.i, align 4
+  store i32 %106, ptr %dst.ptr.for.small.size.cleanup.i, align 4
+  %src.gep.i3245.i91 = getelementptr i8, ptr %src.ptr.for.small.size.cleanup.i, i32 4
+  %dst.gep.i3246.i92 = getelementptr i8, ptr %dst.ptr.for.small.size.cleanup.i, i32 4
+  %107 = load i32, ptr %src.gep.i3245.i91, align 4
+  store i32 %107, ptr %dst.gep.i3246.i92, align 4
+  %src.gep.i3247.i93 = getelementptr i8, ptr %src.ptr.for.small.size.cleanup.i, i32 8
+  %dst.gep.i3248.i94 = getelementptr i8, ptr %dst.ptr.for.small.size.cleanup.i, i32 8
+  %108 = load i32, ptr %src.gep.i3247.i93, align 4
+  store i32 %108, ptr %dst.gep.i3248.i94, align 4
+  br label %return
+
+sw.bb13.i83:                                      ; preds = %call.small.size.cleanup.i
+  %109 = load i32, ptr %src.ptr.for.small.size.cleanup.i, align 4
+  store i32 %109, ptr %dst.ptr.for.small.size.cleanup.i, align 4
+  %src.gep.i3251.i84 = getelementptr i8, ptr %src.ptr.for.small.size.cleanup.i, i32 4
+  %dst.gep.i3252.i85 = getelementptr i8, ptr %dst.ptr.for.small.size.cleanup.i, i32 4
+  %110 = load i32, ptr %src.gep.i3251.i84, align 4
+  store i32 %110, ptr %dst.gep.i3252.i85, align 4
+  %src.gep.i3253.i86 = getelementptr i8, ptr %src.ptr.for.small.size.cleanup.i, i32 8
+  %dst.gep.i3254.i87 = getelementptr i8, ptr %dst.ptr.for.small.size.cleanup.i, i32 8
+  %111 = load i32, ptr %src.gep.i3253.i86, align 4
+  store i32 %111, ptr %dst.gep.i3254.i87, align 4
+  %src.gep.i855.i88 = getelementptr i8, ptr %src.ptr.for.small.size.cleanup.i, i32 12
+  %dst.gep.i856.i89 = getelementptr i8, ptr %dst.ptr.for.small.size.cleanup.i, i32 12
+  %112 = load i8, ptr %src.gep.i855.i88, align 1
+  store i8 %112, ptr %dst.gep.i856.i89, align 1
+  br label %return
+
+sw.bb14.i76:                                      ; preds = %call.small.size.cleanup.i
+  %113 = load i32, ptr %src.ptr.for.small.size.cleanup.i, align 4
+  store i32 %113, ptr %dst.ptr.for.small.size.cleanup.i, align 4
+  %src.gep.i3259.i77 = getelementptr i8, ptr %src.ptr.for.small.size.cleanup.i, i32 4
+  %dst.gep.i3260.i78 = getelementptr i8, ptr %dst.ptr.for.small.size.cleanup.i, i32 4
+  %114 = load i32, ptr %src.gep.i3259.i77, align 4
+  store i32 %114, ptr %dst.gep.i3260.i78, align 4
+  %src.gep.i3261.i79 = getelementptr i8, ptr %src.ptr.for.small.size.cleanup.i, i32 8
+  %dst.gep.i3262.i80 = getelementptr i8, ptr %dst.ptr.for.small.size.cleanup.i, i32 8
+  %115 = load i32, ptr %src.gep.i3261.i79, align 4
+  store i32 %115, ptr %dst.gep.i3262.i80, align 4
+  %src.gep.i1663.i81 = getelementptr i8, ptr %src.ptr.for.small.size.cleanup.i, i32 12
+  %dst.gep.i1664.i82 = getelementptr i8, ptr %dst.ptr.for.small.size.cleanup.i, i32 12
+  %116 = load i16, ptr %src.gep.i1663.i81, align 2
+  store i16 %116, ptr %dst.gep.i1664.i82, align 2
+  br label %return
+
+sw.bb15.i67:                                      ; preds = %call.small.size.cleanup.i
+  %117 = load i32, ptr %src.ptr.for.small.size.cleanup.i, align 4
+  store i32 %117, ptr %dst.ptr.for.small.size.cleanup.i, align 4
+  %src.gep.i3267.i68 = getelementptr i8, ptr %src.ptr.for.small.size.cleanup.i, i32 4
+  %dst.gep.i3268.i69 = getelementptr i8, ptr %dst.ptr.for.small.size.cleanup.i, i32 4
+  %118 = load i32, ptr %src.gep.i3267.i68, align 4
+  store i32 %118, ptr %dst.gep.i3268.i69, align 4
+  %src.gep.i3269.i70 = getelementptr i8, ptr %src.ptr.for.small.size.cleanup.i, i32 8
+  %dst.gep.i3270.i71 = getelementptr i8, ptr %dst.ptr.for.small.size.cleanup.i, i32 8
+  %119 = load i32, ptr %src.gep.i3269.i70, align 4
+  store i32 %119, ptr %dst.gep.i3270.i71, align 4
+  %src.gep.i1671.i72 = getelementptr i8, ptr %src.ptr.for.small.size.cleanup.i, i32 12
+  %dst.gep.i1672.i73 = getelementptr i8, ptr %dst.ptr.for.small.size.cleanup.i, i32 12
+  %120 = load i16, ptr %src.gep.i1671.i72, align 2
+  store i16 %120, ptr %dst.gep.i1672.i73, align 2
+  %src.gep.i873.i74 = getelementptr i8, ptr %src.ptr.for.small.size.cleanup.i, i32 14
+  %dst.gep.i874.i75 = getelementptr i8, ptr %dst.ptr.for.small.size.cleanup.i, i32 14
+  %121 = load i8, ptr %src.gep.i873.i74, align 1
+  store i8 %121, ptr %dst.gep.i874.i75, align 1
+  br label %return
+
+return:                                           ; preds = %final.cleanup.i, %call.small.size.cleanup.i, %sw.bb1.i131, %sw.bb2.i130, %sw.bb3.i127, %sw.bb4.i126, %sw.bb5.i123, %sw.bb6.i120, %sw.bb7.i115, %sw.bb8.i112, %sw.bb9.i107, %sw.bb10.i102, %sw.bb11.i95, %sw.bb12.i90, %sw.bb13.i83, %sw.bb14.i76, %sw.bb15.i67, %sw.bb15.i1, %sw.bb14.i10, %sw.bb13.i17, %sw.bb12.i24, %sw.bb11.i29, %sw.bb10.i36, %sw.bb9.i41, %sw.bb8.i46, %sw.bb7.i49, %sw.bb6.i54, %sw.bb5.i57, %sw.bb4.i60, %sw.bb3.i61, %sw.bb2.i64, %sw.bb1.i65, %handle.head
   ret void
 }
 
-declare void @llvm.memcpy.p0.p0.i32(ptr noalias nocapture writeonly, ptr noalias nocapture readonly, i32, i1 immarg)
+; Function Attrs: noinline nounwind
+define internal void @esp32p4MemCpySrc8Dst16Var(i32 %0, i32 %1, i32 %2)  {
+; CHECK-LABEL: define internal void @esp32p4MemCpySrc8Dst16Var(
+; CHECK-SAME: i32 [[TMP0:%.*]], i32 [[TMP1:%.*]], i32 [[TMP2:%.*]]) {
+; CHECK-NEXT:  [[ENTRY:.*:]]
+; CHECK-NEXT:    [[CMP:%.*]] = icmp ult i32 [[TMP2]], 8
+; CHECK-NEXT:    br i1 [[CMP]], label %[[HANDLE_SMALL_SIZE:.*]], label %[[CHECK_MID_RANGE:.*]]
+; CHECK:       [[HANDLE_SMALL_SIZE]]:
+; CHECK-NEXT:    [[TMP3:%.*]] = inttoptr i32 [[TMP0]] to ptr
+; CHECK-NEXT:    [[TMP4:%.*]] = inttoptr i32 [[TMP1]] to ptr
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrc8Dst16From1To7Opt(ptr [[TMP3]], ptr [[TMP4]], i32 [[TMP2]])
+; CHECK-NEXT:    br label %[[RETURN:.*]]
+; CHECK:       [[CHECK_MID_RANGE]]:
+; CHECK-NEXT:    [[CMP1:%.*]] = icmp ult i32 [[TMP2]], 16
+; CHECK-NEXT:    br i1 [[CMP1]], label %[[HANDLE_MID_SIZE:.*]], label %[[HANDLE_LARGE_LOOP:.*]]
+; CHECK:       [[HANDLE_MID_SIZE]]:
+; CHECK-NEXT:    [[VLDL64IP:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[TMP1]], i32 8, i32 0)
+; CHECK-NEXT:    [[VSTL64IP:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 [[TMP0]], i32 8)
+; CHECK-NEXT:    [[TMP5:%.*]] = inttoptr i32 [[VSTL64IP]] to ptr
+; CHECK-NEXT:    [[TMP6:%.*]] = inttoptr i32 [[VLDL64IP]] to ptr
+; CHECK-NEXT:    [[SUB:%.*]] = add nsw i32 [[TMP2]], -8
+; CHECK-NEXT:    call void @esp32p4MemCpySrc8Dst16From1To7Opt(ptr [[TMP5]], ptr [[TMP6]], i32 [[SUB]])
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[HANDLE_LARGE_LOOP]]:
+; CHECK-NEXT:    [[DIV94:%.*]] = lshr i32 [[TMP2]], 7
+; CHECK-NEXT:    [[REM:%.*]] = lshr i32 [[TMP2]], 4
+; CHECK-NEXT:    [[DIV195:%.*]] = and i32 [[REM]], 7
+; CHECK-NEXT:    [[REM4:%.*]] = and i32 [[TMP2]], 7
+; CHECK-NEXT:    [[CMP97_NOT:%.*]] = icmp ult i32 [[TMP2]], 128
+; CHECK-NEXT:    br i1 [[CMP97_NOT]], label %[[LOOP_EXIT_CLEANUP:.*]], label %[[LOOP_BODY_128B:.*]]
+; CHECK:       [[RETURN]]:
+; CHECK-NEXT:    ret void
+; CHECK:       [[LOOP_EXIT_CLEANUP]]:
+; CHECK-NEXT:    [[SRC_PTR_AT_CLEANUP:%.*]] = phi i32 [ [[TMP1]], %[[HANDLE_LARGE_LOOP]] ], [ [[VLDH64IP15:%.*]], %[[LOOP_BODY_128B]] ]
+; CHECK-NEXT:    [[DST_PTR_AT_CLEANUP:%.*]] = phi i32 [ [[TMP0]], %[[HANDLE_LARGE_LOOP]] ], [ [[VST128IP22:%.*]], %[[LOOP_BODY_128B]] ]
+; CHECK-NEXT:    switch i32 [[DIV195]], label %[[INVALID_SWITCH_TRAP:.*]] [
+; CHECK-NEXT:      i32 1, label %[[TAIL_CASE_1:.*]]
+; CHECK-NEXT:      i32 2, label %[[TAIL_CASE_2:.*]]
+; CHECK-NEXT:      i32 3, label %[[TAIL_CASE_3:.*]]
+; CHECK-NEXT:      i32 4, label %[[TAIL_CASE_4:.*]]
+; CHECK-NEXT:      i32 5, label %[[TAIL_CASE_5:.*]]
+; CHECK-NEXT:      i32 6, label %[[TAIL_CASE_6:.*]]
+; CHECK-NEXT:      i32 7, label %[[TAIL_CASE_7:.*]]
+; CHECK-NEXT:      i32 0, label %[[HANDLE_TAIL_SWITCH:.*]]
+; CHECK-NEXT:    ]
+; CHECK:       [[LOOP_BODY_128B]]:
+; CHECK-NEXT:    [[I_098:%.*]] = phi i32 [ 0, %[[HANDLE_LARGE_LOOP]] ], [ [[INC:%.*]], %[[LOOP_BODY_128B]] ]
+; CHECK-NEXT:    [[SRC_PTR_PHI:%.*]] = phi i32 [ [[TMP1]], %[[HANDLE_LARGE_LOOP]] ], [ [[VLDH64IP15]], %[[LOOP_BODY_128B]] ]
+; CHECK-NEXT:    [[DST_PTR_PHI:%.*]] = phi i32 [ [[TMP0]], %[[HANDLE_LARGE_LOOP]] ], [ [[VST128IP22]], %[[LOOP_BODY_128B]] ]
+; CHECK-NEXT:    [[VLDL64IP1:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[SRC_PTR_PHI]], i32 8, i32 0)
+; CHECK-NEXT:    [[VLDH64IP:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP1]], i32 8, i32 0)
+; CHECK-NEXT:    [[VLDL64IP2:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP]], i32 8, i32 1)
+; CHECK-NEXT:    [[VLDH64IP3:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP2]], i32 8, i32 1)
+; CHECK-NEXT:    [[VLDL64IP4:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP3]], i32 8, i32 2)
+; CHECK-NEXT:    [[VLDH64IP5:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP4]], i32 8, i32 2)
+; CHECK-NEXT:    [[VLDL64IP6:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP5]], i32 8, i32 3)
+; CHECK-NEXT:    [[VLDH64IP7:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP6]], i32 8, i32 3)
+; CHECK-NEXT:    [[VLDL64IP8:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP7]], i32 8, i32 4)
+; CHECK-NEXT:    [[VLDH64IP9:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP8]], i32 8, i32 4)
+; CHECK-NEXT:    [[VLDL64IP10:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP9]], i32 8, i32 5)
+; CHECK-NEXT:    [[VLDH64IP11:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP10]], i32 8, i32 5)
+; CHECK-NEXT:    [[VLDL64IP12:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP11]], i32 8, i32 6)
+; CHECK-NEXT:    [[VLDH64IP13:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP12]], i32 8, i32 6)
+; CHECK-NEXT:    [[VLDL64IP14:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP13]], i32 8, i32 7)
+; CHECK-NEXT:    [[VLDH64IP15]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP14]], i32 8, i32 7)
+; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_PHI]], i32 16)
+; CHECK-NEXT:    [[VST128IP16:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
+; CHECK-NEXT:    [[VST128IP17:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP16]], i32 16)
+; CHECK-NEXT:    [[VST128IP18:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 3, i32 [[VST128IP17]], i32 16)
+; CHECK-NEXT:    [[VST128IP19:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 4, i32 [[VST128IP18]], i32 16)
+; CHECK-NEXT:    [[VST128IP20:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 5, i32 [[VST128IP19]], i32 16)
+; CHECK-NEXT:    [[VST128IP21:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 6, i32 [[VST128IP20]], i32 16)
+; CHECK-NEXT:    [[VST128IP22]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 7, i32 [[VST128IP21]], i32 16)
+; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_098]], 1
+; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], [[DIV94]]
+; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[LOOP_EXIT_CLEANUP]], label %[[LOOP_BODY_128B]]
+; CHECK:       [[HANDLE_TAIL_SWITCH]]:
+; CHECK-NEXT:    [[SRC_PTR_EPILOG:%.*]] = phi i32 [ [[SRC_PTR_AT_CLEANUP]], %[[LOOP_EXIT_CLEANUP]] ], [ [[VLDH64IP24:%.*]], %[[TAIL_CASE_1]] ], [ [[VLDH64IP29:%.*]], %[[TAIL_CASE_2]] ], [ [[VLDH64IP37:%.*]], %[[TAIL_CASE_3]] ], [ [[VLDH64IP48:%.*]], %[[TAIL_CASE_4]] ], [ [[VLDH64IP62:%.*]], %[[TAIL_CASE_5]] ], [ [[VLDH64IP79:%.*]], %[[TAIL_CASE_6]] ], [ [[VLDH64IP99:%.*]], %[[TAIL_CASE_7]] ]
+; CHECK-NEXT:    [[DST_PTR_EPILOG:%.*]] = phi i32 [ [[DST_PTR_AT_CLEANUP]], %[[LOOP_EXIT_CLEANUP]] ], [ [[VST128IP25:%.*]], %[[TAIL_CASE_1]] ], [ [[VST128IP31:%.*]], %[[TAIL_CASE_2]] ], [ [[VST128IP40:%.*]], %[[TAIL_CASE_3]] ], [ [[VST128IP52:%.*]], %[[TAIL_CASE_4]] ], [ [[VST128IP67:%.*]], %[[TAIL_CASE_5]] ], [ [[VST128IP85:%.*]], %[[TAIL_CASE_6]] ], [ [[VST128IP106:%.*]], %[[TAIL_CASE_7]] ]
+; CHECK-NEXT:    [[TMP7:%.*]] = and i32 [[TMP2]], 8
+; CHECK-NEXT:    [[TMP8:%.*]] = icmp eq i32 [[TMP7]], 0
+; CHECK-NEXT:    br i1 [[TMP8]], label %[[AFTER_8B_TAIL:.*]], label %[[HANDLE_8B_TAIL:.*]]
+; CHECK:       [[INVALID_SWITCH_TRAP]]:
+; CHECK-NEXT:    unreachable
+; CHECK:       [[HANDLE_8B_TAIL]]:
+; CHECK-NEXT:    [[VLDL64IP107:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[SRC_PTR_EPILOG]], i32 8, i32 0)
+; CHECK-NEXT:    [[VSTL64IP108:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 [[DST_PTR_EPILOG]], i32 8)
+; CHECK-NEXT:    br label %[[AFTER_8B_TAIL]]
+; CHECK:       [[AFTER_8B_TAIL]]:
+; CHECK-NEXT:    [[SRC_PTR_END17:%.*]] = phi i32 [ [[SRC_PTR_EPILOG]], %[[HANDLE_TAIL_SWITCH]] ], [ [[VLDL64IP107]], %[[HANDLE_8B_TAIL]] ]
+; CHECK-NEXT:    [[DST_PTR_END17:%.*]] = phi i32 [ [[DST_PTR_EPILOG]], %[[HANDLE_TAIL_SWITCH]] ], [ [[VSTL64IP108]], %[[HANDLE_8B_TAIL]] ]
+; CHECK-NEXT:    [[TMP9:%.*]] = icmp eq i32 [[REM4]], 0
+; CHECK-NEXT:    br i1 [[TMP9]], label %[[RETURN]], label %[[HANDLE_REMAINING_BYTES:.*]]
+; CHECK:       [[TAIL_CASE_1]]:
+; CHECK-NEXT:    [[VLDL64IP23:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[SRC_PTR_AT_CLEANUP]], i32 8, i32 0)
+; CHECK-NEXT:    [[VLDH64IP24]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP23]], i32 8, i32 0)
+; CHECK-NEXT:    [[VST128IP25]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_AT_CLEANUP]], i32 16)
+; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
+; CHECK:       [[TAIL_CASE_2]]:
+; CHECK-NEXT:    [[VLDL64IP26:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[SRC_PTR_AT_CLEANUP]], i32 8, i32 0)
+; CHECK-NEXT:    [[VLDH64IP27:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP26]], i32 8, i32 0)
+; CHECK-NEXT:    [[VLDL64IP28:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP27]], i32 8, i32 1)
+; CHECK-NEXT:    [[VLDH64IP29]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP28]], i32 8, i32 1)
+; CHECK-NEXT:    [[VST128IP30:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_AT_CLEANUP]], i32 16)
+; CHECK-NEXT:    [[VST128IP31]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP30]], i32 16)
+; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
+; CHECK:       [[TAIL_CASE_3]]:
+; CHECK-NEXT:    [[VLDL64IP32:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[SRC_PTR_AT_CLEANUP]], i32 8, i32 0)
+; CHECK-NEXT:    [[VLDH64IP33:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP32]], i32 8, i32 0)
+; CHECK-NEXT:    [[VLDL64IP34:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP33]], i32 8, i32 1)
+; CHECK-NEXT:    [[VLDH64IP35:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP34]], i32 8, i32 1)
+; CHECK-NEXT:    [[VLDL64IP36:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP35]], i32 8, i32 2)
+; CHECK-NEXT:    [[VLDH64IP37]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP36]], i32 8, i32 2)
+; CHECK-NEXT:    [[VST128IP38:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_AT_CLEANUP]], i32 16)
+; CHECK-NEXT:    [[VST128IP39:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP38]], i32 16)
+; CHECK-NEXT:    [[VST128IP40]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP39]], i32 16)
+; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
+; CHECK:       [[TAIL_CASE_4]]:
+; CHECK-NEXT:    [[VLDL64IP41:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[SRC_PTR_AT_CLEANUP]], i32 8, i32 0)
+; CHECK-NEXT:    [[VLDH64IP42:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP41]], i32 8, i32 0)
+; CHECK-NEXT:    [[VLDL64IP43:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP42]], i32 8, i32 1)
+; CHECK-NEXT:    [[VLDH64IP44:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP43]], i32 8, i32 1)
+; CHECK-NEXT:    [[VLDL64IP45:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP44]], i32 8, i32 2)
+; CHECK-NEXT:    [[VLDH64IP46:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP45]], i32 8, i32 2)
+; CHECK-NEXT:    [[VLDL64IP47:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP46]], i32 8, i32 3)
+; CHECK-NEXT:    [[VLDH64IP48]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP47]], i32 8, i32 3)
+; CHECK-NEXT:    [[VST128IP49:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_AT_CLEANUP]], i32 16)
+; CHECK-NEXT:    [[VST128IP50:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP49]], i32 16)
+; CHECK-NEXT:    [[VST128IP51:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP50]], i32 16)
+; CHECK-NEXT:    [[VST128IP52]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 3, i32 [[VST128IP51]], i32 16)
+; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
+; CHECK:       [[TAIL_CASE_5]]:
+; CHECK-NEXT:    [[VLDL64IP53:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[SRC_PTR_AT_CLEANUP]], i32 8, i32 0)
+; CHECK-NEXT:    [[VLDH64IP54:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP53]], i32 8, i32 0)
+; CHECK-NEXT:    [[VLDL64IP55:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP54]], i32 8, i32 1)
+; CHECK-NEXT:    [[VLDH64IP56:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP55]], i32 8, i32 1)
+; CHECK-NEXT:    [[VLDL64IP57:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP56]], i32 8, i32 2)
+; CHECK-NEXT:    [[VLDH64IP58:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP57]], i32 8, i32 2)
+; CHECK-NEXT:    [[VLDL64IP59:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP58]], i32 8, i32 3)
+; CHECK-NEXT:    [[VLDH64IP60:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP59]], i32 8, i32 3)
+; CHECK-NEXT:    [[VLDL64IP61:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP60]], i32 8, i32 4)
+; CHECK-NEXT:    [[VLDH64IP62]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP61]], i32 8, i32 4)
+; CHECK-NEXT:    [[VST128IP63:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_AT_CLEANUP]], i32 16)
+; CHECK-NEXT:    [[VST128IP64:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP63]], i32 16)
+; CHECK-NEXT:    [[VST128IP65:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP64]], i32 16)
+; CHECK-NEXT:    [[VST128IP66:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 3, i32 [[VST128IP65]], i32 16)
+; CHECK-NEXT:    [[VST128IP67]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 4, i32 [[VST128IP66]], i32 16)
+; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
+; CHECK:       [[TAIL_CASE_6]]:
+; CHECK-NEXT:    [[VLDL64IP68:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[SRC_PTR_AT_CLEANUP]], i32 8, i32 0)
+; CHECK-NEXT:    [[VLDH64IP69:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP68]], i32 8, i32 0)
+; CHECK-NEXT:    [[VLDL64IP70:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP69]], i32 8, i32 1)
+; CHECK-NEXT:    [[VLDH64IP71:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP70]], i32 8, i32 1)
+; CHECK-NEXT:    [[VLDL64IP72:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP71]], i32 8, i32 2)
+; CHECK-NEXT:    [[VLDH64IP73:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP72]], i32 8, i32 2)
+; CHECK-NEXT:    [[VLDL64IP74:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP73]], i32 8, i32 3)
+; CHECK-NEXT:    [[VLDH64IP75:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP74]], i32 8, i32 3)
+; CHECK-NEXT:    [[VLDL64IP76:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP75]], i32 8, i32 4)
+; CHECK-NEXT:    [[VLDH64IP77:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP76]], i32 8, i32 4)
+; CHECK-NEXT:    [[VLDL64IP78:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP77]], i32 8, i32 5)
+; CHECK-NEXT:    [[VLDH64IP79]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP78]], i32 8, i32 5)
+; CHECK-NEXT:    [[VST128IP80:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_AT_CLEANUP]], i32 16)
+; CHECK-NEXT:    [[VST128IP81:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP80]], i32 16)
+; CHECK-NEXT:    [[VST128IP82:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP81]], i32 16)
+; CHECK-NEXT:    [[VST128IP83:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 3, i32 [[VST128IP82]], i32 16)
+; CHECK-NEXT:    [[VST128IP84:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 4, i32 [[VST128IP83]], i32 16)
+; CHECK-NEXT:    [[VST128IP85]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 5, i32 [[VST128IP84]], i32 16)
+; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
+; CHECK:       [[TAIL_CASE_7]]:
+; CHECK-NEXT:    [[VLDL64IP86:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[SRC_PTR_AT_CLEANUP]], i32 8, i32 0)
+; CHECK-NEXT:    [[VLDH64IP87:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP86]], i32 8, i32 0)
+; CHECK-NEXT:    [[VLDL64IP88:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP87]], i32 8, i32 1)
+; CHECK-NEXT:    [[VLDH64IP89:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP88]], i32 8, i32 1)
+; CHECK-NEXT:    [[VLDL64IP90:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP89]], i32 8, i32 2)
+; CHECK-NEXT:    [[VLDH64IP91:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP90]], i32 8, i32 2)
+; CHECK-NEXT:    [[VLDL64IP92:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP91]], i32 8, i32 3)
+; CHECK-NEXT:    [[VLDH64IP93:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP92]], i32 8, i32 3)
+; CHECK-NEXT:    [[VLDL64IP94:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP93]], i32 8, i32 4)
+; CHECK-NEXT:    [[VLDH64IP95:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP94]], i32 8, i32 4)
+; CHECK-NEXT:    [[VLDL64IP96:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP95]], i32 8, i32 5)
+; CHECK-NEXT:    [[VLDH64IP97:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP96]], i32 8, i32 5)
+; CHECK-NEXT:    [[VLDL64IP98:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP97]], i32 8, i32 6)
+; CHECK-NEXT:    [[VLDH64IP99]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP98]], i32 8, i32 6)
+; CHECK-NEXT:    [[VST128IP100:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_AT_CLEANUP]], i32 16)
+; CHECK-NEXT:    [[VST128IP101:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP100]], i32 16)
+; CHECK-NEXT:    [[VST128IP102:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP101]], i32 16)
+; CHECK-NEXT:    [[VST128IP103:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 3, i32 [[VST128IP102]], i32 16)
+; CHECK-NEXT:    [[VST128IP104:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 4, i32 [[VST128IP103]], i32 16)
+; CHECK-NEXT:    [[VST128IP105:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 5, i32 [[VST128IP104]], i32 16)
+; CHECK-NEXT:    [[VST128IP106]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 6, i32 [[VST128IP105]], i32 16)
+; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
+; CHECK:       [[HANDLE_REMAINING_BYTES]]:
+; CHECK-NEXT:    [[TMP10:%.*]] = inttoptr i32 [[SRC_PTR_END17]] to ptr
+; CHECK-NEXT:    [[TMP11:%.*]] = inttoptr i32 [[DST_PTR_END17]] to ptr
+; CHECK-NEXT:    call void @esp32p4MemCpySrc8Dst16From1To7Opt(ptr [[TMP11]], ptr [[TMP10]], i32 [[REM4]])
+; CHECK-NEXT:    br label %[[RETURN]]
+;
+entry:
+  %is.lt.8 = icmp ult i32 %2, 8
+  br i1 %is.lt.8, label %handle.small.size, label %check.mid.range
 
+handle.small.size:                                ; preds = %entry
+  %3 = inttoptr i32 %0 to ptr
+  %4 = inttoptr i32 %1 to ptr
+  tail call void @esp32p4MemCpySrc8Dst16From1To7Opt(ptr %3, ptr %4, i32 %2)
+  br label %return
+
+check.mid.range:                                  ; preds = %entry
+  %is.lt.16 = icmp ult i32 %2, 16
+  br i1 %is.lt.16, label %handle.mid.size, label %handle.large.loop
+
+handle.mid.size:                                  ; preds = %check.mid.range
+  %vldl64ip = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %1, i32 8, i32 0)
+  %vstl64ip = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 %0, i32 8)
+  %5 = inttoptr i32 %vstl64ip to ptr
+  %6 = inttoptr i32 %vldl64ip to ptr
+  %size.minus.8 = add nsw i32 %2, -8
+  call void @esp32p4MemCpySrc8Dst16From1To7Opt(ptr %5, ptr %6, i32 %size.minus.8)
+  br label %return
+
+handle.large.loop:                                ; preds = %check.mid.range
+  %num.128B.blocks = lshr i32 %2, 7
+  %num.16B.blocks = lshr i32 %2, 4
+  %remaining.16B.blocks = and i32 %num.16B.blocks, 7
+  %remaining.bytes = and i32 %2, 7
+  %is.lt.128 = icmp ult i32 %2, 128
+  br i1 %is.lt.128, label %loop.exit.cleanup, label %loop.body.128B
+
+return:                                           ; preds = %handle.remaining.bytes, %after.8B.tail, %handle.mid.size, %handle.small.size
+  ret void
+
+loop.exit.cleanup:                                ; preds = %loop.body.128B, %handle.large.loop
+  %src.ptr.after.loop = phi i32 [ %1, %handle.large.loop ], [ %vldh64ip15, %loop.body.128B ]
+  %dst.ptr.after.loop = phi i32 [ %0, %handle.large.loop ], [ %vst128ip22, %loop.body.128B ]
+  switch i32 %remaining.16B.blocks, label %invalid.switch.trap [
+  i32 1, label %tail.case.1
+  i32 2, label %tail.case.2
+  i32 3, label %tail.case.3
+  i32 4, label %tail.case.4
+  i32 5, label %tail.case.5
+  i32 6, label %tail.case.6
+  i32 7, label %tail.case.7
+  i32 0, label %handle.tail.switch
+  ]
+
+loop.body.128B:                                   ; preds = %loop.body.128B, %handle.large.loop
+  %loop.index = phi i32 [ 0, %handle.large.loop ], [ %loop.inc, %loop.body.128B ]
+  %src.ptr.loop = phi i32 [ %1, %handle.large.loop ], [ %vldh64ip15, %loop.body.128B ]
+  %dst.ptr.loop = phi i32 [ %0, %handle.large.loop ], [ %vst128ip22, %loop.body.128B ]
+  %vldl64ip1 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %src.ptr.loop, i32 8, i32 0)
+  %vldh64ip = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip1, i32 8, i32 0)
+  %vldl64ip2 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip, i32 8, i32 1)
+  %vldh64ip3 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip2, i32 8, i32 1)
+  %vldl64ip4 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip3, i32 8, i32 2)
+  %vldh64ip5 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip4, i32 8, i32 2)
+  %vldl64ip6 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip5, i32 8, i32 3)
+  %vldh64ip7 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip6, i32 8, i32 3)
+  %vldl64ip8 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip7, i32 8, i32 4)
+  %vldh64ip9 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip8, i32 8, i32 4)
+  %vldl64ip10 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip9, i32 8, i32 5)
+  %vldh64ip11 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip10, i32 8, i32 5)
+  %vldl64ip12 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip11, i32 8, i32 6)
+  %vldh64ip13 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip12, i32 8, i32 6)
+  %vldl64ip14 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip13, i32 8, i32 7)
+  %vldh64ip15 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip14, i32 8, i32 7)
+  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
+  %vst128ip16 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
+  %vst128ip17 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip16, i32 16)
+  %vst128ip18 = call i32 @llvm.riscv.esp.vst.128.ip(i32 3, i32 %vst128ip17, i32 16)
+  %vst128ip19 = call i32 @llvm.riscv.esp.vst.128.ip(i32 4, i32 %vst128ip18, i32 16)
+  %vst128ip20 = call i32 @llvm.riscv.esp.vst.128.ip(i32 5, i32 %vst128ip19, i32 16)
+  %vst128ip21 = call i32 @llvm.riscv.esp.vst.128.ip(i32 6, i32 %vst128ip20, i32 16)
+  %vst128ip22 = call i32 @llvm.riscv.esp.vst.128.ip(i32 7, i32 %vst128ip21, i32 16)
+  %loop.inc = add nuw nsw i32 %loop.index, 1
+  %loop.done = icmp eq i32 %loop.inc, %num.128B.blocks
+  br i1 %loop.done, label %loop.exit.cleanup, label %loop.body.128B
+
+handle.tail.switch:                               ; preds = %loop.exit.cleanup, %tail.case.7, %tail.case.6, %tail.case.5, %tail.case.4, %tail.case.3, %tail.case.2, %tail.case.1
+  %src.ptr.tail = phi i32 [ %src.ptr.after.loop, %loop.exit.cleanup ], [ %vldh64ip24, %tail.case.1 ], [ %vldh64ip29, %tail.case.2 ], [ %vldh64ip37, %tail.case.3 ], [ %vldh64ip48, %tail.case.4 ], [ %vldh64ip62, %tail.case.5 ], [ %vldh64ip79, %tail.case.6 ], [ %vldh64ip99, %tail.case.7 ]
+  %dst.ptr.tail = phi i32 [ %dst.ptr.after.loop, %loop.exit.cleanup ], [ %vst128ip25, %tail.case.1 ], [ %vst128ip31, %tail.case.2 ], [ %vst128ip40, %tail.case.3 ], [ %vst128ip52, %tail.case.4 ], [ %vst128ip67, %tail.case.5 ], [ %vst128ip85, %tail.case.6 ], [ %vst128ip106, %tail.case.7 ]
+  %7 = and i32 %2, 8
+  %8 = icmp eq i32 %7, 0
+  br i1 %8, label %after.8B.tail, label %handle.8B.tail
+
+invalid.switch.trap:                              ; preds = %loop.exit.cleanup
+  unreachable
+
+handle.8B.tail:                                   ; preds = %handle.tail.switch
+  %vldl64ip107 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %src.ptr.tail, i32 8, i32 0)
+  %vstl64ip108 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 %dst.ptr.tail, i32 8)
+  br label %after.8B.tail
+
+after.8B.tail:                                    ; preds = %handle.8B.tail, %handle.tail.switch
+  %src.ptr.after.8B = phi i32 [ %src.ptr.tail, %handle.tail.switch ], [ %vldl64ip107, %handle.8B.tail ]
+  %dst.ptr.after.8B = phi i32 [ %dst.ptr.tail, %handle.tail.switch ], [ %vstl64ip108, %handle.8B.tail ]
+  %9 = icmp eq i32 %remaining.bytes, 0
+  br i1 %9, label %return, label %handle.remaining.bytes
+
+tail.case.1:                                      ; preds = %loop.exit.cleanup
+  %vldl64ip23 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %src.ptr.after.loop, i32 8, i32 0)
+  %vldh64ip24 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip23, i32 8, i32 0)
+  %vst128ip25 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.after.loop, i32 16)
+  br label %handle.tail.switch
+
+tail.case.2:                                      ; preds = %loop.exit.cleanup
+  %vldl64ip26 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %src.ptr.after.loop, i32 8, i32 0)
+  %vldh64ip27 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip26, i32 8, i32 0)
+  %vldl64ip28 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip27, i32 8, i32 1)
+  %vldh64ip29 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip28, i32 8, i32 1)
+  %vst128ip30 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.after.loop, i32 16)
+  %vst128ip31 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip30, i32 16)
+  br label %handle.tail.switch
+
+tail.case.3:                                      ; preds = %loop.exit.cleanup
+  %vldl64ip32 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %src.ptr.after.loop, i32 8, i32 0)
+  %vldh64ip33 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip32, i32 8, i32 0)
+  %vldl64ip34 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip33, i32 8, i32 1)
+  %vldh64ip35 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip34, i32 8, i32 1)
+  %vldl64ip36 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip35, i32 8, i32 2)
+  %vldh64ip37 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip36, i32 8, i32 2)
+  %vst128ip38 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.after.loop, i32 16)
+  %vst128ip39 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip38, i32 16)
+  %vst128ip40 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip39, i32 16)
+  br label %handle.tail.switch
+
+tail.case.4:                                      ; preds = %loop.exit.cleanup
+  %vldl64ip41 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %src.ptr.after.loop, i32 8, i32 0)
+  %vldh64ip42 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip41, i32 8, i32 0)
+  %vldl64ip43 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip42, i32 8, i32 1)
+  %vldh64ip44 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip43, i32 8, i32 1)
+  %vldl64ip45 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip44, i32 8, i32 2)
+  %vldh64ip46 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip45, i32 8, i32 2)
+  %vldl64ip47 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip46, i32 8, i32 3)
+  %vldh64ip48 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip47, i32 8, i32 3)
+  %vst128ip49 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.after.loop, i32 16)
+  %vst128ip50 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip49, i32 16)
+  %vst128ip51 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip50, i32 16)
+  %vst128ip52 = call i32 @llvm.riscv.esp.vst.128.ip(i32 3, i32 %vst128ip51, i32 16)
+  br label %handle.tail.switch
+
+tail.case.5:                                      ; preds = %loop.exit.cleanup
+  %vldl64ip53 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %src.ptr.after.loop, i32 8, i32 0)
+  %vldh64ip54 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip53, i32 8, i32 0)
+  %vldl64ip55 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip54, i32 8, i32 1)
+  %vldh64ip56 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip55, i32 8, i32 1)
+  %vldl64ip57 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip56, i32 8, i32 2)
+  %vldh64ip58 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip57, i32 8, i32 2)
+  %vldl64ip59 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip58, i32 8, i32 3)
+  %vldh64ip60 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip59, i32 8, i32 3)
+  %vldl64ip61 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip60, i32 8, i32 4)
+  %vldh64ip62 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip61, i32 8, i32 4)
+  %vst128ip63 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.after.loop, i32 16)
+  %vst128ip64 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip63, i32 16)
+  %vst128ip65 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip64, i32 16)
+  %vst128ip66 = call i32 @llvm.riscv.esp.vst.128.ip(i32 3, i32 %vst128ip65, i32 16)
+  %vst128ip67 = call i32 @llvm.riscv.esp.vst.128.ip(i32 4, i32 %vst128ip66, i32 16)
+  br label %handle.tail.switch
+
+tail.case.6:                                      ; preds = %loop.exit.cleanup
+  %vldl64ip68 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %src.ptr.after.loop, i32 8, i32 0)
+  %vldh64ip69 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip68, i32 8, i32 0)
+  %vldl64ip70 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip69, i32 8, i32 1)
+  %vldh64ip71 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip70, i32 8, i32 1)
+  %vldl64ip72 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip71, i32 8, i32 2)
+  %vldh64ip73 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip72, i32 8, i32 2)
+  %vldl64ip74 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip73, i32 8, i32 3)
+  %vldh64ip75 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip74, i32 8, i32 3)
+  %vldl64ip76 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip75, i32 8, i32 4)
+  %vldh64ip77 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip76, i32 8, i32 4)
+  %vldl64ip78 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip77, i32 8, i32 5)
+  %vldh64ip79 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip78, i32 8, i32 5)
+  %vst128ip80 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.after.loop, i32 16)
+  %vst128ip81 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip80, i32 16)
+  %vst128ip82 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip81, i32 16)
+  %vst128ip83 = call i32 @llvm.riscv.esp.vst.128.ip(i32 3, i32 %vst128ip82, i32 16)
+  %vst128ip84 = call i32 @llvm.riscv.esp.vst.128.ip(i32 4, i32 %vst128ip83, i32 16)
+  %vst128ip85 = call i32 @llvm.riscv.esp.vst.128.ip(i32 5, i32 %vst128ip84, i32 16)
+  br label %handle.tail.switch
+
+tail.case.7:                                      ; preds = %loop.exit.cleanup
+  %vldl64ip86 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %src.ptr.after.loop, i32 8, i32 0)
+  %vldh64ip87 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip86, i32 8, i32 0)
+  %vldl64ip88 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip87, i32 8, i32 1)
+  %vldh64ip89 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip88, i32 8, i32 1)
+  %vldl64ip90 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip89, i32 8, i32 2)
+  %vldh64ip91 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip90, i32 8, i32 2)
+  %vldl64ip92 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip91, i32 8, i32 3)
+  %vldh64ip93 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip92, i32 8, i32 3)
+  %vldl64ip94 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip93, i32 8, i32 4)
+  %vldh64ip95 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip94, i32 8, i32 4)
+  %vldl64ip96 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip95, i32 8, i32 5)
+  %vldh64ip97 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip96, i32 8, i32 5)
+  %vldl64ip98 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip97, i32 8, i32 6)
+  %vldh64ip99 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip98, i32 8, i32 6)
+  %vst128ip100 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.after.loop, i32 16)
+  %vst128ip101 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip100, i32 16)
+  %vst128ip102 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip101, i32 16)
+  %vst128ip103 = call i32 @llvm.riscv.esp.vst.128.ip(i32 3, i32 %vst128ip102, i32 16)
+  %vst128ip104 = call i32 @llvm.riscv.esp.vst.128.ip(i32 4, i32 %vst128ip103, i32 16)
+  %vst128ip105 = call i32 @llvm.riscv.esp.vst.128.ip(i32 5, i32 %vst128ip104, i32 16)
+  %vst128ip106 = call i32 @llvm.riscv.esp.vst.128.ip(i32 6, i32 %vst128ip105, i32 16)
+  br label %handle.tail.switch
+
+handle.remaining.bytes:                           ; preds = %after.8B.tail
+  %10 = inttoptr i32 %src.ptr.after.8B to ptr
+  %11 = inttoptr i32 %dst.ptr.after.8B to ptr
+  call void @esp32p4MemCpySrc8Dst16From1To7Opt(ptr %11, ptr %10, i32 %remaining.bytes)
+  br label %return
+}
+
+; Function Attrs: noinline nounwind
+define internal void @esp32p4MemCpySrc8Dst16From1To7Opt(ptr %dst, ptr %src, i32 %size)  {
+; CHECK-LABEL: define internal void @esp32p4MemCpySrc8Dst16From1To7Opt(
+; CHECK-SAME: ptr [[DST:%.*]], ptr [[SRC:%.*]], i32 [[SIZE:%.*]]) {
+; CHECK-NEXT:  [[ENTRY:.*:]]
+; CHECK-NEXT:    switch i32 [[SIZE]], label %[[RETURN:.*]] [
+; CHECK-NEXT:      i32 1, label %[[SW_BB1:.*]]
+; CHECK-NEXT:      i32 2, label %[[SW_BB2:.*]]
+; CHECK-NEXT:      i32 3, label %[[SW_BB3:.*]]
+; CHECK-NEXT:      i32 4, label %[[SW_BB4:.*]]
+; CHECK-NEXT:      i32 5, label %[[SW_BB5:.*]]
+; CHECK-NEXT:      i32 6, label %[[SW_BB6:.*]]
+; CHECK-NEXT:      i32 7, label %[[SW_BB7:.*]]
+; CHECK-NEXT:    ]
+; CHECK:       [[RETURN]]:
+; CHECK-NEXT:    ret void
+; CHECK:       [[SW_BB1]]:
+; CHECK-NEXT:    [[SRC_GEP_I8:%.*]] = getelementptr i8, ptr [[SRC]], i32 0
+; CHECK-NEXT:    [[DST_GEP_I8:%.*]] = getelementptr i8, ptr [[DST]], i32 0
+; CHECK-NEXT:    [[TMP0:%.*]] = load i8, ptr [[SRC_GEP_I8]], align 1
+; CHECK-NEXT:    store i8 [[TMP0]], ptr [[DST_GEP_I8]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB2]]:
+; CHECK-NEXT:    [[SRC_GEP_I16:%.*]] = getelementptr i8, ptr [[SRC]], i32 0
+; CHECK-NEXT:    [[DST_GEP_I16:%.*]] = getelementptr i8, ptr [[DST]], i32 0
+; CHECK-NEXT:    [[TMP1:%.*]] = load i16, ptr [[SRC_GEP_I16]], align 2
+; CHECK-NEXT:    store i16 [[TMP1]], ptr [[DST_GEP_I16]], align 2
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB3]]:
+; CHECK-NEXT:    [[SRC_GEP_I161:%.*]] = getelementptr i8, ptr [[SRC]], i32 0
+; CHECK-NEXT:    [[DST_GEP_I162:%.*]] = getelementptr i8, ptr [[DST]], i32 0
+; CHECK-NEXT:    [[TMP2:%.*]] = load i16, ptr [[SRC_GEP_I161]], align 2
+; CHECK-NEXT:    store i16 [[TMP2]], ptr [[DST_GEP_I162]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I83:%.*]] = getelementptr i8, ptr [[SRC]], i32 2
+; CHECK-NEXT:    [[DST_GEP_I84:%.*]] = getelementptr i8, ptr [[DST]], i32 2
+; CHECK-NEXT:    [[TMP3:%.*]] = load i8, ptr [[SRC_GEP_I83]], align 1
+; CHECK-NEXT:    store i8 [[TMP3]], ptr [[DST_GEP_I84]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB4]]:
+; CHECK-NEXT:    [[SRC_GEP_I32:%.*]] = getelementptr i8, ptr [[SRC]], i32 0
+; CHECK-NEXT:    [[DST_GEP_I32:%.*]] = getelementptr i8, ptr [[DST]], i32 0
+; CHECK-NEXT:    [[TMP4:%.*]] = load i32, ptr [[SRC_GEP_I32]], align 4
+; CHECK-NEXT:    store i32 [[TMP4]], ptr [[DST_GEP_I32]], align 4
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB5]]:
+; CHECK-NEXT:    [[SRC_GEP_I325:%.*]] = getelementptr i8, ptr [[SRC]], i32 0
+; CHECK-NEXT:    [[DST_GEP_I326:%.*]] = getelementptr i8, ptr [[DST]], i32 0
+; CHECK-NEXT:    [[TMP5:%.*]] = load i32, ptr [[SRC_GEP_I325]], align 4
+; CHECK-NEXT:    store i32 [[TMP5]], ptr [[DST_GEP_I326]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I87:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I88:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP6:%.*]] = load i8, ptr [[SRC_GEP_I87]], align 1
+; CHECK-NEXT:    store i8 [[TMP6]], ptr [[DST_GEP_I88]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB6]]:
+; CHECK-NEXT:    [[SRC_GEP_I329:%.*]] = getelementptr i8, ptr [[SRC]], i32 0
+; CHECK-NEXT:    [[DST_GEP_I3210:%.*]] = getelementptr i8, ptr [[DST]], i32 0
+; CHECK-NEXT:    [[TMP7:%.*]] = load i32, ptr [[SRC_GEP_I329]], align 4
+; CHECK-NEXT:    store i32 [[TMP7]], ptr [[DST_GEP_I3210]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1611:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I1612:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP8:%.*]] = load i16, ptr [[SRC_GEP_I1611]], align 2
+; CHECK-NEXT:    store i16 [[TMP8]], ptr [[DST_GEP_I1612]], align 2
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB7]]:
+; CHECK-NEXT:    [[SRC_GEP_I3213:%.*]] = getelementptr i8, ptr [[SRC]], i32 0
+; CHECK-NEXT:    [[DST_GEP_I3214:%.*]] = getelementptr i8, ptr [[DST]], i32 0
+; CHECK-NEXT:    [[TMP9:%.*]] = load i32, ptr [[SRC_GEP_I3213]], align 4
+; CHECK-NEXT:    store i32 [[TMP9]], ptr [[DST_GEP_I3214]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1615:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I1616:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP10:%.*]] = load i16, ptr [[SRC_GEP_I1615]], align 2
+; CHECK-NEXT:    store i16 [[TMP10]], ptr [[DST_GEP_I1616]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I817:%.*]] = getelementptr i8, ptr [[SRC]], i32 6
+; CHECK-NEXT:    [[DST_GEP_I818:%.*]] = getelementptr i8, ptr [[DST]], i32 6
+; CHECK-NEXT:    [[TMP11:%.*]] = load i8, ptr [[SRC_GEP_I817]], align 1
+; CHECK-NEXT:    store i8 [[TMP11]], ptr [[DST_GEP_I818]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
+;
+entry:
+  switch i32 %size, label %return [
+  i32 1, label %sw.bb1
+  i32 2, label %sw.bb2
+  i32 3, label %sw.bb3
+  i32 4, label %sw.bb4
+  i32 5, label %sw.bb5
+  i32 6, label %sw.bb6
+  i32 7, label %sw.bb7
+  ]
+
+return:                                           ; preds = %sw.bb7, %sw.bb6, %sw.bb5, %sw.bb4, %sw.bb3, %sw.bb2, %sw.bb1, %entry
+  ret void
+
+sw.bb1:                                           ; preds = %entry
+  %src.gep.i8 = getelementptr i8, ptr %src, i32 0
+  %dst.gep.i8 = getelementptr i8, ptr %dst, i32 0
+  %0 = load i8, ptr %src.gep.i8, align 1
+  store i8 %0, ptr %dst.gep.i8, align 1
+  br label %return
+
+sw.bb2:                                           ; preds = %entry
+  %src.gep.i16 = getelementptr i8, ptr %src, i32 0
+  %dst.gep.i16 = getelementptr i8, ptr %dst, i32 0
+  %1 = load i16, ptr %src.gep.i16, align 2
+  store i16 %1, ptr %dst.gep.i16, align 2
+  br label %return
+
+sw.bb3:                                           ; preds = %entry
+  %src.gep.i161 = getelementptr i8, ptr %src, i32 0
+  %dst.gep.i162 = getelementptr i8, ptr %dst, i32 0
+  %2 = load i16, ptr %src.gep.i161, align 2
+  store i16 %2, ptr %dst.gep.i162, align 2
+  %src.gep.i83 = getelementptr i8, ptr %src, i32 2
+  %dst.gep.i84 = getelementptr i8, ptr %dst, i32 2
+  %3 = load i8, ptr %src.gep.i83, align 1
+  store i8 %3, ptr %dst.gep.i84, align 1
+  br label %return
+
+sw.bb4:                                           ; preds = %entry
+  %src.gep.i32 = getelementptr i8, ptr %src, i32 0
+  %dst.gep.i32 = getelementptr i8, ptr %dst, i32 0
+  %4 = load i32, ptr %src.gep.i32, align 4
+  store i32 %4, ptr %dst.gep.i32, align 4
+  br label %return
+
+sw.bb5:                                           ; preds = %entry
+  %src.gep.i325 = getelementptr i8, ptr %src, i32 0
+  %dst.gep.i326 = getelementptr i8, ptr %dst, i32 0
+  %5 = load i32, ptr %src.gep.i325, align 4
+  store i32 %5, ptr %dst.gep.i326, align 4
+  %src.gep.i87 = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i88 = getelementptr i8, ptr %dst, i32 4
+  %6 = load i8, ptr %src.gep.i87, align 1
+  store i8 %6, ptr %dst.gep.i88, align 1
+  br label %return
+
+sw.bb6:                                           ; preds = %entry
+  %src.gep.i329 = getelementptr i8, ptr %src, i32 0
+  %dst.gep.i3210 = getelementptr i8, ptr %dst, i32 0
+  %7 = load i32, ptr %src.gep.i329, align 4
+  store i32 %7, ptr %dst.gep.i3210, align 4
+  %src.gep.i1611 = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i1612 = getelementptr i8, ptr %dst, i32 4
+  %8 = load i16, ptr %src.gep.i1611, align 2
+  store i16 %8, ptr %dst.gep.i1612, align 2
+  br label %return
+
+sw.bb7:                                           ; preds = %entry
+  %src.gep.i3213 = getelementptr i8, ptr %src, i32 0
+  %dst.gep.i3214 = getelementptr i8, ptr %dst, i32 0
+  %9 = load i32, ptr %src.gep.i3213, align 4
+  store i32 %9, ptr %dst.gep.i3214, align 4
+  %src.gep.i1615 = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i1616 = getelementptr i8, ptr %dst, i32 4
+  %10 = load i16, ptr %src.gep.i1615, align 2
+  store i16 %10, ptr %dst.gep.i1616, align 2
+  %src.gep.i817 = getelementptr i8, ptr %src, i32 6
+  %dst.gep.i818 = getelementptr i8, ptr %dst, i32 6
+  %11 = load i8, ptr %src.gep.i817, align 1
+  store i8 %11, ptr %dst.gep.i818, align 1
+  br label %return
+}
+
+; Function Attrs: nounwind
+declare i32 @llvm.riscv.esp.vld.h.64.ip(i32, i32 immarg, i32 immarg)
+
+; Function Attrs: noinline nounwind
+define internal void @esp32p4MemCpySrc8Dst8Var(i32 %0, i32 %1, i32 %2)  {
+; CHECK-LABEL: define internal void @esp32p4MemCpySrc8Dst8Var(
+; CHECK-SAME: i32 [[TMP0:%.*]], i32 [[TMP1:%.*]], i32 [[TMP2:%.*]]) {
+; CHECK-NEXT:  [[ENTRY:.*:]]
+; CHECK-NEXT:    [[CMP:%.*]] = icmp ult i32 [[TMP2]], 8
+; CHECK-NEXT:    br i1 [[CMP]], label %[[HANDLE_SMALL_SIZE:.*]], label %[[CHECK_MID_RANGE:.*]]
+; CHECK:       [[HANDLE_SMALL_SIZE]]:
+; CHECK-NEXT:    [[TMP3:%.*]] = inttoptr i32 [[TMP0]] to ptr
+; CHECK-NEXT:    [[TMP4:%.*]] = inttoptr i32 [[TMP1]] to ptr
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrc8Dst8From1To7Opt(ptr [[TMP3]], ptr [[TMP4]], i32 [[TMP2]])
+; CHECK-NEXT:    br label %[[RETURN:.*]]
+; CHECK:       [[CHECK_MID_RANGE]]:
+; CHECK-NEXT:    [[CMP1:%.*]] = icmp ult i32 [[TMP2]], 16
+; CHECK-NEXT:    br i1 [[CMP1]], label %[[HANDLE_MID_SIZE:.*]], label %[[HANDLE_LARGE_LOOP:.*]]
+; CHECK:       [[HANDLE_MID_SIZE]]:
+; CHECK-NEXT:    [[VLDL64IP:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[TMP1]], i32 8, i32 0)
+; CHECK-NEXT:    [[VSTL64IP:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 [[TMP0]], i32 8)
+; CHECK-NEXT:    [[TMP5:%.*]] = inttoptr i32 [[VSTL64IP]] to ptr
+; CHECK-NEXT:    [[TMP6:%.*]] = inttoptr i32 [[VLDL64IP]] to ptr
+; CHECK-NEXT:    [[SUB:%.*]] = add nsw i32 [[TMP2]], -8
+; CHECK-NEXT:    call void @esp32p4MemCpySrc8Dst8From1To7Opt(ptr [[TMP5]], ptr [[TMP6]], i32 [[SUB]])
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[HANDLE_LARGE_LOOP]]:
+; CHECK-NEXT:    [[DIV94:%.*]] = lshr i32 [[TMP2]], 7
+; CHECK-NEXT:    [[REM:%.*]] = lshr i32 [[TMP2]], 4
+; CHECK-NEXT:    [[DIV195:%.*]] = and i32 [[REM]], 7
+; CHECK-NEXT:    [[REM4:%.*]] = and i32 [[TMP2]], 7
+; CHECK-NEXT:    [[CMP97_NOT:%.*]] = icmp ult i32 [[TMP2]], 128
+; CHECK-NEXT:    br i1 [[CMP97_NOT]], label %[[LOOP_EXIT_CLEANUP:.*]], label %[[LOOP_BODY_128B:.*]]
+; CHECK:       [[RETURN]]:
+; CHECK-NEXT:    ret void
+; CHECK:       [[LOOP_EXIT_CLEANUP]]:
+; CHECK-NEXT:    [[SRC_PTR_AT_CLEANUP:%.*]] = phi i32 [ [[TMP1]], %[[HANDLE_LARGE_LOOP]] ], [ [[VLDH64IP15:%.*]], %[[LOOP_BODY_128B]] ]
+; CHECK-NEXT:    [[DST_PTR_AT_CLEANUP:%.*]] = phi i32 [ [[TMP0]], %[[HANDLE_LARGE_LOOP]] ], [ [[VSTH64IP30:%.*]], %[[LOOP_BODY_128B]] ]
+; CHECK-NEXT:    switch i32 [[DIV195]], label %[[INVALID_SWITCH_TRAP:.*]] [
+; CHECK-NEXT:      i32 1, label %[[TAIL_CASE_1:.*]]
+; CHECK-NEXT:      i32 2, label %[[TAIL_CASE_2:.*]]
+; CHECK-NEXT:      i32 3, label %[[TAIL_CASE_3:.*]]
+; CHECK-NEXT:      i32 4, label %[[TAIL_CASE_4:.*]]
+; CHECK-NEXT:      i32 5, label %[[TAIL_CASE_5:.*]]
+; CHECK-NEXT:      i32 6, label %[[TAIL_CASE_6:.*]]
+; CHECK-NEXT:      i32 7, label %[[TAIL_CASE_7:.*]]
+; CHECK-NEXT:      i32 0, label %[[HANDLE_TAIL_SWITCH:.*]]
+; CHECK-NEXT:    ]
+; CHECK:       [[LOOP_BODY_128B]]:
+; CHECK-NEXT:    [[I_098:%.*]] = phi i32 [ 0, %[[HANDLE_LARGE_LOOP]] ], [ [[INC:%.*]], %[[LOOP_BODY_128B]] ]
+; CHECK-NEXT:    [[SRC_PTR_PHI:%.*]] = phi i32 [ [[TMP1]], %[[HANDLE_LARGE_LOOP]] ], [ [[VLDH64IP15]], %[[LOOP_BODY_128B]] ]
+; CHECK-NEXT:    [[DST_PTR_PHI:%.*]] = phi i32 [ [[TMP0]], %[[HANDLE_LARGE_LOOP]] ], [ [[VSTH64IP30]], %[[LOOP_BODY_128B]] ]
+; CHECK-NEXT:    [[VLDL64IP1:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[SRC_PTR_PHI]], i32 8, i32 0)
+; CHECK-NEXT:    [[VLDH64IP:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP1]], i32 8, i32 0)
+; CHECK-NEXT:    [[VLDL64IP2:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP]], i32 8, i32 1)
+; CHECK-NEXT:    [[VLDH64IP3:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP2]], i32 8, i32 1)
+; CHECK-NEXT:    [[VLDL64IP4:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP3]], i32 8, i32 2)
+; CHECK-NEXT:    [[VLDH64IP5:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP4]], i32 8, i32 2)
+; CHECK-NEXT:    [[VLDL64IP6:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP5]], i32 8, i32 3)
+; CHECK-NEXT:    [[VLDH64IP7:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP6]], i32 8, i32 3)
+; CHECK-NEXT:    [[VLDL64IP8:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP7]], i32 8, i32 4)
+; CHECK-NEXT:    [[VLDH64IP9:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP8]], i32 8, i32 4)
+; CHECK-NEXT:    [[VLDL64IP10:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP9]], i32 8, i32 5)
+; CHECK-NEXT:    [[VLDH64IP11:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP10]], i32 8, i32 5)
+; CHECK-NEXT:    [[VLDL64IP12:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP11]], i32 8, i32 6)
+; CHECK-NEXT:    [[VLDH64IP13:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP12]], i32 8, i32 6)
+; CHECK-NEXT:    [[VLDL64IP14:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP13]], i32 8, i32 7)
+; CHECK-NEXT:    [[VLDH64IP15]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP14]], i32 8, i32 7)
+; CHECK-NEXT:    [[VSTL64IP16:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 [[DST_PTR_PHI]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 [[VSTL64IP16]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP17:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 1, i32 [[VSTH64IP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP18:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 1, i32 [[VSTL64IP17]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP19:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 2, i32 [[VSTH64IP18]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP20:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 2, i32 [[VSTL64IP19]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP21:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 3, i32 [[VSTH64IP20]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP22:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 3, i32 [[VSTL64IP21]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP23:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 4, i32 [[VSTH64IP22]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP24:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 4, i32 [[VSTL64IP23]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP25:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 5, i32 [[VSTH64IP24]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP26:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 5, i32 [[VSTL64IP25]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP27:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 6, i32 [[VSTH64IP26]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP28:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 6, i32 [[VSTL64IP27]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP29:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 7, i32 [[VSTH64IP28]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP30]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 7, i32 [[VSTL64IP29]], i32 8)
+; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_098]], 1
+; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], [[DIV94]]
+; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[LOOP_EXIT_CLEANUP]], label %[[LOOP_BODY_128B]]
+; CHECK:       [[HANDLE_TAIL_SWITCH]]:
+; CHECK-NEXT:    [[SRC_PTR_EPILOG:%.*]] = phi i32 [ [[SRC_PTR_AT_CLEANUP]], %[[LOOP_EXIT_CLEANUP]] ], [ [[VLDH64IP32:%.*]], %[[TAIL_CASE_1]] ], [ [[VLDH64IP38:%.*]], %[[TAIL_CASE_2]] ], [ [[VLDH64IP48:%.*]], %[[TAIL_CASE_3]] ], [ [[VLDH64IP62:%.*]], %[[TAIL_CASE_4]] ], [ [[VLDH64IP80:%.*]], %[[TAIL_CASE_5]] ], [ [[VLDH64IP102:%.*]], %[[TAIL_CASE_6]] ], [ [[VLDH64IP128:%.*]], %[[TAIL_CASE_7]] ]
+; CHECK-NEXT:    [[DST_PTR_EPILOG:%.*]] = phi i32 [ [[DST_PTR_AT_CLEANUP]], %[[LOOP_EXIT_CLEANUP]] ], [ [[VSTH64IP34:%.*]], %[[TAIL_CASE_1]] ], [ [[VSTH64IP42:%.*]], %[[TAIL_CASE_2]] ], [ [[VSTH64IP54:%.*]], %[[TAIL_CASE_3]] ], [ [[VSTH64IP70:%.*]], %[[TAIL_CASE_4]] ], [ [[VSTH64IP90:%.*]], %[[TAIL_CASE_5]] ], [ [[VSTH64IP114:%.*]], %[[TAIL_CASE_6]] ], [ [[VSTH64IP142:%.*]], %[[TAIL_CASE_7]] ]
+; CHECK-NEXT:    [[TMP7:%.*]] = and i32 [[TMP2]], 8
+; CHECK-NEXT:    [[TMP8:%.*]] = icmp eq i32 [[TMP7]], 0
+; CHECK-NEXT:    br i1 [[TMP8]], label %[[AFTER_8B_TAIL:.*]], label %[[HANDLE_8B_TAIL:.*]]
+; CHECK:       [[INVALID_SWITCH_TRAP]]:
+; CHECK-NEXT:    unreachable
+; CHECK:       [[HANDLE_8B_TAIL]]:
+; CHECK-NEXT:    [[VLDL64IP143:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[SRC_PTR_EPILOG]], i32 8, i32 0)
+; CHECK-NEXT:    [[VSTL64IP144:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 [[DST_PTR_EPILOG]], i32 8)
+; CHECK-NEXT:    br label %[[AFTER_8B_TAIL]]
+; CHECK:       [[AFTER_8B_TAIL]]:
+; CHECK-NEXT:    [[SRC_PTR_END17:%.*]] = phi i32 [ [[SRC_PTR_EPILOG]], %[[HANDLE_TAIL_SWITCH]] ], [ [[VLDL64IP143]], %[[HANDLE_8B_TAIL]] ]
+; CHECK-NEXT:    [[DST_PTR_END17:%.*]] = phi i32 [ [[DST_PTR_EPILOG]], %[[HANDLE_TAIL_SWITCH]] ], [ [[VSTL64IP144]], %[[HANDLE_8B_TAIL]] ]
+; CHECK-NEXT:    [[TMP9:%.*]] = icmp eq i32 [[REM4]], 0
+; CHECK-NEXT:    br i1 [[TMP9]], label %[[RETURN]], label %[[HANDLE_REMAINING_BYTES:.*]]
+; CHECK:       [[TAIL_CASE_1]]:
+; CHECK-NEXT:    [[VLDL64IP31:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[SRC_PTR_AT_CLEANUP]], i32 8, i32 0)
+; CHECK-NEXT:    [[VLDH64IP32]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP31]], i32 8, i32 0)
+; CHECK-NEXT:    [[VSTL64IP33:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 [[DST_PTR_AT_CLEANUP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP34]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 [[VSTL64IP33]], i32 8)
+; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
+; CHECK:       [[TAIL_CASE_2]]:
+; CHECK-NEXT:    [[VLDL64IP35:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[SRC_PTR_AT_CLEANUP]], i32 8, i32 0)
+; CHECK-NEXT:    [[VLDH64IP36:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP35]], i32 8, i32 0)
+; CHECK-NEXT:    [[VLDL64IP37:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP36]], i32 8, i32 1)
+; CHECK-NEXT:    [[VLDH64IP38]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP37]], i32 8, i32 1)
+; CHECK-NEXT:    [[VSTL64IP39:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 [[DST_PTR_AT_CLEANUP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP40:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 [[VSTL64IP39]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP41:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 1, i32 [[VSTH64IP40]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP42]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 1, i32 [[VSTL64IP41]], i32 8)
+; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
+; CHECK:       [[TAIL_CASE_3]]:
+; CHECK-NEXT:    [[VLDL64IP43:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[SRC_PTR_AT_CLEANUP]], i32 8, i32 0)
+; CHECK-NEXT:    [[VLDH64IP44:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP43]], i32 8, i32 0)
+; CHECK-NEXT:    [[VLDL64IP45:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP44]], i32 8, i32 1)
+; CHECK-NEXT:    [[VLDH64IP46:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP45]], i32 8, i32 1)
+; CHECK-NEXT:    [[VLDL64IP47:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP46]], i32 8, i32 2)
+; CHECK-NEXT:    [[VLDH64IP48]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP47]], i32 8, i32 2)
+; CHECK-NEXT:    [[VSTL64IP49:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 [[DST_PTR_AT_CLEANUP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP50:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 [[VSTL64IP49]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP51:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 1, i32 [[VSTH64IP50]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP52:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 1, i32 [[VSTL64IP51]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP53:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 2, i32 [[VSTH64IP52]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP54]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 2, i32 [[VSTL64IP53]], i32 8)
+; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
+; CHECK:       [[TAIL_CASE_4]]:
+; CHECK-NEXT:    [[VLDL64IP55:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[SRC_PTR_AT_CLEANUP]], i32 8, i32 0)
+; CHECK-NEXT:    [[VLDH64IP56:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP55]], i32 8, i32 0)
+; CHECK-NEXT:    [[VLDL64IP57:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP56]], i32 8, i32 1)
+; CHECK-NEXT:    [[VLDH64IP58:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP57]], i32 8, i32 1)
+; CHECK-NEXT:    [[VLDL64IP59:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP58]], i32 8, i32 2)
+; CHECK-NEXT:    [[VLDH64IP60:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP59]], i32 8, i32 2)
+; CHECK-NEXT:    [[VLDL64IP61:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP60]], i32 8, i32 3)
+; CHECK-NEXT:    [[VLDH64IP62]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP61]], i32 8, i32 3)
+; CHECK-NEXT:    [[VSTL64IP63:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 [[DST_PTR_AT_CLEANUP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP64:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 [[VSTL64IP63]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP65:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 1, i32 [[VSTH64IP64]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP66:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 1, i32 [[VSTL64IP65]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP67:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 2, i32 [[VSTH64IP66]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP68:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 2, i32 [[VSTL64IP67]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP69:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 3, i32 [[VSTH64IP68]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP70]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 3, i32 [[VSTL64IP69]], i32 8)
+; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
+; CHECK:       [[TAIL_CASE_5]]:
+; CHECK-NEXT:    [[VLDL64IP71:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[SRC_PTR_AT_CLEANUP]], i32 8, i32 0)
+; CHECK-NEXT:    [[VLDH64IP72:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP71]], i32 8, i32 0)
+; CHECK-NEXT:    [[VLDL64IP73:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP72]], i32 8, i32 1)
+; CHECK-NEXT:    [[VLDH64IP74:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP73]], i32 8, i32 1)
+; CHECK-NEXT:    [[VLDL64IP75:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP74]], i32 8, i32 2)
+; CHECK-NEXT:    [[VLDH64IP76:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP75]], i32 8, i32 2)
+; CHECK-NEXT:    [[VLDL64IP77:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP76]], i32 8, i32 3)
+; CHECK-NEXT:    [[VLDH64IP78:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP77]], i32 8, i32 3)
+; CHECK-NEXT:    [[VLDL64IP79:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP78]], i32 8, i32 4)
+; CHECK-NEXT:    [[VLDH64IP80]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP79]], i32 8, i32 4)
+; CHECK-NEXT:    [[VSTL64IP81:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 [[DST_PTR_AT_CLEANUP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP82:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 [[VSTL64IP81]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP83:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 1, i32 [[VSTH64IP82]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP84:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 1, i32 [[VSTL64IP83]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP85:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 2, i32 [[VSTH64IP84]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP86:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 2, i32 [[VSTL64IP85]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP87:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 3, i32 [[VSTH64IP86]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP88:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 3, i32 [[VSTL64IP87]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP89:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 4, i32 [[VSTH64IP88]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP90]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 4, i32 [[VSTL64IP89]], i32 8)
+; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
+; CHECK:       [[TAIL_CASE_6]]:
+; CHECK-NEXT:    [[VLDL64IP91:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[SRC_PTR_AT_CLEANUP]], i32 8, i32 0)
+; CHECK-NEXT:    [[VLDH64IP92:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP91]], i32 8, i32 0)
+; CHECK-NEXT:    [[VLDL64IP93:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP92]], i32 8, i32 1)
+; CHECK-NEXT:    [[VLDH64IP94:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP93]], i32 8, i32 1)
+; CHECK-NEXT:    [[VLDL64IP95:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP94]], i32 8, i32 2)
+; CHECK-NEXT:    [[VLDH64IP96:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP95]], i32 8, i32 2)
+; CHECK-NEXT:    [[VLDL64IP97:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP96]], i32 8, i32 3)
+; CHECK-NEXT:    [[VLDH64IP98:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP97]], i32 8, i32 3)
+; CHECK-NEXT:    [[VLDL64IP99:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP98]], i32 8, i32 4)
+; CHECK-NEXT:    [[VLDH64IP100:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP99]], i32 8, i32 4)
+; CHECK-NEXT:    [[VLDL64IP101:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP100]], i32 8, i32 5)
+; CHECK-NEXT:    [[VLDH64IP102]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP101]], i32 8, i32 5)
+; CHECK-NEXT:    [[VSTL64IP103:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 [[DST_PTR_AT_CLEANUP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP104:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 [[VSTL64IP103]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP105:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 1, i32 [[VSTH64IP104]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP106:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 1, i32 [[VSTL64IP105]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP107:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 2, i32 [[VSTH64IP106]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP108:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 2, i32 [[VSTL64IP107]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP109:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 3, i32 [[VSTH64IP108]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP110:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 3, i32 [[VSTL64IP109]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP111:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 4, i32 [[VSTH64IP110]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP112:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 4, i32 [[VSTL64IP111]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP113:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 5, i32 [[VSTH64IP112]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP114]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 5, i32 [[VSTL64IP113]], i32 8)
+; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
+; CHECK:       [[TAIL_CASE_7]]:
+; CHECK-NEXT:    [[VLDL64IP115:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[SRC_PTR_AT_CLEANUP]], i32 8, i32 0)
+; CHECK-NEXT:    [[VLDH64IP116:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP115]], i32 8, i32 0)
+; CHECK-NEXT:    [[VLDL64IP117:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP116]], i32 8, i32 1)
+; CHECK-NEXT:    [[VLDH64IP118:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP117]], i32 8, i32 1)
+; CHECK-NEXT:    [[VLDL64IP119:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP118]], i32 8, i32 2)
+; CHECK-NEXT:    [[VLDH64IP120:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP119]], i32 8, i32 2)
+; CHECK-NEXT:    [[VLDL64IP121:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP120]], i32 8, i32 3)
+; CHECK-NEXT:    [[VLDH64IP122:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP121]], i32 8, i32 3)
+; CHECK-NEXT:    [[VLDL64IP123:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP122]], i32 8, i32 4)
+; CHECK-NEXT:    [[VLDH64IP124:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP123]], i32 8, i32 4)
+; CHECK-NEXT:    [[VLDL64IP125:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP124]], i32 8, i32 5)
+; CHECK-NEXT:    [[VLDH64IP126:%.*]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP125]], i32 8, i32 5)
+; CHECK-NEXT:    [[VLDL64IP127:%.*]] = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 [[VLDH64IP126]], i32 8, i32 6)
+; CHECK-NEXT:    [[VLDH64IP128]] = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 [[VLDL64IP127]], i32 8, i32 6)
+; CHECK-NEXT:    [[VSTL64IP129:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 [[DST_PTR_AT_CLEANUP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP130:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 [[VSTL64IP129]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP131:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 1, i32 [[VSTH64IP130]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP132:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 1, i32 [[VSTL64IP131]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP133:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 2, i32 [[VSTH64IP132]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP134:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 2, i32 [[VSTL64IP133]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP135:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 3, i32 [[VSTH64IP134]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP136:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 3, i32 [[VSTL64IP135]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP137:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 4, i32 [[VSTH64IP136]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP138:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 4, i32 [[VSTL64IP137]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP139:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 5, i32 [[VSTH64IP138]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP140:%.*]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 5, i32 [[VSTL64IP139]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP141:%.*]] = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 6, i32 [[VSTH64IP140]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP142]] = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 6, i32 [[VSTL64IP141]], i32 8)
+; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
+; CHECK:       [[HANDLE_REMAINING_BYTES]]:
+; CHECK-NEXT:    [[TMP10:%.*]] = inttoptr i32 [[SRC_PTR_END17]] to ptr
+; CHECK-NEXT:    [[TMP11:%.*]] = inttoptr i32 [[DST_PTR_END17]] to ptr
+; CHECK-NEXT:    call void @esp32p4MemCpySrc8Dst8From1To7Opt(ptr [[TMP11]], ptr [[TMP10]], i32 [[REM4]])
+; CHECK-NEXT:    br label %[[RETURN]]
+;
+entry:
+  %is.lt.8 = icmp ult i32 %2, 8
+  br i1 %is.lt.8, label %handle.small.size, label %check.mid.range
+
+handle.small.size:                                ; preds = %entry
+  %3 = inttoptr i32 %0 to ptr
+  %4 = inttoptr i32 %1 to ptr
+  tail call void @esp32p4MemCpySrc8Dst8From1To7Opt(ptr %3, ptr %4, i32 %2)
+  br label %return
+
+check.mid.range:                                  ; preds = %entry
+  %is.lt.16 = icmp ult i32 %2, 16
+  br i1 %is.lt.16, label %handle.mid.size, label %handle.large.loop
+
+handle.mid.size:                                  ; preds = %check.mid.range
+  %vldl64ip = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %1, i32 8, i32 0)
+  %vstl64ip = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 %0, i32 8)
+  %5 = inttoptr i32 %vstl64ip to ptr
+  %6 = inttoptr i32 %vldl64ip to ptr
+  %size.minus.8 = add nsw i32 %2, -8
+  call void @esp32p4MemCpySrc8Dst8From1To7Opt(ptr %5, ptr %6, i32 %size.minus.8)
+  br label %return
+
+handle.large.loop:                                ; preds = %check.mid.range
+  %num.128B.blocks = lshr i32 %2, 7
+  %num.16B.blocks = lshr i32 %2, 4
+  %remaining.16B.blocks = and i32 %num.16B.blocks, 7
+  %remaining.bytes = and i32 %2, 7
+  %is.lt.128 = icmp ult i32 %2, 128
+  br i1 %is.lt.128, label %loop.exit.cleanup, label %loop.body.128B
+
+return:                                           ; preds = %handle.remaining.bytes, %after.8B.tail, %handle.mid.size, %handle.small.size
+  ret void
+
+loop.exit.cleanup:                                ; preds = %loop.body.128B, %handle.large.loop
+  %src.ptr.after.loop = phi i32 [ %1, %handle.large.loop ], [ %vldh64ip15, %loop.body.128B ]
+  %dst.ptr.after.loop = phi i32 [ %0, %handle.large.loop ], [ %vsth64ip30, %loop.body.128B ]
+  switch i32 %remaining.16B.blocks, label %invalid.switch.trap [
+  i32 1, label %tail.case.1
+  i32 2, label %tail.case.2
+  i32 3, label %tail.case.3
+  i32 4, label %tail.case.4
+  i32 5, label %tail.case.5
+  i32 6, label %tail.case.6
+  i32 7, label %tail.case.7
+  i32 0, label %handle.tail.switch
+  ]
+
+loop.body.128B:                                   ; preds = %loop.body.128B, %handle.large.loop
+  %loop.index = phi i32 [ 0, %handle.large.loop ], [ %loop.inc, %loop.body.128B ]
+  %src.ptr.loop = phi i32 [ %1, %handle.large.loop ], [ %vldh64ip15, %loop.body.128B ]
+  %dst.ptr.loop = phi i32 [ %0, %handle.large.loop ], [ %vsth64ip30, %loop.body.128B ]
+  %vldl64ip1 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %src.ptr.loop, i32 8, i32 0)
+  %vldh64ip = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip1, i32 8, i32 0)
+  %vldl64ip2 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip, i32 8, i32 1)
+  %vldh64ip3 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip2, i32 8, i32 1)
+  %vldl64ip4 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip3, i32 8, i32 2)
+  %vldh64ip5 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip4, i32 8, i32 2)
+  %vldl64ip6 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip5, i32 8, i32 3)
+  %vldh64ip7 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip6, i32 8, i32 3)
+  %vldl64ip8 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip7, i32 8, i32 4)
+  %vldh64ip9 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip8, i32 8, i32 4)
+  %vldl64ip10 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip9, i32 8, i32 5)
+  %vldh64ip11 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip10, i32 8, i32 5)
+  %vldl64ip12 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip11, i32 8, i32 6)
+  %vldh64ip13 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip12, i32 8, i32 6)
+  %vldl64ip14 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip13, i32 8, i32 7)
+  %vldh64ip15 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip14, i32 8, i32 7)
+  %vstl64ip16 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 %dst.ptr.loop, i32 8)
+  %vsth64ip = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 %vstl64ip16, i32 8)
+  %vstl64ip17 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 1, i32 %vsth64ip, i32 8)
+  %vsth64ip18 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 1, i32 %vstl64ip17, i32 8)
+  %vstl64ip19 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 2, i32 %vsth64ip18, i32 8)
+  %vsth64ip20 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 2, i32 %vstl64ip19, i32 8)
+  %vstl64ip21 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 3, i32 %vsth64ip20, i32 8)
+  %vsth64ip22 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 3, i32 %vstl64ip21, i32 8)
+  %vstl64ip23 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 4, i32 %vsth64ip22, i32 8)
+  %vsth64ip24 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 4, i32 %vstl64ip23, i32 8)
+  %vstl64ip25 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 5, i32 %vsth64ip24, i32 8)
+  %vsth64ip26 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 5, i32 %vstl64ip25, i32 8)
+  %vstl64ip27 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 6, i32 %vsth64ip26, i32 8)
+  %vsth64ip28 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 6, i32 %vstl64ip27, i32 8)
+  %vstl64ip29 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 7, i32 %vsth64ip28, i32 8)
+  %vsth64ip30 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 7, i32 %vstl64ip29, i32 8)
+  %loop.inc = add nuw nsw i32 %loop.index, 1
+  %loop.done = icmp eq i32 %loop.inc, %num.128B.blocks
+  br i1 %loop.done, label %loop.exit.cleanup, label %loop.body.128B
+
+handle.tail.switch:                               ; preds = %loop.exit.cleanup, %tail.case.7, %tail.case.6, %tail.case.5, %tail.case.4, %tail.case.3, %tail.case.2, %tail.case.1
+  %src.ptr.tail = phi i32 [ %src.ptr.after.loop, %loop.exit.cleanup ], [ %vldh64ip32, %tail.case.1 ], [ %vldh64ip38, %tail.case.2 ], [ %vldh64ip48, %tail.case.3 ], [ %vldh64ip62, %tail.case.4 ], [ %vldh64ip80, %tail.case.5 ], [ %vldh64ip102, %tail.case.6 ], [ %vldh64ip128, %tail.case.7 ]
+  %dst.ptr.tail = phi i32 [ %dst.ptr.after.loop, %loop.exit.cleanup ], [ %vsth64ip34, %tail.case.1 ], [ %vsth64ip42, %tail.case.2 ], [ %vsth64ip54, %tail.case.3 ], [ %vsth64ip70, %tail.case.4 ], [ %vsth64ip90, %tail.case.5 ], [ %vsth64ip114, %tail.case.6 ], [ %vsth64ip142, %tail.case.7 ]
+  %7 = and i32 %2, 8
+  %8 = icmp eq i32 %7, 0
+  br i1 %8, label %after.8B.tail, label %handle.8B.tail
+
+invalid.switch.trap:                              ; preds = %loop.exit.cleanup
+  unreachable
+
+handle.8B.tail:                                   ; preds = %handle.tail.switch
+  %vldl64ip143 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %src.ptr.tail, i32 8, i32 0)
+  %vstl64ip144 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 %dst.ptr.tail, i32 8)
+  br label %after.8B.tail
+
+after.8B.tail:                                    ; preds = %handle.8B.tail, %handle.tail.switch
+  %src.ptr.after.8B = phi i32 [ %src.ptr.tail, %handle.tail.switch ], [ %vldl64ip143, %handle.8B.tail ]
+  %dst.ptr.after.8B = phi i32 [ %dst.ptr.tail, %handle.tail.switch ], [ %vstl64ip144, %handle.8B.tail ]
+  %9 = icmp eq i32 %remaining.bytes, 0
+  br i1 %9, label %return, label %handle.remaining.bytes
+
+tail.case.1:                                      ; preds = %loop.exit.cleanup
+  %vldl64ip31 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %src.ptr.after.loop, i32 8, i32 0)
+  %vldh64ip32 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip31, i32 8, i32 0)
+  %vstl64ip33 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 %dst.ptr.after.loop, i32 8)
+  %vsth64ip34 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 %vstl64ip33, i32 8)
+  br label %handle.tail.switch
+
+tail.case.2:                                      ; preds = %loop.exit.cleanup
+  %vldl64ip35 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %src.ptr.after.loop, i32 8, i32 0)
+  %vldh64ip36 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip35, i32 8, i32 0)
+  %vldl64ip37 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip36, i32 8, i32 1)
+  %vldh64ip38 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip37, i32 8, i32 1)
+  %vstl64ip39 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 %dst.ptr.after.loop, i32 8)
+  %vsth64ip40 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 %vstl64ip39, i32 8)
+  %vstl64ip41 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 1, i32 %vsth64ip40, i32 8)
+  %vsth64ip42 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 1, i32 %vstl64ip41, i32 8)
+  br label %handle.tail.switch
+
+tail.case.3:                                      ; preds = %loop.exit.cleanup
+  %vldl64ip43 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %src.ptr.after.loop, i32 8, i32 0)
+  %vldh64ip44 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip43, i32 8, i32 0)
+  %vldl64ip45 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip44, i32 8, i32 1)
+  %vldh64ip46 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip45, i32 8, i32 1)
+  %vldl64ip47 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip46, i32 8, i32 2)
+  %vldh64ip48 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip47, i32 8, i32 2)
+  %vstl64ip49 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 %dst.ptr.after.loop, i32 8)
+  %vsth64ip50 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 %vstl64ip49, i32 8)
+  %vstl64ip51 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 1, i32 %vsth64ip50, i32 8)
+  %vsth64ip52 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 1, i32 %vstl64ip51, i32 8)
+  %vstl64ip53 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 2, i32 %vsth64ip52, i32 8)
+  %vsth64ip54 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 2, i32 %vstl64ip53, i32 8)
+  br label %handle.tail.switch
+
+tail.case.4:                                      ; preds = %loop.exit.cleanup
+  %vldl64ip55 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %src.ptr.after.loop, i32 8, i32 0)
+  %vldh64ip56 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip55, i32 8, i32 0)
+  %vldl64ip57 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip56, i32 8, i32 1)
+  %vldh64ip58 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip57, i32 8, i32 1)
+  %vldl64ip59 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip58, i32 8, i32 2)
+  %vldh64ip60 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip59, i32 8, i32 2)
+  %vldl64ip61 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip60, i32 8, i32 3)
+  %vldh64ip62 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip61, i32 8, i32 3)
+  %vstl64ip63 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 %dst.ptr.after.loop, i32 8)
+  %vsth64ip64 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 %vstl64ip63, i32 8)
+  %vstl64ip65 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 1, i32 %vsth64ip64, i32 8)
+  %vsth64ip66 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 1, i32 %vstl64ip65, i32 8)
+  %vstl64ip67 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 2, i32 %vsth64ip66, i32 8)
+  %vsth64ip68 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 2, i32 %vstl64ip67, i32 8)
+  %vstl64ip69 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 3, i32 %vsth64ip68, i32 8)
+  %vsth64ip70 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 3, i32 %vstl64ip69, i32 8)
+  br label %handle.tail.switch
+
+tail.case.5:                                      ; preds = %loop.exit.cleanup
+  %vldl64ip71 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %src.ptr.after.loop, i32 8, i32 0)
+  %vldh64ip72 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip71, i32 8, i32 0)
+  %vldl64ip73 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip72, i32 8, i32 1)
+  %vldh64ip74 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip73, i32 8, i32 1)
+  %vldl64ip75 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip74, i32 8, i32 2)
+  %vldh64ip76 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip75, i32 8, i32 2)
+  %vldl64ip77 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip76, i32 8, i32 3)
+  %vldh64ip78 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip77, i32 8, i32 3)
+  %vldl64ip79 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip78, i32 8, i32 4)
+  %vldh64ip80 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip79, i32 8, i32 4)
+  %vstl64ip81 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 %dst.ptr.after.loop, i32 8)
+  %vsth64ip82 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 %vstl64ip81, i32 8)
+  %vstl64ip83 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 1, i32 %vsth64ip82, i32 8)
+  %vsth64ip84 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 1, i32 %vstl64ip83, i32 8)
+  %vstl64ip85 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 2, i32 %vsth64ip84, i32 8)
+  %vsth64ip86 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 2, i32 %vstl64ip85, i32 8)
+  %vstl64ip87 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 3, i32 %vsth64ip86, i32 8)
+  %vsth64ip88 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 3, i32 %vstl64ip87, i32 8)
+  %vstl64ip89 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 4, i32 %vsth64ip88, i32 8)
+  %vsth64ip90 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 4, i32 %vstl64ip89, i32 8)
+  br label %handle.tail.switch
+
+tail.case.6:                                      ; preds = %loop.exit.cleanup
+  %vldl64ip91 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %src.ptr.after.loop, i32 8, i32 0)
+  %vldh64ip92 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip91, i32 8, i32 0)
+  %vldl64ip93 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip92, i32 8, i32 1)
+  %vldh64ip94 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip93, i32 8, i32 1)
+  %vldl64ip95 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip94, i32 8, i32 2)
+  %vldh64ip96 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip95, i32 8, i32 2)
+  %vldl64ip97 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip96, i32 8, i32 3)
+  %vldh64ip98 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip97, i32 8, i32 3)
+  %vldl64ip99 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip98, i32 8, i32 4)
+  %vldh64ip100 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip99, i32 8, i32 4)
+  %vldl64ip101 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip100, i32 8, i32 5)
+  %vldh64ip102 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip101, i32 8, i32 5)
+  %vstl64ip103 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 %dst.ptr.after.loop, i32 8)
+  %vsth64ip104 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 %vstl64ip103, i32 8)
+  %vstl64ip105 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 1, i32 %vsth64ip104, i32 8)
+  %vsth64ip106 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 1, i32 %vstl64ip105, i32 8)
+  %vstl64ip107 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 2, i32 %vsth64ip106, i32 8)
+  %vsth64ip108 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 2, i32 %vstl64ip107, i32 8)
+  %vstl64ip109 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 3, i32 %vsth64ip108, i32 8)
+  %vsth64ip110 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 3, i32 %vstl64ip109, i32 8)
+  %vstl64ip111 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 4, i32 %vsth64ip110, i32 8)
+  %vsth64ip112 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 4, i32 %vstl64ip111, i32 8)
+  %vstl64ip113 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 5, i32 %vsth64ip112, i32 8)
+  %vsth64ip114 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 5, i32 %vstl64ip113, i32 8)
+  br label %handle.tail.switch
+
+tail.case.7:                                      ; preds = %loop.exit.cleanup
+  %vldl64ip115 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %src.ptr.after.loop, i32 8, i32 0)
+  %vldh64ip116 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip115, i32 8, i32 0)
+  %vldl64ip117 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip116, i32 8, i32 1)
+  %vldh64ip118 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip117, i32 8, i32 1)
+  %vldl64ip119 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip118, i32 8, i32 2)
+  %vldh64ip120 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip119, i32 8, i32 2)
+  %vldl64ip121 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip120, i32 8, i32 3)
+  %vldh64ip122 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip121, i32 8, i32 3)
+  %vldl64ip123 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip122, i32 8, i32 4)
+  %vldh64ip124 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip123, i32 8, i32 4)
+  %vldl64ip125 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip124, i32 8, i32 5)
+  %vldh64ip126 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip125, i32 8, i32 5)
+  %vldl64ip127 = call i32 @llvm.riscv.esp.vld.l.64.ip(i32 %vldh64ip126, i32 8, i32 6)
+  %vldh64ip128 = call i32 @llvm.riscv.esp.vld.h.64.ip(i32 %vldl64ip127, i32 8, i32 6)
+  %vstl64ip129 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 0, i32 %dst.ptr.after.loop, i32 8)
+  %vsth64ip130 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 0, i32 %vstl64ip129, i32 8)
+  %vstl64ip131 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 1, i32 %vsth64ip130, i32 8)
+  %vsth64ip132 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 1, i32 %vstl64ip131, i32 8)
+  %vstl64ip133 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 2, i32 %vsth64ip132, i32 8)
+  %vsth64ip134 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 2, i32 %vstl64ip133, i32 8)
+  %vstl64ip135 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 3, i32 %vsth64ip134, i32 8)
+  %vsth64ip136 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 3, i32 %vstl64ip135, i32 8)
+  %vstl64ip137 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 4, i32 %vsth64ip136, i32 8)
+  %vsth64ip138 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 4, i32 %vstl64ip137, i32 8)
+  %vstl64ip139 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 5, i32 %vsth64ip138, i32 8)
+  %vsth64ip140 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 5, i32 %vstl64ip139, i32 8)
+  %vstl64ip141 = call i32 @llvm.riscv.esp.vst.l.64.ip(i32 6, i32 %vsth64ip140, i32 8)
+  %vsth64ip142 = call i32 @llvm.riscv.esp.vst.h.64.ip(i32 6, i32 %vstl64ip141, i32 8)
+  br label %handle.tail.switch
+
+handle.remaining.bytes:                           ; preds = %after.8B.tail
+  %10 = inttoptr i32 %src.ptr.after.8B to ptr
+  %11 = inttoptr i32 %dst.ptr.after.8B to ptr
+  call void @esp32p4MemCpySrc8Dst8From1To7Opt(ptr %11, ptr %10, i32 %remaining.bytes)
+  br label %return
+}
+
+; Function Attrs: noinline nounwind
+define internal void @esp32p4MemCpySrc8Dst8From1To7Opt(ptr %dst, ptr %src, i32 %size)  {
+; CHECK-LABEL: define internal void @esp32p4MemCpySrc8Dst8From1To7Opt(
+; CHECK-SAME: ptr [[DST:%.*]], ptr [[SRC:%.*]], i32 [[SIZE:%.*]]) {
+; CHECK-NEXT:  [[ENTRY:.*:]]
+; CHECK-NEXT:    switch i32 [[SIZE]], label %[[RETURN:.*]] [
+; CHECK-NEXT:      i32 1, label %[[SW_BB1:.*]]
+; CHECK-NEXT:      i32 2, label %[[SW_BB2:.*]]
+; CHECK-NEXT:      i32 3, label %[[SW_BB3:.*]]
+; CHECK-NEXT:      i32 4, label %[[SW_BB4:.*]]
+; CHECK-NEXT:      i32 5, label %[[SW_BB5:.*]]
+; CHECK-NEXT:      i32 6, label %[[SW_BB6:.*]]
+; CHECK-NEXT:      i32 7, label %[[SW_BB7:.*]]
+; CHECK-NEXT:    ]
+; CHECK:       [[RETURN]]:
+; CHECK-NEXT:    ret void
+; CHECK:       [[SW_BB1]]:
+; CHECK-NEXT:    [[SRC_GEP_I8:%.*]] = getelementptr i8, ptr [[SRC]], i32 0
+; CHECK-NEXT:    [[DST_GEP_I8:%.*]] = getelementptr i8, ptr [[DST]], i32 0
+; CHECK-NEXT:    [[TMP0:%.*]] = load i8, ptr [[SRC_GEP_I8]], align 1
+; CHECK-NEXT:    store i8 [[TMP0]], ptr [[DST_GEP_I8]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB2]]:
+; CHECK-NEXT:    [[SRC_GEP_I16:%.*]] = getelementptr i8, ptr [[SRC]], i32 0
+; CHECK-NEXT:    [[DST_GEP_I16:%.*]] = getelementptr i8, ptr [[DST]], i32 0
+; CHECK-NEXT:    [[TMP1:%.*]] = load i16, ptr [[SRC_GEP_I16]], align 2
+; CHECK-NEXT:    store i16 [[TMP1]], ptr [[DST_GEP_I16]], align 2
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB3]]:
+; CHECK-NEXT:    [[SRC_GEP_I161:%.*]] = getelementptr i8, ptr [[SRC]], i32 0
+; CHECK-NEXT:    [[DST_GEP_I162:%.*]] = getelementptr i8, ptr [[DST]], i32 0
+; CHECK-NEXT:    [[TMP2:%.*]] = load i16, ptr [[SRC_GEP_I161]], align 2
+; CHECK-NEXT:    store i16 [[TMP2]], ptr [[DST_GEP_I162]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I83:%.*]] = getelementptr i8, ptr [[SRC]], i32 2
+; CHECK-NEXT:    [[DST_GEP_I84:%.*]] = getelementptr i8, ptr [[DST]], i32 2
+; CHECK-NEXT:    [[TMP3:%.*]] = load i8, ptr [[SRC_GEP_I83]], align 1
+; CHECK-NEXT:    store i8 [[TMP3]], ptr [[DST_GEP_I84]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB4]]:
+; CHECK-NEXT:    [[SRC_GEP_I32:%.*]] = getelementptr i8, ptr [[SRC]], i32 0
+; CHECK-NEXT:    [[DST_GEP_I32:%.*]] = getelementptr i8, ptr [[DST]], i32 0
+; CHECK-NEXT:    [[TMP4:%.*]] = load i32, ptr [[SRC_GEP_I32]], align 4
+; CHECK-NEXT:    store i32 [[TMP4]], ptr [[DST_GEP_I32]], align 4
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB5]]:
+; CHECK-NEXT:    [[SRC_GEP_I325:%.*]] = getelementptr i8, ptr [[SRC]], i32 0
+; CHECK-NEXT:    [[DST_GEP_I326:%.*]] = getelementptr i8, ptr [[DST]], i32 0
+; CHECK-NEXT:    [[TMP5:%.*]] = load i32, ptr [[SRC_GEP_I325]], align 4
+; CHECK-NEXT:    store i32 [[TMP5]], ptr [[DST_GEP_I326]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I87:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I88:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP6:%.*]] = load i8, ptr [[SRC_GEP_I87]], align 1
+; CHECK-NEXT:    store i8 [[TMP6]], ptr [[DST_GEP_I88]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB6]]:
+; CHECK-NEXT:    [[SRC_GEP_I329:%.*]] = getelementptr i8, ptr [[SRC]], i32 0
+; CHECK-NEXT:    [[DST_GEP_I3210:%.*]] = getelementptr i8, ptr [[DST]], i32 0
+; CHECK-NEXT:    [[TMP7:%.*]] = load i32, ptr [[SRC_GEP_I329]], align 4
+; CHECK-NEXT:    store i32 [[TMP7]], ptr [[DST_GEP_I3210]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1611:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I1612:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP8:%.*]] = load i16, ptr [[SRC_GEP_I1611]], align 2
+; CHECK-NEXT:    store i16 [[TMP8]], ptr [[DST_GEP_I1612]], align 2
+; CHECK-NEXT:    br label %[[RETURN]]
+; CHECK:       [[SW_BB7]]:
+; CHECK-NEXT:    [[SRC_GEP_I3213:%.*]] = getelementptr i8, ptr [[SRC]], i32 0
+; CHECK-NEXT:    [[DST_GEP_I3214:%.*]] = getelementptr i8, ptr [[DST]], i32 0
+; CHECK-NEXT:    [[TMP9:%.*]] = load i32, ptr [[SRC_GEP_I3213]], align 4
+; CHECK-NEXT:    store i32 [[TMP9]], ptr [[DST_GEP_I3214]], align 4
+; CHECK-NEXT:    [[SRC_GEP_I1615:%.*]] = getelementptr i8, ptr [[SRC]], i32 4
+; CHECK-NEXT:    [[DST_GEP_I1616:%.*]] = getelementptr i8, ptr [[DST]], i32 4
+; CHECK-NEXT:    [[TMP10:%.*]] = load i16, ptr [[SRC_GEP_I1615]], align 2
+; CHECK-NEXT:    store i16 [[TMP10]], ptr [[DST_GEP_I1616]], align 2
+; CHECK-NEXT:    [[SRC_GEP_I817:%.*]] = getelementptr i8, ptr [[SRC]], i32 6
+; CHECK-NEXT:    [[DST_GEP_I818:%.*]] = getelementptr i8, ptr [[DST]], i32 6
+; CHECK-NEXT:    [[TMP11:%.*]] = load i8, ptr [[SRC_GEP_I817]], align 1
+; CHECK-NEXT:    store i8 [[TMP11]], ptr [[DST_GEP_I818]], align 1
+; CHECK-NEXT:    br label %[[RETURN]]
+;
+entry:
+  switch i32 %size, label %return [
+  i32 1, label %sw.bb1
+  i32 2, label %sw.bb2
+  i32 3, label %sw.bb3
+  i32 4, label %sw.bb4
+  i32 5, label %sw.bb5
+  i32 6, label %sw.bb6
+  i32 7, label %sw.bb7
+  ]
+
+return:                                           ; preds = %sw.bb7, %sw.bb6, %sw.bb5, %sw.bb4, %sw.bb3, %sw.bb2, %sw.bb1, %entry
+  ret void
+
+sw.bb1:                                           ; preds = %entry
+  %src.gep.i8 = getelementptr i8, ptr %src, i32 0
+  %dst.gep.i8 = getelementptr i8, ptr %dst, i32 0
+  %0 = load i8, ptr %src.gep.i8, align 1
+  store i8 %0, ptr %dst.gep.i8, align 1
+  br label %return
+
+sw.bb2:                                           ; preds = %entry
+  %src.gep.i16 = getelementptr i8, ptr %src, i32 0
+  %dst.gep.i16 = getelementptr i8, ptr %dst, i32 0
+  %1 = load i16, ptr %src.gep.i16, align 2
+  store i16 %1, ptr %dst.gep.i16, align 2
+  br label %return
+
+sw.bb3:                                           ; preds = %entry
+  %src.gep.i161 = getelementptr i8, ptr %src, i32 0
+  %dst.gep.i162 = getelementptr i8, ptr %dst, i32 0
+  %2 = load i16, ptr %src.gep.i161, align 2
+  store i16 %2, ptr %dst.gep.i162, align 2
+  %src.gep.i83 = getelementptr i8, ptr %src, i32 2
+  %dst.gep.i84 = getelementptr i8, ptr %dst, i32 2
+  %3 = load i8, ptr %src.gep.i83, align 1
+  store i8 %3, ptr %dst.gep.i84, align 1
+  br label %return
+
+sw.bb4:                                           ; preds = %entry
+  %src.gep.i32 = getelementptr i8, ptr %src, i32 0
+  %dst.gep.i32 = getelementptr i8, ptr %dst, i32 0
+  %4 = load i32, ptr %src.gep.i32, align 4
+  store i32 %4, ptr %dst.gep.i32, align 4
+  br label %return
+
+sw.bb5:                                           ; preds = %entry
+  %src.gep.i325 = getelementptr i8, ptr %src, i32 0
+  %dst.gep.i326 = getelementptr i8, ptr %dst, i32 0
+  %5 = load i32, ptr %src.gep.i325, align 4
+  store i32 %5, ptr %dst.gep.i326, align 4
+  %src.gep.i87 = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i88 = getelementptr i8, ptr %dst, i32 4
+  %6 = load i8, ptr %src.gep.i87, align 1
+  store i8 %6, ptr %dst.gep.i88, align 1
+  br label %return
+
+sw.bb6:                                           ; preds = %entry
+  %src.gep.i329 = getelementptr i8, ptr %src, i32 0
+  %dst.gep.i3210 = getelementptr i8, ptr %dst, i32 0
+  %7 = load i32, ptr %src.gep.i329, align 4
+  store i32 %7, ptr %dst.gep.i3210, align 4
+  %src.gep.i1611 = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i1612 = getelementptr i8, ptr %dst, i32 4
+  %8 = load i16, ptr %src.gep.i1611, align 2
+  store i16 %8, ptr %dst.gep.i1612, align 2
+  br label %return
+
+sw.bb7:                                           ; preds = %entry
+  %src.gep.i3213 = getelementptr i8, ptr %src, i32 0
+  %dst.gep.i3214 = getelementptr i8, ptr %dst, i32 0
+  %9 = load i32, ptr %src.gep.i3213, align 4
+  store i32 %9, ptr %dst.gep.i3214, align 4
+  %src.gep.i1615 = getelementptr i8, ptr %src, i32 4
+  %dst.gep.i1616 = getelementptr i8, ptr %dst, i32 4
+  %10 = load i16, ptr %src.gep.i1615, align 2
+  store i16 %10, ptr %dst.gep.i1616, align 2
+  %src.gep.i817 = getelementptr i8, ptr %src, i32 6
+  %dst.gep.i818 = getelementptr i8, ptr %dst, i32 6
+  %11 = load i8, ptr %src.gep.i817, align 1
+  store i8 %11, ptr %dst.gep.i818, align 1
+  br label %return
+}
