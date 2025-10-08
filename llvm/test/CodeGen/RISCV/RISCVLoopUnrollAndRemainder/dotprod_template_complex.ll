@@ -2,7 +2,7 @@
 ; RUN: opt -S -mtriple=riscv32-esp-unknown-elf -passes=riscv-loop-unroll-and-remainder -riscv-loop-unroll-and-remainder=true < %s | FileCheck %s
 define dso_local float @test_loop(ptr nocapture noundef readonly %data1, ptr nocapture noundef readonly %data2, i32 noundef %start_index, i32 noundef %end_index, i32 noundef %update1, i32 noundef %update2, float noundef %offset) local_unnamed_addr {
 ; CHECK-LABEL: define dso_local float @test_loop(
-; CHECK-SAME: ptr noalias nocapture noundef readonly [[DATA1:%.*]], ptr noalias nocapture noundef readonly [[DATA2:%.*]], i32 noundef [[START_INDEX:%.*]], i32 noundef [[END_INDEX:%.*]], i32 noundef [[UPDATE1:%.*]], i32 noundef [[UPDATE2:%.*]], float noundef [[OFFSET:%.*]]) local_unnamed_addr {
+; CHECK-SAME: ptr noalias noundef readonly captures(none) [[DATA1:%.*]], ptr noalias noundef readonly captures(none) [[DATA2:%.*]], i32 noundef [[START_INDEX:%.*]], i32 noundef [[END_INDEX:%.*]], i32 noundef [[UPDATE1:%.*]], i32 noundef [[UPDATE2:%.*]], float noundef [[OFFSET:%.*]]) local_unnamed_addr {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    [[INVARIANT_GEP:%.*]] = getelementptr float, ptr [[DATA1]], i32 [[UPDATE1]]
 ; CHECK-NEXT:    [[INVARIANT_GEP8:%.*]] = getelementptr float, ptr [[DATA2]], i32 [[UPDATE2]]
