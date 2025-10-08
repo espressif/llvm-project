@@ -14,6 +14,7 @@
 #include "MCTargetDesc/RISCVBaseInfo.h"
 #include "RISCV.h"
 #include "RISCVCustomLICM.h"
+#include "RISCVEsp32P4MemIntrin.h"
 #include "RISCVLoopUnrollAndRemainder.h"
 #include "RISCVMachineFunctionInfo.h"
 #include "RISCVMachineScheduler.h"
@@ -693,22 +694,34 @@ void RISCVTargetMachine::registerPassBuilderCallbacks(PassBuilder &PB) {
           FPM.addPass(RISCVLoopUnrollAndRemainderPass());
           return true;
         }
+        if (Name == "riscv-esp32-p4-mem-intrin") {
+          FPM.addPass(RISCVEsp32P4MemIntrinPass());
+          return true;
+        }
         return false;
       });
 
-  PB.registerOptimizerLastEPCallback(
-      [](ModulePassManager &PM, OptimizationLevel Level, ThinOrFullLTOPhase) {
-        if(EnableEsp32P4Optimize && (Level == OptimizationLevel::O3 || Level == OptimizationLevel::O2)){
-          EnableRISCVSplitLoopByLength = true;
-          EnableRISCVCustomLICM = true;
-          EnableRISCVLoopUnrollAndRemainder = true;
-          FunctionPassManager FPM;
-          FPM.addPass(RISCVSplitLoopByLengthPass());
-          FPM.addPass(RISCVCustomLICMPass());
-          FPM.addPass(RISCVLoopUnrollAndRemainderPass());
-          PM.addPass(createModuleToFunctionPassAdaptor(std::move(FPM)));
-        }
-      });
+  PB.registerOptimizerLastEPCallback([](ModulePassManager &PM,
+                                        OptimizationLevel Level,
+                                        ThinOrFullLTOPhase Phase) {
+    if (EnableEsp32P4Optimize &&
+        (Level == OptimizationLevel::O3 || Level == OptimizationLevel::O2)) {
+      EnableRISCVSplitLoopByLength = true;
+      EnableRISCVCustomLICM = true;
+      EnableRISCVLoopUnrollAndRemainder = true;
+      FunctionPassManager FPM;
+      FPM.addPass(RISCVSplitLoopByLengthPass());
+      FPM.addPass(RISCVCustomLICMPass());
+      FPM.addPass(RISCVLoopUnrollAndRemainderPass());
+      PM.addPass(createModuleToFunctionPassAdaptor(std::move(FPM)));
+    }
+    if (EnableRISCVEsp32P4MemIntrin &&
+        (Level == OptimizationLevel::O3 || Level == OptimizationLevel::O2)) {
+      FunctionPassManager FPM;
+      FPM.addPass(RISCVEsp32P4MemIntrinPass());
+      PM.addPass(createModuleToFunctionPassAdaptor(std::move(FPM)));
+    }
+  });
 }
 
 yaml::MachineFunctionInfo *
