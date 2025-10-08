@@ -3,7 +3,7 @@
 %struct.fir_f32_s = type { ptr, ptr, i32, i32, i32, i16 }
 define dso_local noundef i32 @dsps_fir_f32_ansi(ptr nocapture noundef %fir, ptr nocapture noundef readonly %input, ptr nocapture noundef writeonly %output, i32 noundef %len) local_unnamed_addr {
 ; CHECK-LABEL: define dso_local noundef i32 @dsps_fir_f32_ansi(
-; CHECK-SAME: ptr noalias nocapture noundef [[FIR:%.*]], ptr noalias nocapture noundef readonly [[INPUT:%.*]], ptr noalias nocapture noundef writeonly [[OUTPUT:%.*]], i32 noundef [[LEN:%.*]]) local_unnamed_addr {
+; CHECK-SAME: ptr noalias noundef captures(none) [[FIR:%.*]], ptr noalias noundef readonly captures(none) [[INPUT:%.*]], ptr noalias noundef writeonly captures(none) [[OUTPUT:%.*]], i32 noundef [[LEN:%.*]]) local_unnamed_addr {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    [[TMP0:%.*]] = icmp sgt i32 [[LEN]], 2
 ; CHECK-NEXT:    br i1 [[TMP0]], label [[FOR_COND_PREHEADER:%.*]], label [[FOR_BODY_LR_PH_CLONE_PREHEADER:%.*]]
