@@ -2,7 +2,7 @@
 ; RUN: opt -S -mtriple=riscv32-esp-unknown-elf -passes=riscv-loop-unroll-and-remainder -riscv-loop-unroll-and-remainder=true < %s | FileCheck %s
 define dso_local float @test_loop(ptr nocapture noundef readonly %data1, ptr nocapture noundef readonly %data2) local_unnamed_addr {
 ; CHECK-LABEL: define dso_local float @test_loop(
-; CHECK-SAME: ptr noalias nocapture noundef readonly [[DATA1:%.*]], ptr noalias nocapture noundef readonly [[DATA2:%.*]]) local_unnamed_addr {
+; CHECK-SAME: ptr noalias noundef readonly captures(none) [[DATA1:%.*]], ptr noalias noundef readonly captures(none) [[DATA2:%.*]]) local_unnamed_addr {
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    br label [[FOR_BODY:%.*]]
 ; CHECK:       for.end:
