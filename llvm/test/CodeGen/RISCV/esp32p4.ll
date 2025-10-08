@@ -470,7 +470,7 @@ define void @test(){
 ; CHECK-NEXT:    li a1, 6
 ; CHECK-NEXT:    esp.vldbc.32.xp q3, a1, a5
 ; CHECK-NEXT:    li a1, 6
-; CHECK-NEXT:    esp.vldbc.8.ip q4, a1, -492
+; CHECK-NEXT:    esp.vldbc.8.ip q4, a1, -112
 ; CHECK-NEXT:    li a1, 9
 ; CHECK-NEXT:    esp.vldbc.8.xp q6, a1, a5
 ; CHECK-NEXT:    li a1, 10
@@ -867,7 +867,7 @@ define void @test(){
 	%142 = tail call i32 @llvm.riscv.esp.vldbc.16.xp(i32 3, i32 2, i32 2)
 	%143 = tail call i32 @llvm.riscv.esp.vldbc.32.ip(i32 8, i32 396, i32 5)
 	%144 = tail call i32 @llvm.riscv.esp.vldbc.32.xp(i32 14, i32 6, i32 3)
-	%145 = tail call i32 @llvm.riscv.esp.vldbc.8.ip(i32 6, i32 -492, i32 4)
+	%145 = tail call i32 @llvm.riscv.esp.vldbc.8.ip(i32 6, i32 -112, i32 4)
 	%146 = tail call i32 @llvm.riscv.esp.vldbc.8.xp(i32 14, i32 9, i32 6)
 	%147 = tail call i32 @llvm.riscv.esp.vldext.s16.ip(i32 10, i32 32, i32 6, i32 2)
 	%148 = tail call i32 @llvm.riscv.esp.vldext.s16.xp(i32 11, i32 0, i32 2, i32 6)
