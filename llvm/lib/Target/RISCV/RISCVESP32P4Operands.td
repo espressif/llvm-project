@@ -53,7 +53,15 @@ def offset_256_16: Immediate<i32, [{ return (Imm >= -2048 && Imm <= 2032) && ((I
   let DecoderMethod = "decodeOffset_256_16Operand";
 }
 
-// offset_256_4 predicate - 4-bit signed immediate in the range [-512,508] with an interval
+// offset_256_2 predicate - 8-bit signed immediate in the range [-256,254] with an interval
+// of 2.
+def Offset_256_2_AsmOperand: P4ImmAsmOperand<"Offset_256_2">;
+def offset_256_2: Immediate<i32, [{ return (Imm >= -256 && Imm <= 254) && ((Imm & 0x1) == 0); }], "Offset_256_2_AsmOperand"> {
+  let EncoderMethod = "getOffset_256_2OpValue";
+  let DecoderMethod = "decodeOffset_256_2Operand";
+}
+
+// offset_256_4 predicate - 8-bit signed immediate in the range [-512,508] with an interval
 // of 4.
 def Offset_256_4_AsmOperand: P4ImmAsmOperand<"Offset_256_4">;
 def offset_256_4: Immediate<i32, [{ return (Imm >= -512 && Imm <= 508) && ((Imm & 0x3) == 0); }], "Offset_256_4_AsmOperand"> {

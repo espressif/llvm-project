@@ -907,6 +907,12 @@ public:
     });
   }
 
+  bool isOffset_256_2() const {
+    return isSImmPred([](int64_t Imm) {
+      return ((Imm >= -256) && (Imm <= 254) && ((Imm & 0x1) == 0));
+    });
+  }
+
   bool isOffset_256_4() const {
     return isSImmPred([](int64_t Imm) {
       return ((Imm >= -512) && (Imm <= 508) && ((Imm & 0x3) == 0));

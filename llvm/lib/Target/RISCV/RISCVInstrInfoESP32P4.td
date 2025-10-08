@@ -12527,7 +12527,7 @@ def ESP_LDQA_U8_128_XP_P : PseudoESP32P4<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, 
 				"!esp_ldqa_u8_128_xp_p $rs1, $rs2",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_ldqa_u8_128_xp GPRPIE:$rs2, GPRPIE:$rs1))]>;
 
-def ESP_VLDBC_16_IP: Esp32P4Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_4:$off2564),
+def ESP_VLDBC_16_IP: Esp32P4Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_2:$off2564),
                    "esp.vldbc.16.ip\t $qu, $rs1, $off2564", []> 
 {
   bits<5> rs1;
@@ -12566,7 +12566,7 @@ def ESP_VLDBC_16_IP: Esp32P4Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs1, 
 }
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
-def ESP_VLDBC_16_IP_P : PseudoESP32P4<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_4:$off2564, imm8:$qu),
+def ESP_VLDBC_16_IP_P : PseudoESP32P4<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_2:$off2564, imm8:$qu),
 				"!esp_vldbc_16_ip_p $qu, $rs1, $off2564",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vldbc_16_ip GPRPIE:$rs1, timm:$off2564, timm:$qu))]>;
 
@@ -12705,7 +12705,7 @@ def ESP_VLDBC_32_XP_P : PseudoESP32P4<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPR
 				"!esp_vldbc_32_xp_p $qu, $rs1, $rs2",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vldbc_32_xp GPRPIE:$rs2, GPRPIE:$rs1, timm:$qu))]>;
 
-def ESP_VLDBC_8_IP: Esp32P4Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_4:$off2564),
+def ESP_VLDBC_8_IP: Esp32P4Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs1, imm8:$off2564),
                    "esp.vldbc.8.ip\t $qu, $rs1, $off2564", []> 
 {
   bits<5> rs1;
@@ -12744,7 +12744,7 @@ def ESP_VLDBC_8_IP: Esp32P4Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs1, o
 }
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
-def ESP_VLDBC_8_IP_P : PseudoESP32P4<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_4:$off2564, imm8:$qu),
+def ESP_VLDBC_8_IP_P : PseudoESP32P4<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, imm8:$off2564, imm8:$qu),
 				"!esp_vldbc_8_ip_p $qu, $rs1, $off2564",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vldbc_8_ip GPRPIE:$rs1, timm:$off2564, timm:$qu))]>;
 
