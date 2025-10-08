@@ -82,9 +82,9 @@ void elf::setTarget(Ctx &ctx) {
   case EM_S390:
     return setSystemZTargetInfo(ctx);
   case EM_X86_64:
-    return setX86_64TargetInfo();
+    return setX86_64TargetInfo(ctx);
   case EM_XTENSA:
-    return getXtensaTargetInfo();
+    return setXtensaTargetInfo(ctx);
   default:
     Fatal(ctx) << "unsupported e_machine value: " << ctx.arg.emachine;
   }
