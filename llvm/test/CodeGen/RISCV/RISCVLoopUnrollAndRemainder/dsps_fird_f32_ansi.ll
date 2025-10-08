@@ -58,13 +58,13 @@ define dso_local noundef i32 @dsps_fird_f32_ansi(ptr nocapture noundef %fir, ptr
 ; CHECK-NEXT:    [[SCEVGEP120:%.*]] = getelementptr i8, ptr [[TMP6]], i32 4
 ; CHECK-NEXT:    [[SCEVGEP121:%.*]] = getelementptr i8, ptr [[SCEVGEP120]], i32 [[TMP7]]
 ; CHECK-NEXT:    [[SCEVGEP123:%.*]] = getelementptr i8, ptr [[TMP6]], i32 [[TMP7]]
-; CHECK-NEXT:    [[SCEVGEP127:%.*]] = getelementptr i8, ptr [[TMP5]], i32 28
 ; CHECK-NEXT:    [[SCEVGEP129:%.*]] = getelementptr i8, ptr [[TMP5]], i32 24
 ; CHECK-NEXT:    [[SCEVGEP131:%.*]] = getelementptr i8, ptr [[TMP5]], i32 20
 ; CHECK-NEXT:    [[SCEVGEP133:%.*]] = getelementptr i8, ptr [[TMP5]], i32 16
-; CHECK-NEXT:    [[SCEVGEP135:%.*]] = getelementptr nuw i8, ptr [[TMP5]], i32 12
-; CHECK-NEXT:    [[SCEVGEP137:%.*]] = getelementptr nuw i8, ptr [[TMP5]], i32 8
-; CHECK-NEXT:    [[SCEVGEP139:%.*]] = getelementptr nuw i8, ptr [[TMP5]], i32 4
+; CHECK-NEXT:    [[SCEVGEP135:%.*]] = getelementptr i8, ptr [[TMP5]], i32 12
+; CHECK-NEXT:    [[SCEVGEP137:%.*]] = getelementptr i8, ptr [[TMP5]], i32 8
+; CHECK-NEXT:    [[SCEVGEP139:%.*]] = getelementptr i8, ptr [[TMP5]], i32 4
+; CHECK-NEXT:    [[SCEVGEP127:%.*]] = getelementptr i8, ptr [[TMP5]], i32 28
 ; CHECK-NEXT:    br label [[FOR_BODY14_7:%.*]]
 ; CHECK:       for.body4:
 ; CHECK-NEXT:    [[LSR_IV:%.*]] = phi i32 [ [[LSR_IV_NEXT:%.*]], [[FOR_BODY4]] ], [ [[TMP0]], [[FOR_BODY4_LR_PH]] ]
@@ -104,9 +104,9 @@ define dso_local noundef i32 @dsps_fird_f32_ansi(ptr nocapture noundef %fir, ptr
 ; CHECK-NEXT:    [[SCEVGEP147:%.*]] = getelementptr i8, ptr [[TMP10]], i32 [[TMP15]]
 ; CHECK-NEXT:    br label [[FOR_BODY14_CLONE:%.*]]
 ; CHECK:       for.body14.7:
-; CHECK-NEXT:    [[LSR_IV125:%.*]] = phi i32 [ 0, [[FOR_BODY14_LR_PH]] ], [ [[INC15_7]], [[FOR_BODY14_7]] ]
 ; CHECK-NEXT:    [[LSR_IV80:%.*]] = phi i32 [ 0, [[FOR_BODY14_LR_PH]] ], [ [[LSR_IV_NEXT81:%.*]], [[FOR_BODY14_7]] ]
 ; CHECK-NEXT:    [[LSR_IV77:%.*]] = phi i32 [ [[TMP4]], [[FOR_BODY14_LR_PH]] ], [ [[LSR_IV_NEXT78]], [[FOR_BODY14_7]] ]
+; CHECK-NEXT:    [[COEFF_POS_068:%.*]] = phi i32 [ 0, [[FOR_BODY14_LR_PH]] ], [ [[INC15_7]], [[FOR_BODY14_7]] ]
 ; CHECK-NEXT:    [[ACC:%.*]] = phi float [ 0.000000e+00, [[FOR_BODY14_LR_PH]] ], [ [[TMP18]], [[FOR_BODY14_7]] ]
 ; CHECK-NEXT:    [[ACC3:%.*]] = phi float [ 0.000000e+00, [[FOR_BODY14_LR_PH]] ], [ [[TMP21]], [[FOR_BODY14_7]] ]
 ; CHECK-NEXT:    [[ACC4:%.*]] = phi float [ 0.000000e+00, [[FOR_BODY14_LR_PH]] ], [ [[TMP24]], [[FOR_BODY14_7]] ]
@@ -150,6 +150,7 @@ define dso_local noundef i32 @dsps_fird_f32_ansi(ptr nocapture noundef %fir, ptr
 ; CHECK-NEXT:    [[SCEVGEP85:%.*]] = getelementptr i8, ptr [[SCEVGEP106]], i32 [[LSR_IV80]]
 ; CHECK-NEXT:    [[TMP35:%.*]] = load float, ptr [[SCEVGEP85]], align 4
 ; CHECK-NEXT:    [[TMP36]] = tail call float @llvm.fmuladd.f32(float [[TMP34]], float [[TMP35]], float [[ACC8]])
+; CHECK-NEXT:    [[INC15_7]] = add i32 [[COEFF_POS_068]], 8
 ; CHECK-NEXT:    [[SCEVGEP116:%.*]] = getelementptr i8, ptr [[SCEVGEP127]], i32 [[LSR_IV80]]
 ; CHECK-NEXT:    [[TMP37:%.*]] = load float, ptr [[SCEVGEP116]], align 4
 ; CHECK-NEXT:    [[SCEVGEP82:%.*]] = getelementptr i8, ptr [[SCEVGEP101]], i32 [[LSR_IV80]]
@@ -157,8 +158,7 @@ define dso_local noundef i32 @dsps_fird_f32_ansi(ptr nocapture noundef %fir, ptr
 ; CHECK-NEXT:    [[TMP39]] = tail call float @llvm.fmuladd.f32(float [[TMP37]], float [[TMP38]], float [[ACC9]])
 ; CHECK-NEXT:    [[LSR_IV_NEXT78]] = add nsw i32 [[LSR_IV77]], 8
 ; CHECK-NEXT:    [[TMP40:%.*]] = add i32 [[LSR_IV_NEXT78]], 8
-; CHECK-NEXT:    [[LSR_IV_NEXT81]] = add nuw i32 [[LSR_IV80]], 32
-; CHECK-NEXT:    [[INC15_7]] = add nuw i32 [[LSR_IV125]], 8
+; CHECK-NEXT:    [[LSR_IV_NEXT81]] = add i32 [[LSR_IV80]], 32
 ; CHECK-NEXT:    [[EXITCOND83_NOT_7:%.*]] = icmp sgt i32 [[TMP40]], [[TMP1]]
 ; CHECK-NEXT:    br i1 [[EXITCOND83_NOT_7]], label [[FOR_COND63_PREHEADER]], label [[FOR_BODY14_7]]
 ; CHECK:       for.body79.lr.ph:
