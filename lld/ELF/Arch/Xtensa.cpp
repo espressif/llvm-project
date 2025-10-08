@@ -21,10 +21,11 @@ using namespace lld;
 using namespace lld::elf;
 
 namespace {
+// X86::X86(Ctx &ctx) : TargetInfo(ctx) {
 
 class Xtensa final : public TargetInfo {
 public:
-  Xtensa();
+  Xtensa(Ctx &ctx);
   RelExpr getRelExpr(RelType type, const Symbol &s,
                      const uint8_t *loc) const override;
   void relocate(uint8_t *loc, const Relocation &rel,
@@ -33,7 +34,7 @@ public:
 
 } // namespace
 
-Xtensa::Xtensa() {}
+Xtensa::Xtensa(Ctx &ctx) : TargetInfo(ctx) {}
 
 RelExpr Xtensa::getRelExpr(RelType type, const Symbol &s,
                            const uint8_t *loc) const {
@@ -88,8 +89,8 @@ RelExpr Xtensa::getRelExpr(RelType type, const Symbol &s,
     // Because we don't do linker relaxation, we can ignore these relocations.
     return R_NONE;
   default:
-    error(getErrorLocation(loc) + "unknown relocation (" + Twine(type) +
-          ") against symbol " + toString(s));
+    Err(ctx) << getErrorLoc(ctx, loc) << "unknown relocation (" << type.v
+             << ") against symbol " << &s;
     return R_NONE;
   }
 }
@@ -142,7 +143,7 @@ void Xtensa::relocate(uint8_t *loc, const Relocation &rel, uint64_t val) const {
   case R_XTENSA_SLOT0_OP: {
     // HACK: calculate the instruction location based on the PC-relative
     // relocation value.
-    uint64_t dest = rel.sym->getVA(rel.addend);
+    uint64_t dest = rel.sym->getVA(ctx, rel.addend);
     uint64_t p = dest - val;
 
     // This relocation is used for various instructions.
@@ -151,45 +152,45 @@ void Xtensa::relocate(uint8_t *loc, const Relocation &rel, uint64_t val) const {
     if (opcode == 0b0001) { // RI16 format: l32r
       int64_t val = dest - ((p + 3) & (uint64_t)0xfffffffc);
       if ((val < -262144 || val > -4))
-        reportRangeError(loc, rel, Twine(static_cast<int64_t>(val)), -262141,
+        reportRangeError(ctx, loc, rel, Twine(static_cast<int64_t>(val)), -262141,
                          -4);
-      checkAlignment(loc, static_cast<uint64_t>(val), 4, rel);
+      checkAlignment(ctx, loc, static_cast<uint64_t>(val), 4, rel);
       write16le(loc + 1, val >> 2);
     } else if (opcode == 0b0101) { // call0, call4, call8, call12 (CALL format)
       uint64_t val = dest - ((p + 4) & (uint64_t)0xfffffffc);
-      checkInt(loc, static_cast<int64_t>(val) >> 2, 18, rel);
-      checkAlignment(loc, val, 4, rel);
+      checkInt(ctx, loc, static_cast<int64_t>(val) >> 2, 18, rel);
+      checkAlignment(ctx, loc, val, 4, rel);
       const int64_t target = static_cast<int64_t>(val) >> 2;
       loc[0] = (loc[0] & 0b0011'1111) | ((target & 0b0000'0011) << 6);
       loc[1] = target >> 2;
       loc[2] = target >> 10;
     } else if ((loc[0] & 0x3f) == 0b00'0110) { // j (CALL format)
       uint64_t valJ = val - 4;
-      checkInt(loc, static_cast<int64_t>(valJ), 18, rel);
+      checkInt(ctx, loc, static_cast<int64_t>(valJ), 18, rel);
       loc[0] = (loc[0] & 0b0011'1111) | ((valJ & 0b0000'0011) << 6);
       loc[1] = valJ >> 2;
       loc[2] = valJ >> 10;
     } else if (isRRI8Branch(loc)) { // RRI8 format (various branch instructions)
       uint64_t v = val - 4;
-      checkInt(loc, static_cast<int64_t>(v), 8, rel);
+      checkInt(ctx, loc, static_cast<int64_t>(v), 8, rel);
       loc[2] = v & 0xff;
     } else if (isLoop(loc)) { // loop instructions
       uint64_t v = val - 4;
-      checkUInt(loc, v, 8, rel);
+      checkUInt(ctx, loc, v, 8, rel);
       loc[2] = v & 0xff;
     } else if ((loc[0] & 0b1000'1111) == 0b1000'1100) { // RI16 format: beqz.n, bnez.n
       uint64_t v = val - 4;
-      checkUInt(loc, v, 6, rel);
+      checkUInt(ctx, loc, v, 6, rel);
       loc[0] = (loc[0] & 0xcf) | (v & 0x30);
       loc[1] = (loc[1] & 0x0f) | ((v & 0x0f) << 4);
     } else if ((loc[0] & 0b0011'1111) == 0b0001'0110) { // BRI12 format: beqz, bgez, bltz, bnez
       uint64_t v = val - 4;
-      checkInt(loc, static_cast<int64_t>(v), 12, rel);
+      checkInt(ctx, loc, static_cast<int64_t>(v), 12, rel);
       loc[1] = ((loc[1] & 0x0f)) | ((v & 0x0f) << 4);
       loc[2] = (v >> 4) & 0xff;
     } else {
-      error(getErrorLocation(loc) +
-            "unknown opcode for relocation: " + std::to_string(loc[0]));
+      Err(ctx) << getErrorLoc(ctx, loc)
+               << "unknown opcode for relocation: " << std::to_string(loc[0]);
     }
     break;
   }
@@ -198,7 +199,6 @@ void Xtensa::relocate(uint8_t *loc, const Relocation &rel, uint64_t val) const {
   }
 }
 
-TargetInfo *elf::getXtensaTargetInfo() {
-  static Xtensa target;
-  return &target;
+void elf::setXtensaTargetInfo(Ctx &ctx) {
+  ctx.target.reset(new Xtensa(ctx));
 }
