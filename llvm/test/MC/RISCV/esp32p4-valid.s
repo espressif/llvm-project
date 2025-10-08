@@ -570,16 +570,16 @@ esp.ldqa.u8.128.ip a2, 1200
 # CHECK: esp.ldqa.u8.128.ip	 a2, 1200       # encoding: [0xbb,0x56,0x42,0x20]
 esp.ldqa.u8.128.xp a2, a5
 # CHECK: esp.ldqa.u8.128.xp	 a2, a5         # encoding: [0x5b,0x50,0x72,0x13]
-esp.vldbc.16.ip q4, a3, 408
-# CHECK: esp.vldbc.16.ip	 q4, a3, 408            # encoding: [0x3b,0xb0,0x32,0xb6]
+esp.vldbc.16.ip q4, a3, 200
+# CHECK: esp.vldbc.16.ip	 q4, a3, 200            # encoding: [0x3b,0xb0,0x22,0xb6]
 esp.vldbc.16.xp q5, a2, a1
 # CHECK: esp.vldbc.16.xp	 q5, a2, a1             # encoding: [0x5f,0x54,0x32,0x96]
 esp.vldbc.32.ip q6, a2, -176
 # CHECK: esp.vldbc.32.ip	 q6, a2, -176           # encoding: [0x3b,0x38,0xa2,0xce]
 esp.vldbc.32.xp q0, a1, a2
 # CHECK: esp.vldbc.32.xp	 q0, a1, a2             # encoding: [0x5f,0xc0,0x41,0x8e]
-esp.vldbc.8.ip q6, a0, 200
-# CHECK: esp.vldbc.8.ip	 q6, a0, 200            # encoding: [0x3b,0x38,0x91,0x16]
+esp.vldbc.8.ip q6, a0, 112
+# CHECK: esp.vldbc.8.ip	 q6, a0, 112            # encoding: [0x3b,0x38,0x81,0x36]
 esp.vldbc.8.xp q5, a4, a2
 # CHECK: esp.vldbc.8.xp	 q5, a4, a2             # encoding: [0x5f,0x54,0x43,0x86]
 esp.vldext.s16.ip q4, q1, a3, -112
