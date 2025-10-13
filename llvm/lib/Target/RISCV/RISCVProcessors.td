@@ -799,3 +799,17 @@ def ANDES_AX45MPV : RISCVProcessorModel<"andes-ax45mpv",
                                          FeatureStdExtV,
                                          FeatureVendorXAndesPerf],
                                         Andes45TuneFeatures>;
+
+def ESPRESSIF_ESP32P4 : RISCVProcessorModel<"esp32p4",
+                                       NoSchedModel,
+                                       [Feature32Bit,
+                                        FeatureVendorXesppie,
+                                        FeatureStdExtZicsr,
+                                        FeatureStdExtZifencei,
+                                        FeatureStdExtM,
+                                        FeatureStdExtA,
+                                        FeatureStdExtF,
+                                        FeatureStdExtC,
+                                        FeatureStdExtZcb,
+                                        FeatureStdExtZcmp,
+                                        FeatureStdExtZcmt]>;
