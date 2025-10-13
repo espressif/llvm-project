@@ -131,8 +131,14 @@ void XtensaInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
   else if (STI.hasSingleFloat() && Xtensa::ARRegClass.contains(SrcReg) &&
            Xtensa::FPRRegClass.contains(DestReg))
     Opcode = Xtensa::WFR;
-   else
-     report_fatal_error("Impossible reg-to-reg copy");
+  else if (STI.hasBoolean() && Xtensa::BRRegClass.contains(SrcReg) &&
+           Xtensa::BRRegClass.contains(DestReg)) {
+    BuildMI(MBB, MBBI, DL, get(Xtensa::ORB), DestReg)
+        .addReg(SrcReg, getKillRegState(KillSrc))
+        .addReg(SrcReg, getKillRegState(KillSrc));
+    return;
+  } else
+    report_fatal_error("Impossible reg-to-reg copy");
 
   BuildMI(MBB, MBBI, DL, get(Opcode), DestReg)
       .addReg(SrcReg, getKillRegState(KillSrc));
@@ -171,6 +177,9 @@ void XtensaInstrInfo::getLoadStoreOpcodes(const TargetRegisterClass *RC,
   } else if (RC == &Xtensa::FPRRegClass) {
     LoadOpcode = Xtensa::LSI;
     StoreOpcode = Xtensa::SSI;
+  } else if (RC == &Xtensa::BRRegClass) {
+    LoadOpcode = Xtensa::RESTORE_BOOL;
+    StoreOpcode = Xtensa::SPILL_BOOL;
   } else {
     llvm_unreachable("Unsupported regclass to load or store");
   }

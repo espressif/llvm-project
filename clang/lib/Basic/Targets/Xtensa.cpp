@@ -90,6 +90,7 @@ bool XtensaTargetInfo::hasFeature(StringRef Feature) const {
   return llvm::StringSwitch<bool>(Feature)
       .Case("fp", HasFP)
       .Case("windowed", HasWindowed)
+      .Case("bool", HasBoolean)
       .Default(false);
 }
 
@@ -99,6 +100,8 @@ bool XtensaTargetInfo::handleTargetFeatures(std::vector<std::string> &Features,
   for (const auto &Feature : Features) {
     if (Feature == "+fp")
       HasFP = true;
+    else if (Feature == "+bool")
+      HasBoolean = true;
     else if (Feature == "+windowed")
       HasWindowed = true;
   }
