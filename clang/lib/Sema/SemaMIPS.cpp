@@ -298,4 +298,17 @@ void SemaMIPS::handleInterruptAttr(Decl *D, const ParsedAttr &AL) {
                  MipsInterruptAttr(getASTContext(), AL, Kind));
 }
 
+void SemaMIPS::handleMipsShortCall(Decl *D, const ParsedAttr &AL) {
+  if (!isFuncOrMethodForAttrSubject(D)) {
+    Diag(D->getLocation(), diag::warn_attribute_wrong_decl_type)
+        << "'short_call'" << ExpectedFunction;
+    return;
+  }
+
+  if (!AL.checkExactlyNumArgs(SemaRef, 0))
+    return;
+
+  handleSimpleAttribute<MipsShortCallAttr>(*this, D, AL);
+}
+
 } // namespace clang
