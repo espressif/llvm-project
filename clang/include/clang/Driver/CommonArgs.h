@@ -289,6 +289,11 @@ std::string complexRangeKindToStr(LangOptions::ComplexRangeKind Range);
 // Render a frontend option corresponding to ComplexRangeKind.
 std::string renderComplexRangeOption(LangOptions::ComplexRangeKind Range);
 
+void addEspMultilibsPaths(const Driver &D, const MultilibSet &Multilibs,
+                                const Multilib &Multilib,
+                                StringRef CPU,
+                                StringRef InstallPath,
+                                ToolChain::path_list &Paths);
 } // end namespace tools
 } // end namespace driver
 } // end namespace clang
