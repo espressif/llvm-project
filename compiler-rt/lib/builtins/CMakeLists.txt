@@ -820,7 +820,11 @@ set(ve_SOURCES
   ${GENERIC_TF_SOURCES}
   ${GENERIC_SOURCES})
 
-set(xtensa_SOURCES ${GENERIC_SOURCES} ${GENERIC_TF_SOURCES})
+set(xtensa_SOURCES
+  xtensa/ieee754_sqrtf.S
+  ${GENERIC_SOURCES}
+  ${GENERIC_TF_SOURCES}
+)
 
 add_custom_target(builtins)
 set_target_properties(builtins PROPERTIES FOLDER "Compiler-RT/Metatargets")
