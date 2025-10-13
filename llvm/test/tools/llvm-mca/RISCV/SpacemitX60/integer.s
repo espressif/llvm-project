@@ -248,8 +248,8 @@ bseti a0, a1, 1
 # CHECK-NEXT:  1      12    12.00                        12    SMX60_IEU[12],SMX60_IEUA[12]               REMUW                      remuw	a0, a1, a2
 # CHECK-NEXT:  1      1     0.50                  U      1     SMX60_IEU                                  CSRRW                      csrrw	t0, 4095, t1
 # CHECK-NEXT:  1      1     0.50                  U      1     SMX60_IEU                                  CSRRS                      csrrs	s3, fflags, s5
-# CHECK-NEXT:  1      1     0.50                  U      1     SMX60_IEU                                  CSRRC                      csrrc	sp, 0, ra
-# CHECK-NEXT:  1      1     0.50                  U      1     SMX60_IEU                                  CSRRWI                     csrrwi	a5, 0, 0
+# CHECK-NEXT:  1      1     0.50                  U      1     SMX60_IEU                                  CSRRC                      csrrc	sp, ustatus, ra
+# CHECK-NEXT:  1      1     0.50                  U      1     SMX60_IEU                                  CSRRWI                     csrrwi	a5, ustatus, 0
 # CHECK-NEXT:  1      1     0.50                  U      1     SMX60_IEU                                  CSRRSI                     csrrsi	t2, 4095, 31
 # CHECK-NEXT:  1      1     0.50                  U      1     SMX60_IEU                                  CSRRCI                     csrrci	t1, sscratch, 5
 # CHECK-NEXT:  1      1     0.50                         1     SMX60_IEU                                  CZERO_EQZ                  czero.eqz	a0, a1, a2
@@ -378,8 +378,8 @@ bseti a0, a1, 1
 # CHECK-NEXT:  -     12.00   -      -      -     remuw	a0, a1, a2
 # CHECK-NEXT:  -     0.50   0.50    -      -     csrrw	t0, 4095, t1
 # CHECK-NEXT:  -     0.50   0.50    -      -     csrrs	s3, fflags, s5
-# CHECK-NEXT:  -     0.50   0.50    -      -     csrrc	sp, 0, ra
-# CHECK-NEXT:  -     0.50   0.50    -      -     csrrwi	a5, 0, 0
+# CHECK-NEXT:  -     0.50   0.50    -      -     csrrc	sp, ustatus, ra
+# CHECK-NEXT:  -     0.50   0.50    -      -     csrrwi	a5, ustatus, 0
 # CHECK-NEXT:  -     0.50   0.50    -      -     csrrsi	t2, 4095, 31
 # CHECK-NEXT:  -     0.50   0.50    -      -     csrrci	t1, sscratch, 5
 # CHECK-NEXT:  -     0.50   0.50    -      -     czero.eqz	a0, a1, a2

@@ -269,8 +269,8 @@ xperm4 a0, a1, a2
 # CHECK-NEXT:  1      13    13.00                       remuw	a0, a1, a2
 # CHECK-NEXT:  1      1     0.25                  U     csrrw	t0, 4095, t1
 # CHECK-NEXT:  1      1     0.25                  U     csrrs	s3, fflags, s5
-# CHECK-NEXT:  1      1     0.25                  U     csrrc	sp, 0, ra
-# CHECK-NEXT:  1      1     0.25                  U     csrrwi	a5, 0, 0
+# CHECK-NEXT:  1      1     0.25                  U     csrrc	sp, ustatus, ra
+# CHECK-NEXT:  1      1     0.25                  U     csrrwi	a5, ustatus, 0
 # CHECK-NEXT:  1      1     0.25                  U     csrrsi	t2, 4095, 31
 # CHECK-NEXT:  1      1     0.25                  U     csrrci	t1, sscratch, 5
 # CHECK-NEXT:  1      1     0.25                        czero.eqz	a0, a1, a2
@@ -407,8 +407,8 @@ xperm4 a0, a1, a2
 # CHECK-NEXT:  -      -      -      -      -      -      -     13.00  remuw	a0, a1, a2
 # CHECK-NEXT:  -      -      -      -     1.00    -      -      -     csrrw	t0, 4095, t1
 # CHECK-NEXT:  -      -      -      -     1.00    -      -      -     csrrs	s3, fflags, s5
-# CHECK-NEXT: 1.00    -      -      -      -      -      -      -     csrrc	sp, 0, ra
-# CHECK-NEXT:  -      -      -      -     1.00    -      -      -     csrrwi	a5, 0, 0
+# CHECK-NEXT: 1.00    -      -      -      -      -      -      -     csrrc	sp, ustatus, ra
+# CHECK-NEXT:  -      -      -      -     1.00    -      -      -     csrrwi	a5, ustatus, 0
 # CHECK-NEXT: 1.00    -      -      -      -      -      -      -     csrrsi	t2, 4095, 31
 # CHECK-NEXT:  -      -      -      -     1.00    -      -      -     csrrci	t1, sscratch, 5
 # CHECK-NEXT: 1.00    -      -      -      -      -      -      -     czero.eqz	a0, a1, a2
