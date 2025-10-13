@@ -19,6 +19,7 @@
 #include "Arch/SystemZ.h"
 #include "Arch/VE.h"
 #include "Arch/X86.h"
+#include "Arch/Xtensa.h"
 #include "HIPAMD.h"
 #include "Hexagon.h"
 #include "MSP430.h"
