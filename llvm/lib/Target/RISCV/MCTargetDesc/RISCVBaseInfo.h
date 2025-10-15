@@ -166,7 +166,7 @@ enum {
   InstFormatQC_EJ = 25,
   InstFormatQC_ES = 26,
   InstFormatNDS_BRANCH_10 = 27,
-  InstFormatESP32P4 = 28,
+  InstFormatESPV = 28,
   InstFormatOther = 31,
 
   InstFormatMask = 31,
