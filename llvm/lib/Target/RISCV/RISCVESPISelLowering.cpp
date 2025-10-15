@@ -1,4 +1,4 @@
-//==- RISCVESP32P4ISelLowering.cpp - ESP32 P4 DAG Lowering Implementation -===//
+//==- RISCVESPISelLowering.cpp - ESP32 P4 DAG Lowering Implementation -===//
 //
 //                     The LLVM Compiler Infrastructure
 //
