@@ -1,4 +1,4 @@
-//===- RISCVESP32P4Operands.td - ESP32P4 instruction operands -*- tblgen-*--===//
+//===- RISCVESPOperands.td - ESP32P4 instruction operands -*- tblgen-*--===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -138,5 +138,16 @@ def uimm12 : RISCVOp,
     if (!MCOp.evaluateAsConstantImm(Imm))
       return false;
     return isUInt<12>(Imm);
+  }];
+}
+
+def imm5 : RISCVSImmOp<5>;
+
+def shamt : RISCVUImmOp<6> {
+    let MCOperandPredicate = [{
+    int64_t Imm;
+    if (!MCOp.evaluateAsConstantImm(Imm))
+      return false;
+    return isUInt<}]# bitsNum #[{>(Imm) && Imm <= 32>;
   }];
 }

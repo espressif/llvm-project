@@ -757,7 +757,7 @@ uint64_t RISCVMCCodeEmitter::getImmOpValue(const MCInst &MI, unsigned OpNo,
       FixupKind = RISCV::fixup_riscv_jal;
       RelaxCandidate = true;
     } else if (MIFrm == RISCVII::InstFormatB||
-               MIFrm == RISCVII::InstFormatESP32P4) {
+               MIFrm == RISCVII::InstFormatESPV) {
       FixupKind = RISCV::fixup_riscv_branch;
       // Relaxes to B<cc>; JAL, with fixup_riscv_jal
       AsmRelaxToLinkerRelaxable();
