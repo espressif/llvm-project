@@ -1988,5 +1988,5 @@ include "llvm/IR/IntrinsicsRISCVXMIPS.td"
 
 // Generated code
 // --------------
-include "llvm/IR/IntrinsicsRISCVESP32P4.td"
-include "llvm/IR/IntrinsicsRISCVESP32H4.td"
+include "llvm/IR/IntrinsicsRISCVESPV.td"
+include "llvm/IR/IntrinsicsRISCVESPDSP.td"
