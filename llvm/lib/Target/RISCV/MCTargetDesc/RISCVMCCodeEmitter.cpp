@@ -711,7 +711,7 @@ uint64_t RISCVMCCodeEmitter::getImmOpValue(const MCInst &MI, unsigned OpNo,
       FixupKind = RISCV::fixup_riscv_jal;
       AsmRelaxToLinkerRelaxableWithFeature(RISCV::FeatureVendorXqcilb);
     } else if (MIFrm == RISCVII::InstFormatB||
-               MIFrm == RISCVII::InstFormatESP32P4) {
+               MIFrm == RISCVII::InstFormatESPV) {
       FixupKind = RISCV::fixup_riscv_branch;
       // This might be assembler relaxed to `b<cc>; jal` but we cannot relax
       // the `jal` again in the assembler.
