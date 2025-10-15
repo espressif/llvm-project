@@ -1,4 +1,4 @@
-//===- RISCVInstrInfoP4HWLP.td - RISCV Target Description -*- tablegen -*--===//
+//===- RISCVInstrInfoESPLOOP.td - RISCV Target Description -*- tablegen -*--===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -8,14 +8,14 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file describes the RISCV ESP32P4 DSP instructions in TableGen format.
+// This file describes the RISCV ESPLOOP instructions in TableGen format.
 //
 // These definitions are generated
 // This file is generated
 //
 //===----------------------------------------------------------------------===//
 
-def ESP_LP_SETUPI: Esp32P4Inst<(outs), (ins uimm1:$id, uimm12:$count, uimm10_step4:$offset),
+def ESP_LP_SETUPI: EspLoopInst<(outs), (ins uimm1:$id, uimm12:$count, uimm10_step4:$offset),
                    "esp.lp.setupi\t $id, $count, $offset", []> 
 {
   bits<1> id;
@@ -41,7 +41,7 @@ def ESP_LP_SETUPI: Esp32P4Inst<(outs), (ins uimm1:$id, uimm12:$count, uimm10_ste
   let Inst{0} = 1;
 }
 
-def ESP_LP_SETUP: Esp32P4Inst<(outs), (ins uimm1:$id, GPR:$rs1, uimm13_step4:$offset),
+def ESP_LP_SETUP: EspLoopInst<(outs), (ins uimm1:$id, GPR:$rs1, uimm13_step4:$offset),
                    "esp.lp.setup\t $id, $rs1, $offset", []> 
 {
   bits<1> id;
@@ -67,7 +67,7 @@ def ESP_LP_SETUP: Esp32P4Inst<(outs), (ins uimm1:$id, GPR:$rs1, uimm13_step4:$of
   let Inst{0} = 1;
 }
 
-def ESP_LP_STARTI: Esp32P4Inst<(outs), (ins uimm1:$id, uimm13_step4:$offset),
+def ESP_LP_STARTI: EspLoopInst<(outs), (ins uimm1:$id, uimm13_step4:$offset),
                    "esp.lp.starti\t $id, $offset", []> 
 {
   bits<1> id;
@@ -93,7 +93,7 @@ def ESP_LP_STARTI: Esp32P4Inst<(outs), (ins uimm1:$id, uimm13_step4:$offset),
   let Inst{0} = 1;
 }
 
-def ESP_LP_ENDI: Esp32P4Inst<(outs), (ins uimm1:$id, uimm13_step4:$offset),
+def ESP_LP_ENDI: EspLoopInst<(outs), (ins uimm1:$id, uimm13_step4:$offset),
                    "esp.lp.endi\t $id, $offset", []> 
 {
   bits<1> id;
@@ -119,7 +119,7 @@ def ESP_LP_ENDI: Esp32P4Inst<(outs), (ins uimm1:$id, uimm13_step4:$offset),
   let Inst{0} = 1;
 }
 
-def ESP_LP_COUNTI: Esp32P4Inst<(outs), (ins uimm1:$id, uimm12:$count),
+def ESP_LP_COUNTI: EspLoopInst<(outs), (ins uimm1:$id, uimm12:$count),
                    "esp.lp.counti\t $id, $count", []> 
 {
   bits<1> id;
@@ -145,7 +145,7 @@ def ESP_LP_COUNTI: Esp32P4Inst<(outs), (ins uimm1:$id, uimm12:$count),
   let Inst{0} = 1;
 }
 
-def ESP_LP_COUNT: Esp32P4Inst<(outs), (ins uimm1:$id, GPR:$rs1),
+def ESP_LP_COUNT: EspLoopInst<(outs), (ins uimm1:$id, GPR:$rs1),
                    "esp.lp.count\t $id, $rs1", []> 
 {
   bits<1> id;
