@@ -6,8 +6,10 @@ declare i32 @llvm.abs.i32(i32, i1)
 
 define i32 @abs_i32(i32 %a) {
 ; XTENSA-LABEL: abs_i32:
-; XTENSA:       # %bb.0:
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0:
 ; XTENSA-NEXT:    entry a1, 32
+; XTENSA-NEXT:    .cfi_def_cfa_offset 32
 ; XTENSA-NEXT:    abs a2, a2
 ; XTENSA-NEXT:    retw.n
   %1 = tail call i32 @llvm.abs.i32(i32 %a, i1 false)
@@ -16,8 +18,10 @@ define i32 @abs_i32(i32 %a) {
 
 define i32 @abs_poison_i32(i32 %a) {
 ; XTENSA-LABEL: abs_poison_i32:
-; XTENSA:       # %bb.0:
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0:
 ; XTENSA-NEXT:    entry a1, 32
+; XTENSA-NEXT:    .cfi_def_cfa_offset 32
 ; XTENSA-NEXT:    abs a2, a2
 ; XTENSA-NEXT:    retw.n
   %1 = tail call i32 @llvm.abs.i32(i32 %a, i1 true)
