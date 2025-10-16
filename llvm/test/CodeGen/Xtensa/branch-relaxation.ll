@@ -4,7 +4,8 @@
 
 define i32 @jump(i1 %a) {
 ; XTENSA-LABEL: jump:
-; XTENSA:       # %bb.0:
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0:
 ; XTENSA-NEXT:    movi a8, 1
 ; XTENSA-NEXT:    and a8, a2, a8
 ; XTENSA-NEXT:    beqz a8, .LBB0_2
@@ -41,9 +42,11 @@ tail:
 
 define i32 @jx(i1 %a) {
 ; XTENSA-LABEL: jx:
-; XTENSA:       # %bb.0:
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0:
 ; XTENSA-NEXT:    addi a8, a1, -16
 ; XTENSA-NEXT:    or a1, a8, a8
+; XTENSA-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-NEXT:    movi a8, 1
 ; XTENSA-NEXT:    and a8, a2, a8
 ; XTENSA-NEXT:    bnez a8, .LBB1_1
@@ -85,13 +88,19 @@ tail:
 
 define void @relax_spill() {
 ; XTENSA-LABEL: relax_spill:
-; XTENSA:       # %bb.0:
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0:
 ; XTENSA-NEXT:    addi a8, a1, -32
 ; XTENSA-NEXT:    or a1, a8, a8
+; XTENSA-NEXT:    .cfi_def_cfa_offset 32
 ; XTENSA-NEXT:    s32i a12, a1, 16 # 4-byte Folded Spill
 ; XTENSA-NEXT:    s32i a13, a1, 12 # 4-byte Folded Spill
 ; XTENSA-NEXT:    s32i a14, a1, 8 # 4-byte Folded Spill
 ; XTENSA-NEXT:    s32i a15, a1, 4 # 4-byte Folded Spill
+; XTENSA-NEXT:    .cfi_offset a12, -4
+; XTENSA-NEXT:    .cfi_offset a13, -8
+; XTENSA-NEXT:    .cfi_offset a14, -12
+; XTENSA-NEXT:    .cfi_offset a15, -16
 ; XTENSA-NEXT:    #APP
 ; XTENSA-NEXT:    #NO_APP
 ; XTENSA-NEXT:    #APP
