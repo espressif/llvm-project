@@ -6,9 +6,11 @@
 
 define void @t() noinline optnone {
 ; XTENSA-LABEL: t:
-; XTENSA:       # %bb.0: # %entry
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0: # %entry
 ; XTENSA-NEXT:    addi a8, a1, -16
 ; XTENSA-NEXT:    or a1, a8, a8
+; XTENSA-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-NEXT:    movi a8, 0
 ; XTENSA-NEXT:    memw
 ; XTENSA-NEXT:    s32i a8, a1, 0
@@ -18,9 +20,11 @@ define void @t() noinline optnone {
 ; XTENSA-NEXT:    ret
 ;
 ; XTENSA-DEBUG-LABEL: t:
-; XTENSA-DEBUG:       # %bb.0: # %entry
+; XTENSA-DEBUG:         .cfi_startproc
+; XTENSA-DEBUG-NEXT:  # %bb.0: # %entry
 ; XTENSA-DEBUG-NEXT:    addi a8, a1, -16
 ; XTENSA-DEBUG-NEXT:    or a1, a8, a8
+; XTENSA-DEBUG-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-DEBUG-NEXT:    movi a8, 0
 ; XTENSA-DEBUG-NEXT:    memw
 ; XTENSA-DEBUG-NEXT:    s32i a8, a1, 0
@@ -30,9 +34,11 @@ define void @t() noinline optnone {
 ; XTENSA-DEBUG-NEXT:    ret
 ;
 ; XTENSA-DEBUG-DENSITY-LABEL: t:
-; XTENSA-DEBUG-DENSITY:       # %bb.0: # %entry
+; XTENSA-DEBUG-DENSITY:         .cfi_startproc
+; XTENSA-DEBUG-DENSITY-NEXT:  # %bb.0: # %entry
 ; XTENSA-DEBUG-DENSITY-NEXT:    addi a8, a1, -16
 ; XTENSA-DEBUG-DENSITY-NEXT:    mov.n a1, a8
+; XTENSA-DEBUG-DENSITY-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-DEBUG-DENSITY-NEXT:    movi.n a8, 0
 ; XTENSA-DEBUG-DENSITY-NEXT:    memw
 ; XTENSA-DEBUG-DENSITY-NEXT:    s32i.n a8, a1, 0
@@ -42,9 +48,11 @@ define void @t() noinline optnone {
 ; XTENSA-DEBUG-DENSITY-NEXT:    ret.n
 ;
 ; XTENSA-DENSITY-LABEL: t:
-; XTENSA-DENSITY:       # %bb.0: # %entry
+; XTENSA-DENSITY:         .cfi_startproc
+; XTENSA-DENSITY-NEXT:  # %bb.0: # %entry
 ; XTENSA-DENSITY-NEXT:    addi a8, a1, -16
 ; XTENSA-DENSITY-NEXT:    mov.n a1, a8
+; XTENSA-DENSITY-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-DENSITY-NEXT:    movi.n a8, 0
 ; XTENSA-DENSITY-NEXT:    memw
 ; XTENSA-DENSITY-NEXT:    s32i.n a8, a1, 0
@@ -62,9 +70,11 @@ entry:
 
 define void @t2() {
 ; XTENSA-LABEL: t2:
-; XTENSA:       # %bb.0: # %entry
+; XTENSA:         .cfi_startproc
+; XTENSA-NEXT:  # %bb.0: # %entry
 ; XTENSA-NEXT:    addi a8, a1, -16
 ; XTENSA-NEXT:    or a1, a8, a8
+; XTENSA-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-NEXT:    movi a8, 0
 ; XTENSA-NEXT:    memw
 ; XTENSA-NEXT:    s32i a8, a1, 0
@@ -74,9 +84,11 @@ define void @t2() {
 ; XTENSA-NEXT:    ret
 ;
 ; XTENSA-DEBUG-LABEL: t2:
-; XTENSA-DEBUG:       # %bb.0: # %entry
+; XTENSA-DEBUG:         .cfi_startproc
+; XTENSA-DEBUG-NEXT:  # %bb.0: # %entry
 ; XTENSA-DEBUG-NEXT:    addi a8, a1, -16
 ; XTENSA-DEBUG-NEXT:    or a1, a8, a8
+; XTENSA-DEBUG-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-DEBUG-NEXT:    movi a8, 0
 ; XTENSA-DEBUG-NEXT:    memw
 ; XTENSA-DEBUG-NEXT:    s32i a8, a1, 0
@@ -86,9 +98,11 @@ define void @t2() {
 ; XTENSA-DEBUG-NEXT:    ret
 ;
 ; XTENSA-DEBUG-DENSITY-LABEL: t2:
-; XTENSA-DEBUG-DENSITY:       # %bb.0: # %entry
+; XTENSA-DEBUG-DENSITY:         .cfi_startproc
+; XTENSA-DEBUG-DENSITY-NEXT:  # %bb.0: # %entry
 ; XTENSA-DEBUG-DENSITY-NEXT:    addi a8, a1, -16
 ; XTENSA-DEBUG-DENSITY-NEXT:    mov.n a1, a8
+; XTENSA-DEBUG-DENSITY-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-DEBUG-DENSITY-NEXT:    movi.n a8, 0
 ; XTENSA-DEBUG-DENSITY-NEXT:    memw
 ; XTENSA-DEBUG-DENSITY-NEXT:    s32i.n a8, a1, 0
@@ -98,9 +112,11 @@ define void @t2() {
 ; XTENSA-DEBUG-DENSITY-NEXT:    ret.n
 ;
 ; XTENSA-DENSITY-LABEL: t2:
-; XTENSA-DENSITY:       # %bb.0: # %entry
+; XTENSA-DENSITY:         .cfi_startproc
+; XTENSA-DENSITY-NEXT:  # %bb.0: # %entry
 ; XTENSA-DENSITY-NEXT:    addi a8, a1, -16
 ; XTENSA-DENSITY-NEXT:    mov.n a1, a8
+; XTENSA-DENSITY-NEXT:    .cfi_def_cfa_offset 16
 ; XTENSA-DENSITY-NEXT:    movi.n a8, 0
 ; XTENSA-DENSITY-NEXT:    memw
 ; XTENSA-DENSITY-NEXT:    s32i.n a8, a1, 0

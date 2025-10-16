@@ -4,14 +4,26 @@
 define { ptr, i32 } @test() personality ptr null {
 ; CHECK-LABEL: test:
 ; CHECK:       .Lfunc_begin0:
+; CHECK-NEXT:    .cfi_startproc
 ; CHECK-NEXT:  # %bb.0: # %else
 ; CHECK-NEXT:    addi a8, a1, -16
 ; CHECK-NEXT:    or a1, a8, a8
+; CHECK-NEXT:    .cfi_def_cfa_offset 16
 ; CHECK-NEXT:    s32i a0, a1, 0 # 4-byte Folded Spill
+; CHECK-NEXT:    .cfi_offset a0, -4
+; CHECK-NEXT:  .Ltmp0: # EH_LABEL
 ; CHECK-NEXT:    movi a2, 0
 ; CHECK-NEXT:    or a3, a2, a2
 ; CHECK-NEXT:    or a4, a2, a2
 ; CHECK-NEXT:    callx0 a2
+; CHECK-NEXT:  .Ltmp1: # EH_LABEL
+; CHECK-NEXT:  # %bb.1: # %postinvoke
+; CHECK-NEXT:  .LBB0_2: # %landingPad
+; CHECK-NEXT:  .Ltmp2: # EH_LABEL
+; CHECK-NEXT:    l32i a0, a1, 0 # 4-byte Folded Reload
+; CHECK-NEXT:    addi a8, a1, 16
+; CHECK-NEXT:    or a1, a8, a8
+; CHECK-NEXT:    ret
 else:
   invoke void null({ i32, ptr } zeroinitializer, i32 0)
           to label %postinvoke unwind label %landingPad
