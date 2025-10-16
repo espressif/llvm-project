@@ -10,8 +10,10 @@
 
 define dso_local void @caller_struct_a128b_1([4 x i32] %0) {
 ; XTENSA-STRUCT16-LABEL: caller_struct_a128b_1:
-; XTENSA-STRUCT16:       # %bb.0:
+; XTENSA-STRUCT16:         .cfi_startproc
+; XTENSA-STRUCT16-NEXT:  # %bb.0:
 ; XTENSA-STRUCT16-NEXT:    entry a1, 32
+; XTENSA-STRUCT16-NEXT:    .cfi_def_cfa_offset 32
 ; XTENSA-STRUCT16-NEXT:    mov.n a13, a5
 ; XTENSA-STRUCT16-NEXT:    mov.n a12, a4
 ; XTENSA-STRUCT16-NEXT:    mov.n a11, a3
@@ -21,8 +23,10 @@ define dso_local void @caller_struct_a128b_1([4 x i32] %0) {
 ; XTENSA-STRUCT16-NEXT:    retw.n
 ;
 ; XTENSA-I128-LABEL: caller_struct_a128b_1:
-; XTENSA-I128:       # %bb.0:
+; XTENSA-I128:         .cfi_startproc
+; XTENSA-I128-NEXT:  # %bb.0:
 ; XTENSA-I128-NEXT:    entry a1, 32
+; XTENSA-I128-NEXT:    .cfi_def_cfa_offset 32
 ; XTENSA-I128-NEXT:    mov.n a13, a5
 ; XTENSA-I128-NEXT:    mov.n a12, a4
 ; XTENSA-I128-NEXT:    mov.n a11, a3
@@ -39,8 +43,10 @@ declare dso_local void @callee_struct_a128b_1([4 x i32])
 
 define dso_local void @caller_struct_a128b_2([4 x i32] %0) {
 ; XTENSA-STRUCT16-LABEL: caller_struct_a128b_2:
-; XTENSA-STRUCT16:       # %bb.0:
+; XTENSA-STRUCT16:         .cfi_startproc
+; XTENSA-STRUCT16-NEXT:  # %bb.0:
 ; XTENSA-STRUCT16-NEXT:    entry a1, 32
+; XTENSA-STRUCT16-NEXT:    .cfi_def_cfa_offset 32
 ; XTENSA-STRUCT16-NEXT:    mov.n a13, a5
 ; XTENSA-STRUCT16-NEXT:    mov.n a12, a4
 ; XTENSA-STRUCT16-NEXT:    mov.n a11, a3
@@ -52,8 +58,10 @@ define dso_local void @caller_struct_a128b_2([4 x i32] %0) {
 ; XTENSA-STRUCT16-NEXT:    retw.n
 ;
 ; XTENSA-I128-LABEL: caller_struct_a128b_2:
-; XTENSA-I128:       # %bb.0:
+; XTENSA-I128:         .cfi_startproc
+; XTENSA-I128-NEXT:  # %bb.0:
 ; XTENSA-I128-NEXT:    entry a1, 32
+; XTENSA-I128-NEXT:    .cfi_def_cfa_offset 32
 ; XTENSA-I128-NEXT:    mov.n a13, a5
 ; XTENSA-I128-NEXT:    mov.n a12, a4
 ; XTENSA-I128-NEXT:    mov.n a11, a3
@@ -73,8 +81,10 @@ declare dso_local void @callee_struct_a128b_2([4 x i32], i32 noundef)
 
 define dso_local void @caller_struct_a128b_3([4 x i32] %0) {
 ; XTENSA-STRUCT16-LABEL: caller_struct_a128b_3:
-; XTENSA-STRUCT16:       # %bb.0:
+; XTENSA-STRUCT16:         .cfi_startproc
+; XTENSA-STRUCT16-NEXT:  # %bb.0:
 ; XTENSA-STRUCT16-NEXT:    entry a1, 64
+; XTENSA-STRUCT16-NEXT:    .cfi_def_cfa_offset 64
 ; XTENSA-STRUCT16-NEXT:    s32i.n a5, a1, 28
 ; XTENSA-STRUCT16-NEXT:    s32i.n a4, a1, 24
 ; XTENSA-STRUCT16-NEXT:    s32i.n a3, a1, 20
@@ -94,8 +104,10 @@ define dso_local void @caller_struct_a128b_3([4 x i32] %0) {
 ; XTENSA-STRUCT16-NEXT:    retw.n
 ;
 ; XTENSA-I128-LABEL: caller_struct_a128b_3:
-; XTENSA-I128:       # %bb.0:
+; XTENSA-I128:         .cfi_startproc
+; XTENSA-I128-NEXT:  # %bb.0:
 ; XTENSA-I128-NEXT:    entry a1, 64
+; XTENSA-I128-NEXT:    .cfi_def_cfa_offset 64
 ; XTENSA-I128-NEXT:    s32i.n a5, a1, 28
 ; XTENSA-I128-NEXT:    s32i.n a4, a1, 24
 ; XTENSA-I128-NEXT:    s32i.n a3, a1, 20
@@ -136,8 +148,10 @@ declare dso_local void @callee_struct_a128b_3(i32 noundef, %struct.S* noundef by
 
 define dso_local void @caller_i128b_1(i128 noundef %0) {
 ; XTENSA-STRUCT16-LABEL: caller_i128b_1:
-; XTENSA-STRUCT16:       # %bb.0:
+; XTENSA-STRUCT16:         .cfi_startproc
+; XTENSA-STRUCT16-NEXT:  # %bb.0:
 ; XTENSA-STRUCT16-NEXT:    entry a1, 32
+; XTENSA-STRUCT16-NEXT:    .cfi_def_cfa_offset 32
 ; XTENSA-STRUCT16-NEXT:    mov.n a13, a5
 ; XTENSA-STRUCT16-NEXT:    mov.n a12, a4
 ; XTENSA-STRUCT16-NEXT:    mov.n a11, a3
@@ -147,8 +161,10 @@ define dso_local void @caller_i128b_1(i128 noundef %0) {
 ; XTENSA-STRUCT16-NEXT:    retw.n
 ;
 ; XTENSA-I128-LABEL: caller_i128b_1:
-; XTENSA-I128:       # %bb.0:
+; XTENSA-I128:         .cfi_startproc
+; XTENSA-I128-NEXT:  # %bb.0:
 ; XTENSA-I128-NEXT:    entry a1, 32
+; XTENSA-I128-NEXT:    .cfi_def_cfa_offset 32
 ; XTENSA-I128-NEXT:    mov.n a13, a5
 ; XTENSA-I128-NEXT:    mov.n a12, a4
 ; XTENSA-I128-NEXT:    mov.n a11, a3
@@ -165,8 +181,10 @@ declare dso_local void @callee_i128b_1(i128 noundef)
 
 define dso_local void @caller_i128b_2(i128 noundef %0) {
 ; XTENSA-STRUCT16-LABEL: caller_i128b_2:
-; XTENSA-STRUCT16:       # %bb.0:
+; XTENSA-STRUCT16:         .cfi_startproc
+; XTENSA-STRUCT16-NEXT:  # %bb.0:
 ; XTENSA-STRUCT16-NEXT:    entry a1, 32
+; XTENSA-STRUCT16-NEXT:    .cfi_def_cfa_offset 32
 ; XTENSA-STRUCT16-NEXT:    mov.n a13, a5
 ; XTENSA-STRUCT16-NEXT:    mov.n a12, a4
 ; XTENSA-STRUCT16-NEXT:    mov.n a11, a3
@@ -178,8 +196,10 @@ define dso_local void @caller_i128b_2(i128 noundef %0) {
 ; XTENSA-STRUCT16-NEXT:    retw.n
 ;
 ; XTENSA-I128-LABEL: caller_i128b_2:
-; XTENSA-I128:       # %bb.0:
+; XTENSA-I128:         .cfi_startproc
+; XTENSA-I128-NEXT:  # %bb.0:
 ; XTENSA-I128-NEXT:    entry a1, 32
+; XTENSA-I128-NEXT:    .cfi_def_cfa_offset 32
 ; XTENSA-I128-NEXT:    mov.n a13, a5
 ; XTENSA-I128-NEXT:    mov.n a12, a4
 ; XTENSA-I128-NEXT:    mov.n a11, a3
@@ -199,8 +219,10 @@ declare dso_local void @callee_i128b_2(i128 noundef, i32 noundef)
 
 define dso_local void @caller_i128b_3(i128 noundef %0) {
 ; XTENSA-STRUCT16-LABEL: caller_i128b_3:
-; XTENSA-STRUCT16:       # %bb.0:
+; XTENSA-STRUCT16:         .cfi_startproc
+; XTENSA-STRUCT16-NEXT:  # %bb.0:
 ; XTENSA-STRUCT16-NEXT:    entry a1, 64
+; XTENSA-STRUCT16-NEXT:    .cfi_def_cfa_offset 64
 ; XTENSA-STRUCT16-NEXT:    s32i.n a5, a1, 28
 ; XTENSA-STRUCT16-NEXT:    s32i.n a4, a1, 24
 ; XTENSA-STRUCT16-NEXT:    s32i.n a3, a1, 20
@@ -219,8 +241,10 @@ define dso_local void @caller_i128b_3(i128 noundef %0) {
 ; XTENSA-STRUCT16-NEXT:    retw.n
 ;
 ; XTENSA-I128-LABEL: caller_i128b_3:
-; XTENSA-I128:       # %bb.0:
+; XTENSA-I128:         .cfi_startproc
+; XTENSA-I128-NEXT:  # %bb.0:
 ; XTENSA-I128-NEXT:    entry a1, 64
+; XTENSA-I128-NEXT:    .cfi_def_cfa_offset 64
 ; XTENSA-I128-NEXT:    s32i.n a5, a1, 28
 ; XTENSA-I128-NEXT:    s32i.n a4, a1, 24
 ; XTENSA-I128-NEXT:    s32i.n a3, a1, 20

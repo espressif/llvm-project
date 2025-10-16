@@ -33,6 +33,7 @@ XtensaMCAsmInfo::XtensaMCAsmInfo(const Triple &TT,
   UsesELFSectionDirectiveForBSS = true;
   SupportsDebugInformation = true;
   AlignmentIsInBytes = true;
+  ExceptionsType = ExceptionHandling::DwarfCFI;
 }
 
 void XtensaMCAsmInfo::printSpecifierExpr(raw_ostream &OS,
