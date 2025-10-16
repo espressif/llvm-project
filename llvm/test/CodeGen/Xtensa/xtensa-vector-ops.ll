@@ -3,8 +3,10 @@
 
 define i32 @test_2xi32toi32(<2 x i32> %a)  {
 ; CHECK-LABEL: test_2xi32toi32:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    ae_movad32.l a2, aed0
 ; CHECK-NEXT:    retw.n
   %r = extractelement <2 x i32> %a, i32 0
@@ -13,8 +15,10 @@ define i32 @test_2xi32toi32(<2 x i32> %a)  {
 
 define <2 x i32> @test_i32to2xi32(i32 %a)  {
 ; CHECK-LABEL: test_i32to2xi32:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    ae_movda32x2 aed0, a2, a2
 ; CHECK-NEXT:    retw.n
   %vecinit = insertelement <2 x i32> undef, i32 %a, i64 0
@@ -24,8 +28,10 @@ define <2 x i32> @test_i32to2xi32(i32 %a)  {
 
 define void @test_store_2xi32(i32 %a, <2 x i32> %v) {
 ; CHECK-LABEL: test_store_2xi32:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    ae_s32x2.i aed0, a2, 0
 ; CHECK-NEXT:    retw.n
   %p = inttoptr i32 %a to ptr
@@ -35,8 +41,10 @@ define void @test_store_2xi32(i32 %a, <2 x i32> %v) {
 
 define void @test_store_1xi64(i32 %a, <1 x i64> %v) {
 ; CHECK-LABEL: test_store_1xi64:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    ae_s64.i aed0, a2, 0
 ; CHECK-NEXT:    retw.n
   %p = inttoptr i32 %a to ptr
@@ -46,8 +54,10 @@ define void @test_store_1xi64(i32 %a, <1 x i64> %v) {
 
 define <1 x i64> @test_build_1xi64(i64 %v) {
 ; CHECK-LABEL: test_build_1xi64:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    ae_movda32x2 aed0, a3, a2
 ; CHECK-NEXT:    retw.n
   %vec = insertelement <1 x i64> undef, i64 %v, i64 0
@@ -56,8 +66,10 @@ define <1 x i64> @test_build_1xi64(i64 %v) {
 
 define void @test_store_4xi16(i32 %a, <4 x i16> %v) {
 ; CHECK-LABEL: test_store_4xi16:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    ae_s16x4.i aed0, a2, 0
 ; CHECK-NEXT:    retw.n
   %p = inttoptr i32 %a to ptr
@@ -67,8 +79,10 @@ define void @test_store_4xi16(i32 %a, <4 x i16> %v) {
 
 define <2 x i32> @test_load_2xi32(i32 %a) {
 ; CHECK-LABEL: test_load_2xi32:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    ae_l32x2.i aed0, a2, 0
 ; CHECK-NEXT:    retw.n
   %p = inttoptr i32 %a to ptr
@@ -78,8 +92,10 @@ define <2 x i32> @test_load_2xi32(i32 %a) {
 
 define <1 x i64> @test_load_1xi64(i32 %a) {
 ; CHECK-LABEL: test_load_1xi64:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    ae_l64.i aed0, a2, 0
 ; CHECK-NEXT:    retw.n
   %p = inttoptr i32 %a to ptr
@@ -89,8 +105,10 @@ define <1 x i64> @test_load_1xi64(i32 %a) {
 
 define <4 x i16> @test_load_4xi16(i32 %a) {
 ; CHECK-LABEL: test_load_4xi16:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    ae_l16x4.i aed0, a2, 0
 ; CHECK-NEXT:    retw.n
   %p = inttoptr i32 %a to ptr
@@ -100,8 +118,10 @@ define <4 x i16> @test_load_4xi16(i32 %a) {
 
 define void @test_build_store_1xi32(i32 %a, i32 %v) {
 ; CHECK-LABEL: test_build_store_1xi32:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    ae_movda32 aed0, a3
 ; CHECK-NEXT:    ae_s32.l.i aed0, a2, 0
 ; CHECK-NEXT:    retw.n
@@ -113,8 +133,10 @@ define void @test_build_store_1xi32(i32 %a, i32 %v) {
 
 define i32 @test_load_extract_1xi32(i32 %a) {
 ; CHECK-LABEL: test_load_extract_1xi32:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    l32i.n a2, a2, 0
 ; CHECK-NEXT:    retw.n
   %p = inttoptr i32 %a to ptr
@@ -125,8 +147,10 @@ define i32 @test_load_extract_1xi32(i32 %a) {
 
 define <4 x i16> @test_build_4xi16_2(i16 %a, i16 %b) {
 ; CHECK-LABEL: test_build_4xi16_2:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    ae_movda16x2 aed0, a2, a3
 ; CHECK-NEXT:    retw.n
   %vecinit = insertelement <4 x i16> undef, i16 %a, i64 0
@@ -138,8 +162,10 @@ define <4 x i16> @test_build_4xi16_2(i16 %a, i16 %b) {
 
 define <4 x i16> @test_build_4xi16_1(i16 %a) {
 ; CHECK-LABEL: test_build_4xi16_1:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    ae_movda16 aed0, a2
 ; CHECK-NEXT:    retw.n
   %vecinit = insertelement <4 x i16> undef, i16 %a, i64 0
@@ -149,8 +175,10 @@ define <4 x i16> @test_build_4xi16_1(i16 %a) {
 
 define i32 @test_extract(<2 x i32> %v2i, <1 x i32> %v1i, <4 x i16> %v4s, <1 x i64> %v1l) {
 ; CHECK-LABEL: test_extract:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    ae_movad16.0 a8, aed2
 ; CHECK-NEXT:    l32r a9, .LCPI13_0
 ; CHECK-NEXT:    and a8, a8, a9
@@ -198,8 +226,10 @@ define i32 @test_extract(<2 x i32> %v2i, <1 x i32> %v1i, <4 x i16> %v4s, <1 x i6
 
 define <1 x i32> @test_extract_subvec_1x32(<2 x i32> %v) {
 ; CHECK-LABEL: test_extract_subvec_1x32:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    ae_movad32.l a8, aed0
 ; CHECK-NEXT:    ae_movda32 aed0, a8
 ; CHECK-NEXT:    retw.n
@@ -210,8 +240,10 @@ define <1 x i32> @test_extract_subvec_1x32(<2 x i32> %v) {
 
 define <4 x i16> @rlshift4(<4 x i16> %a, i16 signext %b) {
 ; CHECK-LABEL: rlshift4:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    l32r a8, .LCPI15_0
 ; CHECK-NEXT:    and a9, a2, a8
 ; CHECK-NEXT:    ae_movad16.3 a10, aed0
@@ -244,8 +276,10 @@ define <4 x i16> @rlshift4(<4 x i16> %a, i16 signext %b) {
 
 define <4 x i16> @rlshift4_imm(<4 x i16> %a) {
 ; CHECK-LABEL: rlshift4_imm:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    ae_movad16.3 a8, aed0
 ; CHECK-NEXT:    l32r a9, .LCPI16_0
 ; CHECK-NEXT:    and a8, a8, a9
@@ -271,8 +305,10 @@ define <4 x i16> @rlshift4_imm(<4 x i16> %a) {
 
 define <2 x i32> @rlshift2(<2 x i32> %a, i32 %b) {
 ; CHECK-LABEL: rlshift2:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    ae_movad32.l a8, aed0
 ; CHECK-NEXT:    ssr a2
 ; CHECK-NEXT:    srl a8, a8
@@ -290,8 +326,10 @@ define <2 x i32> @rlshift2(<2 x i32> %a, i32 %b) {
 
 define <2 x i32> @rlshift2_imm(<2 x i32> %a) {
 ; CHECK-LABEL: rlshift2_imm:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    ae_movad32.l a8, aed0
 ; CHECK-NEXT:    srli a8, a8, 1
 ; CHECK-NEXT:    ae_movad32.h a9, aed0
@@ -304,8 +342,10 @@ define <2 x i32> @rlshift2_imm(<2 x i32> %a) {
 
 define <1 x i64> @rlshift1(<1 x i64> %a, i32 %b) {
 ; CHECK-LABEL: rlshift1:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    ae_movad32.l a8, aed0
 ; CHECK-NEXT:    ae_movad32.h a9, aed0
 ; CHECK-NEXT:    ae_movda32 aed0, a2
@@ -337,8 +377,10 @@ define <1 x i64> @rlshift1(<1 x i64> %a, i32 %b) {
 
 define <1 x i64> @rlshift1_imm(<1 x i64> %a) {
 ; CHECK-LABEL: rlshift1_imm:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    ae_movad32.l a8, aed0
 ; CHECK-NEXT:    ae_movad32.h a9, aed0
 ; CHECK-NEXT:    ae_movi aed0, 1
@@ -368,8 +410,10 @@ define <1 x i64> @rlshift1_imm(<1 x i64> %a) {
 
 define <4 x i16> @rashift4(<4 x i16> %a, i16 signext %b) {
 ; CHECK-LABEL: rashift4:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    l32r a8, .LCPI21_0
 ; CHECK-NEXT:    and a8, a2, a8
 ; CHECK-NEXT:    ae_movad16.3 a9, aed0
@@ -401,8 +445,10 @@ define <4 x i16> @rashift4(<4 x i16> %a, i16 signext %b) {
 
 define <4 x i16> @rashift4_imm(<4 x i16> %a) {
 ; CHECK-LABEL: rashift4_imm:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    ae_movad16.3 a8, aed0
 ; CHECK-NEXT:    sext a8, a8, 15
 ; CHECK-NEXT:    srai a8, a8, 1
@@ -426,8 +472,10 @@ define <4 x i16> @rashift4_imm(<4 x i16> %a) {
 
 define <2 x i32> @rashift2(<2 x i32> %a, i32 %b) {
 ; CHECK-LABEL: rashift2:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    ae_movad32.l a8, aed0
 ; CHECK-NEXT:    ssr a2
 ; CHECK-NEXT:    sra a8, a8
@@ -445,8 +493,10 @@ define <2 x i32> @rashift2(<2 x i32> %a, i32 %b) {
 
 define <2 x i32> @rashift2_imm(<2 x i32> %a) {
 ; CHECK-LABEL: rashift2_imm:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    ae_movad32.l a8, aed0
 ; CHECK-NEXT:    srai a8, a8, 1
 ; CHECK-NEXT:    ae_movad32.h a9, aed0
@@ -460,8 +510,10 @@ define <2 x i32> @rashift2_imm(<2 x i32> %a) {
 
 define <1 x i64> @rashift1(<1 x i64> %a, i64 %b) {
 ; CHECK-LABEL: rashift1:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    ae_movad32.l a8, aed0
 ; CHECK-NEXT:    ae_movad32.h a9, aed0
 ; CHECK-NEXT:    ssr a2
@@ -490,8 +542,10 @@ define <1 x i64> @rashift1(<1 x i64> %a, i64 %b) {
 
 define <1 x i64> @rashift1_imm(<1 x i64> %a) {
 ; CHECK-LABEL: rashift1_imm:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    ae_movad32.l a9, aed0
 ; CHECK-NEXT:    ae_movad32.h a8, aed0
 ; CHECK-NEXT:    ae_movi aed0, 1
@@ -522,8 +576,10 @@ define <1 x i64> @rashift1_imm(<1 x i64> %a) {
 
 define <4 x i16> @lshift4(<4 x i16> %a, i16 signext %b) {
 ; CHECK-LABEL: lshift4:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    l32r a8, .LCPI27_0
 ; CHECK-NEXT:    and a8, a2, a8
 ; CHECK-NEXT:    ae_movad16.3 a9, aed0
@@ -552,8 +608,10 @@ define <4 x i16> @lshift4(<4 x i16> %a, i16 signext %b) {
 
 define <4 x i16> @lshift4_imm(<4 x i16> %a) {
 ; CHECK-LABEL: lshift4_imm:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    ae_movad16.3 a8, aed0
 ; CHECK-NEXT:    _slli a8, a8, 1
 ; CHECK-NEXT:    ae_movad16.2 a9, aed0
@@ -574,8 +632,10 @@ define <4 x i16> @lshift4_imm(<4 x i16> %a) {
 
 define <2 x i32> @lshift2(<2 x i32> %a, i32 %b) {
 ; CHECK-LABEL: lshift2:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    ae_movad32.l a8, aed0
 ; CHECK-NEXT:    ssl a2
 ; CHECK-NEXT:    sll a8, a8
@@ -593,8 +653,10 @@ define <2 x i32> @lshift2(<2 x i32> %a, i32 %b) {
 
 define <2 x i32> @lshift2_imm(<2 x i32> %a) {
 ; CHECK-LABEL: lshift2_imm:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    ae_movad32.l a8, aed0
 ; CHECK-NEXT:    _slli a8, a8, 1
 ; CHECK-NEXT:    ae_movad32.h a9, aed0
@@ -608,8 +670,10 @@ define <2 x i32> @lshift2_imm(<2 x i32> %a) {
 
 define <1 x i64> @lshift1(<1 x i64> %a, i64 %b) {
 ; CHECK-LABEL: lshift1:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    ae_movad32.l a9, aed0
 ; CHECK-NEXT:    ae_movad32.h a8, aed0
 ; CHECK-NEXT:    ssl a2
@@ -638,8 +702,10 @@ define <1 x i64> @lshift1(<1 x i64> %a, i64 %b) {
 
 define <1 x i64> @lshift1_imm(<1 x i64> %a) {
 ; CHECK-LABEL: lshift1_imm:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    ae_movad32.l a8, aed0
 ; CHECK-NEXT:    ae_movad32.h a9, aed0
 ; CHECK-NEXT:    ae_movi aed0, 1
@@ -669,8 +735,10 @@ define <1 x i64> @lshift1_imm(<1 x i64> %a) {
 
 define void @test_valign_load_store(i32 %p1, i32 %p2) {
 ; CHECK-LABEL: test_valign_load_store:
-; CHECK:       # %bb.0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
 ; CHECK-NEXT:    entry a1, 32
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-NEXT:    ae_lalign64.i u0, a2, 0
 ; CHECK-NEXT:    ae_salign64.i u0, a3, 0
 ; CHECK-NEXT:    retw.n
