@@ -92,8 +92,10 @@ entry:
 
 define double @test_from_fp16(i16 %in) {
 ; CHECK-ESP32-LABEL: test_from_fp16:
-; CHECK-ESP32:       # %bb.0:
+; CHECK-ESP32:         .cfi_startproc
+; CHECK-ESP32-NEXT:  # %bb.0:
 ; CHECK-ESP32-NEXT:    entry a1, 32
+; CHECK-ESP32-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-ESP32-NEXT:    mov.n a10, a2
 ; CHECK-ESP32-NEXT:    l32r a8, .LCPI1_0
 ; CHECK-ESP32-NEXT:    callx8 a8
@@ -104,8 +106,10 @@ define double @test_from_fp16(i16 %in) {
 ; CHECK-ESP32-NEXT:    retw.n
 ;
 ; CHECK-ESP32S3-LABEL: test_from_fp16:
-; CHECK-ESP32S3:       # %bb.0:
+; CHECK-ESP32S3:         .cfi_startproc
+; CHECK-ESP32S3-NEXT:  # %bb.0:
 ; CHECK-ESP32S3-NEXT:    entry a1, 32
+; CHECK-ESP32S3-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-ESP32S3-NEXT:    mov.n a10, a2
 ; CHECK-ESP32S3-NEXT:    l32r a8, .LCPI1_0
 ; CHECK-ESP32S3-NEXT:    callx8 a8
@@ -116,8 +120,10 @@ define double @test_from_fp16(i16 %in) {
 ; CHECK-ESP32S3-NEXT:    retw.n
 ;
 ; CHECK-ESP32S2-LABEL: test_from_fp16:
-; CHECK-ESP32S2:       # %bb.0:
+; CHECK-ESP32S2:         .cfi_startproc
+; CHECK-ESP32S2-NEXT:  # %bb.0:
 ; CHECK-ESP32S2-NEXT:    entry a1, 32
+; CHECK-ESP32S2-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-ESP32S2-NEXT:    l32r a8, .LCPI1_0
 ; CHECK-ESP32S2-NEXT:    and a10, a2, a8
 ; CHECK-ESP32S2-NEXT:    l32r a8, .LCPI1_1
@@ -133,8 +139,10 @@ define double @test_from_fp16(i16 %in) {
 
 define i16 @test_to_fp16(double %in) {
 ; CHECK-ESP32-LABEL: test_to_fp16:
-; CHECK-ESP32:       # %bb.0:
+; CHECK-ESP32:         .cfi_startproc
+; CHECK-ESP32-NEXT:  # %bb.0:
 ; CHECK-ESP32-NEXT:    entry a1, 32
+; CHECK-ESP32-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-ESP32-NEXT:    mov.n a11, a3
 ; CHECK-ESP32-NEXT:    mov.n a10, a2
 ; CHECK-ESP32-NEXT:    l32r a8, .LCPI2_0
@@ -144,8 +152,10 @@ define i16 @test_to_fp16(double %in) {
 ; CHECK-ESP32-NEXT:    retw.n
 ;
 ; CHECK-ESP32S3-LABEL: test_to_fp16:
-; CHECK-ESP32S3:       # %bb.0:
+; CHECK-ESP32S3:         .cfi_startproc
+; CHECK-ESP32S3-NEXT:  # %bb.0:
 ; CHECK-ESP32S3-NEXT:    entry a1, 32
+; CHECK-ESP32S3-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-ESP32S3-NEXT:    mov.n a11, a3
 ; CHECK-ESP32S3-NEXT:    mov.n a10, a2
 ; CHECK-ESP32S3-NEXT:    l32r a8, .LCPI2_0
@@ -155,8 +165,10 @@ define i16 @test_to_fp16(double %in) {
 ; CHECK-ESP32S3-NEXT:    retw.n
 ;
 ; CHECK-ESP32S2-LABEL: test_to_fp16:
-; CHECK-ESP32S2:       # %bb.0:
+; CHECK-ESP32S2:         .cfi_startproc
+; CHECK-ESP32S2-NEXT:  # %bb.0:
 ; CHECK-ESP32S2-NEXT:    entry a1, 32
+; CHECK-ESP32S2-NEXT:    .cfi_def_cfa_offset 32
 ; CHECK-ESP32S2-NEXT:    mov.n a11, a3
 ; CHECK-ESP32S2-NEXT:    mov.n a10, a2
 ; CHECK-ESP32S2-NEXT:    l32r a8, .LCPI2_0
