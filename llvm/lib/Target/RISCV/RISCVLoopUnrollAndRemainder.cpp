@@ -50,6 +50,7 @@
 #include "llvm/Analysis/BlockFrequencyInfo.h"
 #include "llvm/Analysis/CGSCCPassManager.h"
 #include "llvm/Analysis/CodeMetrics.h"
+#include "llvm/Analysis/DomTreeUpdater.h"
 #include "llvm/Analysis/LoopAnalysisManager.h"
 #include "llvm/Analysis/LoopInfo.h"
 #include "llvm/Analysis/LoopPass.h"
@@ -2898,20 +2899,26 @@ static bool shouldUnrollComplexLoop(Function &F, Loop *L, ScalarEvolution &SE,
 
   if (L->getCanonicalInductionVariable())
     return false;
-  // Check if the loop count is fixed and appropriate, loop count is constant
+
   BasicBlock *LoopPreheader = L->getLoopPreheader();
-  // Get the start value of the loop
   if (LoopPreheader) {
-    return false;
+    return true;
   }
 
   BasicBlock *LoopHeader = L->getHeader();
   BasicBlock *NewPreheader =
       BasicBlock::Create(LoopHeader->getContext(), "for.cond.preheader",
                          LoopHeader->getParent(), LoopHeader);
+
+  DomTreeUpdater DTU(DT, DomTreeUpdater::UpdateStrategy::Eager);
+  SmallVector<DominatorTree::UpdateType, 4> Updates;
+
   // Redirect all external predecessors to the new preheader basic block
   for (BasicBlock *pred : predecessors(LoopHeader)) {
     if (!L->contains(pred)) {
+      Updates.push_back({DominatorTree::Delete, pred, LoopHeader});
+      Updates.push_back({DominatorTree::Insert, pred, NewPreheader});
+
       pred->getTerminator()->replaceUsesOfWith(LoopHeader, NewPreheader);
       // Update PHI nodes in the loop header to point to the new preheader basic
       // block
@@ -2925,9 +2932,13 @@ static bool shouldUnrollComplexLoop(Function &F, Loop *L, ScalarEvolution &SE,
   }
   // Jump from the new preheader to the loop header
   BranchInst::Create(LoopHeader, NewPreheader);
+  Updates.push_back({DominatorTree::Insert, NewPreheader, LoopHeader});
+
+  DTU.applyUpdates(Updates);
+  SE.forgetLoop(L);
+
   return true;
 }
-
 static bool shouldUnrollAddcType(Function &F, LoopInfo *LI) {
   // Check the number of basic blocks
   if (F.size() != 6)
