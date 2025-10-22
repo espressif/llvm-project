@@ -2089,6 +2089,21 @@ let Predicates = [HasSingleFloat] in {
 }
 
 //===----------------------------------------------------------------------===//
+// External Registers read/write instructions
+//===----------------------------------------------------------------------===//
+
+def RER : RRR_Inst<0x00, 0x00, 0x04, (outs AR:$t), (ins AR:$s),
+                  "rer\t$t, $s", []> {
+  let r = 0x6;
+}
+
+def WER : RRR_Inst<0x00, 0x00, 0x04, (outs), (ins AR:$t, AR:$s),
+                  "wer\t$t, $s", []> {
+  let r = 0x7;
+  let hasSideEffects = 1;
+}
+
+//===----------------------------------------------------------------------===//
 // DSP Instructions
 //===----------------------------------------------------------------------===//
 include "XtensaDSPInstrInfo.td"
