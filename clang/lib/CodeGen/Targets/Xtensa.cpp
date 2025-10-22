@@ -59,7 +59,8 @@ ABIArgInfo XtensaABIInfo::classifyArgumentType(QualType Ty,
   if (CGCXXABI::RecordArgABI RAA = getRecordArgABI(Ty, getCXXABI())) {
     if (ArgGPRsLeft)
       ArgGPRsLeft -= 1;
-    return getNaturalAlignIndirect(Ty, /*ByVal=*/RAA ==
+    return getNaturalAlignIndirect(
+        Ty, getDataLayout().getAllocaAddrSpace(), /*ByVal=*/RAA ==
                                            CGCXXABI::RAA_DirectInMemory);
   }
 
@@ -114,7 +115,8 @@ ABIArgInfo XtensaABIInfo::classifyArgumentType(QualType Ty,
     }
   }
 #undef MAX_STRUCT_IN_REGS_SIZE
-  return getNaturalAlignIndirect(Ty, /*ByVal=*/true);
+  return getNaturalAlignIndirect(
+      Ty, getDataLayout().getAllocaAddrSpace(), /*ByVal=*/true);
 }
 
 ABIArgInfo XtensaABIInfo::classifyReturnType(QualType RetTy) const {
