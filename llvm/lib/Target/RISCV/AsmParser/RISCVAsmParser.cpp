@@ -733,7 +733,19 @@ public:
   bool isUImm7() const { return isUImm<7>(); }
   bool isUImm8() const { return isUImm<8>(); }
   bool isUImm9() const { return isUImm<9>(); }
-  bool isUImm10() const { return isUImm<10>(); }
+  bool isUImm10() const {
+    int64_t Imm;
+    bool IsValid;
+    if (!isExpr())
+      return false;
+    bool IsConstantImm = evaluateConstantExpr(getExpr(), Imm);
+    RISCV::Specifier VK = RISCV::S_None;
+    if (!IsConstantImm)
+      IsValid = RISCVAsmParser::classifySymbolRef(getExpr(), VK);
+    else
+      IsValid = isUInt<10>(Imm);
+    return IsValid && VK == RISCV::S_None;
+  }
   bool isUImm11() const { return isUImm<11>(); }
   bool isUImm16() const { return isUImm<16>(); }
   bool isUImm20() const { return isUImm<20>(); }
@@ -856,7 +868,17 @@ public:
   }
 
   bool isUImm13() const {
-    return isUImm<13>();
+    int64_t Imm;
+    bool IsValid;
+    if (!isExpr())
+      return false;
+    bool IsConstantImm = evaluateConstantExpr(getExpr(), Imm);
+    RISCV::Specifier VK = RISCV::S_None;
+    if (!IsConstantImm)
+      IsValid = RISCVAsmParser::classifySymbolRef(getExpr(), VK);
+    else
+      IsValid = isUInt<13>(Imm);
+    return IsValid && VK == RISCV::S_None;
   }
 
   bool isImm8() const {
