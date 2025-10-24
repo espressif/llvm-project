@@ -42,7 +42,8 @@ int main(int, char**) {
   test(256);
   test(1000);
   test(1024);
-  test(1000000);
+  // ESP: Exceeds available memory
+  // test(1000000);
   assert(globalMemCounter.checkOutstandingNewEq(0));
 
   return 0;

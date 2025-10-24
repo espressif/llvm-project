@@ -97,11 +97,14 @@ static_assert(LockFreeStatusInfo<void*>::status_known, "");
 // 8 bytes. In that case, atomics may or may not be lockfree based on their address.
 static_assert(alignof(long long) == sizeof(long long) ? LockFreeStatusInfo<long long>::status_known : true, "");
 
+#if !defined(__riscv) || defined(__riscv_atomic)
 // Those should always be lock free: hardcode some expected values to make sure our tests are actually
 // testing something meaningful.
+// ESP: this is not the case for RISCV w/o atomic extension.
 static_assert(LockFreeStatusInfo<char>::value == LockFreeStatus::always, "");
 static_assert(LockFreeStatusInfo<short>::value == LockFreeStatus::always, "");
 static_assert(LockFreeStatusInfo<int>::value == LockFreeStatus::always, "");
+#endif
 #endif
 
 // These macros are somewhat suprising to use, since they take the values 0, 1, or 2.

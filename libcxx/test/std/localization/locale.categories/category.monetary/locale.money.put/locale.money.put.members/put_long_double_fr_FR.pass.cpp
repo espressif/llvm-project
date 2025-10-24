@@ -14,6 +14,9 @@
 // NetBSD does not support LC_MONETARY at the moment
 // XFAIL: netbsd
 
+// TODO: Fix problem with 'LOCALE_CONV_FR_FR_UTF_8_MON_THOUSANDS_SEP' test substitutions for ESP platform
+// UNSUPPORTED: LIBCXX-ESP-FIXME
+
 // REQUIRES: locale.fr_FR.UTF-8
 
 // ADDITIONAL_COMPILE_FLAGS: -DFR_MON_THOU_SEP=%{LOCALE_CONV_FR_FR_UTF_8_MON_THOUSANDS_SEP}

@@ -21,6 +21,9 @@
 // ::timespec_get is available starting with AIX 7.3 TL2
 // XFAIL: target={{.+}}-aix{{7.2.*|7.3.0.*|7.3.1.*}}
 
+// Espressif uses newlib which does not define TIME_UTC andhas no timespec_get
+// UNSUPPORTED: LIBCXX-ESP-FIXME
+
 #include <ctime>
 #include <type_traits>
 

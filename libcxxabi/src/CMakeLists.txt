@@ -36,7 +36,7 @@ else()
   )
 endif()
 
-if (LIBCXXABI_ENABLE_THREADS AND (UNIX OR FUCHSIA) AND NOT (APPLE OR CYGWIN)
+if (LIBCXXABI_ENABLE_THREADS AND (UNIX OR FUCHSIA OR ESPRESSIF) AND NOT (APPLE OR CYGWIN)
     AND NOT (${CMAKE_SYSTEM_NAME} MATCHES "AIX"))
   list(APPEND LIBCXXABI_SOURCES
     cxa_thread_atexit.cpp
@@ -79,6 +79,10 @@ if (FUCHSIA)
     # TODO: Use CMAKE_LINK_LIBRARY_USING_FEATURE once our minimum CMake is at least 3.24
     # https://cmake.org/cmake/help/latest/variable/CMAKE_LINK_LIBRARY_USING_FEATURE.html
     add_link_flags("-Wl,--push-state,--as-needed,-lzircon,--pop-state")
+endif()
+
+if (ESPRESSIF)
+    add_compile_flags("-D__ESP__")
 endif()
 
 if (NOT LIBCXXABI_USE_COMPILER_RT)

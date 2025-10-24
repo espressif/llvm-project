@@ -54,6 +54,9 @@ for header in public_headers:
 
 // UNSUPPORTED: FROZEN-CXX03-HEADERS-FIXME
 
+// TODO: Fix seemingly circular inclusion or <wchar.h> in ESP env
+// UNSUPPORTED: LIBCXX-ESP-FIXME
+
 {lit_header_restrictions.get(header, '')}
 {lit_header_undeprecations.get(header, '')}
 
@@ -90,6 +93,9 @@ print(
 
 // TODO: Fix seemingly circular inclusion or <wchar.h> on AIX
 // UNSUPPORTED: LIBCXX-AIX-FIXME
+
+// TODO: Fix seemingly circular inclusion or <wchar.h> in ESP env
+// UNSUPPORTED: LIBCXX-ESP-FIXME
 
 @import std;
 

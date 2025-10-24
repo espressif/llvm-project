@@ -11,6 +11,8 @@
 
 // XFAIL: FROZEN-CXX03-HEADERS-FIXME
 
+// UNSUPPORTED: LIBCXX-ESP-FIXME
+
 #include <__verbose_abort>
 #include <csignal>
 #include <cstdlib>

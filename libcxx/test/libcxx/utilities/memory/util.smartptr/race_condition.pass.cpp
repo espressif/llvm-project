@@ -8,6 +8,10 @@
 //
 // UNSUPPORTED: no-threads
 //
+// Espressif builds libcxx with pthreads.
+// But for tests under QEMU simple pthread stubs are used for single-thread tests only.
+// UNSUPPORTED: LIBCXX-ESP-FIXME
+//
 // <memory>
 //
 // class shared_ptr
