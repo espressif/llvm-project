@@ -1,7 +1,4 @@
-# Fails on Winodws due to incorrectly built command line: `'(': command not found`, so disable it temporarily
-# UNSUPPORTED: system-windows
-
-# RUN: python3 %s > %t && ( %clang_cc1 -Dxtfloat=float -O0 -triple=xtensa %t -o - -emit-llvm | FileCheck %t )
+# RUN: python3 %s > %t &&  %clang_cc1 -Dxtfloat=float -O0 -triple=xtensa %t -o - -emit-llvm | FileCheck %t
 
 FIXTURES = [
 ('xtfloat', 'xt_addexp_s', ['xtfloat', 'xtfloat']) ,
