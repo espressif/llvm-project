@@ -310,6 +310,10 @@ def : Pat<(i32 (extloadi1  addr_ish1:$addr)), (L8UI addr_ish1:$addr)>;
 def : Pat<(i32 (extloadi8  addr_ish1:$addr)), (L8UI addr_ish1:$addr)>;
 def : Pat<(i32 (extloadi16 addr_ish2:$addr)), (L16UI addr_ish2:$addr)>;
 
+// Load from aggregate constant placed as Global Variable
+def : Pat<(i32 (load (add i32:$s, (Xtensa_pcrel_wrapper tconstpool:$in)))),
+          (L32I (ADD i32:$s, (L32R tconstpool:$in)), 0)>;
+
 //===----------------------------------------------------------------------===//
 // Conditional branch instructions
 //===----------------------------------------------------------------------===//
@@ -1660,6 +1664,11 @@ def WFR : RRR_Inst<0x00, 0x0A, 0x0f, (outs FPR:$r), (ins AR:$s),
 let AddedComplexity = 10 in
 def : Pat<(f32 (load (Xtensa_pcrel_wrapper tconstpool:$in))),
           (WFR (L32R tconstpool:$in))>;
+
+// Load from aggregate constant placed as Global Variable
+let AddedComplexity = 10 in
+def : Pat<(f32 (load (add i32:$s, (Xtensa_pcrel_wrapper tconstpool:$in)))),
+          (LSI (ADD i32:$s, (L32R tconstpool:$in)), 0)>;
 
 //===----------------------------------------------------------------------===//
 // SelectCC and BranchCC instructions with FP operands
