@@ -96,7 +96,6 @@ define dso_local noundef i32 @dsps_fird_f32_ansi(ptr nocapture noundef %fir, ptr
 ; CHECK:       for.body27.lr.ph:
 ; CHECK-NEXT:    [[TMP10:%.*]] = load ptr, ptr [[FIR]], align 4
 ; CHECK-NEXT:    [[TMP11:%.*]] = load ptr, ptr [[DELAY]], align 4
-; CHECK-NEXT:    [[TMP12:%.*]] = add i32 [[COEFF_POS_0_LCSSA]], [[TMP1]]
 ; CHECK-NEXT:    [[TMP13:%.*]] = sub i32 [[TMP1]], [[N_0_LCSSA]]
 ; CHECK-NEXT:    [[TMP14:%.*]] = shl i32 [[N_0_LCSSA]], 2
 ; CHECK-NEXT:    [[SCEVGEP144:%.*]] = getelementptr i8, ptr [[TMP11]], i32 [[TMP14]]
@@ -164,7 +163,6 @@ define dso_local noundef i32 @dsps_fird_f32_ansi(ptr nocapture noundef %fir, ptr
 ; CHECK:       for.body79.lr.ph:
 ; CHECK-NEXT:    [[TMP41:%.*]] = load ptr, ptr [[FIR]], align 4
 ; CHECK-NEXT:    [[TMP42:%.*]] = load ptr, ptr [[DELAY]], align 4
-; CHECK-NEXT:    [[TMP43:%.*]] = and i32 [[TMP4]], 2147483640
 ; CHECK-NEXT:    [[SCEVGEP150:%.*]] = getelementptr i8, ptr [[TMP42]], i32 28
 ; CHECK-NEXT:    [[SCEVGEP154:%.*]] = getelementptr i8, ptr [[TMP42]], i32 24
 ; CHECK-NEXT:    [[SCEVGEP156:%.*]] = getelementptr i8, ptr [[TMP42]], i32 20
@@ -202,21 +200,34 @@ define dso_local noundef i32 @dsps_fird_f32_ansi(ptr nocapture noundef %fir, ptr
 ; CHECK-NEXT:    [[SCEVGEP149]] = getelementptr i8, ptr [[LSR_IV148]], i32 4
 ; CHECK-NEXT:    [[EXITCOND83_NOT_CLONE:%.*]] = icmp eq i32 [[LSR_IV_NEXT143]], 0
 ; CHECK-NEXT:    br i1 [[EXITCOND83_NOT_CLONE]], label [[FOR_COND_CLEANUP26_LOOPEXIT:%.*]], label [[FOR_BODY14_CLONE]]
+; CHECK:       for.cond130.preheader.loopexit:
+; CHECK-NEXT:    [[DOTLCSSA191:%.*]] = phi float [ [[TMP51:%.*]], [[FOR_BODY27_7]] ]
+; CHECK-NEXT:    [[DOTLCSSA190:%.*]] = phi float [ [[TMP54:%.*]], [[FOR_BODY27_7]] ]
+; CHECK-NEXT:    [[DOTLCSSA189:%.*]] = phi float [ [[TMP57:%.*]], [[FOR_BODY27_7]] ]
+; CHECK-NEXT:    [[DOTLCSSA188:%.*]] = phi float [ [[TMP60:%.*]], [[FOR_BODY27_7]] ]
+; CHECK-NEXT:    [[DOTLCSSA187:%.*]] = phi float [ [[TMP63:%.*]], [[FOR_BODY27_7]] ]
+; CHECK-NEXT:    [[DOTLCSSA186:%.*]] = phi float [ [[TMP66:%.*]], [[FOR_BODY27_7]] ]
+; CHECK-NEXT:    [[DOTLCSSA185:%.*]] = phi float [ [[TMP69:%.*]], [[FOR_BODY27_7]] ]
+; CHECK-NEXT:    [[DOTLCSSA184:%.*]] = phi float [ [[TMP72:%.*]], [[FOR_BODY27_7]] ]
+; CHECK-NEXT:    [[LSR_IV_NEXT144_LCSSA:%.*]] = phi i32 [ [[LSR_IV_NEXT168:%.*]], [[FOR_BODY27_7]] ]
+; CHECK-NEXT:    [[TMP81:%.*]] = and i32 [[TMP4]], 2147483640
+; CHECK-NEXT:    br label [[FOR_COND130_PREHEADER:%.*]]
 ; CHECK:       for.cond130.preheader:
-; CHECK-NEXT:    [[ACC_0_LCSSA_CLONE:%.*]] = phi float [ [[ACC_1_LCSSA:%.*]], [[FOR_COND_CLEANUP26]] ], [ [[TMP51:%.*]], [[FOR_BODY27_7]] ]
-; CHECK-NEXT:    [[ACC_1_LCSSA2_CLONE:%.*]] = phi float [ [[ACC_1_LCSSA2]], [[FOR_COND_CLEANUP26]] ], [ [[TMP54:%.*]], [[FOR_BODY27_7]] ]
-; CHECK-NEXT:    [[ACC_2_LCSSA_CLONE:%.*]] = phi float [ [[ACC_2_LCSSA]], [[FOR_COND_CLEANUP26]] ], [ [[TMP57:%.*]], [[FOR_BODY27_7]] ]
-; CHECK-NEXT:    [[ACC_3_LCSSA_CLONE:%.*]] = phi float [ [[ACC_3_LCSSA]], [[FOR_COND_CLEANUP26]] ], [ [[TMP60:%.*]], [[FOR_BODY27_7]] ]
-; CHECK-NEXT:    [[ACC_4_LCSSA_CLONE:%.*]] = phi float [ [[ACC_4_LCSSA]], [[FOR_COND_CLEANUP26]] ], [ [[TMP63:%.*]], [[FOR_BODY27_7]] ]
-; CHECK-NEXT:    [[ACC_5_LCSSA_CLONE:%.*]] = phi float [ [[ACC_5_LCSSA]], [[FOR_COND_CLEANUP26]] ], [ [[TMP66:%.*]], [[FOR_BODY27_7]] ]
-; CHECK-NEXT:    [[ACC_6_LCSSA_CLONE:%.*]] = phi float [ [[ACC_6_LCSSA]], [[FOR_COND_CLEANUP26]] ], [ [[TMP69:%.*]], [[FOR_BODY27_7]] ]
-; CHECK-NEXT:    [[ACC_7_LCSSA_CLONE:%.*]] = phi float [ [[ACC_7_LCSSA]], [[FOR_COND_CLEANUP26]] ], [ [[TMP72:%.*]], [[FOR_BODY27_7]] ]
-; CHECK-NEXT:    [[COEFF_POS_0_LCSSA_CLONE:%.*]] = phi i32 [ [[COEFF_POS_1_LCSSA]], [[FOR_COND_CLEANUP26]] ], [ [[LSR_IV_NEXT168:%.*]], [[FOR_BODY27_7]] ]
-; CHECK-NEXT:    [[N_0_LCSSA_CLONE:%.*]] = phi i32 [ 0, [[FOR_COND_CLEANUP26]] ], [ [[TMP43]], [[FOR_BODY27_7]] ]
+; CHECK-NEXT:    [[ACC_0_LCSSA_CLONE:%.*]] = phi float [ [[ACC_1_LCSSA:%.*]], [[FOR_COND_CLEANUP26]] ], [ [[DOTLCSSA191]], [[FOR_COND130_PREHEADER_LOOPEXIT:%.*]] ]
+; CHECK-NEXT:    [[ACC_1_LCSSA2_CLONE:%.*]] = phi float [ [[ACC_1_LCSSA2]], [[FOR_COND_CLEANUP26]] ], [ [[DOTLCSSA190]], [[FOR_COND130_PREHEADER_LOOPEXIT]] ]
+; CHECK-NEXT:    [[ACC_2_LCSSA_CLONE:%.*]] = phi float [ [[ACC_2_LCSSA]], [[FOR_COND_CLEANUP26]] ], [ [[DOTLCSSA189]], [[FOR_COND130_PREHEADER_LOOPEXIT]] ]
+; CHECK-NEXT:    [[ACC_3_LCSSA_CLONE:%.*]] = phi float [ [[ACC_3_LCSSA]], [[FOR_COND_CLEANUP26]] ], [ [[DOTLCSSA188]], [[FOR_COND130_PREHEADER_LOOPEXIT]] ]
+; CHECK-NEXT:    [[ACC_4_LCSSA_CLONE:%.*]] = phi float [ [[ACC_4_LCSSA]], [[FOR_COND_CLEANUP26]] ], [ [[DOTLCSSA187]], [[FOR_COND130_PREHEADER_LOOPEXIT]] ]
+; CHECK-NEXT:    [[ACC_5_LCSSA_CLONE:%.*]] = phi float [ [[ACC_5_LCSSA]], [[FOR_COND_CLEANUP26]] ], [ [[DOTLCSSA186]], [[FOR_COND130_PREHEADER_LOOPEXIT]] ]
+; CHECK-NEXT:    [[ACC_6_LCSSA_CLONE:%.*]] = phi float [ [[ACC_6_LCSSA]], [[FOR_COND_CLEANUP26]] ], [ [[DOTLCSSA185]], [[FOR_COND130_PREHEADER_LOOPEXIT]] ]
+; CHECK-NEXT:    [[ACC_7_LCSSA_CLONE:%.*]] = phi float [ [[ACC_7_LCSSA]], [[FOR_COND_CLEANUP26]] ], [ [[DOTLCSSA184]], [[FOR_COND130_PREHEADER_LOOPEXIT]] ]
+; CHECK-NEXT:    [[COEFF_POS_0_LCSSA_CLONE:%.*]] = phi i32 [ [[COEFF_POS_1_LCSSA]], [[FOR_COND_CLEANUP26]] ], [ [[LSR_IV_NEXT144_LCSSA]], [[FOR_COND130_PREHEADER_LOOPEXIT]] ]
+; CHECK-NEXT:    [[N_0_LCSSA_CLONE:%.*]] = phi i32 [ 0, [[FOR_COND_CLEANUP26]] ], [ [[TMP81]], [[FOR_COND130_PREHEADER_LOOPEXIT]] ]
 ; CHECK-NEXT:    [[CMP2572_CLONE:%.*]] = icmp slt i32 [[N_0_LCSSA_CLONE]], [[TMP4]]
 ; CHECK-NEXT:    br i1 [[CMP2572_CLONE]], label [[FOR_BODY133_LR_PH:%.*]], label [[FOR_END141]]
 ; CHECK:       for.cond.cleanup26.loopexit:
 ; CHECK-NEXT:    [[DOTLCSSA207:%.*]] = phi float [ [[TMP47]], [[FOR_BODY14_CLONE]] ]
+; CHECK-NEXT:    [[TMP12:%.*]] = add i32 [[COEFF_POS_0_LCSSA]], [[TMP1]]
 ; CHECK-NEXT:    [[N_0_LCSSA_NEG:%.*]] = sub i32 0, [[N_0_LCSSA]]
 ; CHECK-NEXT:    [[TMP48:%.*]] = add i32 [[TMP12]], [[N_0_LCSSA_NEG]]
 ; CHECK-NEXT:    br label [[FOR_COND_CLEANUP26]]
@@ -224,7 +235,7 @@ define dso_local noundef i32 @dsps_fird_f32_ansi(ptr nocapture noundef %fir, ptr
 ; CHECK-NEXT:    [[COEFF_POS_1_LCSSA]] = phi i32 [ [[COEFF_POS_0_LCSSA]], [[FOR_COND63_PREHEADER]] ], [ [[TMP48]], [[FOR_COND_CLEANUP26_LOOPEXIT]] ]
 ; CHECK-NEXT:    [[ACC_1_LCSSA]] = phi float [ [[ACC_0_LCSSA]], [[FOR_COND63_PREHEADER]] ], [ [[DOTLCSSA207]], [[FOR_COND_CLEANUP26_LOOPEXIT]] ]
 ; CHECK-NEXT:    [[EXITCOND85_NOT:%.*]] = icmp slt i32 [[TMP4]], 8
-; CHECK-NEXT:    br i1 [[EXITCOND85_NOT]], label [[FOR_COND130_PREHEADER:%.*]], label [[FOR_BODY79_LR_PH:%.*]]
+; CHECK-NEXT:    br i1 [[EXITCOND85_NOT]], label [[FOR_COND130_PREHEADER]], label [[FOR_BODY79_LR_PH:%.*]]
 ; CHECK:       for.body27.7:
 ; CHECK-NEXT:    [[LSR_IV167:%.*]] = phi i32 [ [[COEFF_POS_1_LCSSA]], [[FOR_BODY79_LR_PH]] ], [ [[LSR_IV_NEXT168]], [[FOR_BODY27_7]] ]
 ; CHECK-NEXT:    [[LSR_IV151:%.*]] = phi i32 [ 0, [[FOR_BODY79_LR_PH]] ], [ [[LSR_IV_NEXT152:%.*]], [[FOR_BODY27_7]] ]
@@ -281,7 +292,7 @@ define dso_local noundef i32 @dsps_fird_f32_ansi(ptr nocapture noundef %fir, ptr
 ; CHECK-NEXT:    [[LSR_IV_NEXT152]] = add nuw i32 [[LSR_IV151]], 32
 ; CHECK-NEXT:    [[LSR_IV_NEXT168]] = add i32 [[LSR_IV167]], 8
 ; CHECK-NEXT:    [[EXITCOND84_NOT_7:%.*]] = icmp sgt i32 [[ADD76]], [[TMP4]]
-; CHECK-NEXT:    br i1 [[EXITCOND84_NOT_7]], label [[FOR_COND130_PREHEADER]], label [[FOR_BODY27_7]]
+; CHECK-NEXT:    br i1 [[EXITCOND84_NOT_7]], label [[FOR_COND130_PREHEADER_LOOPEXIT]], label [[FOR_BODY27_7]]
 ; CHECK:       for.body133.lr.ph:
 ; CHECK-NEXT:    [[TMP73:%.*]] = load ptr, ptr [[FIR]], align 4
 ; CHECK-NEXT:    [[TMP74:%.*]] = load ptr, ptr [[DELAY]], align 4
