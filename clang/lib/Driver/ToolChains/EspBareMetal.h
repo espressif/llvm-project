@@ -40,6 +40,8 @@ public:
     return ToolChain::CST_Libstdcxx;
   }
 
+  ToolChain::UnwindLibType GetUnwindLibType(const llvm::opt::ArgList &Args) const override;
+
   void AddClangCXXStdlibIncludeArgs(
       const llvm::opt::ArgList &DriverArgs,
       llvm::opt::ArgStringList &CC1Args) const override;
