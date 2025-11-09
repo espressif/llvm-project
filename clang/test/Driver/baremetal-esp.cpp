@@ -130,9 +130,10 @@
 // CHECK-ESP-RV32IMAC-LIBCXX-SAME: "-o" "a.out"
 // CHECK-ESP-RV32IMAC-LIBCXX-SAME: "-X" "{{.*}}.o"
 // CHECK-ESP-RV32IMAC-LIBCXX-SAME: "-L[[SYSROOT]]{{[/\\]+}}riscv32-esp-unknown-elf{{[/\\]+}}rv32imac-zicsr-zifencei_ilp32{{[/\\]+}}lib"
-// CHECK-ESP-RV32IMAC-LIBCXX-SAME: "-lc++" "-lc++abi" "-lunwind"
+// CHECK-ESP-RV32IMAC-LIBCXX-SAME: "-lc++" "-lc++abi"
 // CHECK-ESP-RV32IMAC-LIBCXX-SAME: "-lm" "-lc" "-lnosys"
 // CHECK-ESP-RV32IMAC-LIBCXX-SAME: "{{[^"]*}}libclang_rt.builtins.a"
+// CHECK-ESP-RV32IMAC-LIBCXX-SAME: "-l:libunwind.a"
 
 // RUN: %t.dir/basic_riscv32_esp_tree/bin/clang --driver-mode=g++ %s -### 2>&1 --target=riscv32-esp-elf \
 // RUN:     -nodefaultlibs \
@@ -436,9 +437,10 @@
 // CHECK-ESP-ESP32-LIBCXX-SAME: "-o" "a.out"
 // CHECK-ESP-ESP32-LIBCXX-SAME: "-X" "{{.*}}.o"
 // CHECK-ESP-ESP32-LIBCXX-SAME: "-L[[SYSROOT]]{{[/\\]+}}xtensa-esp-unknown-elf{{[/\\]+}}esp32{{[/\\]+}}lib"
-// CHECK-ESP-ESP32-LIBCXX-SAME: "-lc++" "-lc++abi" "-lunwind"
+// CHECK-ESP-ESP32-LIBCXX-SAME: "-lc++" "-lc++abi"
 // CHECK-ESP-ESP32-LIBCXX-SAME: "-lm" "-lc" "-lnosys"
 // CHECK-ESP-ESP32-LIBCXX-SAME: "{{[^"]*}}libclang_rt.builtins.a"
+// CHECK-ESP-ESP32-LIBCXX-SAME: "-lgcc"
 
 // RUN: %t.dir/basic_xtensa_esp_tree/bin/clang --driver-mode=g++ %s -### 2>&1 --target=xtensa-esp-elf \
 // RUN:     -nodefaultlibs \

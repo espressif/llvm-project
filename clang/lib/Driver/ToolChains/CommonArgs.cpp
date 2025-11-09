@@ -2270,7 +2270,8 @@ static LibGccType getLibGccType(const ToolChain &TC, const Driver &D,
   if (Args.hasArg(options::OPT_static_libgcc) ||
       Args.hasArg(options::OPT_static) || Args.hasArg(options::OPT_static_pie) ||
       // The Android NDK only provides libunwind.a, not libunwind.so.
-      TC.getTriple().isAndroid())
+      TC.getTriple().isAndroid() ||
+      TC.getTriple().getVendor() == llvm::Triple::Espressif)
     return LibGccType::StaticLibGcc;
   if (Args.hasArg(options::OPT_shared_libgcc))
     return LibGccType::SharedLibGcc;
@@ -2317,7 +2318,10 @@ static void AddUnwindLibrary(const ToolChain &TC, const Driver &D,
   case ToolChain::UNW_None:
     return;
   case ToolChain::UNW_Libgcc: {
-    if (LGT == LibGccType::StaticLibGcc)
+    // Espressif baremetal toolchain uses static libgcc.a
+    if (TC.getTriple().getVendor() == llvm::Triple::Espressif)
+      CmdArgs.push_back("-lgcc");
+    else if (LGT == LibGccType::StaticLibGcc)
       CmdArgs.push_back("-lgcc_eh");
     else
       CmdArgs.push_back("-lgcc_s");

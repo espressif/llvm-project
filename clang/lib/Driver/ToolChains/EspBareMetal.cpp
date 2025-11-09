@@ -71,6 +71,14 @@ EspBareMetal::EspBareMetal(const Driver &D, const llvm::Triple &Triple,
   }
 }
 
+ToolChain::UnwindLibType
+EspBareMetal::GetUnwindLibType(const llvm::opt::ArgList &Args) const {
+  if (getTriple().isRISCV())
+    return ToolChain::UNW_CompilerRT;
+
+  return ToolChain::UNW_Libgcc;
+}
+
 void EspBareMetal::AddClangCXXStdlibIncludeArgs(const ArgList &DriverArgs,
                                              ArgStringList &CC1Args) const {
   if (DriverArgs.hasArg(options::OPT_nostdinc) ||
@@ -103,7 +111,6 @@ void EspBareMetal::AddCXXStdlibLibArgs(const ArgList &Args,
     if (Args.hasArg(options::OPT_fexperimental_library))
       CmdArgs.push_back("-lc++experimental");
     CmdArgs.push_back("-lc++abi");
-    CmdArgs.push_back("-lunwind");
     break;
   case ToolChain::CST_Libstdcxx:
     CmdArgs.push_back("-lstdc++");
