@@ -1009,12 +1009,21 @@ SDValue XtensaTargetLowering::LowerFormalArguments(
       // which is a value necessary to VASTART.
       int FI = MFI.CreateFixedObject(RegSize, VaArgOffset, true);
       XtensaFI->setVarArgsInRegsFrameIndex(FI);
+      Register FrameReg = Subtarget.getRegisterInfo()->getFrameRegister(MF);
 
       // Copy the integer registers that may have been used for passing varargs
       // to the vararg save area.
       for (unsigned I = Idx; I < ArgRegsNum; ++I, VaArgOffset += RegSize) {
         const Register Reg = RegInfo.createVirtualRegister(RC);
-        RegInfo.addLiveIn(IntRegs[I], Reg);
+
+        // Argument passed in FrameReg we save in A8 (in emitPrologue),
+        // so load argument from A8
+        if (IntRegs[I] == FrameReg) {
+          RegInfo.addLiveIn(Xtensa::A8, Reg);
+          XtensaFI->setSaveFrameRegister();
+        } else {
+          RegInfo.addLiveIn(IntRegs[I], Reg);
+        }
 
         SDValue ArgValue = DAG.getCopyFromReg(Chain, DL, Reg, RegTy);
         FI = MFI.CreateFixedObject(RegSize, VaArgOffset, true);
