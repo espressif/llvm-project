@@ -543,3 +543,24 @@ entry:
   call void @llvm.va_end(ptr %list)
   ret void
 }
+
+define dso_local void @f0(i32 noundef %a, ...) #0 {
+; CHECK-LABEL: f0:
+; CHECK:         .cfi_startproc
+; CHECK-NEXT:  # %bb.0:
+; CHECK-NEXT:    addi a8, a1, -32
+; CHECK-NEXT:    or a1, a8, a8
+; CHECK-NEXT:    .cfi_def_cfa_offset 32
+; CHECK-NEXT:    s32i a7, a1, 20
+; CHECK-NEXT:    s32i a6, a1, 16
+; CHECK-NEXT:    s32i a5, a1, 12
+; CHECK-NEXT:    s32i a4, a1, 8
+; CHECK-NEXT:    s32i a3, a1, 4
+; CHECK-NEXT:    s32i a2, a1, 0
+; CHECK-NEXT:    addi a8, a1, 32
+; CHECK-NEXT:    or a1, a8, a8
+; CHECK-NEXT:    ret
+  %b = alloca i32, align 4
+  store i32 %a, ptr %b, align 4
+  ret void
+}
