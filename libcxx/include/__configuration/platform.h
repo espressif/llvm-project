@@ -49,6 +49,10 @@
 #  include <picolibc.h>
 #endif
 
+#if __has_include(<newlib.h>)
+#  include <newlib.h>
+#endif
+
 #ifndef __BYTE_ORDER__
 #  error                                                                                                               \
       "Your compiler doesn't seem to define __BYTE_ORDER__, which is required by libc++ to know the endianness of your target platform"
