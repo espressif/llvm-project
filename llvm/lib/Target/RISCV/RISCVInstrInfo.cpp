@@ -2877,6 +2877,7 @@ bool RISCVInstrInfo::verifyInstruction(const MachineInstr &MI,
           // clang-format off
         CASE_OPERAND_SIMM(5)
         CASE_OPERAND_SIMM(6)
+        CASE_OPERAND_SIMM(8)
         CASE_OPERAND_SIMM(11)
         CASE_OPERAND_SIMM(12)
         CASE_OPERAND_SIMM(26)

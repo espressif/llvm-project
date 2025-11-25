@@ -820,6 +820,7 @@ public:
 
   bool isSImm5() const { return isSImm<5>(); }
   bool isSImm6() const { return isSImm<6>(); }
+  bool isSImm8() const { return isSImm<8>(); }
   bool isSImm10() const { return isSImm<10>(); }
   bool isSImm11() const { return isSImm<11>(); }
   bool isSImm16() const { return isSImm<16>(); }

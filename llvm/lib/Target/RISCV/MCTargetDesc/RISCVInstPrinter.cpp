@@ -471,3 +471,44 @@ void RISCVInstPrinter::printOffset_256_4_AsmOperand(const MCInst *MI, int OpNum,
   } else
     printOperand(MI, OpNum, STI, O);
 }
+
+void RISCVInstPrinter::printSATOperand(const MCInst *MI, int OpNum, const MCSubtargetInfo &STI,
+                     raw_ostream &O) {
+  uint32_t Value = MI->getOperand(OpNum).getImm();
+  assert(Value <= 1 && "Value must be either 0 or 1");
+  if (Value == 1)
+    O << "sat";
+  else
+    O << "trunc";
+}
+void RISCVInstPrinter::printRMOperand(const MCInst *MI, int OpNum, const MCSubtargetInfo &STI,
+  raw_ostream &O) {
+  uint32_t Value = MI->getOperand(OpNum).getImm();
+  assert((Value >= 0 && Value <= 7) && "Value must be [0,7]");
+  switch (Value) {
+    case 0:
+      O << "rdn";
+      break;
+    case 1:
+      O << "rup";
+      break;
+    case 2:
+      O << "raz";
+      break;
+    case 3:
+      O << "rtz";
+      break;
+    case 4:
+      O << "rhaz";
+      break;
+    case 5:
+      O << "rhtz";
+      break;
+    case 6:
+      O << "rne";
+      break;
+    case 7:
+      O << "dyn";
+      break;
+  }
+  }

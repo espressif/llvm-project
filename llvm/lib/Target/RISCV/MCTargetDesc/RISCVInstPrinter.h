@@ -97,6 +97,10 @@ public:
                                     const MCSubtargetInfo &STI, raw_ostream &O);
   void printOffset_256_4_AsmOperand(const MCInst *MI, int OpNum,
                                     const MCSubtargetInfo &STI, raw_ostream &O);
+  void printSATOperand(const MCInst *MI, int OpNum, const MCSubtargetInfo &STI,
+                       raw_ostream &O);
+  void printRMOperand(const MCInst *MI, int OpNum, const MCSubtargetInfo &STI,
+                       raw_ostream &O);
 };
 } // namespace llvm
 
