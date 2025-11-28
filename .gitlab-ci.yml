@@ -1,5 +1,6 @@
 stages:
   - test_build
+  - test
   - upstream_sync
 
 image: ${CI_DOCKER_REGISTRY}/llvm-build:5
@@ -102,10 +103,13 @@ build_and_test:
     - .rules:not-scheduled-rebase-on-main
   artifacts:
     paths:
+      - ${DIST_DIR}/
       - ${BUILD_DIR}/*.log
     when: always
     expire_in: 1 day
-  retry: 2
+  retry: 1
+  variables:
+    PACK_TOOL: "tar cJhvf"
   before_script:
     - git config --global --add safe.directory $CI_PROJECT_DIR
   after_script:
@@ -146,3 +150,40 @@ build_and_test:
     - chmod o+w ${BUILD_PATH}/lld-tests.log;
     - runuser -u test_runner -- ninja -C ${BUILD_PATH} check-lld 2>&1 | tee ${BUILD_PATH}/lld-tests.log;
     - chown -R ${CUR_USER} ${BUILD_PATH};
+    - mkdir -p ${PWD}/${DIST_DIR}
+    - PIE_TEST_TOOLS_ARCH=${PWD}/${DIST_DIR}/pie_test_tools.tar.xz
+    - pushd ${BUILD_PATH}
+    - echo "Packing tools for PIE optimization tests"
+    - ${PACK_TOOL} ${PIE_TEST_TOOLS_ARCH} bin/clang bin/llc bin/llvm-objdump bin/opt lib/clang
+    - popd
+    - ls -l ${PWD}/${DIST_DIR}
+
+test_pie_optimizations:
+  tags: [ "amd64", "build" ]
+  stage: test
+  needs:
+    - job: "build_and_test"
+  artifacts:
+    paths:
+      - esp-dsp/scripts/
+    when: always
+    expire_in: 1 day
+  variables:
+    TEST_APP_ESP_DSP_CUSTOM_BRANCH: "llvm-21-optimization-test-v2"
+    UNPACK_TOOL: "tar xJvf"
+  allow_failure: true
+  script:
+    - LLVM_PROJECT_PATH=$PWD
+    - ls -l ${PWD}/${DIST_DIR}
+    - PIE_TEST_TOOLS_ARCH=${PWD}/${DIST_DIR}/pie_test_tools.tar.xz
+    - echo "Unpacking tools for PIE optimization tests"
+    - mkdir pie_tests
+    - pushd pie_tests
+    - ${UNPACK_TOOL} ${PIE_TEST_TOOLS_ARCH}
+    - ls -l $PWD
+    - export PATH=${PWD}/bin:${PATH}
+    - popd
+    - git clone --shallow-submodules --recursive --single-branch --branch $TEST_APP_ESP_DSP_CUSTOM_BRANCH -- https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}:${CI_SERVER_PORT}/idf/esp-dsp.git esp-dsp
+    - pushd $PWD/esp-dsp/
+    - echo ${LLVM_PROJECT_PATH}/llvm/utils/update_test_checks.py
+    - ./test_all.sh ${LLVM_PROJECT_PATH}/llvm/utils/update_test_checks.py
