@@ -93,7 +93,7 @@ before_script:
       if [ "${PACK_TARGET_LIBS}" == "ON" ] || [ "${BUILD_TARGET_LIBS}" == "ON" ]; then
         echo "Enable target libraries build"
         export USE_LIBC="newlib";
-        export USE_LIBCXX="libstdcxx";
+        export USE_LIBCXX="libstdcxx;libcxx";
         export USE_RTLIB="compiler-rt;libgcc";
       else
         echo "Disable target libraries"
