@@ -260,6 +260,9 @@ void RISCVTargetInfo::getTargetDefines(const LangOptions &Opts,
                        "transformed to other scheme");
     }
   }
+  // Follow g++ convention and predefine _GNU_SOURCE for C++.
+  if (Opts.CPlusPlus)
+    Builder.defineMacro("_GNU_SOURCE");
 }
 
 static constexpr int NumRVVBuiltins =
