@@ -73,28 +73,28 @@ define dso_local range(i32 0, 458756) i32 @dspi_dotprod_off_u16_ansi(ptr nocaptu
 ; CHECK-NEXT:    [[COND_STEP3:%.*]] = and i1 [[CMP_IMG_STEP3]], [[CMP_FILT_STEP3]]
 ; CHECK-NEXT:    br i1 [[COND_STEP3]], label %[[CALL_STEP3:.*]], label %[[CALL_GENERIC:.*]]
 ; CHECK:       [[CALL_STEP1]]:
-; CHECK-NEXT:    call void @llvm.lifetime.start.p0(i64 -1, ptr [[ADD38_US_LOC]])
+; CHECK-NEXT:    call void @llvm.lifetime.start.p0(ptr [[ADD38_US_LOC]])
 ; CHECK-NEXT:    call void @dspi_dotprod_off_u16_ansi.for.body28.us(i64 [[ACC_081_US]], i32 1, ptr [[I_DATA_080_US]], i32 1, ptr [[F_DATA_079_US]], i32 [[CONV35]], i32 [[COUNT_X]], ptr [[ADD38_US_LOC]])
 ; CHECK-NEXT:    [[TMP10:%.*]] = load i64, ptr [[ADD38_US_LOC]], align 8
-; CHECK-NEXT:    call void @llvm.lifetime.end.p0(i64 -1, ptr [[ADD38_US_LOC]])
+; CHECK-NEXT:    call void @llvm.lifetime.end.p0(ptr [[ADD38_US_LOC]])
 ; CHECK-NEXT:    br label %[[CALL_MERGE:.*]]
 ; CHECK:       [[CALL_STEP2]]:
-; CHECK-NEXT:    call void @llvm.lifetime.start.p0(i64 -1, ptr [[ADD38_US_LOC]])
+; CHECK-NEXT:    call void @llvm.lifetime.start.p0(ptr [[ADD38_US_LOC]])
 ; CHECK-NEXT:    call void @dspi_dotprod_off_u16_ansi.for.body28.us(i64 [[ACC_081_US]], i32 2, ptr [[I_DATA_080_US]], i32 2, ptr [[F_DATA_079_US]], i32 [[CONV35]], i32 [[COUNT_X]], ptr [[ADD38_US_LOC]])
 ; CHECK-NEXT:    [[TMP11:%.*]] = load i64, ptr [[ADD38_US_LOC]], align 8
-; CHECK-NEXT:    call void @llvm.lifetime.end.p0(i64 -1, ptr [[ADD38_US_LOC]])
+; CHECK-NEXT:    call void @llvm.lifetime.end.p0(ptr [[ADD38_US_LOC]])
 ; CHECK-NEXT:    br label %[[CALL_MERGE]]
 ; CHECK:       [[CALL_STEP3]]:
-; CHECK-NEXT:    call void @llvm.lifetime.start.p0(i64 -1, ptr [[ADD38_US_LOC]])
+; CHECK-NEXT:    call void @llvm.lifetime.start.p0(ptr [[ADD38_US_LOC]])
 ; CHECK-NEXT:    call void @dspi_dotprod_off_u16_ansi.for.body28.us(i64 [[ACC_081_US]], i32 3, ptr [[I_DATA_080_US]], i32 3, ptr [[F_DATA_079_US]], i32 [[CONV35]], i32 [[COUNT_X]], ptr [[ADD38_US_LOC]])
 ; CHECK-NEXT:    [[TMP12:%.*]] = load i64, ptr [[ADD38_US_LOC]], align 8
-; CHECK-NEXT:    call void @llvm.lifetime.end.p0(i64 -1, ptr [[ADD38_US_LOC]])
+; CHECK-NEXT:    call void @llvm.lifetime.end.p0(ptr [[ADD38_US_LOC]])
 ; CHECK-NEXT:    br label %[[CALL_MERGE]]
 ; CHECK:       [[CALL_GENERIC]]:
-; CHECK-NEXT:    call void @llvm.lifetime.start.p0(i64 -1, ptr [[ADD38_US_LOC]])
+; CHECK-NEXT:    call void @llvm.lifetime.start.p0(ptr [[ADD38_US_LOC]])
 ; CHECK-NEXT:    call void @dspi_dotprod_off_u16_ansi.for.body28.us(i64 [[ACC_081_US]], i32 [[TMP0]], ptr [[I_DATA_080_US]], i32 [[TMP4]], ptr [[F_DATA_079_US]], i32 [[CONV35]], i32 [[COUNT_X]], ptr [[ADD38_US_LOC]])
 ; CHECK-NEXT:    [[ADD38_US_RELOAD_GENERIC:%.*]] = load i64, ptr [[ADD38_US_LOC]], align 8
-; CHECK-NEXT:    call void @llvm.lifetime.end.p0(i64 -1, ptr [[ADD38_US_LOC]])
+; CHECK-NEXT:    call void @llvm.lifetime.end.p0(ptr [[ADD38_US_LOC]])
 ; CHECK-NEXT:    br label %[[CALL_MERGE]]
 ; CHECK:       [[CALL_MERGE]]:
 ; CHECK-NEXT:    [[ADD_US_RELOAD]] = phi i64 [ [[TMP10]], %[[CALL_STEP1]] ], [ [[TMP11]], %[[CALL_STEP2]] ], [ [[TMP12]], %[[CALL_STEP3]] ], [ [[ADD38_US_RELOAD_GENERIC]], %[[CALL_GENERIC]] ]
