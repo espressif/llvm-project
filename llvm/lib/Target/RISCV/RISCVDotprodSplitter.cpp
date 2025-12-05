@@ -96,17 +96,27 @@ verifySequenceInBlock(BasicBlock &BB, CallInst *TheCall, Value *CallArg) {
   for (Instruction &I : BB) {
     Instruction *Current = &I;
     if (auto *II = dyn_cast<IntrinsicInst>(Current)) {
-      if (II->getIntrinsicID() == Intrinsic::lifetime_start &&
-          II->getArgOperand(1) == CallArg) {
-        // Found start before the call?
-        if (!FoundCall)
-          FoundStart = II;
-      } else if (II->getIntrinsicID() == Intrinsic::lifetime_end &&
-                 II->getArgOperand(1) == CallArg) {
-        // Found end after start, call, and load?
-        if (FoundStart && FoundCall && FoundLoad) {
-          FoundEnd = II;
-          break; // Found the complete sequence
+      if (II->getIntrinsicID() == Intrinsic::lifetime_start ||
+          II->getIntrinsicID() == Intrinsic::lifetime_end) {
+        // In LLVM 22+, lifetime intrinsics have only one argument (ptr).
+        // In older versions, they have two arguments (size, ptr).
+        // Check the pointer argument which is at index 0 for new version,
+        // or index 1 for old version.
+        unsigned PtrArgIdx = (II->arg_size() == 1) ? 0 : 1;
+        Value *LifetimePtr = II->getArgOperand(PtrArgIdx);
+
+        if (II->getIntrinsicID() == Intrinsic::lifetime_start &&
+            LifetimePtr == CallArg) {
+          // Found start before the call?
+          if (!FoundCall)
+            FoundStart = II;
+        } else if (II->getIntrinsicID() == Intrinsic::lifetime_end &&
+                   LifetimePtr == CallArg) {
+          // Found end after start, call, and load?
+          if (FoundStart && FoundCall && FoundLoad) {
+            FoundEnd = II;
+            break; // Found the complete sequence
+          }
         }
       }
     } else if (Current == TheCall) {
