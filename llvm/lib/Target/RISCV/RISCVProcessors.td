@@ -800,31 +800,99 @@ def ANDES_AX45MPV : RISCVProcessorModel<"andes-ax45mpv",
                                          FeatureVendorXAndesPerf],
                                         Andes45TuneFeatures>;
 
+class FeatureSet<list<SubtargetFeature> Features_> {
+  list<SubtargetFeature> Features = Features_;
+}
+
+def FeatureEspL1 : FeatureSet<[Feature32Bit,
+                               FeatureStdExtI,
+                               FeatureStdExtZicsr,
+                               FeatureStdExtZifencei,
+                               FeatureStdExtM,
+                               FeatureStdExtC]>;
+
+def FeatureEspL2 : FeatureSet<!listconcat(FeatureEspL1.Features,
+                              [FeatureStdExtA])>;
+
+// TODO: LLVM-446. Add 'FeatureStdExtZcmp' when options for HW bug workaround are implemented.
+def FeatureEspL3 : FeatureSet<!listconcat(FeatureEspL2.Features,
+                              [FeatureStdExtZcb,
+                               FeatureStdExtZcmt])>;
+
+def FeatureEspL4 : FeatureSet<!listconcat(FeatureEspL3.Features,
+                              [FeatureStdExtB,
+                               FeatureStdExtZbc])>;
+
+def FeatureEspL5 : FeatureSet<!listconcat(FeatureEspL3.Features,
+                              [FeatureStdExtF,
+                               FeatureStdExtB,
+                               FeatureStdExtZbc])>;
+
+def ESPRESSIF_ESP32C2 : RISCVProcessorModel<"esp32c2",
+                                       NoSchedModel,
+                                       !listconcat(FeatureEspL1.Features,
+                                        [])>;
+
+def ESPRESSIF_ESP32C3 : RISCVProcessorModel<"esp32c3",
+                                       NoSchedModel,
+                                       !listconcat(FeatureEspL1.Features,
+                                        [])>;
+
+def ESPRESSIF_ESP32H2 : RISCVProcessorModel<"esp32h2",
+                                       NoSchedModel,
+                                       !listconcat(FeatureEspL2.Features,
+                                        [])>;
+
+def ESPRESSIF_ESP32C5 : RISCVProcessorModel<"esp32c5",
+                                       NoSchedModel,
+                                       !listconcat(FeatureEspL3.Features,
+                                        [])>;
+
+def ESPRESSIF_ESP32C6 : RISCVProcessorModel<"esp32c6",
+                                       NoSchedModel,
+                                       !listconcat(FeatureEspL2.Features,
+                                        [])>;
+
+def ESPRESSIF_ESP32C61ECO0 : RISCVProcessorModel<"esp32c61eco0",
+                                       NoSchedModel,
+                                       !listconcat(FeatureEspL3.Features,
+                                        [])>;
+
+// CPU w/o "ecoX" suffixes stands for the latest version of the chip.
+// Currently it corresponds to any chip version after ECO3
+def ESPRESSIF_ESP32C61 : RISCVProcessorModel<"esp32c61",
+                                       NoSchedModel,
+                                       !listconcat(FeatureEspL4.Features,
+                                        [])>;
+
+def ESPRESSIF_ESP32H21 : RISCVProcessorModel<"esp32h21",
+                                       NoSchedModel,
+                                       !listconcat(FeatureEspL2.Features,
+                                        [])>;
+
+def ESPRESSIF_ESP32P4ECO4 : RISCVProcessorModel<"esp32p4eco4",
+                                       NoSchedModel,
+                                       !listconcat(FeatureEspL3.Features,
+                                        [FeatureStdExtF,
+                                         FeatureVendorXespv1v,
+                                         FeatureVendorXesploop])>;
+
+// CPU w/o "ecoX" suffixes stands for the latest version of the chip.
+// Currently it corresponds to any chip version after ECO4
 def ESPRESSIF_ESP32P4 : RISCVProcessorModel<"esp32p4",
                                        NoSchedModel,
-                                       [Feature32Bit,
-                                        FeatureVendorXespv,
-                                        FeatureVendorXesploop,
-                                        FeatureStdExtZicsr,
-                                        FeatureStdExtZifencei,
-                                        FeatureStdExtM,
-                                        FeatureStdExtA,
-                                        FeatureStdExtF,
-                                        FeatureStdExtC,
-                                        FeatureStdExtZcb,
-                                        FeatureStdExtZcmp,
-                                        FeatureStdExtZcmt]>;
+                                       !listconcat(FeatureEspL5.Features,
+                                        [FeatureVendorXespv,
+                                         FeatureVendorXesploop])>;
 
 def ESPRESSIF_ESP32H4 : RISCVProcessorModel<"esp32h4",
                                        NoSchedModel,
-                                       [Feature32Bit,
-                                        FeatureVendorXespdsp,
-                                        FeatureStdExtZicsr,
-                                        FeatureStdExtZifencei,
-                                        FeatureStdExtM,
-                                        FeatureStdExtA,
-                                        FeatureStdExtF,
-                                        FeatureStdExtC,
-                                        FeatureStdExtZcb,
-                                        FeatureStdExtZcmp,
-                                        FeatureStdExtZcmt]>;
+                                       !listconcat(FeatureEspL5.Features,
+                                        [FeatureVendorXespdsp,
+                                         FeatureVendorXesploop])>;
+
+def ESPRESSIF_ESP32S31 : RISCVProcessorModel<"esp32s31",
+                                       NoSchedModel,
+                                       !listconcat(FeatureEspL5.Features,
+                                        [FeatureVendorXespv,
+                                         FeatureVendorXesploop])>;
