@@ -36,11 +36,11 @@ class Esp32DSPInst<dag outs, dag ins, string asmstr, list<dag> pattern,
 
 class Esp32V2P2Inst<dag outs, dag ins, string asmstr, list<dag> pattern,
                    InstrItinClass itin = NoItinerary> 
-  : EspBase<outs, ins, asmstr, pattern, "ESPV2P2", itin>, Requires<[HasVendorXespv2p2]>;
+  : EspBase<outs, ins, asmstr, pattern, "ESPV2P2", itin>, Requires<[HasVendorXespv]>;
 
 class EspVInst<dag outs, dag ins, string asmstr, list<dag> pattern,
                 InstrItinClass itin = NoItinerary>
-  : EspBase<outs, ins, asmstr, pattern, "ESPV", itin>, Requires<[HasVendorXespv]>;
+  : EspBase<outs, ins, asmstr, pattern, "ESPV2P1", itin>, Requires<[HasVendorXespv2p1]>;
 
 class EspLoopInst<dag outs, dag ins, string asmstr, list<dag> pattern,
                 InstrItinClass itin = NoItinerary>

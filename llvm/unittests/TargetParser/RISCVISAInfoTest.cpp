@@ -1144,8 +1144,8 @@ R"(All available -march extensions for RISC-V
     xcvsimd              1.0
     xespdsp              2.1
     xesploop             1.0
-    xespv                2.1
-    xespv2p2             2.2
+    xespv                2.2
+    xespv2p1             2.1
     xmipscbop            1.0
     xmipscmov            1.0
     xmipslsp             1.0
@@ -1245,6 +1245,7 @@ For example, clang -march=rv32i_v1p0)";
   outs().flush();
 
   std::string CapturedOutput = testing::internal::GetCapturedStdout();
+  // dbgs() << CapturedOutput;
   EXPECT_TRUE([](std::string &Captured, std::string &Expected) {
                 return Captured.find(Expected) != std::string::npos;
               }(CapturedOutput, ExpectedOutput));

@@ -488,7 +488,7 @@ test_pie_optimizations:
     when: always
     expire_in: 1 day
   variables:
-    TEST_APP_ESP_DSP_CUSTOM_BRANCH: "llvm-21-optimization-test-v3"
+    TEST_APP_ESP_DSP_CUSTOM_BRANCH: "llvm-21-optimization-test-v4"
     UNPACK_TOOL: "tar xJvf"
   allow_failure: true
   script:

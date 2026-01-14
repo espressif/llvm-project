@@ -953,7 +953,8 @@ static constexpr DecoderListEntry DecoderList32[]{
     {DecoderTableRV32Only32, {}, "RV32-only standard 32-bit instructions"},
     {DecoderTableZfinx32, {}, "Zfinx (Float in Integer)"},
     {DecoderTableZdinxRV32Only32, {}, "RV32-only Zdinx (Double in Integer)"},
-    {DecoderTableESPV32, {RISCV::FeatureVendorXespv}, "XESPV Instruction opcode table"},
+    {DecoderTableESPV2P132, {RISCV::FeatureVendorXespv2p1}, "XESPV 2.1 Instruction opcode table"},
+    {DecoderTableESPV2P232, {RISCV::FeatureVendorXespv}, "XESPV 2.2 Instruction opcode table"},
 };
 
 DecodeStatus RISCVDisassembler::getInstruction32(MCInst &MI, uint64_t &Size,
