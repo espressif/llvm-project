@@ -71,12 +71,6 @@ define void @foo() nounwind {
 ; CHECK-ESP32S2-NEXT:    callx8 a8
 ; CHECK-ESP32S2-NEXT:    l32r a8, .LCPI0_5
 ; CHECK-ESP32S2-NEXT:    callx8 a8
-; CHECK-ESP32S2-NEXT:    l32r a8, .LCPI0_6
-; CHECK-ESP32S2-NEXT:    and a10, a10, a8
-; CHECK-ESP32S2-NEXT:    l32r a8, .LCPI0_7
-; CHECK-ESP32S2-NEXT:    callx8 a8
-; CHECK-ESP32S2-NEXT:    l32r a8, .LCPI0_8
-; CHECK-ESP32S2-NEXT:    callx8 a8
 ; CHECK-ESP32S2-NEXT:    s16i a10, a6, 0
 ; CHECK-ESP32S2-NEXT:    retw.n
 entry:
@@ -147,8 +141,7 @@ define i16 @test_to_fp16(double %in) {
 ; CHECK-ESP32-NEXT:    mov.n a10, a2
 ; CHECK-ESP32-NEXT:    l32r a8, .LCPI2_0
 ; CHECK-ESP32-NEXT:    callx8 a8
-; CHECK-ESP32-NEXT:    l32r a8, .LCPI2_1
-; CHECK-ESP32-NEXT:    and a2, a10, a8
+; CHECK-ESP32-NEXT:    mov.n a2, a10
 ; CHECK-ESP32-NEXT:    retw.n
 ;
 ; CHECK-ESP32S3-LABEL: test_to_fp16:
@@ -160,8 +153,7 @@ define i16 @test_to_fp16(double %in) {
 ; CHECK-ESP32S3-NEXT:    mov.n a10, a2
 ; CHECK-ESP32S3-NEXT:    l32r a8, .LCPI2_0
 ; CHECK-ESP32S3-NEXT:    callx8 a8
-; CHECK-ESP32S3-NEXT:    l32r a8, .LCPI2_1
-; CHECK-ESP32S3-NEXT:    and a2, a10, a8
+; CHECK-ESP32S3-NEXT:    mov.n a2, a10
 ; CHECK-ESP32S3-NEXT:    retw.n
 ;
 ; CHECK-ESP32S2-LABEL: test_to_fp16:
@@ -172,12 +164,6 @@ define i16 @test_to_fp16(double %in) {
 ; CHECK-ESP32S2-NEXT:    mov.n a11, a3
 ; CHECK-ESP32S2-NEXT:    mov.n a10, a2
 ; CHECK-ESP32S2-NEXT:    l32r a8, .LCPI2_0
-; CHECK-ESP32S2-NEXT:    callx8 a8
-; CHECK-ESP32S2-NEXT:    l32r a8, .LCPI2_1
-; CHECK-ESP32S2-NEXT:    and a10, a10, a8
-; CHECK-ESP32S2-NEXT:    l32r a8, .LCPI2_2
-; CHECK-ESP32S2-NEXT:    callx8 a8
-; CHECK-ESP32S2-NEXT:    l32r a8, .LCPI2_3
 ; CHECK-ESP32S2-NEXT:    callx8 a8
 ; CHECK-ESP32S2-NEXT:    mov.n a2, a10
 ; CHECK-ESP32S2-NEXT:    retw.n
