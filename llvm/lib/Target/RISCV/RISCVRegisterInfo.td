@@ -52,11 +52,53 @@ class RISCVReg128<RISCVReg64 subreg>
   let SubRegIndices = [sub_64];
 }
 
+//===----------------------------------------------------------------------===//
+// ESP32P4 PIE QR Register Definitions (All QR-related definitions grouped here)
+//===----------------------------------------------------------------------===//
+// ESP32P4 QR registers are 128-bit vector registers (Q0-Q7)
+// Complete hierarchy: Q (128-bit) -> D (64-bit) -> S (32-bit) -> H (16-bit) -> B (8-bit)
+// Reference: AArch64 register hierarchy (B/H/S/D/Q)
+//
+// All QR register definitions are grouped in this section for easy debugging and maintenance.
+//===----------------------------------------------------------------------===//
+
+// QR register subregister indices
+// Base subregister indices (low bits)
+// Note: QR registers are maximum 128-bit, so we only define indices up to 64-bit
+// Q (128-bit) is the top-level register, so it doesn't need a subregister index
+// Use qr_ prefix to avoid conflict with GPR subregister indices (sub_16, sub_32, sub_64)
+def sub_qr_64 : SubRegIndex<64, 0>;   // 64-bit, offset 0
+def sub_qr_64_hi : SubRegIndex<64, 64>;   // 64-bit, offset 64
+
 let FallbackRegAltNameIndex = NoRegAltName in
 def ABIRegAltName : RegAltNameIndex;
 
 def sub_vrm4_0 : SubRegIndex<256>;
 def sub_vrm4_1 : SubRegIndex<256, 256>;
+
+// QACC subregister indices (256-bit)
+def sub_qacc_l : SubRegIndex<256, 0>;    // Low 256-bit [255:0]
+def sub_qacc_h : SubRegIndex<256, 256>;  // High 256-bit [511:256]
+
+// QACC 128-bit subregister indices (for QACC_L and QACC_H)
+// Hardware supports 128-bit subregister access (e.g., QACC_L[127:0], QACC_L[255:128])
+def sub_qacc_l_lo : SubRegIndex<128, 0>;      // QACC_L[127:0]
+def sub_qacc_l_hi : SubRegIndex<128, 128>;    // QACC_L[255:128]
+def sub_qacc_h_lo : SubRegIndex<128, 0>;      // QACC_H[127:0]
+def sub_qacc_h_hi : SubRegIndex<128, 128>;    // QACC_H[255:128]
+
+// ESPV-specific subregister indices for QACC_REG (512-bit)
+// These are separate from standard RISC-V RVV indices (sub_vrm2_0/1) to avoid
+// conflicts with non-ESPV code. ESPV does not support RVV, so we use dedicated indices.
+def sub_qacc_vrm2_0 : SubRegIndex<256, 0>;    // QACC[255:0] -> QACC_L (low 256-bit)
+def sub_qacc_vrm2_1 : SubRegIndex<256, 256>;  // QACC[511:256] -> QACC_H (high 256-bit)
+
+// XACC subregister indices (40-bit accumulator, represented as i64)
+// Hardware supports subregister access:
+// - XACC[31:0] (low 32 bits) - accessed via ESP.MOVX.R.XACC.L / ESP.MOVX.W.XACC.L
+// - XACC[39:32] (high 8 bits) - accessed via ESP.MOVX.R.XACC.H / ESP.MOVX.W.XACC.H
+def sub_xacc_lo : SubRegIndex<32, 0>;      // XACC[31:0] (low 32 bits)
+def sub_xacc_hi : SubRegIndex<8, 32>;      // XACC[39:32] (high 8 bits)
 def sub_vrm2_0 : SubRegIndex<128>;
 def sub_vrm2_1 : SubRegIndex<128, 128>;
 def sub_vrm2_2 : ComposedSubRegIndex<sub_vrm4_1, sub_vrm2_0>;
@@ -213,23 +255,165 @@ let RegAltNameIndices = [ABIRegAltName] in {
   }
 }
 
+// QR register class definition
 class QRReg<bits<16> num, string n, list<string>alt = []> : Register<n>{
   let Namespace = "RISCV";
   let HWEncoding{15-0} = num;
   let AltNames = alt;
 }
-let RegAltNameIndices = [ABIRegAltName] in {
-  def Q0 : QRReg<0, "q0", ["q0"]>, DwarfRegNum<[0]>;
-  def Q1 : QRReg<1, "q1", ["q1"]>, DwarfRegNum<[1]>;
-  def Q2 : QRReg<2, "q2", ["q2"]>, DwarfRegNum<[2]>;
-  def Q3 : QRReg<3, "q3", ["q3"]>, DwarfRegNum<[3]>;
-  def Q4 : QRReg<4, "q4", ["q4"]>, DwarfRegNum<[4]>;
-  def Q5 : QRReg<5, "q5", ["q5"]>, DwarfRegNum<[5]>;
-  def Q6 : QRReg<6, "q6", ["q6"]>, DwarfRegNum<[6]>;
-  def Q7 : QRReg<7, "q7", ["q7"]>, DwarfRegNum<[7]>;
+
+// ----------------------------------------------------------------------------
+foreach i = 0-7 in {
+  // D0: Q low 64
+  def Q#i#_D0 : QRReg<!add(i, 8), "q"#i>; 
+  
+  // D1: Q high 64
+  def Q#i#_D1 : QRReg<!add(i, 16), "q"#i>;
 }
 
-def QR : RegisterClass<"RISCV", [v16i8, v4i32], 128, (sequence "Q%u", 0, 7)>;
+// Q registers (128-bit, top-level registers)
+// Each Q register contains 2 D registers
+let RegAltNameIndices = [ABIRegAltName] in {
+  foreach i = 0-7 in {
+    def Q#i : QRReg<i, "q"#i, ["q"#i]>, DwarfRegNum<[i]> {
+      let SubRegs = [!cast<Register>("Q"#i#"_D0"), !cast<Register>("Q"#i#"_D1")];
+      let SubRegIndices = [sub_qr_64, sub_qr_64_hi];
+      let CoveredBySubRegs = 1;
+    }
+  }
+}
+
+// ESP32-P4 QACC accumulator registers
+// QACC_H and QACC_L are physically independent but logically form a unified 512-bit accumulator.
+// We use subregister mechanism to represent logical unity while maintaining physical independence
+// for parallel scheduling via LaneMask mechanism.
+def QACC_L_LO_REG : RISCVReg<0, "qacc_l_lo">;
+def QACC_L_HI_REG : RISCVReg<0, "qacc_l_hi">;
+def QACC_H_LO_REG : RISCVReg<0, "qacc_h_lo">;
+def QACC_H_HI_REG : RISCVReg<0, "qacc_h_hi">;
+
+def QACC_L_REG : Register<"qacc_l"> {
+  let Namespace = "RISCV";
+  let SubRegs = [QACC_L_LO_REG, QACC_L_HI_REG];
+  let SubRegIndices = [sub_qacc_l_lo, sub_qacc_l_hi];
+}
+
+def QACC_H_REG : Register<"qacc_h"> {
+  let Namespace = "RISCV";
+  let SubRegs = [QACC_H_LO_REG, QACC_H_HI_REG];
+  let SubRegIndices = [sub_qacc_h_lo, sub_qacc_h_hi];
+}
+
+// QACC super register (logical 512-bit accumulator)
+def QACC_REG : Register<"qacc"> {
+  let Namespace = "RISCV";
+  let SubRegs = [QACC_L_REG, QACC_H_REG];
+  // Use ESPV-specific indices to avoid conflicts with standard RISC-V RVV indices
+  let SubRegIndices = [sub_qacc_vrm2_0, sub_qacc_vrm2_1];
+}
+
+// ESP32-P4 XACC register (40-bit accumulator, represented as i64 in LLVM IR)
+// Hardware supports subregister access: XACC[31:0] (low) and XACC[39:32] (high)
+def XACC_LO_REG : RISCVReg<0, "xacc_lo">;
+def XACC_HI_REG : RISCVReg<0, "xacc_hi">;
+
+def XACC : Register<"xacc"> {
+  let Namespace = "RISCV";
+  let SubRegs = [XACC_LO_REG, XACC_HI_REG];
+  let SubRegIndices = [sub_xacc_lo, sub_xacc_hi];
+}
+
+// QACC register classes
+// isAllocatable=1 allows type legalizer to create virtual registers for v32i8 in RV32.
+// CopyCost=-1 prevents spilling (QACC_H/L are implicit physical registers).
+let isAllocatable = 1, CopyCost = -1 in {
+  def QACC_L_LOW : RegisterClass<"RISCV", [v16i8], 128, (add QACC_L_LO_REG)>;
+  def QACC_L_HIGH : RegisterClass<"RISCV", [v16i8], 128, (add QACC_L_HI_REG)>;
+  def QACC_H_LOW : RegisterClass<"RISCV", [v16i8], 128, (add QACC_H_LO_REG)>;
+  def QACC_H_HIGH : RegisterClass<"RISCV", [v16i8], 128, (add QACC_H_HI_REG)>;
+  def QACC_H : RegisterClass<"RISCV", [v8i32, v32i8], 256, (add QACC_H_REG)>;
+  def QACC_L : RegisterClass<"RISCV", [v8i32, v32i8], 256, (add QACC_L_REG)>;
+}
+
+// QACC register class for unified 512-bit accumulator (v64i8)
+// Non-allocatable as QACC_REG is a logical super-register, not a physical register.
+// Virtual registers for v64i8 are handled via QACC_L and QACC_H in Lowering/Select.
+def QACCTuples : RegisterTuples<[sub_qacc_vrm2_0, sub_qacc_vrm2_1],
+                                 [(add QACC_L), (add QACC_H)]>;
+
+let isAllocatable = 0 in {
+  def QACC : RegisterClass<"RISCV", [v64i8], 512, (add QACCTuples)>;
+}
+
+// XACC register classes
+// isAllocatable=1 allows type legalizer to create virtual registers for i64 in RV32.
+// CopyCost=-1 prevents spilling (XACC is implicit physical register).
+let isAllocatable = 1, CopyCost = -1 in {
+  def XACC_LOW : RegisterClass<"RISCV", [i32], 32, (add XACC_LO_REG)>;
+  // XACC_HIGH: Hardware register is 8-bit (XACC[39:32]), but we use i32 to match IR type.
+  // Size=32 ensures 4-byte alignment for spilling; hardware uses only low 8 bits.
+  def XACC_HIGH : RegisterClass<"RISCV", [i32], 32, (add XACC_HI_REG)> {
+    let Size = 32;
+  }
+  def XACCReg : RegisterClass<"RISCV", [i64], 64, (add XACC)>;
+}
+// ESP32-P4 implicit state registers (RV32 only)
+// All use isAllocatable=1 (for type legalizer) and CopyCost=-1 (prevent spilling).
+def SAR : RISCVReg<0, "sar">;
+def SARRI : RegInfoByHwMode<
+      [RV32],
+      [RegInfo<32,32,32>]>;
+let isAllocatable = 1, CopyCost = -1, RegInfos = SARRI in {
+  def SARReg : RegisterClass<"RISCV", [i32], 32, (add SAR)>;
+}
+
+def CFG : RISCVReg<0, "cfg">;
+def CFGRI : RegInfoByHwMode<
+      [RV32],
+      [RegInfo<32,32,32>]>;
+let isAllocatable = 1, CopyCost = -1, RegInfos = CFGRI in {
+  def CFGReg : RegisterClass<"RISCV", [i32], 32, (add CFG)>;
+}
+
+def PERF : RISCVReg<0, "perf">;
+def PERFRI : RegInfoByHwMode<
+      [RV32],
+      [RegInfo<32,32,32>]>;
+let isAllocatable = 1, CopyCost = -1, RegInfos = PERFRI in {
+  def PERFReg : RegisterClass<"RISCV", [i32], 32, (add PERF)>;
+}
+
+def FFT_BIT_WIDTH : RISCVReg<0, "fft_bit_width">;
+let isAllocatable = 1, CopyCost = -1 in {
+  def FFT_BIT_WIDTHReg : RegisterClass<"RISCV", [i32], 32, (add FFT_BIT_WIDTH)>;
+}
+
+def SAR_BYTES : RISCVReg<0, "sar_bytes">;
+def SAR_BYTESRI : RegInfoByHwMode<
+      [RV32],
+      [RegInfo<32,32,32>]>;
+let isAllocatable = 1, CopyCost = -1, RegInfos = SAR_BYTESRI in {
+  def SAR_BYTESReg : RegisterClass<"RISCV", [i32], 32, (add SAR_BYTES)>;
+}
+
+def UA_STATE : RISCVReg<0, "ua_state">;
+let isAllocatable = 1, CopyCost = -1 in {
+  def UA_STATEReg : RegisterClass<"RISCV", [v16i8], 128, (add UA_STATE)>;
+}
+
+// ESP32P4 PIE QR register classes
+// QR_64: Unified 64-bit subregister class (16 physical registers: Q0_D0-Q7_D0 and Q0_D1-Q7_D1).
+// isAllocatable=1 allows type legalizer to create virtual registers for v8i8 in RV32.
+// CopyCost=-1 prevents unnecessary COPY instructions between QR_64 and QR (same physical register).
+let isAllocatable = 1, CopyCost = -1 in {
+  def QR_64 : RegisterClass<"RISCV", [v8i8, v4i16, v2i32], 64,
+                            (add (sequence "Q%u_D0", 0, 7),
+                                 (sequence "Q%u_D1", 0, 7))> {
+    let DecoderMethod = "DecodeQR_64RegisterClass";
+  }
+}
+
+def QR : RegisterClass<"RISCV", [v16i8,v8i16,v4i32], 128, (sequence "Q%u", 0, 7)>;
 
 def XLenVT : ValueTypeByHwMode<[RV32, RV64],
                                [i32,  i64]>;

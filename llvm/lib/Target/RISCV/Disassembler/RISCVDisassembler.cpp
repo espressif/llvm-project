@@ -354,6 +354,15 @@ static const unsigned QRDecoderTable[] = {RISCV::Q0, RISCV::Q1, RISCV::Q2,
                                           RISCV::Q3, RISCV::Q4, RISCV::Q5,
                                           RISCV::Q6, RISCV::Q7};
 
+// QR_64DecoderTable: Unified 64-bit register decoder table (similar to AArch64 FPR64)
+// Contains all Q0_D0-Q7_D0 (low 64-bit) and Q0_D1-Q7_D1 (high 64-bit) registers
+// Total: 16 physical registers (8 low + 8 high)
+static const unsigned QR_64DecoderTable[] = {
+    RISCV::Q0_D0, RISCV::Q1_D0, RISCV::Q2_D0, RISCV::Q3_D0,
+    RISCV::Q4_D0, RISCV::Q5_D0, RISCV::Q6_D0, RISCV::Q7_D0,
+    RISCV::Q0_D1, RISCV::Q1_D1, RISCV::Q2_D1, RISCV::Q3_D1,
+    RISCV::Q4_D1, RISCV::Q5_D1, RISCV::Q6_D1, RISCV::Q7_D1};
+
 static DecodeStatus DecodeQRRegisterClass(MCInst &Inst, uint64_t RegNo,
                                           uint64_t Address,
                                           const void *Decoder) {
@@ -361,6 +370,17 @@ static DecodeStatus DecodeQRRegisterClass(MCInst &Inst, uint64_t RegNo,
     return MCDisassembler::Fail;
 
   unsigned Reg = QRDecoderTable[RegNo];
+  Inst.addOperand(MCOperand::createReg(Reg));
+  return MCDisassembler::Success;
+}
+
+static DecodeStatus DecodeQR_64RegisterClass(MCInst &Inst, uint64_t RegNo,
+                                             uint64_t Address,
+                                             const void *Decoder) {
+  if (RegNo >= std::size(QR_64DecoderTable))
+    return MCDisassembler::Fail;
+
+  unsigned Reg = QR_64DecoderTable[RegNo];
   Inst.addOperand(MCOperand::createReg(Reg));
   return MCDisassembler::Success;
 }
