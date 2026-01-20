@@ -93,7 +93,7 @@ public:
   // Post transform for multiple loops
   virtual void postUnrolledLoops() {}
   // Check if loop should be unrolled
-  virtual bool shouldUnroll(Loop &L) {}
+  virtual bool shouldUnroll(Loop &L) = 0;
   // Get unroll count
   unsigned getUnrollCount() const { return UnrollCount; }
 

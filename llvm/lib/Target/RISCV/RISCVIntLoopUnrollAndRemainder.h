@@ -76,7 +76,7 @@ public:
   virtual void preTransform() {}
   virtual void postTransform(Loop &L) {}
   virtual void postUnroll() {}
-  virtual bool shouldUnroll(Loop &L) {}
+  virtual bool shouldUnroll(Loop &L) = 0;
   unsigned getUnrollCount() const { return UnrollCount; }
 };
 
