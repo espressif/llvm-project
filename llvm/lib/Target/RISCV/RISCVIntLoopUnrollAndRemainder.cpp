@@ -308,7 +308,7 @@ createEntryBlockModifications(BasicBlock &EntryBB, int UnrollCount) {
   // Insert new instructions before Icmp
   IRBuilder<> Builder(CompareInst);
   Value *AndValue = Builder.CreateAnd(
-      EndIndex, ConstantInt::get(EndIndex->getType(), -UnrollCount), "and");
+      EndIndex, ConstantInt::getSigned(EndIndex->getType(), -UnrollCount), "and");
   CompareInst->setOperand(0, AndValue);
   CompareInst->setOperand(1, StartIndex);
   return std::make_pair(AndValue, EndIndex);
@@ -560,9 +560,9 @@ void DspsInt16DotprodHandler::postUnrollDspsInt16Dotprod(Function &F, Loop &L,
   // Insert loop preheader instructions
   IRBuilder<> PreheaderBuilder(LoopPreheader->getTerminator());
   Value *MinusOne = PreheaderBuilder.CreateAdd(
-      AndValue, ConstantInt::get(AndValue->getType(), -1));
+      AndValue, ConstantInt::getSigned(AndValue->getType(), -1));
   Value *AndEight = PreheaderBuilder.CreateAnd(
-      MinusOne, ConstantInt::get(AndValue->getType(), -Unroll_count));
+      MinusOne, ConstantInt::getSigned(AndValue->getType(), -Unroll_count));
 
   // Insert loop exit instructions
   IRBuilder<> ExitBuilder(ForCondCleanupLoopExit->getTerminator());
@@ -689,7 +689,7 @@ void DspsInt16MathHandler::postUnrollInt16MathType(Function &F, Loop &L,
   Value *Lenarg = FirstICmp->getOperand(0);
   IRBuilder<> Builder(FirstICmp);
   Value *AndValue = Builder.CreateAnd(
-      Lenarg, ConstantInt::get(Lenarg->getType(), 1 - Unroll_count), "and");
+      Lenarg, ConstantInt::getSigned(Lenarg->getType(), 1 - Unroll_count), "and");
   FirstICmp->setOperand(0, AndValue);
   ForCondPreheader->getTerminator()->setSuccessor(1, ForBodyMerged);
   swapTerminatorSuccessors(ForCondPreheader);
@@ -810,7 +810,7 @@ void DspsInt16FirdHandler::postUnrollDspsInt16FIRD(
   SExtInst *LenSExt = getLastInst<SExtInst>(ForCondCleanup20);
   ICmpInst *ExitCondition = getLastInst<ICmpInst>(ForCondCleanup20);
   Value *LenMinus15 = BinaryOperator::CreateNSWAdd(
-      LenSExt, ConstantInt::get(LenSExt->getType(), -15), "sub45",
+      LenSExt, ConstantInt::getSigned(LenSExt->getType(), -15), "sub45",
       ExitCondition);
   ExitCondition->setOperand(0, PosSExt);
   ExitCondition->setOperand(1, LenMinus15);
@@ -902,7 +902,7 @@ void DspsInt16FirdHandler::postUnrollDspsInt16FIRD(
 
   Builder.SetInsertPoint(ForCond227Preheader);
   Value *PosMinus15 = Builder.CreateAdd(
-      PosSExt, ConstantInt::get(Type::getInt32Ty(F.getContext()), -15),
+      PosSExt, ConstantInt::getSigned(Type::getInt32Ty(F.getContext()), -15),
       "Sub230", true);
   Value *PosGt15Cmp = Builder.CreateICmpSGT(
       Load_pos, ConstantInt::get(Type::getInt16Ty(F.getContext()), 15),
@@ -1021,9 +1021,9 @@ void DspiIntDotprodHandler::postUnrollDspiIntDotprod(Function &F, Loop *L,
   // Create new instruction
   IRBuilder<> Builder(EntryCmp);
   Value *CountMinus7 = Builder.CreateNSWAdd(
-      CountValue, ConstantInt::get(CountValue->getType(), -7), "Sub1");
+      CountValue, ConstantInt::getSigned(CountValue->getType(), -7), "Sub1");
   Value *And_val = Builder.CreateAnd(
-      CountValue, ConstantInt::get(CountValue->getType(), -8));
+      CountValue, ConstantInt::getSigned(CountValue->getType(), -8));
 
   BasicBlock *ForCondCleanup27 = nullptr;
   for (BasicBlock *Succ : successors(ForCond25Preheader)) {
@@ -1119,8 +1119,8 @@ void DspmInt16MultHandler::postUnrollDspmInt16Mult(Function &F, Loop *L,
 
   IRBuilder<> Builder(EntryCmp);
   Value *CountMinus7 =
-      Builder.CreateNSWAdd(N, ConstantInt::get(N->getType(), -7), "Sub6");
-  Value *And_val = Builder.CreateAnd(N, ConstantInt::get(N->getType(), -8));
+      Builder.CreateNSWAdd(N, ConstantInt::getSigned(N->getType(), -7), "Sub6");
+  Value *And_val = Builder.CreateAnd(N, ConstantInt::getSigned(N->getType(), -8));
 
   // Create new for.cond110.preheader basic block
   BasicBlock *ForCond110Preheader = BasicBlock::Create(
