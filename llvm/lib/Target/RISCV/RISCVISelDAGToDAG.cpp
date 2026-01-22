@@ -997,6 +997,8 @@ void RISCVDAGToDAGISel::Select(SDNode *Node) {
     Node->setNodeId(-1);
     return;
   }
+  if (Subtarget->hasVendorXespv() && selectESP(Node))
+    return;
 
   // Instruction Selection not handled by the auto-generated tablegen selection
   // should be handled here.
@@ -2590,6 +2592,7 @@ void RISCVDAGToDAGISel::Select(SDNode *Node) {
     MVT InVT = V.getSimpleValueType();
     SDLoc DL(V);
 
+
     const RISCVTargetLowering &TLI = *Subtarget->getTargetLowering();
     MVT SubVecContainerVT = VT;
     // Establish the correct scalable-vector types for any fixed-length type.
@@ -2730,6 +2733,1006 @@ void RISCVDAGToDAGISel::Select(SDNode *Node) {
 
   // Select the default instruction.
   SelectCode(Node);
+}
+
+bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
+  unsigned Opcode = Node->getOpcode();
+  SDLoc DL(Node);
+  MVT XLenVT = Subtarget->getXLenVT();
+  
+  switch (Opcode) {
+    case RISCVISD::ESP_VST_128_IP_M: {
+      // Handle ESP_VST_128_IP_M node with MMO
+      // Node: (chain, vec, ptr, imm) -> (ptr_out, chain)
+      // Instruction: ESP_VST_128_IP (ins QR:$qu, GPRPIE:$rs1, offset_256_16:$off25616)
+      // Operand order: [qu, rs1, off25616, chain] - instruction operands first, then chain
+      SDValue Chain = Node->getOperand(0);
+      SDValue Vec = Node->getOperand(1);
+      SDValue Ptr = Node->getOperand(2);
+      SDValue Imm = Node->getOperand(3);
+      
+      // Select immediate operand: extract constant value if possible
+      SDValue ImmOp = Imm;
+      if (auto *ImmNode = dyn_cast<ConstantSDNode>(Imm.getNode())) {
+        // Direct constant
+        int64_t ImmVal = ImmNode->getSExtValue();
+        ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+      } else if (auto *LoadNode = dyn_cast<LoadSDNode>(Imm.getNode())) {
+        // Load from memory (O0 optimization level)
+        // Try to extract constant value from load
+        SDValue BasePtr = LoadNode->getBasePtr();
+        if (auto *FIN = dyn_cast<FrameIndexSDNode>(BasePtr.getNode())) {
+          // Load from FrameIndex - try to find corresponding store with constant value
+          // Search through the chain to find a store to this FrameIndex
+          int64_t ImmVal = 0;
+          bool FoundConstant = false;
+          SDValue SearchChain = LoadNode->getChain();
+          for (SDNode *ChainNode = SearchChain.getNode();
+               ChainNode && !FoundConstant;
+               ChainNode = (ChainNode->getNumOperands() > 0) ? 
+                           ChainNode->getOperand(0).getNode() : nullptr) {
+            if (auto *StoreNode = dyn_cast<StoreSDNode>(ChainNode)) {
+              SDValue StorePtr = StoreNode->getBasePtr();
+              if (auto *StoreFIN = dyn_cast<FrameIndexSDNode>(StorePtr.getNode())) {
+                if (StoreFIN->getIndex() == FIN->getIndex()) {
+                  // Found store to same FrameIndex
+                  SDValue StoredVal = StoreNode->getValue();
+                  if (auto *StoredConst = dyn_cast<ConstantSDNode>(StoredVal.getNode())) {
+                    ImmVal = StoredConst->getSExtValue();
+                    FoundConstant = true;
+                  }
+                }
+              }
+            }
+          }
+          if (FoundConstant) {
+            ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+          } else {
+            // Fallback: select the load node (will generate register)
+            // This should not happen for offset_256_16 constraint, but handle gracefully
+            if (!Imm.getNode()->isMachineOpcode()) {
+              Select(Imm.getNode());
+              ImmOp = SDValue(Imm.getNode(), 0);
+            } else {
+              ImmOp = Imm;
+            }
+          }
+        } else {
+          // Load from non-FrameIndex address - select it
+          if (!Imm.getNode()->isMachineOpcode()) {
+            Select(Imm.getNode());
+            ImmOp = SDValue(Imm.getNode(), 0);
+          } else {
+            ImmOp = Imm;
+          }
+        }
+      } else {
+        // Other node type - select it
+        if (!Imm.getNode()->isMachineOpcode()) {
+          Select(Imm.getNode());
+          ImmOp = SDValue(Imm.getNode(), 0);
+        } else {
+          ImmOp = Imm;
+        }
+      }
+      
+      // Instruction outputs: (rs1r, chain)
+      SDVTList VTs = CurDAG->getVTList(XLenVT, MVT::Other);
+      // Operand order must match instruction definition: (ins QR:$qu, GPRPIE:$rs1, offset_256_16:$off25616)
+      // Order: [instruction operands..., chain]
+      SDValue Ops[] = {Vec, Ptr, ImmOp, Chain};
+      SDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_VST_128_IP, DL, VTs, Ops);
+      
+      // Copy MMO from MemSDNode if present
+      if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
+        MachineMemOperand *MMO = MemNode->getMemOperand();
+        CurDAG->setNodeMemRefs(cast<MachineSDNode>(NewNode), {MMO});
+      }
+      
+      ReplaceNode(Node, NewNode);
+      return true;
+    }
+    case RISCVISD::ESP_VLD_128_IP_M: {
+      // Handle ESP_VLD_128_IP_M node with MMO
+      // Node: (chain, ptr, imm) -> (vec, ptr_out, chain)
+      // Instruction: ESP_VLD_128_IP (ins GPRPIE:$rs1, offset_256_16:$off25616)
+      // Operand order: [rs1, off25616, chain] - instruction operands first, then chain
+      SDValue Chain = Node->getOperand(0);
+      SDValue Ptr = Node->getOperand(1);
+      SDValue Imm = Node->getOperand(2);
+      
+      // Select immediate operand: extract constant value if possible
+      SDValue ImmOp = Imm;
+      if (auto *ImmNode = dyn_cast<ConstantSDNode>(Imm.getNode())) {
+        // Direct constant
+        int64_t ImmVal = ImmNode->getSExtValue();
+        ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+      } else if (auto *LoadNode = dyn_cast<LoadSDNode>(Imm.getNode())) {
+        // Load from memory (O0 optimization level)
+        // Try to extract constant value from load
+        SDValue BasePtr = LoadNode->getBasePtr();
+        if (auto *FIN = dyn_cast<FrameIndexSDNode>(BasePtr.getNode())) {
+          // Load from FrameIndex - try to find corresponding store with constant value
+          // Search through the chain to find a store to this FrameIndex
+          int64_t ImmVal = 0;
+          bool FoundConstant = false;
+          SDValue SearchChain = LoadNode->getChain();
+          for (SDNode *ChainNode = SearchChain.getNode();
+               ChainNode && !FoundConstant;
+               ChainNode = (ChainNode->getNumOperands() > 0) ? 
+                           ChainNode->getOperand(0).getNode() : nullptr) {
+            if (auto *StoreNode = dyn_cast<StoreSDNode>(ChainNode)) {
+              SDValue StorePtr = StoreNode->getBasePtr();
+              if (auto *StoreFIN = dyn_cast<FrameIndexSDNode>(StorePtr.getNode())) {
+                if (StoreFIN->getIndex() == FIN->getIndex()) {
+                  // Found store to same FrameIndex
+                  SDValue StoredVal = StoreNode->getValue();
+                  if (auto *StoredConst = dyn_cast<ConstantSDNode>(StoredVal.getNode())) {
+                    ImmVal = StoredConst->getSExtValue();
+                    FoundConstant = true;
+                  }
+                }
+              }
+            }
+          }
+          if (FoundConstant) {
+            ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+          } else {
+            // Fallback: select the load node (will generate register)
+            // This should not happen for offset_256_16 constraint, but handle gracefully
+            if (!Imm.getNode()->isMachineOpcode()) {
+              Select(Imm.getNode());
+              ImmOp = SDValue(Imm.getNode(), 0);
+            } else {
+              ImmOp = Imm;
+            }
+          }
+        } else {
+          // Load from non-FrameIndex address - select it
+          if (!Imm.getNode()->isMachineOpcode()) {
+            Select(Imm.getNode());
+            ImmOp = SDValue(Imm.getNode(), 0);
+          } else {
+            ImmOp = Imm;
+          }
+        }
+      } else {
+        // Other node type - select it
+        if (!Imm.getNode()->isMachineOpcode()) {
+          Select(Imm.getNode());
+          ImmOp = SDValue(Imm.getNode(), 0);
+        } else {
+          ImmOp = Imm;
+        }
+      }
+      
+      // Instruction outputs: (qu, rs1r, chain)
+      SDVTList VTs = CurDAG->getVTList(MVT::v16i8, XLenVT, MVT::Other);
+      // Operand order must match instruction definition: (ins GPRPIE:$rs1, offset_256_16:$off25616)
+      // Order: [instruction operands..., chain]
+      SDValue Ops[] = {Ptr, ImmOp, Chain};
+      SDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_VLD_128_IP, DL, VTs, Ops);
+      
+      // Copy MMO from MemSDNode if present
+      if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
+        MachineMemOperand *MMO = MemNode->getMemOperand();
+        CurDAG->setNodeMemRefs(cast<MachineSDNode>(NewNode), {MMO});
+      }
+      
+      ReplaceNode(Node, NewNode);
+      return true;
+    }
+    case RISCVISD::ESP_VLD_128_XP_M: {
+      // Handle ESP_VLD_128_XP_M node with MMO
+      // Node: (chain, ptr, reg) -> (vec, ptr_out, chain)
+      // Instruction: ESP_VLD_128_XP (ins GPRPIE:$rs2, GPRPIE:$rs1)
+      // Operand order: [rs2, rs1, chain] - instruction operands first, then chain
+      SDValue Chain = Node->getOperand(0);
+      SDValue Ptr = Node->getOperand(1);
+      SDValue Reg = Node->getOperand(2);
+  
+      // getMachineNode will automatically select operands if needed
+      // Instruction outputs: (qu, rs1r, chain)
+      SDVTList VTs = CurDAG->getVTList(MVT::v16i8, XLenVT, MVT::Other);
+      // Operand order must match instruction definition: (ins GPRPIE:$rs2, GPRPIE:$rs1)
+      // Order: [instruction operands..., chain]
+      SDValue Ops[] = {Reg, Ptr, Chain};
+      SDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_VLD_128_XP, DL, VTs, Ops);
+  
+      // Copy MMO from MemSDNode if present
+      if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
+        MachineMemOperand *MMO = MemNode->getMemOperand();
+        CurDAG->setNodeMemRefs(cast<MachineSDNode>(NewNode), {MMO});
+      }
+  
+      ReplaceNode(Node, NewNode);
+      return true;
+    }
+    case RISCVISD::ESP_VST_128_XP_M: {
+      // Handle ESP_VST_128_XP_M node with MMO
+      // Node: (chain, vec, ptr, reg) -> (ptr_out, chain)
+      // Instruction: ESP_VST_128_XP (ins GPRPIE:$rs2, QR:$qu, GPRPIE:$rs1)
+      // Operand order: [rs2, qu, rs1, chain] - instruction operands first, then chain
+      SDValue Chain = Node->getOperand(0);
+      SDValue Vec = Node->getOperand(1);
+      SDValue Ptr = Node->getOperand(2);
+      SDValue Reg = Node->getOperand(3);
+  
+      // getMachineNode will automatically select operands if needed
+      // Instruction outputs: (rs1r, chain)
+      SDVTList VTs = CurDAG->getVTList(XLenVT, MVT::Other);
+      // Operand order must match instruction definition: (ins GPRPIE:$rs2, QR:$qu, GPRPIE:$rs1)
+      // Order: [instruction operands..., chain]
+      SDValue Ops[] = {Reg, Vec, Ptr, Chain};
+      SDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_VST_128_XP, DL, VTs, Ops);
+  
+      // Copy MMO from MemSDNode if present
+      if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
+        MachineMemOperand *MMO = MemNode->getMemOperand();
+        CurDAG->setNodeMemRefs(cast<MachineSDNode>(NewNode), {MMO});
+      }
+  
+      ReplaceNode(Node, NewNode);
+      return true;
+    }
+    case RISCVISD::ESP_VLD_H_64_IP_M: {
+      // Handle ESP_VLD_H_64_IP_M node with MMO
+      // Node: (chain, ptr, imm) -> (vec, ptr_out, chain)
+      // Instruction: ESP_VLD_H_64_IP (ins GPRPIE:$rs1, offset_256_8:$off2568)
+      // Operand order: [rs1, off2568, chain] - instruction operands first, then chain
+      SDValue Chain = Node->getOperand(0);
+      SDValue Ptr = Node->getOperand(1);
+      SDValue Imm = Node->getOperand(2);
+  
+      // Select immediate operand: extract constant value if possible
+      SDValue ImmOp = Imm;
+      if (auto *ImmNode = dyn_cast<ConstantSDNode>(Imm.getNode())) {
+        // Direct constant
+        int64_t ImmVal = ImmNode->getSExtValue();
+        ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+      } else if (auto *LoadNode = dyn_cast<LoadSDNode>(Imm.getNode())) {
+        // Load from memory (O0 optimization level)
+        // Try to extract constant value from load
+        SDValue BasePtr = LoadNode->getBasePtr();
+        if (auto *FIN = dyn_cast<FrameIndexSDNode>(BasePtr.getNode())) {
+          // Load from FrameIndex - try to find corresponding store with constant value
+          // Search through the chain to find a store to this FrameIndex
+          int64_t ImmVal = 0;
+          bool FoundConstant = false;
+          SDValue SearchChain = LoadNode->getChain();
+          for (SDNode *ChainNode = SearchChain.getNode();
+               ChainNode && !FoundConstant;
+               ChainNode = (ChainNode->getNumOperands() > 0) ?
+                           ChainNode->getOperand(0).getNode() : nullptr) {
+            if (auto *StoreNode = dyn_cast<StoreSDNode>(ChainNode)) {
+              SDValue StorePtr = StoreNode->getBasePtr();
+              if (auto *StoreFIN = dyn_cast<FrameIndexSDNode>(StorePtr.getNode())) {
+                if (StoreFIN->getIndex() == FIN->getIndex()) {
+                  // Found store to same FrameIndex
+                  SDValue StoredVal = StoreNode->getValue();
+                  if (auto *StoredConst = dyn_cast<ConstantSDNode>(StoredVal.getNode())) {
+                    ImmVal = StoredConst->getSExtValue();
+                    FoundConstant = true;
+                  }
+                }
+              }
+            }
+          }
+          if (FoundConstant) {
+            ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+          } else {
+            // Fallback: select the load node (will generate register)
+            if (!Imm.getNode()->isMachineOpcode()) {
+              Select(Imm.getNode());
+              ImmOp = SDValue(Imm.getNode(), 0);
+            } else {
+              ImmOp = Imm;
+            }
+          }
+        } else {
+          // Load from non-FrameIndex address - select it
+          if (!Imm.getNode()->isMachineOpcode()) {
+            Select(Imm.getNode());
+            ImmOp = SDValue(Imm.getNode(), 0);
+          } else {
+            ImmOp = Imm;
+          }
+        }
+      } else {
+        // Other node type - select it
+        if (!Imm.getNode()->isMachineOpcode()) {
+          Select(Imm.getNode());
+          ImmOp = SDValue(Imm.getNode(), 0);
+        } else {
+          ImmOp = Imm;
+        }
+      }
+  
+      // Instruction outputs: (qu, rs1r, chain)
+      // Note: The instruction definition requires QR_H:$qu.
+      // The register class will be correctly set by InstrEmitter based on the instruction definition.
+      SDVTList VTs = CurDAG->getVTList(MVT::v8i8, XLenVT, MVT::Other);
+      // Operand order must match instruction definition: (ins GPRPIE:$rs1, offset_256_8:$off2568)
+      // Order: [instruction operands..., chain]
+      SDValue Ops[] = {Ptr, ImmOp, Chain};
+      MachineSDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_VLD_H_64_IP, DL, VTs, Ops);
+  
+      // Copy MMO from MemSDNode if present
+      if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
+        MachineMemOperand *MMO = MemNode->getMemOperand();
+        CurDAG->setNodeMemRefs(NewNode, {MMO});
+      }
+  
+      ReplaceNode(Node, NewNode);
+      return true;
+    }
+    case RISCVISD::ESP_VLD_H_64_XP_M: {
+      // Handle ESP_VLD_H_64_XP_M node with MMO
+      // Node: (chain, ptr, reg) -> (vec, ptr_out, chain)
+      // Instruction: ESP_VLD_H_64_XP (ins GPRPIE:$rs2, GPRPIE:$rs1)
+      // Operand order: [rs2, rs1, chain] - instruction operands first, then chain
+      SDValue Chain = Node->getOperand(0);
+      SDValue Ptr = Node->getOperand(1);
+      SDValue Reg = Node->getOperand(2);
+  
+      // getMachineNode will automatically select operands if needed
+      // Instruction outputs: (qu, rs1r, chain)
+      SDVTList VTs = CurDAG->getVTList(MVT::v8i8, XLenVT, MVT::Other);
+      // Operand order must match instruction definition: (ins GPRPIE:$rs2, GPRPIE:$rs1)
+      // Order: [instruction operands..., chain]
+      SDValue Ops[] = {Reg, Ptr, Chain};
+      SDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_VLD_H_64_XP, DL, VTs, Ops);
+  
+      // Copy MMO from MemSDNode if present
+      if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
+        MachineMemOperand *MMO = MemNode->getMemOperand();
+        CurDAG->setNodeMemRefs(cast<MachineSDNode>(NewNode), {MMO});
+      }
+  
+      ReplaceNode(Node, NewNode);
+      return true;
+    }
+    case RISCVISD::ESP_VLD_L_64_IP_M: {
+      // Handle ESP_VLD_L_64_IP_M node with MMO
+      // Node: (chain, ptr, imm) -> (vec, ptr_out, chain)
+      // Instruction: ESP_VLD_L_64_IP (ins GPRPIE:$rs1, offset_256_8:$off2568)
+      // Operand order: [rs1, off2568, chain] - instruction operands first, then chain
+      SDValue Chain = Node->getOperand(0);
+      SDValue Ptr = Node->getOperand(1);
+      SDValue Imm = Node->getOperand(2);
+  
+      // Select immediate operand: extract constant value if possible
+      SDValue ImmOp = Imm;
+      if (auto *ImmNode = dyn_cast<ConstantSDNode>(Imm.getNode())) {
+        // Direct constant
+        int64_t ImmVal = ImmNode->getSExtValue();
+        ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+      } else if (auto *LoadNode = dyn_cast<LoadSDNode>(Imm.getNode())) {
+        // Load from memory (O0 optimization level)
+        // Try to extract constant value from load
+        SDValue BasePtr = LoadNode->getBasePtr();
+        if (auto *FIN = dyn_cast<FrameIndexSDNode>(BasePtr.getNode())) {
+          // Load from FrameIndex - try to find corresponding store with constant value
+          // Search through the chain to find a store to this FrameIndex
+          int64_t ImmVal = 0;
+          bool FoundConstant = false;
+          SDValue SearchChain = LoadNode->getChain();
+          for (SDNode *ChainNode = SearchChain.getNode();
+               ChainNode && !FoundConstant;
+               ChainNode = (ChainNode->getNumOperands() > 0) ?
+                           ChainNode->getOperand(0).getNode() : nullptr) {
+            if (auto *StoreNode = dyn_cast<StoreSDNode>(ChainNode)) {
+              SDValue StorePtr = StoreNode->getBasePtr();
+              if (auto *StoreFIN = dyn_cast<FrameIndexSDNode>(StorePtr.getNode())) {
+                if (StoreFIN->getIndex() == FIN->getIndex()) {
+                  // Found store to same FrameIndex
+                  SDValue StoredVal = StoreNode->getValue();
+                  if (auto *StoredConst = dyn_cast<ConstantSDNode>(StoredVal.getNode())) {
+                    ImmVal = StoredConst->getSExtValue();
+                    FoundConstant = true;
+                  }
+                }
+              }
+            }
+          }
+          if (FoundConstant) {
+            ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+          } else {
+            // Fallback: select the load node (will generate register)
+            if (!Imm.getNode()->isMachineOpcode()) {
+              Select(Imm.getNode());
+              ImmOp = SDValue(Imm.getNode(), 0);
+            } else {
+              ImmOp = Imm;
+            }
+          }
+        } else {
+          // Load from non-FrameIndex address - select it
+          if (!Imm.getNode()->isMachineOpcode()) {
+            Select(Imm.getNode());
+            ImmOp = SDValue(Imm.getNode(), 0);
+          } else {
+            ImmOp = Imm;
+          }
+        }
+      } else {
+        // Other node type - select it
+        if (!Imm.getNode()->isMachineOpcode()) {
+          Select(Imm.getNode());
+          ImmOp = SDValue(Imm.getNode(), 0);
+        } else {
+          ImmOp = Imm;
+        }
+      }
+  
+      // Instruction outputs: (qu, rs1r, chain)
+      // Note: The instruction definition requires QR_L:$qu.
+      // The register class will be correctly set by InstrEmitter based on the instruction definition.
+      SDVTList VTs = CurDAG->getVTList(MVT::v8i8, XLenVT, MVT::Other);
+      // Operand order must match instruction definition: (ins GPRPIE:$rs1, offset_256_8:$off2568)
+      // Order: [instruction operands..., chain]
+      SDValue Ops[] = {Ptr, ImmOp, Chain};
+      MachineSDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_VLD_L_64_IP, DL, VTs, Ops);
+  
+      // Copy MMO from MemSDNode if present
+      if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
+        MachineMemOperand *MMO = MemNode->getMemOperand();
+        CurDAG->setNodeMemRefs(NewNode, {MMO});
+      }
+  
+      ReplaceNode(Node, NewNode);
+      return true;
+    }
+    case RISCVISD::ESP_VLD_L_64_XP_M: {
+      // Handle ESP_VLD_L_64_XP_M node with MMO
+      // Node: (chain, ptr, reg) -> (vec, ptr_out, chain)
+      // Instruction: ESP_VLD_L_64_XP (ins GPRPIE:$rs2, GPRPIE:$rs1)
+      // Operand order: [rs2, rs1, chain] - instruction operands first, then chain
+      SDValue Chain = Node->getOperand(0);
+      SDValue Ptr = Node->getOperand(1);
+      SDValue Reg = Node->getOperand(2);
+  
+      // getMachineNode will automatically select operands if needed
+      // Instruction outputs: (qu, rs1r, chain)
+      SDVTList VTs = CurDAG->getVTList(MVT::v8i8, XLenVT, MVT::Other);
+      // Operand order must match instruction definition: (ins GPRPIE:$rs2, GPRPIE:$rs1)
+      // Order: [instruction operands..., chain]
+      SDValue Ops[] = {Reg, Ptr, Chain};
+      SDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_VLD_L_64_XP, DL, VTs, Ops);
+  
+      // Copy MMO from MemSDNode if present
+      if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
+        MachineMemOperand *MMO = MemNode->getMemOperand();
+        CurDAG->setNodeMemRefs(cast<MachineSDNode>(NewNode), {MMO});
+      }
+  
+      ReplaceNode(Node, NewNode);
+      return true;
+    }
+    case RISCVISD::ESP_VST_H_64_IP_M: {
+      // Handle ESP_VST_H_64_IP_M node with MMO
+      // Node: (chain, vec, ptr, imm) -> (ptr_out, chain)
+      // Instruction: ESP_VST_H_64_IP (ins QR_H:$qu, GPRPIE:$rs1, offset_256_8:$off2568)
+      // Operand order: [qu, rs1, off2568, chain] - instruction operands first, then chain
+      SDValue Chain = Node->getOperand(0);
+      SDValue Vec = Node->getOperand(1);
+      SDValue Ptr = Node->getOperand(2);
+      SDValue Imm = Node->getOperand(3);
+  
+      // Select immediate operand: extract constant value if possible
+      SDValue ImmOp = Imm;
+      if (auto *ImmNode = dyn_cast<ConstantSDNode>(Imm.getNode())) {
+        // Direct constant
+        int64_t ImmVal = ImmNode->getSExtValue();
+        ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+      } else if (auto *LoadNode = dyn_cast<LoadSDNode>(Imm.getNode())) {
+        // Load from memory (O0 optimization level)
+        // Try to extract constant value from load
+        SDValue BasePtr = LoadNode->getBasePtr();
+        if (auto *FIN = dyn_cast<FrameIndexSDNode>(BasePtr.getNode())) {
+          // Load from FrameIndex - try to find corresponding store with constant value
+          // Search through the chain to find a store to this FrameIndex
+          int64_t ImmVal = 0;
+          bool FoundConstant = false;
+          SDValue SearchChain = LoadNode->getChain();
+          for (SDNode *ChainNode = SearchChain.getNode();
+               ChainNode && !FoundConstant;
+               ChainNode = (ChainNode->getNumOperands() > 0) ?
+                           ChainNode->getOperand(0).getNode() : nullptr) {
+            if (auto *StoreNode = dyn_cast<StoreSDNode>(ChainNode)) {
+              SDValue StorePtr = StoreNode->getBasePtr();
+              if (auto *StoreFIN = dyn_cast<FrameIndexSDNode>(StorePtr.getNode())) {
+                if (StoreFIN->getIndex() == FIN->getIndex()) {
+                  // Found store to same FrameIndex
+                  SDValue StoredVal = StoreNode->getValue();
+                  if (auto *StoredConst = dyn_cast<ConstantSDNode>(StoredVal.getNode())) {
+                    ImmVal = StoredConst->getSExtValue();
+                    FoundConstant = true;
+                  }
+                }
+              }
+            }
+          }
+          if (FoundConstant) {
+            ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+          } else {
+            // Fallback: select the load node (will generate register)
+            if (!Imm.getNode()->isMachineOpcode()) {
+              Select(Imm.getNode());
+              ImmOp = SDValue(Imm.getNode(), 0);
+            } else {
+              ImmOp = Imm;
+            }
+          }
+        } else {
+          // Load from non-FrameIndex address - select it
+          if (!Imm.getNode()->isMachineOpcode()) {
+            Select(Imm.getNode());
+            ImmOp = SDValue(Imm.getNode(), 0);
+          } else {
+            ImmOp = Imm;
+          }
+        }
+      } else {
+        // Other node type - select it
+        if (!Imm.getNode()->isMachineOpcode()) {
+          Select(Imm.getNode());
+          ImmOp = SDValue(Imm.getNode(), 0);
+        } else {
+          ImmOp = Imm;
+        }
+      }
+  
+      // Handle Vec operand: similar to ESP_VST_128_IP_M, but need to handle subregister extraction
+      // Vec can be:
+      // 1. v8i8 from ESP_VLD_H_64_IP_M (already correct, use directly)
+      // 2. EXTRACT_SUBVECTOR from v16i8 (need to convert to EXTRACT_SUBREG)
+      // 3. v16i8 (need to extract sub_qr_64_hi)
+      SDValue ConstrainedVec = Vec;
+      
+      // If Vec is already v8i8 and not EXTRACT_SUBVECTOR, use it directly
+      // This handles the case where Vec comes from ESP_VLD_H_64_IP_M (first return value)
+      if (Vec.getValueType() == MVT::v8i8 && 
+          Vec.getOpcode() != ISD::EXTRACT_SUBVECTOR) {
+        // Already correct type, use directly (will be selected when used as operand)
+        ConstrainedVec = Vec;
+      }
+      // Check if Vec is an EXTRACT_SUBVECTOR node that needs to be processed
+      else if (Vec.getOpcode() == ISD::EXTRACT_SUBVECTOR && 
+               Vec.getValueType() == MVT::v8i8 &&
+               Vec.getOperand(0).getValueType() == MVT::v16i8) {
+        // Check the extraction index: 8 for high 64-bit, 0 for low 64-bit
+        unsigned Idx = cast<ConstantSDNode>(Vec.getOperand(1))->getZExtValue();
+        if (Idx == 8) {
+          // This is extracting high 64-bit from v16i8, which should be converted to EXTRACT_SUBREG
+          // Select the source vector first (it should be a QR register)
+          SDValue SrcVec = Vec.getOperand(0);
+          if (!SrcVec.getNode()->isMachineOpcode()) {
+            Select(SrcVec.getNode());
+            // After Select, the node may have been replaced, so get the new value
+            // Preserve the ResNo from original SrcVec to handle multi-value nodes correctly
+            SrcVec = SDValue(SrcVec.getNode(), SrcVec.getResNo());
+          } else {
+            // Already a machine node, preserve ResNo
+            SrcVec = SDValue(SrcVec.getNode(), SrcVec.getResNo());
+          }
+          // Extract high 64-bit subregister
+          SDValue SubIdx = CurDAG->getTargetConstant(RISCV::sub_qr_64_hi, DL, XLenVT);
+          SDNode *ExtractNode = CurDAG->getMachineNode(TargetOpcode::EXTRACT_SUBREG, DL, MVT::v8i8, SrcVec, SubIdx);
+          ConstrainedVec = SDValue(ExtractNode, 0);
+        } else {
+          // For other indices, select the EXTRACT_SUBVECTOR node normally
+          Select(Vec.getNode());
+          // Preserve the ResNo from original Vec to handle multi-value nodes correctly
+          ConstrainedVec = SDValue(Vec.getNode(), Vec.getResNo());
+        }
+      } else if (!Vec.getNode()->isMachineOpcode()) {
+        // If Vec is not a machine node yet, select it first
+        Select(Vec.getNode());
+        // Preserve the ResNo from original Vec to handle multi-value nodes correctly
+        ConstrainedVec = SDValue(Vec.getNode(), Vec.getResNo());
+      }
+      
+      // If Vec is still v16i8 (full 128-bit QR register), extract sub_qr_64_hi first
+      if (ConstrainedVec.getValueType() == MVT::v16i8) {
+        // Extract high 64-bit subregister from full QR register
+        SDValue SubIdx = CurDAG->getTargetConstant(RISCV::sub_qr_64_hi, DL, XLenVT);
+        SDNode *ExtractNode = CurDAG->getMachineNode(TargetOpcode::EXTRACT_SUBREG, DL, MVT::v8i8, ConstrainedVec, SubIdx);
+        ConstrainedVec = SDValue(ExtractNode, 0);
+      }
+      // If Vec is already v8i8, it should already be in QR_64RegClass from EXTRACT_SUBVECTOR processing.
+      // No need for COPY_TO_REGCLASS.
+  
+      // Instruction outputs: (rs1r, chain) - chain is needed for mayStore instructions
+      // Even though instruction definition only has 1 output, MachineNode needs chain for memory ordering
+      SDVTList VTs = CurDAG->getVTList(XLenVT, MVT::Other);
+      // Operand order must match instruction definition: (ins QR_H:$qu, GPRPIE:$rs1, offset_256_8:$off2568)
+      // Order: [instruction operands..., chain]
+      SDValue Ops[] = {ConstrainedVec, Ptr, ImmOp, Chain};
+      SDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_VST_H_64_IP, DL, VTs, Ops);
+  
+      // Copy MMO from MemSDNode if present
+      if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
+        MachineMemOperand *MMO = MemNode->getMemOperand();
+        CurDAG->setNodeMemRefs(cast<MachineSDNode>(NewNode), {MMO});
+      }
+  
+      // ReplaceNode automatically handles all return values: Node(0)->NewNode(0), Node(1)->NewNode(1)
+      ReplaceNode(Node, NewNode);
+      return true;
+    }
+    case RISCVISD::ESP_VST_H_64_XP_M: {
+      // Handle ESP_VST_H_64_XP_M node with MMO
+      // Node: (chain, vec, ptr, reg) -> (ptr_out, chain)
+      // Instruction: ESP_VST_H_64_XP (ins GPRPIE:$rs2, QR_H:$qu, GPRPIE:$rs1)
+      // Operand order: [rs2, qu, rs1, chain] - instruction operands first, then chain
+      SDValue Chain = Node->getOperand(0);
+      SDValue Vec = Node->getOperand(1);
+      SDValue Ptr = Node->getOperand(2);
+      SDValue Reg = Node->getOperand(3);
+  
+      // Handle Vec operand: similar to ESP_VST_128_IP_M, but need to handle subregister extraction
+      // Vec can be:
+      // 1. v8i8 from ESP_VLD_H_64_XP_M (already correct, use directly)
+      // 2. EXTRACT_SUBVECTOR from v16i8 (need to convert to EXTRACT_SUBREG)
+      // 3. v16i8 (need to extract sub_qr_64_hi)
+      SDValue ConstrainedVec = Vec;
+      
+      // If Vec is already v8i8 and not EXTRACT_SUBVECTOR, use it directly
+      // This handles the case where Vec comes from ESP_VLD_H_64_XP_M (first return value)
+      if (Vec.getValueType() == MVT::v8i8 && 
+          Vec.getOpcode() != ISD::EXTRACT_SUBVECTOR) {
+        // Already correct type, use directly (will be selected when used as operand)
+        ConstrainedVec = Vec;
+      }
+      // Check if Vec is an EXTRACT_SUBVECTOR node that needs to be processed
+      else if (Vec.getOpcode() == ISD::EXTRACT_SUBVECTOR && 
+               Vec.getValueType() == MVT::v8i8 &&
+               Vec.getOperand(0).getValueType() == MVT::v16i8) {
+        // Check the extraction index: 8 for high 64-bit, 0 for low 64-bit
+        unsigned Idx = cast<ConstantSDNode>(Vec.getOperand(1))->getZExtValue();
+        if (Idx == 8) {
+          // This is extracting high 64-bit from v16i8, which should be converted to EXTRACT_SUBREG
+          // Select the source vector first (it should be a QR register)
+          SDValue SrcVec = Vec.getOperand(0);
+          if (!SrcVec.getNode()->isMachineOpcode()) {
+            Select(SrcVec.getNode());
+            // After Select, the node may have been replaced, so get the new value
+            // Preserve the ResNo from original SrcVec to handle multi-value nodes correctly
+            SrcVec = SDValue(SrcVec.getNode(), SrcVec.getResNo());
+          } else {
+            // Already a machine node, preserve ResNo
+            SrcVec = SDValue(SrcVec.getNode(), SrcVec.getResNo());
+          }
+          // Extract high 64-bit subregister
+          SDValue SubIdx = CurDAG->getTargetConstant(RISCV::sub_qr_64_hi, DL, XLenVT);
+          SDNode *ExtractNode = CurDAG->getMachineNode(TargetOpcode::EXTRACT_SUBREG, DL, MVT::v8i8, SrcVec, SubIdx);
+          ConstrainedVec = SDValue(ExtractNode, 0);
+        } else {
+          // For other indices, select the EXTRACT_SUBVECTOR node normally
+          Select(Vec.getNode());
+          // Preserve the ResNo from original Vec to handle multi-value nodes correctly
+          ConstrainedVec = SDValue(Vec.getNode(), Vec.getResNo());
+        }
+      } else if (!Vec.getNode()->isMachineOpcode()) {
+        // If Vec is not a machine node yet, select it first
+        Select(Vec.getNode());
+        // Preserve the ResNo from original Vec to handle multi-value nodes correctly
+        ConstrainedVec = SDValue(Vec.getNode(), Vec.getResNo());
+      }
+      
+      // If Vec is still v16i8 (full 128-bit QR register), extract sub_qr_64_hi first
+      if (ConstrainedVec.getValueType() == MVT::v16i8) {
+        // Extract high 64-bit subregister from full QR register
+        SDValue SubIdx = CurDAG->getTargetConstant(RISCV::sub_qr_64_hi, DL, XLenVT);
+        SDNode *ExtractNode = CurDAG->getMachineNode(TargetOpcode::EXTRACT_SUBREG, DL, MVT::v8i8, ConstrainedVec, SubIdx);
+        ConstrainedVec = SDValue(ExtractNode, 0);
+      }
+      // If Vec is already v8i8, it should already be in QR_64RegClass from EXTRACT_SUBVECTOR processing.
+      // No need for COPY_TO_REGCLASS.
+  
+      // getMachineNode will automatically select operands if needed
+      // Instruction outputs: (rs1r, chain) - chain is needed for mayStore instructions
+      // Even though instruction definition only has 1 output, MachineNode needs chain for memory ordering
+      SDVTList VTs = CurDAG->getVTList(XLenVT, MVT::Other);
+      // Operand order must match instruction definition: (ins GPRPIE:$rs2, QR_H:$qu, GPRPIE:$rs1)
+      // Order: [instruction operands..., chain]
+      SDValue Ops[] = {Reg, ConstrainedVec, Ptr, Chain};
+      SDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_VST_H_64_XP, DL, VTs, Ops);
+  
+      // Copy MMO from MemSDNode if present
+      if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
+        MachineMemOperand *MMO = MemNode->getMemOperand();
+        CurDAG->setNodeMemRefs(cast<MachineSDNode>(NewNode), {MMO});
+      }
+  
+      // ReplaceNode automatically handles all return values: Node(0)->NewNode(0), Node(1)->NewNode(1)
+      ReplaceNode(Node, NewNode);
+      return true;
+    }
+    case RISCVISD::ESP_VST_L_64_IP_M: {
+      // Handle ESP_VST_L_64_IP_M node with MMO
+      // Node: (chain, vec, ptr, imm) -> (ptr_out, chain)
+      // Instruction: ESP_VST_L_64_IP (ins QR_L:$qu, GPRPIE:$rs1, offset_256_8:$off2568)
+      // Operand order: [qu, rs1, off2568, chain] - instruction operands first, then chain
+      SDValue Chain = Node->getOperand(0);
+      SDValue Vec = Node->getOperand(1);
+      SDValue Ptr = Node->getOperand(2);
+      SDValue Imm = Node->getOperand(3);
+  
+      // Select immediate operand: extract constant value if possible
+      SDValue ImmOp = Imm;
+      if (auto *ImmNode = dyn_cast<ConstantSDNode>(Imm.getNode())) {
+        // Direct constant
+        int64_t ImmVal = ImmNode->getSExtValue();
+        ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+      } else if (auto *LoadNode = dyn_cast<LoadSDNode>(Imm.getNode())) {
+        // Load from memory (O0 optimization level)
+        // Try to extract constant value from load
+        SDValue BasePtr = LoadNode->getBasePtr();
+        if (auto *FIN = dyn_cast<FrameIndexSDNode>(BasePtr.getNode())) {
+          // Load from FrameIndex - try to find corresponding store with constant value
+          // Search through the chain to find a store to this FrameIndex
+          int64_t ImmVal = 0;
+          bool FoundConstant = false;
+          SDValue SearchChain = LoadNode->getChain();
+          for (SDNode *ChainNode = SearchChain.getNode();
+               ChainNode && !FoundConstant;
+               ChainNode = (ChainNode->getNumOperands() > 0) ?
+                           ChainNode->getOperand(0).getNode() : nullptr) {
+            if (auto *StoreNode = dyn_cast<StoreSDNode>(ChainNode)) {
+              SDValue StorePtr = StoreNode->getBasePtr();
+              if (auto *StoreFIN = dyn_cast<FrameIndexSDNode>(StorePtr.getNode())) {
+                if (StoreFIN->getIndex() == FIN->getIndex()) {
+                  // Found store to same FrameIndex
+                  SDValue StoredVal = StoreNode->getValue();
+                  if (auto *StoredConst = dyn_cast<ConstantSDNode>(StoredVal.getNode())) {
+                    ImmVal = StoredConst->getSExtValue();
+                    FoundConstant = true;
+                  }
+                }
+              }
+            }
+          }
+          if (FoundConstant) {
+            ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+          } else {
+            // Fallback: select the load node (will generate register)
+            if (!Imm.getNode()->isMachineOpcode()) {
+              Select(Imm.getNode());
+              ImmOp = SDValue(Imm.getNode(), 0);
+            } else {
+              ImmOp = Imm;
+            }
+          }
+        } else {
+          // Load from non-FrameIndex address - select it
+          if (!Imm.getNode()->isMachineOpcode()) {
+            Select(Imm.getNode());
+            ImmOp = SDValue(Imm.getNode(), 0);
+          } else {
+            ImmOp = Imm;
+          }
+        }
+      } else {
+        // Other node type - select it
+        if (!Imm.getNode()->isMachineOpcode()) {
+          Select(Imm.getNode());
+          ImmOp = SDValue(Imm.getNode(), 0);
+        } else {
+          ImmOp = Imm;
+        }
+      }
+  
+      // Handle Vec operand: similar to ESP_VST_128_IP_M, but need to handle subregister extraction
+      // Vec can be:
+      // 1. v8i8 from ESP_VLD_L_64_IP_M (already correct, use directly)
+      // 2. EXTRACT_SUBVECTOR from v16i8 (need to convert to EXTRACT_SUBREG)
+      // 3. v16i8 (need to extract sub_qr_64)
+      SDValue ConstrainedVec = Vec;
+      
+      // If Vec is already v8i8 and not EXTRACT_SUBVECTOR, use it directly
+      // This handles the case where Vec comes from ESP_VLD_L_64_IP_M (first return value)
+      if (Vec.getValueType() == MVT::v8i8 && 
+          Vec.getOpcode() != ISD::EXTRACT_SUBVECTOR) {
+        // Already correct type, use directly (will be selected when used as operand)
+        ConstrainedVec = Vec;
+      }
+      // Check if Vec is an EXTRACT_SUBVECTOR node that needs to be processed
+      else if (Vec.getOpcode() == ISD::EXTRACT_SUBVECTOR && 
+               Vec.getValueType() == MVT::v8i8 &&
+               Vec.getOperand(0).getValueType() == MVT::v16i8) {
+        // Check the extraction index: 8 for high 64-bit, 0 for low 64-bit
+        unsigned Idx = cast<ConstantSDNode>(Vec.getOperand(1))->getZExtValue();
+        if (Idx == 0) {
+          // This is extracting low 64-bit from v16i8, which should be converted to EXTRACT_SUBREG
+          // Select the source vector first (it should be a QR register)
+          SDValue SrcVec = Vec.getOperand(0);
+          if (!SrcVec.getNode()->isMachineOpcode()) {
+            Select(SrcVec.getNode());
+            // After Select, the node may have been replaced, so get the new value
+            // Preserve the ResNo from original SrcVec to handle multi-value nodes correctly
+            SrcVec = SDValue(SrcVec.getNode(), SrcVec.getResNo());
+          } else {
+            // Already a machine node, preserve ResNo
+            SrcVec = SDValue(SrcVec.getNode(), SrcVec.getResNo());
+          }
+          // Extract low 64-bit subregister
+          SDValue SubIdx = CurDAG->getTargetConstant(RISCV::sub_qr_64, DL, XLenVT);
+          SDNode *ExtractNode = CurDAG->getMachineNode(TargetOpcode::EXTRACT_SUBREG, DL, MVT::v8i8, SrcVec, SubIdx);
+          ConstrainedVec = SDValue(ExtractNode, 0);
+        } else {
+          // For other indices, select the EXTRACT_SUBVECTOR node normally
+          Select(Vec.getNode());
+          // Preserve the ResNo from original Vec to handle multi-value nodes correctly
+          ConstrainedVec = SDValue(Vec.getNode(), Vec.getResNo());
+        }
+      } else if (!Vec.getNode()->isMachineOpcode()) {
+        // If Vec is not a machine node yet, select it first
+        Select(Vec.getNode());
+        // Preserve the ResNo from original Vec to handle multi-value nodes correctly
+        ConstrainedVec = SDValue(Vec.getNode(), Vec.getResNo());
+      }
+      
+      // If Vec is still v16i8 (full 128-bit QR register), extract sub_qr_64 first
+      if (ConstrainedVec.getValueType() == MVT::v16i8) {
+        // Extract low 64-bit subregister from full QR register
+        SDValue SubIdx = CurDAG->getTargetConstant(RISCV::sub_qr_64, DL, XLenVT);
+        SDNode *ExtractNode = CurDAG->getMachineNode(TargetOpcode::EXTRACT_SUBREG, DL, MVT::v8i8, ConstrainedVec, SubIdx);
+        ConstrainedVec = SDValue(ExtractNode, 0);
+      }
+      // If Vec is already v8i8, it should already be in QR_64RegClass from EXTRACT_SUBVECTOR processing.
+      // No need for COPY_TO_REGCLASS.
+  
+      // Instruction outputs: (rs1r, chain) - chain is needed for mayStore instructions
+      // Even though instruction definition only has 1 output, MachineNode needs chain for memory ordering
+      SDVTList VTs = CurDAG->getVTList(XLenVT, MVT::Other);
+      // Operand order must match instruction definition: (ins QR_L:$qu, GPRPIE:$rs1, offset_256_8:$off2568)
+      // Order: [instruction operands..., chain]
+      SDValue Ops[] = {ConstrainedVec, Ptr, ImmOp, Chain};
+      SDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_VST_L_64_IP, DL, VTs, Ops);
+  
+      // Copy MMO from MemSDNode if present
+      if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
+        MachineMemOperand *MMO = MemNode->getMemOperand();
+        CurDAG->setNodeMemRefs(cast<MachineSDNode>(NewNode), {MMO});
+      }
+  
+      // ReplaceNode automatically handles all return values: Node(0)->NewNode(0), Node(1)->NewNode(1)
+      ReplaceNode(Node, NewNode);
+      return true;
+    }
+    case RISCVISD::ESP_VST_L_64_XP_M: {
+      // Handle ESP_VST_L_64_XP_M node with MMO
+      // Node: (chain, vec, ptr, reg) -> (ptr_out, chain)
+      // Instruction: ESP_VST_L_64_XP (ins GPRPIE:$rs2, QR_L:$qu, GPRPIE:$rs1)
+      // Operand order: [rs2, qu, rs1, chain] - instruction operands first, then chain
+      SDValue Chain = Node->getOperand(0);
+      SDValue Vec = Node->getOperand(1);
+      SDValue Ptr = Node->getOperand(2);
+      SDValue Reg = Node->getOperand(3);
+  
+      // Handle Vec operand: similar to ESP_VST_128_IP_M, but need to handle subregister extraction
+      // Vec can be:
+      // 1. v8i8 from ESP_VLD_L_64_XP_M (already correct, use directly)
+      // 2. EXTRACT_SUBVECTOR from v16i8 (need to convert to EXTRACT_SUBREG)
+      // 3. v16i8 (need to extract sub_qr_64)
+      SDValue ConstrainedVec = Vec;
+      
+      // If Vec is already v8i8 and not EXTRACT_SUBVECTOR, use it directly
+      // This handles the case where Vec comes from ESP_VLD_L_64_XP_M (first return value)
+      if (Vec.getValueType() == MVT::v8i8 && 
+          Vec.getOpcode() != ISD::EXTRACT_SUBVECTOR) {
+        // Already correct type, use directly (will be selected when used as operand)
+        ConstrainedVec = Vec;
+      }
+      // Check if Vec is an EXTRACT_SUBVECTOR node that needs to be processed
+      else if (Vec.getOpcode() == ISD::EXTRACT_SUBVECTOR && 
+               Vec.getValueType() == MVT::v8i8 &&
+               Vec.getOperand(0).getValueType() == MVT::v16i8) {
+        // Check the extraction index: 8 for high 64-bit, 0 for low 64-bit
+        unsigned Idx = cast<ConstantSDNode>(Vec.getOperand(1))->getZExtValue();
+        if (Idx == 0) {
+          // This is extracting low 64-bit from v16i8, which should be converted to EXTRACT_SUBREG
+          // Select the source vector first (it should be a QR register)
+          SDValue SrcVec = Vec.getOperand(0);
+          if (!SrcVec.getNode()->isMachineOpcode()) {
+            Select(SrcVec.getNode());
+            // After Select, the node may have been replaced, so get the new value
+            // Preserve the ResNo from original SrcVec to handle multi-value nodes correctly
+            SrcVec = SDValue(SrcVec.getNode(), SrcVec.getResNo());
+          } else {
+            // Already a machine node, preserve ResNo
+            SrcVec = SDValue(SrcVec.getNode(), SrcVec.getResNo());
+          }
+          // Extract low 64-bit subregister
+          SDValue SubIdx = CurDAG->getTargetConstant(RISCV::sub_qr_64, DL, XLenVT);
+          SDNode *ExtractNode = CurDAG->getMachineNode(TargetOpcode::EXTRACT_SUBREG, DL, MVT::v8i8, SrcVec, SubIdx);
+          ConstrainedVec = SDValue(ExtractNode, 0);
+        } else {
+          // For other indices, select the EXTRACT_SUBVECTOR node normally
+          Select(Vec.getNode());
+          // Preserve the ResNo from original Vec to handle multi-value nodes correctly
+          ConstrainedVec = SDValue(Vec.getNode(), Vec.getResNo());
+        }
+      } else if (!Vec.getNode()->isMachineOpcode()) {
+        // If Vec is not a machine node yet, select it first
+        Select(Vec.getNode());
+        // Preserve the ResNo from original Vec to handle multi-value nodes correctly
+        ConstrainedVec = SDValue(Vec.getNode(), Vec.getResNo());
+      }
+      
+      // If Vec is still v16i8 (full 128-bit QR register), extract sub_qr_64 first
+      if (ConstrainedVec.getValueType() == MVT::v16i8) {
+        // Extract low 64-bit subregister from full QR register
+        SDValue SubIdx = CurDAG->getTargetConstant(RISCV::sub_qr_64, DL, XLenVT);
+        SDNode *ExtractNode = CurDAG->getMachineNode(TargetOpcode::EXTRACT_SUBREG, DL, MVT::v8i8, ConstrainedVec, SubIdx);
+        ConstrainedVec = SDValue(ExtractNode, 0);
+      }
+      // If Vec is already v8i8, it should already be in QR_64RegClass from EXTRACT_SUBVECTOR processing.
+      // No need for COPY_TO_REGCLASS.
+  
+      // getMachineNode will automatically select operands if needed
+      // Instruction outputs: (rs1r, chain) - chain is needed for mayStore instructions
+      // Even though instruction definition only has 1 output, MachineNode needs chain for memory ordering
+      SDVTList VTs = CurDAG->getVTList(XLenVT, MVT::Other);
+      // Operand order must match instruction definition: (ins GPRPIE:$rs2, QR_L:$qu, GPRPIE:$rs1)
+      // Order: [instruction operands..., chain]
+      SDValue Ops[] = {Reg, ConstrainedVec, Ptr, Chain};
+      SDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_VST_L_64_XP, DL, VTs, Ops);
+  
+      // Copy MMO from MemSDNode if present
+      if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
+        MachineMemOperand *MMO = MemNode->getMemOperand();
+        CurDAG->setNodeMemRefs(cast<MachineSDNode>(NewNode), {MMO});
+      }
+  
+      // ReplaceNode automatically handles all return values: Node(0)->NewNode(0), Node(1)->NewNode(1)
+      ReplaceNode(Node, NewNode);
+      return true;
+    }
+    case ISD::EXTRACT_VECTOR_ELT: {
+      // Handle extract_vector_elt from ESP_VLD_128_IP_M multi-return node
+      SDValue Vec = Node->getOperand(0);
+      SDValue Idx = Node->getOperand(1);
+      
+      // Check if Vec is the first result of ESP_VLD_128_IP_M
+      if (Vec.getOpcode() == RISCVISD::ESP_VLD_128_IP_M && Vec.getResNo() == 0) {
+        SDNode *VLDNode = Vec.getNode();
+        SDValue Ptr = VLDNode->getOperand(1);
+        SDValue Imm = VLDNode->getOperand(2);
+        
+        // First, match ESP_VLD_128_IP instruction
+        if (auto *ImmC = dyn_cast<ConstantSDNode>(Imm)) {
+          int64_t ImmVal = ImmC->getSExtValue();
+          // Check if ImmVal is a valid offset_256_16 immediate
+          if (ImmVal >= -2048 && ImmVal <= 2032 && (ImmVal % 16 == 0)) {
+            // Create ESP_VLD_128_IP instruction
+            SDValue Ops[] = {Ptr, Imm};
+            MachineSDNode *VLDInst = CurDAG->getMachineNode(
+                RISCV::ESP_VLD_128_IP, DL,
+                CurDAG->getVTList(MVT::v16i8, MVT::i32, MVT::Other),
+                Ops);
+            // Copy memory references from the original node
+            if (auto *MemNode = dyn_cast<MemSDNode>(VLDNode)) {
+              CurDAG->setNodeMemRefs(VLDInst, {MemNode->getMemOperand()});
+            }
+            
+            // Replace the Vec operand with the instruction's vector output
+            SDValue VecResult = SDValue(VLDInst, 0);
+            SDValue NewExtract = CurDAG->getNode(ISD::EXTRACT_VECTOR_ELT, DL,
+                                                 Node->getValueType(0),
+                                                 VecResult, Idx);
+            ReplaceNode(Node, NewExtract.getNode());
+            return true;
+          }
+        }
+      }
+      break;
+    }  
+  default:
+    return false;
+  }
 }
 
 bool RISCVDAGToDAGISel::SelectInlineAsmMemoryOperand(

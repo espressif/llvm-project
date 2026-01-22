@@ -1901,4 +1901,5 @@ include "llvm/IR/IntrinsicsRISCVXAndes.td"
 // Generated code
 // --------------
 include "llvm/IR/IntrinsicsRISCVESPV.td"
+include "llvm/IR/IntrinsicsRISCVESPVM.td"
 include "llvm/IR/IntrinsicsRISCVESPDSP.td"
