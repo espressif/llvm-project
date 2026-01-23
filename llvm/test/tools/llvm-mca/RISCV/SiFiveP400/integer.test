@@ -81,8 +81,8 @@
 # CHECK-NEXT:  1      1     1.00           *             1     SiFiveP400Store                            SD                         sd	t0, 0(a0)
 # CHECK-NEXT:  1      1     1.00                  U      1     SiFiveP400IEXQ1,SiFiveP400IntArith         CSRRW                      csrrw	t0, 4095, t1
 # CHECK-NEXT:  1      1     1.00                  U      1     SiFiveP400IEXQ1,SiFiveP400IntArith         CSRRS                      csrrs	s3, fflags, s5
-# CHECK-NEXT:  1      1     1.00                  U      1     SiFiveP400IEXQ1,SiFiveP400IntArith         CSRRC                      csrrc	sp, 0, ra
-# CHECK-NEXT:  1      1     1.00                  U      1     SiFiveP400IEXQ1,SiFiveP400IntArith         CSRRWI                     csrrwi	a5, 0, 0
+# CHECK-NEXT:  1      1     1.00                  U      1     SiFiveP400IEXQ1,SiFiveP400IntArith         CSRRC                      csrrc	sp, ustatus, ra
+# CHECK-NEXT:  1      1     1.00                  U      1     SiFiveP400IEXQ1,SiFiveP400IntArith         CSRRWI                     csrrwi	a5, ustatus, 0
 # CHECK-NEXT:  1      1     1.00                  U      1     SiFiveP400IEXQ1,SiFiveP400IntArith         CSRRSI                     csrrsi	t2, 4095, 31
 # CHECK-NEXT:  1      1     1.00                  U      1     SiFiveP400IEXQ1,SiFiveP400IntArith         CSRRCI                     csrrci	t1, sscratch, 5
 
@@ -159,7 +159,7 @@
 # CHECK-NEXT:  -      -      -      -      -      -      -     1.00    -      -      -      -      -     sd	t0, 0(a0)
 # CHECK-NEXT:  -      -      -      -     1.00    -      -      -      -      -      -      -      -     csrrw	t0, 4095, t1
 # CHECK-NEXT:  -      -      -      -     1.00    -      -      -      -      -      -      -      -     csrrs	s3, fflags, s5
-# CHECK-NEXT:  -      -      -      -     1.00    -      -      -      -      -      -      -      -     csrrc	sp, 0, ra
-# CHECK-NEXT:  -      -      -      -     1.00    -      -      -      -      -      -      -      -     csrrwi	a5, 0, 0
+# CHECK-NEXT:  -      -      -      -     1.00    -      -      -      -      -      -      -      -     csrrc	sp, ustatus, ra
+# CHECK-NEXT:  -      -      -      -     1.00    -      -      -      -      -      -      -      -     csrrwi	a5, ustatus, 0
 # CHECK-NEXT:  -      -      -      -     1.00    -      -      -      -      -      -      -      -     csrrsi	t2, 4095, 31
 # CHECK-NEXT:  -      -      -      -     1.00    -      -      -      -      -      -      -      -     csrrci	t1, sscratch, 5
