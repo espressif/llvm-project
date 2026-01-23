@@ -75,8 +75,8 @@
 # CHECK-NEXT:  1      1     0.25           *             1     SMTX100_LSQ                                SD                         sd	t0, 0(a0)
 # CHECK-NEXT:  1      1     0.50                  U      1     SMTX100_IQ,SMTX100_IQ0                     CSRRW                      csrrw	t0, 4095, t1
 # CHECK-NEXT:  1      1     0.50                  U      1     SMTX100_IQ,SMTX100_IQ0                     CSRRS                      csrrs	s3, fflags, s5
-# CHECK-NEXT:  1      1     0.50                  U      1     SMTX100_IQ,SMTX100_IQ0                     CSRRC                      csrrc	sp, 0, ra
-# CHECK-NEXT:  1      1     0.50                  U      1     SMTX100_IQ,SMTX100_IQ0                     CSRRWI                     csrrwi	a5, 0, 0
+# CHECK-NEXT:  1      1     0.50                  U      1     SMTX100_IQ,SMTX100_IQ0                     CSRRC                      csrrc	sp, ustatus, ra
+# CHECK-NEXT:  1      1     0.50                  U      1     SMTX100_IQ,SMTX100_IQ0                     CSRRWI                     csrrwi	a5, ustatus, 0
 # CHECK-NEXT:  1      1     0.50                  U      1     SMTX100_IQ,SMTX100_IQ0                     CSRRSI                     csrrsi	t2, 4095, 31
 # CHECK-NEXT:  1      1     0.50                  U      1     SMTX100_IQ,SMTX100_IQ0                     CSRRCI                     csrrci	t1, sscratch, 5
 
@@ -154,7 +154,7 @@
 # CHECK-NEXT:  -      -      -      -      -      -      -      -      -      -     0.25   0.25   0.25   0.25   sd	t0, 0(a0)
 # CHECK-NEXT:  -      -      -      -      -      -     0.50   0.50    -      -      -      -      -      -     csrrw	t0, 4095, t1
 # CHECK-NEXT:  -      -      -      -      -      -     0.50   0.50    -      -      -      -      -      -     csrrs	s3, fflags, s5
-# CHECK-NEXT:  -      -      -      -      -      -     0.50   0.50    -      -      -      -      -      -     csrrc	sp, 0, ra
-# CHECK-NEXT:  -      -      -      -      -      -     0.50   0.50    -      -      -      -      -      -     csrrwi	a5, 0, 0
+# CHECK-NEXT:  -      -      -      -      -      -     0.50   0.50    -      -      -      -      -      -     csrrc	sp, ustatus, ra
+# CHECK-NEXT:  -      -      -      -      -      -     0.50   0.50    -      -      -      -      -      -     csrrwi	a5, ustatus, 0
 # CHECK-NEXT:  -      -      -      -      -      -     0.50   0.50    -      -      -      -      -      -     csrrsi	t2, 4095, 31
 # CHECK-NEXT:  -      -      -      -      -      -     0.50   0.50    -      -      -      -      -      -     csrrci	t1, sscratch, 5
