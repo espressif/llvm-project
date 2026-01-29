@@ -84,6 +84,48 @@ typedef struct {
   unsigned int SarBytes; // SAR_BYTES[3:0] = Rs1[3:0] (32-bit, only low 4 bits
                          // used, range 0-15)
 } esp_vld_usar_res_t;
+
+// ESP.ZERO.XACC result structure - Zero XACC with explicit state passing
+// Mixed model: XACC as {unsigned int low, unsigned int high}
+typedef struct {
+  unsigned int xacc_low;  // XACC[31:0] (i32, set to 0)
+  unsigned int xacc_high; // XACC[39:32] (i32, only low 8 bits valid, set to 0)
+} esp_xacc_zero_res_t;
+
+// ESP.LD.XACC.IP result structure - Load 64-bit Data and store low 40 bits to
+// XACC Mixed model: XACC as {unsigned int low, unsigned int high}
+typedef struct {
+  unsigned int xacc_low;  // XACC[31:0] (i32)
+  unsigned int xacc_high; // XACC[39:32] (i32, only low 8 bits valid)
+  void *Ptr;              // Updated pointer
+} esp_xacc_res_t;
+
+// ESP.CMUL.*.LD.INCP result structure
+typedef struct {
+  esp_vec128_t Qz; // For u16/s16 is v8i16, for u8/s8 is v16i8
+  esp_vec128_t Qu; // Always v16i8
+  void *Ptr;
+} esp_cmul_ld_incp_res_t;
+
+// ESP.VOP.LD.INCP result structure - Vector operation with load and increment
+// pointer Used for VADD, VSUB, VMUL, etc. LD.INCP instructions
+typedef struct {
+  union {
+    esp_vec128_t V8;
+    esp_vec128_16_t V16;
+    esp_vec128_32_t V32;
+  } Qv;
+  esp_vec128_t Qu;
+  void *Ptr;
+} esp_vop_ld_incp_res_t;
+
+// QACC as 4x128-bit structure for explicit phantom operand passing
+typedef struct {
+  esp_vec128_t v0; // QACC_L[127:0]: First 128 bits
+  esp_vec128_t v1; // QACC_L[255:128]: Second 128 bits
+  esp_vec128_t v2; // QACC_H[127:0]: Third 128 bits
+  esp_vec128_t v3; // QACC_H[255:128]: Fourth 128 bits
+} esp_qacc_4x128_t;
 // ESP.VLD.128.IP.M / ESP.VST.128.IP.M - using immediate increment
 static inline __attribute__((always_inline)) esp_vld_res_t
 esp_vld_128_ip_m(void const *Ptr, int Imm) {
@@ -401,6 +443,69 @@ esp_vldext_u16_xp_m(void const *Ptr, int Reg) {
   esp_vldext_res_t Res;
   Res.Ptr = __builtin_riscv_esp_vldext_u16_xp_m(Ptr, Reg, &Res.Val1, &Res.Val2);
   return Res;
+}
+
+// ESP.VADD.*.LD.INCP wrapper functions - Vector add with load and increment
+// pointer
+static inline __attribute__((always_inline)) esp_vop_ld_incp_res_t
+esp_vadd_s8_ld_incp_m(esp_vec128_t Qx, esp_vec128_t Qy, void const *Rs1) {
+  esp_vop_ld_incp_res_t Res;
+  Res.Ptr =
+      __builtin_riscv_esp_vadd_s8_ld_incp_m(Qx, Qy, Rs1, &Res.Qv.V8, &Res.Qu);
+  return Res;
+}
+
+static inline __attribute__((always_inline)) esp_vop_ld_incp_res_t
+esp_vadd_u8_ld_incp_m(esp_vec128_t Qx, esp_vec128_t Qy, void const *Rs1) {
+  esp_vop_ld_incp_res_t Res;
+  Res.Ptr =
+      __builtin_riscv_esp_vadd_u8_ld_incp_m(Qx, Qy, Rs1, &Res.Qv.V8, &Res.Qu);
+  return Res;
+}
+
+static inline __attribute__((always_inline)) esp_vop_ld_incp_res_t
+esp_vadd_s16_ld_incp_m(esp_vec128_16_t Qx, esp_vec128_16_t Qy,
+                       void const *Rs1) {
+  esp_vop_ld_incp_res_t Res;
+  // qv_out is esp_vec128_t*; Res.Qv.V8 and Res.Qv.V16 alias the same 128 bits.
+  Res.Ptr =
+      __builtin_riscv_esp_vadd_s16_ld_incp_m(Qx, Qy, Rs1, &Res.Qv.V8, &Res.Qu);
+  return Res;
+}
+
+static inline __attribute__((always_inline)) esp_vop_ld_incp_res_t
+esp_vadd_u16_ld_incp_m(esp_vec128_16_t Qx, esp_vec128_16_t Qy,
+                       void const *Rs1) {
+  esp_vop_ld_incp_res_t Res;
+  Res.Ptr =
+      __builtin_riscv_esp_vadd_u16_ld_incp_m(Qx, Qy, Rs1, &Res.Qv.V8, &Res.Qu);
+  return Res;
+}
+
+// ESP.ST.S.XACC.IP (_m version) - Store Signed XACC with Immediate
+// Post-increment Returns: updated pointer Mixed model: XACC as {unsigned int
+// low, unsigned int high} This wrapper calls the builtin and uses explicit
+// state passing for XACC Note: XACC is passthru (unchanged) for ST instructions
+// For simplified API, we use 0 as default XACC value (caller should initialize
+// XACC before calling)
+static inline __attribute__((always_inline)) void *esp_st_s_xacc_ip_m(void *Ptr,
+                                                                      int Imm) {
+  void *PtrOut;
+  unsigned int XaccLowOut;
+  unsigned int XaccHighOut;
+  // Use 0 as default XACC value (caller should have initialized XACC via
+  // __builtin_riscv_esp_zero_xacc() or similar) For explicit state passing, we
+  // pass current XACC state (passthru)
+  unsigned int XaccLowIn = 0U;  // Default: XACC[31:0] = 0
+  unsigned int XaccHighIn = 0U; // Default: XACC[39:32] = 0
+  // Call builtin to get updated pointer
+  // Builtin signature: void*(unsigned int, unsigned int, void *, int, void *,
+  // unsigned int *, unsigned int *) XaccLowIn, XaccHighIn: current XACC state
+  // (input, passthru) &PtrOut: pointer to store updated pointer (output)
+  // &XaccLowOut, &XaccHighOut: pointers to store XACC state (output, unchanged
+  // for ST)
+  return __builtin_riscv_esp_st_s_xacc_ip_m(XaccLowIn, XaccHighIn, Ptr, Imm,
+                                            &PtrOut, &XaccLowOut, &XaccHighOut);
 }
 
 #if defined(__cplusplus)
