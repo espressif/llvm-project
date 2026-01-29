@@ -119,6 +119,26 @@ typedef struct {
   void *Ptr;
 } esp_vop_ld_incp_res_t;
 
+// ESP.VMULAS.*.XACC.LD.IP/XP result structure with explicit XACC
+// Mixed model: XACC as {unsigned int low, unsigned int high}
+typedef struct {
+  union {
+    esp_vec128_t V8;
+    esp_vec128_16_t V16;
+  } Qu;                   // Loaded 128-bit Data
+  void *Ptr;              // Updated pointer
+  unsigned int xacc_low;  // XACC[31:0] (i32)
+  unsigned int xacc_high; // XACC[39:32] (i32, only low 8 bits valid)
+} esp_vmulas_xacc_ld_res_t;
+
+// ESP.VMULAS.*.XACC.ST.IP/XP result structure with explicit XACC
+// Mixed model: XACC as {unsigned int low, unsigned int high}
+typedef struct {
+  void *Ptr;              // Updated pointer
+  unsigned int xacc_low;  // XACC[31:0] (i32)
+  unsigned int xacc_high; // XACC[39:32] (i32, only low 8 bits valid)
+} esp_vmulas_xacc_st_res_t;
+
 // QACC as 4x128-bit structure for explicit phantom operand passing
 typedef struct {
   esp_vec128_t v0; // QACC_L[127:0]: First 128 bits
@@ -506,6 +526,879 @@ static inline __attribute__((always_inline)) void *esp_st_s_xacc_ip_m(void *Ptr,
   // for ST)
   return __builtin_riscv_esp_st_s_xacc_ip_m(XaccLowIn, XaccHighIn, Ptr, Imm,
                                             &PtrOut, &XaccLowOut, &XaccHighOut);
+}
+
+// QACC register types for explicit state passing
+typedef __attribute__((
+    vector_size(32))) int8_t esp_qacc_h_t; // QACC_H: v32i8 (256-bit)
+typedef __attribute__((
+    vector_size(32))) int8_t esp_qacc_l_t; // QACC_L: v32i8 (256-bit)
+
+// ESP.LD.QACC result structures
+typedef struct {
+  esp_vec128_t qacc_128; // QACC value (128-bit)
+  void *Ptr;
+} esp_qacc_128_res_t;
+
+// ESP.LDQA result structure - Load 128-bit Data, extend and store to QACC
+typedef struct {
+  esp_vec128_t v0; // QACC_L[127:0]
+  esp_vec128_t v1; // QACC_L[255:128]
+  esp_vec128_t v2; // QACC_H[127:0]
+  esp_vec128_t v3; // QACC_H[255:128]
+  void *Ptr;
+} esp_ldqa_res_t;
+
+// ESP.MOV result structure - Move vector to QACC
+typedef struct {
+  esp_vec128_t v0; // QACC_L[127:0]
+  esp_vec128_t v1; // QACC_L[255:128]
+  esp_vec128_t v2; // QACC_H[127:0]
+  esp_vec128_t v3; // QACC_H[255:128]
+} esp_mov_qacc_res_t;
+
+// Partial QACC state: QACC_H or QACC_L half for VCMULAS operands and results.
+typedef struct {
+  esp_vec128_t v2; // QACC_H[127:0]
+  esp_vec128_t v3; // QACC_H[255:128]
+} esp_mov_qacc_h_res_t;
+
+typedef struct {
+  esp_vec128_t v0; // QACC_L[127:0]
+  esp_vec128_t v1; // QACC_L[255:128]
+} esp_mov_qacc_l_res_t;
+
+typedef esp_mov_qacc_h_res_t esp_vcmulas_qacc_h_res_t;
+typedef esp_mov_qacc_l_res_t esp_vcmulas_qacc_l_res_t;
+
+// ESP.VMULAS result structure
+typedef esp_mov_qacc_res_t esp_vmulas_qacc_res_t;
+
+// ESP.VMULAS result structure with pointer
+typedef struct {
+  esp_vec128_t v0; // QACC_L[127:0]
+  esp_vec128_t v1; // QACC_L[255:128]
+  esp_vec128_t v2; // QACC_H[127:0]
+  esp_vec128_t v3; // QACC_H[255:128]
+  esp_vec128_t Qu; // Qu vector
+  void *Ptr;
+} esp_vmulas_qacc_ld_res_t;
+
+// ESP.VSMULAS result structure
+typedef esp_mov_qacc_res_t esp_vsmulas_qacc_res_t;
+
+// VCMULAS QACC H LD result structure
+typedef struct {
+  esp_vec128_t v2; // QACC_H[127:0]
+  esp_vec128_t v3; // QACC_H[255:128]
+  esp_vec128_t Qu;
+  void *Ptr;
+} esp_vcmulas_qacc_h_ld_res_t;
+
+// VCMULAS QACC L LD result structure
+typedef struct {
+  esp_vec128_t v0; // QACC_L[127:0]
+  esp_vec128_t v1; // QACC_L[255:128]
+  esp_vec128_t Qu;
+  void *Ptr;
+} esp_vcmulas_qacc_l_ld_res_t;
+
+// ESP.ZERO.QACC (_m version)
+static inline __attribute__((always_inline)) esp_qacc_4x128_t
+esp_zero_qacc_m(void) {
+  esp_qacc_4x128_t Res;
+  __builtin_riscv_esp_zero_qacc_m(&Res.v0, &Res.v1, &Res.v2, &Res.v3);
+  return Res;
+}
+
+// ESP.MOV.S8.QACC (_m version)
+static inline __attribute__((always_inline)) esp_mov_qacc_res_t
+esp_mov_s8_qacc_m(esp_vec128_t Qu) {
+  esp_mov_qacc_res_t Res;
+  __builtin_riscv_esp_mov_s8_qacc_m(Qu, &Res.v0, &Res.v1, &Res.v2, &Res.v3);
+  return Res;
+}
+
+// ESP.MOV.S16.QACC (_m version)
+static inline __attribute__((always_inline)) esp_mov_qacc_res_t
+esp_mov_s16_qacc_m(esp_vec128_16_t Qu) {
+  esp_mov_qacc_res_t Res;
+  __builtin_riscv_esp_mov_s16_qacc_m(Qu, &Res.v0, &Res.v1, &Res.v2, &Res.v3);
+  return Res;
+}
+
+// ESP.MOV.U8.QACC (_m version)
+static inline __attribute__((always_inline)) esp_mov_qacc_res_t
+esp_mov_u8_qacc_m(esp_vec128_t Qu) {
+  esp_mov_qacc_res_t Res;
+  __builtin_riscv_esp_mov_u8_qacc_m(Qu, &Res.v0, &Res.v1, &Res.v2, &Res.v3);
+  return Res;
+}
+
+// ESP.MOV.U16.QACC (_m version)
+static inline __attribute__((always_inline)) esp_mov_qacc_res_t
+esp_mov_u16_qacc_m(esp_vec128_16_t Qu) {
+  esp_mov_qacc_res_t Res;
+  __builtin_riscv_esp_mov_u16_qacc_m(Qu, &Res.v0, &Res.v1, &Res.v2, &Res.v3);
+  return Res;
+}
+
+// ESP.VMULAS.S8.QACC (_m version)
+static inline __attribute__((always_inline)) esp_vmulas_qacc_res_t
+esp_vmulas_s8_qacc_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qx,
+                     esp_vec128_t Qy) {
+  esp_vmulas_qacc_res_t Res;
+  __builtin_riscv_esp_vmulas_s8_qacc_m(QaccIn.v0, QaccIn.v1, QaccIn.v2,
+                                       QaccIn.v3, Qx, Qy, &Res.v0, &Res.v1,
+                                       &Res.v2, &Res.v3);
+  return Res;
+}
+
+// ESP.VMULAS.S8.QACC.ST.IP (_m version)
+static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
+esp_vmulas_s8_qacc_st_ip_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qu,
+                           esp_vec128_t Qx, esp_vec128_t Qy, void *Ptr,
+                           int Imm) {
+  esp_vmulas_qacc_ld_res_t Res;
+  esp_vec128_t v0, v1, v2, v3;
+  void *UpdatedPtr;
+  UpdatedPtr = __builtin_riscv_esp_vmulas_s8_qacc_st_ip_m(
+      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qu, Qx, Qy, Ptr, Imm, &v0,
+      &v1, &v2, &v3);
+  Res.v0 = v0;
+  Res.v1 = v1;
+  Res.v2 = v2;
+  Res.v3 = v3;
+  Res.Ptr = UpdatedPtr;
+  Res.Qu = Qu;
+  return Res;
+}
+
+// ESP.VCMULAS.S8.QACC.H (_m version)
+static inline __attribute__((always_inline)) esp_vcmulas_qacc_h_res_t
+esp_vcmulas_s8_qacc_h_m(esp_mov_qacc_h_res_t QaccHIn, esp_vec128_t Qx,
+                        esp_vec128_t Qy) {
+  esp_vcmulas_qacc_h_res_t Res;
+  __builtin_riscv_esp_vcmulas_s8_qacc_h_m(QaccHIn.v2, QaccHIn.v3, Qx, Qy,
+                                          &Res.v2, &Res.v3);
+  return Res;
+}
+
+// ESP.VCMULAS.S8.QACC.L (_m version)
+static inline __attribute__((always_inline)) esp_vcmulas_qacc_l_res_t
+esp_vcmulas_s8_qacc_l_m(esp_mov_qacc_l_res_t QaccLIn, esp_vec128_t Qx,
+                        esp_vec128_t Qy) {
+  esp_vcmulas_qacc_l_res_t Res;
+  __builtin_riscv_esp_vcmulas_s8_qacc_l_m(QaccLIn.v0, QaccLIn.v1, Qx, Qy,
+                                          &Res.v0, &Res.v1);
+  return Res;
+}
+
+// ESP.VCMULAS.S16.QACC.H (_m version)
+static inline __attribute__((always_inline)) esp_vcmulas_qacc_h_res_t
+esp_vcmulas_s16_qacc_h_m(esp_mov_qacc_h_res_t QaccHIn, esp_vec128_16_t Qx,
+                         esp_vec128_16_t Qy) {
+  esp_vcmulas_qacc_h_res_t Res;
+  __builtin_riscv_esp_vcmulas_s16_qacc_h_m(QaccHIn.v2, QaccHIn.v3, Qx, Qy,
+                                           &Res.v2, &Res.v3);
+  return Res;
+}
+
+// ESP.VCMULAS.S16.QACC.L (_m version)
+static inline __attribute__((always_inline)) esp_vcmulas_qacc_l_res_t
+esp_vcmulas_s16_qacc_l_m(esp_mov_qacc_l_res_t QaccLIn, esp_vec128_16_t Qx,
+                         esp_vec128_16_t Qy) {
+  esp_vcmulas_qacc_l_res_t Res;
+  __builtin_riscv_esp_vcmulas_s16_qacc_l_m(QaccLIn.v0, QaccLIn.v1, Qx, Qy,
+                                           &Res.v0, &Res.v1);
+  return Res;
+}
+
+// ESP.VCMULAS.S8.QACC.H.LD.IP (_m version)
+static inline __attribute__((always_inline)) esp_vcmulas_qacc_h_ld_res_t
+esp_vcmulas_s8_qacc_h_ld_ip_m(esp_mov_qacc_h_res_t QaccHIn, esp_vec128_t Qx,
+                              esp_vec128_t Qy, void const *Ptr, int Imm) {
+  esp_vcmulas_qacc_h_ld_res_t Res;
+  esp_vec128_t TempQu, TempV2, TempV3;
+  void *UpdatedPtr;
+  UpdatedPtr = __builtin_riscv_esp_vcmulas_s8_qacc_h_ld_ip_m(
+      QaccHIn.v2, QaccHIn.v3, Qx, Qy, Ptr, Imm, &TempQu, &TempV2, &TempV3);
+  Res.Qu = TempQu;
+  Res.v2 = TempV2;
+  Res.v3 = TempV3;
+  Res.Ptr = UpdatedPtr;
+  return Res;
+}
+
+// ESP.VCMULAS.S8.QACC.L.LD.IP (_m version)
+static inline __attribute__((always_inline)) esp_vcmulas_qacc_l_ld_res_t
+esp_vcmulas_s8_qacc_l_ld_ip_m(esp_mov_qacc_l_res_t QaccLIn, esp_vec128_t Qx,
+                              esp_vec128_t Qy, void const *Ptr, int Imm) {
+  esp_vcmulas_qacc_l_ld_res_t Res;
+  esp_vec128_t TempQu, TempV0, TempV1;
+  void *UpdatedPtr;
+  UpdatedPtr = __builtin_riscv_esp_vcmulas_s8_qacc_l_ld_ip_m(
+      QaccLIn.v0, QaccLIn.v1, Qx, Qy, Ptr, Imm, &TempQu, &TempV0, &TempV1);
+  Res.Qu = TempQu;
+  Res.v0 = TempV0;
+  Res.v1 = TempV1;
+  Res.Ptr = UpdatedPtr;
+  return Res;
+}
+
+// ESP.LD.QACC.H.H.128.IP (_m version)
+static inline __attribute__((always_inline)) esp_qacc_128_res_t
+esp_ld_qacc_h_h_128_ip_m(void const *Ptr, int Imm) {
+  esp_qacc_128_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_ld_qacc_h_h_128_ip_m(Ptr, Imm, &Res.qacc_128);
+  return Res;
+}
+
+// ESP.LD.QACC.H.L.128.IP (_m version)
+static inline __attribute__((always_inline)) esp_qacc_128_res_t
+esp_ld_qacc_h_l_128_ip_m(void const *Ptr, int Imm) {
+  esp_qacc_128_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_ld_qacc_h_l_128_ip_m(Ptr, Imm, &Res.qacc_128);
+  return Res;
+}
+
+// ESP.LD.QACC.L.H.128.IP (_m version)
+static inline __attribute__((always_inline)) esp_qacc_128_res_t
+esp_ld_qacc_l_h_128_ip_m(void const *Ptr, int Imm) {
+  esp_qacc_128_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_ld_qacc_l_h_128_ip_m(Ptr, Imm, &Res.qacc_128);
+  return Res;
+}
+
+// ESP.LD.QACC.L.L.128.IP (_m version)
+static inline __attribute__((always_inline)) esp_qacc_128_res_t
+esp_ld_qacc_l_l_128_ip_m(void const *Ptr, int Imm) {
+  esp_qacc_128_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_ld_qacc_l_l_128_ip_m(Ptr, Imm, &Res.qacc_128);
+  return Res;
+}
+
+// ESP.ST.QACC.H.H.128.IP (_m version)
+static inline __attribute__((always_inline)) void *
+esp_st_qacc_h_h_128_ip_m(esp_vec128_t qacc_128, void *Ptr, int Imm) {
+  return __builtin_riscv_esp_st_qacc_h_h_128_ip_m(qacc_128, Ptr, Imm);
+}
+
+// ESP.ST.QACC.H.L.128.IP (_m version)
+static inline __attribute__((always_inline)) void *
+esp_st_qacc_h_l_128_ip_m(esp_vec128_t qacc_128, void *Ptr, int Imm) {
+  return __builtin_riscv_esp_st_qacc_h_l_128_ip_m(qacc_128, Ptr, Imm);
+}
+
+// ESP.ST.QACC.L.H.128.IP (_m version)
+static inline __attribute__((always_inline)) void *
+esp_st_qacc_l_h_128_ip_m(esp_vec128_t qacc_128, void *Ptr, int Imm) {
+  return __builtin_riscv_esp_st_qacc_l_h_128_ip_m(qacc_128, Ptr, Imm);
+}
+
+// ESP.ST.QACC.L.L.128.IP (_m version)
+static inline __attribute__((always_inline)) void *
+esp_st_qacc_l_l_128_ip_m(esp_vec128_t qacc_128, void *Ptr, int Imm) {
+  return __builtin_riscv_esp_st_qacc_l_l_128_ip_m(qacc_128, Ptr, Imm);
+}
+
+// ESP.LDQA.S16.128.IP (_m version)
+static inline __attribute__((always_inline)) esp_ldqa_res_t
+esp_ldqa_s16_128_ip_m(void const *Ptr, int Imm) {
+  esp_ldqa_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_ldqa_s16_128_ip_m(Ptr, Imm, &Res.v0, &Res.v1,
+                                                  &Res.v2, &Res.v3);
+  return Res;
+}
+
+// ESP.LDQA.S16.128.XP (_m version)
+static inline __attribute__((always_inline)) esp_ldqa_res_t
+esp_ldqa_s16_128_xp_m(void const *Ptr, int Reg) {
+  esp_ldqa_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_ldqa_s16_128_xp_m(Ptr, Reg, &Res.v0, &Res.v1,
+                                                  &Res.v2, &Res.v3);
+  return Res;
+}
+
+// ESP.LDQA.S8.128.IP (_m version)
+static inline __attribute__((always_inline)) esp_ldqa_res_t
+esp_ldqa_s8_128_ip_m(void const *Ptr, int Imm) {
+  esp_ldqa_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_ldqa_s8_128_ip_m(Ptr, Imm, &Res.v0, &Res.v1,
+                                                 &Res.v2, &Res.v3);
+  return Res;
+}
+
+// ESP.LDQA.S8.128.XP (_m version)
+static inline __attribute__((always_inline)) esp_ldqa_res_t
+esp_ldqa_s8_128_xp_m(void const *Ptr, int Reg) {
+  esp_ldqa_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_ldqa_s8_128_xp_m(Ptr, Reg, &Res.v0, &Res.v1,
+                                                 &Res.v2, &Res.v3);
+  return Res;
+}
+
+// ESP.LDQA.U16.128.IP (_m version)
+static inline __attribute__((always_inline)) esp_ldqa_res_t
+esp_ldqa_u16_128_ip_m(void const *Ptr, int Imm) {
+  esp_ldqa_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_ldqa_u16_128_ip_m(Ptr, Imm, &Res.v0, &Res.v1,
+                                                  &Res.v2, &Res.v3);
+  return Res;
+}
+
+// ESP.LDQA.U16.128.XP (_m version)
+static inline __attribute__((always_inline)) esp_ldqa_res_t
+esp_ldqa_u16_128_xp_m(void const *Ptr, int Reg) {
+  esp_ldqa_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_ldqa_u16_128_xp_m(Ptr, Reg, &Res.v0, &Res.v1,
+                                                  &Res.v2, &Res.v3);
+  return Res;
+}
+
+// ESP.LDQA.U8.128.IP (_m version)
+static inline __attribute__((always_inline)) esp_ldqa_res_t
+esp_ldqa_u8_128_ip_m(void const *Ptr, int Imm) {
+  esp_ldqa_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_ldqa_u8_128_ip_m(Ptr, Imm, &Res.v0, &Res.v1,
+                                                 &Res.v2, &Res.v3);
+  return Res;
+}
+
+// ESP.LDQA.U8.128.XP (_m version)
+static inline __attribute__((always_inline)) esp_ldqa_res_t
+esp_ldqa_u8_128_xp_m(void const *Ptr, int Reg) {
+  esp_ldqa_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_ldqa_u8_128_xp_m(Ptr, Reg, &Res.v0, &Res.v1,
+                                                 &Res.v2, &Res.v3);
+  return Res;
+}
+
+// ESP.SRCMB.S16.QACC (_m version)
+static inline __attribute__((always_inline)) esp_vec128_16_t
+esp_srcmb_s16_qacc_m(int Rs1, int Sel2) {
+  esp_vec128_t zero = {0};
+  return __builtin_riscv_esp_srcmb_s16_qacc_m(zero, zero, zero, zero, Rs1,
+                                              Sel2);
+}
+
+// ESP.SRCMB.S8.QACC (_m version)
+static inline __attribute__((always_inline)) esp_vec128_t
+esp_srcmb_s8_qacc_m(int Rs1, int Sel2) {
+  esp_vec128_t zero = {0};
+  return __builtin_riscv_esp_srcmb_s8_qacc_m(zero, zero, zero, zero, Rs1, Sel2);
+}
+
+// ESP.SRCMB.U16.QACC (_m version)
+static inline __attribute__((always_inline)) esp_vec128_16_t
+esp_srcmb_u16_qacc_m(int Rs1, int Sel2) {
+  esp_vec128_t zero = {0};
+  return __builtin_riscv_esp_srcmb_u16_qacc_m(zero, zero, zero, zero, Rs1,
+                                              Sel2);
+}
+
+// ESP.SRCMB.U8.QACC (_m version)
+static inline __attribute__((always_inline)) esp_vec128_t
+esp_srcmb_u8_qacc_m(int Rs1, int Sel2) {
+  esp_vec128_t zero = {0};
+  return __builtin_riscv_esp_srcmb_u8_qacc_m(zero, zero, zero, zero, Rs1, Sel2);
+}
+
+// ESP.VMULAS.S16.QACC (_m version)
+static inline __attribute__((always_inline)) esp_vmulas_qacc_res_t
+esp_vmulas_s16_qacc_m(esp_mov_qacc_res_t QaccIn, esp_vec128_16_t Qx,
+                      esp_vec128_16_t Qy) {
+  esp_vmulas_qacc_res_t Res;
+  __builtin_riscv_esp_vmulas_s16_qacc_m(QaccIn.v0, QaccIn.v1, QaccIn.v2,
+                                        QaccIn.v3, Qx, Qy, &Res.v0, &Res.v1,
+                                        &Res.v2, &Res.v3);
+  return Res;
+}
+
+// ESP.VMULAS.U16.QACC (_m version)
+static inline __attribute__((always_inline)) esp_vmulas_qacc_res_t
+esp_vmulas_u16_qacc_m(esp_mov_qacc_res_t QaccIn, esp_vec128_16_t Qx,
+                      esp_vec128_16_t Qy) {
+  esp_vmulas_qacc_res_t Res;
+  __builtin_riscv_esp_vmulas_u16_qacc_m(QaccIn.v0, QaccIn.v1, QaccIn.v2,
+                                        QaccIn.v3, Qx, Qy, &Res.v0, &Res.v1,
+                                        &Res.v2, &Res.v3);
+  return Res;
+}
+
+// ESP.VMULAS.U8.QACC (_m version)
+static inline __attribute__((always_inline)) esp_vmulas_qacc_res_t
+esp_vmulas_u8_qacc_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qx,
+                     esp_vec128_t Qy) {
+  esp_vmulas_qacc_res_t Res;
+  __builtin_riscv_esp_vmulas_u8_qacc_m(QaccIn.v0, QaccIn.v1, QaccIn.v2,
+                                       QaccIn.v3, Qx, Qy, &Res.v0, &Res.v1,
+                                       &Res.v2, &Res.v3);
+  return Res;
+}
+
+// ESP.VMULAS.S16.QACC.LD.IP (_m version)
+static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
+esp_vmulas_s16_qacc_ld_ip_m(esp_mov_qacc_res_t QaccIn, esp_vec128_16_t Qx,
+                            esp_vec128_16_t Qy, void const *Ptr, int Imm) {
+  esp_vmulas_qacc_ld_res_t Res;
+  esp_vec128_t Qu, v0, v1, v2, v3;
+  void *UpdatedPtr;
+  UpdatedPtr = __builtin_riscv_esp_vmulas_s16_qacc_ld_ip_m(
+      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qx, Qy, Ptr, Imm, &Qu, &v0,
+      &v1, &v2, &v3);
+  Res.Qu = Qu;
+  Res.v0 = v0;
+  Res.v1 = v1;
+  Res.v2 = v2;
+  Res.v3 = v3;
+  Res.Ptr = UpdatedPtr;
+  return Res;
+}
+
+// ESP.VMULAS.S16.QACC.LD.XP (_m version)
+static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
+esp_vmulas_s16_qacc_ld_xp_m(esp_mov_qacc_res_t QaccIn, esp_vec128_16_t Qx,
+                            esp_vec128_16_t Qy, void const *Ptr, int Reg) {
+  esp_vmulas_qacc_ld_res_t Res;
+  esp_vec128_t Qu, v0, v1, v2, v3;
+  void *UpdatedPtr;
+  UpdatedPtr = __builtin_riscv_esp_vmulas_s16_qacc_ld_xp_m(
+      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qx, Qy, Ptr, Reg, &Qu, &v0,
+      &v1, &v2, &v3);
+  Res.Qu = Qu;
+  Res.v0 = v0;
+  Res.v1 = v1;
+  Res.v2 = v2;
+  Res.v3 = v3;
+  Res.Ptr = UpdatedPtr;
+  return Res;
+}
+
+// ESP.VMULAS.S8.QACC.LD.IP (_m version)
+static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
+esp_vmulas_s8_qacc_ld_ip_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qx,
+                           esp_vec128_t Qy, void const *Ptr, int Imm) {
+  esp_vmulas_qacc_ld_res_t Res;
+  esp_vec128_t Qu, v0, v1, v2, v3;
+  void *UpdatedPtr;
+  UpdatedPtr = __builtin_riscv_esp_vmulas_s8_qacc_ld_ip_m(
+      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qx, Qy, Ptr, Imm, &Qu, &v0,
+      &v1, &v2, &v3);
+  Res.Qu = Qu;
+  Res.v0 = v0;
+  Res.v1 = v1;
+  Res.v2 = v2;
+  Res.v3 = v3;
+  Res.Ptr = UpdatedPtr;
+  return Res;
+}
+
+// ESP.VMULAS.S8.QACC.LD.XP (_m version)
+static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
+esp_vmulas_s8_qacc_ld_xp_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qx,
+                           esp_vec128_t Qy, void const *Ptr, int Reg) {
+  esp_vmulas_qacc_ld_res_t Res;
+  esp_vec128_t Qu, v0, v1, v2, v3;
+  void *UpdatedPtr;
+  UpdatedPtr = __builtin_riscv_esp_vmulas_s8_qacc_ld_xp_m(
+      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qx, Qy, Ptr, Reg, &Qu, &v0,
+      &v1, &v2, &v3);
+  Res.Qu = Qu;
+  Res.v0 = v0;
+  Res.v1 = v1;
+  Res.v2 = v2;
+  Res.v3 = v3;
+  Res.Ptr = UpdatedPtr;
+  return Res;
+}
+
+// ESP.VMULAS.U16.QACC.LD.IP (_m version)
+static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
+esp_vmulas_u16_qacc_ld_ip_m(esp_mov_qacc_res_t QaccIn, esp_vec128_16_t Qx,
+                            esp_vec128_16_t Qy, void const *Ptr, int Imm) {
+  esp_vmulas_qacc_ld_res_t Res;
+  esp_vec128_t Qu, v0, v1, v2, v3;
+  void *UpdatedPtr;
+  UpdatedPtr = __builtin_riscv_esp_vmulas_u16_qacc_ld_ip_m(
+      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qx, Qy, Ptr, Imm, &Qu, &v0,
+      &v1, &v2, &v3);
+  Res.Qu = Qu;
+  Res.v0 = v0;
+  Res.v1 = v1;
+  Res.v2 = v2;
+  Res.v3 = v3;
+  Res.Ptr = UpdatedPtr;
+  return Res;
+}
+
+// ESP.VMULAS.U16.QACC.LD.XP (_m version)
+static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
+esp_vmulas_u16_qacc_ld_xp_m(esp_mov_qacc_res_t QaccIn, esp_vec128_16_t Qx,
+                            esp_vec128_16_t Qy, void const *Ptr, int Reg) {
+  esp_vmulas_qacc_ld_res_t Res;
+  esp_vec128_t Qu, v0, v1, v2, v3;
+  void *UpdatedPtr;
+  UpdatedPtr = __builtin_riscv_esp_vmulas_u16_qacc_ld_xp_m(
+      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qx, Qy, Ptr, Reg, &Qu, &v0,
+      &v1, &v2, &v3);
+  Res.Qu = Qu;
+  Res.v0 = v0;
+  Res.v1 = v1;
+  Res.v2 = v2;
+  Res.v3 = v3;
+  Res.Ptr = UpdatedPtr;
+  return Res;
+}
+
+// ESP.VMULAS.U8.QACC.LD.IP (_m version)
+static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
+esp_vmulas_u8_qacc_ld_ip_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qx,
+                           esp_vec128_t Qy, void const *Ptr, int Imm) {
+  esp_vmulas_qacc_ld_res_t Res;
+  esp_vec128_t Qu, v0, v1, v2, v3;
+  void *UpdatedPtr;
+  UpdatedPtr = __builtin_riscv_esp_vmulas_u8_qacc_ld_ip_m(
+      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qx, Qy, Ptr, Imm, &Qu, &v0,
+      &v1, &v2, &v3);
+  Res.Qu = Qu;
+  Res.v0 = v0;
+  Res.v1 = v1;
+  Res.v2 = v2;
+  Res.v3 = v3;
+  Res.Ptr = UpdatedPtr;
+  return Res;
+}
+
+// ESP.VMULAS.U8.QACC.LD.XP (_m version)
+static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
+esp_vmulas_u8_qacc_ld_xp_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qx,
+                           esp_vec128_t Qy, void const *Ptr, int Reg) {
+  esp_vmulas_qacc_ld_res_t Res;
+  esp_vec128_t Qu, v0, v1, v2, v3;
+  void *UpdatedPtr;
+  UpdatedPtr = __builtin_riscv_esp_vmulas_u8_qacc_ld_xp_m(
+      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qx, Qy, Ptr, Reg, &Qu, &v0,
+      &v1, &v2, &v3);
+  Res.Qu = Qu;
+  Res.v0 = v0;
+  Res.v1 = v1;
+  Res.v2 = v2;
+  Res.v3 = v3;
+  Res.Ptr = UpdatedPtr;
+  return Res;
+}
+
+// ESP.VMULAS.S16.QACC.ST.IP (_m version)
+static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
+esp_vmulas_s16_qacc_st_ip_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qu,
+                            esp_vec128_16_t Qx, esp_vec128_16_t Qy, void *Ptr,
+                            int Imm) {
+  esp_vmulas_qacc_ld_res_t Res;
+  esp_vec128_t v0, v1, v2, v3;
+  void *UpdatedPtr;
+  UpdatedPtr = __builtin_riscv_esp_vmulas_s16_qacc_st_ip_m(
+      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qu, Qx, Qy, Ptr, Imm, &v0,
+      &v1, &v2, &v3);
+  Res.v0 = v0;
+  Res.v1 = v1;
+  Res.v2 = v2;
+  Res.v3 = v3;
+  Res.Ptr = UpdatedPtr;
+  Res.Qu = Qu;
+  return Res;
+}
+
+// ESP.VMULAS.S16.QACC.ST.XP (_m version)
+static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
+esp_vmulas_s16_qacc_st_xp_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qu,
+                            esp_vec128_16_t Qx, esp_vec128_16_t Qy, void *Ptr,
+                            int Reg) {
+  esp_vmulas_qacc_ld_res_t Res;
+  esp_vec128_t v0, v1, v2, v3;
+  void *UpdatedPtr;
+  UpdatedPtr = __builtin_riscv_esp_vmulas_s16_qacc_st_xp_m(
+      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qu, Qx, Qy, Ptr, Reg, &v0,
+      &v1, &v2, &v3);
+  Res.v0 = v0;
+  Res.v1 = v1;
+  Res.v2 = v2;
+  Res.v3 = v3;
+  Res.Ptr = UpdatedPtr;
+  Res.Qu = Qu;
+  return Res;
+}
+
+// ESP.VMULAS.S8.QACC.ST.XP (_m version)
+static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
+esp_vmulas_s8_qacc_st_xp_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qu,
+                           esp_vec128_t Qx, esp_vec128_t Qy, void *Ptr,
+                           int Reg) {
+  esp_vmulas_qacc_ld_res_t Res;
+  esp_vec128_t v0, v1, v2, v3;
+  void *UpdatedPtr;
+  UpdatedPtr = __builtin_riscv_esp_vmulas_s8_qacc_st_xp_m(
+      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qu, Qx, Qy, Ptr, Reg, &v0,
+      &v1, &v2, &v3);
+  Res.v0 = v0;
+  Res.v1 = v1;
+  Res.v2 = v2;
+  Res.v3 = v3;
+  Res.Ptr = UpdatedPtr;
+  Res.Qu = Qu;
+  return Res;
+}
+
+// ESP.VMULAS.U16.QACC.ST.IP (_m version)
+static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
+esp_vmulas_u16_qacc_st_ip_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qu,
+                            esp_vec128_16_t Qx, esp_vec128_16_t Qy, void *Ptr,
+                            int Imm) {
+  esp_vmulas_qacc_ld_res_t Res;
+  esp_vec128_t v0, v1, v2, v3;
+  void *UpdatedPtr;
+  UpdatedPtr = __builtin_riscv_esp_vmulas_u16_qacc_st_ip_m(
+      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qu, Qx, Qy, Ptr, Imm, &v0,
+      &v1, &v2, &v3);
+  Res.v0 = v0;
+  Res.v1 = v1;
+  Res.v2 = v2;
+  Res.v3 = v3;
+  Res.Ptr = UpdatedPtr;
+  Res.Qu = Qu;
+  return Res;
+}
+
+// ESP.VMULAS.U16.QACC.ST.XP (_m version)
+static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
+esp_vmulas_u16_qacc_st_xp_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qu,
+                            esp_vec128_16_t Qx, esp_vec128_16_t Qy, void *Ptr,
+                            int Reg) {
+  esp_vmulas_qacc_ld_res_t Res;
+  esp_vec128_t v0, v1, v2, v3;
+  void *UpdatedPtr;
+  UpdatedPtr = __builtin_riscv_esp_vmulas_u16_qacc_st_xp_m(
+      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qu, Qx, Qy, Ptr, Reg, &v0,
+      &v1, &v2, &v3);
+  Res.v0 = v0;
+  Res.v1 = v1;
+  Res.v2 = v2;
+  Res.v3 = v3;
+  Res.Ptr = UpdatedPtr;
+  Res.Qu = Qu;
+  return Res;
+}
+
+// ESP.VMULAS.U8.QACC.ST.IP (_m version)
+static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
+esp_vmulas_u8_qacc_st_ip_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qu,
+                           esp_vec128_t Qx, esp_vec128_t Qy, void *Ptr,
+                           int Imm) {
+  esp_vmulas_qacc_ld_res_t Res;
+  esp_vec128_t v0, v1, v2, v3;
+  void *UpdatedPtr;
+  UpdatedPtr = __builtin_riscv_esp_vmulas_u8_qacc_st_ip_m(
+      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qu, Qx, Qy, Ptr, Imm, &v0,
+      &v1, &v2, &v3);
+  Res.v0 = v0;
+  Res.v1 = v1;
+  Res.v2 = v2;
+  Res.v3 = v3;
+  Res.Ptr = UpdatedPtr;
+  Res.Qu = Qu;
+  return Res;
+}
+
+// ESP.VMULAS.U8.QACC.ST.XP (_m version)
+static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
+esp_vmulas_u8_qacc_st_xp_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qu,
+                           esp_vec128_t Qx, esp_vec128_t Qy, void *Ptr,
+                           int Reg) {
+  esp_vmulas_qacc_ld_res_t Res;
+  esp_vec128_t v0, v1, v2, v3;
+  void *UpdatedPtr;
+  UpdatedPtr = __builtin_riscv_esp_vmulas_u8_qacc_st_xp_m(
+      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qu, Qx, Qy, Ptr, Reg, &v0,
+      &v1, &v2, &v3);
+  Res.v0 = v0;
+  Res.v1 = v1;
+  Res.v2 = v2;
+  Res.v3 = v3;
+  Res.Ptr = UpdatedPtr;
+  Res.Qu = Qu;
+  return Res;
+}
+
+// ESP.VMULAS.S16.QACC.LDBC.INCP (_m version)
+static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
+esp_vmulas_s16_qacc_ldbc_incp_m(esp_mov_qacc_res_t QaccIn, esp_vec128_16_t Qx,
+                                esp_vec128_16_t Qy, void const *Ptr) {
+  esp_vmulas_qacc_ld_res_t Res;
+  esp_vec128_t Qu, v0, v1, v2, v3;
+  void *UpdatedPtr;
+  UpdatedPtr = __builtin_riscv_esp_vmulas_s16_qacc_ldbc_incp_m(
+      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qx, Qy, Ptr, &Qu, &v0, &v1,
+      &v2, &v3);
+  Res.Qu = Qu;
+  Res.v0 = v0;
+  Res.v1 = v1;
+  Res.v2 = v2;
+  Res.v3 = v3;
+  Res.Ptr = UpdatedPtr;
+  return Res;
+}
+
+// ESP.VMULAS.S8.QACC.LDBC.INCP (_m version)
+static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
+esp_vmulas_s8_qacc_ldbc_incp_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qx,
+                               esp_vec128_t Qy, void const *Ptr) {
+  esp_vmulas_qacc_ld_res_t Res;
+  esp_vec128_t Qu, v0, v1, v2, v3;
+  void *UpdatedPtr;
+  UpdatedPtr = __builtin_riscv_esp_vmulas_s8_qacc_ldbc_incp_m(
+      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qx, Qy, Ptr, &Qu, &v0, &v1,
+      &v2, &v3);
+  Res.Qu = Qu;
+  Res.v0 = v0;
+  Res.v1 = v1;
+  Res.v2 = v2;
+  Res.v3 = v3;
+  Res.Ptr = UpdatedPtr;
+  return Res;
+}
+
+// ESP.VMULAS.U16.QACC.LDBC.INCP (_m version)
+static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
+esp_vmulas_u16_qacc_ldbc_incp_m(esp_mov_qacc_res_t QaccIn, esp_vec128_16_t Qx,
+                                esp_vec128_16_t Qy, void const *Ptr) {
+  esp_vmulas_qacc_ld_res_t Res;
+  esp_vec128_t Qu, v0, v1, v2, v3;
+  void *UpdatedPtr;
+  UpdatedPtr = __builtin_riscv_esp_vmulas_u16_qacc_ldbc_incp_m(
+      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qx, Qy, Ptr, &Qu, &v0, &v1,
+      &v2, &v3);
+  Res.Qu = Qu;
+  Res.v0 = v0;
+  Res.v1 = v1;
+  Res.v2 = v2;
+  Res.v3 = v3;
+  Res.Ptr = UpdatedPtr;
+  return Res;
+}
+
+// ESP.VMULAS.U8.QACC.LDBC.INCP (_m version)
+static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
+esp_vmulas_u8_qacc_ldbc_incp_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qx,
+                               esp_vec128_t Qy, void const *Ptr) {
+  esp_vmulas_qacc_ld_res_t Res;
+  esp_vec128_t Qu, v0, v1, v2, v3;
+  void *UpdatedPtr;
+  UpdatedPtr = __builtin_riscv_esp_vmulas_u8_qacc_ldbc_incp_m(
+      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qx, Qy, Ptr, &Qu, &v0, &v1,
+      &v2, &v3);
+  Res.Qu = Qu;
+  Res.v0 = v0;
+  Res.v1 = v1;
+  Res.v2 = v2;
+  Res.v3 = v3;
+  Res.Ptr = UpdatedPtr;
+  return Res;
+}
+
+// ESP.VCMULAS.S16.QACC.H.LD.IP (_m version)
+static inline __attribute__((always_inline)) esp_vcmulas_qacc_h_ld_res_t
+esp_vcmulas_s16_qacc_h_ld_ip_m(esp_mov_qacc_h_res_t QaccHIn, esp_vec128_16_t Qx,
+                               esp_vec128_16_t Qy, void const *Ptr, int Imm) {
+  esp_vcmulas_qacc_h_ld_res_t Res;
+  esp_vec128_t TempQu, TempV2, TempV3;
+  void *UpdatedPtr;
+  UpdatedPtr = __builtin_riscv_esp_vcmulas_s16_qacc_h_ld_ip_m(
+      QaccHIn.v2, QaccHIn.v3, Qx, Qy, Ptr, Imm, &TempQu, &TempV2, &TempV3);
+  Res.Qu = TempQu;
+  Res.v2 = TempV2;
+  Res.v3 = TempV3;
+  Res.Ptr = UpdatedPtr;
+  return Res;
+}
+
+// ESP.VCMULAS.S16.QACC.L.LD.IP (_m version)
+static inline __attribute__((always_inline)) esp_vcmulas_qacc_l_ld_res_t
+esp_vcmulas_s16_qacc_l_ld_ip_m(esp_mov_qacc_l_res_t QaccLIn, esp_vec128_16_t Qx,
+                               esp_vec128_16_t Qy, void const *Ptr, int Imm) {
+  esp_vcmulas_qacc_l_ld_res_t Res;
+  esp_vec128_t TempQu, TempV0, TempV1;
+  void *UpdatedPtr;
+  UpdatedPtr = __builtin_riscv_esp_vcmulas_s16_qacc_l_ld_ip_m(
+      QaccLIn.v0, QaccLIn.v1, Qx, Qy, Ptr, Imm, &TempQu, &TempV0, &TempV1);
+  Res.Qu = TempQu;
+  Res.v0 = TempV0;
+  Res.v1 = TempV1;
+  Res.Ptr = UpdatedPtr;
+  return Res;
+}
+
+// ESP.VCMULAS.S16.QACC.H.LD.XP (_m version)
+static inline __attribute__((always_inline)) esp_vcmulas_qacc_h_ld_res_t
+esp_vcmulas_s16_qacc_h_ld_xp_m(esp_mov_qacc_h_res_t QaccHIn, esp_vec128_16_t Qx,
+                               esp_vec128_16_t Qy, void const *Ptr, int Reg) {
+  esp_vcmulas_qacc_h_ld_res_t Res;
+  esp_vec128_t TempQu, TempV2, TempV3;
+  void *UpdatedPtr;
+  UpdatedPtr = __builtin_riscv_esp_vcmulas_s16_qacc_h_ld_xp_m(
+      QaccHIn.v2, QaccHIn.v3, Qx, Qy, Ptr, Reg, &TempQu, &TempV2, &TempV3);
+  Res.Qu = TempQu;
+  Res.v2 = TempV2;
+  Res.v3 = TempV3;
+  Res.Ptr = UpdatedPtr;
+  return Res;
+}
+
+// ESP.VCMULAS.S16.QACC.L.LD.XP (_m version)
+static inline __attribute__((always_inline)) esp_vcmulas_qacc_l_ld_res_t
+esp_vcmulas_s16_qacc_l_ld_xp_m(esp_mov_qacc_l_res_t QaccLIn, esp_vec128_16_t Qx,
+                               esp_vec128_16_t Qy, void const *Ptr, int Reg) {
+  esp_vcmulas_qacc_l_ld_res_t Res;
+  esp_vec128_t TempQu, TempV0, TempV1;
+  void *UpdatedPtr;
+  UpdatedPtr = __builtin_riscv_esp_vcmulas_s16_qacc_l_ld_xp_m(
+      QaccLIn.v0, QaccLIn.v1, Qx, Qy, Ptr, Reg, &TempQu, &TempV0, &TempV1);
+  Res.Qu = TempQu;
+  Res.v0 = TempV0;
+  Res.v1 = TempV1;
+  Res.Ptr = UpdatedPtr;
+  return Res;
+}
+
+// ESP.VCMULAS.S8.QACC.H.LD.XP (_m version)
+static inline __attribute__((always_inline)) esp_vcmulas_qacc_h_ld_res_t
+esp_vcmulas_s8_qacc_h_ld_xp_m(esp_mov_qacc_h_res_t QaccHIn, esp_vec128_t Qx,
+                              esp_vec128_t Qy, void const *Ptr, int Reg) {
+  esp_vcmulas_qacc_h_ld_res_t Res;
+  esp_vec128_t TempQu, TempV2, TempV3;
+  void *UpdatedPtr;
+  UpdatedPtr = __builtin_riscv_esp_vcmulas_s8_qacc_h_ld_xp_m(
+      QaccHIn.v2, QaccHIn.v3, Qx, Qy, Ptr, Reg, &TempQu, &TempV2, &TempV3);
+  Res.Qu = TempQu;
+  Res.v2 = TempV2;
+  Res.v3 = TempV3;
+  Res.Ptr = UpdatedPtr;
+  return Res;
+}
+
+// ESP.VCMULAS.S8.QACC.L.LD.XP (_m version)
+static inline __attribute__((always_inline)) esp_vcmulas_qacc_l_ld_res_t
+esp_vcmulas_s8_qacc_l_ld_xp_m(esp_mov_qacc_l_res_t QaccLIn, esp_vec128_t Qx,
+                              esp_vec128_t Qy, void const *Ptr, int Reg) {
+  esp_vcmulas_qacc_l_ld_res_t Res;
+  esp_vec128_t TempQu, TempV0, TempV1;
+  void *UpdatedPtr;
+  UpdatedPtr = __builtin_riscv_esp_vcmulas_s8_qacc_l_ld_xp_m(
+      QaccLIn.v0, QaccLIn.v1, Qx, Qy, Ptr, Reg, &TempQu, &TempV0, &TempV1);
+  Res.Qu = TempQu;
+  Res.v0 = TempV0;
+  Res.v1 = TempV1;
+  Res.Ptr = UpdatedPtr;
+  return Res;
 }
 
 #if defined(__cplusplus)
