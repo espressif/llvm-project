@@ -1227,6 +1227,16 @@ def int_riscv_esp_st_qacc_l_l_128_ip_m : Intrinsic<
      llvm_i32_ty],                        // offset
     [IntrWriteMem, IntrArgMemOnly]>;      //  No IntrHasSideEffects
 
+// ESP.LDXQ.32 (_m version)
+// Load 32-bit data from memory address calculated using qw vector and sel8, store to qu vector using sel4
+// Returns: qu vector
+// Parameters: [pointer, qw vector, sel4 immediate, sel8 immediate]
+// Note: Not marked as ClangBuiltin to avoid generic intrinsic path
+// Builtin has 4 parameters (ptr + vector + 2 immediates + output pointer) but intrinsic has 4 parameters
+def int_riscv_esp_ldxq_32_m : Intrinsic<[llvm_v4i32_ty], 
+                                         [llvm_ptr_ty, llvm_v8i16_ty, llvm_i32_ty, llvm_i32_ty], 
+                                         [IntrReadMem, IntrArgMemOnly]>;
+
 // ESP.LDQA.S16.128.IP (_m version)
 // Load 128-bit data, sign-extend 8x16-bit to 64-bit, store to QACC_H and QACC_L
 // Returns: updated pointer + 4x128-bit QACC (QACC_L_LOW, QACC_L_HIGH, QACC_H_LOW, QACC_H_HIGH)
