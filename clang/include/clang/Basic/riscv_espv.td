@@ -3474,3 +3474,272 @@ def esp_st_ua_state_ip_m
       Value *NewPtr = Builder.CreateExtractValue(Call, 1);
       return NewPtr;
   }]>;
+
+// ESP.ST.U.XACC.IP.M
+def esp_st_u_xacc_ip_m
+    : ESPVBuiltin<"st_u_xacc_ip_m", "riscv_esp_st_u_xacc_ip_m", [{
+      Value *XACCLowIn = EmitScalarExpr(E->getArg(0));
+      Value *XACCHighIn = EmitScalarExpr(E->getArg(1));
+      Value *Ptr = EmitScalarExpr(E->getArg(2));
+      Value *Imm = EmitScalarExpr(E->getArg(3));
+      Value *PtrOut = EmitScalarExpr(E->getArg(4));
+      Value *XACCLowOutPtr = EmitScalarExpr(E->getArg(5));
+      Value *XACCHighOutPtr = EmitScalarExpr(E->getArg(6));
+
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_st_u_xacc_ip_m);
+      Value *Call = Builder.CreateCall(F, {XACCLowIn, XACCHighIn, Ptr, Imm});
+
+      // Intrinsic returns {ptr, i32 xacc_low_unchanged, i32 xacc_high_unchanged}
+      Value *NewPtr = Builder.CreateExtractValue(Call, 0);
+      Value *XACCLowOut = Builder.CreateExtractValue(Call, 1);
+      Value *XACCHighOut = Builder.CreateExtractValue(Call, 2);
+
+      // Store results to output parameters
+      Builder.CreateStore(NewPtr, Address(PtrOut, NewPtr->getType(), CharUnits::fromQuantity(4)));
+      Builder.CreateStore(XACCLowOut, Address(XACCLowOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      Builder.CreateStore(XACCHighOut, Address(XACCHighOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+
+      return NewPtr;
+  }]>;
+
+// ESP.ZERO.XACC.M
+def esp_zero_xacc_m : ESPVBuiltin<"zero_xacc_m", "riscv_esp_zero_xacc_m", [{
+      // ESP.ZERO.XACC (_m version) - Mixed model: XACC as {i32 low, i32 high}
+      // Intrinsic signature: [] -> [i32, i32] (both set to 0)
+      // Builtin signature: void(void *xacc_low_out, void *xacc_high_out)
+      // Note: Using void * instead of unsigned int * because TableGen may not support unsigned int * in all cases
+      // The code generation casts void * to unsigned int * implicitly via Address type
+      Value *XACCLowOutPtr = EmitScalarExpr(E->getArg(0));
+      Value *XACCHighOutPtr = EmitScalarExpr(E->getArg(1));
+
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_zero_xacc_m);
+      Value *Call = Builder.CreateCall(F, {});
+
+      // Intrinsic returns {i32 xacc_low=0, i32 xacc_high=0}
+      Value *XACCLow = Builder.CreateExtractValue(Call, 0);
+      Value *XACCHigh = Builder.CreateExtractValue(Call, 1);
+
+      // Store results to output parameters
+      // Address constructor will handle void * to i32* conversion
+      Builder.CreateStore(XACCLow, Address(XACCLowOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      Builder.CreateStore(XACCHigh, Address(XACCHighOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+
+      // Return donothing to prevent fallback to generic intrinsic path
+      Function *NoOpF = CGM.getIntrinsic(Intrinsic::donothing);
+      return Builder.CreateCall(NoOpF, {});
+  }]>;
+
+// ESP.MOVI.16.A.M
+def esp_movi_16_a_m : ESPVBuiltin<"movi_16_a_m", "riscv_esp_movi_16_a_m", [{
+      // ESP.MOVI.16.A (_m version) - Extract 16-bit element from vector to scalar
+      // Parameters: (vector, index)
+      // vector: input vector (v8i16)
+      // index: element index (int, i32, sel16)
+      // Returns: extracted element (i32)
+      Value *QY = EmitScalarExpr(E->getArg(0));
+      Value *Sel = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_movi_16_a_m);
+      Value *Result = Builder.CreateCall(F, {QY, Sel});
+      return Result;
+  }]>;
+
+// ESP.MOVI.32.A.M
+def esp_movi_32_a_m : ESPVBuiltin<"movi_32_a_m", "riscv_esp_movi_32_a_m", [{
+      // ESP.MOVI.32.A (_m version) - Extract 32-bit element from vector to scalar
+      // Parameters: (vector, index)
+      // vector: input vector (v4i32)
+      // index: element index (int, i32, sel4)
+      // Returns: extracted element (i32)
+      Value *QY = EmitScalarExpr(E->getArg(0));
+      Value *Sel = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_movi_32_a_m);
+      Value *Result = Builder.CreateCall(F, {QY, Sel});
+      return Result;
+  }]>;
+
+// ESP.MOVI.8.A.M
+def esp_movi_8_a_m : ESPVBuiltin<"movi_8_a_m", "riscv_esp_movi_8_a_m", [{
+      // ESP.MOVI.8.A (_m version) - Extract 8-bit element from vector to scalar
+      // Parameters: (vector, index)
+      // vector: input vector (v16i8)
+      // index: element index (int, i32, sel16)
+      // Returns: extracted element (i32)
+      Value *QY = EmitScalarExpr(E->getArg(0));
+      Value *Sel = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_movi_8_a_m);
+      Value *Result = Builder.CreateCall(F, {QY, Sel});
+      return Result;
+  }]>;
+
+// ESP.MOVX.R.FFT.BIT.WIDTH.M
+def esp_movx_r_fft_bit_width_m
+    : ESPVBuiltin<"movx_r_fft_bit_width_m", "riscv_esp_movx_r_fft_bit_width_m",
+                  [{
+      // ESP.MOVX.R.FFT.BIT.WIDTH (_m version) - Read FFT_BIT_WIDTH register with explicit state passing
+      // Parameters: (fft_bit_width)
+      // fft_bit_width: current FFT_BIT_WIDTH value (for explicit state passing, unsigned int, i32)
+      // Returns: rd[31:0] = {28'b0, FFT_BIT_WIDTH[3:0]} (unsigned int, i32)
+      // Hardware automatically extracts only low 4 bits from FFT_BIT_WIDTH register
+      // FFT_BIT_WIDTH stores unsigned bit width mode (0-15), so both input and output are unsigned
+      // Note: Using i32 instead of i64 because hardware register only has 4 bits valid, and input/output are both 32-bit
+      Value *FftBitWidth = EmitScalarExpr(E->getArg(0));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_movx_r_fft_bit_width_m);
+      return Builder.CreateCall(F, {FftBitWidth});
+  }]>;
+
+// ESP.MOVX.W.FFT.BIT.WIDTH.M
+def esp_movx_w_fft_bit_width_m
+    : ESPVBuiltin<"movx_w_fft_bit_width_m", "riscv_esp_movx_w_fft_bit_width_m",
+                  [{
+      // ESP.MOVX.W.FFT.BIT.WIDTH (_m version) - Write FFT_BIT_WIDTH register with explicit state passing
+      // Parameters: (rs1)
+      // rs1: value to write to FFT_BIT_WIDTH (unsigned int, i32)
+      // Returns: FFT_BIT_WIDTH value (unsigned int, i32) for chaining
+      // Note: FFT_BIT_WIDTH[3:0] = rs1[3:0] (only low 4 bits of rs1 are used)
+      // FFT_BIT_WIDTH stores unsigned bit width mode (0-15), so return type is unsigned
+      // Note: Using i32 instead of i64 because hardware register only has 4 bits valid, and input/output are both 32-bit
+      Value *RS1 = EmitScalarExpr(E->getArg(0));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_movx_w_fft_bit_width_m);
+      return Builder.CreateCall(F, {RS1});
+  }]>;
+
+// ESP.MOVI.16.Q.M
+def esp_movi_16_q_m : ESPVBuiltin<"movi_16_q_m", "riscv_esp_movi_16_q_m", [{
+      // Builtin signature: (esp_vec128_16_t qy, int sel16, int rs1) -> esp_vec128_16_t
+      // Intrinsic signature: (v8i16 qy_in, i32 sel16, i32 rs1) -> v8i16
+      // Instruction: ESP.MOVI.16.Q qy, rs1, sel16
+      // Parameter order: (qy, sel16, rs1) matches both Builtin and Intrinsic
+      Value *QY = EmitScalarExpr(E->getArg(0));  // qy (input vector)
+      Value *Sel16 = EmitScalarExpr(E->getArg(1));  // sel16 (select index)
+      Value *RS1 = EmitScalarExpr(E->getArg(2));  // rs1 (scalar value to insert)
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_movi_16_q_m);
+      Value *Result = Builder.CreateCall(F, {QY, Sel16, RS1});  // Order: (qy, sel16, rs1)
+      return Result;
+  }]>;
+
+// ESP.MOVI.32.Q.M
+def esp_movi_32_q_m : ESPVBuiltin<"movi_32_q_m", "riscv_esp_movi_32_q_m", [{
+      // Builtin signature: (esp_vec128_32_t qy, int sel4, int rs1) -> esp_vec128_32_t
+      // Intrinsic signature: (v4i32 qy_in, i32 sel4, i32 rs1) -> v4i32
+      // Instruction: ESP.MOVI.32.Q qy, rs1, sel4
+      // Parameter order: (qy, sel4, rs1) matches both Builtin and Intrinsic
+      Value *QY = EmitScalarExpr(E->getArg(0));  // qy (input vector)
+      Value *Sel4 = EmitScalarExpr(E->getArg(1));  // sel4 (select index)
+      Value *RS1 = EmitScalarExpr(E->getArg(2));  // rs1 (scalar value to insert)
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_movi_32_q_m);
+      Value *Result = Builder.CreateCall(F, {QY, Sel4, RS1});  // Order: (qy, sel4, rs1)
+      return Result;
+  }]>;
+
+// ESP.MOVI.8.Q.M
+def esp_movi_8_q_m : ESPVBuiltin<"movi_8_q_m", "riscv_esp_movi_8_q_m", [{
+      // Builtin signature: (esp_vec128_t qy, int sel16, int rs1) -> esp_vec128_t
+      // Intrinsic signature: (v16i8 qy_in, i32 sel16, i32 rs1) -> v16i8
+      // Instruction: ESP.MOVI.8.Q qy, rs1, sel16
+      // Parameter order: (qy, sel16, rs1) matches both Builtin and Intrinsic
+      Value *QY = EmitScalarExpr(E->getArg(0));  // qy (input vector)
+      Value *Sel16 = EmitScalarExpr(E->getArg(1));  // sel16 (select index)
+      Value *RS1 = EmitScalarExpr(E->getArg(2));  // rs1 (scalar value to insert)
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_movi_8_q_m);
+      Value *Result = Builder.CreateCall(F, {QY, Sel16, RS1});  // Order: (qy, sel16, rs1)
+      return Result;
+  }]>;
+
+// ESP.MOVX.R.CFG.M
+def esp_movx_r_cfg_m : ESPVBuiltin<"movx_r_cfg_m", "riscv_esp_movx_r_cfg_m", [{
+      // ESP.MOVX.R.CFG (_m version) - Read CFG register
+      // Parameters: none
+      // Returns: CFG[31:0] (unsigned int, i32)
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_movx_r_cfg_m);
+      return Builder.CreateCall(F, {});
+  }]>;
+
+// ESP.MOVX.R.XACC.H.M
+def esp_movx_r_xacc_h_m
+    : ESPVBuiltin<"movx_r_xacc_h_m", "riscv_esp_movx_r_xacc_h_m", [{
+      // ESP.MOVX.R.XACC_H (_m version) - Subregister model: reads XACC[39:32] only
+      // Parameters: (unsigned int xacc_h) - passthru for explicit state passing (i32, only low 8 bits valid)
+      // Returns: XACC[39:32] value as unsigned int (i32, only low 8 bits valid)
+      // Instruction: rd[31:0] = {24'b0, XACC[39:32]} - outputs to GPRPIE (i32)
+      // Note: Hardware reads directly from XACC register, but xacc_h parameter
+      // enables explicit state passing for data flow: variable -> xacc_h -> MOVX.R(xacc_h) -> return
+      Value *XACCHigh = EmitScalarExpr(E->getArg(0));  // xacc_h (unsigned int, passthru, only low 8 bits valid)
+      // Ensure XACCHigh is i32 (builtin accepts unsigned int)
+      if (XACCHigh->getType() != Builder.getInt32Ty()) {
+      if (XACCHigh->getType() == Builder.getInt8Ty()) {
+      XACCHigh = Builder.CreateZExt(XACCHigh, Builder.getInt32Ty()); // Zero-extend i8 to i32
+      } else {
+      XACCHigh = Builder.CreateTrunc(XACCHigh, Builder.getInt32Ty()); // Truncate to i32 if needed
+      }
+      }
+      // Intrinsic is not overloaded, so don't pass type parameters
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_movx_r_xacc_h_m);
+      Value *Result = Builder.CreateCall(F, {XACCHigh});
+      // Result is i32 (unsigned int, only low 8 bits valid), return as-is
+      return Result;
+  }]>;
+
+// ESP.MOVX.R.XACC.L.M
+def esp_movx_r_xacc_l_m
+    : ESPVBuiltin<"movx_r_xacc_l_m", "riscv_esp_movx_r_xacc_l_m", [{
+      // ESP.MOVX.R.XACC_L (_m version) - Subregister model: reads XACC[31:0] only
+      // Parameters: (unsigned int xacc_l) - passthru for explicit state passing
+      // Returns: XACC[31:0] value as unsigned int (i32)
+      // Note: Hardware reads directly from XACC register, but xacc_l parameter
+      // enables explicit state passing for data flow: variable -> xacc_l -> MOVX.R(xacc_l) -> return
+      Value *XACCLow = EmitScalarExpr(E->getArg(0));  // xacc_l (unsigned int, passthru)
+      // Intrinsic is not overloaded, so don't pass type parameters
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_movx_r_xacc_l_m);
+      return Builder.CreateCall(F, {XACCLow});
+  }]>;
+
+// ESP.MOVX.W.CFG.M
+def esp_movx_w_cfg_m : ESPVBuiltin<"movx_w_cfg_m", "riscv_esp_movx_w_cfg_m", [{
+      // ESP.MOVX.W.CFG (_m version) - Write CFG register
+      // Parameters: (rs1)
+      // rs1: value to write to CFG register (unsigned int, i32)
+      // Returns: void
+      Value *RS1 = EmitScalarExpr(E->getArg(0));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_movx_w_cfg_m);
+      return Builder.CreateCall(F, {RS1});
+  }]>;
+
+// ESP.MOVX.W.XACC.H.M
+def esp_movx_w_xacc_h_m
+    : ESPVBuiltin<"movx_w_xacc_h_m", "riscv_esp_movx_w_xacc_h_m", [{
+      // ESP.MOVX.W.XACC_H (_m version) - Subregister model: writes XACC[39:32] only
+      // Parameters: (value)
+      // value: value to write to XACC[39:32] (unsigned int, i32, only low 8 bits used)
+      // Returns: new XACC[39:32] value (unsigned int, i32, only low 8 bits valid)
+      // Note: Builtin accepts i32 to avoid type promotion issues in RV32
+      // Instruction inputs/outputs GPRPIE (i32), hardware uses only low 8 bits
+      Value *Val = EmitScalarExpr(E->getArg(0));  // Value to write (unsigned int, only low 8 bits used)
+      // Ensure Val is i32 (builtin accepts unsigned int)
+      if (Val->getType() != Builder.getInt32Ty()) {
+      if (Val->getType() == Builder.getInt8Ty()) {
+      Val = Builder.CreateZExt(Val, Builder.getInt32Ty()); // Zero-extend i8 to i32
+      } else {
+      Val = Builder.CreateTrunc(Val, Builder.getInt32Ty()); // Truncate to i32 if needed
+      }
+      }
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_movx_w_xacc_h_m);
+      Value *CallResult = Builder.CreateCall(F, {Val});
+      // CallResult is i32 (unsigned int, only low 8 bits valid), return as-is (matches builtin signature)
+      return CallResult;
+  }]>;
+
+// ESP.MOVX.W.XACC.L.M
+def esp_movx_w_xacc_l_m
+    : ESPVBuiltin<"movx_w_xacc_l_m", "riscv_esp_movx_w_xacc_l_m", [{
+      // ESP.MOVX.W.XACC_L (_m version) - Subregister model: writes XACC[31:0] only
+      // Parameters: (value)
+      // value: value to write to XACC[31:0] (unsigned int, i32)
+      // Returns: new XACC[31:0] value (unsigned int, i32)
+      Value *Value = EmitScalarExpr(E->getArg(0));  // Value to write (unsigned int)
+      // Ensure Value is i32
+      if (Value->getType() != Builder.getInt32Ty()) {
+      Value = Builder.CreateTrunc(Value, Builder.getInt32Ty()); // Truncate to i32 if needed
+      }
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_movx_w_xacc_l_m);
+      return Builder.CreateCall(F, {Value});
+  }]>;
