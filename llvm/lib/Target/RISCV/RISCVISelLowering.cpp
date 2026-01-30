@@ -2130,6 +2130,59 @@ bool RISCVTargetLowering::getTgtMemIntrinsic(IntrinsicInfo &Info,
     Info.flags |= MachineMemOperand::MOLoad;
     return true;
   }
+  case Intrinsic::riscv_esp_cmul_s16_ld_incp_m:
+  case Intrinsic::riscv_esp_cmul_s8_ld_incp_m:
+  case Intrinsic::riscv_esp_cmul_u16_ld_incp_m:
+  case Intrinsic::riscv_esp_cmul_u8_ld_incp_m: {
+    // CMUL LD INCP intrinsics: (qz_in, qx, qy, ptr, offset, sar) -> {qz, qu, ptr}
+    // Pointer is the 3rd argument (operand 3)
+    Info.opc = ISD::INTRINSIC_W_CHAIN;
+    Info.ptrVal = I.getArgOperand(3);
+    Info.memVT = MVT::v16i8;
+    Info.align = Align(16);
+    Info.size = 16;
+    Info.flags |= MachineMemOperand::MOLoad;
+    return true;
+  }
+  case Intrinsic::riscv_esp_cmul_s16_st_incp_m:
+  case Intrinsic::riscv_esp_cmul_s8_st_incp_m:
+  case Intrinsic::riscv_esp_cmul_u16_st_incp_m:
+  case Intrinsic::riscv_esp_cmul_u8_st_incp_m: {
+    // CMUL ST INCP intrinsics: (qz_in, qx, qy, qu, ptr, offset, sar) -> {qz, ptr}
+    // Pointer is the 4th argument (operand 4)
+    Info.opc = ISD::INTRINSIC_W_CHAIN;
+    Info.ptrVal = I.getArgOperand(4);
+    Info.memVT = MVT::v16i8;
+    Info.align = Align(16);
+    Info.size = 16;
+    Info.flags |= MachineMemOperand::MOStore;
+    return true;
+  }
+  case Intrinsic::riscv_esp_st_qacc_l_l_128_ip_m:
+  case Intrinsic::riscv_esp_st_qacc_l_h_128_ip_m:
+  case Intrinsic::riscv_esp_st_qacc_h_l_128_ip_m:
+  case Intrinsic::riscv_esp_st_qacc_h_h_128_ip_m: {
+    // ST QACC intrinsics: (qacc_value, ptr, offset) -> ptr
+    // Pointer is the 1st argument (operand 1)
+    Info.opc = ISD::INTRINSIC_W_CHAIN;
+    Info.ptrVal = I.getArgOperand(1);
+    Info.memVT = MVT::v16i8;
+    Info.align = Align(16);
+    Info.size = 16;
+    Info.flags |= MachineMemOperand::MOStore;
+    return true;
+  }
+  case Intrinsic::riscv_esp_st_s_xacc_ip_m: {
+    // ST S XACC IP intrinsic: (xacc_low, xacc_high, ptr, offset) -> {ptr, xacc_low, xacc_high}
+    // Pointer is the 2nd argument (operand 2)
+    Info.opc = ISD::INTRINSIC_W_CHAIN;
+    Info.ptrVal = I.getArgOperand(2);
+    Info.memVT = MVT::i64;
+    Info.align = Align(8);
+    Info.size = 8;
+    Info.flags |= MachineMemOperand::MOStore;
+    return true;
+  }
   }
 }
 
@@ -10715,6 +10768,10 @@ SDValue RISCVTargetLowering::LowerINTRINSIC_WO_CHAIN(SDValue Op,
   unsigned IntNo = Op.getConstantOperandVal(0);
   SDLoc DL(Op);
   MVT XLenVT = Subtarget.getXLenVT();
+
+  // Try ESPV intrinsic lowering first
+  if (SDValue V = RISCV::lowerESPVIntrinsicWOChain(Op, DAG, Subtarget))
+    return V;
 
   switch (IntNo) {
   default:

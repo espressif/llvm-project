@@ -21,7 +21,9 @@ class RISCVTargetLowering;
 
 namespace RISCV {
 
-// ESPV intrinsic lowering function
+// ESPV intrinsic lowering functions
+SDValue lowerESPVIntrinsicWOChain(SDValue Op, SelectionDAG &DAG,
+                                  const RISCVSubtarget &Subtarget);
 SDValue lowerESPVIntrinsicWChain(SDValue Op, SelectionDAG &DAG,
                                   const RISCVSubtarget &Subtarget);
 

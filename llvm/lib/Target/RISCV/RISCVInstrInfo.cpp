@@ -628,6 +628,22 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
     return;
   }
 
+  // Handle copy between GPR and FFT_BIT_WIDTH register
+  if (RISCV::FFT_BIT_WIDTHRegRegClass.contains(DstReg) &&
+      RISCV::GPRRegClass.contains(SrcReg)) {
+    // GPR -> FFT_BIT_WIDTH: use ESP.MOVX.W.FFT.BIT.WIDTH
+    BuildMI(MBB, MBBI, DL, get(RISCV::ESP_MOVX_W_FFT_BIT_WIDTH), DstReg)
+        .addReg(SrcReg, KillFlag);
+    return;
+  }
+  if (RISCV::GPRRegClass.contains(DstReg) &&
+      RISCV::FFT_BIT_WIDTHRegRegClass.contains(SrcReg)) {
+    // FFT_BIT_WIDTH -> GPR: use ESP.MOVX.R.FFT.BIT.WIDTH
+    BuildMI(MBB, MBBI, DL, get(RISCV::ESP_MOVX_R_FFT_BIT_WIDTH), DstReg)
+        .addReg(SrcReg, KillFlag);
+    return;
+  }
+
   // VR->VR copies.
   const TargetRegisterClass *RegClass =
       TRI->getCommonMinimalPhysRegClass(SrcReg, DstReg);
