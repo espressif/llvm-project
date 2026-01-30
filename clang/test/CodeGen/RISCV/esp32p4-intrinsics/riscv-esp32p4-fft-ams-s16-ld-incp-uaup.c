@@ -66,8 +66,6 @@ void test_fft_ams_s16_ld_incp_uaup(void const *src, void *dst) {
     esp_vst_128_ip_m(Res.Qu, dst, 16);           // Store Qu (v16i8)
     esp_vst_128_ip_m(qz_conv.V8, dst, 16);  // Store Qz (v8i16 converted to v16i8)
     esp_vst_128_ip_m(QvConv.V8, dst, 16);  // Store Qv (v8i16 converted to v16i8)
-    (void)Res.Ptr;
-    (void)Res.UaState;
 }
 
 //.
