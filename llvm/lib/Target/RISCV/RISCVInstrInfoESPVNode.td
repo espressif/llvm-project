@@ -56,6 +56,50 @@ def riscv_esp_ld_128_usar_xp_m : RVSDNode<"ESP_LD_128_USAR_XP_M", SDT_ESPLD128US
 def riscv_esp_vst_128_xp_m : RVSDNode<"ESP_VST_128_XP_M", SDT_ESPVST128XPM,
                                       [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
 
+// SRCQ.128.ST.INCP SDNode
+// Result: rs1r (updated pointer)
+// Operands: qy (v16i8 vector), qw (v16i8 vector), rs1 (pointer)
+// Note: Uses SAR_BYTES as implicit register
+def SDT_ESPSRCQ128STINCPM : SDTypeProfile<1, 4, [
+  SDTCisPtrTy<0>,          // Result 0: updated pointer
+  SDTCisVT<1, i32>,        // Operand 0: SAR_BYTES (32-bit, only low 4 bits used, range 0-15)
+  SDTCisVT<2, v16i8>,      // Operand 1: qy vector
+  SDTCisVT<3, v16i8>,      // Operand 2: qw vector
+  SDTCisPtrTy<4>           // Operand 3: pointer
+]>;
+def riscv_esp_srcq_128_st_incp_m : RVSDNode<"ESP_SRCQ_128_ST_INCP_M", SDT_ESPSRCQ128STINCPM,
+                                             [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+
+// SRC.Q.LD.IP/XP SDNodes
+// Results: qu (v16i8), rs1r (ptr), qw (v16i8)
+// Operands: SAR_BYTES (i32), qy (v16i8), qw (v16i8), rs1 (ptr), offset (i32)
+def SDT_ESPSRCQLDIPM : SDTypeProfile<3, 5, [
+  SDTCisVT<0, v16i8>,      // Result 0: qu (loaded) - matches instruction output order
+  SDTCisPtrTy<1>,          // Result 1: updated pointer - matches instruction output order
+  SDTCisVT<2, v16i8>,      // Result 2: qw (updated) - matches instruction output order
+  SDTCisVT<3, i32>,        // Operand 0: SAR_BYTES (32-bit, only low 4 bits used, range 0-15)
+  SDTCisVT<4, v16i8>,      // Operand 1: qy
+  SDTCisVT<5, v16i8>,      // Operand 2: qw
+  SDTCisPtrTy<6>,          // Operand 3: pointer
+  SDTCisVT<7, i32>         // Operand 4: offset
+]>;
+
+def SDT_ESPSRCQLDXPM : SDTypeProfile<3, 5, [
+  SDTCisVT<0, v16i8>,      // Result 0: qu (loaded) - matches instruction output order
+  SDTCisPtrTy<1>,          // Result 1: updated pointer - matches instruction output order
+  SDTCisVT<2, v16i8>,      // Result 2: qw (updated) - matches instruction output order
+  SDTCisVT<3, i32>,        // Operand 0: SAR_BYTES (32-bit, only low 4 bits used, range 0-15)
+  SDTCisVT<4, v16i8>,      // Operand 1: qy
+  SDTCisVT<5, v16i8>,      // Operand 2: qw
+  SDTCisPtrTy<6>,          // Operand 3: pointer
+  SDTCisVT<7, i32>         // Operand 4: offset (register)
+]>;
+
+def riscv_esp_src_q_ld_ip_m : RVSDNode<"ESP_SRC_Q_LD_IP_M", SDT_ESPSRCQLDIPM,
+                                       [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_src_q_ld_xp_m : RVSDNode<"ESP_SRC_Q_LD_XP_M", SDT_ESPSRCQLDXPM,
+                                       [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+
 // VLD/VST H.64/L.64 SDNodes
 def SDT_ESPVLDH64IPM : SDTypeProfile<2, 2, [
   SDTCisVT<0, v8i8>,       // Result 0: vector
@@ -747,6 +791,36 @@ def riscv_esp_vadd_s16_st_incp_m : RVSDNode<"ESP_VADD_S16_ST_INCP_M", SDT_ESPVAD
 def riscv_esp_vadd_u16_st_incp_m : RVSDNode<"ESP_VADD_U16_ST_INCP_M", SDT_ESPVADDU16STINCPM,
                                            [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
 def riscv_esp_vadd_u8_st_incp_m : RVSDNode<"ESP_VADD_U8_ST_INCP_M", SDT_ESPVADDU8STINCPM,
+                                           [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+
+// VMUL LD.INCP SDNodes
+// Results: qv (vector), qu (vector), rs1r (pointer)
+// Operands: qx (vector), qy (vector), rs1 (pointer), sar (SAR register value, explicit state passing, i32)
+def SDT_ESPVMULS16LDINCPM : SDTypeProfile<3, 4, [
+  SDTCisVT<0, v8i16>,      // Result 0: qv vector
+  SDTCisVT<1, v16i8>,      // Result 1: qu vector
+  SDTCisPtrTy<2>,          // Result 2: updated pointer
+  SDTCisVT<3, v8i16>,      // Operand 0: qx vector
+  SDTCisVT<4, v8i16>,      // Operand 1: qy vector
+  SDTCisPtrTy<5>,          // Operand 2: rs1 pointer
+  SDTCisVT<6, i32>         // Operand 3: sar (SAR register value, explicit state passing, i32, only low 6 bits used)
+]>;
+def riscv_esp_vmul_s16_ld_incp_m : RVSDNode<"ESP_VMUL_S16_LD_INCP_M", SDT_ESPVMULS16LDINCPM,
+                                           [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+
+// VMUL ST.INCP SDNodes
+// Results: qv (vector), rs1r (pointer)
+// Operands: qx (vector), qy (vector), qu (vector), rs1 (pointer), sar (SAR register value, explicit state passing, i32)
+def SDT_ESPVMULS16STINCPM : SDTypeProfile<2, 5, [
+  SDTCisVT<0, v8i16>,      // Result 0: qv vector
+  SDTCisPtrTy<1>,          // Result 1: updated pointer
+  SDTCisVT<2, v8i16>,      // Operand 0: qx vector
+  SDTCisVT<3, v8i16>,      // Operand 1: qy vector
+  SDTCisVT<4, v16i8>,      // Operand 2: qu vector
+  SDTCisPtrTy<5>,          // Operand 3: rs1 pointer
+  SDTCisVT<6, i32>         // Operand 4: sar (SAR register value, explicit state passing, i32, only low 6 bits used)
+]>;
+def riscv_esp_vmul_s16_st_incp_m : RVSDNode<"ESP_VMUL_S16_ST_INCP_M", SDT_ESPVMULS16STINCPM,
                                            [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
 
 // VCMULAS pure compute SDNodes (no memory access, explicit passthru)

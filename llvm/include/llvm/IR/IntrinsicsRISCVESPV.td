@@ -698,6 +698,34 @@ def int_riscv_esp_movi_8_a: ClangBuiltin<"__builtin_riscv_esp_movi_8_a">,
 def int_riscv_esp_movi_8_q: ClangBuiltin<"__builtin_riscv_esp_movi_8_q">,
 	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
+// MOVI - Extract from vector to scalar (_m variants for machine instruction matching)
+// MOVI.16.A - Extract 16-bit from vector to scalar
+def int_riscv_esp_movi_16_a_m : Intrinsic<[llvm_i32_ty], 
+                                          [llvm_v8i16_ty, llvm_i32_ty],  // (vector, index)
+                                          [IntrNoMem]>;
+// MOVI.32.A - Extract 32-bit from vector to scalar
+def int_riscv_esp_movi_32_a_m : Intrinsic<[llvm_i32_ty], 
+                                          [llvm_v4i32_ty, llvm_i32_ty],  // (vector, index)
+                                          [IntrNoMem]>;
+// MOVI.8.A - Extract 8-bit from vector to scalar
+def int_riscv_esp_movi_8_a_m : Intrinsic<[llvm_i32_ty], 
+                                         [llvm_v16i8_ty, llvm_i32_ty],  // (vector, index)
+                                         [IntrNoMem]>;
+
+// MOVI - Insert from scalar to vector (_m variants for machine instruction matching)
+// MOVI.16.Q - Insert 16-bit from scalar to vector
+def int_riscv_esp_movi_16_q_m : Intrinsic<[llvm_v8i16_ty], 
+                                          [llvm_v8i16_ty, llvm_i32_ty, llvm_i32_ty],  // (vector, index, value)
+                                          [IntrNoMem]>;
+// MOVI.32.Q - Insert 32-bit from scalar to vector
+def int_riscv_esp_movi_32_q_m : Intrinsic<[llvm_v4i32_ty], 
+                                          [llvm_v4i32_ty, llvm_i32_ty, llvm_i32_ty],  // (vector, index, value)
+                                          [IntrNoMem]>;
+// MOVI.8.Q - Insert 8-bit from scalar to vector
+def int_riscv_esp_movi_8_q_m : Intrinsic<[llvm_v16i8_ty], 
+                                         [llvm_v16i8_ty, llvm_i32_ty, llvm_i32_ty],  // (vector, index, value)
+                                         [IntrNoMem]>;
+
 def int_riscv_esp_movx_r_cfg: ClangBuiltin<"__builtin_riscv_esp_movx_r_cfg">,
 	Intrinsic<[llvm_i32_ty], [], []>;
 

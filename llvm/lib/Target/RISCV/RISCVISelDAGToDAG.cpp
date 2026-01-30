@@ -6081,6 +6081,86 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       ReplaceNode(Node, NewNode);
       return true;
     }
+  case RISCVISD::ESP_LD_XACC_IP_M: {
+    // Handle ESP_LD_XACC_IP_M node - Mixed model: XACC as {i32 low, i32 high}
+    // Custom instruction selection needed because XACC_LOW/XACC_HIGH have only one physical register
+    // This ensures virtual registers are correctly passed to register allocator
+    SDValue Chain = Node->getOperand(0);
+    SDValue XACCLowIn = Node->getOperand(1);
+    SDValue XACCHighIn = Node->getOperand(2);
+    SDValue Ptr = Node->getOperand(3);
+    SDValue Offset = Node->getOperand(4);
+    
+    // Check immediate operand: extract constant value if possible
+    int64_t ImmVal = 0;
+    if (auto *C = dyn_cast<ConstantSDNode>(Offset)) {
+      ImmVal = C->getSExtValue();
+    } else {
+      // If offset is not a constant, we cannot select this instruction
+      // (ESP_LD_XACC_IP only accepts immediate offsets)
+      SelectCode(Node);
+      return true;
+    }
+    
+    // Verify immediate range: [-1024, 1016], step 8 (ESP32P4 hardware limitation)
+    if (ImmVal < -1024 || ImmVal > 1016 || (ImmVal % 8) != 0) {
+      SelectCode(Node);
+      return true;
+    }
+    
+    // Build MachineSDNode
+    // Result types: [Ptr, XACC_LO, XACC_HI, Chain, Glue(optional)]
+    SmallVector<EVT, 5> VTs = {XLenVT, MVT::i32, MVT::i32, MVT::Other, MVT::Glue};
+    SDVTList VTList = CurDAG->getVTList(VTs);
+    
+    // Build operand list
+    // Note: Operand order must match instruction definition: (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs1, offset_256_8:$off2568)
+    SmallVector<SDValue, 6> Ops = {
+        XACCLowIn, 
+        XACCHighIn, 
+        Ptr, 
+        CurDAG->getTargetConstant(ImmVal, DL, XLenVT), 
+        Chain
+    };
+    
+    // Safely handle Glue operand (fix potential out-of-bounds access)
+    // Node->getNumOperands() includes Chain, inputs, and optional Glue
+    // If Glue exists, it's always the last operand
+    if (Node->getGluedNode()) {
+      Ops.push_back(Node->getOperand(Node->getNumOperands() - 1));
+    }
+    
+    // Create machine instruction node
+    SDNode *InstNode = CurDAG->getMachineNode(RISCV::ESP_LD_XACC_IP, DL, VTList, Ops);
+    
+    // Copy memory operand information (MemOperand) to preserve alias analysis info
+    if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
+      MachineMemOperand *MMO = MemNode->getMemOperand();
+      CurDAG->setNodeMemRefs(cast<MachineSDNode>(InstNode), {MMO});
+    }
+    
+    // Extract results from instruction
+    // Original Node result order: 0:Ptr, 1:XACCLo, 2:XACCHi, 3:Chain, (4:Glue)
+    SDValue PtrOut = SDValue(InstNode, 0);
+    SDValue NewXACCLow = SDValue(InstNode, 1);
+    SDValue NewXACCHigh = SDValue(InstNode, 2);
+    SDValue InstChain = SDValue(InstNode, 3);
+    SDValue InstGlue = SDValue(InstNode, 4);
+    
+    // Replace uses
+    ReplaceUses(SDValue(Node, 0), PtrOut);       // Ptr
+    ReplaceUses(SDValue(Node, 1), NewXACCLow);  // XACC Low
+    ReplaceUses(SDValue(Node, 2), NewXACCHigh); // XACC High
+    ReplaceUses(SDValue(Node, 3), InstChain);    // Chain
+    
+    // If original node produced Glue, replace it too
+    if (Node->getValueType(Node->getNumValues() - 1) == MVT::Glue) {
+      ReplaceUses(SDValue(Node, Node->getNumValues() - 1), InstGlue);
+    }
+    
+    CurDAG->RemoveDeadNode(Node);
+    return true;
+  }
   default:
     return false;
   }
