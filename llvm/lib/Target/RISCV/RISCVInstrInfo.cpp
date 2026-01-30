@@ -941,19 +941,6 @@ void RISCVInstrInfo::storeRegToStackSlot(MachineBasicBlock &MBB,
     // It should not be spilled, but if register allocator tries to spill it,
     // we need to handle it. For now, report an error.
     llvm_unreachable("XACC register cannot be spilled to stack");
-  } else if (RISCV::XACC_HIGHRegClass.hasSubClassEq(RC) ||
-           RISCV::XACC_LOWRegClass.hasSubClassEq(RC)) {
-    // XACC_HIGH and XACC_LOW are subregisters of XACC (implicit physical register)
-    // They should not be spilled due to CopyCost=-1, but if spilling occurs,
-    // use standard SW (Store Word) instruction. Size=32 ensures proper stack slot allocation.
-    // Note: XACC_HIGH only uses low 8 bits, but we model it as i32 (Type Masquerading pattern).
-    // The extra 3 bytes in stack slot are harmless (garbage values).
-    Opcode = RISCV::SW;
-  } else if (RISCV::XACCRegRegClass.hasSubClassEq(RC)) {
-    // XACC is a 40-bit implicit accumulator register
-    // It should not be spilled, but if register allocator tries to spill it,
-    // we need to handle it. For now, report an error.
-    llvm_unreachable("XACC register cannot be spilled to stack");
   } else
     llvm_unreachable("Can't store this register to stack slot");
 
@@ -1039,20 +1026,6 @@ void RISCVInstrInfo::loadRegFromStackSlot(
   else if (RISCV::VRN8M1RegClass.hasSubClassEq(RC))
     Opcode = RISCV::PseudoVRELOAD8_M1;
   else if (RISCV::XACC_HIGHRegClass.hasSubClassEq(RC) ||
-           RISCV::XACC_LOWRegClass.hasSubClassEq(RC)) {
-    // XACC_HIGH and XACC_LOW are subregisters of XACC (implicit physical register)
-    // They should not be reloaded due to CopyCost=-1, but if reloading occurs,
-    // use standard LW (Load Word) instruction. Size=32 ensures proper stack slot allocation.
-    // Note: XACC_HIGH only uses low 8 bits, but we model it as i32 (Type Masquerading pattern).
-    // The extra 3 bytes loaded from stack are harmless (will be zero-extended by instruction).
-    // Both XACC_HIGH and XACC_LOW are 32-bit register classes, so always use LW.
-    Opcode = RISCV::LW;
-  } else if (RISCV::XACCRegRegClass.hasSubClassEq(RC)) {
-    // XACC is a 40-bit implicit accumulator register
-    // It should not be spilled, but if register allocator tries to reload it,
-    // we need to handle it. For now, report an error.
-    llvm_unreachable("XACC register cannot be reloaded from stack");
-  } else if (RISCV::XACC_HIGHRegClass.hasSubClassEq(RC) ||
            RISCV::XACC_LOWRegClass.hasSubClassEq(RC)) {
     // XACC_HIGH and XACC_LOW are subregisters of XACC (implicit physical register)
     // They should not be reloaded due to CopyCost=-1, but if reloading occurs,
