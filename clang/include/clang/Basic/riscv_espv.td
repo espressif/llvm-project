@@ -33,7 +33,7 @@ def esp_ld_128_usar_ip_m
       // Corresponds to def int_riscv_esp_ld_128_usar_ip_m in .td
       Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_ld_128_usar_ip_m);
 
-      // 3. Generate the Call instruction
+      // 3. Generate Call instruction
       // Intrinsic return type is { <16 x i8>, i8*, i64 } (vector, pointer, sar_bytes)
       Value *Call = Builder.CreateCall(F, {Ptr, Imm});
 
@@ -3742,4 +3742,998 @@ def esp_movx_w_xacc_l_m
       }
       Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_movx_w_xacc_l_m);
       return Builder.CreateCall(F, {Value});
+  }]>;
+
+// ESP.MOVX.R.SAR.BYTES.M
+def esp_movx_r_sar_bytes_m
+    : ESPVBuiltin<"movx_r_sar_bytes_m", "riscv_esp_movx_r_sar_bytes_m", [{
+      // ESP.MOVX.R.SAR_BYTES (_m version) - Read SAR_BYTES register with explicit state passing
+      // Parameters: (sar_bytes)
+      // sar_bytes: current SAR_BYTES value (for explicit state passing, unsigned long long int, i64)
+      // Returns: rd[31:0] = {28'b0, SAR_BYTES[3:0]} (unsigned int, i32)
+      // Hardware automatically extracts only low 4 bits from SAR_BYTES register
+      // SAR_BYTES stores unsigned byte shift amount (0-15), so both input and output are unsigned
+      Value *SarBytes = EmitScalarExpr(E->getArg(0));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_movx_r_sar_bytes_m);
+      return Builder.CreateCall(F, {SarBytes});
+  }]>;
+
+// ESP.SRC.Q.LD.IP.M
+def esp_src_q_ld_ip_m
+    : ESPVBuiltin<"src_q_ld_ip_m", "riscv_esp_src_q_ld_ip_m", [{
+      Value *QY = EmitScalarExpr(E->getArg(0));
+      Value *QW = EmitScalarExpr(E->getArg(1));
+      Value *Ptr = EmitScalarExpr(E->getArg(2));
+      Value *Imm = EmitScalarExpr(E->getArg(3));
+      Value *QWOutPtr = EmitScalarExpr(E->getArg(4));
+      Value *QUOutPtr = EmitScalarExpr(E->getArg(5));
+      Value *SarBytes = EmitScalarExpr(E->getArg(6));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_src_q_ld_ip_m);
+      Value *Call = Builder.CreateCall(F, {SarBytes, QY, QW, Ptr, Imm});
+      // Extract updated qw and qu from the result struct
+      Value *QWOut = Builder.CreateExtractValue(Call, 0);
+      Value *QUOut = Builder.CreateExtractValue(Call, 1);
+      Value *NewPtr = Builder.CreateExtractValue(Call, 2);
+      // Store results to provided pointers
+      Builder.CreateStore(QWOut, Address(QWOutPtr, QWOut->getType(), CharUnits::fromQuantity(16)));
+      Builder.CreateStore(QUOut, Address(QUOutPtr, QUOut->getType(), CharUnits::fromQuantity(16)));
+      return NewPtr;
+  }]>;
+
+// ESP.SRC.Q.LD.XP.M
+def esp_src_q_ld_xp_m
+    : ESPVBuiltin<"src_q_ld_xp_m", "riscv_esp_src_q_ld_xp_m", [{
+      Value *QY = EmitScalarExpr(E->getArg(0));
+      Value *QW = EmitScalarExpr(E->getArg(1));
+      Value *Ptr = EmitScalarExpr(E->getArg(2));
+      Value *Reg = EmitScalarExpr(E->getArg(3));
+      Value *QWOutPtr = EmitScalarExpr(E->getArg(4));
+      Value *QUOutPtr = EmitScalarExpr(E->getArg(5));
+      Value *SarBytes = EmitScalarExpr(E->getArg(6));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_src_q_ld_xp_m);
+      Value *Call = Builder.CreateCall(F, {SarBytes, QY, QW, Ptr, Reg});
+      // Extract updated qw and qu from the result struct
+      Value *QWOut = Builder.CreateExtractValue(Call, 0);
+      Value *QUOut = Builder.CreateExtractValue(Call, 1);
+      Value *NewPtr = Builder.CreateExtractValue(Call, 2);
+      // Store results to provided pointers
+      Builder.CreateStore(QWOut, Address(QWOutPtr, QWOut->getType(), CharUnits::fromQuantity(16)));
+      Builder.CreateStore(QUOut, Address(QUOutPtr, QUOut->getType(), CharUnits::fromQuantity(16)));
+      return NewPtr;
+  }]>;
+
+// ESP.SRC.Q.M
+def esp_src_q_m : ESPVBuiltin<"src_q_m", "riscv_esp_src_q_m", [{
+      Value *QY = EmitScalarExpr(E->getArg(0));
+      Value *QW = EmitScalarExpr(E->getArg(1));
+      Value *SarBytes = EmitScalarExpr(E->getArg(2));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_src_q_m);
+      Value *Result = Builder.CreateCall(F, {SarBytes, QY, QW});
+      return Result;
+  }]>;
+
+// ESP.SRC.Q.QUP.M
+def esp_src_q_qup_m : ESPVBuiltin<"src_q_qup_m", "riscv_esp_src_q_qup_m", [{
+      Value *QW = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Value *QZOutPtr = EmitScalarExpr(E->getArg(2));
+      Value *QWOutPtr = EmitScalarExpr(E->getArg(3));
+      Value *SarBytes = EmitScalarExpr(E->getArg(4));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_src_q_qup_m);
+      Value *Call = Builder.CreateCall(F, {SarBytes, QW, QY});
+      // Extract results from the result struct
+      Value *QZOut = Builder.CreateExtractValue(Call, 0);
+      Value *QWOut = Builder.CreateExtractValue(Call, 1);
+      // Store results to provided pointers
+      Builder.CreateStore(QZOut, Address(QZOutPtr, QZOut->getType(), CharUnits::fromQuantity(16)));
+      Builder.CreateStore(QWOut, Address(QWOutPtr, QWOut->getType(), CharUnits::fromQuantity(16)));
+      // Return donothing to prevent fallback to generic intrinsic path
+      Function *NoOpF = CGM.getIntrinsic(Intrinsic::donothing);
+      return Builder.CreateCall(NoOpF, {});
+  }]>;
+
+// ESP.SRCQ.128.ST.INCP.M
+def esp_srcq_128_st_incp_m
+    : ESPVBuiltin<"srcq_128_st_incp_m", "riscv_esp_srcq_128_st_incp_m", [{
+      Value *QY = EmitScalarExpr(E->getArg(0));
+      Value *QW = EmitScalarExpr(E->getArg(1));
+      Value *Ptr = EmitScalarExpr(E->getArg(2));
+      Value *SarBytes = EmitScalarExpr(E->getArg(3));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_srcq_128_st_incp_m);
+      Value *NewPtr = Builder.CreateCall(F, {SarBytes, QY, QW, Ptr});
+      return NewPtr;
+  }]>;
+
+// ESP.CMUL.S8.M
+def esp_cmul_s8_m : ESPVBuiltin<"cmul_s8_m", "riscv_esp_cmul_s8_m", [{
+      // Parameters: (qz_in, qx, qy, sel4, sar)
+      // qz_in: passthru operand for preserving unmodified bits (RMW semantics)
+      // qx, qy: source vectors (128-bit, 16x8-bit segments)
+      // sel4: select value (int, immediate)
+      // sar: SAR register value (unsigned long long int, i64, only low 6 bits used, range 0-63)
+      Value *QZ_IN = EmitScalarExpr(E->getArg(0));  // qz_in: passthru operand
+      Value *QX = EmitScalarExpr(E->getArg(1));
+      Value *QY = EmitScalarExpr(E->getArg(2));
+      Value *SEL4 = EmitScalarExpr(E->getArg(3));
+      Value *Sar = EmitScalarExpr(E->getArg(4));  // SAR register value (explicit state passing)
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_cmul_s8_m);
+      Value *Call = Builder.CreateCall(F, {QZ_IN, QX, QY, SEL4, Sar});
+      return Call; // Return vector result
+  }]>;
+
+// ESP.CMUL.U16.M
+def esp_cmul_u16_m : ESPVBuiltin<"cmul_u16_m", "riscv_esp_cmul_u16_m", [{
+      // Parameters: (qz_in, qx, qy, sel4, sar)
+      // qz_in: passthru operand for preserving unmodified bits (RMW semantics)
+      // qx, qy: source vectors (128-bit, 8x16-bit segments)
+      // sel4: select value (int, immediate)
+      // sar: SAR register value (unsigned long long int, i64, only low 6 bits used, range 0-63)
+      Value *QZ_IN = EmitScalarExpr(E->getArg(0));  // qz_in: passthru operand
+      Value *QX = EmitScalarExpr(E->getArg(1));
+      Value *QY = EmitScalarExpr(E->getArg(2));
+      Value *SEL4 = EmitScalarExpr(E->getArg(3));
+      Value *Sar = EmitScalarExpr(E->getArg(4));  // SAR register value (explicit state passing)
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_cmul_u16_m);
+      Value *Call = Builder.CreateCall(F, {QZ_IN, QX, QY, SEL4, Sar});
+      return Call; // Return vector result
+  }]>;
+
+// ESP.CMUL.U8.M
+def esp_cmul_u8_m : ESPVBuiltin<"cmul_u8_m", "riscv_esp_cmul_u8_m", [{
+      // Parameters: (qz_in, qx, qy, sel4, sar)
+      // qz_in: passthru operand for preserving unmodified bits (RMW semantics)
+      // qx, qy: source vectors (128-bit, 16x8-bit segments)
+      // sel4: select value (int, immediate)
+      // sar: SAR register value (unsigned long long int, i64, only low 6 bits used, range 0-63)
+      Value *QZ_IN = EmitScalarExpr(E->getArg(0));  // qz_in: passthru operand
+      Value *QX = EmitScalarExpr(E->getArg(1));
+      Value *QY = EmitScalarExpr(E->getArg(2));
+      Value *SEL4 = EmitScalarExpr(E->getArg(3));
+      Value *Sar = EmitScalarExpr(E->getArg(4));  // SAR register value (explicit state passing)
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_cmul_u8_m);
+      Value *Call = Builder.CreateCall(F, {QZ_IN, QX, QY, SEL4, Sar});
+      return Call; // Return vector result
+  }]>;
+
+// ESP.VMUL.S16.LD.INCP.M
+def esp_vmul_s16_ld_incp_m
+    : ESPVBuiltin<"vmul_s16_ld_incp_m", "riscv_esp_vmul_s16_ld_incp_m", [{
+      // Parameters: (qx, qy, rs1, qv_ptr, qu_ptr, sar)
+      // qx, qy: source vectors (128-bit, 8x16-bit segments)
+      // rs1: source pointer
+      // qv_ptr, qu_ptr: output pointers for qv and qu results
+      // sar: SAR register value (unsigned long long int, i64, only low 6 bits used, range 0-63)
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Value *RS1 = EmitScalarExpr(E->getArg(2));
+      Value *QVPtr = EmitScalarExpr(E->getArg(3));
+      Value *QUPtr = EmitScalarExpr(E->getArg(4));
+      Value *Sar = EmitScalarExpr(E->getArg(5));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmul_s16_ld_incp_m);
+      Value *Call = Builder.CreateCall(F, {QX, QY, RS1, Sar});
+      Value *QV = Builder.CreateExtractValue(Call, 0);
+      Value *QU = Builder.CreateExtractValue(Call, 1);
+      Value *NewPtr = Builder.CreateExtractValue(Call, 2);
+      Builder.CreateStore(QV, Address(QVPtr, QV->getType(), CharUnits::fromQuantity(16)));
+      Builder.CreateStore(QU, Address(QUPtr, QU->getType(), CharUnits::fromQuantity(16)));
+      return NewPtr;
+  }]>;
+
+// ESP.VMUL.S16.M
+def esp_vmul_s16_m : ESPVBuiltin<"vmul_s16_m", "riscv_esp_vmul_s16_m", [{
+      // ESP.VMUL.S16 (_m version) - Vector multiply with explicit SAR state passing
+      // Parameters: (qx, qy, sar)
+      // qx, qy: source vectors (128-bit, 8x16-bit segments)
+      // sar: SAR register value (unsigned long long int, i64, only low 6 bits used, range 0-63)
+      // Returns: qz (128-bit vector, 8x16-bit segments)
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Value *Sar = EmitScalarExpr(E->getArg(2));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmul_s16_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY, Sar});
+      return Result;
+  }]>;
+
+// ESP.VMUL.S16.S8XS8.M
+def esp_vmul_s16_s8xs8_m
+    : ESPVBuiltin<"vmul_s16_s8xs8_m", "riscv_esp_vmul_s16_s8xs8_m", [{
+      // ESP.VMUL.S16.S8XS8 (_m version) - Vector multiply with explicit SAR state passing
+      // Parameters: (qx, qy, qz_ptr, qv_ptr, sar)
+      // qx, qy: source vectors (128-bit, 16x8-bit segments)
+      // qz_ptr, qv_ptr: output pointers for qz and qv results
+      // sar: SAR register value (unsigned long long int, i64, only low 6 bits used, range 0-63)
+      // Returns: void (results stored to pointers)
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Value *QZPtr = EmitScalarExpr(E->getArg(2));
+      Value *QVPtr = EmitScalarExpr(E->getArg(3));
+      Value *Sar = EmitScalarExpr(E->getArg(4));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmul_s16_s8xs8_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY, Sar});
+      // Extract the two output vectors from the result struct
+      Value *QZ = Builder.CreateExtractValue(Result, 0);
+      Value *QV = Builder.CreateExtractValue(Result, 1);
+      // Store the results to the provided pointers
+      Builder.CreateStore(QZ, Address(QZPtr, QZ->getType(), CharUnits::fromQuantity(16)));
+      Builder.CreateStore(QV, Address(QVPtr, QV->getType(), CharUnits::fromQuantity(16)));
+      // Return a void call to prevent fallback to generic intrinsic path
+      // Use a no-op intrinsic that returns void
+      Function *NoOpF = CGM.getIntrinsic(Intrinsic::donothing);
+      return Builder.CreateCall(NoOpF, {});
+  }]>;
+
+// ESP.VMUL.S16.ST.INCP.M
+def esp_vmul_s16_st_incp_m
+    : ESPVBuiltin<"vmul_s16_st_incp_m", "riscv_esp_vmul_s16_st_incp_m", [{
+      // Parameters: (qx, qy, qu, rs1, qv, sar)
+      // qx, qy: source vectors (128-bit, 8x16-bit segments)
+      // qu: vector to store
+      // rs1: destination pointer
+      // qv: vector value
+      // sar: SAR register value (unsigned long long int, i64, only low 6 bits used, range 0-63)
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Value *QU = EmitScalarExpr(E->getArg(2));
+      Value *RS1 = EmitScalarExpr(E->getArg(3));
+      Value *QV = EmitScalarExpr(E->getArg(4));
+      Value *Sar = EmitScalarExpr(E->getArg(5));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmul_s16_st_incp_m);
+      Value *Call = Builder.CreateCall(F, {QX, QY, QU, RS1, QV, Sar});
+
+      // Intrinsic returns {v8i16 qv, i8* ptr}
+      // Extract ptr from return value (builtin returns void*, but intrinsic returns {qv, ptr})
+      Value *Ptr = Builder.CreateExtractValue(Call, 1);
+      return Ptr;
+  }]>;
+
+// ESP.VMUL.S32.S16XS16.M
+def esp_vmul_s32_s16xs16_m
+    : ESPVBuiltin<"vmul_s32_s16xs16_m", "riscv_esp_vmul_s32_s16xs16_m", [{
+      // ESP.VMUL.S32.S16XS16 (_m version) - Vector multiply with explicit SAR state passing
+      // Parameters: (qx, qy, qz_ptr, qv_ptr, sar)
+      // qx, qy: source vectors (128-bit, 8x16-bit segments)
+      // qz_ptr, qv_ptr: output pointers for qz and qv results
+      // sar: SAR register value (unsigned long long int, i64, only low 6 bits used, range 0-63)
+      // Returns: void (results stored to pointers)
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Value *QZPtr = EmitScalarExpr(E->getArg(2));
+      Value *QVPtr = EmitScalarExpr(E->getArg(3));
+      Value *Sar = EmitScalarExpr(E->getArg(4));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmul_s32_s16xs16_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY, Sar});
+      // Extract the two output vectors from the result struct
+      Value *QZ = Builder.CreateExtractValue(Result, 0);
+      Value *QV = Builder.CreateExtractValue(Result, 1);
+      // Store the results to the provided pointers
+      Builder.CreateStore(QZ, Address(QZPtr, QZ->getType(), CharUnits::fromQuantity(16)));
+      Builder.CreateStore(QV, Address(QVPtr, QV->getType(), CharUnits::fromQuantity(16)));
+      // Return a void call to prevent fallback to generic intrinsic path
+      // Use a no-op intrinsic that returns void
+      Function *NoOpF = CGM.getIntrinsic(Intrinsic::donothing);
+      return Builder.CreateCall(NoOpF, {});
+  }]>;
+
+// ESP.VMUL.S8.M
+def esp_vmul_s8_m : ESPVBuiltin<"vmul_s8_m", "riscv_esp_vmul_s8_m", [{
+      // ESP.VMUL.S8 (_m version) - Vector multiply with explicit SAR state passing
+      // Parameters: (qx, qy, sar)
+      // qx, qy: source vectors (128-bit, 16x8-bit segments)
+      // sar: SAR register value (unsigned long long int, i64, only low 6 bits used, range 0-63)
+      // Returns: qz (128-bit vector, 16x8-bit segments)
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Value *Sar = EmitScalarExpr(E->getArg(2));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmul_s8_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY, Sar});
+      return Result;
+  }]>;
+
+// ESP.VMUL.U16.M
+def esp_vmul_u16_m : ESPVBuiltin<"vmul_u16_m", "riscv_esp_vmul_u16_m", [{
+      // ESP.VMUL.U16 (_m version) - Vector multiply with explicit SAR state passing
+      // Parameters: (qx, qy, sar)
+      // qx, qy: source vectors (128-bit, 8x16-bit segments)
+      // sar: SAR register value (unsigned long long int, i64, only low 6 bits used, range 0-63)
+      // Returns: qz (128-bit vector, 8x16-bit segments)
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Value *Sar = EmitScalarExpr(E->getArg(2));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmul_u16_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY, Sar});
+      return Result;
+  }]>;
+
+// ESP.VMUL.U8.M
+def esp_vmul_u8_m : ESPVBuiltin<"vmul_u8_m", "riscv_esp_vmul_u8_m", [{
+      // ESP.VMUL.U8 (_m version) - Vector multiply with explicit SAR state passing
+      // Parameters: (qx, qy, sar)
+      // qx, qy: source vectors (128-bit, 16x8-bit segments)
+      // sar: SAR register value (unsigned long long int, i64, only low 6 bits used, range 0-63)
+      // Returns: qz (128-bit vector, 16x8-bit segments)
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Value *Sar = EmitScalarExpr(E->getArg(2));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmul_u8_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY, Sar});
+      return Result;
+  }]>;
+
+// ESP.VSR.U32.M
+def esp_vsr_u32_m : ESPVBuiltin<"vsr_u32_m", "riscv_esp_vsr_u32_m", [{
+      // ESP.VSR.U32 (_m version) - Unsigned logical right shift with explicit SAR state passing
+      // Parameters: (qy, sar)
+      // qy: source vector (128-bit, 4x32-bit segments)
+      // sar: SAR register value (unsigned long long int, i64, only low 6 bits used, range 0-63)
+      // Returns: qu (128-bit vector, 4x32-bit segments)
+      Value *QY = EmitScalarExpr(E->getArg(0));
+      Value *Sar = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vsr_u32_m);
+      Value *Result = Builder.CreateCall(F, {QY, Sar});
+      return Result;
+  }]>;
+
+// ESP.SRS.S.XACC.M
+def esp_srs_s_xacc_m : ESPVBuiltin<"srs_s_xacc_m", "riscv_esp_srs_s_xacc_m", [{
+      // ESP.SRS.S.XACC (_m version) - Shift Right and Saturate Signed from XACC with explicit state passing
+      // Parameters: (xacc_h_in, xacc_l_in, shift_amount, xacc_h_out, xacc_l_out)
+      // XACC is represented as struct {unsigned int xacc_h; unsigned int xacc_l;} via two parameters (both i32)
+      // Note: xacc_h is i32 but only low 8 bits are valid (XACC[39:32])
+      // Returns: saturated 32-bit signed value
+      Value *XACCHighIn = EmitScalarExpr(E->getArg(0));  // xacc_h_in (unsigned int, i32, only low 8 bits valid)
+      Value *XACCLowIn = EmitScalarExpr(E->getArg(1));   // xacc_l_in (unsigned int, i32)
+      Value *RS1 = EmitScalarExpr(E->getArg(2));         // shift_amount (int, i32)
+      Value *XACCHighOutPtr = EmitScalarExpr(E->getArg(3)); // xacc_h_out pointer
+      Value *XACCLowOutPtr = EmitScalarExpr(E->getArg(4));  // xacc_l_out pointer
+
+      // Ensure XACCHighIn is i32 (builtin accepts unsigned int)
+      if (XACCHighIn->getType() != Builder.getInt32Ty()) {
+      if (XACCHighIn->getType() == Builder.getInt8Ty()) {
+      XACCHighIn = Builder.CreateZExt(XACCHighIn, Builder.getInt32Ty()); // Zero-extend i8 to i32
+      } else {
+      XACCHighIn = Builder.CreateTrunc(XACCHighIn, Builder.getInt32Ty()); // Truncate to i32 if needed
+      }
+      }
+
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_srs_s_xacc_m);
+      Value *Call = Builder.CreateCall(F, {XACCHighIn, XACCLowIn, RS1});
+
+      // Intrinsic returns {i32 saturated_value, i32 new_xacc_h (only low 8 bits valid), i32 new_xacc_l}
+      Value *SaturatedValue = Builder.CreateExtractValue(Call, 0);
+      Value *NewXACCHigh = Builder.CreateExtractValue(Call, 1);  // i32 (only low 8 bits valid)
+      Value *NewXACCLow = Builder.CreateExtractValue(Call, 2);   // i32
+
+      // Store new XACC parts to output pointers
+      Builder.CreateStore(NewXACCHigh, Address(XACCHighOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      Builder.CreateStore(NewXACCLow, Address(XACCLowOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      return SaturatedValue;
+  }]>;
+
+// ESP.SRS.U.XACC.M
+def esp_srs_u_xacc_m : ESPVBuiltin<"srs_u_xacc_m", "riscv_esp_srs_u_xacc_m", [{
+      // Parameters: (xacc_h_in, xacc_l_in, shift_amount, xacc_h_out, xacc_l_out)
+      // XACC is represented as struct {unsigned int xacc_h; unsigned int xacc_l;} via two parameters (both i32)
+      // Note: xacc_h is i32 but only low 8 bits are valid (XACC[39:32])
+      // Returns: saturated 32-bit unsigned value
+      Value *XACCHighIn = EmitScalarExpr(E->getArg(0));  // xacc_h_in (unsigned int, i32, only low 8 bits valid)
+      Value *XACCLowIn = EmitScalarExpr(E->getArg(1));   // xacc_l_in (unsigned int, i32)
+      Value *RS1 = EmitScalarExpr(E->getArg(2));         // shift_amount (int, i32)
+      Value *XACCHighOutPtr = EmitScalarExpr(E->getArg(3)); // xacc_h_out pointer
+      Value *XACCLowOutPtr = EmitScalarExpr(E->getArg(4));  // xacc_l_out pointer
+
+      // Ensure XACCHighIn is i32 (builtin accepts unsigned int)
+      if (XACCHighIn->getType() != Builder.getInt32Ty()) {
+      if (XACCHighIn->getType() == Builder.getInt8Ty()) {
+      XACCHighIn = Builder.CreateZExt(XACCHighIn, Builder.getInt32Ty()); // Zero-extend i8 to i32
+      } else {
+      XACCHighIn = Builder.CreateTrunc(XACCHighIn, Builder.getInt32Ty()); // Truncate to i32 if needed
+      }
+      }
+
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_srs_u_xacc_m);
+      Value *Call = Builder.CreateCall(F, {XACCHighIn, XACCLowIn, RS1});
+
+      // Intrinsic returns {i32 saturated_value, i32 new_xacc_h (only low 8 bits valid), i32 new_xacc_l}
+      Value *SaturatedValue = Builder.CreateExtractValue(Call, 0);
+      Value *NewXACCHigh = Builder.CreateExtractValue(Call, 1);  // i32 (only low 8 bits valid)
+      Value *NewXACCLow = Builder.CreateExtractValue(Call, 2);   // i32
+
+      // Store new XACC parts to output pointers
+      Builder.CreateStore(NewXACCHigh, Address(XACCHighOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      Builder.CreateStore(NewXACCLow, Address(XACCLowOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      return SaturatedValue;
+  }]>;
+
+// ESP.VMULAS.S16.XACC.LD.IP.M
+def esp_vmulas_s16_xacc_ld_ip_m
+    : ESPVBuiltin<"vmulas_s16_xacc_ld_ip_m",
+                  "riscv_esp_vmulas_s16_xacc_ld_ip_m", [{
+      Value *XACCLowIn = EmitScalarExpr(E->getArg(0));  // XACC[31:0] input (unsigned int, i32)
+      Value *XACCHighIn = EmitScalarExpr(E->getArg(1)); // XACC[39:32] input (unsigned int, i32, only low 8 bits valid)
+      Value *QX = EmitScalarExpr(E->getArg(2));
+      Value *QY = EmitScalarExpr(E->getArg(3));
+      Value *RS1 = EmitScalarExpr(E->getArg(4));
+      Value *OFFSET = EmitScalarExpr(E->getArg(5));
+      Value *QUOutPtr = EmitScalarExpr(E->getArg(6));  // QU output parameter (pointer)
+      Value *XACCLowOutPtr = EmitScalarExpr(E->getArg(7));  // XACC[31:0] output parameter (pointer)
+      Value *XACCHighOutPtr = EmitScalarExpr(E->getArg(8)); // XACC[39:32] output parameter (pointer)
+
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmulas_s16_xacc_ld_ip_m);
+      Value *Call = Builder.CreateCall(F, {XACCLowIn, XACCHighIn, QX, QY, RS1, OFFSET});
+
+      // Intrinsic returns {v16i8 qu, ptr, i32 new_xacc_low, i32 new_xacc_high}
+      // Extract values from return struct
+      Value *QU = Builder.CreateExtractValue(Call, 0);  // Extract qu (128-bit data)
+      Value *Ptr = Builder.CreateExtractValue(Call, 1);
+      Value *NewXACCLow = Builder.CreateExtractValue(Call, 2);  // Extract XACC[31:0] (i32)
+      Value *NewXACCHigh = Builder.CreateExtractValue(Call, 3); // Extract XACC[39:32] (i32, only low 8 bits valid)
+
+      // Store qu and new XACC to output pointers
+      Builder.CreateStore(QU, Address(QUOutPtr, QU->getType(), CharUnits::fromQuantity(16)));
+      Builder.CreateStore(NewXACCLow, Address(XACCLowOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      Builder.CreateStore(NewXACCHigh, Address(XACCHighOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+
+      return Ptr; // Return updated pointer
+  }]>;
+
+// ESP.VMULAS.S16.XACC.LD.XP.M
+def esp_vmulas_s16_xacc_ld_xp_m
+    : ESPVBuiltin<"vmulas_s16_xacc_ld_xp_m",
+                  "riscv_esp_vmulas_s16_xacc_ld_xp_m", [{
+      Value *XACCLowIn = EmitScalarExpr(E->getArg(0));  // XACC[31:0] input (unsigned int, i32)
+      Value *XACCHighIn = EmitScalarExpr(E->getArg(1)); // XACC[39:32] input (unsigned int, i32, only low 8 bits valid)
+      Value *QX = EmitScalarExpr(E->getArg(2));
+      Value *QY = EmitScalarExpr(E->getArg(3));
+      Value *RS1 = EmitScalarExpr(E->getArg(4));
+      Value *RS2 = EmitScalarExpr(E->getArg(5));
+      Value *QUOutPtr = EmitScalarExpr(E->getArg(6));  // QU output parameter (pointer)
+      Value *XACCLowOutPtr = EmitScalarExpr(E->getArg(7));  // XACC[31:0] output parameter (pointer)
+      Value *XACCHighOutPtr = EmitScalarExpr(E->getArg(8)); // XACC[39:32] output parameter (pointer)
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmulas_s16_xacc_ld_xp_m);
+      Value *Call = Builder.CreateCall(F, {XACCLowIn, XACCHighIn, QX, QY, RS1, RS2});
+
+      // Intrinsic returns {v16i8 qu, ptr, i32 new_xacc_low, i32 new_xacc_high}
+      // Extract values from return struct
+      Value *QU = Builder.CreateExtractValue(Call, 0);  // Extract qu (128-bit data)
+      Value *Ptr = Builder.CreateExtractValue(Call, 1);
+      Value *NewXACCLow = Builder.CreateExtractValue(Call, 2);  // Extract XACC[31:0] (i32)
+      Value *NewXACCHigh = Builder.CreateExtractValue(Call, 3); // Extract XACC[39:32] (i32, only low 8 bits valid)
+
+      // Store qu and new XACC to output pointers
+      Builder.CreateStore(QU, Address(QUOutPtr, QU->getType(), CharUnits::fromQuantity(16)));
+      Builder.CreateStore(NewXACCLow, Address(XACCLowOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      Builder.CreateStore(NewXACCHigh, Address(XACCHighOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+
+      return Ptr; // Return updated pointer
+  }]>;
+
+// ESP.VMULAS.S16.XACC.M
+def esp_vmulas_s16_xacc_m
+    : ESPVBuiltin<"vmulas_s16_xacc_m", "riscv_esp_vmulas_s16_xacc_m", [{
+      // Mixed model: Input XACC as struct {unsigned int low, unsigned int high}
+      // Parameters: (unsigned int xacc_low_in, unsigned int xacc_high_in, qx, qy, unsigned int *xacc_low_out, unsigned int *xacc_high_out)
+      // Returns: void (outputs via pointers)
+      // Note: xacc_high_in is i32 but only low 8 bits are valid (XACC[39:32])
+      Value *XACCLowIn = EmitScalarExpr(E->getArg(0));  // XACC[31:0] input (unsigned int, i32)
+      Value *XACCHighIn = EmitScalarExpr(E->getArg(1)); // XACC[39:32] input (unsigned int, i32, only low 8 bits valid)
+      Value *QX = EmitScalarExpr(E->getArg(2));
+      Value *QY = EmitScalarExpr(E->getArg(3));
+      Value *XACCLowOutPtr = EmitScalarExpr(E->getArg(4));  // Output pointer for XACC[31:0]
+      Value *XACCHighOutPtr = EmitScalarExpr(E->getArg(5)); // Output pointer for XACC[39:32]
+
+      // Ensure XACCHighIn is i32 (builtin accepts unsigned int)
+      if (XACCHighIn->getType() != Builder.getInt32Ty()) {
+      if (XACCHighIn->getType() == Builder.getInt8Ty()) {
+      XACCHighIn = Builder.CreateZExt(XACCHighIn, Builder.getInt32Ty()); // Zero-extend i8 to i32
+      } else {
+      XACCHighIn = Builder.CreateTrunc(XACCHighIn, Builder.getInt32Ty()); // Truncate to i32 if needed
+      }
+      }
+
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmulas_s16_xacc_m);
+      Value *Call = Builder.CreateCall(F, {XACCLowIn, XACCHighIn, QX, QY});
+
+      // Intrinsic returns {i32, i32} struct (xacc_l, xacc_h where only low 8 bits of xacc_h are valid)
+      Value *NewXACCLow = Builder.CreateExtractValue(Call, 0);  // Extract XACC[31:0] (i32)
+      Value *NewXACCHigh = Builder.CreateExtractValue(Call, 1); // Extract XACC[39:32] (i32, only low 8 bits valid)
+
+      // Store results to output pointers
+      Builder.CreateStore(NewXACCLow, Address(XACCLowOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      Builder.CreateStore(NewXACCHigh, Address(XACCHighOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+
+      // Return void call
+      Function *NoOpF = CGM.getIntrinsic(Intrinsic::donothing);
+      return Builder.CreateCall(NoOpF, {});
+  }]>;
+
+// ESP.VMULAS.S16.XACC.ST.IP.M
+def esp_vmulas_s16_xacc_st_ip_m
+    : ESPVBuiltin<"vmulas_s16_xacc_st_ip_m",
+                  "riscv_esp_vmulas_s16_xacc_st_ip_m", [{
+      Value *XACCLowIn = EmitScalarExpr(E->getArg(0));  // XACC[31:0] input (unsigned int, i32)
+      Value *XACCHighIn = EmitScalarExpr(E->getArg(1)); // XACC[39:32] input (unsigned int, i32, only low 8 bits valid)
+      Value *QU = EmitScalarExpr(E->getArg(2));
+      Value *QX = EmitScalarExpr(E->getArg(3));
+      Value *QY = EmitScalarExpr(E->getArg(4));
+      Value *RS1 = EmitScalarExpr(E->getArg(5));
+      Value *OFFSET = EmitScalarExpr(E->getArg(6));
+      Value *XACCLowOutPtr = EmitScalarExpr(E->getArg(7));  // XACC[31:0] output parameter (pointer)
+      Value *XACCHighOutPtr = EmitScalarExpr(E->getArg(8)); // XACC[39:32] output parameter (pointer)
+
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmulas_s16_xacc_st_ip_m);
+      Value *Call = Builder.CreateCall(F, {XACCLowIn, XACCHighIn, QU, QX, QY, RS1, OFFSET});
+
+      // Intrinsic returns {ptr, i32 new_xacc_low, i32 new_xacc_high}
+      // Extract values from return struct
+      Value *Ptr = Builder.CreateExtractValue(Call, 0);
+      Value *NewXACCLow = Builder.CreateExtractValue(Call, 1);  // Extract XACC[31:0] (i32)
+      Value *NewXACCHigh = Builder.CreateExtractValue(Call, 2); // Extract XACC[39:32] (i32, only low 8 bits valid)
+
+      // Store new XACC to output parameters
+      Builder.CreateStore(NewXACCLow, Address(XACCLowOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      Builder.CreateStore(NewXACCHigh, Address(XACCHighOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+
+      return Ptr; // Return updated pointer
+  }]>;
+
+// ESP.VMULAS.S16.XACC.ST.XP.M
+def esp_vmulas_s16_xacc_st_xp_m
+    : ESPVBuiltin<"vmulas_s16_xacc_st_xp_m",
+                  "riscv_esp_vmulas_s16_xacc_st_xp_m", [{
+      Value *XACCLowIn = EmitScalarExpr(E->getArg(0));  // XACC[31:0] input (unsigned int, i32)
+      Value *XACCHighIn = EmitScalarExpr(E->getArg(1)); // XACC[39:32] input (unsigned int, i32, only low 8 bits valid)
+      Value *QU = EmitScalarExpr(E->getArg(2));
+      Value *QX = EmitScalarExpr(E->getArg(3));
+      Value *QY = EmitScalarExpr(E->getArg(4));
+      Value *RS1 = EmitScalarExpr(E->getArg(5));
+      Value *RS2 = EmitScalarExpr(E->getArg(6));
+      Value *XACCLowOutPtr = EmitScalarExpr(E->getArg(7));  // XACC[31:0] output parameter (pointer)
+      Value *XACCHighOutPtr = EmitScalarExpr(E->getArg(8)); // XACC[39:32] output parameter (pointer)
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmulas_s16_xacc_st_xp_m);
+      Value *Call = Builder.CreateCall(F, {XACCLowIn, XACCHighIn, QU, QX, QY, RS1, RS2});
+      // Intrinsic returns {ptr, i32 new_xacc_low, i32 new_xacc_high}
+      // Extract values from return struct
+      Value *Ptr = Builder.CreateExtractValue(Call, 0);
+      Value *NewXACCLow = Builder.CreateExtractValue(Call, 1);  // Extract XACC[31:0] (i32)
+      Value *NewXACCHigh = Builder.CreateExtractValue(Call, 2); // Extract XACC[39:32] (i32, only low 8 bits valid)
+
+      // Store new XACC to output parameters
+      Builder.CreateStore(NewXACCLow, Address(XACCLowOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      Builder.CreateStore(NewXACCHigh, Address(XACCHighOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+
+      return Ptr; // Return updated pointer
+  }]>;
+
+// ESP.VMULAS.S8.XACC.LD.IP.M
+def esp_vmulas_s8_xacc_ld_ip_m
+    : ESPVBuiltin<"vmulas_s8_xacc_ld_ip_m", "riscv_esp_vmulas_s8_xacc_ld_ip_m",
+                  [{
+      Value *XACCLowIn = EmitScalarExpr(E->getArg(0));  // XACC[31:0] input (unsigned int, i32)
+      Value *XACCHighIn = EmitScalarExpr(E->getArg(1)); // XACC[39:32] input (unsigned int, i32, only low 8 bits valid)
+      Value *QX = EmitScalarExpr(E->getArg(2));
+      Value *QY = EmitScalarExpr(E->getArg(3));
+      Value *RS1 = EmitScalarExpr(E->getArg(4));
+      Value *OFFSET = EmitScalarExpr(E->getArg(5));
+      Value *QUOutPtr = EmitScalarExpr(E->getArg(6));  // QU output parameter (pointer)
+      Value *XACCLowOutPtr = EmitScalarExpr(E->getArg(7));  // XACC[31:0] output parameter (pointer)
+      Value *XACCHighOutPtr = EmitScalarExpr(E->getArg(8)); // XACC[39:32] output parameter (pointer)
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmulas_s8_xacc_ld_ip_m);
+      Value *Call = Builder.CreateCall(F, {XACCLowIn, XACCHighIn, QX, QY, RS1, OFFSET});
+
+      // Intrinsic returns {v16i8 qu, ptr, i32 new_xacc_low, i32 new_xacc_high}
+      // Extract values from return struct
+      Value *QU = Builder.CreateExtractValue(Call, 0);  // Extract qu (128-bit data)
+      Value *Ptr = Builder.CreateExtractValue(Call, 1);
+      Value *NewXACCLow = Builder.CreateExtractValue(Call, 2);  // Extract XACC[31:0] (i32)
+      Value *NewXACCHigh = Builder.CreateExtractValue(Call, 3); // Extract XACC[39:32] (i32, only low 8 bits valid)
+
+      // Store qu and new XACC to output pointers
+      Builder.CreateStore(QU, Address(QUOutPtr, QU->getType(), CharUnits::fromQuantity(16)));
+      Builder.CreateStore(NewXACCLow, Address(XACCLowOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      Builder.CreateStore(NewXACCHigh, Address(XACCHighOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      return Ptr;
+  }]>;
+
+// ESP.VMULAS.S8.XACC.LD.XP.M
+def esp_vmulas_s8_xacc_ld_xp_m
+    : ESPVBuiltin<"vmulas_s8_xacc_ld_xp_m", "riscv_esp_vmulas_s8_xacc_ld_xp_m",
+                  [{
+      Value *XACCLowIn = EmitScalarExpr(E->getArg(0));  // XACC[31:0] input (unsigned int, i32)
+      Value *XACCHighIn = EmitScalarExpr(E->getArg(1)); // XACC[39:32] input (unsigned int, i32, only low 8 bits valid)
+      Value *QX = EmitScalarExpr(E->getArg(2));
+      Value *QY = EmitScalarExpr(E->getArg(3));
+      Value *RS1 = EmitScalarExpr(E->getArg(4));
+      Value *RS2 = EmitScalarExpr(E->getArg(5));
+      Value *QUOutPtr = EmitScalarExpr(E->getArg(6));  // QU output parameter (pointer)
+      Value *XACCLowOutPtr = EmitScalarExpr(E->getArg(7));  // XACC[31:0] output parameter (pointer)
+      Value *XACCHighOutPtr = EmitScalarExpr(E->getArg(8)); // XACC[39:32] output parameter (pointer)
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmulas_s8_xacc_ld_xp_m);
+      Value *Call = Builder.CreateCall(F, {XACCLowIn, XACCHighIn, QX, QY, RS1, RS2});
+
+      // Intrinsic returns {v16i8 qu, ptr, i32 new_xacc_low, i32 new_xacc_high}
+      // Extract values from return struct
+      Value *QU = Builder.CreateExtractValue(Call, 0);  // Extract qu (128-bit data)
+      Value *Ptr = Builder.CreateExtractValue(Call, 1);
+      Value *NewXACCLow = Builder.CreateExtractValue(Call, 2);  // Extract XACC[31:0] (i32)
+      Value *NewXACCHigh = Builder.CreateExtractValue(Call, 3); // Extract XACC[39:32] (i32, only low 8 bits valid)
+
+      // Store qu and new XACC to output pointers
+      Builder.CreateStore(QU, Address(QUOutPtr, QU->getType(), CharUnits::fromQuantity(16)));
+      Builder.CreateStore(NewXACCLow, Address(XACCLowOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      Builder.CreateStore(NewXACCHigh, Address(XACCHighOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      return Ptr;
+  }]>;
+
+// ESP.VMULAS.S8.XACC.M
+def esp_vmulas_s8_xacc_m
+    : ESPVBuiltin<"vmulas_s8_xacc_m", "riscv_esp_vmulas_s8_xacc_m", [{
+      // Mixed model: Input XACC as struct {unsigned int low, unsigned char high}
+      // Parameters: (unsigned int xacc_low_in, unsigned char xacc_high_in, qx, qy, unsigned int *xacc_low_out, unsigned char *xacc_high_out)
+      // Returns: void (outputs via pointers)
+      Value *XACCLowIn = EmitScalarExpr(E->getArg(0));  // XACC[31:0] input (unsigned int)
+      Value *XACCHighIn = EmitScalarExpr(E->getArg(1)); // XACC[39:32] input (unsigned int, i32, only low 8 bits valid)
+      Value *QX = EmitScalarExpr(E->getArg(2));
+      Value *QY = EmitScalarExpr(E->getArg(3));
+      Value *XACCLowOutPtr = EmitScalarExpr(E->getArg(4));  // Output pointer for XACC[31:0]
+      Value *XACCHighOutPtr = EmitScalarExpr(E->getArg(5)); // Output pointer for XACC[39:32]
+
+      // Ensure XACCHighIn is i32 (builtin accepts unsigned int)
+      if (XACCHighIn->getType() != Builder.getInt32Ty()) {
+      if (XACCHighIn->getType() == Builder.getInt8Ty()) {
+      XACCHighIn = Builder.CreateZExt(XACCHighIn, Builder.getInt32Ty()); // Zero-extend i8 to i32
+      } else {
+      XACCHighIn = Builder.CreateTrunc(XACCHighIn, Builder.getInt32Ty()); // Truncate to i32 if needed
+      }
+      }
+
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmulas_s8_xacc_m);
+      Value *Call = Builder.CreateCall(F, {XACCLowIn, XACCHighIn, QX, QY});
+
+      // Intrinsic returns {i32, i32} struct (xacc_l, xacc_h where only low 8 bits of xacc_h are valid)
+      Value *NewXACCLow = Builder.CreateExtractValue(Call, 0);  // Extract XACC[31:0] (i32)
+      Value *NewXACCHigh = Builder.CreateExtractValue(Call, 1); // Extract XACC[39:32] (i32, only low 8 bits valid)
+
+      // Store results to output pointers
+      Builder.CreateStore(NewXACCLow, Address(XACCLowOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      Builder.CreateStore(NewXACCHigh, Address(XACCHighOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+
+      // Return void call
+      Function *NoOpF = CGM.getIntrinsic(Intrinsic::donothing);
+      return Builder.CreateCall(NoOpF, {});
+  }]>;
+
+// ESP.VMULAS.S8.XACC.ST.IP.M
+def esp_vmulas_s8_xacc_st_ip_m
+    : ESPVBuiltin<"vmulas_s8_xacc_st_ip_m", "riscv_esp_vmulas_s8_xacc_st_ip_m",
+                  [{
+      Value *XACCLowIn = EmitScalarExpr(E->getArg(0));  // XACC[31:0] input (unsigned int, i32)
+      Value *XACCHighIn = EmitScalarExpr(E->getArg(1)); // XACC[39:32] input (unsigned int, i32, only low 8 bits valid)
+      Value *QU = EmitScalarExpr(E->getArg(2));
+      Value *QX = EmitScalarExpr(E->getArg(3));
+      Value *QY = EmitScalarExpr(E->getArg(4));
+      Value *RS1 = EmitScalarExpr(E->getArg(5));
+      Value *OFFSET = EmitScalarExpr(E->getArg(6));
+      Value *XACCLowOutPtr = EmitScalarExpr(E->getArg(7));  // XACC[31:0] output parameter (pointer)
+      Value *XACCHighOutPtr = EmitScalarExpr(E->getArg(8)); // XACC[39:32] output parameter (pointer)
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmulas_s8_xacc_st_ip_m);
+      Value *Call = Builder.CreateCall(F, {XACCLowIn, XACCHighIn, QU, QX, QY, RS1, OFFSET});
+      // Intrinsic returns {ptr, i32 new_xacc_low, i32 new_xacc_high}
+      Value *Ptr = Builder.CreateExtractValue(Call, 0);
+      Value *NewXACCLow = Builder.CreateExtractValue(Call, 1);  // Extract XACC[31:0] (i32)
+      Value *NewXACCHigh = Builder.CreateExtractValue(Call, 2); // Extract XACC[39:32] (i32, only low 8 bits valid)
+
+      // Store new XACC to output parameters
+      Builder.CreateStore(NewXACCLow, Address(XACCLowOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      Builder.CreateStore(NewXACCHigh, Address(XACCHighOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      return Ptr;
+  }]>;
+
+// ESP.VMULAS.S8.XACC.ST.XP.M
+def esp_vmulas_s8_xacc_st_xp_m
+    : ESPVBuiltin<"vmulas_s8_xacc_st_xp_m", "riscv_esp_vmulas_s8_xacc_st_xp_m",
+                  [{
+      Value *XACCLowIn = EmitScalarExpr(E->getArg(0));  // XACC[31:0] input (unsigned int, i32)
+      Value *XACCHighIn = EmitScalarExpr(E->getArg(1)); // XACC[39:32] input (unsigned int, i32, only low 8 bits valid)
+      Value *QU = EmitScalarExpr(E->getArg(2));
+      Value *QX = EmitScalarExpr(E->getArg(3));
+      Value *QY = EmitScalarExpr(E->getArg(4));
+      Value *RS1 = EmitScalarExpr(E->getArg(5));
+      Value *RS2 = EmitScalarExpr(E->getArg(6));
+      Value *XACCLowOutPtr = EmitScalarExpr(E->getArg(7));  // XACC[31:0] output parameter (pointer)
+      Value *XACCHighOutPtr = EmitScalarExpr(E->getArg(8)); // XACC[39:32] output parameter (pointer)
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmulas_s8_xacc_st_xp_m);
+      Value *Call = Builder.CreateCall(F, {XACCLowIn, XACCHighIn, QU, QX, QY, RS1, RS2});
+      // Intrinsic returns {ptr, i32 new_xacc_low, i32 new_xacc_high}
+      Value *Ptr = Builder.CreateExtractValue(Call, 0);
+      Value *NewXACCLow = Builder.CreateExtractValue(Call, 1);  // Extract XACC[31:0] (i32)
+      Value *NewXACCHigh = Builder.CreateExtractValue(Call, 2); // Extract XACC[39:32] (i32, only low 8 bits valid)
+
+      // Store new XACC to output parameters
+      Builder.CreateStore(NewXACCLow, Address(XACCLowOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      Builder.CreateStore(NewXACCHigh, Address(XACCHighOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      return Ptr;
+  }]>;
+
+// ESP.VMULAS.U16.XACC.LD.IP.M
+def esp_vmulas_u16_xacc_ld_ip_m
+    : ESPVBuiltin<"vmulas_u16_xacc_ld_ip_m",
+                  "riscv_esp_vmulas_u16_xacc_ld_ip_m", [{
+      Value *XACCLowIn = EmitScalarExpr(E->getArg(0));  // XACC[31:0] input (unsigned int, i32)
+      Value *XACCHighIn = EmitScalarExpr(E->getArg(1)); // XACC[39:32] input (unsigned int, i32, only low 8 bits valid)
+      Value *QX = EmitScalarExpr(E->getArg(2));
+      Value *QY = EmitScalarExpr(E->getArg(3));
+      Value *RS1 = EmitScalarExpr(E->getArg(4));
+      Value *OFFSET = EmitScalarExpr(E->getArg(5));
+      Value *QUOutPtr = EmitScalarExpr(E->getArg(6));  // QU output parameter (pointer)
+      Value *XACCLowOutPtr = EmitScalarExpr(E->getArg(7));  // XACC[31:0] output parameter (pointer)
+      Value *XACCHighOutPtr = EmitScalarExpr(E->getArg(8)); // XACC[39:32] output parameter (pointer)
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmulas_u16_xacc_ld_ip_m);
+      Value *Call = Builder.CreateCall(F, {XACCLowIn, XACCHighIn, QX, QY, RS1, OFFSET});
+
+      // Intrinsic returns {v16i8 qu, ptr, i32 new_xacc_low, i32 new_xacc_high}
+      // Extract values from return struct
+      Value *QU = Builder.CreateExtractValue(Call, 0);  // Extract qu (128-bit data)
+      Value *Ptr = Builder.CreateExtractValue(Call, 1);
+      Value *NewXACCLow = Builder.CreateExtractValue(Call, 2);  // Extract XACC[31:0] (i32)
+      Value *NewXACCHigh = Builder.CreateExtractValue(Call, 3); // Extract XACC[39:32] (i32, only low 8 bits valid)
+
+      // Store qu and new XACC to output pointers
+      Builder.CreateStore(QU, Address(QUOutPtr, QU->getType(), CharUnits::fromQuantity(16)));
+      Builder.CreateStore(NewXACCLow, Address(XACCLowOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      Builder.CreateStore(NewXACCHigh, Address(XACCHighOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      return Ptr;
+  }]>;
+
+// ESP.VMULAS.U16.XACC.LD.XP.M
+def esp_vmulas_u16_xacc_ld_xp_m
+    : ESPVBuiltin<"vmulas_u16_xacc_ld_xp_m",
+                  "riscv_esp_vmulas_u16_xacc_ld_xp_m", [{
+      Value *XACCLowIn = EmitScalarExpr(E->getArg(0));  // XACC[31:0] input (unsigned int, i32)
+      Value *XACCHighIn = EmitScalarExpr(E->getArg(1)); // XACC[39:32] input (unsigned int, i32, only low 8 bits valid)
+      Value *QX = EmitScalarExpr(E->getArg(2));
+      Value *QY = EmitScalarExpr(E->getArg(3));
+      Value *RS1 = EmitScalarExpr(E->getArg(4));
+      Value *RS2 = EmitScalarExpr(E->getArg(5));
+      Value *QUOutPtr = EmitScalarExpr(E->getArg(6));  // QU output parameter (pointer)
+      Value *XACCLowOutPtr = EmitScalarExpr(E->getArg(7));  // XACC[31:0] output parameter (pointer)
+      Value *XACCHighOutPtr = EmitScalarExpr(E->getArg(8)); // XACC[39:32] output parameter (pointer)
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmulas_u16_xacc_ld_xp_m);
+      Value *Call = Builder.CreateCall(F, {XACCLowIn, XACCHighIn, QX, QY, RS1, RS2});
+
+      // Intrinsic returns {v16i8 qu, ptr, i32 new_xacc_low, i32 new_xacc_high}
+      // Extract values from return struct
+      Value *QU = Builder.CreateExtractValue(Call, 0);  // Extract qu (128-bit data)
+      Value *Ptr = Builder.CreateExtractValue(Call, 1);
+      Value *NewXACCLow = Builder.CreateExtractValue(Call, 2);  // Extract XACC[31:0] (i32)
+      Value *NewXACCHigh = Builder.CreateExtractValue(Call, 3); // Extract XACC[39:32] (i32, only low 8 bits valid)
+
+      // Store qu and new XACC to output pointers
+      Builder.CreateStore(QU, Address(QUOutPtr, QU->getType(), CharUnits::fromQuantity(16)));
+      Builder.CreateStore(NewXACCLow, Address(XACCLowOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      Builder.CreateStore(NewXACCHigh, Address(XACCHighOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      return Ptr;
+  }]>;
+
+// ESP.VMULAS.U16.XACC.M
+def esp_vmulas_u16_xacc_m
+    : ESPVBuiltin<"vmulas_u16_xacc_m", "riscv_esp_vmulas_u16_xacc_m", [{
+      // Mixed model: Input XACC as struct {unsigned int low, unsigned int high}
+      // Parameters: (unsigned int xacc_low_in, unsigned int xacc_high_in, qx, qy, unsigned int *xacc_low_out, unsigned int *xacc_high_out)
+      // Returns: void (outputs via pointers)
+      // Note: xacc_high_in is i32 but only low 8 bits are valid (XACC[39:32])
+      Value *XACCLowIn = EmitScalarExpr(E->getArg(0));  // XACC[31:0] input (unsigned int, i32)
+      Value *XACCHighIn = EmitScalarExpr(E->getArg(1)); // XACC[39:32] input (unsigned int, i32, only low 8 bits valid)
+      Value *QX = EmitScalarExpr(E->getArg(2));
+      Value *QY = EmitScalarExpr(E->getArg(3));
+      Value *XACCLowOutPtr = EmitScalarExpr(E->getArg(4));  // Output pointer for XACC[31:0]
+      Value *XACCHighOutPtr = EmitScalarExpr(E->getArg(5)); // Output pointer for XACC[39:32]
+
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmulas_u16_xacc_m);
+      Value *Call = Builder.CreateCall(F, {XACCLowIn, XACCHighIn, QX, QY});
+
+      // Intrinsic returns {i32, i8} struct
+      Value *NewXACCLow = Builder.CreateExtractValue(Call, 0);  // Extract XACC[31:0]
+      Value *NewXACCHigh = Builder.CreateExtractValue(Call, 1); // Extract XACC[39:32]
+
+      // Store results to output pointers
+      Builder.CreateStore(NewXACCLow, Address(XACCLowOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      Builder.CreateStore(NewXACCHigh, Address(XACCHighOutPtr, Builder.getInt8Ty(), CharUnits::fromQuantity(1)));
+
+      // Return void call
+      Function *NoOpF = CGM.getIntrinsic(Intrinsic::donothing);
+      return Builder.CreateCall(NoOpF, {});
+  }]>;
+
+// ESP.VMULAS.U16.XACC.ST.IP.M
+def esp_vmulas_u16_xacc_st_ip_m
+    : ESPVBuiltin<"vmulas_u16_xacc_st_ip_m",
+                  "riscv_esp_vmulas_u16_xacc_st_ip_m", [{
+      Value *XACCLowIn = EmitScalarExpr(E->getArg(0));  // XACC[31:0] input (unsigned int, i32)
+      Value *XACCHighIn = EmitScalarExpr(E->getArg(1)); // XACC[39:32] input (unsigned int, i32, only low 8 bits valid)
+      Value *QU = EmitScalarExpr(E->getArg(2));
+      Value *QX = EmitScalarExpr(E->getArg(3));
+      Value *QY = EmitScalarExpr(E->getArg(4));
+      Value *RS1 = EmitScalarExpr(E->getArg(5));
+      Value *OFFSET = EmitScalarExpr(E->getArg(6));
+      Value *XACCLowOutPtr = EmitScalarExpr(E->getArg(7));  // XACC[31:0] output parameter (pointer)
+      Value *XACCHighOutPtr = EmitScalarExpr(E->getArg(8)); // XACC[39:32] output parameter (pointer)
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmulas_u16_xacc_st_ip_m);
+      Value *Call = Builder.CreateCall(F, {XACCLowIn, XACCHighIn, QU, QX, QY, RS1, OFFSET});
+      // Intrinsic returns {ptr, i32 new_xacc_low, i32 new_xacc_high}
+      Value *Ptr = Builder.CreateExtractValue(Call, 0);
+      Value *NewXACCLow = Builder.CreateExtractValue(Call, 1);  // Extract XACC[31:0] (i32)
+      Value *NewXACCHigh = Builder.CreateExtractValue(Call, 2); // Extract XACC[39:32] (i32, only low 8 bits valid)
+
+      // Store new XACC to output parameters
+      Builder.CreateStore(NewXACCLow, Address(XACCLowOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      Builder.CreateStore(NewXACCHigh, Address(XACCHighOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      return Ptr;
+  }]>;
+
+// ESP.VMULAS.U16.XACC.ST.XP.M
+def esp_vmulas_u16_xacc_st_xp_m
+    : ESPVBuiltin<"vmulas_u16_xacc_st_xp_m",
+                  "riscv_esp_vmulas_u16_xacc_st_xp_m", [{
+      Value *XACCLowIn = EmitScalarExpr(E->getArg(0));  // XACC[31:0] input (unsigned int, i32)
+      Value *XACCHighIn = EmitScalarExpr(E->getArg(1)); // XACC[39:32] input (unsigned int, i32, only low 8 bits valid)
+      Value *QU = EmitScalarExpr(E->getArg(2));
+      Value *QX = EmitScalarExpr(E->getArg(3));
+      Value *QY = EmitScalarExpr(E->getArg(4));
+      Value *RS1 = EmitScalarExpr(E->getArg(5));
+      Value *RS2 = EmitScalarExpr(E->getArg(6));
+      Value *XACCLowOutPtr = EmitScalarExpr(E->getArg(7));  // XACC[31:0] output parameter (pointer)
+      Value *XACCHighOutPtr = EmitScalarExpr(E->getArg(8)); // XACC[39:32] output parameter (pointer)
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmulas_u16_xacc_st_xp_m);
+      Value *Call = Builder.CreateCall(F, {XACCLowIn, XACCHighIn, QU, QX, QY, RS1, RS2});
+      // Intrinsic returns {ptr, i32 new_xacc_low, i32 new_xacc_high}
+      Value *Ptr = Builder.CreateExtractValue(Call, 0);
+      Value *NewXACCLow = Builder.CreateExtractValue(Call, 1);  // Extract XACC[31:0] (i32)
+      Value *NewXACCHigh = Builder.CreateExtractValue(Call, 2); // Extract XACC[39:32] (i32, only low 8 bits valid)
+
+      // Store new XACC to output parameters
+      Builder.CreateStore(NewXACCLow, Address(XACCLowOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      Builder.CreateStore(NewXACCHigh, Address(XACCHighOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      return Ptr;
+  }]>;
+
+// ESP.VMULAS.U8.XACC.LD.IP.M
+def esp_vmulas_u8_xacc_ld_ip_m
+    : ESPVBuiltin<"vmulas_u8_xacc_ld_ip_m", "riscv_esp_vmulas_u8_xacc_ld_ip_m",
+                  [{
+      Value *XACCLowIn = EmitScalarExpr(E->getArg(0));  // XACC[31:0] input (unsigned int, i32)
+      Value *XACCHighIn = EmitScalarExpr(E->getArg(1)); // XACC[39:32] input (unsigned int, i32, only low 8 bits valid)
+      Value *QX = EmitScalarExpr(E->getArg(2));
+      Value *QY = EmitScalarExpr(E->getArg(3));
+      Value *RS1 = EmitScalarExpr(E->getArg(4));
+      Value *OFFSET = EmitScalarExpr(E->getArg(5));
+      Value *QUOutPtr = EmitScalarExpr(E->getArg(6));  // QU output parameter (pointer)
+      Value *XACCLowOutPtr = EmitScalarExpr(E->getArg(7));  // XACC[31:0] output parameter (pointer)
+      Value *XACCHighOutPtr = EmitScalarExpr(E->getArg(8)); // XACC[39:32] output parameter (pointer)
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmulas_u8_xacc_ld_ip_m);
+      Value *Call = Builder.CreateCall(F, {XACCLowIn, XACCHighIn, QX, QY, RS1, OFFSET});
+
+      // Intrinsic returns {v16i8 qu, ptr, i32 new_xacc_low, i32 new_xacc_high}
+      // Extract values from return struct
+      Value *QU = Builder.CreateExtractValue(Call, 0);  // Extract qu (128-bit data)
+      Value *Ptr = Builder.CreateExtractValue(Call, 1);
+      Value *NewXACCLow = Builder.CreateExtractValue(Call, 2);  // Extract XACC[31:0] (i32)
+      Value *NewXACCHigh = Builder.CreateExtractValue(Call, 3); // Extract XACC[39:32] (i32, only low 8 bits valid)
+
+      // Store qu and new XACC to output pointers
+      Builder.CreateStore(QU, Address(QUOutPtr, QU->getType(), CharUnits::fromQuantity(16)));
+      Builder.CreateStore(NewXACCLow, Address(XACCLowOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      Builder.CreateStore(NewXACCHigh, Address(XACCHighOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      return Ptr;
+  }]>;
+
+// ESP.VMULAS.U8.XACC.LD.XP.M
+def esp_vmulas_u8_xacc_ld_xp_m
+    : ESPVBuiltin<"vmulas_u8_xacc_ld_xp_m", "riscv_esp_vmulas_u8_xacc_ld_xp_m",
+                  [{
+      Value *XACCLowIn = EmitScalarExpr(E->getArg(0));  // XACC[31:0] input (unsigned int, i32)
+      Value *XACCHighIn = EmitScalarExpr(E->getArg(1)); // XACC[39:32] input (unsigned int, i32, only low 8 bits valid)
+      Value *QX = EmitScalarExpr(E->getArg(2));
+      Value *QY = EmitScalarExpr(E->getArg(3));
+      Value *RS1 = EmitScalarExpr(E->getArg(4));
+      Value *RS2 = EmitScalarExpr(E->getArg(5));
+      Value *QUOutPtr = EmitScalarExpr(E->getArg(6));  // QU output parameter (pointer)
+      Value *XACCLowOutPtr = EmitScalarExpr(E->getArg(7));  // XACC[31:0] output parameter (pointer)
+      Value *XACCHighOutPtr = EmitScalarExpr(E->getArg(8)); // XACC[39:32] output parameter (pointer)
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmulas_u8_xacc_ld_xp_m);
+      Value *Call = Builder.CreateCall(F, {XACCLowIn, XACCHighIn, QX, QY, RS1, RS2});
+
+      // Intrinsic returns {v16i8 qu, ptr, i32 new_xacc_low, i32 new_xacc_high}
+      // Extract values from return struct
+      Value *QU = Builder.CreateExtractValue(Call, 0);  // Extract qu (128-bit data)
+      Value *Ptr = Builder.CreateExtractValue(Call, 1);
+      Value *NewXACCLow = Builder.CreateExtractValue(Call, 2);  // Extract XACC[31:0] (i32)
+      Value *NewXACCHigh = Builder.CreateExtractValue(Call, 3); // Extract XACC[39:32] (i32, only low 8 bits valid)
+
+      // Store qu and new XACC to output pointers
+      Builder.CreateStore(QU, Address(QUOutPtr, QU->getType(), CharUnits::fromQuantity(16)));
+      Builder.CreateStore(NewXACCLow, Address(XACCLowOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      Builder.CreateStore(NewXACCHigh, Address(XACCHighOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      return Ptr;
+  }]>;
+
+// ESP.VMULAS.U8.XACC.M
+def esp_vmulas_u8_xacc_m
+    : ESPVBuiltin<"vmulas_u8_xacc_m", "riscv_esp_vmulas_u8_xacc_m", [{
+      // Mixed model: Input XACC as struct {unsigned int low, unsigned int high}
+      // Parameters: (unsigned int xacc_low_in, unsigned int xacc_high_in, qx, qy, unsigned int *xacc_low_out, unsigned int *xacc_high_out)
+      // Returns: void (outputs via pointers)
+      // Note: xacc_high_in is i32 but only low 8 bits are valid (XACC[39:32])
+      Value *XACCLowIn = EmitScalarExpr(E->getArg(0));  // XACC[31:0] input (unsigned int, i32)
+      Value *XACCHighIn = EmitScalarExpr(E->getArg(1)); // XACC[39:32] input (unsigned int, i32, only low 8 bits valid)
+      Value *QX = EmitScalarExpr(E->getArg(2));
+      Value *QY = EmitScalarExpr(E->getArg(3));
+      Value *XACCLowOutPtr = EmitScalarExpr(E->getArg(4));  // Output pointer for XACC[31:0]
+      Value *XACCHighOutPtr = EmitScalarExpr(E->getArg(5)); // Output pointer for XACC[39:32]
+
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmulas_u8_xacc_m);
+      Value *Call = Builder.CreateCall(F, {XACCLowIn, XACCHighIn, QX, QY});
+
+      // Intrinsic returns {i32, i8} struct
+      Value *NewXACCLow = Builder.CreateExtractValue(Call, 0);  // Extract XACC[31:0]
+      Value *NewXACCHigh = Builder.CreateExtractValue(Call, 1); // Extract XACC[39:32]
+
+      // Store results to output pointers
+      Builder.CreateStore(NewXACCLow, Address(XACCLowOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      Builder.CreateStore(NewXACCHigh, Address(XACCHighOutPtr, Builder.getInt8Ty(), CharUnits::fromQuantity(1)));
+
+      // Return void call
+      Function *NoOpF = CGM.getIntrinsic(Intrinsic::donothing);
+      return Builder.CreateCall(NoOpF, {});
+  }]>;
+
+// ESP.VMULAS.U8.XACC.ST.IP.M
+def esp_vmulas_u8_xacc_st_ip_m
+    : ESPVBuiltin<"vmulas_u8_xacc_st_ip_m", "riscv_esp_vmulas_u8_xacc_st_ip_m",
+                  [{
+      Value *XACCLowIn = EmitScalarExpr(E->getArg(0));  // XACC[31:0] input (unsigned int, i32)
+      Value *XACCHighIn = EmitScalarExpr(E->getArg(1)); // XACC[39:32] input (unsigned int, i32, only low 8 bits valid)
+      Value *QU = EmitScalarExpr(E->getArg(2));
+      Value *QX = EmitScalarExpr(E->getArg(3));
+      Value *QY = EmitScalarExpr(E->getArg(4));
+      Value *RS1 = EmitScalarExpr(E->getArg(5));
+      Value *OFFSET = EmitScalarExpr(E->getArg(6));
+      Value *XACCLowOutPtr = EmitScalarExpr(E->getArg(7));  // XACC[31:0] output parameter (pointer)
+      Value *XACCHighOutPtr = EmitScalarExpr(E->getArg(8)); // XACC[39:32] output parameter (pointer)
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmulas_u8_xacc_st_ip_m);
+      Value *Call = Builder.CreateCall(F, {XACCLowIn, XACCHighIn, QU, QX, QY, RS1, OFFSET});
+      // Intrinsic returns {ptr, i32 new_xacc_low, i32 new_xacc_high}
+      Value *Ptr = Builder.CreateExtractValue(Call, 0);
+      Value *NewXACCLow = Builder.CreateExtractValue(Call, 1);  // Extract XACC[31:0] (i32)
+      Value *NewXACCHigh = Builder.CreateExtractValue(Call, 2); // Extract XACC[39:32] (i32, only low 8 bits valid)
+
+      // Store new XACC to output parameters
+      Builder.CreateStore(NewXACCLow, Address(XACCLowOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      Builder.CreateStore(NewXACCHigh, Address(XACCHighOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      return Ptr;
+  }]>;
+
+// ESP.VMULAS.U8.XACC.ST.XP.M
+def esp_vmulas_u8_xacc_st_xp_m
+    : ESPVBuiltin<"vmulas_u8_xacc_st_xp_m", "riscv_esp_vmulas_u8_xacc_st_xp_m",
+                  [{
+      Value *XACCLowIn = EmitScalarExpr(E->getArg(0));  // XACC[31:0] input (unsigned int, i32)
+      Value *XACCHighIn = EmitScalarExpr(E->getArg(1)); // XACC[39:32] input (unsigned int, i32, only low 8 bits valid)
+      Value *QU = EmitScalarExpr(E->getArg(2));
+      Value *QX = EmitScalarExpr(E->getArg(3));
+      Value *QY = EmitScalarExpr(E->getArg(4));
+      Value *RS1 = EmitScalarExpr(E->getArg(5));
+      Value *RS2 = EmitScalarExpr(E->getArg(6));
+      Value *XACCLowOutPtr = EmitScalarExpr(E->getArg(7));  // XACC[31:0] output parameter (pointer)
+      Value *XACCHighOutPtr = EmitScalarExpr(E->getArg(8)); // XACC[39:32] output parameter (pointer)
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmulas_u8_xacc_st_xp_m);
+      Value *Call = Builder.CreateCall(F, {XACCLowIn, XACCHighIn, QU, QX, QY, RS1, RS2});
+      // Intrinsic returns {ptr, i32 new_xacc_low, i32 new_xacc_high}
+      Value *Ptr = Builder.CreateExtractValue(Call, 0);
+      Value *NewXACCLow = Builder.CreateExtractValue(Call, 1);  // Extract XACC[31:0] (i32)
+      Value *NewXACCHigh = Builder.CreateExtractValue(Call, 2); // Extract XACC[39:32] (i32, only low 8 bits valid)
+
+      // Store new XACC to output parameters
+      Builder.CreateStore(NewXACCLow, Address(XACCLowOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      Builder.CreateStore(NewXACCHigh, Address(XACCHighOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
+      return Ptr;
   }]>;
