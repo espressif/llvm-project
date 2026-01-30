@@ -644,14 +644,64 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
       RISCV::GPRRegClass.contains(SrcReg)) {
     // GPR -> FFT_BIT_WIDTH: use ESP.MOVX.W.FFT.BIT.WIDTH
     BuildMI(MBB, MBBI, DL, get(RISCV::ESP_MOVX_W_FFT_BIT_WIDTH), DstReg)
-        .addReg(SrcReg, KillFlag);
+        .addReg(SrcReg, KillFlag | getRenamableRegState(RenamableSrc));
     return;
   }
   if (RISCV::GPRRegClass.contains(DstReg) &&
       RISCV::FFT_BIT_WIDTHRegRegClass.contains(SrcReg)) {
     // FFT_BIT_WIDTH -> GPR: use ESP.MOVX.R.FFT.BIT.WIDTH
     BuildMI(MBB, MBBI, DL, get(RISCV::ESP_MOVX_R_FFT_BIT_WIDTH), DstReg)
-        .addReg(SrcReg, KillFlag);
+        .addReg(SrcReg, KillFlag | getRenamableRegState(RenamableSrc));
+    return;
+  }
+
+  // Handle SAR register copies (ESP32P4)
+  // SAR is a 6-bit register, represented as 32-bit for explicit state passing
+  // GPR -> SAR: Use ESP.MOVX.W.SAR
+  if (RISCV::SARRegRegClass.contains(DstReg) &&
+      RISCV::GPRRegClass.contains(SrcReg)) {
+    BuildMI(MBB, MBBI, DL, get(RISCV::ESP_MOVX_W_SAR), DstReg)
+        .addReg(SrcReg, KillFlag | getRenamableRegState(RenamableSrc));
+    return;
+  }
+
+  // SAR -> GPR: Use ESP.MOVX.R.SAR
+  if (RISCV::GPRRegClass.contains(DstReg) &&
+      RISCV::SARRegRegClass.contains(SrcReg)) {
+    BuildMI(MBB, MBBI, DL, get(RISCV::ESP_MOVX_R_SAR), DstReg)
+        .addReg(SrcReg, KillFlag | getRenamableRegState(RenamableSrc));
+    return;
+  }
+
+  // SAR -> SAR: Use COPY directly (same register class)
+  if (RISCV::SARRegRegClass.contains(DstReg, SrcReg)) {
+    BuildMI(MBB, MBBI, DL, get(RISCV::COPY), DstReg)
+        .addReg(SrcReg, KillFlag | getRenamableRegState(RenamableSrc));
+    return;
+  }
+
+  // Handle SAR_BYTES register copies (ESP32P4)
+  // SAR_BYTES is a 4-bit register, represented as 32-bit for explicit state passing
+  // GPR -> SAR_BYTES: Use ESP.MOVX.W.SAR.BYTES
+  if (RISCV::SAR_BYTESRegRegClass.contains(DstReg) &&
+      RISCV::GPRRegClass.contains(SrcReg)) {
+    BuildMI(MBB, MBBI, DL, get(RISCV::ESP_MOVX_W_SAR_BYTES), DstReg)
+        .addReg(SrcReg, KillFlag | getRenamableRegState(RenamableSrc));
+    return;
+  }
+
+  // SAR_BYTES -> GPR: Use ESP.MOVX.R.SAR.BYTES
+  if (RISCV::GPRRegClass.contains(DstReg) &&
+      RISCV::SAR_BYTESRegRegClass.contains(SrcReg)) {
+    BuildMI(MBB, MBBI, DL, get(RISCV::ESP_MOVX_R_SAR_BYTES), DstReg)
+        .addReg(SrcReg, KillFlag | getRenamableRegState(RenamableSrc));
+    return;
+  }
+
+  // SAR_BYTES -> SAR_BYTES: Use COPY directly (same register class)
+  if (RISCV::SAR_BYTESRegRegClass.contains(DstReg, SrcReg)) {
+    BuildMI(MBB, MBBI, DL, get(RISCV::COPY), DstReg)
+        .addReg(SrcReg, KillFlag | getRenamableRegState(RenamableSrc));
     return;
   }
 
@@ -715,6 +765,97 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
   }
   // XACC_HIGH -> XACC_HIGH: Use COPY directly (same register class)
   if (RISCV::XACC_HIGHRegClass.contains(DstReg, SrcReg)) {
+    BuildMI(MBB, MBBI, DL, get(RISCV::COPY), DstReg)
+        .addReg(SrcReg, KillFlag | getRenamableRegState(RenamableSrc));
+    return;
+  }
+
+  // Handle QR register copies (ESP32P4)
+  // QR registers are 128-bit, split into two 64-bit subregisters
+  if (RISCV::QRRegClass.contains(DstReg, SrcReg)) {
+    // Copy low 64-bit subregister
+    MCRegister SrcLow = TRI->getSubReg(SrcReg, RISCV::sub_qr_64);
+    MCRegister DstLow = TRI->getSubReg(DstReg, RISCV::sub_qr_64);
+    BuildMI(MBB, MBBI, DL, get(RISCV::COPY), DstLow)
+        .addReg(SrcLow, KillFlag);
+    
+    // Copy high 64-bit subregister
+    MCRegister SrcHigh = TRI->getSubReg(SrcReg, RISCV::sub_qr_64_hi);
+    MCRegister DstHigh = TRI->getSubReg(DstReg, RISCV::sub_qr_64_hi);
+    BuildMI(MBB, MBBI, DL, get(RISCV::COPY), DstHigh)
+        .addReg(SrcHigh, KillFlag);
+    return;
+  }
+
+  // Handle QR -> QR_64 copies (ESP32P4)
+  // When copying from QR to QR_64, use EXTRACT_SUBREG instead of COPY
+  // Determine which subregister index to use based on the destination register
+  if (RISCV::QRRegClass.contains(SrcReg) && RISCV::QR_64RegClass.contains(DstReg)) {
+    // Determine subregister index by checking if DstReg is D0 (low) or D1 (high)
+    // D0 registers: Q0_D0-Q7_D0 (encoding 0-7)
+    // D1 registers: Q0_D1-Q7_D1 (encoding 8-15)
+    MCRegister DstRegNum = DstReg;
+    if (DstRegNum >= RISCV::Q0_D0 && DstRegNum <= RISCV::Q7_D0) {
+      // Low 64-bit subregister
+      BuildMI(MBB, MBBI, DL, get(TargetOpcode::EXTRACT_SUBREG), DstReg)
+          .addReg(SrcReg, KillFlag | getRenamableRegState(RenamableSrc))
+          .addImm(RISCV::sub_qr_64);
+      return;
+    } 
+    if (DstRegNum >= RISCV::Q0_D1 && DstRegNum <= RISCV::Q7_D1) {
+      // High 64-bit subregister
+      BuildMI(MBB, MBBI, DL, get(TargetOpcode::EXTRACT_SUBREG), DstReg)
+          .addReg(SrcReg, KillFlag | getRenamableRegState(RenamableSrc))
+          .addImm(RISCV::sub_qr_64_hi);
+      return;
+    }
+  }
+
+  // Handle QR_64 unified subregister copies (ESP32P4)
+  // QR_64 contains both low and high 64-bit subregisters (D0 and D1)
+  if (RISCV::QR_64RegClass.contains(DstReg) && RISCV::QR_64RegClass.contains(SrcReg)) {
+    // For 64-bit subregister copies, use COPY directly
+    BuildMI(MBB, MBBI, DL, get(RISCV::COPY), DstReg)
+        .addReg(SrcReg, KillFlag | getRenamableRegState(RenamableSrc));
+    return;
+  }
+
+  // Handle QACC <-> VR copies (ESP32P4)
+  // QACC registers are independent physical registers, not aliases of VR
+  // We need to handle copies between QACC and VR registers
+  bool DstIsQACC = RISCV::QACC_LRegClass.contains(DstReg) ||
+                   RISCV::QACC_HRegClass.contains(DstReg) ||
+                   RISCV::QACC_L_LOWRegClass.contains(DstReg) ||
+                   RISCV::QACC_L_HIGHRegClass.contains(DstReg) ||
+                   RISCV::QACC_H_LOWRegClass.contains(DstReg) ||
+                   RISCV::QACC_H_HIGHRegClass.contains(DstReg);
+  bool SrcIsQACC = RISCV::QACC_LRegClass.contains(SrcReg) ||
+                   RISCV::QACC_HRegClass.contains(SrcReg) ||
+                   RISCV::QACC_L_LOWRegClass.contains(SrcReg) ||
+                   RISCV::QACC_L_HIGHRegClass.contains(SrcReg) ||
+                   RISCV::QACC_H_LOWRegClass.contains(SrcReg) ||
+                   RISCV::QACC_H_HIGHRegClass.contains(SrcReg);
+  bool DstIsVR = RISCV::QRRegClass.contains(DstReg) ||
+                 RISCV::QR_64RegClass.contains(DstReg);
+  bool SrcIsVR = RISCV::QRRegClass.contains(SrcReg) ||
+                 RISCV::QR_64RegClass.contains(SrcReg);
+
+  // QACC -> VR: Use COPY directly (subregister extraction handled by LLVM)
+  if (DstIsVR && SrcIsQACC) {
+    BuildMI(MBB, MBBI, DL, get(RISCV::COPY), DstReg)
+        .addReg(SrcReg, KillFlag | getRenamableRegState(RenamableSrc));
+    return;
+  }
+
+  // VR -> QACC: Use COPY directly (subregister insertion handled by LLVM)
+  if (DstIsQACC && SrcIsVR) {
+    BuildMI(MBB, MBBI, DL, get(RISCV::COPY), DstReg)
+        .addReg(SrcReg, KillFlag | getRenamableRegState(RenamableSrc));
+    return;
+  }
+
+  // QACC -> QACC: Use COPY directly
+  if (DstIsQACC && SrcIsQACC) {
     BuildMI(MBB, MBBI, DL, get(RISCV::COPY), DstReg)
         .addReg(SrcReg, KillFlag | getRenamableRegState(RenamableSrc));
     return;
@@ -788,6 +929,19 @@ void RISCVInstrInfo::storeRegToStackSlot(MachineBasicBlock &MBB,
   else if (RISCV::VRN8M1RegClass.hasSubClassEq(RC))
     Opcode = RISCV::PseudoVSPILL8_M1;
   else if (RISCV::XACC_HIGHRegClass.hasSubClassEq(RC) ||
+           RISCV::XACC_LOWRegClass.hasSubClassEq(RC)) {
+    // XACC_HIGH and XACC_LOW are subregisters of XACC (implicit physical register)
+    // They should not be spilled due to CopyCost=-1, but if spilling occurs,
+    // use standard SW (Store Word) instruction. Size=32 ensures proper stack slot allocation.
+    // Note: XACC_HIGH only uses low 8 bits, but we model it as i32 (Type Masquerading pattern).
+    // The extra 3 bytes in stack slot are harmless (garbage values).
+    Opcode = RISCV::SW;
+  } else if (RISCV::XACCRegRegClass.hasSubClassEq(RC)) {
+    // XACC is a 40-bit implicit accumulator register
+    // It should not be spilled, but if register allocator tries to spill it,
+    // we need to handle it. For now, report an error.
+    llvm_unreachable("XACC register cannot be spilled to stack");
+  } else if (RISCV::XACC_HIGHRegClass.hasSubClassEq(RC) ||
            RISCV::XACC_LOWRegClass.hasSubClassEq(RC)) {
     // XACC_HIGH and XACC_LOW are subregisters of XACC (implicit physical register)
     // They should not be spilled due to CopyCost=-1, but if spilling occurs,
@@ -885,6 +1039,20 @@ void RISCVInstrInfo::loadRegFromStackSlot(
   else if (RISCV::VRN8M1RegClass.hasSubClassEq(RC))
     Opcode = RISCV::PseudoVRELOAD8_M1;
   else if (RISCV::XACC_HIGHRegClass.hasSubClassEq(RC) ||
+           RISCV::XACC_LOWRegClass.hasSubClassEq(RC)) {
+    // XACC_HIGH and XACC_LOW are subregisters of XACC (implicit physical register)
+    // They should not be reloaded due to CopyCost=-1, but if reloading occurs,
+    // use standard LW (Load Word) instruction. Size=32 ensures proper stack slot allocation.
+    // Note: XACC_HIGH only uses low 8 bits, but we model it as i32 (Type Masquerading pattern).
+    // The extra 3 bytes loaded from stack are harmless (will be zero-extended by instruction).
+    // Both XACC_HIGH and XACC_LOW are 32-bit register classes, so always use LW.
+    Opcode = RISCV::LW;
+  } else if (RISCV::XACCRegRegClass.hasSubClassEq(RC)) {
+    // XACC is a 40-bit implicit accumulator register
+    // It should not be spilled, but if register allocator tries to reload it,
+    // we need to handle it. For now, report an error.
+    llvm_unreachable("XACC register cannot be reloaded from stack");
+  } else if (RISCV::XACC_HIGHRegClass.hasSubClassEq(RC) ||
            RISCV::XACC_LOWRegClass.hasSubClassEq(RC)) {
     // XACC_HIGH and XACC_LOW are subregisters of XACC (implicit physical register)
     // They should not be reloaded due to CopyCost=-1, but if reloading occurs,

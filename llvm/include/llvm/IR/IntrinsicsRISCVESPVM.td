@@ -1549,6 +1549,22 @@ def int_riscv_esp_srcq_128_st_incp_m : Intrinsic<[llvm_ptr_ty],
                                                    [llvm_i32_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty], 
                                                    [IntrWriteMem, IntrArgMemOnly]>;
 
+// SRCXXP.2Q - Shift Right Concatenated with Register offset and Post-increment, 2 Quad registers
+// Performs logical right shift on concatenated qw and qy, updates both registers and pointer
+// Returns: { <16 x i8> new_qy, <16 x i8> new_qw, ptr new_ptr }
+// Explicit state passing: All register updates are visible in IR through return values
+// This allows optimization without IntrHasSideEffects while preventing dead code elimination
+def int_riscv_esp_srcxxp_2q_m : Intrinsic<[llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty], 
+                                            [llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_i32_ty], 
+                                            [IntrNoMem]>;
+
+// SLCXXP.2Q - Shift Left with Register offset and Post-increment, 2 Quad registers
+// Shifts concatenated qy and qw left, updates both registers and pointer
+// Returns modified values and updated pointer, input and output registers are the same due to constraints
+def int_riscv_esp_slcxxp_2q_m : Intrinsic<[llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty], 
+                                             [llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_i32_ty], 
+                                             [IntrNoMem]>;
+
 // SRCMB.S16.QACC - Shift amount from rs1 register (rs1[5:0])
 // Returns v8i16 (saturated 16-bit signed values)
 // QACC is passed as explicit phantom operand (4x128-bit) for proper data flow tracking
@@ -1562,6 +1578,20 @@ def int_riscv_esp_srcmb_s16_qacc_m : Intrinsic<[llvm_v8i16_ty],
 def int_riscv_esp_srcmb_s8_qacc_m : Intrinsic<[llvm_v16i8_ty], 
                                                  [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_i32_ty, llvm_i32_ty], 
                                                  [IntrNoMem]>;
+
+// SRCMB.S16.Q.QACC - Shift amounts from qw vector (8x16-bit values)
+// Returns v8i16 (saturated 16-bit signed values)
+// QACC is passed as explicit phantom operand (4x128-bit) for proper data flow tracking
+def int_riscv_esp_srcmb_s16_q_qacc_m : Intrinsic<[llvm_v8i16_ty], 
+                                                    [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v8i16_ty, llvm_i32_ty], 
+                                                    [IntrNoMem]>;
+
+// SRCMB.S8.Q.QACC - Shift amounts from qw vector (16x8-bit values)
+// Returns v16i8 (saturated 8-bit signed values)
+// QACC is passed as explicit phantom operand (4x128-bit) for proper data flow tracking
+def int_riscv_esp_srcmb_s8_q_qacc_m : Intrinsic<[llvm_v16i8_ty], 
+                                                   [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_i32_ty], 
+                                                   [IntrNoMem]>;
 
 // SRCMB.U16.QACC - Shift amount from rs1 register (rs1[5:0])
 // Returns v8i16 (saturated 16-bit unsigned values)
@@ -1640,6 +1670,30 @@ def int_riscv_esp_vmulas_s8_qacc_m :
                llvm_v16i8_ty,                                                   // qx
                llvm_v16i8_ty],                                                  // qy
               [IntrNoMem]>;
+
+// ESP.VSMULAS.S16.QACC (_m version) - Multiply-accumulate to QACC_H and QACC_L
+// Returns: {v16i8, v16i8, v16i8, v16i8} - 4x128-bit QACC directly
+// Parameters: v16i8, v16i8, v16i8, v16i8 (4x128-bit QACC passthru), v8i16, v8i16 (qx, qy), i32 (sel16)
+// Note: No ClangBuiltin - builtin signature doesn't match intrinsic signature (builtin uses output pointers)
+def int_riscv_esp_vsmulas_s16_qacc_m :
+	Intrinsic<[llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: 4x128-bit QACC
+              [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty,   // Current QACC (4x128-bit passthru)
+               llvm_v8i16_ty,                                                   // qx
+               llvm_v8i16_ty,                                                  // qy
+               llvm_i32_ty],                                                   // sel16
+              [IntrNoMem]>;                       // No IntrHasSideEffects
+
+// ESP.VSMULAS.S8.QACC (_m version) - Multiply-accumulate to QACC_H and QACC_L
+// Returns: {v16i8, v16i8, v16i8, v16i8} - 4x128-bit QACC directly
+// Parameters: v16i8, v16i8, v16i8, v16i8 (4x128-bit QACC passthru), v16i8, v16i8 (qx, qy), i32 (sel16)
+// Note: No ClangBuiltin - builtin signature doesn't match intrinsic signature (builtin uses output pointers)
+def int_riscv_esp_vsmulas_s8_qacc_m :
+	Intrinsic<[llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: 4x128-bit QACC
+              [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty,   // Current QACC (4x128-bit passthru)
+               llvm_v16i8_ty,                                                  // qx
+               llvm_v16i8_ty,                                                  // qy
+               llvm_i32_ty],                                                   // sel16
+              [IntrNoMem]>;                       // No IntrHasSideEffects
 
 // ESP.VMULAS.S8.QACC.LD.IP (_m version)
 def int_riscv_esp_vmulas_s8_qacc_ld_ip_m :

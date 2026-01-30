@@ -3157,7 +3157,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
         MachineMemOperand *MMO = MemNode->getMemOperand();
         CurDAG->setNodeMemRefs(cast<MachineSDNode>(NewNode), {MMO});
       }
-  
+
       ReplaceNode(Node, NewNode);
       return true;
     }
@@ -3170,7 +3170,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       SDValue Vec = Node->getOperand(1);
       SDValue Ptr = Node->getOperand(2);
       SDValue Reg = Node->getOperand(3);
-  
+
       // getMachineNode will automatically select operands if needed
       // Instruction outputs: (rs1r, chain)
       SDVTList VTs = CurDAG->getVTList(XLenVT, MVT::Other);
@@ -3178,13 +3178,13 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       // Order: [instruction operands..., chain]
       SDValue Ops[] = {Reg, Vec, Ptr, Chain};
       SDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_VST_128_XP, DL, VTs, Ops);
-  
+
       // Copy MMO from MemSDNode if present
       if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
         MachineMemOperand *MMO = MemNode->getMemOperand();
         CurDAG->setNodeMemRefs(cast<MachineSDNode>(NewNode), {MMO});
       }
-  
+
       ReplaceNode(Node, NewNode);
       return true;
     }
@@ -4794,6 +4794,105 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
     SDValue QU = SDValue(Res, 0);  // qu output (Result 0)
     
     ReplaceUses(SDValue(Node, 0), QU);  // qu -> Node output 0
+    CurDAG->RemoveDeadNode(Node);
+    return true;
+  }
+  case RISCVISD::ESP_SRCMB_S16_Q_QACC_M: {
+    // Handle ESP_SRCMB_S16_Q_QACC_M node
+    // SDNode returns: v8i16 (qu)
+    // SDNode operands: (v0, v1, v2, v3, qw, sel2) - QACC as 4x128-bit explicit phantom operands
+    // v0: QACC_L[127:0], v1: QACC_L[255:128], v2: QACC_H[127:0], v3: QACC_H[255:128]
+    SDValue V0 = Node->getOperand(0);    // QACC_L[127:0] phantom operand
+    SDValue V1 = Node->getOperand(1);    // QACC_L[255:128] phantom operand
+    SDValue V2 = Node->getOperand(2);    // QACC_H[127:0] phantom operand
+    SDValue V3 = Node->getOperand(3);    // QACC_H[255:128] phantom operand
+    SDValue QW = Node->getOperand(4);    // Shift amounts vector
+    SDValue Sel2 = Node->getOperand(5);   // Saturation select
+    
+    unsigned Opc = RISCV::ESP_SRCMB_S16_Q_QACC;
+    
+    // Instruction outputs: QR:$qu
+    // Instruction inputs: QR:$v0, QR:$v1, QR:$v2, QR:$v3 (4x128-bit phantom operands), QR:$qw, select_2:$sel2
+    // Phantom operands are not shown in assembly string but are used for data flow tracking
+    SDVTList VTList = CurDAG->getVTList(MVT::v8i16);
+    // Operand order: [v0, v1, v2, v3, qw, sel2] - matches instruction definition
+    SDValue Ops[] = {V0, V1, V2, V3, QW, Sel2};
+    MachineSDNode *Res = CurDAG->getMachineNode(Opc, DL, VTList, Ops);
+    
+    // Extract explicit output from instruction
+    SDValue QU = SDValue(Res, 0);  // qu output (Result 0)
+    
+    ReplaceUses(SDValue(Node, 0), QU);  // qu -> Node output 0
+    CurDAG->RemoveDeadNode(Node);
+    return true;
+  }
+  case RISCVISD::ESP_SRCMB_S8_Q_QACC_M: {
+    // Handle ESP_SRCMB_S8_Q_QACC_M node
+    // SDNode returns: v16i8 (qu)
+    // SDNode operands: (v0, v1, v2, v3, qw, sel2) - QACC as 4x128-bit explicit phantom operands
+    // v0: QACC_L[127:0], v1: QACC_L[255:128], v2: QACC_H[127:0], v3: QACC_H[255:128]
+    SDValue V0 = Node->getOperand(0);    // QACC_L[127:0] phantom operand
+    SDValue V1 = Node->getOperand(1);    // QACC_L[255:128] phantom operand
+    SDValue V2 = Node->getOperand(2);    // QACC_H[127:0] phantom operand
+    SDValue V3 = Node->getOperand(3);    // QACC_H[255:128] phantom operand
+    SDValue QW = Node->getOperand(4);    // Shift amounts vector
+    SDValue Sel2 = Node->getOperand(5);   // Saturation select
+    
+    unsigned Opc = RISCV::ESP_SRCMB_S8_Q_QACC;
+    
+    // Instruction outputs: QR:$qu
+    // Instruction inputs: QR:$v0, QR:$v1, QR:$v2, QR:$v3 (4x128-bit phantom operands), QR:$qw, select_2:$sel2
+    // Phantom operands are not shown in assembly string but are used for data flow tracking
+    SDVTList VTList = CurDAG->getVTList(MVT::v16i8);
+    // Operand order: [v0, v1, v2, v3, qw, sel2] - matches instruction definition
+    SDValue Ops[] = {V0, V1, V2, V3, QW, Sel2};
+    MachineSDNode *Res = CurDAG->getMachineNode(Opc, DL, VTList, Ops);
+    
+    // Extract explicit output from instruction
+    SDValue QU = SDValue(Res, 0);  // qu output (Result 0)
+    
+    ReplaceUses(SDValue(Node, 0), QU);  // qu -> Node output 0
+    CurDAG->RemoveDeadNode(Node);
+    return true;
+  }
+  case RISCVISD::ESP_VSMULAS_S16_QACC_M:
+  case RISCVISD::ESP_VSMULAS_S8_QACC_M: {
+    // Handle VSMULAS QACC nodes
+    // SDNode returns: (v16i8, v16i8, v16i8, v16i8) - 4x128-bit QACC directly
+    // SDNode operands: (v0, v1, v2, v3, qx, qy, sel16) - 4x128-bit passthru as explicit phantom operands
+    SDValue V0In = Node->getOperand(0);  // QACC_L[127:0] passthru (v16i8)
+    SDValue V1In = Node->getOperand(1);  // QACC_L[255:128] passthru (v16i8)
+    SDValue V2In = Node->getOperand(2);  // QACC_H[127:0] passthru (v16i8)
+    SDValue V3In = Node->getOperand(3);  // QACC_H[255:128] passthru (v16i8)
+    SDValue QX = Node->getOperand(4);
+    SDValue QY = Node->getOperand(5);
+    SDValue SEL16 = Node->getOperand(6);
+    
+    unsigned Opc;
+    if (Opcode == RISCVISD::ESP_VSMULAS_S16_QACC_M) {
+      Opc = RISCV::ESP_VSMULAS_S16_QACC;
+    } else {
+      Opc = RISCV::ESP_VSMULAS_S8_QACC;
+    }
+    
+    // Instruction outputs: (QACC_L_LOW, QACC_L_HIGH, QACC_H_LOW, QACC_H_HIGH)
+    // Instruction inputs: (QACC_L_LOW_in, QACC_L_HIGH_in, QACC_H_LOW_in, QACC_H_HIGH_in, QR:$qx, QR:$qy, select_16:$sel16)
+    SmallVector<EVT, 4> VTList = {MVT::v16i8, MVT::v16i8, MVT::v16i8, MVT::v16i8};
+    SDVTList VTs = CurDAG->getVTList(VTList);
+    // Operand order: [v0, v1, v2, v3, qx, qy, sel16] - matches instruction definition
+    SDValue Ops[] = {V0In, V1In, V2In, V3In, QX, QY, SEL16};
+    MachineSDNode *Res = CurDAG->getMachineNode(Opc, DL, VTs, Ops);
+    
+    // Extract explicit outputs from instruction
+    SDValue V0Out = SDValue(Res, 0);  // QACC_L[127:0] output (Result 0)
+    SDValue V1Out = SDValue(Res, 1);  // QACC_L[255:128] output (Result 1)
+    SDValue V2Out = SDValue(Res, 2);  // QACC_H[127:0] output (Result 2)
+    SDValue V3Out = SDValue(Res, 3);  // QACC_H[255:128] output (Result 3)
+    
+    ReplaceUses(SDValue(Node, 0), V0Out);  // v0 -> Node output 0
+    ReplaceUses(SDValue(Node, 1), V1Out);  // v1 -> Node output 1
+    ReplaceUses(SDValue(Node, 2), V2Out);  // v2 -> Node output 2
+    ReplaceUses(SDValue(Node, 3), V3Out);  // v3 -> Node output 3
     CurDAG->RemoveDeadNode(Node);
     return true;
   }
