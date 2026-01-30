@@ -155,7 +155,7 @@ def pause : RISCVBuiltin<"void()">;
 
 include "BuiltinsRISCVESPV.td"
 include "BuiltinsRISCVESPDSP.td"
-
+include "BuiltinsRISCVESPVM.td"
 //===----------------------------------------------------------------------===//
 // XCV extensions.
 //===----------------------------------------------------------------------===//

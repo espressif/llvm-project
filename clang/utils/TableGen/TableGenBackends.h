@@ -171,6 +171,9 @@ void EmitRVVBuiltinCG(const llvm::RecordKeeper &Records, llvm::raw_ostream &OS);
 void EmitRVVBuiltinSema(const llvm::RecordKeeper &Records,
                         llvm::raw_ostream &OS);
 
+void EmitESPVBuiltinCodeGen(const llvm::RecordKeeper &Records,
+                            llvm::raw_ostream &OS);
+
 void EmitCdeHeader(const llvm::RecordKeeper &Records, llvm::raw_ostream &OS);
 void EmitCdeBuiltinDef(const llvm::RecordKeeper &Records,
                        llvm::raw_ostream &OS);
