@@ -596,10 +596,16 @@ def int_riscv_esp_movx_w_sar_m : Intrinsic<[llvm_i32_ty],
 // Returns: i32 (SAR_BYTES value, 32-bit unsigned, only low 4 bits used)
 // Parameters: [ i32 value to write (rs1, 32-bit unsigned) ]
 // MOVX.W - Write implicit registers (all return void)
+def int_riscv_esp_movx_w_cfg_m : Intrinsic<[], [llvm_i32_ty],
+                                            [IntrNoMem,IntrHasSideEffects]>;
 
-def int_riscv_esp_movx_w_sar_bytes_m : Intrinsic<
-    [llvm_i32_ty],                          // Return: SAR_BYTES value (32-bit unsigned, only low 4 bits used, range 0-15)
-    [llvm_i32_ty],                          // Value to write (rs1, 32-bit unsigned)
+def int_riscv_esp_movx_w_sar_bytes_m : Intrinsic<[llvm_i32_ty], 
+                                                 [llvm_i32_ty], 
+                                                 [IntrNoMem]>;
+
+def int_riscv_esp_movx_w_xacc_h_m : Intrinsic<
+    [llvm_i32_ty],                          // Return: i32 (GPRPIE register class, only low 8 bits valid)
+    [llvm_i32_ty],                          // Value to write (i32, only low 8 bits used)
     [IntrNoMem]>;                           //  No IntrHasSideEffects!
 
 // ESP.MOVX.R.XACC_H (_m version) - Read XACC[39:32] with explicit state passing
@@ -617,18 +623,7 @@ def int_riscv_esp_movx_r_xacc_l_m : Intrinsic<
     [llvm_i32_ty],                          // Input: xacc_l (passthru for explicit state passing)
     [IntrNoMem]>;                           //  No IntrHasSideEffects!
 
-// MOVX.W - Write implicit registers (all return void)
-def int_riscv_esp_movx_w_cfg_m : Intrinsic<[], [llvm_i32_ty],
-                                            [IntrNoMem,IntrHasSideEffects]>;
-
 // ESP.MOVX.W.XACC_H (_m version) - Write XACC[39:32] with explicit state passing
-// Returns: i32 (GPRPIE register class, only low 8 bits valid)
-// Parameters: [value to write (i32, only low 8 bits used)]
-def int_riscv_esp_movx_w_xacc_h_m : Intrinsic<
-    [llvm_i32_ty],                          // Return: i32 (GPRPIE register class, only low 8 bits valid)
-    [llvm_i32_ty],                          // Value to write (i32, only low 8 bits used)
-    [IntrNoMem]>;                           //  No IntrHasSideEffects!
-// ESP.MOVX.W.XACC_L (_m version) - Subregister model: writes XACC[31:0] only
 // Returns: new XACC[31:0] value as i32 (unsigned int)
 // Parameters: [value to write (i32, unsigned int)]
 def int_riscv_esp_movx_w_xacc_l_m : Intrinsic<
@@ -1791,6 +1786,338 @@ def int_riscv_esp_vmulas_u8_qacc_st_xp_m :
                llvm_ptr_ty,                                 // pointer
                llvm_i32_ty],                                // rs2 register offset
               [IntrWriteMem, IntrArgMemOnly]>;
+
+// ESP.VMULAS.S16.XACC (_m version)
+// Returns: new XACC (only low 40 bits used)
+// Parameters: [current XACC (passthru, only low 40 bits used), qx, qy]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+// Note: No ClangBuiltin - builtin signature (void with 6 params including pointers) doesn't match intrinsic signature ({i32, i8} with 4 params)
+// CodeGen is handled manually in riscv_espv_builtin_cg.inc
+// ESP.VMULAS.S16.XACC (_m version) - Mixed model: xacc_h and xacc_l are both i32
+// Returns: struct {i32 (XACC[31:0]), i32 (XACC[39:32], only low 8 bits valid)}
+def int_riscv_esp_vmulas_s16_xacc_m :
+	Intrinsic<[llvm_i32_ty, llvm_i32_ty],           // Returns: struct {i32 (XACC[31:0]), i32 (XACC[39:32], only low 8 bits valid)}
+              [llvm_i32_ty,                          // XACC[31:0] (passthru, i32)
+               llvm_i32_ty,                          // XACC[39:32] (passthru, i32, only low 8 bits valid)
+               llvm_v8i16_ty,                        // qx
+               llvm_v8i16_ty],                       // qy
+              [IntrNoMem]>;                          // No IntrHasSideEffects
+
+// ESP.VMULAS.S16.XACC.LD.IP (_m version)
+// Returns: qu vector + updated pointer + new XACC (only low 40 bits used)
+// Parameters: [current XACC (passthru, only low 40 bits used), qx, qy, pointer, immediate offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+// ESP.VMULAS.S16.XACC.LD.IP (_m version) - Mixed model: XACC as {i32 low, i32 high}
+// Returns: qu vector + updated pointer + new XACC as {i32 low, i32 high}
+// Parameters: [xacc_low_in (i32), xacc_high_in (i32, only low 8 bits valid), qx, qy, pointer, offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_vmulas_s16_xacc_ld_ip_m :
+	Intrinsic<[llvm_v16i8_ty, llvm_ptr_ty, llvm_i32_ty, llvm_i32_ty],  // Returns: qu + pointer + new XACC {i32 low, i32 high}
+              [llvm_i32_ty,                                             // xacc_low_in (i32)
+               llvm_i32_ty,                                             // xacc_high_in (i32, only low 8 bits valid)
+               llvm_v8i16_ty,                                           // qx
+               llvm_v8i16_ty,                                           // qy
+               llvm_ptr_ty,                                             // pointer
+               llvm_i32_ty],                                            // offset
+              [IntrReadMem, IntrArgMemOnly]>;                           // No IntrHasSideEffects
+
+// ESP.VMULAS.S16.XACC.LD.XP (_m version) - Mixed model: XACC as {i32 low, i32 high}
+// Returns: qu vector + updated pointer + new XACC as {i32 low, i32 high}
+// Parameters: [xacc_low_in (i32), xacc_high_in (i32, only low 8 bits valid), qx, qy, pointer, register offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_vmulas_s16_xacc_ld_xp_m :
+	Intrinsic<[llvm_v16i8_ty, llvm_ptr_ty, llvm_i32_ty, llvm_i32_ty],  // Returns: qu + pointer + new XACC {i32 low, i32 high}
+              [llvm_i32_ty,                                             // xacc_low_in (i32)
+               llvm_i32_ty,                                             // xacc_high_in (i32, only low 8 bits valid)
+               llvm_v8i16_ty,                                           // qx
+               llvm_v8i16_ty,                                           // qy
+               llvm_ptr_ty,                                             // pointer
+               llvm_i32_ty],                                            // register offset
+              [IntrReadMem, IntrArgMemOnly]>;                           // No IntrHasSideEffects
+
+// ESP.VMULAS.S16.XACC.ST.IP (_m version) - Mixed model: XACC as {i32 low, i32 high}
+// Returns: updated pointer + new XACC as {i32 low, i32 high}
+// Parameters: [xacc_low_in (i32), xacc_high_in (i32, only low 8 bits valid), qu, qx, qy, pointer, immediate offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_vmulas_s16_xacc_st_ip_m :
+	Intrinsic<[llvm_ptr_ty, llvm_i32_ty, llvm_i32_ty],  // Returns: pointer + new XACC {i32 low, i32 high}
+              [llvm_i32_ty,                              // xacc_low_in (i32)
+               llvm_i32_ty,                              // xacc_high_in (i32, only low 8 bits valid)
+               llvm_v16i8_ty,                            // qu
+               llvm_v8i16_ty,                            // qx
+               llvm_v8i16_ty,                            // qy
+               llvm_ptr_ty,                              // pointer
+               llvm_i32_ty],                             // offset
+              [IntrWriteMem, IntrArgMemOnly]>;           // No IntrHasSideEffects
+
+// ESP.VMULAS.S16.XACC.ST.XP (_m version) - Mixed model: XACC as {i32 low, i32 high}
+// Returns: updated pointer + new XACC as {i32 low, i32 high}
+// Parameters: [xacc_low_in (i32), xacc_high_in (i32, only low 8 bits valid), qu, qx, qy, pointer, register offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_vmulas_s16_xacc_st_xp_m :
+	Intrinsic<[llvm_ptr_ty, llvm_i32_ty, llvm_i32_ty],  // Returns: pointer + new XACC {i32 low, i32 high}
+              [llvm_i32_ty,                              // xacc_low_in (i32)
+               llvm_i32_ty,                              // xacc_high_in (i32, only low 8 bits valid)
+               llvm_v16i8_ty,                            // qu
+               llvm_v8i16_ty,                            // qx
+               llvm_v8i16_ty,                            // qy
+               llvm_ptr_ty,                              // pointer
+               llvm_i32_ty],                             // register offset
+              [IntrWriteMem, IntrArgMemOnly]>;           // No IntrHasSideEffects
+
+// ESP.VMULAS.S8.XACC (_m version)
+// Returns: new XACC (only low 40 bits used)
+// Parameters: [current XACC (passthru, only low 40 bits used), qx, qy]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+// Note: No ClangBuiltin - builtin signature (void with 6 params including pointers) doesn't match intrinsic signature ({i32, i8} with 4 params)
+// CodeGen is handled manually in riscv_espv_builtin_cg.inc
+// ESP.VMULAS.S8.XACC (_m version) - Mixed model: xacc_h and xacc_l are both i32
+// Returns: struct {i32 (XACC[31:0]), i32 (XACC[39:32], only low 8 bits valid)}
+def int_riscv_esp_vmulas_s8_xacc_m :
+	Intrinsic<[llvm_i32_ty, llvm_i32_ty],           // Returns: struct {i32 (XACC[31:0]), i32 (XACC[39:32], only low 8 bits valid)}
+              [llvm_i32_ty,                          // XACC[31:0] (passthru, i32)
+               llvm_i32_ty,                          // XACC[39:32] (passthru, i32, only low 8 bits valid)
+               llvm_v16i8_ty,                        // qx
+               llvm_v16i8_ty],                       // qy
+              [IntrNoMem]>;                          // No IntrHasSideEffects
+
+// ESP.VMULAS.S8.XACC.LD.IP (_m version) - Mixed model: XACC as {i32 low, i32 high}
+// Returns: qu vector + updated pointer + new XACC as {i32 low, i32 high}
+// Parameters: [xacc_low_in (i32), xacc_high_in (i32, only low 8 bits valid), qx, qy, pointer, offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_vmulas_s8_xacc_ld_ip_m :
+	Intrinsic<[llvm_v16i8_ty, llvm_ptr_ty, llvm_i32_ty, llvm_i32_ty],  // Returns: qu + pointer + new XACC {i32 low, i32 high}
+              [llvm_i32_ty,                                             // xacc_low_in (i32)
+               llvm_i32_ty,                                             // xacc_high_in (i32, only low 8 bits valid)
+               llvm_v16i8_ty,                                           // qx
+               llvm_v16i8_ty,                                           // qy
+               llvm_ptr_ty,                                             // pointer
+               llvm_i32_ty],                                            // offset
+              [IntrReadMem, IntrArgMemOnly]>;                           // No IntrHasSideEffects
+
+// ESP.VMULAS.S8.XACC.LD.XP (_m version) - Mixed model: XACC as {i32 low, i32 high}
+// Returns: qu vector + updated pointer + new XACC as {i32 low, i32 high}
+// Parameters: [xacc_low_in (i32), xacc_high_in (i32, only low 8 bits valid), qx, qy, pointer, register offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_vmulas_s8_xacc_ld_xp_m :
+	Intrinsic<[llvm_v16i8_ty, llvm_ptr_ty, llvm_i32_ty, llvm_i32_ty],  // Returns: qu + pointer + new XACC {i32 low, i32 high}
+              [llvm_i32_ty,                                             // xacc_low_in (i32)
+               llvm_i32_ty,                                             // xacc_high_in (i32, only low 8 bits valid)
+               llvm_v16i8_ty,                                           // qx
+               llvm_v16i8_ty,                                           // qy
+               llvm_ptr_ty,                                             // pointer
+               llvm_i32_ty],                                            // register offset
+              [IntrReadMem, IntrArgMemOnly]>;                           // No IntrHasSideEffects
+
+// ESP.VMULAS.S8.XACC.ST.IP (_m version) - Mixed model: XACC as {i32 low, i32 high}
+// Returns: updated pointer + new XACC as {i32 low, i32 high}
+// Parameters: [xacc_low_in (i32), xacc_high_in (i32, only low 8 bits valid), qu, qx, qy, pointer, immediate offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_vmulas_s8_xacc_st_ip_m :
+	Intrinsic<[llvm_ptr_ty, llvm_i32_ty, llvm_i32_ty],  // Returns: pointer + new XACC {i32 low, i32 high}
+              [llvm_i32_ty,                              // xacc_low_in (i32)
+               llvm_i32_ty,                              // xacc_high_in (i32, only low 8 bits valid)
+               llvm_v16i8_ty,                            // qu
+               llvm_v16i8_ty,                            // qx
+               llvm_v16i8_ty,                            // qy
+               llvm_ptr_ty,                              // pointer
+               llvm_i32_ty],                             // offset
+              [IntrWriteMem, IntrArgMemOnly]>;           // No IntrHasSideEffects
+
+// ESP.VMULAS.S8.XACC.ST.XP (_m version) - Mixed model: XACC as {i32 low, i32 high}
+// Returns: updated pointer + new XACC as {i32 low, i32 high}
+// Parameters: [xacc_low_in (i32), xacc_high_in (i32, only low 8 bits valid), qu, qx, qy, pointer, register offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_vmulas_s8_xacc_st_xp_m :
+	Intrinsic<[llvm_ptr_ty, llvm_i32_ty, llvm_i32_ty],  // Returns: pointer + new XACC {i32 low, i32 high}
+              [llvm_i32_ty,                              // xacc_low_in (i32)
+               llvm_i32_ty,                              // xacc_high_in (i32, only low 8 bits valid)
+               llvm_v16i8_ty,                            // qu
+               llvm_v16i8_ty,                            // qx
+               llvm_v16i8_ty,                            // qy
+               llvm_ptr_ty,                              // pointer
+               llvm_i32_ty],                             // register offset
+              [IntrWriteMem, IntrArgMemOnly]>;           // No IntrHasSideEffects
+
+// ESP.VMULAS.U16.XACC (_m version)
+// Returns: new XACC (only low 40 bits used)
+// Parameters: [current XACC (passthru, only low 40 bits used), qx, qy]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+// Note: No ClangBuiltin - builtin signature (void with 6 params including pointers) doesn't match intrinsic signature ({i32, i8} with 4 params)
+// CodeGen is handled manually in riscv_espv_builtin_cg.inc
+// ESP.VMULAS.U16.XACC (_m version) - Mixed model: xacc_h and xacc_l are both i32
+// Returns: struct {i32 (XACC[31:0]), i32 (XACC[39:32], only low 8 bits valid)}
+def int_riscv_esp_vmulas_u16_xacc_m :
+	Intrinsic<[llvm_i32_ty, llvm_i32_ty],           // Returns: struct {i32 (XACC[31:0]), i32 (XACC[39:32], only low 8 bits valid)}
+              [llvm_i32_ty,                          // XACC[31:0] (passthru, i32)
+               llvm_i32_ty,                          // XACC[39:32] (passthru, i32, only low 8 bits valid)
+               llvm_v8i16_ty,                        // qx
+               llvm_v8i16_ty],                       // qy
+              [IntrNoMem]>;                          // No IntrHasSideEffects
+
+// ESP.VMULAS.U16.XACC.LD.IP (_m version)
+// Returns: qu vector + updated pointer + new XACC (only low 40 bits used)
+// Parameters: [current XACC (passthru, only low 40 bits used), qx, qy, pointer, immediate offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+// ESP.VMULAS.U16.XACC.LD.IP (_m version) - Mixed model: XACC as {i32 low, i32 high}
+// Returns: qu vector + updated pointer + new XACC as {i32 low, i32 high}
+// Parameters: [xacc_low_in (i32), xacc_high_in (i32, only low 8 bits valid), qx, qy, pointer, offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_vmulas_u16_xacc_ld_ip_m :
+	Intrinsic<[llvm_v16i8_ty, llvm_ptr_ty, llvm_i32_ty, llvm_i32_ty],  // Returns: qu + pointer + new XACC {i32 low, i32 high}
+              [llvm_i32_ty,                                             // xacc_low_in (i32)
+               llvm_i32_ty,                                             // xacc_high_in (i32, only low 8 bits valid)
+               llvm_v8i16_ty,                                           // qx
+               llvm_v8i16_ty,                                           // qy
+               llvm_ptr_ty,                                             // pointer
+               llvm_i32_ty],                                            // offset
+              [IntrReadMem, IntrArgMemOnly]>;                           // No IntrHasSideEffects
+
+// ESP.VMULAS.U16.XACC.LD.XP (_m version) - Mixed model: XACC as {i32 low, i32 high}
+// Returns: qu vector + updated pointer + new XACC as {i32 low, i32 high}
+// Parameters: [xacc_low_in (i32), xacc_high_in (i32, only low 8 bits valid), qx, qy, pointer, register offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_vmulas_u16_xacc_ld_xp_m :
+	Intrinsic<[llvm_v16i8_ty, llvm_ptr_ty, llvm_i32_ty, llvm_i32_ty],  // Returns: qu + pointer + new XACC {i32 low, i32 high}
+              [llvm_i32_ty,                                             // xacc_low_in (i32)
+               llvm_i32_ty,                                             // xacc_high_in (i32, only low 8 bits valid)
+               llvm_v8i16_ty,                                           // qx
+               llvm_v8i16_ty,                                           // qy
+               llvm_ptr_ty,                                             // pointer
+               llvm_i32_ty],                                            // register offset
+              [IntrReadMem, IntrArgMemOnly]>;                           // No IntrHasSideEffects
+
+// ESP.VMULAS.U16.XACC.ST.IP (_m version) - Mixed model: XACC as {i32 low, i32 high}
+// Returns: updated pointer + new XACC as {i32 low, i32 high}
+// Parameters: [xacc_low_in (i32), xacc_high_in (i32, only low 8 bits valid), qu, qx, qy, pointer, immediate offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_vmulas_u16_xacc_st_ip_m :
+	Intrinsic<[llvm_ptr_ty, llvm_i32_ty, llvm_i32_ty],  // Returns: pointer + new XACC {i32 low, i32 high}
+              [llvm_i32_ty,                              // xacc_low_in (i32)
+               llvm_i32_ty,                              // xacc_high_in (i32, only low 8 bits valid)
+               llvm_v16i8_ty,                            // qu
+               llvm_v8i16_ty,                            // qx
+               llvm_v8i16_ty,                            // qy
+               llvm_ptr_ty,                              // pointer
+               llvm_i32_ty],                             // offset
+              [IntrWriteMem, IntrArgMemOnly]>;           // No IntrHasSideEffects
+
+// ESP.VMULAS.U16.XACC.ST.XP (_m version) - Mixed model: XACC as {i32 low, i32 high}
+// Returns: updated pointer + new XACC as {i32 low, i32 high}
+// Parameters: [xacc_low_in (i32), xacc_high_in (i32, only low 8 bits valid), qu, qx, qy, pointer, register offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_vmulas_u16_xacc_st_xp_m :
+	Intrinsic<[llvm_ptr_ty, llvm_i32_ty, llvm_i32_ty],  // Returns: pointer + new XACC {i32 low, i32 high}
+              [llvm_i32_ty,                              // xacc_low_in (i32)
+               llvm_i32_ty,                              // xacc_high_in (i32, only low 8 bits valid)
+               llvm_v16i8_ty,                            // qu
+               llvm_v8i16_ty,                            // qx
+               llvm_v8i16_ty,                            // qy
+               llvm_ptr_ty,                              // pointer
+               llvm_i32_ty],                             // register offset
+              [IntrWriteMem, IntrArgMemOnly]>;           // No IntrHasSideEffects
+
+// ESP.VMULAS.U8.XACC (_m version)
+// Returns: new XACC (only low 40 bits used)
+// Parameters: [current XACC (passthru, only low 40 bits used), qx, qy]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+// Note: No ClangBuiltin - builtin signature (void with 6 params including pointers) doesn't match intrinsic signature ({i32, i8} with 4 params)
+// CodeGen is handled manually in riscv_espv_builtin_cg.inc
+// ESP.VMULAS.U8.XACC (_m version) - Mixed model: xacc_h and xacc_l are both i32
+// Returns: struct {i32 (XACC[31:0]), i32 (XACC[39:32], only low 8 bits valid)}
+def int_riscv_esp_vmulas_u8_xacc_m :
+	Intrinsic<[llvm_i32_ty, llvm_i32_ty],           // Returns: struct {i32 (XACC[31:0]), i32 (XACC[39:32], only low 8 bits valid)}
+              [llvm_i32_ty,                          // XACC[31:0] (passthru, i32)
+               llvm_i32_ty,                          // XACC[39:32] (passthru, i32, only low 8 bits valid)
+               llvm_v16i8_ty,                        // qx
+               llvm_v16i8_ty],                       // qy
+              [IntrNoMem]>;                          // No IntrHasSideEffects
+
+// ESP.VMULAS.U8.XACC.LD.IP (_m version) - Mixed model: XACC as {i32 low, i32 high}
+// Returns: qu vector + updated pointer + new XACC as {i32 low, i32 high}
+// Parameters: [xacc_low_in (i32), xacc_high_in (i32, only low 8 bits valid), qx, qy, pointer, offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_vmulas_u8_xacc_ld_ip_m :
+	Intrinsic<[llvm_v16i8_ty, llvm_ptr_ty, llvm_i32_ty, llvm_i32_ty],  // Returns: qu + pointer + new XACC {i32 low, i32 high}
+              [llvm_i32_ty,                                             // xacc_low_in (i32)
+               llvm_i32_ty,                                             // xacc_high_in (i32, only low 8 bits valid)
+               llvm_v16i8_ty,                                           // qx
+               llvm_v16i8_ty,                                           // qy
+               llvm_ptr_ty,                                             // pointer
+               llvm_i32_ty],                                            // offset
+              [IntrReadMem, IntrArgMemOnly]>;                           // No IntrHasSideEffects
+
+// ESP.VMULAS.U8.XACC.LD.XP (_m version) - Mixed model: XACC as {i32 low, i32 high}
+// Returns: qu vector + updated pointer + new XACC as {i32 low, i32 high}
+// Parameters: [xacc_low_in (i32), xacc_high_in (i32, only low 8 bits valid), qx, qy, pointer, register offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_vmulas_u8_xacc_ld_xp_m :
+	Intrinsic<[llvm_v16i8_ty, llvm_ptr_ty, llvm_i32_ty, llvm_i32_ty],  // Returns: qu + pointer + new XACC {i32 low, i32 high}
+              [llvm_i32_ty,                                             // xacc_low_in (i32)
+               llvm_i32_ty,                                             // xacc_high_in (i32, only low 8 bits valid)
+               llvm_v16i8_ty,                                           // qx
+               llvm_v16i8_ty,                                           // qy
+               llvm_ptr_ty,                                             // pointer
+               llvm_i32_ty],                                            // register offset
+              [IntrReadMem, IntrArgMemOnly]>;                           // No IntrHasSideEffects
+
+// ESP.VMULAS.U8.XACC.ST.IP (_m version) - Mixed model: XACC as {i32 low, i32 high}
+// Returns: updated pointer + new XACC as {i32 low, i32 high}
+// Parameters: [xacc_low_in (i32), xacc_high_in (i32, only low 8 bits valid), qu, qx, qy, pointer, immediate offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_vmulas_u8_xacc_st_ip_m :
+	Intrinsic<[llvm_ptr_ty, llvm_i32_ty, llvm_i32_ty],  // Returns: pointer + new XACC {i32 low, i32 high}
+              [llvm_i32_ty,                              // xacc_low_in (i32)
+               llvm_i32_ty,                              // xacc_high_in (i32, only low 8 bits valid)
+               llvm_v16i8_ty,                            // qu
+               llvm_v16i8_ty,                            // qx
+               llvm_v16i8_ty,                            // qy
+               llvm_ptr_ty,                              // pointer
+               llvm_i32_ty],                             // offset
+              [IntrWriteMem, IntrArgMemOnly]>;          // No IntrHasSideEffects
+
+// ESP.VMULAS.U8.XACC.ST.XP (_m version) - Mixed model: XACC as {i32 low, i32 high}
+// Returns: updated pointer + new XACC as {i32 low, i32 high}
+// Parameters: [xacc_low_in (i32), xacc_high_in (i32, only low 8 bits valid), qu, qx, qy, pointer, register offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_vmulas_u8_xacc_st_xp_m :
+	Intrinsic<[llvm_ptr_ty, llvm_i32_ty, llvm_i32_ty],  // Returns: pointer + new XACC {i32 low, i32 high}
+              [llvm_i32_ty,                              // xacc_low_in (i32)
+               llvm_i32_ty,                              // xacc_high_in (i32, only low 8 bits valid)
+               llvm_v16i8_ty,                            // qu
+               llvm_v16i8_ty,                            // qx
+               llvm_v16i8_ty,                            // qy
+               llvm_ptr_ty,                              // pointer
+               llvm_i32_ty],                             // register offset
+              [IntrWriteMem, IntrArgMemOnly]>;           // No IntrHasSideEffects
+
+// ESP.SRS.S.XACC (_m version) - Shift Right and Saturate Signed from XACC with explicit state passing
+// Performs arithmetic right shift on XACC, saturates to 32-bit signed, writes back to XACC
+// Returns: saturated 32-bit signed value + new XACC (i64, only low 40 bits used)
+// Parameters: [current XACC (passthru, i64, only low 40 bits used), shift amount (i32, only low 6 bits used)]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+// ESP.SRS.S.XACC (_m version) - Shift Right and Saturate Signed from XACC with explicit state passing
+// XACC is represented as struct {i32 xacc_h; i32 xacc_l;} via two parameters (both i32)
+// xacc_h is i32 but only low 8 bits are valid (XACC[39:32])
+def int_riscv_esp_srs_s_xacc_m : Intrinsic<[llvm_i32_ty, llvm_i32_ty, llvm_i32_ty],  // Return: saturated value + new XACC {i32 xacc_h (only low 8 bits valid), i32 xacc_l}
+                                             [llvm_i32_ty,                            // XACC high part (xacc_h, i32, only low 8 bits valid)
+                                              llvm_i32_ty,                            // XACC low part (xacc_l, i32)
+                                              llvm_i32_ty],                           // Shift amount (rs1, i32, only low 6 bits used)
+                                             [IntrNoMem]>;                            // No IntrHasSideEffects
+
+// ESP.SRS.U.XACC (_m version) - Shift Right and Saturate Unsigned from XACC with explicit state passing
+// Performs arithmetic right shift on XACC, saturates to 32-bit unsigned, writes back to XACC
+// Returns: saturated 32-bit unsigned value + new XACC (i64, only low 40 bits used)
+// Parameters: [current XACC (passthru, i64, only low 40 bits used), shift amount (i32, only low 6 bits used)]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+// ESP.SRS.U.XACC (_m version) - Shift Right and Saturate Unsigned from XACC with explicit state passing
+// XACC is represented as struct {i32 xacc_h; i32 xacc_l;} via two parameters (both i32)
+// xacc_h is i32 but only low 8 bits are valid (XACC[39:32])
+def int_riscv_esp_srs_u_xacc_m : Intrinsic<[llvm_i32_ty, llvm_i32_ty, llvm_i32_ty],  // Return: saturated value + new XACC {i32 xacc_h (only low 8 bits valid), i32 xacc_l}
+                                             [llvm_i32_ty,                            // XACC high part (xacc_h, i32, only low 8 bits valid)
+                                              llvm_i32_ty,                            // XACC low part (xacc_l, i32)
+                                              llvm_i32_ty],                           // Shift amount (rs1, i32, only low 6 bits used)
+                                             [IntrNoMem]>;                            // No IntrHasSideEffects
 
 // ESP.VMULAS.S16.QACC.LDBC.INCP (_m version)
 def int_riscv_esp_vmulas_s16_qacc_ldbc_incp_m :

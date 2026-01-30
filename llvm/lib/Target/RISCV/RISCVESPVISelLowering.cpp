@@ -49,6 +49,14 @@ static SDValue LowerVMULASQACCSTXP(SDValue Op, SelectionDAG &DAG,
                                    unsigned ISDOpcode);
 static SDValue LowerVMULASQACCLDBCINCP(SDValue Op, SelectionDAG &DAG,
                                        unsigned ISDOpcode);
+static SDValue LowerVMULASXACCLDIP(SDValue Op, SelectionDAG &DAG,
+                                   unsigned ISDOpcode);
+static SDValue LowerVMULASXACCLDXP(SDValue Op, SelectionDAG &DAG,
+                                   unsigned ISDOpcode);
+static SDValue LowerVMULASXACCSTIP(SDValue Op, SelectionDAG &DAG,
+                                   unsigned ISDOpcode);
+static SDValue LowerVMULASXACCSTXP(SDValue Op, SelectionDAG &DAG,
+                                   unsigned ISDOpcode);
 
 bool getESPVTgtMemIntrinsic(TargetLowering::IntrinsicInfo &Info,
                             const CallInst &I, unsigned Intrinsic) {
@@ -2085,6 +2093,42 @@ SDValue lowerESPVIntrinsicWChain(SDValue Op, SelectionDAG &DAG,
   case Intrinsic::riscv_esp_vmulas_u8_qacc_ldbc_incp_m:
     return LowerVMULASQACCLDBCINCP(Op, DAG,
                                    RISCVISD::ESP_VMULAS_U8_QACC_LDBC_INCP_M);
+  // VMULAS XACC LD IP
+  case Intrinsic::riscv_esp_vmulas_s16_xacc_ld_ip_m:
+    return LowerVMULASXACCLDIP(Op, DAG, RISCVISD::ESP_VMULAS_S16_XACC_LD_IP_M);
+  case Intrinsic::riscv_esp_vmulas_s8_xacc_ld_ip_m:
+    return LowerVMULASXACCLDIP(Op, DAG, RISCVISD::ESP_VMULAS_S8_XACC_LD_IP_M);
+  case Intrinsic::riscv_esp_vmulas_u16_xacc_ld_ip_m:
+    return LowerVMULASXACCLDIP(Op, DAG, RISCVISD::ESP_VMULAS_U16_XACC_LD_IP_M);
+  case Intrinsic::riscv_esp_vmulas_u8_xacc_ld_ip_m:
+    return LowerVMULASXACCLDIP(Op, DAG, RISCVISD::ESP_VMULAS_U8_XACC_LD_IP_M);
+  // VMULAS XACC LD XP
+  case Intrinsic::riscv_esp_vmulas_s16_xacc_ld_xp_m:
+    return LowerVMULASXACCLDXP(Op, DAG, RISCVISD::ESP_VMULAS_S16_XACC_LD_XP_M);
+  case Intrinsic::riscv_esp_vmulas_s8_xacc_ld_xp_m:
+    return LowerVMULASXACCLDXP(Op, DAG, RISCVISD::ESP_VMULAS_S8_XACC_LD_XP_M);
+  case Intrinsic::riscv_esp_vmulas_u16_xacc_ld_xp_m:
+    return LowerVMULASXACCLDXP(Op, DAG, RISCVISD::ESP_VMULAS_U16_XACC_LD_XP_M);
+  case Intrinsic::riscv_esp_vmulas_u8_xacc_ld_xp_m:
+    return LowerVMULASXACCLDXP(Op, DAG, RISCVISD::ESP_VMULAS_U8_XACC_LD_XP_M);
+  // VMULAS XACC ST IP
+  case Intrinsic::riscv_esp_vmulas_s16_xacc_st_ip_m:
+    return LowerVMULASXACCSTIP(Op, DAG, RISCVISD::ESP_VMULAS_S16_XACC_ST_IP_M);
+  case Intrinsic::riscv_esp_vmulas_s8_xacc_st_ip_m:
+    return LowerVMULASXACCSTIP(Op, DAG, RISCVISD::ESP_VMULAS_S8_XACC_ST_IP_M);
+  case Intrinsic::riscv_esp_vmulas_u16_xacc_st_ip_m:
+    return LowerVMULASXACCSTIP(Op, DAG, RISCVISD::ESP_VMULAS_U16_XACC_ST_IP_M);
+  case Intrinsic::riscv_esp_vmulas_u8_xacc_st_ip_m:
+    return LowerVMULASXACCSTIP(Op, DAG, RISCVISD::ESP_VMULAS_U8_XACC_ST_IP_M);
+  // VMULAS XACC ST XP
+  case Intrinsic::riscv_esp_vmulas_s16_xacc_st_xp_m:
+    return LowerVMULASXACCSTXP(Op, DAG, RISCVISD::ESP_VMULAS_S16_XACC_ST_XP_M);
+  case Intrinsic::riscv_esp_vmulas_s8_xacc_st_xp_m:
+    return LowerVMULASXACCSTXP(Op, DAG, RISCVISD::ESP_VMULAS_S8_XACC_ST_XP_M);
+  case Intrinsic::riscv_esp_vmulas_u16_xacc_st_xp_m:
+    return LowerVMULASXACCSTXP(Op, DAG, RISCVISD::ESP_VMULAS_U16_XACC_ST_XP_M);
+  case Intrinsic::riscv_esp_vmulas_u8_xacc_st_xp_m:
+    return LowerVMULASXACCSTXP(Op, DAG, RISCVISD::ESP_VMULAS_U8_XACC_ST_XP_M);
   case Intrinsic::riscv_esp_vcmulas_s8_qacc_h_ld_ip_m: {
     // Lower VCMULAS S8 QACC H LD IP intrinsic to custom SDNode
     // Intrinsic: (chain, int_id, v2_in, v3_in, qx, qy, ptr, offset) -> {ptr,
@@ -2698,7 +2742,210 @@ static SDValue LowerSTXACCIP(SDValue Op, SelectionDAG &DAG,
   return DAG.getMergeValues({PtrOut, XACCLowOut, XACCHighOut, Chain}, DL);
 }
 
-// LD/ST UA_STATE Lowering
+// VMULAS XACC LD IP Lowering
+static SDValue LowerVMULASXACCLDIP(SDValue Op, SelectionDAG &DAG,
+                                   unsigned ISDOpcode) {
+  // Intrinsic: (chain, int_id, xacc_low_in, xacc_high_in, qx, qy, ptr, offset)
+  // -> {qu, ptr, new_xacc_low, new_xacc_high, chain} Mixed model: XACC as {i32
+  // low, i32 high}
+  SDLoc DL(Op);
+  SDValue Chain = Op.getOperand(0);
+  SDValue XACCLowIn = Op.getOperand(2); // i32 passthru (XACC[31:0])
+  SDValue XACCHighIn =
+      Op.getOperand(3); // i32 passthru (XACC[39:32], only low 8 bits valid)
+  SDValue QX = Op.getOperand(4);
+  SDValue QY = Op.getOperand(5);
+  SDValue Ptr = Op.getOperand(6);
+  SDValue Offset = Op.getOperand(7);
+
+  EVT PtrVT = Ptr.getValueType();
+  EVT MemVT = MVT::v16i8;
+  // SDNode with SDNPHasChain and SDNPOutGlue: Chain and Glue are added
+  // automatically SDTypeProfile defines 4 explicit results: v16i8, ptr, i32,
+  // i32 With Chain and Glue: total 6 results getVTList must list all results
+  // including Chain and Glue
+  EVT VTsArray[] = {MVT::v16i8, PtrVT,      MVT::i32,
+                    MVT::i32,   MVT::Other, MVT::Glue};
+  SDVTList VTs = DAG.getVTList(VTsArray);
+  // Operands: Chain (SDNPHasChain requires it as first operand), XACC low, XACC
+  // high, QX, QY, Ptr, Offset SDTypeProfile defines 6 operands, but
+  // SDNPHasChain adds Chain as first operand = 7 total
+  SDValue Ops[] = {Chain, XACCLowIn, XACCHighIn, QX, QY, Ptr, Offset};
+
+  if (auto *MemIntr = dyn_cast<MemIntrinsicSDNode>(Op.getNode())) {
+    MachineMemOperand *MMO = MemIntr->getMemOperand();
+    SDValue Node = DAG.getMemIntrinsicNode(ISDOpcode, DL, VTs, Ops, MemVT, MMO);
+    // getMemIntrinsicNode returns: [v16i8, ptr, i32, i32, Chain, Glue]
+    SDValue Qu = Node.getValue(0);         // v16i8
+    SDValue PtrOut = Node.getValue(1);     // ptr
+    SDValue NewXACCLow = Node.getValue(2); // i32 (XACC[31:0])
+    SDValue NewXACCHigh =
+        Node.getValue(3);     // i32 (XACC[39:32], only low 8 bits valid)
+    Chain = Node.getValue(4); // chain
+    return DAG.getMergeValues({Qu, PtrOut, NewXACCLow, NewXACCHigh, Chain}, DL);
+  }
+  SDValue Node = DAG.getNode(ISDOpcode, DL, VTs, Ops);
+  SDValue Qu = Node.getValue(0);         // v16i8
+  SDValue PtrOut = Node.getValue(1);     // ptr
+  SDValue NewXACCLow = Node.getValue(2); // i32 (XACC[31:0])
+  SDValue NewXACCHigh =
+      Node.getValue(3);     // i32 (XACC[39:32], only low 8 bits valid)
+  Chain = Node.getValue(4); // chain
+  return DAG.getMergeValues({Qu, PtrOut, NewXACCLow, NewXACCHigh, Chain}, DL);
+}
+
+// VMULAS XACC LD XP Lowering
+static SDValue LowerVMULASXACCLDXP(SDValue Op, SelectionDAG &DAG,
+                                   unsigned ISDOpcode) {
+  // Intrinsic: (chain, int_id, xacc_low_in, xacc_high_in, qx, qy, ptr, rs2) ->
+  // {qu, ptr, new_xacc_low, new_xacc_high, chain} Mixed model: XACC as {i32
+  // low, i32 high}
+  SDLoc DL(Op);
+  SDValue Chain = Op.getOperand(0);
+  SDValue XACCLowIn = Op.getOperand(2); // i32 passthru (XACC[31:0])
+  SDValue XACCHighIn =
+      Op.getOperand(3); // i32 passthru (XACC[39:32], only low 8 bits valid)
+  SDValue QX = Op.getOperand(4);
+  SDValue QY = Op.getOperand(5);
+  SDValue Ptr = Op.getOperand(6);
+  SDValue Rs2 = Op.getOperand(7);
+
+  EVT PtrVT = Ptr.getValueType();
+  EVT MemVT = MVT::v16i8;
+  // SDNode with SDNPHasChain and SDNPOutGlue: Chain and Glue are added
+  // automatically SDTypeProfile defines 4 explicit results: v16i8, ptr, i32,
+  // i32 With Chain and Glue: total 6 results getVTList must list all results
+  // including Chain and Glue
+  EVT VTsArray[] = {MVT::v16i8, PtrVT,      MVT::i32,
+                    MVT::i32,   MVT::Other, MVT::Glue};
+  SDVTList VTs = DAG.getVTList(VTsArray);
+  // Operands: Chain (SDNPHasChain requires it as first operand), XACC low, XACC
+  // high, QX, QY, Ptr, Rs2 SDTypeProfile defines 6 operands, but SDNPHasChain
+  // adds Chain as first operand = 7 total
+  SDValue Ops[] = {Chain, XACCLowIn, XACCHighIn, QX, QY, Ptr, Rs2};
+
+  if (auto *MemIntr = dyn_cast<MemIntrinsicSDNode>(Op.getNode())) {
+    MachineMemOperand *MMO = MemIntr->getMemOperand();
+    SDValue Node = DAG.getMemIntrinsicNode(ISDOpcode, DL, VTs, Ops, MemVT, MMO);
+    // getMemIntrinsicNode returns: [v16i8, ptr, i32, i32, Chain, Glue]
+    SDValue Qu = Node.getValue(0);         // v16i8
+    SDValue PtrOut = Node.getValue(1);     // ptr
+    SDValue NewXACCLow = Node.getValue(2); // i32 (XACC[31:0])
+    SDValue NewXACCHigh =
+        Node.getValue(3);     // i32 (XACC[39:32], only low 8 bits valid)
+    Chain = Node.getValue(4); // chain
+    return DAG.getMergeValues({Qu, PtrOut, NewXACCLow, NewXACCHigh, Chain}, DL);
+  }
+  SDValue Node = DAG.getNode(ISDOpcode, DL, VTs, Ops);
+  SDValue Qu = Node.getValue(0);         // v16i8
+  SDValue PtrOut = Node.getValue(1);     // ptr
+  SDValue NewXACCLow = Node.getValue(2); // i32 (XACC[31:0])
+  SDValue NewXACCHigh =
+      Node.getValue(3);     // i32 (XACC[39:32], only low 8 bits valid)
+  Chain = Node.getValue(4); // chain
+  return DAG.getMergeValues({Qu, PtrOut, NewXACCLow, NewXACCHigh, Chain}, DL);
+}
+
+// VMULAS XACC ST IP Lowering
+static SDValue LowerVMULASXACCSTIP(SDValue Op, SelectionDAG &DAG,
+                                   unsigned ISDOpcode) {
+  // Intrinsic: (chain, int_id, xacc_low_in, xacc_high_in, qu, qx, qy, ptr,
+  // offset) -> {ptr, new_xacc_low, new_xacc_high, chain} Mixed model: XACC as
+  // {i32 low, i32 high}
+  SDLoc DL(Op);
+  SDValue Chain = Op.getOperand(0);
+  SDValue XACCLowIn = Op.getOperand(2); // i32 passthru (XACC[31:0])
+  SDValue XACCHighIn =
+      Op.getOperand(3); // i32 passthru (XACC[39:32], only low 8 bits valid)
+  SDValue QU = Op.getOperand(4);
+  SDValue QX = Op.getOperand(5);
+  SDValue QY = Op.getOperand(6);
+  SDValue Ptr = Op.getOperand(7);
+  SDValue Offset = Op.getOperand(8);
+
+  EVT PtrVT = Ptr.getValueType();
+  EVT MemVT = MVT::v16i8;
+  // SDNode with SDNPHasChain and SDNPOutGlue: Chain and Glue are added
+  // automatically SDTypeProfile defines 3 explicit results: ptr, i32, i32 With
+  // Chain and Glue: total 5 results getVTList must list all results including
+  // Chain and Glue
+  EVT VTsArray[] = {PtrVT, MVT::i32, MVT::i32, MVT::Other, MVT::Glue};
+  SDVTList VTs = DAG.getVTList(VTsArray);
+  // Operands: Chain (SDNPHasChain requires it as first operand), XACC low, XACC
+  // high, QU, QX, QY, Ptr, Offset SDTypeProfile defines 7 operands, but
+  // SDNPHasChain adds Chain as first operand = 8 total
+  SDValue Ops[] = {Chain, XACCLowIn, XACCHighIn, QU, QX, QY, Ptr, Offset};
+
+  if (auto *MemIntr = dyn_cast<MemIntrinsicSDNode>(Op.getNode())) {
+    MachineMemOperand *MMO = MemIntr->getMemOperand();
+    SDValue Node = DAG.getMemIntrinsicNode(ISDOpcode, DL, VTs, Ops, MemVT, MMO);
+    // getMemIntrinsicNode returns: [ptr, i32, i32, Chain, Glue]
+    SDValue PtrOut = Node.getValue(0);     // ptr
+    SDValue NewXACCLow = Node.getValue(1); // i32 (XACC[31:0])
+    SDValue NewXACCHigh =
+        Node.getValue(2);     // i32 (XACC[39:32], only low 8 bits valid)
+    Chain = Node.getValue(3); // chain
+    return DAG.getMergeValues({PtrOut, NewXACCLow, NewXACCHigh, Chain}, DL);
+  }
+  SDValue Node = DAG.getNode(ISDOpcode, DL, VTs, Ops);
+  SDValue PtrOut = Node.getValue(0);     // ptr
+  SDValue NewXACCLow = Node.getValue(1); // i32 (XACC[31:0])
+  SDValue NewXACCHigh =
+      Node.getValue(2);     // i32 (XACC[39:32], only low 8 bits valid)
+  Chain = Node.getValue(3); // chain
+  return DAG.getMergeValues({PtrOut, NewXACCLow, NewXACCHigh, Chain}, DL);
+}
+
+// VMULAS XACC ST XP Lowering
+static SDValue LowerVMULASXACCSTXP(SDValue Op, SelectionDAG &DAG,
+                                   unsigned ISDOpcode) {
+  // Intrinsic: (chain, int_id, xacc_low_in, xacc_high_in, qu, qx, qy, ptr, rs2)
+  // -> {ptr, new_xacc_low, new_xacc_high, chain} Mixed model: XACC as {i32 low,
+  // i32 high}
+  SDLoc DL(Op);
+  SDValue Chain = Op.getOperand(0);
+  SDValue XACCLowIn = Op.getOperand(2); // i32 passthru (XACC[31:0])
+  SDValue XACCHighIn =
+      Op.getOperand(3); // i32 passthru (XACC[39:32], only low 8 bits valid)
+  SDValue QU = Op.getOperand(4);
+  SDValue QX = Op.getOperand(5);
+  SDValue QY = Op.getOperand(6);
+  SDValue Ptr = Op.getOperand(7);
+  SDValue Rs2 = Op.getOperand(8);
+
+  EVT PtrVT = Ptr.getValueType();
+  EVT MemVT = MVT::v16i8;
+  // SDNode with SDNPHasChain and SDNPOutGlue: Chain and Glue are added
+  // automatically SDTypeProfile defines 3 explicit results: ptr, i32, i32 With
+  // Chain and Glue: total 5 results getVTList must list all results including
+  // Chain and Glue
+  EVT VTsArray[] = {PtrVT, MVT::i32, MVT::i32, MVT::Other, MVT::Glue};
+  SDVTList VTs = DAG.getVTList(VTsArray);
+  // Operands: Chain (SDNPHasChain requires it as first operand), XACC low, XACC
+  // high, QU, QX, QY, Ptr, Rs2 SDTypeProfile defines 7 operands, but
+  // SDNPHasChain adds Chain as first operand = 8 total
+  SDValue Ops[] = {Chain, XACCLowIn, XACCHighIn, QU, QX, QY, Ptr, Rs2};
+
+  if (auto *MemIntr = dyn_cast<MemIntrinsicSDNode>(Op.getNode())) {
+    MachineMemOperand *MMO = MemIntr->getMemOperand();
+    SDValue Node = DAG.getMemIntrinsicNode(ISDOpcode, DL, VTs, Ops, MemVT, MMO);
+    // getMemIntrinsicNode returns: [ptr, i32, i32, Chain, Glue]
+    SDValue PtrOut = Node.getValue(0);     // ptr
+    SDValue NewXACCLow = Node.getValue(1); // i32 (XACC[31:0])
+    SDValue NewXACCHigh =
+        Node.getValue(2);     // i32 (XACC[39:32], only low 8 bits valid)
+    Chain = Node.getValue(3); // chain
+    return DAG.getMergeValues({PtrOut, NewXACCLow, NewXACCHigh, Chain}, DL);
+  }
+  SDValue Node = DAG.getNode(ISDOpcode, DL, VTs, Ops);
+  SDValue PtrOut = Node.getValue(0);     // ptr
+  SDValue NewXACCLow = Node.getValue(1); // i32 (XACC[31:0])
+  SDValue NewXACCHigh =
+      Node.getValue(2);     // i32 (XACC[39:32], only low 8 bits valid)
+  Chain = Node.getValue(3); // chain
+  return DAG.getMergeValues({PtrOut, NewXACCLow, NewXACCHigh, Chain}, DL);
+}
+
 static SDValue LowerLDUASTATEIP(SDValue Op, SelectionDAG &DAG,
                                 unsigned ISDOpcode) {
   // Lower intrinsic to custom SDNode that will be matched to ESP_LD_UA_STATE_IP
@@ -3416,6 +3663,117 @@ SDValue lowerESPVIntrinsicWOChain(SDValue Op, SelectionDAG &DAG,
     return DAG.getMergeValues({Node.getValue(0), Node.getValue(1),
                                Node.getValue(2), Node.getValue(3)},
                               DL);
+  }
+  case Intrinsic::riscv_esp_vmulas_s16_xacc_m: {
+    // Lower VMULAS S16 XACC pure compute intrinsic with mixed model
+    // Intrinsic: (int_id, xacc_low_passthru, xacc_high_passthru, qx, qy) ->
+    // {new_xacc_low, new_xacc_high} Mixed model: XACC as struct {i32
+    // (XACC[31:0]), i32 (XACC[39:32], only low 8 bits valid)}
+    SDLoc DL(Op);
+    SDValue XACCLowPassthru = Op.getOperand(1); // i32 passthru (XACC[31:0])
+    SDValue XACCHighPassthru =
+        Op.getOperand(2); // i32 passthru (XACC[39:32], only low 8 bits valid)
+    SDValue QX = Op.getOperand(3);
+    SDValue QY = Op.getOperand(4);
+
+    SDVTList VTs = DAG.getVTList(
+        MVT::i32,
+        MVT::i32); // Both outputs are i32 (xacc_h only low 8 bits valid)
+    SDValue Ops[] = {XACCLowPassthru, XACCHighPassthru, QX, QY};
+    SDValue Node = DAG.getNode(RISCVISD::ESP_VMULAS_S16_XACC_M, DL, VTs, Ops);
+    return DAG.getMergeValues({Node.getValue(0), Node.getValue(1)}, DL);
+  }
+  case Intrinsic::riscv_esp_vmulas_s8_xacc_m: {
+    // Lower VMULAS S8 XACC pure compute intrinsic with mixed model
+    // Mixed model: XACC as struct {i32 (XACC[31:0]), i32 (XACC[39:32], only low
+    // 8 bits valid)}
+    SDLoc DL(Op);
+    SDValue XACCLowPassthru = Op.getOperand(1); // i32 passthru (XACC[31:0])
+    SDValue XACCHighPassthru =
+        Op.getOperand(2); // i32 passthru (XACC[39:32], only low 8 bits valid)
+    SDValue QX = Op.getOperand(3);
+    SDValue QY = Op.getOperand(4);
+
+    SDVTList VTs = DAG.getVTList(
+        MVT::i32,
+        MVT::i32); // Both outputs are i32 (xacc_h only low 8 bits valid)
+    SDValue Ops[] = {XACCLowPassthru, XACCHighPassthru, QX, QY};
+    SDValue Node = DAG.getNode(RISCVISD::ESP_VMULAS_S8_XACC_M, DL, VTs, Ops);
+    return DAG.getMergeValues({Node.getValue(0), Node.getValue(1)}, DL);
+  }
+  case Intrinsic::riscv_esp_vmulas_u16_xacc_m: {
+    // Lower VMULAS U16 XACC pure compute intrinsic with mixed model
+    // Mixed model: XACC as struct {i32 (XACC[31:0]), i32 (XACC[39:32], only low
+    // 8 bits valid)}
+    SDLoc DL(Op);
+    SDValue XACCLowPassthru = Op.getOperand(1); // i32 passthru (XACC[31:0])
+    SDValue XACCHighPassthru =
+        Op.getOperand(2); // i32 passthru (XACC[39:32], only low 8 bits valid)
+    SDValue QX = Op.getOperand(3);
+    SDValue QY = Op.getOperand(4);
+
+    SDVTList VTs = DAG.getVTList(
+        MVT::i32,
+        MVT::i32); // Both outputs are i32 (xacc_h only low 8 bits valid)
+    SDValue Ops[] = {XACCLowPassthru, XACCHighPassthru, QX, QY};
+    SDValue Node = DAG.getNode(RISCVISD::ESP_VMULAS_U16_XACC_M, DL, VTs, Ops);
+    return DAG.getMergeValues({Node.getValue(0), Node.getValue(1)}, DL);
+  }
+  case Intrinsic::riscv_esp_vmulas_u8_xacc_m: {
+    // Lower VMULAS U8 XACC pure compute intrinsic with mixed model
+    // Mixed model: XACC as struct {i32 (XACC[31:0]), i32 (XACC[39:32], only low
+    // 8 bits valid)}
+    SDLoc DL(Op);
+    SDValue XACCLowPassthru = Op.getOperand(1); // i32 passthru (XACC[31:0])
+    SDValue XACCHighPassthru =
+        Op.getOperand(2); // i32 passthru (XACC[39:32], only low 8 bits valid)
+    SDValue QX = Op.getOperand(3);
+    SDValue QY = Op.getOperand(4);
+
+    SDVTList VTs = DAG.getVTList(
+        MVT::i32,
+        MVT::i32); // Both outputs are i32 (xacc_h only low 8 bits valid)
+    SDValue Ops[] = {XACCLowPassthru, XACCHighPassthru, QX, QY};
+    SDValue Node = DAG.getNode(RISCVISD::ESP_VMULAS_U8_XACC_M, DL, VTs, Ops);
+    return DAG.getMergeValues({Node.getValue(0), Node.getValue(1)}, DL);
+  }
+  case Intrinsic::riscv_esp_srs_s_xacc_m: {
+    // Lower SRS S XACC intrinsic with explicit state passing
+    // Intrinsic: (int_id, xacc_h_passthru, xacc_l_passthru, rs1) ->
+    // {saturated_value, new_xacc_h, new_xacc_l} Mixed model: XACC as struct
+    // {i32 (XACC[39:32], only low 8 bits valid), i32 (XACC[31:0])}
+    SDLoc DL(Op);
+    SDValue XACCHighPassthru =
+        Op.getOperand(1); // i32 passthru (XACC[39:32], only low 8 bits valid)
+    SDValue XACCLowPassthru = Op.getOperand(2); // i32 passthru (XACC[31:0])
+    SDValue RS1 = Op.getOperand(3);             // i32 shift amount
+
+    SDVTList VTs = DAG.getVTList(MVT::i32, MVT::i32,
+                                 MVT::i32); // saturated_value, new_xacc_h (only
+                                            // low 8 bits valid), new_xacc_l
+    SDValue Ops[] = {XACCHighPassthru, XACCLowPassthru, RS1};
+    SDValue Node = DAG.getNode(RISCVISD::ESP_SRS_S_XACC_M, DL, VTs, Ops);
+    return DAG.getMergeValues(
+        {Node.getValue(0), Node.getValue(1), Node.getValue(2)}, DL);
+  }
+  case Intrinsic::riscv_esp_srs_u_xacc_m: {
+    // Lower SRS U XACC intrinsic with explicit state passing
+    // Intrinsic: (int_id, xacc_h_passthru, xacc_l_passthru, rs1) ->
+    // {saturated_value, new_xacc_h, new_xacc_l} Mixed model: XACC as struct
+    // {i32 (XACC[39:32], only low 8 bits valid), i32 (XACC[31:0])}
+    SDLoc DL(Op);
+    SDValue XACCHighPassthru =
+        Op.getOperand(1); // i32 passthru (XACC[39:32], only low 8 bits valid)
+    SDValue XACCLowPassthru = Op.getOperand(2); // i32 passthru (XACC[31:0])
+    SDValue RS1 = Op.getOperand(3);             // i32 shift amount
+
+    SDVTList VTs = DAG.getVTList(MVT::i32, MVT::i32,
+                                 MVT::i32); // saturated_value, new_xacc_h (only
+                                            // low 8 bits valid), new_xacc_l
+    SDValue Ops[] = {XACCHighPassthru, XACCLowPassthru, RS1};
+    SDValue Node = DAG.getNode(RISCVISD::ESP_SRS_U_XACC_M, DL, VTs, Ops);
+    return DAG.getMergeValues(
+        {Node.getValue(0), Node.getValue(1), Node.getValue(2)}, DL);
   }
   default:
     return SDValue();

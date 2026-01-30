@@ -658,7 +658,6 @@ def SDT_ESPFFTBITREVM : SDTypeProfile<2, 2, [
 ]>;
 def riscv_esp_fft_bitrev_m : RVSDNode<"ESP_FFT_BITREV_M", SDT_ESPFFTBITREVM, []>;
 
-
 // FFT.CMUL.S16.LD.XP SDNode with explicit SAR state passing
 // Results: qz (v8i16), qu (v16i8), rs1r (pointer)
 // Operands: qx (v8i16), qy (v8i16), rs1 (pointer), rs2 (pointer), sel8 (i32 immediate), sar (i32)
@@ -1260,6 +1259,70 @@ def riscv_esp_vmulas_s8_qacc_m : RVSDNode<"ESP_VMULAS_S8_QACC_M", SDT_ESPVMULASS
 def riscv_esp_vmulas_u16_qacc_m : RVSDNode<"ESP_VMULAS_U16_QACC_M", SDT_ESPVMULASU16QACCM>;
 def riscv_esp_vmulas_u8_qacc_m : RVSDNode<"ESP_VMULAS_U8_QACC_M", SDT_ESPVMULASU8QACCM>;
 
+// VMULAS XACC SDNodes - Vector Multiply-Accumulate to XACC with explicit state passing
+// Results: new XACC (i64, only low 40 bits used) as {i32 low, i32 high}
+// Operands: XACC passthru (i64, only low 40 bits used) as {i32 low, i32 high} + qx + qy
+def SDT_ESPVMULASS16XACCM : SDTypeProfile<2, 4, [
+  SDTCisVT<0, i32>,        // Result 0: new XACC[31:0] (i32)
+  SDTCisVT<1, i32>,        // Result 1: new XACC[39:32] (i32, only low 8 bits valid)
+  SDTCisVT<2, i32>,        // Operand 0: XACC[31:0] passthru (i32)
+  SDTCisVT<3, i32>,        // Operand 1: XACC[39:32] passthru (i32, only low 8 bits valid)
+  SDTCisVT<4, v8i16>,      // Operand 2: qx vector (8x i16)
+  SDTCisVT<5, v8i16>       // Operand 3: qy vector (8x i16)
+]>;
+def SDT_ESPVMULASS8XACCM : SDTypeProfile<2, 4, [
+  SDTCisVT<0, i32>,        // Result 0: new XACC[31:0] (i32)
+  SDTCisVT<1, i32>,        // Result 1: new XACC[39:32] (i32, only low 8 bits valid)
+  SDTCisVT<2, i32>,        // Operand 0: XACC[31:0] passthru (i32)
+  SDTCisVT<3, i32>,        // Operand 1: XACC[39:32] passthru (i32, only low 8 bits valid)
+  SDTCisVT<4, v16i8>,      // Operand 2: qx vector
+  SDTCisVT<5, v16i8>       // Operand 3: qy vector
+]>;
+def SDT_ESPVMULASU16XACCM : SDTypeProfile<2, 4, [
+  SDTCisVT<0, i32>,        // Result 0: new XACC[31:0] (i32)
+  SDTCisVT<1, i32>,        // Result 1: new XACC[39:32] (i32, only low 8 bits valid)
+  SDTCisVT<2, i32>,        // Operand 0: XACC[31:0] passthru (i32)
+  SDTCisVT<3, i32>,        // Operand 1: XACC[39:32] passthru (i32, only low 8 bits valid)
+  SDTCisVT<4, v8i16>,      // Operand 2: qx vector (8x i16)
+  SDTCisVT<5, v8i16>       // Operand 3: qy vector (8x i16)
+]>;
+def SDT_ESPVMULASU8XACCM : SDTypeProfile<2, 4, [
+  SDTCisVT<0, i32>,        // Result 0: new XACC[31:0] (i32)
+  SDTCisVT<1, i32>,        // Result 1: new XACC[39:32] (i32, only low 8 bits valid)
+  SDTCisVT<2, i32>,        // Operand 0: XACC[31:0] passthru (i32)
+  SDTCisVT<3, i32>,        // Operand 1: XACC[39:32] passthru (i32, only low 8 bits valid)
+  SDTCisVT<4, v16i8>,      // Operand 2: qx vector
+  SDTCisVT<5, v16i8>       // Operand 3: qy vector
+]>;
+
+def riscv_esp_vmulas_s16_xacc_m : RVSDNode<"ESP_VMULAS_S16_XACC_M", SDT_ESPVMULASS16XACCM, []>;
+def riscv_esp_vmulas_s8_xacc_m : RVSDNode<"ESP_VMULAS_S8_XACC_M", SDT_ESPVMULASS8XACCM, []>;
+def riscv_esp_vmulas_u16_xacc_m : RVSDNode<"ESP_VMULAS_U16_XACC_M", SDT_ESPVMULASU16XACCM, []>;
+def riscv_esp_vmulas_u8_xacc_m : RVSDNode<"ESP_VMULAS_U8_XACC_M", SDT_ESPVMULASU8XACCM, []>;
+
+// SRS XACC SDNodes - Shift Right and Saturate from XACC with explicit state passing
+// Results: saturated value (i32) + new XACC (i64)
+// Operands: XACC passthru (i64) + shift amount (i32)
+def SDT_ESPSRSSXACCM : SDTypeProfile<3, 3, [
+  SDTCisVT<0, i32>,        // Result 0: saturated signed value (i32)
+  SDTCisVT<1, i32>,        // Result 1: new XACC high part (i32, only low 8 bits valid, XACC[39:32])
+  SDTCisVT<2, i32>,        // Result 2: new XACC low part (i32, XACC[31:0])
+  SDTCisVT<3, i32>,        // Operand 0: XACC high passthru (i32, only low 8 bits valid, XACC[39:32])
+  SDTCisVT<4, i32>,        // Operand 1: XACC low passthru (i32, XACC[31:0])
+  SDTCisVT<5, i32>         // Operand 2: shift amount (rs1, i32, only low 6 bits used)
+]>;
+def SDT_ESPSRSUXACCM : SDTypeProfile<3, 3, [
+  SDTCisVT<0, i32>,        // Result 0: saturated unsigned value (i32)
+  SDTCisVT<1, i32>,        // Result 1: new XACC high part (i32, only low 8 bits valid, XACC[39:32])
+  SDTCisVT<2, i32>,        // Result 2: new XACC low part (i32, XACC[31:0])
+  SDTCisVT<3, i32>,        // Operand 0: XACC high passthru (i32, only low 8 bits valid, XACC[39:32])
+  SDTCisVT<4, i32>,        // Operand 1: XACC low passthru (i32, XACC[31:0])
+  SDTCisVT<5, i32>         // Operand 2: shift amount (rs1, i32, only low 6 bits used)
+]>;
+
+def riscv_esp_srs_s_xacc_m : RVSDNode<"ESP_SRS_S_XACC_M", SDT_ESPSRSSXACCM, []>;
+def riscv_esp_srs_u_xacc_m : RVSDNode<"ESP_SRS_U_XACC_M", SDT_ESPSRSUXACCM, []>;
+
 // VMULAS QACC LD IP SDNodes
 def SDT_ESPVMULASS16QACCLDIPM : SDTypeProfile<6, 8, [
   SDTCisVT<0, v16i8>,      // Result 0: qu vector
@@ -1560,9 +1623,262 @@ def riscv_esp_vmulas_u16_qacc_st_xp_m : RVSDNode<"ESP_VMULAS_U16_QACC_ST_XP_M", 
 def riscv_esp_vmulas_u8_qacc_st_xp_m : RVSDNode<"ESP_VMULAS_U8_QACC_ST_XP_M", SDT_ESPVMULASU8QACCSTXPM,
                                                  [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
 
+// VMULAS XACC LD IP SDNodes (immediate offset) - Mixed model: XACC as {i32 low, i32 high}
+def SDT_ESPVMULASS16XACCLDIPM : SDTypeProfile<4, 6, [
+  SDTCisVT<0, v16i8>,      // Result 0: qu vector
+  SDTCisPtrTy<1>,          // Result 1: updated pointer
+  SDTCisVT<2, i32>,        // Result 2: new XACC low (i32)
+  SDTCisVT<3, i32>,        // Result 3: new XACC high (i32, only low 8 bits valid)
+  SDTCisVT<4, i32>,        // Operand 0: XACC low passthru (i32)
+  SDTCisVT<5, i32>,        // Operand 1: XACC high passthru (i32, only low 8 bits valid)
+  SDTCisVT<6, v8i16>,      // Operand 2: qx vector (8x i16)
+  SDTCisVT<7, v8i16>,      // Operand 3: qy vector (8x i16)
+  SDTCisPtrTy<8>,          // Operand 4: rs1 pointer
+  SDTCisVT<9, i32>         // Operand 5: offset immediate
+]>;
+def SDT_ESPVMULASS8XACCLDIPM : SDTypeProfile<4, 6, [
+  SDTCisVT<0, v16i8>,      // Result 0: qu vector
+  SDTCisPtrTy<1>,          // Result 1: updated pointer
+  SDTCisVT<2, i32>,        // Result 2: new XACC low (i32)
+  SDTCisVT<3, i32>,        // Result 3: new XACC high (i32, only low 8 bits valid)
+  SDTCisVT<4, i32>,        // Operand 0: XACC low passthru (i32)
+  SDTCisVT<5, i32>,        // Operand 1: XACC high passthru (i32, only low 8 bits valid)
+  SDTCisVT<6, v16i8>,      // Operand 2: qx vector
+  SDTCisVT<7, v16i8>,      // Operand 3: qy vector
+  SDTCisPtrTy<8>,          // Operand 4: rs1 pointer
+  SDTCisVT<9, i32>         // Operand 5: offset immediate
+]>;
+def SDT_ESPVMULASU16XACCLDIPM : SDTypeProfile<4, 6, [
+  SDTCisVT<0, v16i8>,      // Result 0: qu vector
+  SDTCisPtrTy<1>,          // Result 1: updated pointer
+  SDTCisVT<2, i32>,        // Result 2: new XACC low (i32)
+  SDTCisVT<3, i32>,        // Result 3: new XACC high (i32, only low 8 bits valid)
+  SDTCisVT<4, i32>,        // Operand 0: XACC low passthru (i32)
+  SDTCisVT<5, i32>,        // Operand 1: XACC high passthru (i32, only low 8 bits valid)
+  SDTCisVT<6, v8i16>,      // Operand 2: qx vector (8x i16)
+  SDTCisVT<7, v8i16>,      // Operand 3: qy vector (8x i16)
+  SDTCisPtrTy<8>,          // Operand 4: rs1 pointer
+  SDTCisVT<9, i32>         // Operand 5: offset immediate
+]>;
+def SDT_ESPVMULASU8XACCLDIPM : SDTypeProfile<4, 6, [
+  SDTCisVT<0, v16i8>,      // Result 0: qu vector
+  SDTCisPtrTy<1>,          // Result 1: updated pointer
+  SDTCisVT<2, i32>,        // Result 2: new XACC low (i32)
+  SDTCisVT<3, i32>,        // Result 3: new XACC high (i32, only low 8 bits valid)
+  SDTCisVT<4, i32>,        // Operand 0: XACC low passthru (i32)
+  SDTCisVT<5, i32>,        // Operand 1: XACC high passthru (i32, only low 8 bits valid)
+  SDTCisVT<6, v16i8>,      // Operand 2: qx vector
+  SDTCisVT<7, v16i8>,      // Operand 3: qy vector
+  SDTCisPtrTy<8>,          // Operand 4: rs1 pointer
+  SDTCisVT<9, i32>         // Operand 5: offset immediate
+]>;
+
+def riscv_esp_vmulas_s16_xacc_ld_ip_m : RVSDNode<"ESP_VMULAS_S16_XACC_LD_IP_M", SDT_ESPVMULASS16XACCLDIPM,
+                                                  [SDNPHasChain, SDNPMayLoad, SDNPMemOperand,
+                                                   SDNPOptInGlue, SDNPOutGlue]>;
+def riscv_esp_vmulas_s8_xacc_ld_ip_m : RVSDNode<"ESP_VMULAS_S8_XACC_LD_IP_M", SDT_ESPVMULASS8XACCLDIPM,
+                                                 [SDNPHasChain, SDNPMayLoad, SDNPMemOperand,
+                                                  SDNPOptInGlue, SDNPOutGlue]>;
+def riscv_esp_vmulas_u16_xacc_ld_ip_m : RVSDNode<"ESP_VMULAS_U16_XACC_LD_IP_M", SDT_ESPVMULASU16XACCLDIPM,
+                                                   [SDNPHasChain, SDNPMayLoad, SDNPMemOperand,
+                                                    SDNPOptInGlue, SDNPOutGlue]>;
+def riscv_esp_vmulas_u8_xacc_ld_ip_m : RVSDNode<"ESP_VMULAS_U8_XACC_LD_IP_M", SDT_ESPVMULASU8XACCLDIPM,
+                                                 [SDNPHasChain, SDNPMayLoad, SDNPMemOperand,
+                                                  SDNPOptInGlue, SDNPOutGlue]>;
+
+// VMULAS XACC LD XP SDNodes (register offset) - Mixed model: XACC as {i32 low, i32 high}
+def SDT_ESPVMULASS16XACCLDXPM : SDTypeProfile<4, 6, [
+  SDTCisVT<0, v16i8>,      // Result 0: qu vector
+  SDTCisPtrTy<1>,          // Result 1: updated pointer
+  SDTCisVT<2, i32>,        // Result 2: new XACC low (i32)
+  SDTCisVT<3, i32>,        // Result 3: new XACC high (i32, only low 8 bits valid)
+  SDTCisVT<4, i32>,        // Operand 0: XACC low passthru (i32)
+  SDTCisVT<5, i32>,        // Operand 1: XACC high passthru (i32, only low 8 bits valid)
+  SDTCisVT<6, v8i16>,      // Operand 2: qx vector (8x i16)
+  SDTCisVT<7, v8i16>,      // Operand 3: qy vector (8x i16)
+  SDTCisPtrTy<8>,          // Operand 4: rs1 pointer
+  SDTCisVT<9, i32>         // Operand 5: rs2 register offset
+]>;
+def SDT_ESPVMULASS8XACCLDXPM : SDTypeProfile<4, 6, [
+  SDTCisVT<0, v16i8>,      // Result 0: qu vector
+  SDTCisPtrTy<1>,          // Result 1: updated pointer
+  SDTCisVT<2, i32>,        // Result 2: new XACC low (i32)
+  SDTCisVT<3, i32>,        // Result 3: new XACC high (i32, only low 8 bits valid)
+  SDTCisVT<4, i32>,        // Operand 0: XACC low passthru (i32)
+  SDTCisVT<5, i32>,        // Operand 1: XACC high passthru (i32, only low 8 bits valid)
+  SDTCisVT<6, v16i8>,      // Operand 2: qx vector
+  SDTCisVT<7, v16i8>,      // Operand 3: qy vector
+  SDTCisPtrTy<8>,          // Operand 4: rs1 pointer
+  SDTCisVT<9, i32>         // Operand 5: rs2 register offset
+]>;
+def SDT_ESPVMULASU16XACCLDXPM : SDTypeProfile<4, 6, [
+  SDTCisVT<0, v16i8>,      // Result 0: qu vector
+  SDTCisPtrTy<1>,          // Result 1: updated pointer
+  SDTCisVT<2, i32>,        // Result 2: new XACC low (i32)
+  SDTCisVT<3, i32>,        // Result 3: new XACC high (i32, only low 8 bits valid)
+  SDTCisVT<4, i32>,        // Operand 0: XACC low passthru (i32)
+  SDTCisVT<5, i32>,        // Operand 1: XACC high passthru (i32, only low 8 bits valid)
+  SDTCisVT<6, v8i16>,      // Operand 2: qx vector (8x i16)
+  SDTCisVT<7, v8i16>,      // Operand 3: qy vector (8x i16)
+  SDTCisPtrTy<8>,          // Operand 4: rs1 pointer
+  SDTCisVT<9, i32>         // Operand 5: rs2 register offset
+]>;
+def SDT_ESPVMULASU8XACCLDXPM : SDTypeProfile<4, 6, [
+  SDTCisVT<0, v16i8>,      // Result 0: qu vector
+  SDTCisPtrTy<1>,          // Result 1: updated pointer
+  SDTCisVT<2, i32>,        // Result 2: new XACC low (i32)
+  SDTCisVT<3, i32>,        // Result 3: new XACC high (i32, only low 8 bits valid)
+  SDTCisVT<4, i32>,        // Operand 0: XACC low passthru (i32)
+  SDTCisVT<5, i32>,        // Operand 1: XACC high passthru (i32, only low 8 bits valid)
+  SDTCisVT<6, v16i8>,      // Operand 2: qx vector
+  SDTCisVT<7, v16i8>,      // Operand 3: qy vector
+  SDTCisPtrTy<8>,          // Operand 4: rs1 pointer
+  SDTCisVT<9, i32>         // Operand 5: rs2 register offset
+]>;
+
+def riscv_esp_vmulas_s16_xacc_ld_xp_m : RVSDNode<"ESP_VMULAS_S16_XACC_LD_XP_M", SDT_ESPVMULASS16XACCLDXPM,
+                                                  [SDNPHasChain, SDNPMayLoad, SDNPMemOperand,
+                                                   SDNPOptInGlue, SDNPOutGlue]>;
+def riscv_esp_vmulas_s8_xacc_ld_xp_m : RVSDNode<"ESP_VMULAS_S8_XACC_LD_XP_M", SDT_ESPVMULASS8XACCLDXPM,
+                                                 [SDNPHasChain, SDNPMayLoad, SDNPMemOperand,
+                                                  SDNPOptInGlue, SDNPOutGlue]>;
+def riscv_esp_vmulas_u16_xacc_ld_xp_m : RVSDNode<"ESP_VMULAS_U16_XACC_LD_XP_M", SDT_ESPVMULASU16XACCLDXPM,
+                                                   [SDNPHasChain, SDNPMayLoad, SDNPMemOperand,
+                                                    SDNPOptInGlue, SDNPOutGlue]>;
+def riscv_esp_vmulas_u8_xacc_ld_xp_m : RVSDNode<"ESP_VMULAS_U8_XACC_LD_XP_M", SDT_ESPVMULASU8XACCLDXPM,
+                                                 [SDNPHasChain, SDNPMayLoad, SDNPMemOperand,
+                                                  SDNPOptInGlue, SDNPOutGlue]>;
+
+// VMULAS XACC ST IP SDNodes - Mixed model: XACC as {i32 low, i32 high}
+// Results: rs1r (pointer), new XACC {i32 low, i32 high}
+// Operands: XACC {i32 low, i32 high}, qu (vector), qx (vector), qy (vector), rs1 (pointer), offset (i32 immediate)
+def SDT_ESPVMULASS16XACCSTIPM : SDTypeProfile<3, 7, [
+  SDTCisPtrTy<0>,          // Result 0: updated pointer
+  SDTCisVT<1, i32>,        // Result 1: new XACC low (i32)
+  SDTCisVT<2, i32>,        // Result 2: new XACC high (i32, only low 8 bits valid)
+  SDTCisVT<3, i32>,        // Operand 0: XACC low passthru (i32)
+  SDTCisVT<4, i32>,        // Operand 1: XACC high passthru (i32, only low 8 bits valid)
+  SDTCisVT<5, v16i8>,      // Operand 2: qu vector
+  SDTCisVT<6, v8i16>,      // Operand 3: qx vector (8x i16)
+  SDTCisVT<7, v8i16>,      // Operand 4: qy vector (8x i16)
+  SDTCisPtrTy<8>,          // Operand 5: rs1 pointer
+  SDTCisVT<9, i32>         // Operand 6: offset immediate
+]>;
+def SDT_ESPVMULASS8XACCSTIPM : SDTypeProfile<3, 7, [
+  SDTCisPtrTy<0>,          // Result 0: updated pointer
+  SDTCisVT<1, i32>,        // Result 1: new XACC low (i32)
+  SDTCisVT<2, i32>,        // Result 2: new XACC high (i32, only low 8 bits valid)
+  SDTCisVT<3, i32>,        // Operand 0: XACC low passthru (i32)
+  SDTCisVT<4, i32>,        // Operand 1: XACC high passthru (i32, only low 8 bits valid)
+  SDTCisVT<5, v16i8>,      // Operand 2: qu vector
+  SDTCisVT<6, v16i8>,      // Operand 3: qx vector
+  SDTCisVT<7, v16i8>,      // Operand 4: qy vector
+  SDTCisPtrTy<8>,          // Operand 5: rs1 pointer
+  SDTCisVT<9, i32>         // Operand 6: offset immediate
+]>;
+def SDT_ESPVMULASU16XACCSTIPM : SDTypeProfile<3, 7, [
+  SDTCisPtrTy<0>,          // Result 0: updated pointer
+  SDTCisVT<1, i32>,        // Result 1: new XACC low (i32)
+  SDTCisVT<2, i32>,        // Result 2: new XACC high (i32, only low 8 bits valid)
+  SDTCisVT<3, i32>,        // Operand 0: XACC low passthru (i32)
+  SDTCisVT<4, i32>,        // Operand 1: XACC high passthru (i32, only low 8 bits valid)
+  SDTCisVT<5, v16i8>,      // Operand 2: qu vector
+  SDTCisVT<6, v8i16>,      // Operand 3: qx vector (8x i16)
+  SDTCisVT<7, v8i16>,      // Operand 4: qy vector (8x i16)
+  SDTCisPtrTy<8>,          // Operand 5: rs1 pointer
+  SDTCisVT<9, i32>         // Operand 6: offset immediate
+]>;
+def SDT_ESPVMULASU8XACCSTIPM : SDTypeProfile<3, 7, [
+  SDTCisPtrTy<0>,          // Result 0: updated pointer
+  SDTCisVT<1, i32>,        // Result 1: new XACC low (i32)
+  SDTCisVT<2, i32>,        // Result 2: new XACC high (i32, only low 8 bits valid)
+  SDTCisVT<3, i32>,        // Operand 0: XACC low passthru (i32)
+  SDTCisVT<4, i32>,        // Operand 1: XACC high passthru (i32, only low 8 bits valid)
+  SDTCisVT<5, v16i8>,      // Operand 2: qu vector
+  SDTCisVT<6, v16i8>,      // Operand 3: qx vector
+  SDTCisVT<7, v16i8>,      // Operand 4: qy vector
+  SDTCisPtrTy<8>,          // Operand 5: rs1 pointer
+  SDTCisVT<9, i32>         // Operand 6: offset immediate
+]>;
+
+def riscv_esp_vmulas_s16_xacc_st_ip_m : RVSDNode<"ESP_VMULAS_S16_XACC_ST_IP_M", SDT_ESPVMULASS16XACCSTIPM,
+                                                  [SDNPHasChain, SDNPMayStore, SDNPMemOperand,
+                                                   SDNPOptInGlue, SDNPOutGlue]>;
+def riscv_esp_vmulas_s8_xacc_st_ip_m : RVSDNode<"ESP_VMULAS_S8_XACC_ST_IP_M", SDT_ESPVMULASS8XACCSTIPM,
+                                                 [SDNPHasChain, SDNPMayStore, SDNPMemOperand,
+                                                  SDNPOptInGlue, SDNPOutGlue]>;
+def riscv_esp_vmulas_u16_xacc_st_ip_m : RVSDNode<"ESP_VMULAS_U16_XACC_ST_IP_M", SDT_ESPVMULASU16XACCSTIPM,
+                                                   [SDNPHasChain, SDNPMayStore, SDNPMemOperand,
+                                                    SDNPOptInGlue, SDNPOutGlue]>;
+def riscv_esp_vmulas_u8_xacc_st_ip_m : RVSDNode<"ESP_VMULAS_U8_XACC_ST_IP_M", SDT_ESPVMULASU8XACCSTIPM,
+                                                 [SDNPHasChain, SDNPMayStore, SDNPMemOperand,
+                                                  SDNPOptInGlue, SDNPOutGlue]>;
+
+// VMULAS XACC ST XP SDNodes (register offset) - Mixed model: XACC as {i32 low, i32 high}
+def SDT_ESPVMULASS16XACCSTXPM : SDTypeProfile<3, 7, [
+  SDTCisPtrTy<0>,          // Result 0: updated pointer
+  SDTCisVT<1, i32>,        // Result 1: new XACC low (i32)
+  SDTCisVT<2, i32>,        // Result 2: new XACC high (i32, only low 8 bits valid)
+  SDTCisVT<3, i32>,        // Operand 0: XACC low passthru (i32)
+  SDTCisVT<4, i32>,        // Operand 1: XACC high passthru (i32, only low 8 bits valid)
+  SDTCisVT<5, v16i8>,      // Operand 2: qu vector
+  SDTCisVT<6, v8i16>,      // Operand 3: qx vector (8x i16)
+  SDTCisVT<7, v8i16>,      // Operand 4: qy vector (8x i16)
+  SDTCisPtrTy<8>,          // Operand 5: rs1 pointer
+  SDTCisVT<9, i32>         // Operand 6: rs2 register offset
+]>;
+def SDT_ESPVMULASS8XACCSTXPM : SDTypeProfile<3, 7, [
+  SDTCisPtrTy<0>,          // Result 0: updated pointer
+  SDTCisVT<1, i32>,        // Result 1: new XACC low (i32)
+  SDTCisVT<2, i32>,        // Result 2: new XACC high (i32, only low 8 bits valid)
+  SDTCisVT<3, i32>,        // Operand 0: XACC low passthru (i32)
+  SDTCisVT<4, i32>,        // Operand 1: XACC high passthru (i32, only low 8 bits valid)
+  SDTCisVT<5, v16i8>,      // Operand 2: qu vector
+  SDTCisVT<6, v16i8>,      // Operand 3: qx vector
+  SDTCisVT<7, v16i8>,      // Operand 4: qy vector
+  SDTCisPtrTy<8>,          // Operand 5: rs1 pointer
+  SDTCisVT<9, i32>         // Operand 6: rs2 register offset
+]>;
+def SDT_ESPVMULASU16XACCSTXPM : SDTypeProfile<3, 7, [
+  SDTCisPtrTy<0>,          // Result 0: updated pointer
+  SDTCisVT<1, i32>,        // Result 1: new XACC low (i32)
+  SDTCisVT<2, i32>,        // Result 2: new XACC high (i32, only low 8 bits valid)
+  SDTCisVT<3, i32>,        // Operand 0: XACC low passthru (i32)
+  SDTCisVT<4, i32>,        // Operand 1: XACC high passthru (i32, only low 8 bits valid)
+  SDTCisVT<5, v16i8>,      // Operand 2: qu vector
+  SDTCisVT<6, v8i16>,      // Operand 3: qx vector (8x i16)
+  SDTCisVT<7, v8i16>,      // Operand 4: qy vector (8x i16)
+  SDTCisPtrTy<8>,          // Operand 5: rs1 pointer
+  SDTCisVT<9, i32>         // Operand 6: rs2 register offset
+]>;
+def SDT_ESPVMULASU8XACCSTXPM : SDTypeProfile<3, 7, [
+  SDTCisPtrTy<0>,          // Result 0: updated pointer
+  SDTCisVT<1, i32>,        // Result 1: new XACC low (i32)
+  SDTCisVT<2, i32>,        // Result 2: new XACC high (i32, only low 8 bits valid)
+  SDTCisVT<3, i32>,        // Operand 0: XACC low passthru (i32)
+  SDTCisVT<4, i32>,        // Operand 1: XACC high passthru (i32, only low 8 bits valid)
+  SDTCisVT<5, v16i8>,      // Operand 2: qu vector
+  SDTCisVT<6, v16i8>,      // Operand 3: qx vector
+  SDTCisVT<7, v16i8>,      // Operand 4: qy vector
+  SDTCisPtrTy<8>,          // Operand 5: rs1 pointer
+  SDTCisVT<9, i32>         // Operand 6: rs2 register offset
+]>;
+
+def riscv_esp_vmulas_s16_xacc_st_xp_m : RVSDNode<"ESP_VMULAS_S16_XACC_ST_XP_M", SDT_ESPVMULASS16XACCSTXPM,
+                                                  [SDNPHasChain, SDNPMayStore, SDNPMemOperand,
+                                                   SDNPOptInGlue, SDNPOutGlue]>;
+def riscv_esp_vmulas_s8_xacc_st_xp_m : RVSDNode<"ESP_VMULAS_S8_XACC_ST_XP_M", SDT_ESPVMULASS8XACCSTXPM,
+                                                 [SDNPHasChain, SDNPMayStore, SDNPMemOperand,
+                                                  SDNPOptInGlue, SDNPOutGlue]>;
+def riscv_esp_vmulas_u16_xacc_st_xp_m : RVSDNode<"ESP_VMULAS_U16_XACC_ST_XP_M", SDT_ESPVMULASU16XACCSTXPM,
+                                                   [SDNPHasChain, SDNPMayStore, SDNPMemOperand,
+                                                    SDNPOptInGlue, SDNPOutGlue]>;
+def riscv_esp_vmulas_u8_xacc_st_xp_m : RVSDNode<"ESP_VMULAS_U8_XACC_ST_XP_M", SDT_ESPVMULASU8XACCSTXPM,
+                                                 [SDNPHasChain, SDNPMayStore, SDNPMemOperand,
+                                                  SDNPOptInGlue, SDNPOutGlue]>;
+
 // VMULAS QACC LDBC INCP SDNodes
 def SDT_ESPVMULASS16QACCLDBCINCPM : SDTypeProfile<6, 7, [
-  SDTCisVT<0, v16i8>,      // Result 0: qu vector
   SDTCisPtrTy<1>,          // Result 1: updated pointer
   SDTCisVT<2, v16i8>,      // Result 2: QACC_L[127:0]
   SDTCisVT<3, v16i8>,      // Result 3: QACC_L[255:128]
