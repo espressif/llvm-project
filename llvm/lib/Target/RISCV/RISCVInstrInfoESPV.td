@@ -3433,7 +3433,7 @@ def ESP_CMUL_S16_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, select_4:$sel4, 
 // SAR is passed explicitly as SARReg:$sar_in (64-bit) for explicit state passing
 def ESP_CMUL_S16_LD_INCP: EspVInst<(outs QR:$qz, QR:$qu, GPRPIE:$rs1r), (ins QR:$qz_in, QR:$qx, QR:$qy, GPRPIE:$rs1, select_4:$sel4, SARReg:$sar_in),
                    "esp.cmul.s16.ld.incp\t $qu, $rs1, $qz, $qx, $qy, $sel4", 
-                   []> 
+                   [(set QR:$qz, QR:$qu, GPRPIE:$rs1r, (riscv_esp_cmul_s16_ld_incp_m QR:$qz_in, QR:$qx, QR:$qy, GPRPIE:$rs1, select_4:$sel4, SARReg:$sar_in))]> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -3480,7 +3480,7 @@ def ESP_CMUL_S16_LD_INCP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:
 // SAR is passed explicitly as SARReg:$sar_in (64-bit) for explicit state passing
 def ESP_CMUL_S16_ST_INCP: EspVInst<(outs QR:$qz, GPRPIE:$rs1r), (ins QR:$qz_in, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, select_4:$sel4, SARReg:$sar_in),
                    "esp.cmul.s16.st.incp\t $qu, $rs1, $qz, $qx, $qy, $sel4", 
-                   []> 
+                   [(set QR:$qz, GPRPIE:$rs1r, (riscv_esp_cmul_s16_st_incp_m QR:$qz_in, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, select_4:$sel4, SARReg:$sar_in))]> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -3576,7 +3576,7 @@ def ESP_CMUL_S8_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, select_4:$sel4, i
 // SAR is passed explicitly as SARReg:$sar_in (64-bit) for explicit state passing
 def ESP_CMUL_S8_LD_INCP: EspVInst<(outs QR:$qz, QR:$qu, GPRPIE:$rs1r), (ins QR:$qz_in, QR:$qx, QR:$qy, GPRPIE:$rs1, select_4:$sel4, SARReg:$sar_in),
                    "esp.cmul.s8.ld.incp\t $qu, $rs1, $qz, $qx, $qy, $sel4", 
-                   []> 
+                   [(set QR:$qz, QR:$qu, GPRPIE:$rs1r, (riscv_esp_cmul_s8_ld_incp_m QR:$qz_in, QR:$qx, QR:$qy, GPRPIE:$rs1, select_4:$sel4, SARReg:$sar_in))]> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -3623,7 +3623,7 @@ def ESP_CMUL_S8_LD_INCP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$
 // SAR is passed explicitly as SARReg:$sar_in (64-bit) for explicit state passing
 def ESP_CMUL_S8_ST_INCP: EspVInst<(outs QR:$qz, GPRPIE:$rs1r), (ins QR:$qz_in, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, select_4:$sel4, SARReg:$sar_in),
                    "esp.cmul.s8.st.incp\t $qu, $rs1, $qz, $qx, $qy, $sel4", 
-                   []> 
+                   [(set QR:$qz, GPRPIE:$rs1r, (riscv_esp_cmul_s8_st_incp_m QR:$qz_in, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, select_4:$sel4, SARReg:$sar_in))]> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -3719,7 +3719,7 @@ def ESP_CMUL_U16_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, select_4:$sel4, 
 // SAR is passed explicitly as SARReg:$sar_in (64-bit) for explicit state passing
 def ESP_CMUL_U16_LD_INCP: EspVInst<(outs QR:$qz, QR:$qu, GPRPIE:$rs1r), (ins QR:$qz_in, QR:$qx, QR:$qy, GPRPIE:$rs1, select_4:$sel4, SARReg:$sar_in),
                    "esp.cmul.u16.ld.incp\t $qu, $rs1, $qz, $qx, $qy, $sel4", 
-                   []> 
+                   [(set QR:$qz, QR:$qu, GPRPIE:$rs1r, (riscv_esp_cmul_u16_ld_incp_m QR:$qz_in, QR:$qx, QR:$qy, GPRPIE:$rs1, select_4:$sel4, SARReg:$sar_in))]> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -3766,7 +3766,7 @@ def ESP_CMUL_U16_LD_INCP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:
 // SAR is passed explicitly as SARReg:$sar_in (64-bit) for explicit state passing
 def ESP_CMUL_U16_ST_INCP: EspVInst<(outs QR:$qz, GPRPIE:$rs1r), (ins QR:$qz_in, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, select_4:$sel4, SARReg:$sar_in),
                    "esp.cmul.u16.st.incp\t $qu, $rs1, $qz, $qx, $qy, $sel4", 
-                   []> 
+                   [(set QR:$qz, GPRPIE:$rs1r, (riscv_esp_cmul_u16_st_incp_m QR:$qz_in, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, select_4:$sel4, SARReg:$sar_in))]> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -3862,7 +3862,7 @@ def ESP_CMUL_U8_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, select_4:$sel4, i
 // SAR is passed explicitly as SARReg:$sar_in (64-bit) for explicit state passing
 def ESP_CMUL_U8_LD_INCP: EspVInst<(outs QR:$qz, QR:$qu, GPRPIE:$rs1r), (ins QR:$qz_in, QR:$qx, QR:$qy, GPRPIE:$rs1, select_4:$sel4, SARReg:$sar_in),
                    "esp.cmul.u8.ld.incp\t $qu, $rs1, $qz, $qx, $qy, $sel4", 
-                   []> 
+                   [(set QR:$qz, QR:$qu, GPRPIE:$rs1r, (riscv_esp_cmul_u8_ld_incp_m QR:$qz_in, QR:$qx, QR:$qy, GPRPIE:$rs1, select_4:$sel4, SARReg:$sar_in))]> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -3909,7 +3909,7 @@ def ESP_CMUL_U8_LD_INCP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$
 // SAR is passed explicitly as SARReg:$sar_in (64-bit) for explicit state passing
 def ESP_CMUL_U8_ST_INCP: EspVInst<(outs QR:$qz, GPRPIE:$rs1r), (ins QR:$qz_in, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, select_4:$sel4, SARReg:$sar_in),
                    "esp.cmul.u8.st.incp\t $qu, $rs1, $qz, $qx, $qy, $sel4", 
-                   []> 
+                   [(set QR:$qz, GPRPIE:$rs1r, (riscv_esp_cmul_u8_st_incp_m QR:$qz_in, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, select_4:$sel4, SARReg:$sar_in))]> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -4714,7 +4714,8 @@ def ESP_VADD_S16_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, imm8:$qv),
 // Note: Direct match to SDNode, no custom inserter needed
 def ESP_VADD_S16_LD_INCP: EspVInst<(outs QR:$qv, QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1),
                    "esp.vadd.s16.ld.incp\t $qu, $rs1, $qv, $qx, $qy",
-                   []> 
+                   [(set QR:$qv, QR:$qu, GPRPIE:$rs1r,
+                      (riscv_esp_vadd_s16_ld_incp_m QR:$qx, QR:$qy, GPRPIE:$rs1))]> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -4759,7 +4760,8 @@ def ESP_VADD_S16_LD_INCP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:
 
 def ESP_VADD_S16_ST_INCP: EspVInst<(outs QR:$qv, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1),
                    "esp.vadd.s16.st.incp\t $qu, $rs1, $qv, $qx, $qy",
-                   []> 
+                   [(set QR:$qv, GPRPIE:$rs1r,
+                      (riscv_esp_vadd_s16_st_incp_m QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1))]> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -4987,7 +4989,8 @@ def ESP_VADD_S8_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, imm8:$qv),
 
 def ESP_VADD_S8_LD_INCP: EspVInst<(outs QR:$qv, QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1),
                    "esp.vadd.s8.ld.incp\t $qu, $rs1, $qv, $qx, $qy", 
-                   []> 
+                   [(set QR:$qv, QR:$qu, GPRPIE:$rs1r, 
+                      (riscv_esp_vadd_s8_ld_incp_m QR:$qx, QR:$qy, GPRPIE:$rs1))]> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -5032,7 +5035,8 @@ def ESP_VADD_S8_LD_INCP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$
 
 def ESP_VADD_S8_ST_INCP: EspVInst<(outs QR:$qv, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1),
                    "esp.vadd.s8.st.incp	 $qu, $rs1, $qv, $qx, $qy",
-                   []> 
+                   [(set QR:$qv, GPRPIE:$rs1r,
+                      (riscv_esp_vadd_s8_st_incp_m QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1))]> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -5123,7 +5127,8 @@ def ESP_VADD_U16_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, imm8:$qv),
 
 def ESP_VADD_U16_LD_INCP: EspVInst<(outs QR:$qv, QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1),
                    "esp.vadd.u16.ld.incp	 $qu, $rs1, $qv, $qx, $qy",
-                   []> 
+                   [(set QR:$qv, QR:$qu, GPRPIE:$rs1r,
+                      (riscv_esp_vadd_u16_ld_incp_m QR:$qx, QR:$qy, GPRPIE:$rs1))]> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -5168,7 +5173,8 @@ def ESP_VADD_U16_LD_INCP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:
 
 def ESP_VADD_U16_ST_INCP: EspVInst<(outs QR:$qv, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1),
                    "esp.vadd.u16.st.incp	 $qu, $rs1, $qv, $qx, $qy",
-                   []> 
+                   [(set QR:$qv, GPRPIE:$rs1r,
+                      (riscv_esp_vadd_u16_st_incp_m QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1))]> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -5395,7 +5401,8 @@ def ESP_VADD_U8_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, imm8:$qv),
 
 def ESP_VADD_U8_LD_INCP: EspVInst<(outs QR:$qv, QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1),
                    "esp.vadd.u8.ld.incp	 $qu, $rs1, $qv, $qx, $qy",
-                   []> 
+                   [(set QR:$qv, QR:$qu, GPRPIE:$rs1r,
+                      (riscv_esp_vadd_u8_ld_incp_m QR:$qx, QR:$qy, GPRPIE:$rs1))]> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -5440,7 +5447,8 @@ def ESP_VADD_U8_LD_INCP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$
 
 def ESP_VADD_U8_ST_INCP: EspVInst<(outs QR:$qv, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1),
                    "esp.vadd.u8.st.incp	 $qu, $rs1, $qv, $qx, $qy",
-                   []> 
+                   [(set QR:$qv, GPRPIE:$rs1r,
+                      (riscv_esp_vadd_u8_st_incp_m QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1))]> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -11277,7 +11285,7 @@ def ESP_MOVX_R_SAR_BYTES: EspVInst<(outs GPRPIE:$rd), (ins SAR_BYTESReg:$sar_byt
                    // SAR_BYTES is 64-bit, but instruction outputs only 32-bit rd
                    // Hardware automatically extracts SAR_BYTES[3:0] and zero-extends to 32-bit
                    // Intrinsic returns i32 directly, no trunc needed
-                   []> 
+                   [(set GPRPIE:$rd, (int_riscv_esp_movx_r_sar_bytes_m SAR_BYTESReg:$sar_bytes_in))]> 
 {
   bits<5> rd;
   let mayStore = 0;
@@ -11593,7 +11601,7 @@ def ESP_MOVX_W_SAR_BYTES: EspVInst<(outs SAR_BYTESReg:$sar_bytes_out), (ins GPRP
                    // Instruction: SAR_BYTES[3:0] = rs1[3:0] (hardware automatically uses only low 4 bits of rs1)
                    // Return value: SAR_BYTES (64-bit, zero-extended from rs1[3:0])
                    // Hardware automatically handles the 4-bit copy, no compiler masking needed
-                   []>
+                   [(set SAR_BYTESReg:$sar_bytes_out, (int_riscv_esp_movx_w_sar_bytes_m GPRPIE:$rs1))]>
 {
   // Return value is SAR_BYTES (64-bit), zero-extended from rs1[3:0]
   // Hardware automatically writes SAR_BYTES[3:0] = rs1[3:0] (only low 4 bits are used)
@@ -12570,7 +12578,7 @@ def ESP_ZERO_XACC_P : PseudoEsp<(outs), (ins),
 // SAR is passed explicitly as SARReg:$sar_in (64-bit) for explicit state passing
 def ESP_FFT_AMS_S16_LD_INCP: EspVInst<(outs QR:$qu, QR:$qz, QR:$qv, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qw, GPRPIE:$rs1, select_2:$sel2, SARReg:$sar_in),
                    "esp.fft.ams.s16.ld.incp\t $qu, $rs1, $qz, $qv, $qx, $qw, $qy, $sel2", 
-                   []> 
+                   [(set QR:$qu, QR:$qz, QR:$qv, GPRPIE:$rs1r, (riscv_esp_fft_ams_s16_ld_incp_m QR:$qx, QR:$qy, QR:$qw, GPRPIE:$rs1, select_2:$sel2, SARReg:$sar_in))]> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -12624,7 +12632,8 @@ def ESP_FFT_AMS_S16_LD_INCP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, im
 def ESP_FFT_AMS_S16_LD_INCP_UAUP: EspVInst<(outs QR:$qu, QR:$qz, QR:$qv, GPRPIE:$rs1r, UA_STATEReg:$ua_state_out), 
                                             (ins QR:$qx, QR:$qy, QR:$qw, GPRPIE:$rs1, select_2:$sel2, UA_STATEReg:$ua_state_in, SAR_BYTESReg:$sar_bytes_in, SARReg:$sar_in),
                    "esp.fft.ams.s16.ld.incp.uaup\t $qu, $rs1, $qz, $qv, $qx, $qw, $qy, $sel2", 
-                   []> 
+                   [(set QR:$qu, QR:$qz, QR:$qv, GPRPIE:$rs1r, UA_STATEReg:$ua_state_out, 
+                       (riscv_esp_fft_ams_s16_ld_incp_uaup_m QR:$qx, QR:$qy, QR:$qw, GPRPIE:$rs1, select_2:$sel2, UA_STATEReg:$ua_state_in, SAR_BYTESReg:$sar_bytes_in, SARReg:$sar_in))]> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -12675,7 +12684,7 @@ def ESP_FFT_AMS_S16_LD_INCP_UAUP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$q
 // Note: No Defs/Uses = [SAR] because we use explicit phantom operand
 def ESP_FFT_AMS_S16_LD_R32_DECP: EspVInst<(outs QR:$qu, QR:$qz, QR:$qv, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qw, GPRPIE:$rs1, select_2:$sel2, SARReg:$sar_in),
                    "esp.fft.ams.s16.ld.r32.decp\t $qu, $rs1, $qz, $qv, $qx, $qw, $qy, $sel2",
-                   []> 
+                   [(set QR:$qu, QR:$qz, QR:$qv, GPRPIE:$rs1r, (riscv_esp_fft_ams_s16_ld_r32_decp_m QR:$qx, QR:$qy, QR:$qw, GPRPIE:$rs1, select_2:$sel2, SARReg:$sar_in))]> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -12722,7 +12731,8 @@ def ESP_FFT_AMS_S16_LD_R32_DECP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx
 // SAR is passed explicitly as SARReg:$sar_in (64-bit) for explicit state passing
 def ESP_FFT_AMS_S16_ST_INCP: EspVInst<(outs QR:$qz, GPRPIE:$rs1r, GPRPIE:$rs2r), (ins QR:$qx, QR:$qy, QR:$qw, QR:$qu, GPRPIE:$rs1, GPRPIE:$rs2, select_2:$sel2, SARReg:$sar_in),
                    "esp.fft.ams.s16.st.incp\t $qu, $qz, $rs2, $rs1, $qx, $qw, $qy, $sel2",
-                   []> 
+                   [(set QR:$qz, GPRPIE:$rs1r, (riscv_esp_fft_ams_s16_st_incp_m QR:$qx, QR:$qy, QR:$qw, QR:$qu, GPRPIE:$rs1, GPRPIE:$rs2, select_2:$sel2, SARReg:$sar_in)),
+                    (set GPRPIE:$rs2r, GPRPIE:$rs2)]> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -12825,7 +12835,7 @@ def ESP_FFT_BITREV_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, imm8:$qv
 // SAR is passed explicitly as SARReg:$sar_in (64-bit) for explicit state passing
 def ESP_FFT_CMUL_S16_LD_XP: EspVInst<(outs QR:$qz, QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1, select_8:$sel8, SARReg:$sar_in),
                    "esp.fft.cmul.s16.ld.xp\t $qu, $rs1, $rs2, $qz, $qy, $qx, $sel8",
-                   []> 
+                   [(set QR:$qz, QR:$qu, GPRPIE:$rs1r, (riscv_esp_fft_cmul_s16_ld_xp_m QR:$qx, QR:$qy, GPRPIE:$rs1, GPRPIE:$rs2, select_8:$sel8, SARReg:$sar_in))]> 
 {
   bits<5> rs2;
   bits<3> qx;
@@ -12871,7 +12881,7 @@ def ESP_FFT_CMUL_S16_LD_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, 
 // SAR is passed explicitly as SARReg:$sar_in (64-bit) for explicit state passing
 def ESP_FFT_CMUL_S16_ST_XP: EspVInst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, select_4:$sel4, select_4:$upd4, select_8:$sel8, SARReg:$sar_in),
                    "esp.fft.cmul.s16.st.xp\t $qy, $qx, $qu, $rs1, $rs2, $sel8, $upd4, $sel4",
-                   []> 
+                   [(set GPRPIE:$rs1r, (riscv_esp_fft_cmul_s16_st_xp_m QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, GPRPIE:$rs2, select_8:$sel8, select_4:$upd4, select_4:$sel4, SARReg:$sar_in))]> 
 {
   bits<5> rs2;
   bits<3> qx;
@@ -12916,7 +12926,7 @@ def ESP_FFT_CMUL_S16_ST_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, 
 
 def ESP_FFT_R2BF_S16: EspVInst<(outs QR:$qz, QR:$qv), (ins QR:$qx, QR:$qy, select_2:$sel2),
                    "esp.fft.r2bf.s16\t $qz, $qv, $qx, $qy, $sel2",
-                   []> 
+                   [(set QR:$qz, QR:$qv, (riscv_esp_fft_r2bf_s16_m QR:$qx, QR:$qy, select_2:$sel2))]> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -12960,7 +12970,7 @@ def ESP_FFT_R2BF_S16_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, select_2:$se
 
 def ESP_FFT_R2BF_S16_ST_INCP: EspVInst<(outs QR:$qz, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, select_4:$sel4),
                    "esp.fft.r2bf.s16.st.incp\t $qz, $qx, $qy, $rs1, $sel4",
-                   []> 
+                   [(set QR:$qz, GPRPIE:$rs1r, (riscv_esp_fft_r2bf_s16_st_incp_m QR:$qx, QR:$qy, GPRPIE:$rs1, select_4:$sel4))]> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -13006,7 +13016,7 @@ def ESP_FFT_R2BF_S16_ST_INCP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, i
 
 def ESP_FFT_VST_R32_DECP: EspVInst<(outs GPRPIE:$rs1r), (ins QR:$qu, GPRPIE:$rs1, select_2:$sel2),
                    "esp.fft.vst.r32.decp\t $qu, $rs1, $sel2",
-                   []> 
+                   [(set GPRPIE:$rs1r, (riscv_esp_fft_vst_r32_decp_m QR:$qu, GPRPIE:$rs1, select_2:$sel2))]> 
 {
   bits<3> qu;
   bits<5> rs1;
@@ -14269,7 +14279,7 @@ def ESP_VLDHBC_16_INCP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, imm8
 // Instruction loads 128-bit data to QACC_H[255:128], QACC_H[127:0] remains unchanged
 def ESP_LD_QACC_H_H_128_IP: EspVInst<(outs QACC_H_HIGH:$qacc_h_out, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
                    "esp.ld.qacc.h.h.128.ip\t $rs1, $off25616", 
-                   []> 
+                   [(set QACC_H_HIGH:$qacc_h_out, GPRPIE:$rs1r, (riscv_esp_ld_qacc_h_h_128_ip_m GPRPIE:$rs1, offset_256_16:$off25616))]> 
 {
   bits<5> rs1;
   bits<8> off25616;
@@ -14316,7 +14326,7 @@ def ESP_LD_QACC_H_H_128_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, 
 // Instruction loads 128-bit data to QACC_H[127:0], QACC_H[255:128] remains unchanged
 def ESP_LD_QACC_H_L_128_IP: EspVInst<(outs QACC_H_LOW:$qacc_h_out, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
                    "esp.ld.qacc.h.l.128.ip\t $rs1, $off25616", 
-                   []> 
+                   [(set QACC_H_LOW:$qacc_h_out, GPRPIE:$rs1r, (riscv_esp_ld_qacc_h_l_128_ip_m GPRPIE:$rs1, offset_256_16:$off25616))]> 
 {
   bits<5> rs1;
   bits<8> off25616;
@@ -14363,7 +14373,7 @@ def ESP_LD_QACC_H_L_128_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, 
 // Instruction loads 128-bit data to QACC_L[255:128], QACC_L[127:0] remains unchanged
 def ESP_LD_QACC_L_H_128_IP: EspVInst<(outs QACC_L_HIGH:$qacc_l_out, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
                    "esp.ld.qacc.l.h.128.ip\t $rs1, $off25616", 
-                   []> 
+                   [(set QACC_L_HIGH:$qacc_l_out, GPRPIE:$rs1r, (riscv_esp_ld_qacc_l_h_128_ip_m GPRPIE:$rs1, offset_256_16:$off25616))]> 
 {
   bits<5> rs1;
   bits<8> off25616;
@@ -14410,7 +14420,7 @@ def ESP_LD_QACC_L_H_128_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, 
 // Instruction loads 128-bit data to QACC_L[127:0], QACC_L[255:128] remains unchanged
 def ESP_LD_QACC_L_L_128_IP: EspVInst<(outs QACC_L_LOW:$qacc_l_out, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
                    "esp.ld.qacc.l.l.128.ip\t $rs1, $off25616", 
-                   []> 
+                   [(set QACC_L_LOW:$qacc_l_out, GPRPIE:$rs1r, (riscv_esp_ld_qacc_l_l_128_ip_m GPRPIE:$rs1, offset_256_16:$off25616))]> 
 {
   bits<5> rs1;
   bits<8> off25616;
@@ -14459,7 +14469,7 @@ def ESP_LD_QACC_L_L_128_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, 
 // but is NOT printed in the assembly string (only $rs1 and $off25616 are printed)
 def ESP_LD_UA_STATE_IP: EspVInst<(outs UA_STATEReg:$ua_state_out, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616, UA_STATEReg:$ua_state_in),
                    "esp.ld.ua.state.ip\t $rs1, $off25616", 
-                   []> 
+                   [(set UA_STATEReg:$ua_state_out, GPRPIE:$rs1r, (riscv_esp_ld_ua_state_ip_m GPRPIE:$rs1, offset_256_16:$off25616, UA_STATEReg:$ua_state_in))]> 
 {
   bits<5> rs1;
   bits<8> off25616;
@@ -14565,7 +14575,7 @@ def ESP_LDXQ_32_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, imm8:$qw, select_4:$sel4
 let Uses = []<Register> in
 def ESP_ST_QACC_H_H_128_IP: EspVInst<(outs GPRPIE:$rs1r), (ins QACC_H_HIGH:$src, GPRPIE:$rs1, offset_256_16:$off25616),
                    "esp.st.qacc.h.h.128.ip\t $rs1, $off25616", 
-                   []> 
+                   [(set GPRPIE:$rs1r, (riscv_esp_st_qacc_h_h_128_ip_m QACC_H_HIGH:$src, GPRPIE:$rs1, offset_256_16:$off25616))]> 
 {
   bits<5> rs1;
   bits<8> off25616;
@@ -14613,7 +14623,7 @@ def ESP_ST_QACC_H_H_128_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, 
 let Uses = []<Register> in
 def ESP_ST_QACC_H_L_128_IP: EspVInst<(outs GPRPIE:$rs1r), (ins QACC_H_LOW:$src, GPRPIE:$rs1, offset_256_16:$off25616),
                    "esp.st.qacc.h.l.128.ip\t $rs1, $off25616", 
-                   []> 
+                   [(set GPRPIE:$rs1r, (riscv_esp_st_qacc_h_l_128_ip_m QACC_H_LOW:$src, GPRPIE:$rs1, offset_256_16:$off25616))]> 
 {
   bits<5> rs1;
   bits<8> off25616;
@@ -14662,7 +14672,7 @@ def ESP_ST_QACC_H_L_128_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, 
 let Uses = []<Register> in
 def ESP_ST_QACC_L_H_128_IP: EspVInst<(outs GPRPIE:$rs1r), (ins QACC_L_HIGH:$src, GPRPIE:$rs1, offset_256_16:$off25616),
                    "esp.st.qacc.l.h.128.ip\t $rs1, $off25616", 
-                   []> 
+                   [(set GPRPIE:$rs1r, (riscv_esp_st_qacc_l_h_128_ip_m QACC_L_HIGH:$src, GPRPIE:$rs1, offset_256_16:$off25616))]> 
 {
   bits<5> rs1;
   bits<8> off25616;
@@ -16115,7 +16125,7 @@ def ESP_SRCMB_S16_Q_QACC_P : PseudoEsp<(outs), (ins imm8:$qw, select_2:$sel2, im
 
 def ESP_SRCMB_S16_QACC: EspVInst<(outs QR:$qu), (ins QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, GPRPIE:$rs1, select_2:$sel2),
                    "esp.srcmb.s16.qacc\t $qu, $rs1, $sel2",
-                   []>
+                   [(set QR:$qu, (riscv_esp_srcmb_s16_qacc_m QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, GPRPIE:$rs1, select_2:$sel2))]>
 {
   bits<5> rs1;
   bits<1> sel2;

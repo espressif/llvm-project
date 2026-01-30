@@ -1791,6 +1791,8 @@ bool RISCVTargetLowering::getTgtMemIntrinsic(IntrinsicInfo &Info,
     Info.flags |= MachineMemOperand::MONonTemporal;
 
   Info.flags |= RISCVTargetLowering::getTargetMMOFlags(I);
+  if (RISCV::getESPVTgtMemIntrinsic(Info, I, Intrinsic))
+    return true;
   switch (Intrinsic) {
   default:
     return false;
@@ -2019,170 +2021,6 @@ bool RISCVTargetLowering::getTgtMemIntrinsic(IntrinsicInfo &Info,
     return SetRVVLoadStoreInfo(/*PtrOp*/ I.arg_size() - 5,
                                /*IsStore*/ true,
                                /*IsUnitStrided*/ false);
-  case Intrinsic::riscv_esp_vld_128_ip_m:
-  case Intrinsic::riscv_esp_vld_128_xp_m:
-  case Intrinsic::riscv_esp_ld_128_usar_ip_m:
-  case Intrinsic::riscv_esp_ld_128_usar_xp_m: {
-    // Load intrinsics: (ptr, ...) -> { <16 x i8>, ptr }
-    // Pointer is the first argument (operand 0)
-    Info.opc = ISD::INTRINSIC_W_CHAIN;
-    Info.ptrVal = I.getArgOperand(0);
-    Info.memVT = MVT::v16i8;
-    Info.align = Align(16);
-    Info.size = 16;
-    Info.flags |= MachineMemOperand::MOLoad;
-    return true;
-  }
-  case Intrinsic::riscv_esp_vst_128_ip_m:
-  case Intrinsic::riscv_esp_vst_128_xp_m: {
-    // Store intrinsics: (<16 x i8>, ptr, ...) -> ptr
-    // Pointer is the second argument (operand 1)
-    Info.opc = ISD::INTRINSIC_W_CHAIN;
-    Info.ptrVal = I.getArgOperand(1);
-    Info.memVT = MVT::v16i8;
-    Info.align = Align(16);
-    Info.size = 16;
-    Info.flags |= MachineMemOperand::MOStore;
-    return true;
-  }
-  case Intrinsic::riscv_esp_vld_h_64_ip_m:
-  case Intrinsic::riscv_esp_vld_h_64_xp_m:
-  case Intrinsic::riscv_esp_vld_l_64_ip_m:
-  case Intrinsic::riscv_esp_vld_l_64_xp_m: {
-    // Load intrinsics: (ptr, ...) -> { <8 x i8>, ptr }
-    Info.opc = ISD::INTRINSIC_W_CHAIN;
-    Info.ptrVal = I.getArgOperand(0);
-    Info.memVT = MVT::v8i8;
-    Info.align = Align(8);
-    Info.size = 8;
-    Info.flags |= MachineMemOperand::MOLoad;
-    return true;
-  }
-  case Intrinsic::riscv_esp_vst_h_64_ip_m:
-  case Intrinsic::riscv_esp_vst_h_64_xp_m:
-  case Intrinsic::riscv_esp_vst_l_64_ip_m:
-  case Intrinsic::riscv_esp_vst_l_64_xp_m: {
-    // Store intrinsics: (<8 x i8>, ptr, ...) -> ptr
-    Info.opc = ISD::INTRINSIC_W_CHAIN;
-    Info.ptrVal = I.getArgOperand(1);
-    Info.memVT = MVT::v8i8;
-    Info.align = Align(8);
-    Info.size = 8;
-    Info.flags |= MachineMemOperand::MOStore;
-    return true;
-  }
-  case Intrinsic::riscv_esp_vldbc_8_ip_m:
-  case Intrinsic::riscv_esp_vldbc_8_xp_m: {
-    // Load broadcast intrinsics: (ptr, ...) -> { <16 x i8>, ptr }
-    Info.opc = ISD::INTRINSIC_W_CHAIN;
-    Info.ptrVal = I.getArgOperand(0);
-    Info.memVT = MVT::i8;
-    Info.align = Align(1);
-    Info.size = 1;
-    Info.flags |= MachineMemOperand::MOLoad;
-    return true;
-  }
-  case Intrinsic::riscv_esp_vldbc_16_ip_m:
-  case Intrinsic::riscv_esp_vldbc_16_xp_m: {
-    // Load broadcast intrinsics: (ptr, ...) -> { <8 x i16>, ptr }
-    Info.opc = ISD::INTRINSIC_W_CHAIN;
-    Info.ptrVal = I.getArgOperand(0);
-    Info.memVT = MVT::i16;
-    Info.align = Align(2);
-    Info.size = 2;
-    Info.flags |= MachineMemOperand::MOLoad;
-    return true;
-  }
-  case Intrinsic::riscv_esp_vldbc_32_ip_m:
-  case Intrinsic::riscv_esp_vldbc_32_xp_m: {
-    // Load broadcast intrinsics: (ptr, ...) -> { <4 x i32>, ptr }
-    Info.opc = ISD::INTRINSIC_W_CHAIN;
-    Info.ptrVal = I.getArgOperand(0);
-    Info.memVT = MVT::i32;
-    Info.align = Align(4);
-    Info.size = 4;
-    Info.flags |= MachineMemOperand::MOLoad;
-    return true;
-  }
-  case Intrinsic::riscv_esp_vldext_s8_ip_m:
-  case Intrinsic::riscv_esp_vldext_s8_xp_m:
-  case Intrinsic::riscv_esp_vldext_u8_ip_m:
-  case Intrinsic::riscv_esp_vldext_u8_xp_m: {
-    // Load extend intrinsics: (ptr, ...) -> { <8 x i16>, <8 x i16>, ptr }
-    Info.opc = ISD::INTRINSIC_W_CHAIN;
-    Info.ptrVal = I.getArgOperand(0);
-    Info.memVT = MVT::v8i8;
-    Info.align = Align(8);
-    Info.size = 8;
-    Info.flags |= MachineMemOperand::MOLoad;
-    return true;
-  }
-  case Intrinsic::riscv_esp_vldext_s16_ip_m:
-  case Intrinsic::riscv_esp_vldext_s16_xp_m:
-  case Intrinsic::riscv_esp_vldext_u16_ip_m:
-  case Intrinsic::riscv_esp_vldext_u16_xp_m: {
-    // Load extend intrinsics: (ptr, ...) -> { <4 x i32>, <4 x i32>, ptr }
-    Info.opc = ISD::INTRINSIC_W_CHAIN;
-    Info.ptrVal = I.getArgOperand(0);
-    Info.memVT = MVT::v4i16;
-    Info.align = Align(8);
-    Info.size = 8;
-    Info.flags |= MachineMemOperand::MOLoad;
-    return true;
-  }
-  case Intrinsic::riscv_esp_cmul_s16_ld_incp_m:
-  case Intrinsic::riscv_esp_cmul_s8_ld_incp_m:
-  case Intrinsic::riscv_esp_cmul_u16_ld_incp_m:
-  case Intrinsic::riscv_esp_cmul_u8_ld_incp_m: {
-    // CMUL LD INCP intrinsics: (qz_in, qx, qy, ptr, offset, sar) -> {qz, qu, ptr}
-    // Pointer is the 3rd argument (operand 3)
-    Info.opc = ISD::INTRINSIC_W_CHAIN;
-    Info.ptrVal = I.getArgOperand(3);
-    Info.memVT = MVT::v16i8;
-    Info.align = Align(16);
-    Info.size = 16;
-    Info.flags |= MachineMemOperand::MOLoad;
-    return true;
-  }
-  case Intrinsic::riscv_esp_cmul_s16_st_incp_m:
-  case Intrinsic::riscv_esp_cmul_s8_st_incp_m:
-  case Intrinsic::riscv_esp_cmul_u16_st_incp_m:
-  case Intrinsic::riscv_esp_cmul_u8_st_incp_m: {
-    // CMUL ST INCP intrinsics: (qz_in, qx, qy, qu, ptr, offset, sar) -> {qz, ptr}
-    // Pointer is the 4th argument (operand 4)
-    Info.opc = ISD::INTRINSIC_W_CHAIN;
-    Info.ptrVal = I.getArgOperand(4);
-    Info.memVT = MVT::v16i8;
-    Info.align = Align(16);
-    Info.size = 16;
-    Info.flags |= MachineMemOperand::MOStore;
-    return true;
-  }
-  case Intrinsic::riscv_esp_st_qacc_l_l_128_ip_m:
-  case Intrinsic::riscv_esp_st_qacc_l_h_128_ip_m:
-  case Intrinsic::riscv_esp_st_qacc_h_l_128_ip_m:
-  case Intrinsic::riscv_esp_st_qacc_h_h_128_ip_m: {
-    // ST QACC intrinsics: (qacc_value, ptr, offset) -> ptr
-    // Pointer is the 1st argument (operand 1)
-    Info.opc = ISD::INTRINSIC_W_CHAIN;
-    Info.ptrVal = I.getArgOperand(1);
-    Info.memVT = MVT::v16i8;
-    Info.align = Align(16);
-    Info.size = 16;
-    Info.flags |= MachineMemOperand::MOStore;
-    return true;
-  }
-  case Intrinsic::riscv_esp_st_s_xacc_ip_m: {
-    // ST S XACC IP intrinsic: (xacc_low, xacc_high, ptr, offset) -> {ptr, xacc_low, xacc_high}
-    // Pointer is the 2nd argument (operand 2)
-    Info.opc = ISD::INTRINSIC_W_CHAIN;
-    Info.ptrVal = I.getArgOperand(2);
-    Info.memVT = MVT::i64;
-    Info.align = Align(8);
-    Info.size = 8;
-    Info.flags |= MachineMemOperand::MOStore;
-    return true;
-  }
   }
 }
 
@@ -14786,6 +14624,32 @@ void RISCVTargetLowering::ReplaceNodeResults(SDNode *N,
   }
   case ISD::INTRINSIC_WO_CHAIN: {
     unsigned IntNo = N->getConstantOperandVal(0);
+    EVT VT = N->getValueType(0);
+    
+    // Handle ESP32P4 intrinsics that return v64i8
+    // These need to be lowered to CONCAT_VECTORS first, then split
+    if (Subtarget.hasVendorXespv() && VT == MVT::v64i8) {
+      if (IntNo == Intrinsic::riscv_esp_mov_s8_qacc_m ||
+          IntNo == Intrinsic::riscv_esp_mov_s16_qacc_m ||
+          IntNo == Intrinsic::riscv_esp_mov_u8_qacc_m ||
+          IntNo == Intrinsic::riscv_esp_mov_u16_qacc_m ||
+          IntNo == Intrinsic::riscv_esp_vmulas_s8_qacc_m ||
+          IntNo == Intrinsic::riscv_esp_vmulas_u16_qacc_m ||
+          IntNo == Intrinsic::riscv_esp_vmulas_u8_qacc_m) {
+        // Lower the intrinsic to CONCAT_VECTORS first
+        SDValue Op = SDValue(N, 0);
+        SDValue Lowered = LowerINTRINSIC_WO_CHAIN(Op, DAG);
+        
+        if (Lowered && Lowered.getOpcode() == ISD::CONCAT_VECTORS &&
+            Lowered.getValueType() == MVT::v64i8) {
+          // Return the CONCAT_VECTORS node as a single result
+          // The type legalizer will then split CONCAT_VECTORS
+          Results.push_back(Lowered);
+          return;
+        }
+      }
+    }
+    
     switch (IntNo) {
     default:
       llvm_unreachable(
