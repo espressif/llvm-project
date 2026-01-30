@@ -139,6 +139,20 @@ typedef struct {
   unsigned int xacc_high; // XACC[39:32] (i32, only low 8 bits valid)
 } esp_vmulas_xacc_st_res_t;
 
+// Partial QACC state: QACC_H or QACC_L half (same layout for MOV and VCMULAS).
+typedef struct {
+  esp_vec128_t v2; // QACC_H[127:0]
+  esp_vec128_t v3; // QACC_H[255:128]
+} esp_mov_qacc_h_res_t;
+
+typedef struct {
+  esp_vec128_t v0; // QACC_L[127:0]
+  esp_vec128_t v1; // QACC_L[255:128]
+} esp_mov_qacc_l_res_t;
+
+typedef esp_mov_qacc_h_res_t esp_vcmulas_qacc_h_res_t;
+typedef esp_mov_qacc_l_res_t esp_vcmulas_qacc_l_res_t;
+
 // QACC as 4x128-bit structure for explicit phantom operand passing
 typedef struct {
   esp_vec128_t v0; // QACC_L[127:0]: First 128 bits
@@ -556,20 +570,6 @@ typedef struct {
   esp_vec128_t v2; // QACC_H[127:0]
   esp_vec128_t v3; // QACC_H[255:128]
 } esp_mov_qacc_res_t;
-
-// Partial QACC state: QACC_H or QACC_L half for VCMULAS operands and results.
-typedef struct {
-  esp_vec128_t v2; // QACC_H[127:0]
-  esp_vec128_t v3; // QACC_H[255:128]
-} esp_mov_qacc_h_res_t;
-
-typedef struct {
-  esp_vec128_t v0; // QACC_L[127:0]
-  esp_vec128_t v1; // QACC_L[255:128]
-} esp_mov_qacc_l_res_t;
-
-typedef esp_mov_qacc_h_res_t esp_vcmulas_qacc_h_res_t;
-typedef esp_mov_qacc_l_res_t esp_vcmulas_qacc_l_res_t;
 
 // ESP.VMULAS result structure
 typedef esp_mov_qacc_res_t esp_vmulas_qacc_res_t;
