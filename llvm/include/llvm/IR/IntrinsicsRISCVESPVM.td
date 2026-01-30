@@ -1617,6 +1617,20 @@ def int_riscv_esp_srcmb_u8_qacc_m : Intrinsic<[llvm_v16i8_ty],
                                                  [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_i32_ty, llvm_i32_ty], 
                                                  [IntrNoMem]>;
 
+// SRCMB.U16.Q.QACC - Shift amounts from qw vector (8x16-bit values)
+// Returns v8i16 (saturated 16-bit unsigned values)
+// QACC is passed as explicit phantom operand (4x128-bit) for proper data flow tracking
+def int_riscv_esp_srcmb_u16_q_qacc_m : Intrinsic<[llvm_v8i16_ty], 
+                                                    [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v8i16_ty, llvm_i32_ty], 
+                                                    [IntrNoMem]>;
+
+// SRCMB.U8.Q.QACC - Shift amounts from qw vector (16x8-bit values)
+// Returns v16i8 (saturated 8-bit unsigned values)
+// QACC is passed as explicit phantom operand (4x128-bit) for proper data flow tracking
+def int_riscv_esp_srcmb_u8_q_qacc_m : Intrinsic<[llvm_v16i8_ty], 
+                                                   [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_i32_ty], 
+                                                   [IntrNoMem]>;
+
 // ESP.VMULAS.S16.QACC (_m version) - Multiply-accumulate to QACC_H and QACC_L
 // Returns: {v16i8, v16i8, v16i8, v16i8} - 4x128-bit QACC directly
 // Parameters: v16i8, v16i8, v16i8, v16i8 (4x128-bit QACC passthru), v8i16, v8i16 (qx, qy)
