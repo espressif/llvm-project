@@ -4737,3 +4737,767 @@ def esp_vmulas_u8_xacc_st_xp_m
       Builder.CreateStore(NewXACCHigh, Address(XACCHighOutPtr, Builder.getInt32Ty(), CharUnits::fromQuantity(4)));
       return Ptr;
   }]>;
+
+// ESP.SLCI.2Q.M
+def esp_slci_2q_m : ESPVBuiltin<"slci_2q_m", "riscv_esp_slci_2q_m", [{
+      // Load vector values from pointer arguments
+      Value *QYPtr = EmitScalarExpr(E->getArg(0));
+      Value *QWPtr = EmitScalarExpr(E->getArg(1));
+      Value *Sel16 = EmitScalarExpr(E->getArg(2));
+
+      // Load current values (vector type is v16i8)
+      llvm::FixedVectorType *VecTy = llvm::FixedVectorType::get(
+      llvm::Type::getInt8Ty(getLLVMContext()), 16);
+      Address QYAddr = Address(QYPtr, VecTy, CharUnits::fromQuantity(16));
+      Address QWAddr = Address(QWPtr, VecTy, CharUnits::fromQuantity(16));
+      Value *QY = Builder.CreateLoad(QYAddr);
+      Value *QW = Builder.CreateLoad(QWAddr);
+
+      // Call intrinsic
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_slci_2q_m);
+      Value *Call = Builder.CreateCall(F, {QY, QW, Sel16});
+
+      // Extract and store results back
+      Value *QYRes = Builder.CreateExtractValue(Call, 0);
+      Value *QWRes = Builder.CreateExtractValue(Call, 1);
+      Builder.CreateStore(QYRes, QYAddr);
+      Builder.CreateStore(QWRes, QWAddr);
+
+      // Return donothing to prevent fallback to generic intrinsic path
+      Function *NoOpF = CGM.getIntrinsic(Intrinsic::donothing);
+      return Builder.CreateCall(NoOpF, {});
+  }]>;
+
+// ESP.SLCXXP.2Q.M
+def esp_slcxxp_2q_m : ESPVBuiltin<"slcxxp_2q_m", "riscv_esp_slcxxp_2q_m", [{
+      Value *QY = EmitScalarExpr(E->getArg(0));
+      Value *QW = EmitScalarExpr(E->getArg(1));
+      Value *Ptr = EmitScalarExpr(E->getArg(2));
+      Value *Offset = EmitScalarExpr(E->getArg(3));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_slcxxp_2q_m);
+      Value *Call = Builder.CreateCall(F, {QY, QW, Ptr, Offset});
+      // New Intrinsic returns {v16i8, v16i8, ptr}
+      // Extract the 2nd element (ptr) to return to the C caller
+      Value *NewPtr = Builder.CreateExtractValue(Call, 2);
+      return NewPtr;
+  }]>;
+
+// ESP.SRCI.2Q.M
+def esp_srci_2q_m : ESPVBuiltin<"srci_2q_m", "riscv_esp_srci_2q_m", [{
+      // Load vector values from pointer arguments
+      Value *QYPtr = EmitScalarExpr(E->getArg(0));
+      Value *QWPtr = EmitScalarExpr(E->getArg(1));
+      Value *Sel16 = EmitScalarExpr(E->getArg(2));
+
+      // Load current values (vector type is v16i8)
+      llvm::FixedVectorType *VecTy = llvm::FixedVectorType::get(
+      llvm::Type::getInt8Ty(getLLVMContext()), 16);
+      Address QYAddr = Address(QYPtr, VecTy, CharUnits::fromQuantity(16));
+      Address QWAddr = Address(QWPtr, VecTy, CharUnits::fromQuantity(16));
+      Value *QY = Builder.CreateLoad(QYAddr);
+      Value *QW = Builder.CreateLoad(QWAddr);
+
+      // Call intrinsic
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_srci_2q_m);
+      Value *Call = Builder.CreateCall(F, {QY, QW, Sel16});
+
+      // Extract and store results back
+      Value *QYRes = Builder.CreateExtractValue(Call, 0);
+      Value *QWRes = Builder.CreateExtractValue(Call, 1);
+      Builder.CreateStore(QYRes, QYAddr);
+      Builder.CreateStore(QWRes, QWAddr);
+
+      // Return donothing to prevent fallback to generic intrinsic path
+      Function *NoOpF = CGM.getIntrinsic(Intrinsic::donothing);
+      return Builder.CreateCall(NoOpF, {});
+  }]>;
+
+// ESP.SRCMB.S16.Q.QACC.M
+def esp_srcmb_s16_q_qacc_m
+    : ESPVBuiltin<"srcmb_s16_q_qacc_m", "riscv_esp_srcmb_s16_q_qacc_m", [{
+      // QACC is passed as explicit phantom operand (4x128-bit) for proper data flow tracking
+      // Parameters: v0, v1, v2, v3 (4x128-bit QACC), qw (shift amounts vector), sel2
+      Value *V0 = EmitScalarExpr(E->getArg(0));  // QACC_L[127:0]
+      Value *V1 = EmitScalarExpr(E->getArg(1));  // QACC_L[255:128]
+      Value *V2 = EmitScalarExpr(E->getArg(2));  // QACC_H[127:0]
+      Value *V3 = EmitScalarExpr(E->getArg(3));  // QACC_H[255:128]
+      Value *QW = EmitScalarExpr(E->getArg(4));  // Shift amounts vector
+      Value *Sel2 = EmitScalarExpr(E->getArg(5));  // Saturation select
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_srcmb_s16_q_qacc_m);
+      // Pass QACC phantom operands to intrinsic for proper data flow tracking
+      // Lowering layer will handle these as phantom operands
+      Value *Result = Builder.CreateCall(F, {V0, V1, V2, V3, QW, Sel2});
+      return Result;
+  }]>;
+
+// ESP.SRCMB.S8.Q.QACC.M
+def esp_srcmb_s8_q_qacc_m
+    : ESPVBuiltin<"srcmb_s8_q_qacc_m", "riscv_esp_srcmb_s8_q_qacc_m", [{
+      // QACC is passed as explicit phantom operand (4x128-bit) for proper data flow tracking
+      // Parameters: v0, v1, v2, v3 (4x128-bit QACC), qw (shift amounts vector), sel2
+      Value *V0 = EmitScalarExpr(E->getArg(0));  // QACC_L[127:0]
+      Value *V1 = EmitScalarExpr(E->getArg(1));  // QACC_L[255:128]
+      Value *V2 = EmitScalarExpr(E->getArg(2));  // QACC_H[127:0]
+      Value *V3 = EmitScalarExpr(E->getArg(3));  // QACC_H[255:128]
+      Value *QW = EmitScalarExpr(E->getArg(4));  // Shift amounts vector
+      Value *Sel2 = EmitScalarExpr(E->getArg(5));  // Saturation select
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_srcmb_s8_q_qacc_m);
+      // Pass QACC phantom operands to intrinsic for proper data flow tracking
+      // Lowering layer will handle these as phantom operands
+      Value *Result = Builder.CreateCall(F, {V0, V1, V2, V3, QW, Sel2});
+      return Result;
+  }]>;
+
+// ESP.SRCXXP.2Q.M
+// Intrinsic returns {v16i8, v16i8, ptr}, but C API only returns ptr
+// Extract ptr part for C return value, while keeping all values in IR for data
+// flow analysis
+def esp_srcxxp_2q_m : ESPVBuiltin<"srcxxp_2q_m", "riscv_esp_srcxxp_2q_m", [{
+      Value *QY = EmitScalarExpr(E->getArg(0));
+      Value *QW = EmitScalarExpr(E->getArg(1));
+      Value *Ptr = EmitScalarExpr(E->getArg(2));
+      Value *Offset = EmitScalarExpr(E->getArg(3));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_srcxxp_2q_m);
+      Value *Call = Builder.CreateCall(F, {QY, QW, Ptr, Offset});
+      // Intrinsic returns {v16i8, v16i8, ptr}
+      // Extract ptr (index 2) for C return value
+      // QY and QW updates remain in IR for data flow analysis, preventing optimization
+      Value *NewPtr = Builder.CreateExtractValue(Call, 2);
+      return NewPtr;
+  }]>;
+
+// ESP.VSL.32.M
+def esp_vsl_32_m : ESPVBuiltin<"vsl_32_m", "riscv_esp_vsl_32_m", [{
+      // ESP.VSL.32 (_m version) - Vector shift left with explicit SAR state passing
+      // Parameters: (qy, sar)
+      // qy: source vector (128-bit, 4x32-bit segments)
+      // sar: SAR register value (unsigned long long int, i64, only low 6 bits used, range 0-63)
+      // Returns: qu (128-bit vector, 4x32-bit segments)
+      Value *QY = EmitScalarExpr(E->getArg(0));
+      Value *Sar = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vsl_32_m);
+      Value *Result = Builder.CreateCall(F, {QY, Sar});
+      return Result;
+  }]>;
+
+// ESP.VSLD.16.M
+def esp_vsld_16_m : ESPVBuiltin<"vsld_16_m", "riscv_esp_vsld_16_m", [{
+      Value *QY = EmitScalarExpr(E->getArg(0));
+      Value *QW = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vsld_16_m);
+      Value *Result = Builder.CreateCall(F, {QY, QW});
+      return Result;
+  }]>;
+
+// ESP.VSLD.32.M
+def esp_vsld_32_m : ESPVBuiltin<"vsld_32_m", "riscv_esp_vsld_32_m", [{
+      Value *QY = EmitScalarExpr(E->getArg(0));
+      Value *QW = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vsld_32_m);
+      Value *Result = Builder.CreateCall(F, {QY, QW});
+      return Result;
+  }]>;
+
+// ESP.VSLD.8.M
+def esp_vsld_8_m : ESPVBuiltin<"vsld_8_m", "riscv_esp_vsld_8_m", [{
+      Value *QY = EmitScalarExpr(E->getArg(0));
+      Value *QW = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vsld_8_m);
+      Value *Result = Builder.CreateCall(F, {QY, QW});
+      return Result;
+  }]>;
+
+// ESP.VSMULAS.S16.QACC.M
+def esp_vsmulas_s16_qacc_m
+    : ESPVBuiltin<"vsmulas_s16_qacc_m", "riscv_esp_vsmulas_s16_qacc_m", [{
+      // Builtin receives 4x128-bit QACC passthru: v0, v1, v2, v3
+      Value *V0In = EmitScalarExpr(E->getArg(0));  // QACC_L[127:0] input (v16i8)
+      Value *V1In = EmitScalarExpr(E->getArg(1));  // QACC_L[255:128] input (v16i8)
+      Value *V2In = EmitScalarExpr(E->getArg(2));  // QACC_H[127:0] input (v16i8)
+      Value *V3In = EmitScalarExpr(E->getArg(3));  // QACC_H[255:128] input (v16i8)
+      Value *QX = EmitScalarExpr(E->getArg(4));
+      Value *QY = EmitScalarExpr(E->getArg(5));
+      Value *SEL16 = EmitScalarExpr(E->getArg(6));
+      Value *OutV0Ptr = EmitScalarExpr(E->getArg(7)); // Output pointer for QACC_L[127:0] (v16i8)
+      Value *OutV1Ptr = EmitScalarExpr(E->getArg(8)); // Output pointer for QACC_L[255:128] (v16i8)
+      Value *OutV2Ptr = EmitScalarExpr(E->getArg(9)); // Output pointer for QACC_H[127:0] (v16i8)
+      Value *OutV3Ptr = EmitScalarExpr(E->getArg(10)); // Output pointer for QACC_H[255:128] (v16i8)
+
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vsmulas_s16_qacc_m);
+      Value *Call = Builder.CreateCall(F, {V0In, V1In, V2In, V3In, QX, QY, SEL16});
+
+      // Intrinsic returns {v16i8, v16i8, v16i8, v16i8} - 4x128-bit QACC directly
+      llvm::Type *V128Ty = llvm::FixedVectorType::get(Builder.getInt8Ty(), 16);
+      Value *V0 = Builder.CreateExtractValue(Call, 0);  // QACC_L[127:0]
+      Value *V1 = Builder.CreateExtractValue(Call, 1);  // QACC_L[255:128]
+      Value *V2 = Builder.CreateExtractValue(Call, 2);  // QACC_H[127:0]
+      Value *V3 = Builder.CreateExtractValue(Call, 3);  // QACC_H[255:128]
+
+      // Store 4x128-bit QACC to output pointers (16-byte aligned)
+      Builder.CreateStore(V0, Address(OutV0Ptr, V128Ty, CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V1, Address(OutV1Ptr, V128Ty, CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V2, Address(OutV2Ptr, V128Ty, CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V3, Address(OutV3Ptr, V128Ty, CharUnits::fromQuantity(16)));
+
+      // Return donothing to prevent fallback to generic intrinsic path
+      Function *NoOpF = CGM.getIntrinsic(Intrinsic::donothing);
+      return Builder.CreateCall(NoOpF, {});
+  }]>;
+
+// ESP.VSMULAS.S8.QACC.M
+def esp_vsmulas_s8_qacc_m
+    : ESPVBuiltin<"vsmulas_s8_qacc_m", "riscv_esp_vsmulas_s8_qacc_m", [{
+      // Builtin receives 4x128-bit QACC passthru: v0, v1, v2, v3
+      Value *V0In = EmitScalarExpr(E->getArg(0));  // QACC_L[127:0] input (v16i8)
+      Value *V1In = EmitScalarExpr(E->getArg(1));  // QACC_L[255:128] input (v16i8)
+      Value *V2In = EmitScalarExpr(E->getArg(2));  // QACC_H[127:0] input (v16i8)
+      Value *V3In = EmitScalarExpr(E->getArg(3));  // QACC_H[255:128] input (v16i8)
+      Value *QX = EmitScalarExpr(E->getArg(4));
+      Value *QY = EmitScalarExpr(E->getArg(5));
+      Value *SEL16 = EmitScalarExpr(E->getArg(6));
+      Value *OutV0Ptr = EmitScalarExpr(E->getArg(7)); // Output pointer for QACC_L[127:0] (v16i8)
+      Value *OutV1Ptr = EmitScalarExpr(E->getArg(8)); // Output pointer for QACC_L[255:128] (v16i8)
+      Value *OutV2Ptr = EmitScalarExpr(E->getArg(9)); // Output pointer for QACC_H[127:0] (v16i8)
+      Value *OutV3Ptr = EmitScalarExpr(E->getArg(10)); // Output pointer for QACC_H[255:128] (v16i8)
+
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vsmulas_s8_qacc_m);
+      Value *Call = Builder.CreateCall(F, {V0In, V1In, V2In, V3In, QX, QY, SEL16});
+
+      // Intrinsic returns {v16i8, v16i8, v16i8, v16i8} - 4x128-bit QACC directly
+      llvm::Type *V128Ty = llvm::FixedVectorType::get(Builder.getInt8Ty(), 16);
+      Value *V0 = Builder.CreateExtractValue(Call, 0);  // QACC_L[127:0]
+      Value *V1 = Builder.CreateExtractValue(Call, 1);  // QACC_L[255:128]
+      Value *V2 = Builder.CreateExtractValue(Call, 2);  // QACC_H[127:0]
+      Value *V3 = Builder.CreateExtractValue(Call, 3);  // QACC_H[255:128]
+
+      // Store 4x128-bit QACC to output pointers (16-byte aligned)
+      Builder.CreateStore(V0, Address(OutV0Ptr, V128Ty, CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V1, Address(OutV1Ptr, V128Ty, CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V2, Address(OutV2Ptr, V128Ty, CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V3, Address(OutV3Ptr, V128Ty, CharUnits::fromQuantity(16)));
+
+      // Return donothing to prevent fallback to generic intrinsic path
+      Function *NoOpF = CGM.getIntrinsic(Intrinsic::donothing);
+      return Builder.CreateCall(NoOpF, {});
+  }]>;
+
+// ESP.VSR.S32.M
+def esp_vsr_s32_m : ESPVBuiltin<"vsr_s32_m", "riscv_esp_vsr_s32_m", [{
+      // ESP.VSR.S32 (_m version) - Signed arithmetic right shift with explicit SAR state passing
+      // Parameters: (qy, sar)
+      // qy: source vector (128-bit, 4x32-bit segments)
+      // sar: SAR register value (unsigned long long int, i64, only low 6 bits used, range 0-63)
+      // Returns: qu (128-bit vector, 4x32-bit segments)
+      Value *QY = EmitScalarExpr(E->getArg(0));
+      Value *Sar = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vsr_s32_m);
+      Value *Result = Builder.CreateCall(F, {QY, Sar});
+      return Result;
+  }]>;
+
+// ESP.VSRD.16.M
+def esp_vsrd_16_m : ESPVBuiltin<"vsrd_16_m", "riscv_esp_vsrd_16_m", [{
+      Value *QY = EmitScalarExpr(E->getArg(0));
+      Value *QW = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vsrd_16_m);
+      Value *Result = Builder.CreateCall(F, {QY, QW});
+      return Result;
+  }]>;
+
+// ESP.VSRD.32.M
+def esp_vsrd_32_m : ESPVBuiltin<"vsrd_32_m", "riscv_esp_vsrd_32_m", [{
+      Value *QY = EmitScalarExpr(E->getArg(0));
+      Value *QW = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vsrd_32_m);
+      Value *Result = Builder.CreateCall(F, {QY, QW});
+      return Result;
+  }]>;
+
+// ESP.VSRD.8.M
+def esp_vsrd_8_m : ESPVBuiltin<"vsrd_8_m", "riscv_esp_vsrd_8_m", [{
+      Value *QY = EmitScalarExpr(E->getArg(0));
+      Value *QW = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vsrd_8_m);
+      Value *Result = Builder.CreateCall(F, {QY, QW});
+      return Result;
+  }]>;
+
+// ESP.VABS.8.M
+def esp_vabs_8_m : ESPVBuiltin<"vabs_8_m", "riscv_esp_vabs_8_m", [{
+      Value *Vec = EmitScalarExpr(E->getArg(0));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vabs_8_m);
+      Value *Result = Builder.CreateCall(F, {Vec});
+      return Result;
+  }]>;
+
+// ESP.VADD.S8.M
+def esp_vadd_s8_m : ESPVBuiltin<"vadd_s8_m", "riscv_esp_vadd_s8_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vadd_s8_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VADD.U8.M
+def esp_vadd_u8_m : ESPVBuiltin<"vadd_u8_m", "riscv_esp_vadd_u8_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vadd_u8_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VSUB.S8.M
+def esp_vsub_s8_m : ESPVBuiltin<"vsub_s8_m", "riscv_esp_vsub_s8_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vsub_s8_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VSUB.U8.M
+def esp_vsub_u8_m : ESPVBuiltin<"vsub_u8_m", "riscv_esp_vsub_u8_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vsub_u8_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VCMP.EQ.S8.M
+def esp_vcmp_eq_s8_m : ESPVBuiltin<"vcmp_eq_s8_m", "riscv_esp_vcmp_eq_s8_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vcmp_eq_s8_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VCMP.EQ.U8.M
+def esp_vcmp_eq_u8_m : ESPVBuiltin<"vcmp_eq_u8_m", "riscv_esp_vcmp_eq_u8_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vcmp_eq_u8_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VCMP.GT.S8.M
+def esp_vcmp_gt_s8_m : ESPVBuiltin<"vcmp_gt_s8_m", "riscv_esp_vcmp_gt_s8_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vcmp_gt_s8_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VCMP.GT.U8.M
+def esp_vcmp_gt_u8_m : ESPVBuiltin<"vcmp_gt_u8_m", "riscv_esp_vcmp_gt_u8_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vcmp_gt_u8_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VCMP.LT.S8.M
+def esp_vcmp_lt_s8_m : ESPVBuiltin<"vcmp_lt_s8_m", "riscv_esp_vcmp_lt_s8_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vcmp_lt_s8_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VCMP.LT.U8.M
+def esp_vcmp_lt_u8_m : ESPVBuiltin<"vcmp_lt_u8_m", "riscv_esp_vcmp_lt_u8_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vcmp_lt_u8_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VMAX.S8.M
+def esp_vmax_s8_m : ESPVBuiltin<"vmax_s8_m", "riscv_esp_vmax_s8_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmax_s8_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VMAX.U8.M
+def esp_vmax_u8_m : ESPVBuiltin<"vmax_u8_m", "riscv_esp_vmax_u8_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmax_u8_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VMIN.S8.M
+def esp_vmin_s8_m : ESPVBuiltin<"vmin_s8_m", "riscv_esp_vmin_s8_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmin_s8_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VMIN.U8.M
+def esp_vmin_u8_m : ESPVBuiltin<"vmin_u8_m", "riscv_esp_vmin_u8_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmin_u8_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VABS.16.M
+def esp_vabs_16_m : ESPVBuiltin<"vabs_16_m", "riscv_esp_vabs_16_m", [{
+      Value *Vec = EmitScalarExpr(E->getArg(0));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vabs_16_m);
+      Value *Result = Builder.CreateCall(F, {Vec});
+      return Result;
+  }]>;
+
+// ESP.VADD.S16.M
+def esp_vadd_s16_m : ESPVBuiltin<"vadd_s16_m", "riscv_esp_vadd_s16_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vadd_s16_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VADD.U16.M
+def esp_vadd_u16_m : ESPVBuiltin<"vadd_u16_m", "riscv_esp_vadd_u16_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vadd_u16_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VCMP.EQ.S16.M
+def esp_vcmp_eq_s16_m
+    : ESPVBuiltin<"vcmp_eq_s16_m", "riscv_esp_vcmp_eq_s16_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vcmp_eq_s16_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VCMP.EQ.U16.M
+def esp_vcmp_eq_u16_m
+    : ESPVBuiltin<"vcmp_eq_u16_m", "riscv_esp_vcmp_eq_u16_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vcmp_eq_u16_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VCMP.GT.S16.M
+def esp_vcmp_gt_s16_m
+    : ESPVBuiltin<"vcmp_gt_s16_m", "riscv_esp_vcmp_gt_s16_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vcmp_gt_s16_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VCMP.GT.U16.M
+def esp_vcmp_gt_u16_m
+    : ESPVBuiltin<"vcmp_gt_u16_m", "riscv_esp_vcmp_gt_u16_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vcmp_gt_u16_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VCMP.LT.S16.M
+def esp_vcmp_lt_s16_m
+    : ESPVBuiltin<"vcmp_lt_s16_m", "riscv_esp_vcmp_lt_s16_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vcmp_lt_s16_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VCMP.LT.U16.M
+def esp_vcmp_lt_u16_m
+    : ESPVBuiltin<"vcmp_lt_u16_m", "riscv_esp_vcmp_lt_u16_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vcmp_lt_u16_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VMAX.S16.M
+def esp_vmax_s16_m : ESPVBuiltin<"vmax_s16_m", "riscv_esp_vmax_s16_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmax_s16_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VMAX.U16.M
+def esp_vmax_u16_m : ESPVBuiltin<"vmax_u16_m", "riscv_esp_vmax_u16_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmax_u16_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VMIN.S16.M
+def esp_vmin_s16_m : ESPVBuiltin<"vmin_s16_m", "riscv_esp_vmin_s16_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmin_s16_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VMIN.U16.M
+def esp_vmin_u16_m : ESPVBuiltin<"vmin_u16_m", "riscv_esp_vmin_u16_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmin_u16_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VSAT.S16.M
+def esp_vsat_s16_m : ESPVBuiltin<"vsat_s16_m", "riscv_esp_vsat_s16_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *RS1 = EmitScalarExpr(E->getArg(1));
+      Value *RS2 = EmitScalarExpr(E->getArg(2));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vsat_s16_m);
+      Value *Result = Builder.CreateCall(F, {QX, RS1, RS2});
+      return Result;
+  }]>;
+
+// ESP.VSAT.U16.M
+def esp_vsat_u16_m : ESPVBuiltin<"vsat_u16_m", "riscv_esp_vsat_u16_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *RS1 = EmitScalarExpr(E->getArg(1));
+      Value *RS2 = EmitScalarExpr(E->getArg(2));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vsat_u16_m);
+      Value *Result = Builder.CreateCall(F, {QX, RS1, RS2});
+      return Result;
+  }]>;
+
+// ESP.VSUB.S16.M
+def esp_vsub_s16_m : ESPVBuiltin<"vsub_s16_m", "riscv_esp_vsub_s16_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vsub_s16_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VSUB.U16.M
+def esp_vsub_u16_m : ESPVBuiltin<"vsub_u16_m", "riscv_esp_vsub_u16_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vsub_u16_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VABS.32.M
+def esp_vabs_32_m : ESPVBuiltin<"vabs_32_m", "riscv_esp_vabs_32_m", [{
+      Value *Vec = EmitScalarExpr(E->getArg(0));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vabs_32_m);
+      Value *Result = Builder.CreateCall(F, {Vec});
+      return Result;
+  }]>;
+
+// ESP.VADD.S32.M
+def esp_vadd_s32_m : ESPVBuiltin<"vadd_s32_m", "riscv_esp_vadd_s32_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vadd_s32_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VADD.U32.M
+def esp_vadd_u32_m : ESPVBuiltin<"vadd_u32_m", "riscv_esp_vadd_u32_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vadd_u32_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VMAX.S32.M
+def esp_vmax_s32_m : ESPVBuiltin<"vmax_s32_m", "riscv_esp_vmax_s32_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmax_s32_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VMAX.U32.M
+def esp_vmax_u32_m : ESPVBuiltin<"vmax_u32_m", "riscv_esp_vmax_u32_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmax_u32_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VMIN.S32.M
+def esp_vmin_s32_m : ESPVBuiltin<"vmin_s32_m", "riscv_esp_vmin_s32_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmin_s32_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VMIN.U32.M
+def esp_vmin_u32_m : ESPVBuiltin<"vmin_u32_m", "riscv_esp_vmin_u32_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vmin_u32_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VSAT.S32.M
+def esp_vsat_s32_m : ESPVBuiltin<"vsat_s32_m", "riscv_esp_vsat_s32_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *RS1 = EmitScalarExpr(E->getArg(1));
+      Value *RS2 = EmitScalarExpr(E->getArg(2));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vsat_s32_m);
+      Value *Result = Builder.CreateCall(F, {QX, RS1, RS2});
+      return Result;
+  }]>;
+
+// ESP.VSAT.U32.M
+def esp_vsat_u32_m : ESPVBuiltin<"vsat_u32_m", "riscv_esp_vsat_u32_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *RS1 = EmitScalarExpr(E->getArg(1));
+      Value *RS2 = EmitScalarExpr(E->getArg(2));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vsat_u32_m);
+      Value *Result = Builder.CreateCall(F, {QX, RS1, RS2});
+      return Result;
+  }]>;
+
+// ESP.VSUB.S32.M
+def esp_vsub_s32_m : ESPVBuiltin<"vsub_s32_m", "riscv_esp_vsub_s32_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vsub_s32_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VSUB.U32.M
+def esp_vsub_u32_m : ESPVBuiltin<"vsub_u32_m", "riscv_esp_vsub_u32_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vsub_u32_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      return Result;
+  }]>;
+
+// ESP.VSAT.S8.M
+def esp_vsat_s8_m : ESPVBuiltin<"vsat_s8_m", "riscv_esp_vsat_s8_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *RS1 = EmitScalarExpr(E->getArg(1));
+      Value *RS2 = EmitScalarExpr(E->getArg(2));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vsat_s8_m);
+      Value *Result = Builder.CreateCall(F, {QX, RS1, RS2});
+      return Result;
+  }]>;
+
+// ESP.VSAT.U8.M
+def esp_vsat_u8_m : ESPVBuiltin<"vsat_u8_m", "riscv_esp_vsat_u8_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *RS1 = EmitScalarExpr(E->getArg(1));
+      Value *RS2 = EmitScalarExpr(E->getArg(2));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vsat_u8_m);
+      Value *Result = Builder.CreateCall(F, {QX, RS1, RS2});
+      return Result;
+  }]>;
+
+// ESP.VEXT.S16.M
+def esp_vext_s16_m : ESPVBuiltin<"vext_s16_m", "riscv_esp_vext_s16_m", [{
+      Value *QW = EmitScalarExpr(E->getArg(0));
+      Value *QZPtr = EmitScalarExpr(E->getArg(1));
+      Value *QVPtr = EmitScalarExpr(E->getArg(2));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vext_s16_m);
+      Value *Result = Builder.CreateCall(F, {QW});
+      // Extract the two output vectors from the result struct
+      Value *QZ = Builder.CreateExtractValue(Result, 0);
+      Value *QV = Builder.CreateExtractValue(Result, 1);
+      // Store the results to the provided pointers
+      Builder.CreateStore(QZ, Address(QZPtr, QZ->getType(), CharUnits::fromQuantity(16)));
+      Builder.CreateStore(QV, Address(QVPtr, QV->getType(), CharUnits::fromQuantity(16)));
+      // Return a void call to prevent fallback to generic intrinsic path
+      Function *NoOpF = CGM.getIntrinsic(Intrinsic::donothing);
+      return Builder.CreateCall(NoOpF, {});
+  }]>;
+
+// ESP.VEXT.S8.M
+def esp_vext_s8_m : ESPVBuiltin<"vext_s8_m", "riscv_esp_vext_s8_m", [{
+      Value *QW = EmitScalarExpr(E->getArg(0));
+      Value *QZPtr = EmitScalarExpr(E->getArg(1));
+      Value *QVPtr = EmitScalarExpr(E->getArg(2));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vext_s8_m);
+      Value *Result = Builder.CreateCall(F, {QW});
+      Value *QZ = Builder.CreateExtractValue(Result, 0);
+      Value *QV = Builder.CreateExtractValue(Result, 1);
+      Builder.CreateStore(QZ, Address(QZPtr, QZ->getType(), CharUnits::fromQuantity(16)));
+      Builder.CreateStore(QV, Address(QVPtr, QV->getType(), CharUnits::fromQuantity(16)));
+      // Return a void call to prevent fallback to generic intrinsic path
+      Function *NoOpF = CGM.getIntrinsic(Intrinsic::donothing);
+      return Builder.CreateCall(NoOpF, {});
+  }]>;
+
+// ESP.VEXT.U16.M
+def esp_vext_u16_m : ESPVBuiltin<"vext_u16_m", "riscv_esp_vext_u16_m", [{
+      Value *QW = EmitScalarExpr(E->getArg(0));
+      Value *QZPtr = EmitScalarExpr(E->getArg(1));
+      Value *QVPtr = EmitScalarExpr(E->getArg(2));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vext_u16_m);
+      Value *Result = Builder.CreateCall(F, {QW});
+      Value *QZ = Builder.CreateExtractValue(Result, 0);
+      Value *QV = Builder.CreateExtractValue(Result, 1);
+      Builder.CreateStore(QZ, Address(QZPtr, QZ->getType(), CharUnits::fromQuantity(16)));
+      Builder.CreateStore(QV, Address(QVPtr, QV->getType(), CharUnits::fromQuantity(16)));
+      // Return a void call to prevent fallback to generic intrinsic path
+      Function *NoOpF = CGM.getIntrinsic(Intrinsic::donothing);
+      return Builder.CreateCall(NoOpF, {});
+  }]>;
+
+// ESP.VEXT.U8.M
+def esp_vext_u8_m : ESPVBuiltin<"vext_u8_m", "riscv_esp_vext_u8_m", [{
+      Value *QW = EmitScalarExpr(E->getArg(0));
+      Value *QZPtr = EmitScalarExpr(E->getArg(1));
+      Value *QVPtr = EmitScalarExpr(E->getArg(2));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vext_u8_m);
+      Value *Result = Builder.CreateCall(F, {QW});
+      Value *QZ = Builder.CreateExtractValue(Result, 0);
+      Value *QV = Builder.CreateExtractValue(Result, 1);
+      Builder.CreateStore(QZ, Address(QZPtr, QZ->getType(), CharUnits::fromQuantity(16)));
+      Builder.CreateStore(QV, Address(QVPtr, QV->getType(), CharUnits::fromQuantity(16)));
+      // Return a void call to prevent fallback to generic intrinsic path
+      Function *NoOpF = CGM.getIntrinsic(Intrinsic::donothing);
+      return Builder.CreateCall(NoOpF, {});
+  }]>;
