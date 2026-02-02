@@ -33,7 +33,7 @@ void test_vadd_s8_ld_incp_simple(void *src1, void *src2, void *dst) {
     esp_vop_ld_incp_res_t vadd_res = esp_vadd_s8_ld_incp_m(
         Res1.Val.V8, Res2.Val.V8, src1);
     // Actually use return value to prevent optimization
-    esp_vst_128_ip_m(vadd_res.Qv.V8, dst, 16);
+    esp_vst_128_ip_m(vadd_res.Qv.v8, dst, 16);
     (void)vadd_res.Qu; (void)vadd_res.Ptr;
 }
 
@@ -55,7 +55,7 @@ void test_vadd_u8_ld_incp_simple(void *src1, void *src2, void *dst) {
     esp_vop_ld_incp_res_t vadd_res = esp_vadd_u8_ld_incp_m(
         Res1.Val.V8, Res2.Val.V8, src1);
     // Actually use return value to prevent optimization
-    esp_vst_128_ip_m(vadd_res.Qv.V8, dst, 16);
+    esp_vst_128_ip_m(vadd_res.Qv.v8, dst, 16);
     (void)vadd_res.Qu; (void)vadd_res.Ptr;
 }
 
@@ -81,7 +81,7 @@ void test_vadd_s16_ld_incp_simple(void *src1, void *src2, void *dst) {
     esp_vec128_16_t Qy = Res2.Val.V16;
     esp_vop_ld_incp_res_t vadd_res = esp_vadd_s16_ld_incp_m(Qx, Qy, src1);
     // Actually use return value to prevent optimization
-    esp_vst_128_ip_m(vadd_res.Qv.V8, dst, 16);
+    esp_vst_128_ip_m(vadd_res.Qv.v8, dst, 16);
     (void)vadd_res.Qu; (void)vadd_res.Ptr;
 }
 
@@ -107,7 +107,7 @@ void test_vadd_u16_ld_incp_simple(void *src1, void *src2, void *dst) {
     esp_vec128_16_t Qy = Res2.Val.V16;
     esp_vop_ld_incp_res_t vadd_res = esp_vadd_u16_ld_incp_m(Qx, Qy, src1);
     // Actually use return value to prevent optimization
-    esp_vst_128_ip_m(vadd_res.Qv.V8, dst, 16);
+    esp_vst_128_ip_m(vadd_res.Qv.v8, dst, 16);
     (void)vadd_res.Qu; (void)vadd_res.Ptr;
 }
 
@@ -130,7 +130,7 @@ void test_vadd_s8_st_incp(void *src1, void *src2, void *dst) {
     esp_vld_res_t Res2 = esp_vld_128_ip_m(src2, 16);
     esp_vop_ld_incp_res_t vadd_res = esp_vadd_s8_ld_incp_m(
         Res1.Val.V8, Res2.Val.V8, src1);
-    esp_vec128_t Qv = vadd_res.Qv.V8;
+    esp_vec128_t Qv = vadd_res.Qv.v8;
     esp_vec128_t Qu = vadd_res.Qu;
     __builtin_riscv_esp_vadd_s8_st_incp_m(Res1.Val.V8, Res2.Val.V8, Qu, dst, Qv);
 }
@@ -153,7 +153,7 @@ void test_vadd_u8_st_incp(void *src1, void *src2, void *dst) {
     esp_vld_res_t Res2 = esp_vld_128_ip_m(src2, 16);
     esp_vop_ld_incp_res_t vadd_res = esp_vadd_u8_ld_incp_m(
         Res1.Val.V8, Res2.Val.V8, src1);
-    esp_vec128_t Qv = vadd_res.Qv.V8;
+    esp_vec128_t Qv = vadd_res.Qv.v8;
     esp_vec128_t Qu = vadd_res.Qu;
     __builtin_riscv_esp_vadd_u8_st_incp_m(Res1.Val.V8, Res2.Val.V8, Qu, dst, Qv);
 }
@@ -179,7 +179,7 @@ void test_vadd_s16_st_incp(void *src1, void *src2, void *dst) {
     esp_vec128_16_t Qx = Res1.Val.V16;
     esp_vec128_16_t Qy = Res2.Val.V16;
     esp_vop_ld_incp_res_t vadd_res = esp_vadd_s16_ld_incp_m(Qx, Qy, src1);
-    esp_vec128_16_t Qv = vadd_res.Qv.V16;
+    esp_vec128_16_t Qv = vadd_res.Qv.v16;
     esp_vec128_t Qu = vadd_res.Qu;
     __builtin_riscv_esp_vadd_s16_st_incp_m(Qx, Qy, Qu, dst, Qv);
 }
@@ -205,7 +205,7 @@ void test_vadd_u16_st_incp(void *src1, void *src2, void *dst) {
     esp_vec128_16_t Qx = Res1.Val.V16;
     esp_vec128_16_t Qy = Res2.Val.V16;
     esp_vop_ld_incp_res_t vadd_res = esp_vadd_u16_ld_incp_m(Qx, Qy, src1);
-    esp_vec128_16_t Qv = vadd_res.Qv.V16;
+    esp_vec128_16_t Qv = vadd_res.Qv.v16;
     esp_vec128_t Qu = vadd_res.Qu;
     __builtin_riscv_esp_vadd_u16_st_incp_m(Qx, Qy, Qu, dst, Qv);
 }
