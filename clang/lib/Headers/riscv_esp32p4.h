@@ -111,9 +111,9 @@ typedef struct {
 // pointer Used for VADD, VSUB, VMUL, etc. LD.INCP instructions
 typedef struct {
   union {
-    esp_vec128_t V8;
-    esp_vec128_16_t V16;
-    esp_vec128_32_t V32;
+    esp_vec128_t v8;
+    esp_vec128_16_t v16;
+    esp_vec128_32_t v32;
   } Qv;
   esp_vec128_t Qu;
   void *Ptr;
@@ -123,8 +123,8 @@ typedef struct {
 // Mixed model: XACC as {unsigned int low, unsigned int high}
 typedef struct {
   union {
-    esp_vec128_t V8;
-    esp_vec128_16_t V16;
+    esp_vec128_t v8;
+    esp_vec128_16_t v16;
   } Qu;                   // Loaded 128-bit Data
   void *Ptr;              // Updated pointer
   unsigned int xacc_low;  // XACC[31:0] (i32)
@@ -498,7 +498,7 @@ static inline __attribute__((always_inline)) esp_vop_ld_incp_res_t
 esp_vadd_s8_ld_incp_m(esp_vec128_t Qx, esp_vec128_t Qy, void const *Rs1) {
   esp_vop_ld_incp_res_t Res;
   Res.Ptr =
-      __builtin_riscv_esp_vadd_s8_ld_incp_m(Qx, Qy, Rs1, &Res.Qv.V8, &Res.Qu);
+      __builtin_riscv_esp_vadd_s8_ld_incp_m(Qx, Qy, Rs1, &Res.Qv.v8, &Res.Qu);
   return Res;
 }
 
@@ -506,7 +506,7 @@ static inline __attribute__((always_inline)) esp_vop_ld_incp_res_t
 esp_vadd_u8_ld_incp_m(esp_vec128_t Qx, esp_vec128_t Qy, void const *Rs1) {
   esp_vop_ld_incp_res_t Res;
   Res.Ptr =
-      __builtin_riscv_esp_vadd_u8_ld_incp_m(Qx, Qy, Rs1, &Res.Qv.V8, &Res.Qu);
+      __builtin_riscv_esp_vadd_u8_ld_incp_m(Qx, Qy, Rs1, &Res.Qv.v8, &Res.Qu);
   return Res;
 }
 
@@ -514,9 +514,9 @@ static inline __attribute__((always_inline)) esp_vop_ld_incp_res_t
 esp_vadd_s16_ld_incp_m(esp_vec128_16_t Qx, esp_vec128_16_t Qy,
                        void const *Rs1) {
   esp_vop_ld_incp_res_t Res;
-  // qv_out is esp_vec128_t*; Res.Qv.V8 and Res.Qv.V16 alias the same 128 bits.
+  // qv_out is esp_vec128_t*; Res.Qv.v8 and Res.Qv.v16 alias the same 128 bits.
   Res.Ptr =
-      __builtin_riscv_esp_vadd_s16_ld_incp_m(Qx, Qy, Rs1, &Res.Qv.V8, &Res.Qu);
+      __builtin_riscv_esp_vadd_s16_ld_incp_m(Qx, Qy, Rs1, &Res.Qv.v8, &Res.Qu);
   return Res;
 }
 
@@ -525,7 +525,7 @@ esp_vadd_u16_ld_incp_m(esp_vec128_16_t Qx, esp_vec128_16_t Qy,
                        void const *Rs1) {
   esp_vop_ld_incp_res_t Res;
   Res.Ptr =
-      __builtin_riscv_esp_vadd_u16_ld_incp_m(Qx, Qy, Rs1, &Res.Qv.V8, &Res.Qu);
+      __builtin_riscv_esp_vadd_u16_ld_incp_m(Qx, Qy, Rs1, &Res.Qv.v8, &Res.Qu);
   return Res;
 }
 
@@ -1429,7 +1429,7 @@ esp_vmulas_s16_xacc_ld_ip_m(unsigned int XaccLowIn, unsigned int XaccHighIn,
   // &Res.xacc_low, &Res.xacc_high: pointers to store new XACC state (output)
   // This enables explicit state passing: xacc_old -> instruction -> xacc_new
   Res.Ptr = __builtin_riscv_esp_vmulas_s16_xacc_ld_ip_m(
-      XaccLowIn, XaccHighIn, Qx, Qy, Ptr, Imm, &Res.Qu.V8, &Res.xacc_low,
+      XaccLowIn, XaccHighIn, Qx, Qy, Ptr, Imm, &Res.Qu.v8, &Res.xacc_low,
       &Res.xacc_high);
   return Res;
 }
@@ -1440,7 +1440,7 @@ esp_vmulas_s16_xacc_ld_xp_m(unsigned int XaccLowIn, unsigned int XaccHighIn,
                             void const *Ptr, int Reg) {
   esp_vmulas_xacc_ld_res_t Res;
   Res.Ptr = __builtin_riscv_esp_vmulas_s16_xacc_ld_xp_m(
-      XaccLowIn, XaccHighIn, Qx, Qy, Ptr, Reg, &Res.Qu.V8, &Res.xacc_low,
+      XaccLowIn, XaccHighIn, Qx, Qy, Ptr, Reg, &Res.Qu.v8, &Res.xacc_low,
       &Res.xacc_high);
   return Res;
 }
@@ -1451,7 +1451,7 @@ esp_vmulas_s8_xacc_ld_ip_m(unsigned int XaccLowIn, unsigned int XaccHighIn,
                            int Imm) {
   esp_vmulas_xacc_ld_res_t Res;
   Res.Ptr = __builtin_riscv_esp_vmulas_s8_xacc_ld_ip_m(
-      XaccLowIn, XaccHighIn, Qx, Qy, Ptr, Imm, &Res.Qu.V8, &Res.xacc_low,
+      XaccLowIn, XaccHighIn, Qx, Qy, Ptr, Imm, &Res.Qu.v8, &Res.xacc_low,
       &Res.xacc_high);
   return Res;
 }
@@ -1462,7 +1462,7 @@ esp_vmulas_s8_xacc_ld_xp_m(unsigned int XaccLowIn, unsigned int XaccHighIn,
                            int Reg) {
   esp_vmulas_xacc_ld_res_t Res;
   Res.Ptr = __builtin_riscv_esp_vmulas_s8_xacc_ld_xp_m(
-      XaccLowIn, XaccHighIn, Qx, Qy, Ptr, Reg, &Res.Qu.V8, &Res.xacc_low,
+      XaccLowIn, XaccHighIn, Qx, Qy, Ptr, Reg, &Res.Qu.v8, &Res.xacc_low,
       &Res.xacc_high);
   return Res;
 }
@@ -1473,7 +1473,7 @@ esp_vmulas_u16_xacc_ld_ip_m(unsigned int XaccLowIn, unsigned int XaccHighIn,
                             void const *Ptr, int Imm) {
   esp_vmulas_xacc_ld_res_t Res;
   Res.Ptr = __builtin_riscv_esp_vmulas_u16_xacc_ld_ip_m(
-      XaccLowIn, XaccHighIn, Qx, Qy, Ptr, Imm, &Res.Qu.V8, &Res.xacc_low,
+      XaccLowIn, XaccHighIn, Qx, Qy, Ptr, Imm, &Res.Qu.v8, &Res.xacc_low,
       &Res.xacc_high);
   return Res;
 }
@@ -1484,7 +1484,7 @@ esp_vmulas_u16_xacc_ld_xp_m(unsigned int XaccLowIn, unsigned int XaccHighIn,
                             void const *Ptr, int Reg) {
   esp_vmulas_xacc_ld_res_t Res;
   Res.Ptr = __builtin_riscv_esp_vmulas_u16_xacc_ld_xp_m(
-      XaccLowIn, XaccHighIn, Qx, Qy, Ptr, Reg, &Res.Qu.V8, &Res.xacc_low,
+      XaccLowIn, XaccHighIn, Qx, Qy, Ptr, Reg, &Res.Qu.v8, &Res.xacc_low,
       &Res.xacc_high);
   return Res;
 }
@@ -1495,7 +1495,7 @@ esp_vmulas_u8_xacc_ld_ip_m(unsigned int XaccLowIn, unsigned int XaccHighIn,
                            int Imm) {
   esp_vmulas_xacc_ld_res_t Res;
   Res.Ptr = __builtin_riscv_esp_vmulas_u8_xacc_ld_ip_m(
-      XaccLowIn, XaccHighIn, Qx, Qy, Ptr, Imm, &Res.Qu.V8, &Res.xacc_low,
+      XaccLowIn, XaccHighIn, Qx, Qy, Ptr, Imm, &Res.Qu.v8, &Res.xacc_low,
       &Res.xacc_high);
   return Res;
 }
@@ -1506,7 +1506,7 @@ esp_vmulas_u8_xacc_ld_xp_m(unsigned int XaccLowIn, unsigned int XaccHighIn,
                            int Reg) {
   esp_vmulas_xacc_ld_res_t Res;
   Res.Ptr = __builtin_riscv_esp_vmulas_u8_xacc_ld_xp_m(
-      XaccLowIn, XaccHighIn, Qx, Qy, Ptr, Reg, &Res.Qu.V8, &Res.xacc_low,
+      XaccLowIn, XaccHighIn, Qx, Qy, Ptr, Reg, &Res.Qu.v8, &Res.xacc_low,
       &Res.xacc_high);
   return Res;
 }
@@ -1886,27 +1886,6 @@ esp_src_q_qup_m(esp_vec128_t Qw, esp_vec128_t Qy, unsigned int sar_bytes) {
   esp_src_q_qup_res_t Res;
   __builtin_riscv_esp_src_q_qup_m(Qw, Qy, &Res.Qz, &Res.Qw, sar_bytes);
   return Res;
-}
-
-// ESP.SRC.Q.M — SAR_BYTES = 0 for tests that only need the default shift.
-static inline __attribute__((always_inline)) esp_vec128_t
-esp_src_q_m(esp_vec128_t Qy, esp_vec128_t Qw) {
-  return __builtin_riscv_esp_src_q_m(Qy, Qw, 0u);
-}
-
-static inline __attribute__((always_inline)) void *
-esp_srcq_128_st_incp_m(esp_vec128_t Qy, esp_vec128_t Qw, void *Ptr) {
-  return __builtin_riscv_esp_srcq_128_st_incp_m(Qy, Qw, Ptr, 0u);
-}
-
-static inline __attribute__((always_inline)) void *
-esp_srcxxp_2q_m(esp_vec128_t Qy, esp_vec128_t Qw, void *Ptr, int offset) {
-  return __builtin_riscv_esp_srcxxp_2q_m(Qy, Qw, Ptr, offset);
-}
-
-static inline __attribute__((always_inline)) void *
-esp_slcxxp_2q_m(esp_vec128_t Qy, esp_vec128_t Qw, void *Ptr, int offset) {
-  return __builtin_riscv_esp_slcxxp_2q_m(Qy, Qw, Ptr, offset);
 }
 
 // ESP.SRCMB builtin declarations - Shift Right and Saturate from QACC
@@ -3442,7 +3421,489 @@ typedef esp_mov_qacc_res_t esp_vmulas_qacc_res_t;
 
 // ESP.VSMULAS result structure - Scalar Multiply-accumulate with QACC_H and
 // QACC_L Returns 4x128-bit QACC directly (same as esp_mov_qacc_res_t)
+typedef esp_mov_qacc_res_t
+    esp_vsmulas_qacc_res_t; // QACC_H: v32i8 (256-bit)  // QACC_L: v32i8
+                            // (256-bit)  // QACC_H[255:128]: v16i8 (128-bit) //
+                            // QACC_H[127:0]: v16i8 (128-bit)  //
+                            // QACC_L[255:128]: v16i8 (128-bit)   //
+                            // QACC_L[127:0]: v16i8 (128-bit)
+
+// ESP.SRCMB builtin declarations - Shift Right and Saturate from QACC
+// All SRCMB variants use explicit QACC phantom operands (4x128-bit) for proper
+// Data flow tracking SRCMB.S16.Q.QACC - QACC is passed as explicit phantom
+// operand (4x128-bit)
+esp_vec128_16_t
+__builtin_riscv_esp_srcmb_s16_q_qacc_m(esp_vec128_t v0, esp_vec128_t v1,
+                                       esp_vec128_t v2, esp_vec128_t v3,
+                                       esp_vec128_16_t Qw, int Sel2);
+// SRCMB.S16.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_16_t __builtin_riscv_esp_srcmb_s16_qacc_m(esp_vec128_t v0,
+                                                     esp_vec128_t v1,
+                                                     esp_vec128_t v2,
+                                                     esp_vec128_t v3, int Rs1,
+                                                     int Sel2);
+// SRCMB.S8.Q.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_t __builtin_riscv_esp_srcmb_s8_q_qacc_m(esp_vec128_t v0,
+                                                   esp_vec128_t v1,
+                                                   esp_vec128_t v2,
+                                                   esp_vec128_t v3,
+                                                   esp_vec128_t Qw, int Sel2);
+// SRCMB.S8.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_t __builtin_riscv_esp_srcmb_s8_qacc_m(esp_vec128_t v0,
+                                                 esp_vec128_t v1,
+                                                 esp_vec128_t v2,
+                                                 esp_vec128_t v3, int Rs1,
+                                                 int Sel2);
+// SRCMB.U16.Q.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_16_t
+__builtin_riscv_esp_srcmb_u16_q_qacc_m(esp_vec128_t v0, esp_vec128_t v1,
+                                       esp_vec128_t v2, esp_vec128_t v3,
+                                       esp_vec128_16_t Qw, int Sel2);
+// SRCMB.U16.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_16_t __builtin_riscv_esp_srcmb_u16_qacc_m(esp_vec128_t v0,
+                                                     esp_vec128_t v1,
+                                                     esp_vec128_t v2,
+                                                     esp_vec128_t v3, int Rs1,
+                                                     int Sel2);
+// SRCMB.U8.Q.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_t __builtin_riscv_esp_srcmb_u8_q_qacc_m(esp_vec128_t v0,
+                                                   esp_vec128_t v1,
+                                                   esp_vec128_t v2,
+                                                   esp_vec128_t v3,
+                                                   esp_vec128_t Qw, int Sel2);
+// SRCMB.U8.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_t __builtin_riscv_esp_srcmb_u8_qacc_m(esp_vec128_t v0,
+                                                 esp_vec128_t v1,
+                                                 esp_vec128_t v2,
+                                                 esp_vec128_t v3, int Rs1,
+                                                 int Sel2);
+
+// ESP.VMULAS result structure - Multiply-accumulate with QACC_H and QACC_L
+// Returns 4x128-bit QACC directly (same as esp_mov_qacc_res_t)
+typedef esp_mov_qacc_res_t esp_vmulas_qacc_res_t;
+
+// ESP.VSMULAS result structure - Scalar Multiply-accumulate with QACC_H and
+// QACC_L Returns 4x128-bit QACC directly (same as esp_mov_qacc_res_t)
 typedef esp_mov_qacc_res_t esp_vsmulas_qacc_res_t;
+
+// Helper function definitions - always_inline wrappers
+static inline __attribute__((always_inline)) esp_vec128_t
+esp_src_q_m(esp_vec128_t Qy, esp_vec128_t Qw) {
+  return __builtin_riscv_esp_src_q_m(Qy, Qw, 0U);
+}
+
+static inline __attribute__((always_inline)) esp_vec128_16_t
+esp_srcmb_s16_q_qacc_m(esp_vec128_16_t Qw, int Sel2) {
+  esp_vec128_t zero = {0};
+  return __builtin_riscv_esp_srcmb_s16_q_qacc_m(zero, zero, zero, zero, Qw,
+                                                Sel2);
+} // QACC_H: v32i8 (256-bit)  // QACC_L: v32i8 (256-bit)  // QACC_H[255:128]:
+  // v16i8 (128-bit)   // QACC_H[127:0]: v16i8 (128-bit)  // QACC_L[255:128]:
+  // v16i8 (128-bit)   // QACC_L[127:0]: v16i8 (128-bit)
+
+// ESP.SRCMB builtin declarations - Shift Right and Saturate from QACC
+// All SRCMB variants use explicit QACC phantom operands (4x128-bit) for proper
+// Data flow tracking SRCMB.S16.Q.QACC - QACC is passed as explicit phantom
+// operand (4x128-bit)
+esp_vec128_16_t
+__builtin_riscv_esp_srcmb_s16_q_qacc_m(esp_vec128_t v0, esp_vec128_t v1,
+                                       esp_vec128_t v2, esp_vec128_t v3,
+                                       esp_vec128_16_t Qw, int Sel2);
+// SRCMB.S16.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_16_t __builtin_riscv_esp_srcmb_s16_qacc_m(esp_vec128_t v0,
+                                                     esp_vec128_t v1,
+                                                     esp_vec128_t v2,
+                                                     esp_vec128_t v3, int Rs1,
+                                                     int Sel2);
+// SRCMB.S8.Q.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_t __builtin_riscv_esp_srcmb_s8_q_qacc_m(esp_vec128_t v0,
+                                                   esp_vec128_t v1,
+                                                   esp_vec128_t v2,
+                                                   esp_vec128_t v3,
+                                                   esp_vec128_t Qw, int Sel2);
+// SRCMB.S8.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_t __builtin_riscv_esp_srcmb_s8_qacc_m(esp_vec128_t v0,
+                                                 esp_vec128_t v1,
+                                                 esp_vec128_t v2,
+                                                 esp_vec128_t v3, int Rs1,
+                                                 int Sel2);
+// SRCMB.U16.Q.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_16_t
+__builtin_riscv_esp_srcmb_u16_q_qacc_m(esp_vec128_t v0, esp_vec128_t v1,
+                                       esp_vec128_t v2, esp_vec128_t v3,
+                                       esp_vec128_16_t Qw, int Sel2);
+// SRCMB.U16.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_16_t __builtin_riscv_esp_srcmb_u16_qacc_m(esp_vec128_t v0,
+                                                     esp_vec128_t v1,
+                                                     esp_vec128_t v2,
+                                                     esp_vec128_t v3, int Rs1,
+                                                     int Sel2);
+// SRCMB.U8.Q.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_t __builtin_riscv_esp_srcmb_u8_q_qacc_m(esp_vec128_t v0,
+                                                   esp_vec128_t v1,
+                                                   esp_vec128_t v2,
+                                                   esp_vec128_t v3,
+                                                   esp_vec128_t Qw, int Sel2);
+// SRCMB.U8.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_t __builtin_riscv_esp_srcmb_u8_qacc_m(esp_vec128_t v0,
+                                                 esp_vec128_t v1,
+                                                 esp_vec128_t v2,
+                                                 esp_vec128_t v3, int Rs1,
+                                                 int Sel2);
+
+// ESP.VMULAS result structure - Multiply-accumulate with QACC_H and QACC_L
+// Returns 4x128-bit QACC directly (same as esp_mov_qacc_res_t)
+typedef esp_mov_qacc_res_t esp_vmulas_qacc_res_t;
+
+// ESP.VSMULAS result structure - Scalar Multiply-accumulate with QACC_H and
+// QACC_L Returns 4x128-bit QACC directly (same as esp_mov_qacc_res_t)
+typedef esp_mov_qacc_res_t esp_vsmulas_qacc_res_t;
+
+static inline __attribute__((always_inline)) esp_vec128_t
+esp_srcmb_s8_q_qacc_m(esp_vec128_t Qw, int Sel2) {
+  esp_vec128_t zero = {0};
+  return __builtin_riscv_esp_srcmb_s8_q_qacc_m(zero, zero, zero, zero, Qw,
+                                               Sel2);
+}
+
+static inline __attribute__((always_inline)) void *
+esp_srcq_128_st_incp_m(esp_vec128_t Qy, esp_vec128_t Qw, void *Ptr) {
+  return __builtin_riscv_esp_srcq_128_st_incp_m(Qy, Qw, Ptr, 0U);
+}
+
+static inline __attribute__((always_inline)) void *
+esp_srcxxp_2q_m(esp_vec128_t Qy, esp_vec128_t Qw, void *Ptr, int offset) {
+  return __builtin_riscv_esp_srcxxp_2q_m(Qy, Qw, Ptr, offset);
+}
+
+static inline __attribute__((always_inline)) void *
+esp_slcxxp_2q_m(esp_vec128_t Qy, esp_vec128_t Qw, void *Ptr, int offset) {
+  return __builtin_riscv_esp_slcxxp_2q_m(Qy, Qw, Ptr, offset);
+}
+
+// ESP.SRCMB builtin declarations - Shift Right and Saturate from QACC
+// All SRCMB variants use explicit QACC phantom operands (4x128-bit) for proper
+// Data flow tracking SRCMB.S16.Q.QACC - QACC is passed as explicit phantom
+// operand (4x128-bit)
+esp_vec128_16_t
+__builtin_riscv_esp_srcmb_s16_q_qacc_m(esp_vec128_t v0, esp_vec128_t v1,
+                                       esp_vec128_t v2, esp_vec128_t v3,
+                                       esp_vec128_16_t Qw, int Sel2);
+// SRCMB.S16.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_16_t __builtin_riscv_esp_srcmb_s16_qacc_m(esp_vec128_t v0,
+                                                     esp_vec128_t v1,
+                                                     esp_vec128_t v2,
+                                                     esp_vec128_t v3, int Rs1,
+                                                     int Sel2);
+// SRCMB.S8.Q.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_t __builtin_riscv_esp_srcmb_s8_q_qacc_m(esp_vec128_t v0,
+                                                   esp_vec128_t v1,
+                                                   esp_vec128_t v2,
+                                                   esp_vec128_t v3,
+                                                   esp_vec128_t Qw, int Sel2);
+// SRCMB.S8.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_t __builtin_riscv_esp_srcmb_s8_qacc_m(esp_vec128_t v0,
+                                                 esp_vec128_t v1,
+                                                 esp_vec128_t v2,
+                                                 esp_vec128_t v3, int Rs1,
+                                                 int Sel2);
+// SRCMB.U16.Q.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_16_t
+__builtin_riscv_esp_srcmb_u16_q_qacc_m(esp_vec128_t v0, esp_vec128_t v1,
+                                       esp_vec128_t v2, esp_vec128_t v3,
+                                       esp_vec128_16_t Qw, int Sel2);
+// SRCMB.U16.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_16_t __builtin_riscv_esp_srcmb_u16_qacc_m(esp_vec128_t v0,
+                                                     esp_vec128_t v1,
+                                                     esp_vec128_t v2,
+                                                     esp_vec128_t v3, int Rs1,
+                                                     int Sel2);
+// SRCMB.U8.Q.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_t __builtin_riscv_esp_srcmb_u8_q_qacc_m(esp_vec128_t v0,
+                                                   esp_vec128_t v1,
+                                                   esp_vec128_t v2,
+                                                   esp_vec128_t v3,
+                                                   esp_vec128_t Qw, int Sel2);
+// SRCMB.U8.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_t __builtin_riscv_esp_srcmb_u8_qacc_m(esp_vec128_t v0,
+                                                 esp_vec128_t v1,
+                                                 esp_vec128_t v2,
+                                                 esp_vec128_t v3, int Rs1,
+                                                 int Sel2);
+
+// ESP.VMULAS result structure - Multiply-accumulate with QACC_H and QACC_L
+// Returns 4x128-bit QACC directly (same as esp_mov_qacc_res_t)
+typedef esp_mov_qacc_res_t esp_vmulas_qacc_res_t;
+
+// ESP.VSMULAS result structure - Scalar Multiply-accumulate with QACC_H and
+// QACC_L Returns 4x128-bit QACC directly (same as esp_mov_qacc_res_t)
+typedef esp_mov_qacc_res_t
+    esp_vsmulas_qacc_res_t; // QACC_H: v32i8 (256-bit)  // QACC_L: v32i8
+                            // (256-bit)  // QACC_H[255:128]: v16i8 (128-bit) //
+                            // QACC_H[127:0]: v16i8 (128-bit)  //
+                            // QACC_L[255:128]: v16i8 (128-bit)   //
+                            // QACC_L[127:0]: v16i8 (128-bit)
+
+// ESP.SRCMB builtin declarations - Shift Right and Saturate from QACC
+// All SRCMB variants use explicit QACC phantom operands (4x128-bit) for proper
+// Data flow tracking SRCMB.S16.Q.QACC - QACC is passed as explicit phantom
+// operand (4x128-bit)
+esp_vec128_16_t
+__builtin_riscv_esp_srcmb_s16_q_qacc_m(esp_vec128_t v0, esp_vec128_t v1,
+                                       esp_vec128_t v2, esp_vec128_t v3,
+                                       esp_vec128_16_t Qw, int Sel2);
+// SRCMB.S16.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_16_t __builtin_riscv_esp_srcmb_s16_qacc_m(esp_vec128_t v0,
+                                                     esp_vec128_t v1,
+                                                     esp_vec128_t v2,
+                                                     esp_vec128_t v3, int Rs1,
+                                                     int Sel2);
+// SRCMB.S8.Q.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_t __builtin_riscv_esp_srcmb_s8_q_qacc_m(esp_vec128_t v0,
+                                                   esp_vec128_t v1,
+                                                   esp_vec128_t v2,
+                                                   esp_vec128_t v3,
+                                                   esp_vec128_t Qw, int Sel2);
+// SRCMB.S8.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_t __builtin_riscv_esp_srcmb_s8_qacc_m(esp_vec128_t v0,
+                                                 esp_vec128_t v1,
+                                                 esp_vec128_t v2,
+                                                 esp_vec128_t v3, int Rs1,
+                                                 int Sel2);
+// SRCMB.U16.Q.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_16_t
+__builtin_riscv_esp_srcmb_u16_q_qacc_m(esp_vec128_t v0, esp_vec128_t v1,
+                                       esp_vec128_t v2, esp_vec128_t v3,
+                                       esp_vec128_16_t Qw, int Sel2);
+// SRCMB.U16.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_16_t __builtin_riscv_esp_srcmb_u16_qacc_m(esp_vec128_t v0,
+                                                     esp_vec128_t v1,
+                                                     esp_vec128_t v2,
+                                                     esp_vec128_t v3, int Rs1,
+                                                     int Sel2);
+// SRCMB.U8.Q.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_t __builtin_riscv_esp_srcmb_u8_q_qacc_m(esp_vec128_t v0,
+                                                   esp_vec128_t v1,
+                                                   esp_vec128_t v2,
+                                                   esp_vec128_t v3,
+                                                   esp_vec128_t Qw, int Sel2);
+// SRCMB.U8.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_t __builtin_riscv_esp_srcmb_u8_qacc_m(esp_vec128_t v0,
+                                                 esp_vec128_t v1,
+                                                 esp_vec128_t v2,
+                                                 esp_vec128_t v3, int Rs1,
+                                                 int Sel2);
+
+// ESP.VMULAS result structure - Multiply-accumulate with QACC_H and QACC_L
+// Returns 4x128-bit QACC directly (same as esp_mov_qacc_res_t)
+typedef esp_mov_qacc_res_t esp_vmulas_qacc_res_t;
+
+// ESP.VSMULAS result structure - Scalar Multiply-accumulate with QACC_H and
+// QACC_L Returns 4x128-bit QACC directly (same as esp_mov_qacc_res_t)
+typedef esp_mov_qacc_res_t
+    esp_vsmulas_qacc_res_t; // QACC_H: v32i8 (256-bit)  // QACC_L: v32i8
+                            // (256-bit)  // QACC_H[255:128]: v16i8 (128-bit) //
+                            // QACC_H[127:0]: v16i8 (128-bit)  //
+                            // QACC_L[255:128]: v16i8 (128-bit)   //
+                            // QACC_L[127:0]: v16i8 (128-bit)
+
+// ESP.SRCMB builtin declarations - Shift Right and Saturate from QACC
+// All SRCMB variants use explicit QACC phantom operands (4x128-bit) for proper
+// Data flow tracking SRCMB.S16.Q.QACC - QACC is passed as explicit phantom
+// operand (4x128-bit)
+esp_vec128_16_t
+__builtin_riscv_esp_srcmb_s16_q_qacc_m(esp_vec128_t v0, esp_vec128_t v1,
+                                       esp_vec128_t v2, esp_vec128_t v3,
+                                       esp_vec128_16_t Qw, int Sel2);
+// SRCMB.S16.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_16_t __builtin_riscv_esp_srcmb_s16_qacc_m(esp_vec128_t v0,
+                                                     esp_vec128_t v1,
+                                                     esp_vec128_t v2,
+                                                     esp_vec128_t v3, int Rs1,
+                                                     int Sel2);
+// SRCMB.S8.Q.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_t __builtin_riscv_esp_srcmb_s8_q_qacc_m(esp_vec128_t v0,
+                                                   esp_vec128_t v1,
+                                                   esp_vec128_t v2,
+                                                   esp_vec128_t v3,
+                                                   esp_vec128_t Qw, int Sel2);
+// SRCMB.S8.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_t __builtin_riscv_esp_srcmb_s8_qacc_m(esp_vec128_t v0,
+                                                 esp_vec128_t v1,
+                                                 esp_vec128_t v2,
+                                                 esp_vec128_t v3, int Rs1,
+                                                 int Sel2);
+// SRCMB.U16.Q.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_16_t
+__builtin_riscv_esp_srcmb_u16_q_qacc_m(esp_vec128_t v0, esp_vec128_t v1,
+                                       esp_vec128_t v2, esp_vec128_t v3,
+                                       esp_vec128_16_t Qw, int Sel2);
+// SRCMB.U16.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_16_t __builtin_riscv_esp_srcmb_u16_qacc_m(esp_vec128_t v0,
+                                                     esp_vec128_t v1,
+                                                     esp_vec128_t v2,
+                                                     esp_vec128_t v3, int Rs1,
+                                                     int Sel2);
+// SRCMB.U8.Q.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_t __builtin_riscv_esp_srcmb_u8_q_qacc_m(esp_vec128_t v0,
+                                                   esp_vec128_t v1,
+                                                   esp_vec128_t v2,
+                                                   esp_vec128_t v3,
+                                                   esp_vec128_t Qw, int Sel2);
+// SRCMB.U8.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_t __builtin_riscv_esp_srcmb_u8_qacc_m(esp_vec128_t v0,
+                                                 esp_vec128_t v1,
+                                                 esp_vec128_t v2,
+                                                 esp_vec128_t v3, int Rs1,
+                                                 int Sel2);
+
+// ESP.VMULAS result structure - Multiply-accumulate with QACC_H and QACC_L
+// Returns 4x128-bit QACC directly (same as esp_mov_qacc_res_t)
+typedef esp_mov_qacc_res_t esp_vmulas_qacc_res_t;
+
+// ESP.VSMULAS result structure - Scalar Multiply-accumulate with QACC_H and
+// QACC_L Returns 4x128-bit QACC directly (same as esp_mov_qacc_res_t)
+typedef esp_mov_qacc_res_t
+    esp_vsmulas_qacc_res_t; // QACC_H: v32i8 (256-bit)  // QACC_L: v32i8
+                            // (256-bit)  // QACC_H[255:128]: v16i8 (128-bit) //
+                            // QACC_H[127:0]: v16i8 (128-bit)  //
+                            // QACC_L[255:128]: v16i8 (128-bit)   //
+                            // QACC_L[127:0]: v16i8 (128-bit)
+
+// ESP.SRCMB builtin declarations - Shift Right and Saturate from QACC
+// All SRCMB variants use explicit QACC phantom operands (4x128-bit) for proper
+// Data flow tracking SRCMB.S16.Q.QACC - QACC is passed as explicit phantom
+// operand (4x128-bit)
+esp_vec128_16_t
+__builtin_riscv_esp_srcmb_s16_q_qacc_m(esp_vec128_t v0, esp_vec128_t v1,
+                                       esp_vec128_t v2, esp_vec128_t v3,
+                                       esp_vec128_16_t Qw, int Sel2);
+// SRCMB.S16.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_16_t __builtin_riscv_esp_srcmb_s16_qacc_m(esp_vec128_t v0,
+                                                     esp_vec128_t v1,
+                                                     esp_vec128_t v2,
+                                                     esp_vec128_t v3, int Rs1,
+                                                     int Sel2);
+// SRCMB.S8.Q.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_t __builtin_riscv_esp_srcmb_s8_q_qacc_m(esp_vec128_t v0,
+                                                   esp_vec128_t v1,
+                                                   esp_vec128_t v2,
+                                                   esp_vec128_t v3,
+                                                   esp_vec128_t Qw, int Sel2);
+// SRCMB.S8.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_t __builtin_riscv_esp_srcmb_s8_qacc_m(esp_vec128_t v0,
+                                                 esp_vec128_t v1,
+                                                 esp_vec128_t v2,
+                                                 esp_vec128_t v3, int Rs1,
+                                                 int Sel2);
+// SRCMB.U16.Q.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_16_t
+__builtin_riscv_esp_srcmb_u16_q_qacc_m(esp_vec128_t v0, esp_vec128_t v1,
+                                       esp_vec128_t v2, esp_vec128_t v3,
+                                       esp_vec128_16_t Qw, int Sel2);
+// SRCMB.U16.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_16_t __builtin_riscv_esp_srcmb_u16_qacc_m(esp_vec128_t v0,
+                                                     esp_vec128_t v1,
+                                                     esp_vec128_t v2,
+                                                     esp_vec128_t v3, int Rs1,
+                                                     int Sel2);
+// SRCMB.U8.Q.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_t __builtin_riscv_esp_srcmb_u8_q_qacc_m(esp_vec128_t v0,
+                                                   esp_vec128_t v1,
+                                                   esp_vec128_t v2,
+                                                   esp_vec128_t v3,
+                                                   esp_vec128_t Qw, int Sel2);
+// SRCMB.U8.QACC - QACC is passed as explicit phantom operand (4x128-bit)
+esp_vec128_t __builtin_riscv_esp_srcmb_u8_qacc_m(esp_vec128_t v0,
+                                                 esp_vec128_t v1,
+                                                 esp_vec128_t v2,
+                                                 esp_vec128_t v3, int Rs1,
+                                                 int Sel2);
+
+// ESP.VMULAS result structure - Multiply-accumulate with QACC_H and QACC_L
+// Returns 4x128-bit QACC directly (same as esp_mov_qacc_res_t)
+typedef esp_mov_qacc_res_t esp_vmulas_qacc_res_t;
+
+// ESP.VSMULAS result structure - Scalar Multiply-accumulate with QACC_H and
+// QACC_L Returns 4x128-bit QACC directly (same as esp_mov_qacc_res_t)
+typedef esp_mov_qacc_res_t
+    esp_vsmulas_qacc_res_t; // QACC_H: v32i8 (256-bit)  // QACC_L: v32i8
+                            // (256-bit)  // QACC_H[255:128]: v16i8 (128-bit) //
+                            // QACC_H[127:0]: v16i8 (128-bit)  //
+                            // QACC_L[255:128]: v16i8 (128-bit)   //
+                            // QACC_L[127:0]: v16i8 (128-bit)  // QACC_H: v32i8
+                            // (256-bit)  // QACC_L: v32i8 (256-bit)  //
+                            // QACC_H[255:128]: v16i8 (128-bit)   //
+                            // QACC_H[127:0]: v16i8 (128-bit)  //
+                            // QACC_L[255:128]: v16i8 (128-bit)   //
+                            // QACC_L[127:0]: v16i8 (128-bit)
+
+// Helper function definitions - always_inline wrappers
+// VZIP/VUNZIP - Vector Zip/Unzip operations
+static inline __attribute__((always_inline)) void
+esp_vzip_8_m(esp_vec128_t Qx, esp_vec128_t Qy, esp_vec128_t *qx_out,
+             esp_vec128_t *qy_out) {
+  __builtin_riscv_esp_vzip_8_m(Qx, Qy, qx_out, qy_out);
+}
+
+static inline __attribute__((always_inline)) void
+esp_vzip_16_m(esp_vec128_16_t Qx, esp_vec128_16_t Qy, esp_vec128_16_t *qx_out,
+              esp_vec128_16_t *qy_out) {
+  __builtin_riscv_esp_vzip_16_m(Qx, Qy, qx_out, qy_out);
+}
+
+static inline __attribute__((always_inline)) void
+esp_vzip_32_m(esp_vec128_32_t Qx, esp_vec128_32_t Qy, esp_vec128_32_t *qx_out,
+              esp_vec128_32_t *qy_out) {
+  __builtin_riscv_esp_vzip_32_m(Qx, Qy, qx_out, qy_out);
+}
+
+static inline __attribute__((always_inline)) void
+esp_vunzip_8_m(esp_vec128_t Qx, esp_vec128_t Qy, esp_vec128_t *qx_out,
+               esp_vec128_t *qy_out) {
+  __builtin_riscv_esp_vunzip_8_m(Qx, Qy, qx_out, qy_out);
+}
+
+static inline __attribute__((always_inline)) void
+esp_vunzip_16_m(esp_vec128_16_t Qx, esp_vec128_16_t Qy, esp_vec128_16_t *qx_out,
+                esp_vec128_16_t *qy_out) {
+  __builtin_riscv_esp_vunzip_16_m(Qx, Qy, qx_out, qy_out);
+}
+
+static inline __attribute__((always_inline)) void
+esp_vunzip_32_m(esp_vec128_32_t Qx, esp_vec128_32_t Qy, esp_vec128_32_t *qx_out,
+                esp_vec128_32_t *qy_out) {
+  __builtin_riscv_esp_vunzip_32_m(Qx, Qy, qx_out, qy_out);
+}
+
+// VZIPT/VUNZIPT - Vector zip/unzip transpose (3 vectors)
+static inline __attribute__((always_inline)) void
+esp_vzipt_8_m(esp_vec128_t Qx, esp_vec128_t Qy, esp_vec128_t Qw,
+              esp_vec128_t *qx_out, esp_vec128_t *qy_out,
+              esp_vec128_t *qw_out) {
+  __builtin_riscv_esp_vzipt_8_m(Qx, Qy, Qw, qx_out, qy_out, qw_out);
+}
+
+static inline __attribute__((always_inline)) void
+esp_vzipt_16_m(esp_vec128_16_t Qx, esp_vec128_16_t Qy, esp_vec128_16_t Qw,
+               esp_vec128_16_t *qx_out, esp_vec128_16_t *qy_out,
+               esp_vec128_16_t *qw_out) {
+  __builtin_riscv_esp_vzipt_16_m(Qx, Qy, Qw, qx_out, qy_out, qw_out);
+}
+
+static inline __attribute__((always_inline)) void
+esp_vunzipt_8_m(esp_vec128_t Qx, esp_vec128_t Qy, esp_vec128_t Qw,
+                esp_vec128_t *qx_out, esp_vec128_t *qy_out,
+                esp_vec128_t *qw_out) {
+  __builtin_riscv_esp_vunzipt_8_m(Qx, Qy, Qw, qx_out, qy_out, qw_out);
+}
+
+static inline __attribute__((always_inline)) void
+esp_vunzipt_16_m(esp_vec128_16_t Qx, esp_vec128_16_t Qy, esp_vec128_16_t Qw,
+                 esp_vec128_16_t *qx_out, esp_vec128_16_t *qy_out,
+                 esp_vec128_16_t *qw_out) {
+  __builtin_riscv_esp_vunzipt_16_m(Qx, Qy, Qw, qx_out, qy_out, qw_out);
+}
 
 #if defined(__cplusplus)
 }
