@@ -5501,3 +5501,369 @@ def esp_vext_u8_m : ESPVBuiltin<"vext_u8_m", "riscv_esp_vext_u8_m", [{
       Function *NoOpF = CGM.getIntrinsic(Intrinsic::donothing);
       return Builder.CreateCall(NoOpF, {});
   }]>;
+
+// ESP.SRCMB.U16.Q.QACC.M
+def esp_srcmb_u16_q_qacc_m
+    : ESPVBuiltin<"srcmb_u16_q_qacc_m", "riscv_esp_srcmb_u16_q_qacc_m", [{
+      // QACC is passed as explicit phantom operand (4x128-bit) for proper data flow tracking
+      // Parameters: v0, v1, v2, v3 (4x128-bit QACC), qw (shift amounts vector), sel2
+      Value *V0 = EmitScalarExpr(E->getArg(0));  // QACC_L[127:0]
+      Value *V1 = EmitScalarExpr(E->getArg(1));  // QACC_L[255:128]
+      Value *V2 = EmitScalarExpr(E->getArg(2));  // QACC_H[127:0]
+      Value *V3 = EmitScalarExpr(E->getArg(3));  // QACC_H[255:128]
+      Value *QW = EmitScalarExpr(E->getArg(4));  // Shift amounts vector
+      Value *Sel2 = EmitScalarExpr(E->getArg(5));  // Saturation select
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_srcmb_u16_q_qacc_m);
+      // Pass QACC phantom operands to intrinsic for proper data flow tracking
+      // Lowering layer will handle these as phantom operands
+      Value *Result = Builder.CreateCall(F, {V0, V1, V2, V3, QW, Sel2});
+      return Result;
+  }]>;
+
+// ESP.SRCMB.U8.Q.QACC.M
+def esp_srcmb_u8_q_qacc_m
+    : ESPVBuiltin<"srcmb_u8_q_qacc_m", "riscv_esp_srcmb_u8_q_qacc_m", [{
+      // QACC is passed as explicit phantom operand (4x128-bit) for proper data flow tracking
+      // Parameters: v0, v1, v2, v3 (4x128-bit QACC), qw (shift amounts vector), sel2
+      Value *V0 = EmitScalarExpr(E->getArg(0));  // QACC_L[127:0]
+      Value *V1 = EmitScalarExpr(E->getArg(1));  // QACC_L[255:128]
+      Value *V2 = EmitScalarExpr(E->getArg(2));  // QACC_H[127:0]
+      Value *V3 = EmitScalarExpr(E->getArg(3));  // QACC_H[255:128]
+      Value *QW = EmitScalarExpr(E->getArg(4));  // Shift amounts vector
+      Value *Sel2 = EmitScalarExpr(E->getArg(5));  // Saturation select
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_srcmb_u8_q_qacc_m);
+      // Pass QACC phantom operands to intrinsic for proper data flow tracking
+      // Lowering layer will handle these as phantom operands
+      Value *Result = Builder.CreateCall(F, {V0, V1, V2, V3, QW, Sel2});
+      return Result;
+  }]>;
+
+// ESP.VSMULAS.S16.QACC.LD.INCP.M
+def esp_vsmulas_s16_qacc_ld_incp_m
+    : ESPVBuiltin<"vsmulas_s16_qacc_ld_incp_m",
+                  "riscv_esp_vsmulas_s16_qacc_ld_incp_m", [{
+      // Builtin receives 4x128-bit QACC passthru: v0, v1, v2, v3
+      Value *V0In = EmitScalarExpr(E->getArg(0));  // QACC_L[127:0] input (v16i8)
+      Value *V1In = EmitScalarExpr(E->getArg(1));  // QACC_L[255:128] input (v16i8)
+      Value *V2In = EmitScalarExpr(E->getArg(2));  // QACC_H[127:0] input (v16i8)
+      Value *V3In = EmitScalarExpr(E->getArg(3));  // QACC_H[255:128] input (v16i8)
+      Value *QX = EmitScalarExpr(E->getArg(4));
+      Value *QY = EmitScalarExpr(E->getArg(5));
+      Value *RS1 = EmitScalarExpr(E->getArg(6));
+      Value *SEL16 = EmitScalarExpr(E->getArg(7));
+      Value *OutQUPtr = EmitScalarExpr(E->getArg(8)); // Output pointer for qu (v16i8)
+      Value *OutV0Ptr = EmitScalarExpr(E->getArg(9)); // Output pointer for QACC_L[127:0] (v16i8)
+      Value *OutV1Ptr = EmitScalarExpr(E->getArg(10)); // Output pointer for QACC_L[255:128] (v16i8)
+      Value *OutV2Ptr = EmitScalarExpr(E->getArg(11)); // Output pointer for QACC_H[127:0] (v16i8)
+      Value *OutV3Ptr = EmitScalarExpr(E->getArg(12)); // Output pointer for QACC_H[255:128] (v16i8)
+
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vsmulas_s16_qacc_ld_incp_m);
+      Value *Call = Builder.CreateCall(F, {V0In, V1In, V2In, V3In, QX, QY, RS1, SEL16});
+
+      // Intrinsic returns {ptr, v16i8 qu, v16i8, v16i8, v16i8, v16i8} - ptr + qu + 4x128-bit QACC
+      // Extract pointer and 4x128-bit QACC directly from return value (similar to ldqa pattern)
+      Value *Ptr = Builder.CreateExtractValue(Call, 0);  // Updated pointer
+      Value *QU = Builder.CreateExtractValue(Call, 1);    // qu (v16i8)
+      Value *V0 = Builder.CreateExtractValue(Call, 2);   // QACC_L[127:0]
+      Value *V1 = Builder.CreateExtractValue(Call, 3);   // QACC_L[255:128]
+      Value *V2 = Builder.CreateExtractValue(Call, 4);   // QACC_H[127:0]
+      Value *V3 = Builder.CreateExtractValue(Call, 5);    // QACC_H[255:128]
+
+      // Store qu and 4x128-bit QACC to output pointers (16-byte aligned)
+      // Use same pattern as ldqa: Address constructor handles void* pointers correctly
+      llvm::Type *V128Ty = llvm::FixedVectorType::get(Builder.getInt8Ty(), 16);
+      Builder.CreateStore(QU, Address(OutQUPtr, V128Ty, CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V0, Address(OutV0Ptr, V128Ty, CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V1, Address(OutV1Ptr, V128Ty, CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V2, Address(OutV2Ptr, V128Ty, CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V3, Address(OutV3Ptr, V128Ty, CharUnits::fromQuantity(16)));
+
+      return Ptr; // Return updated pointer
+  }]>;
+
+// ESP.VSMULAS.S8.QACC.LD.INCP.M
+def esp_vsmulas_s8_qacc_ld_incp_m
+    : ESPVBuiltin<"vsmulas_s8_qacc_ld_incp_m",
+                  "riscv_esp_vsmulas_s8_qacc_ld_incp_m", [{
+      // Builtin receives 4x128-bit QACC passthru: v0, v1, v2, v3
+      Value *V0In = EmitScalarExpr(E->getArg(0));  // QACC_L[127:0] input (v16i8)
+      Value *V1In = EmitScalarExpr(E->getArg(1));  // QACC_L[255:128] input (v16i8)
+      Value *V2In = EmitScalarExpr(E->getArg(2));  // QACC_H[127:0] input (v16i8)
+      Value *V3In = EmitScalarExpr(E->getArg(3));  // QACC_H[255:128] input (v16i8)
+      Value *QX = EmitScalarExpr(E->getArg(4));
+      Value *QY = EmitScalarExpr(E->getArg(5));
+      Value *RS1 = EmitScalarExpr(E->getArg(6));
+      Value *SEL16 = EmitScalarExpr(E->getArg(7));
+      Value *OutQUPtr = EmitScalarExpr(E->getArg(8)); // Output pointer for qu (v16i8)
+      Value *OutV0Ptr = EmitScalarExpr(E->getArg(9)); // Output pointer for QACC_L[127:0] (v16i8)
+      Value *OutV1Ptr = EmitScalarExpr(E->getArg(10)); // Output pointer for QACC_L[255:128] (v16i8)
+      Value *OutV2Ptr = EmitScalarExpr(E->getArg(11)); // Output pointer for QACC_H[127:0] (v16i8)
+      Value *OutV3Ptr = EmitScalarExpr(E->getArg(12)); // Output pointer for QACC_H[255:128] (v16i8)
+
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vsmulas_s8_qacc_ld_incp_m);
+      Value *Call = Builder.CreateCall(F, {V0In, V1In, V2In, V3In, QX, QY, RS1, SEL16});
+
+      // Intrinsic returns {ptr, v16i8 qu, v16i8, v16i8, v16i8, v16i8} - ptr + qu + 4x128-bit QACC
+      // Extract pointer and 4x128-bit QACC directly from return value (similar to ldqa pattern)
+      Value *Ptr = Builder.CreateExtractValue(Call, 0);  // Updated pointer
+      Value *QU = Builder.CreateExtractValue(Call, 1);    // qu (v16i8)
+      Value *V0 = Builder.CreateExtractValue(Call, 2);   // QACC_L[127:0]
+      Value *V1 = Builder.CreateExtractValue(Call, 3);   // QACC_L[255:128]
+      Value *V2 = Builder.CreateExtractValue(Call, 4);   // QACC_H[127:0]
+      Value *V3 = Builder.CreateExtractValue(Call, 5);    // QACC_H[255:128]
+
+      // Store qu and 4x128-bit QACC to output pointers (16-byte aligned)
+      // Use same pattern as ldqa: Address constructor handles void* pointers correctly
+      llvm::Type *V128Ty = llvm::FixedVectorType::get(Builder.getInt8Ty(), 16);
+      Builder.CreateStore(QU, Address(OutQUPtr, V128Ty, CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V0, Address(OutV0Ptr, V128Ty, CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V1, Address(OutV1Ptr, V128Ty, CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V2, Address(OutV2Ptr, V128Ty, CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V3, Address(OutV3Ptr, V128Ty, CharUnits::fromQuantity(16)));
+
+      return Ptr; // Return updated pointer
+  }]>;
+
+// ESP.VSMULAS.U16.QACC.LD.INCP.M
+def esp_vsmulas_u16_qacc_ld_incp_m
+    : ESPVBuiltin<"vsmulas_u16_qacc_ld_incp_m",
+                  "riscv_esp_vsmulas_u16_qacc_ld_incp_m", [{
+      // Builtin receives 4x128-bit QACC passthru: v0, v1, v2, v3
+      Value *V0In = EmitScalarExpr(E->getArg(0));  // QACC_L[127:0] input (v16i8)
+      Value *V1In = EmitScalarExpr(E->getArg(1));  // QACC_L[255:128] input (v16i8)
+      Value *V2In = EmitScalarExpr(E->getArg(2));  // QACC_H[127:0] input (v16i8)
+      Value *V3In = EmitScalarExpr(E->getArg(3));  // QACC_H[255:128] input (v16i8)
+      Value *QX = EmitScalarExpr(E->getArg(4));
+      Value *QY = EmitScalarExpr(E->getArg(5));
+      Value *RS1 = EmitScalarExpr(E->getArg(6));
+      Value *SEL16 = EmitScalarExpr(E->getArg(7));
+      Value *OutQUPtr = EmitScalarExpr(E->getArg(8)); // Output pointer for qu (v16i8)
+      Value *OutV0Ptr = EmitScalarExpr(E->getArg(9)); // Output pointer for QACC_L[127:0] (v16i8)
+      Value *OutV1Ptr = EmitScalarExpr(E->getArg(10)); // Output pointer for QACC_L[255:128] (v16i8)
+      Value *OutV2Ptr = EmitScalarExpr(E->getArg(11)); // Output pointer for QACC_H[127:0] (v16i8)
+      Value *OutV3Ptr = EmitScalarExpr(E->getArg(12)); // Output pointer for QACC_H[255:128] (v16i8)
+
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vsmulas_u16_qacc_ld_incp_m);
+      Value *Call = Builder.CreateCall(F, {V0In, V1In, V2In, V3In, QX, QY, RS1, SEL16});
+
+      // Intrinsic returns {ptr, v16i8 qu, v16i8, v16i8, v16i8, v16i8} - ptr + qu + 4x128-bit QACC
+      // Extract pointer and 4x128-bit QACC directly from return value (similar to ldqa pattern)
+      Value *Ptr = Builder.CreateExtractValue(Call, 0);  // Updated pointer
+      Value *QU = Builder.CreateExtractValue(Call, 1);    // qu (v16i8)
+      Value *V0 = Builder.CreateExtractValue(Call, 2);   // QACC_L[127:0]
+      Value *V1 = Builder.CreateExtractValue(Call, 3);   // QACC_L[255:128]
+      Value *V2 = Builder.CreateExtractValue(Call, 4);   // QACC_H[127:0]
+      Value *V3 = Builder.CreateExtractValue(Call, 5);    // QACC_H[255:128]
+
+      // Store qu and 4x128-bit QACC to output pointers (16-byte aligned)
+      // Use same pattern as ldqa: Address constructor handles void* pointers correctly
+      llvm::Type *V128Ty = llvm::FixedVectorType::get(Builder.getInt8Ty(), 16);
+      Builder.CreateStore(QU, Address(OutQUPtr, V128Ty, CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V0, Address(OutV0Ptr, V128Ty, CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V1, Address(OutV1Ptr, V128Ty, CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V2, Address(OutV2Ptr, V128Ty, CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V3, Address(OutV3Ptr, V128Ty, CharUnits::fromQuantity(16)));
+
+      return Ptr; // Return updated pointer
+  }]>;
+
+// ESP.VSMULAS.U16.QACC.M
+def esp_vsmulas_u16_qacc_m
+    : ESPVBuiltin<"vsmulas_u16_qacc_m", "riscv_esp_vsmulas_u16_qacc_m", [{
+      // Builtin receives 4x128-bit QACC passthru: v0, v1, v2, v3
+      Value *V0In = EmitScalarExpr(E->getArg(0));  // QACC_L[127:0] input (v16i8)
+      Value *V1In = EmitScalarExpr(E->getArg(1));  // QACC_L[255:128] input (v16i8)
+      Value *V2In = EmitScalarExpr(E->getArg(2));  // QACC_H[127:0] input (v16i8)
+      Value *V3In = EmitScalarExpr(E->getArg(3));  // QACC_H[255:128] input (v16i8)
+      Value *QX = EmitScalarExpr(E->getArg(4));
+      Value *QY = EmitScalarExpr(E->getArg(5));
+      Value *SEL16 = EmitScalarExpr(E->getArg(6));
+      Value *OutV0Ptr = EmitScalarExpr(E->getArg(7)); // Output pointer for QACC_L[127:0] (v16i8)
+      Value *OutV1Ptr = EmitScalarExpr(E->getArg(8)); // Output pointer for QACC_L[255:128] (v16i8)
+      Value *OutV2Ptr = EmitScalarExpr(E->getArg(9)); // Output pointer for QACC_H[127:0] (v16i8)
+      Value *OutV3Ptr = EmitScalarExpr(E->getArg(10)); // Output pointer for QACC_H[255:128] (v16i8)
+
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vsmulas_u16_qacc_m);
+      Value *Call = Builder.CreateCall(F, {V0In, V1In, V2In, V3In, QX, QY, SEL16});
+
+      // Intrinsic returns {v16i8, v16i8, v16i8, v16i8} - 4x128-bit QACC directly
+      llvm::Type *V128Ty = llvm::FixedVectorType::get(Builder.getInt8Ty(), 16);
+      Value *V0 = Builder.CreateExtractValue(Call, 0);  // QACC_L[127:0]
+      Value *V1 = Builder.CreateExtractValue(Call, 1);  // QACC_L[255:128]
+      Value *V2 = Builder.CreateExtractValue(Call, 2);  // QACC_H[127:0]
+      Value *V3 = Builder.CreateExtractValue(Call, 3);  // QACC_H[255:128]
+
+      // Store 4x128-bit QACC to output pointers (16-byte aligned)
+      Builder.CreateStore(V0, Address(OutV0Ptr, V128Ty, CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V1, Address(OutV1Ptr, V128Ty, CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V2, Address(OutV2Ptr, V128Ty, CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V3, Address(OutV3Ptr, V128Ty, CharUnits::fromQuantity(16)));
+
+      // Return donothing to prevent fallback to generic intrinsic path
+      Function *NoOpF = CGM.getIntrinsic(Intrinsic::donothing);
+      return Builder.CreateCall(NoOpF, {});
+  }]>;
+
+// ESP.VSMULAS.U8.QACC.LD.INCP.M
+def esp_vsmulas_u8_qacc_ld_incp_m
+    : ESPVBuiltin<"vsmulas_u8_qacc_ld_incp_m",
+                  "riscv_esp_vsmulas_u8_qacc_ld_incp_m", [{
+      // Builtin receives 4x128-bit QACC passthru: v0, v1, v2, v3
+      Value *V0In = EmitScalarExpr(E->getArg(0));  // QACC_L[127:0] input (v16i8)
+      Value *V1In = EmitScalarExpr(E->getArg(1));  // QACC_L[255:128] input (v16i8)
+      Value *V2In = EmitScalarExpr(E->getArg(2));  // QACC_H[127:0] input (v16i8)
+      Value *V3In = EmitScalarExpr(E->getArg(3));  // QACC_H[255:128] input (v16i8)
+      Value *QX = EmitScalarExpr(E->getArg(4));
+      Value *QY = EmitScalarExpr(E->getArg(5));
+      Value *RS1 = EmitScalarExpr(E->getArg(6));
+      Value *SEL16 = EmitScalarExpr(E->getArg(7));
+      Value *OutQUPtr = EmitScalarExpr(E->getArg(8)); // Output pointer for qu (v16i8)
+      Value *OutV0Ptr = EmitScalarExpr(E->getArg(9)); // Output pointer for QACC_L[127:0] (v16i8)
+      Value *OutV1Ptr = EmitScalarExpr(E->getArg(10)); // Output pointer for QACC_L[255:128] (v16i8)
+      Value *OutV2Ptr = EmitScalarExpr(E->getArg(11)); // Output pointer for QACC_H[127:0] (v16i8)
+      Value *OutV3Ptr = EmitScalarExpr(E->getArg(12)); // Output pointer for QACC_H[255:128] (v16i8)
+
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vsmulas_u8_qacc_ld_incp_m);
+      Value *Call = Builder.CreateCall(F, {V0In, V1In, V2In, V3In, QX, QY, RS1, SEL16});
+
+      // Intrinsic returns {ptr, v16i8 qu, v16i8, v16i8, v16i8, v16i8} - ptr + qu + 4x128-bit QACC
+      // Extract pointer and 4x128-bit QACC directly from return value (similar to ldqa pattern)
+      Value *Ptr = Builder.CreateExtractValue(Call, 0);  // Updated pointer
+      Value *QU = Builder.CreateExtractValue(Call, 1);    // qu (v16i8)
+      Value *V0 = Builder.CreateExtractValue(Call, 2);   // QACC_L[127:0]
+      Value *V1 = Builder.CreateExtractValue(Call, 3);   // QACC_L[255:128]
+      Value *V2 = Builder.CreateExtractValue(Call, 4);   // QACC_H[127:0]
+      Value *V3 = Builder.CreateExtractValue(Call, 5);    // QACC_H[255:128]
+
+      // Store qu and 4x128-bit QACC to output pointers (16-byte aligned)
+      // Use same pattern as ldqa: Address constructor handles void* pointers correctly
+      llvm::Type *V128Ty = llvm::FixedVectorType::get(Builder.getInt8Ty(), 16);
+      Builder.CreateStore(QU, Address(OutQUPtr, V128Ty, CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V0, Address(OutV0Ptr, V128Ty, CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V1, Address(OutV1Ptr, V128Ty, CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V2, Address(OutV2Ptr, V128Ty, CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V3, Address(OutV3Ptr, V128Ty, CharUnits::fromQuantity(16)));
+
+      return Ptr; // Return updated pointer
+  }]>;
+
+// ESP.VSMULAS.U8.QACC.M
+def esp_vsmulas_u8_qacc_m
+    : ESPVBuiltin<"vsmulas_u8_qacc_m", "riscv_esp_vsmulas_u8_qacc_m", [{
+      // Builtin receives 4x128-bit QACC passthru: v0, v1, v2, v3
+      Value *V0In = EmitScalarExpr(E->getArg(0));  // QACC_L[127:0] input (v16i8)
+      Value *V1In = EmitScalarExpr(E->getArg(1));  // QACC_L[255:128] input (v16i8)
+      Value *V2In = EmitScalarExpr(E->getArg(2));  // QACC_H[127:0] input (v16i8)
+      Value *V3In = EmitScalarExpr(E->getArg(3));  // QACC_H[255:128] input (v16i8)
+      Value *QX = EmitScalarExpr(E->getArg(4));
+      Value *QY = EmitScalarExpr(E->getArg(5));
+      Value *SEL16 = EmitScalarExpr(E->getArg(6));
+      Value *OutV0Ptr = EmitScalarExpr(E->getArg(7)); // Output pointer for QACC_L[127:0] (v16i8)
+      Value *OutV1Ptr = EmitScalarExpr(E->getArg(8)); // Output pointer for QACC_L[255:128] (v16i8)
+      Value *OutV2Ptr = EmitScalarExpr(E->getArg(9)); // Output pointer for QACC_H[127:0] (v16i8)
+      Value *OutV3Ptr = EmitScalarExpr(E->getArg(10)); // Output pointer for QACC_H[255:128] (v16i8)
+
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vsmulas_u8_qacc_m);
+      Value *Call = Builder.CreateCall(F, {V0In, V1In, V2In, V3In, QX, QY, SEL16});
+
+      // Intrinsic returns {v16i8, v16i8, v16i8, v16i8} - 4x128-bit QACC directly
+      llvm::Type *V128Ty = llvm::FixedVectorType::get(Builder.getInt8Ty(), 16);
+      Value *V0 = Builder.CreateExtractValue(Call, 0);  // QACC_L[127:0]
+      Value *V1 = Builder.CreateExtractValue(Call, 1);  // QACC_L[255:128]
+      Value *V2 = Builder.CreateExtractValue(Call, 2);  // QACC_H[127:0]
+      Value *V3 = Builder.CreateExtractValue(Call, 3);  // QACC_H[255:128]
+
+      // Store 4x128-bit QACC to output pointers (16-byte aligned)
+      Builder.CreateStore(V0, Address(OutV0Ptr, V128Ty, CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V1, Address(OutV1Ptr, V128Ty, CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V2, Address(OutV2Ptr, V128Ty, CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V3, Address(OutV3Ptr, V128Ty, CharUnits::fromQuantity(16)));
+
+      // Return donothing to prevent fallback to generic intrinsic path
+      Function *NoOpF = CGM.getIntrinsic(Intrinsic::donothing);
+      return Builder.CreateCall(NoOpF, {});
+  }]>;
+
+// ESP.VUNZIP.8.M
+def esp_vunzip_8_m : ESPVBuiltin<"vunzip_8_m", "riscv_esp_vunzip_8_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Value *QXOutPtr = EmitScalarExpr(E->getArg(2));
+      Value *QYOutPtr = EmitScalarExpr(E->getArg(3));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vunzip_8_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      Value *V1 = Builder.CreateExtractValue(Result, 0);
+      Value *V2 = Builder.CreateExtractValue(Result, 1);
+      Builder.CreateStore(V1, Address(QXOutPtr, V1->getType(), CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V2, Address(QYOutPtr, V2->getType(), CharUnits::fromQuantity(16)));
+      Function *NoOpF = CGM.getIntrinsic(Intrinsic::donothing);
+      return Builder.CreateCall(NoOpF, {});
+  }]>;
+
+// ESP.VZIP.16.M
+def esp_vzip_16_m : ESPVBuiltin<"vzip_16_m", "riscv_esp_vzip_16_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Value *QXOutPtr = EmitScalarExpr(E->getArg(2));
+      Value *QYOutPtr = EmitScalarExpr(E->getArg(3));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vzip_16_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      Value *V1 = Builder.CreateExtractValue(Result, 0);
+      Value *V2 = Builder.CreateExtractValue(Result, 1);
+      Builder.CreateStore(V1, Address(QXOutPtr, V1->getType(), CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V2, Address(QYOutPtr, V2->getType(), CharUnits::fromQuantity(16)));
+      Function *NoOpF = CGM.getIntrinsic(Intrinsic::donothing);
+      return Builder.CreateCall(NoOpF, {});
+  }]>;
+
+// ESP.VZIP.32.M
+def esp_vzip_32_m : ESPVBuiltin<"vzip_32_m", "riscv_esp_vzip_32_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Value *QXOutPtr = EmitScalarExpr(E->getArg(2));
+      Value *QYOutPtr = EmitScalarExpr(E->getArg(3));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vzip_32_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      Value *V1 = Builder.CreateExtractValue(Result, 0);
+      Value *V2 = Builder.CreateExtractValue(Result, 1);
+      Builder.CreateStore(V1, Address(QXOutPtr, V1->getType(), CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V2, Address(QYOutPtr, V2->getType(), CharUnits::fromQuantity(16)));
+      Function *NoOpF = CGM.getIntrinsic(Intrinsic::donothing);
+      return Builder.CreateCall(NoOpF, {});
+  }]>;
+
+// ESP.VZIP.8.M
+def esp_vzip_8_m : ESPVBuiltin<"vzip_8_m", "riscv_esp_vzip_8_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Value *QXOutPtr = EmitScalarExpr(E->getArg(2));
+      Value *QYOutPtr = EmitScalarExpr(E->getArg(3));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vzip_8_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY});
+      Value *V1 = Builder.CreateExtractValue(Result, 0);
+      Value *V2 = Builder.CreateExtractValue(Result, 1);
+      Builder.CreateStore(V1, Address(QXOutPtr, V1->getType(), CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V2, Address(QYOutPtr, V2->getType(), CharUnits::fromQuantity(16)));
+      Function *NoOpF = CGM.getIntrinsic(Intrinsic::donothing);
+      return Builder.CreateCall(NoOpF, {});
+  }]>;
+
+// ESP.VZIPT.8.M
+def esp_vzipt_8_m : ESPVBuiltin<"vzipt_8_m", "riscv_esp_vzipt_8_m", [{
+      Value *QX = EmitScalarExpr(E->getArg(0));
+      Value *QY = EmitScalarExpr(E->getArg(1));
+      Value *QW = EmitScalarExpr(E->getArg(2));
+      Value *QXOutPtr = EmitScalarExpr(E->getArg(3));
+      Value *QYOutPtr = EmitScalarExpr(E->getArg(4));
+      Value *QWOutPtr = EmitScalarExpr(E->getArg(5));
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_vzipt_8_m);
+      Value *Result = Builder.CreateCall(F, {QX, QY, QW});
+      Value *V1 = Builder.CreateExtractValue(Result, 0);
+      Value *V2 = Builder.CreateExtractValue(Result, 1);
+      Value *V3 = Builder.CreateExtractValue(Result, 2);
+      Builder.CreateStore(V1, Address(QXOutPtr, V1->getType(), CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V2, Address(QYOutPtr, V2->getType(), CharUnits::fromQuantity(16)));
+      Builder.CreateStore(V3, Address(QWOutPtr, V3->getType(), CharUnits::fromQuantity(16)));
+      Function *NoOpF = CGM.getIntrinsic(Intrinsic::donothing);
+      return Builder.CreateCall(NoOpF, {});
+  }]>;
