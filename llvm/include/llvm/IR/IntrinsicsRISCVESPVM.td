@@ -257,6 +257,74 @@ def int_riscv_esp_vssubs_u8_m : Intrinsic<[llvm_v16i8_ty],
                                           [llvm_v16i8_ty, llvm_i32_ty], 
                                           [IntrNoMem]>;
 
+// ESP.VSUB.S32 (_m version)
+// Returns: v4i32 (4 32-bit signed saturating subtraction results)
+// Parameters: [ v4i32 vector qx, v4i32 vector qy ]
+def int_riscv_esp_vsub_s32_m : ClangBuiltin<"__builtin_riscv_esp_vsub_s32_m">,
+	Intrinsic<[llvm_v4i32_ty], [llvm_v4i32_ty, llvm_v4i32_ty], [IntrNoMem]>;
+
+// ESP.VSUB.U16 (_m version)
+// Returns: v8i16 (8 16-bit unsigned saturating subtraction results)
+// Parameters: [ v8i16 vector qx, v8i16 vector qy ]
+def int_riscv_esp_vsub_u16_m : ClangBuiltin<"__builtin_riscv_esp_vsub_u16_m">,
+	Intrinsic<[llvm_v8i16_ty], [llvm_v8i16_ty, llvm_v8i16_ty], [IntrNoMem]>;
+
+// ESP.VSUB.U32 (_m version)
+// Returns: v4i32 (4 32-bit unsigned saturating subtraction results)
+// Parameters: [ v4i32 vector qx, v4i32 vector qy ]
+def int_riscv_esp_vsub_u32_m : ClangBuiltin<"__builtin_riscv_esp_vsub_u32_m">,
+	Intrinsic<[llvm_v4i32_ty], [llvm_v4i32_ty, llvm_v4i32_ty], [IntrNoMem]>;
+
+
+// VCMP.EQ - Equal comparison
+// VCMP.EQ.S16
+def int_riscv_esp_vcmp_eq_s16_m : Intrinsic<[llvm_v8i16_ty], 
+                                               [llvm_v8i16_ty, llvm_v8i16_ty], 
+                                               [IntrNoMem]>;
+
+
+// VCMP.EQ.U16
+def int_riscv_esp_vcmp_eq_u16_m : Intrinsic<[llvm_v8i16_ty], 
+                                               [llvm_v8i16_ty, llvm_v8i16_ty], 
+                                               [IntrNoMem]>;
+// VCMP.EQ.U32
+def int_riscv_esp_vcmp_eq_u32_m : Intrinsic<[llvm_v4i32_ty], 
+                                               [llvm_v4i32_ty, llvm_v4i32_ty], 
+                                               [IntrNoMem]>;
+
+
+// VCMP.GT - Greater than comparison
+// VCMP.GT.S16
+def int_riscv_esp_vcmp_gt_s16_m : Intrinsic<[llvm_v8i16_ty], 
+                                               [llvm_v8i16_ty, llvm_v8i16_ty], 
+                                               [IntrNoMem]>;
+
+// VCMP.GT.U16
+def int_riscv_esp_vcmp_gt_u16_m : Intrinsic<[llvm_v8i16_ty], 
+                                               [llvm_v8i16_ty, llvm_v8i16_ty], 
+                                               [IntrNoMem]>;
+// VCMP.GT.U32
+def int_riscv_esp_vcmp_gt_u32_m : Intrinsic<[llvm_v4i32_ty], 
+                                               [llvm_v4i32_ty, llvm_v4i32_ty], 
+                                               [IntrNoMem]>;
+
+
+// VCMP.LT - Less than comparison
+// VCMP.LT.S16
+def int_riscv_esp_vcmp_lt_s16_m : Intrinsic<[llvm_v8i16_ty], 
+                                               [llvm_v8i16_ty, llvm_v8i16_ty], 
+                                               [IntrNoMem]>;
+
+// VCMP.LT.U16
+def int_riscv_esp_vcmp_lt_u16_m : Intrinsic<[llvm_v8i16_ty], 
+                                               [llvm_v8i16_ty, llvm_v8i16_ty], 
+                                               [IntrNoMem]>;
+// VCMP.LT.U32
+def int_riscv_esp_vcmp_lt_u32_m : Intrinsic<[llvm_v4i32_ty], 
+                                               [llvm_v4i32_ty, llvm_v4i32_ty], 
+                                               [IntrNoMem]>;
+
+
 // VCLAMP - Signed 16-bit
 // Returns: v8i16 (vector clamp on 16-bit signed data)
 // Parameters: [ v8i16 vector qx, i32 sel16 (immediate) ]
@@ -355,6 +423,37 @@ def int_riscv_esp_vsat_u8_m : Intrinsic<[llvm_v16i8_ty],
                                          [llvm_v16i8_ty, llvm_i32_ty, llvm_i32_ty], 
                                          [IntrNoMem]>;
 
+
+// VSAT - Signed 16-bit
+// Returns: v8i16 (vector saturation on 16-bit signed segments)
+// Parameters: [ v8i16 vector qx, i32 rs1, i32 rs2 ]
+def int_riscv_esp_vsat_s16_m : Intrinsic<[llvm_v8i16_ty], 
+                                            [llvm_v8i16_ty, llvm_i32_ty, llvm_i32_ty], 
+                                            [IntrNoMem]>;
+
+// VSAT - Signed 32-bit
+// Returns: v4i32 (vector saturation on 32-bit signed segments)
+// Parameters: [ v4i32 vector qx, i32 rs1, i32 rs2 ]
+def int_riscv_esp_vsat_s32_m : Intrinsic<[llvm_v4i32_ty], 
+                                            [llvm_v4i32_ty, llvm_i32_ty, llvm_i32_ty], 
+                                            [IntrNoMem]>;
+
+
+// VSAT - Unsigned 16-bit
+// Returns: v8i16 (vector saturation on 16-bit unsigned segments)
+// Parameters: [ v8i16 vector qx, i32 rs1, i32 rs2 ]
+def int_riscv_esp_vsat_u16_m : Intrinsic<[llvm_v8i16_ty], 
+                                            [llvm_v8i16_ty, llvm_i32_ty, llvm_i32_ty], 
+                                            [IntrNoMem]>;
+
+// VSAT - Unsigned 32-bit
+// Returns: v4i32 (vector saturation on 32-bit unsigned segments)
+// Parameters: [ v4i32 vector qx, i32 rs1, i32 rs2 ]
+def int_riscv_esp_vsat_u32_m : Intrinsic<[llvm_v4i32_ty], 
+                                            [llvm_v4i32_ty, llvm_i32_ty, llvm_i32_ty], 
+                                            [IntrNoMem]>;
+
+
 // MAX - Signed 8-bit reduction
 // Returns: i32 (maximum value from vector)
 // Parameters: [ v16i8 vector qw ]
@@ -422,13 +521,6 @@ def int_riscv_esp_vadd_s32_m : Intrinsic<[llvm_v4i32_ty],
 // Returns: v4i32 (result vector)
 // Parameters: [ v4i32 vector qx, v4i32 vector qy ]
 def int_riscv_esp_vadd_u32_m : Intrinsic<[llvm_v4i32_ty], 
-                                         [llvm_v4i32_ty, llvm_v4i32_ty], 
-                                         [IntrNoMem]>;
-
-// Vector Subtract - Signed 32-bit
-// Returns: v4i32 (result vector)
-// Parameters: [ v4i32 vector qx, v4i32 vector qy ]
-def int_riscv_esp_vsub_s32_m : Intrinsic<[llvm_v4i32_ty], 
                                          [llvm_v4i32_ty, llvm_v4i32_ty], 
                                          [IntrNoMem]>;
 
@@ -780,6 +872,18 @@ def int_riscv_esp_vmax_u8_m : Intrinsic<[llvm_v16i8_ty],
                                          [llvm_v16i8_ty, llvm_v16i8_ty], 
                                          [IntrNoMem]>;
 
+// ESP.VMAX.U16 (_m version)
+// Returns: v8i16 (maximum values of 8 16-bit unsigned elements)
+// Parameters: [ v8i16 vector qx, v8i16 vector qy ]
+def int_riscv_esp_vmax_u16_m : ClangBuiltin<"__builtin_riscv_esp_vmax_u16_m">,
+	Intrinsic<[llvm_v8i16_ty], [llvm_v8i16_ty, llvm_v8i16_ty], [IntrNoMem]>;
+
+// ESP.VMAX.U32 (_m version)
+// Returns: v4i32 (maximum values of 4 32-bit unsigned elements)
+// Parameters: [ v4i32 vector qx, v4i32 vector qy ]
+def int_riscv_esp_vmax_u32_m : ClangBuiltin<"__builtin_riscv_esp_vmax_u32_m">,
+	Intrinsic<[llvm_v4i32_ty], [llvm_v4i32_ty, llvm_v4i32_ty], [IntrNoMem]>;
+
 // VMIN - Vector Minimum
 // VMIN.S8 - Signed 8-bit vector minimum
 // Returns: v16i8 (minimum values)
@@ -788,12 +892,36 @@ def int_riscv_esp_vmin_s8_m : Intrinsic<[llvm_v16i8_ty],
                                          [llvm_v16i8_ty, llvm_v16i8_ty], 
                                          [IntrNoMem]>;
 
+// ESP.VMIN.S16 (_m version)
+// Returns: v8i16 (minimum values of 8 16-bit signed elements)
+// Parameters: [ v8i16 vector qx, v8i16 vector qy ]
+def int_riscv_esp_vmin_s16_m : ClangBuiltin<"__builtin_riscv_esp_vmin_s16_m">,
+	Intrinsic<[llvm_v8i16_ty], [llvm_v8i16_ty, llvm_v8i16_ty], [IntrNoMem]>;
+
+// ESP.VMIN.S32 (_m version)
+// Returns: v4i32 (minimum values of 4 32-bit signed elements)
+// Parameters: [ v4i32 vector qx, v4i32 vector qy ]
+def int_riscv_esp_vmin_s32_m : ClangBuiltin<"__builtin_riscv_esp_vmin_s32_m">,
+	Intrinsic<[llvm_v4i32_ty], [llvm_v4i32_ty, llvm_v4i32_ty], [IntrNoMem]>;
+
 // VMIN.U8 - Unsigned 8-bit vector minimum
 // Returns: v16i8 (minimum values)
 // Parameters: [ v16i8 vector qx, v16i8 vector qy ]
 def int_riscv_esp_vmin_u8_m : Intrinsic<[llvm_v16i8_ty], 
                                          [llvm_v16i8_ty, llvm_v16i8_ty], 
                                          [IntrNoMem]>;
+
+// ESP.VMIN.U16 (_m version)
+// Returns: v8i16 (minimum values of 8 16-bit unsigned elements)
+// Parameters: [ v8i16 vector qx, v8i16 vector qy ]
+def int_riscv_esp_vmin_u16_m : ClangBuiltin<"__builtin_riscv_esp_vmin_u16_m">,
+	Intrinsic<[llvm_v8i16_ty], [llvm_v8i16_ty, llvm_v8i16_ty], [IntrNoMem]>;
+
+// ESP.VMIN.U32 (_m version)
+// Returns: v4i32 (minimum values of 4 32-bit unsigned elements)
+// Parameters: [ v4i32 vector qx, v4i32 vector qy ]
+def int_riscv_esp_vmin_u32_m : ClangBuiltin<"__builtin_riscv_esp_vmin_u32_m">,
+	Intrinsic<[llvm_v4i32_ty], [llvm_v4i32_ty, llvm_v4i32_ty], [IntrNoMem]>;
 
 // VMUL - Vector Multiplication
 // VMUL.S8 - Signed 8-bit vector multiplication
@@ -2232,4 +2360,37 @@ def int_riscv_esp_vmulas_u8_qacc_ldbc_incp_m :
                llvm_v16i8_ty,                                                               // qy
                llvm_ptr_ty],                                 // pointer
               [IntrReadMem, IntrArgMemOnly]>;
+
+
+// SLCI.2Q - Shift Left with Immediate, 2 Quad registers
+// Shifts concatenated qy and qw left, updates both registers in-place
+// Returns modified values, input and output registers are the same due to constraints
+def int_riscv_esp_slci_2q_m : Intrinsic<[llvm_v16i8_ty, llvm_v16i8_ty], 
+                                           [llvm_v16i8_ty, llvm_v16i8_ty, llvm_i32_ty], 
+                                           [IntrNoMem]>;
+
+// SRCI.2Q - Shift Right with Immediate, 2 Quad registers
+// Shifts concatenated qy and qw right, updates both registers in-place
+// Returns modified values, input and output registers are the same due to constraints
+def int_riscv_esp_srci_2q_m : Intrinsic<[llvm_v16i8_ty, llvm_v16i8_ty], 
+                                           [llvm_v16i8_ty, llvm_v16i8_ty, llvm_i32_ty], 
+                                           [IntrNoMem]>;
+
+// VSLD.32 - 32-bit vector shift
+def int_riscv_esp_vsld_32_m : Intrinsic<[llvm_v4i32_ty], 
+                                            [llvm_v4i32_ty, llvm_v4i32_ty], 
+                                            [IntrNoMem]>;
+
+// VSRD - Vector Shift Right Dynamic
+// Performs vector shift right/left based on shift amounts from qw segments
+// If shift amount is negative, performs left shift; otherwise, performs right shift
+// VSRD.16 - 16-bit vector shift
+def int_riscv_esp_vsrd_16_m : Intrinsic<[llvm_v8i16_ty], 
+                                            [llvm_v8i16_ty, llvm_v8i16_ty], 
+                                            [IntrNoMem]>;
+
+// VSRD.32 - 32-bit vector shift
+def int_riscv_esp_vsrd_32_m : Intrinsic<[llvm_v4i32_ty], 
+                                            [llvm_v4i32_ty, llvm_v4i32_ty], 
+                                            [IntrNoMem]>;
 }
