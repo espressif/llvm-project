@@ -21,8 +21,13 @@ esp_vec128_32_t __builtin_riscv_esp_vsl_32_m(esp_vec128_32_t, unsigned int);
 unsigned int __builtin_riscv_esp_movx_w_sar_m(unsigned int);
 void __builtin_riscv_esp_slci_2q_m(void *, void *, int);
 void __builtin_riscv_esp_srci_2q_m(void *, void *, int);
+void *__builtin_riscv_esp_slcxxp_2q_m(esp_vec128_t, esp_vec128_t, void *, int);
+// Builtin declarations - SAR_BYTES is the last parameter
+esp_vec128_t __builtin_riscv_esp_src_q_m(esp_vec128_t Qy, esp_vec128_t Qw, unsigned int sar_bytes);
 esp_vec128_16_t __builtin_riscv_esp_srcmb_s16_q_qacc_m(esp_vec128_t v0, esp_vec128_t v1, esp_vec128_t v2, esp_vec128_t v3, esp_vec128_16_t Qw, int Sel2);
 esp_vec128_t __builtin_riscv_esp_srcmb_s8_q_qacc_m(esp_vec128_t v0, esp_vec128_t v1, esp_vec128_t v2, esp_vec128_t v3, esp_vec128_t Qw, int Sel2);
+void *__builtin_riscv_esp_srcq_128_st_incp_m(esp_vec128_t Qy, esp_vec128_t Qw, void *Ptr, unsigned int sar_bytes);
+void *__builtin_riscv_esp_srcxxp_2q_m(esp_vec128_t Qy, esp_vec128_t Qw, void *Ptr, int offset);
 void __builtin_riscv_esp_zero_xacc(void);
 // Note: esp_srs_s_xacc_m, esp_srs_u_xacc_m, esp_st_s_xacc_ip_m, esp_st_u_xacc_ip_m
 // are defined as inline wrapper functions in esp32p4_builtin_test_helpers.h
