@@ -160,6 +160,19 @@ typedef struct {
   esp_vec128_t v2; // QACC_H[127:0]: Third 128 bits
   esp_vec128_t v3; // QACC_H[255:128]: Fourth 128 bits
 } esp_qacc_4x128_t;
+
+// Reinterpret 128-bit vector between element-width views (same underlying
+// bits).
+static inline __attribute__((always_inline)) esp_vec128_t
+esp_vec128_16_to_8(esp_vec128_16_t v) {
+  union {
+    esp_vec128_16_t V16;
+    esp_vec128_t V8;
+  } U;
+  U.V16 = v;
+  return U.V8;
+}
+
 // ESP.VLD.128.IP.M / ESP.VST.128.IP.M - using immediate increment
 static inline __attribute__((always_inline)) esp_vld_res_t
 esp_vld_128_ip_m(void const *Ptr, int Imm) {
@@ -1873,6 +1886,27 @@ esp_src_q_qup_m(esp_vec128_t Qw, esp_vec128_t Qy, unsigned int sar_bytes) {
   esp_src_q_qup_res_t Res;
   __builtin_riscv_esp_src_q_qup_m(Qw, Qy, &Res.Qz, &Res.Qw, sar_bytes);
   return Res;
+}
+
+// ESP.SRC.Q.M — SAR_BYTES = 0 for tests that only need the default shift.
+static inline __attribute__((always_inline)) esp_vec128_t
+esp_src_q_m(esp_vec128_t Qy, esp_vec128_t Qw) {
+  return __builtin_riscv_esp_src_q_m(Qy, Qw, 0u);
+}
+
+static inline __attribute__((always_inline)) void *
+esp_srcq_128_st_incp_m(esp_vec128_t Qy, esp_vec128_t Qw, void *Ptr) {
+  return __builtin_riscv_esp_srcq_128_st_incp_m(Qy, Qw, Ptr, 0u);
+}
+
+static inline __attribute__((always_inline)) void *
+esp_srcxxp_2q_m(esp_vec128_t Qy, esp_vec128_t Qw, void *Ptr, int offset) {
+  return __builtin_riscv_esp_srcxxp_2q_m(Qy, Qw, Ptr, offset);
+}
+
+static inline __attribute__((always_inline)) void *
+esp_slcxxp_2q_m(esp_vec128_t Qy, esp_vec128_t Qw, void *Ptr, int offset) {
+  return __builtin_riscv_esp_slcxxp_2q_m(Qy, Qw, Ptr, offset);
 }
 
 // ESP.SRCMB builtin declarations - Shift Right and Saturate from QACC
