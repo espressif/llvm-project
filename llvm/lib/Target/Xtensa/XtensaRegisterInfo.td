@@ -257,9 +257,37 @@ class URReg<bits<8> num, string n, list<string> alt = []> : XtensaReg<n> {
   let AltNames = alt;
 }
 
-// ESP32S2 registers
-def GPIO_OUT : URReg<0, "gpio_out", ["GPIO_OUT"]>;
+// ESP32 registers
 def EXPSTATE : URReg<230, "expstate", ["EXPSTATE"]>;
+
+// ESP32S2 registers
+def GPIO_OUT_S2 : URReg<0, "gpio_out", ["GPIO_OUT"]>;
+
+// ESP32S3 registers
+def ACCX_0 : URReg<0, "accx_0", ["ACCX_0"]>;
+def ACCX_1 : URReg<1, "accx_1", ["ACCX_1"]>;
+def QACC_H_0 : URReg<2, "qacc_h_0", ["QACC_H_0"]>;
+def QACC_H_1 : URReg<3, "qacc_h_1", ["QACC_H_1"]>;
+def QACC_H_2 : URReg<4, "qacc_h_2", ["QACC_H_2"]>;
+def QACC_H_3 : URReg<5, "qacc_h_3", ["QACC_H_3"]>;
+def QACC_H_4 : URReg<6, "qacc_h_4", ["QACC_H_4"]>;
+def QACC_L_0 : URReg<7, "qacc_l_0", ["QACC_L_0"]>;
+def QACC_L_1 : URReg<8, "qacc_l_1", ["QACC_L_1"]>;
+def QACC_L_2 : URReg<9, "qacc_l_2", ["QACC_L_2"]>;
+def QACC_L_3 : URReg<10, "qacc_l_3", ["QACC_L_3"]>;
+def QACC_L_4 : URReg<11, "qacc_l_4", ["QACC_L_4"]>;
+def GPIO_OUT_S3 : URReg<12, "gpio_out", ["GPIO_OUT"]>;
+def SAR_BYTE : URReg<13, "sar_byte", ["SAR_BYTE"]>;
+def FFT_BIT_WIDTH : URReg<14, "fft_bit_width", ["FFT_BIT_WIDTH"]>;
+def UA_STATE_0 : URReg<15, "ua_state_0", ["UA_STATE_0"]>;
+def UA_STATE_1 : URReg<16, "ua_state_1", ["UA_STATE_1"]>;
+def UA_STATE_2 : URReg<17, "ua_state_2", ["UA_STATE_2"]>;
+def UA_STATE_3 : URReg<18, "ua_state_3", ["UA_STATE_3"]>;
+
+def ESP32S3R : RegisterClass<"Xtensa", [i32], 32, (add
+  ACCX_0, ACCX_1, QACC_H_0, QACC_H_1, QACC_H_2, QACC_H_3, QACC_H_4,
+  QACC_L_0, QACC_L_1, QACC_L_2, QACC_L_3, QACC_L_4, GPIO_OUT_S3, SAR_BYTE,
+  FFT_BIT_WIDTH, UA_STATE_0, UA_STATE_1, UA_STATE_2, UA_STATE_3)>;
 
 // Thread Pointer register
 def THREADPTR : URReg<231, "threadptr", ["THREADPTR"]>;
@@ -272,15 +300,9 @@ def F64R_LO : URReg<234, "f64r_lo", ["F64R_LO"]>;
 def F64R_HI : URReg<235, "f64r_hi", ["F64R_HI"]>;
 def F64S : URReg<236, "f64s", ["F64S"]>;
 
-def ACCX : URReg<237, "accx", ["accx_0", "accx_1"]>;
-def QACC : URReg<238, "qacc", ["qacc_h_0", "qacc_h_1", "qacc_h_2", "qacc_h_3", "qacc_h_4", "qacc_l_0", "qacc_l_1", "qacc_l_2", "qacc_l_3", "qacc_l_4"]>;
-def FFT_BIT_WIDTH : URReg<239, "fft_bit_width", ["fft_bit_width"]>;
-def SAR_BYTE : URReg<240, "sar_byte", ["sar_byte"]>;
-def UA_STATE : URReg<241, "ua_state", ["ua_state_0", "ua_state_1", "ua_state_2", "ua_state_3"]>;
-
 def UR :  RegisterClass<"Xtensa", [i32], 32, (add
-  GPIO_OUT, EXPSTATE, THREADPTR, FCR, FSR, F64R_LO, F64R_HI, F64S,
-  ACCX, QACC, FFT_BIT_WIDTH, SAR_BYTE, UA_STATE)>;
+  EXPSTATE, GPIO_OUT_S2, THREADPTR, FCR, FSR, F64R_LO, F64R_HI, F64S,
+  ESP32S3R)>;
 
 //===----------------------------------------------------------------------===//
 // Floating-Point registers
