@@ -82,6 +82,7 @@ class XtensaAsmParser : public MCTargetAsmParser {
 #define GET_ASSEMBLER_HEADER
 #include "XtensaGenAsmMatcher.inc"
 
+  MCRegister getRegisterByName(StringRef RegName);
   ParseStatus parseImmediate(OperandVector &Operands);
   ParseStatus
   parseRegister(OperandVector &Operands, bool AllowParens = false,
@@ -753,6 +754,18 @@ ParseStatus XtensaAsmParser::parsePCRelTarget(OperandVector &Operands) {
   return ParseStatus::Success;
 }
 
+MCRegister XtensaAsmParser::getRegisterByName(StringRef RegName) {
+  MCRegister RegNo = MatchRegisterName(RegName);
+  if (RegNo == 0)
+    RegNo = MatchRegisterAltName(RegName);
+
+  if (RegNo == Xtensa::GPIO_OUT_S2 &&
+      getSTI().getFeatureBits()[Xtensa::FeatureESP32S3Ops])
+    RegNo = Xtensa::GPIO_OUT_S3;
+
+  return RegNo;
+}
+
 bool XtensaAsmParser::parseRegister(MCRegister &Reg, SMLoc &StartLoc,
                                     SMLoc &EndLoc) {
   const AsmToken &Tok = getParser().getTok();
@@ -803,7 +816,7 @@ ParseStatus XtensaAsmParser::parseRegister(OperandVector &Operands,
     // and such situation may lead to confilct
     if (RegType == Xtensa_UR) {
       int64_t RegCode = getLexer().getTok().getIntVal();
-      RegNo = Xtensa::getUserRegister(RegCode, MRI);
+      RegNo = Xtensa::getUserRegister(RegCode, MRI, getSTI().getFeatureBits());
     } else {
       RegName = getLexer().getTok().getString();
       RegNo = MatchRegisterAltName(RegName);
@@ -811,9 +824,7 @@ ParseStatus XtensaAsmParser::parseRegister(OperandVector &Operands,
     break;
   case AsmToken::Identifier:
     RegName = getLexer().getTok().getIdentifier();
-    RegNo = MatchRegisterName(RegName);
-    if (RegNo == 0)
-      RegNo = MatchRegisterAltName(RegName);
+    RegNo = getRegisterByName(RegName);
     break;
   }
 
@@ -926,10 +937,7 @@ bool XtensaAsmParser::ParseInstructionWithSR(ParseInstructionInfo &Info,
     Operands.push_back(XtensaOperand::createToken(Name.take_front(3), NameLoc));
 
     StringRef RegName = Name.drop_front(4);
-    unsigned RegNo = MatchRegisterName(RegName);
-
-    if (RegNo == 0)
-      RegNo = MatchRegisterAltName(RegName);
+    MCRegister RegNo = getRegisterByName(RegName);
 
     if (!Xtensa::checkRegister(RegNo, getSTI().getFeatureBits(), RAType))
       return Error(NameLoc, "invalid register name");

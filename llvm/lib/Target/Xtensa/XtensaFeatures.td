@@ -164,6 +164,11 @@ def FeatureDFPAccel : SubtargetFeature<"dfpaccel", "HasDFPAccel", "true",
 def HasDFPAccel : Predicate<"Subtarget->hasDFPAccel()">,
                   AssemblerPredicate<(all_of FeatureDFPAccel)>;
 
+def FeatureEXPSTATE : SubtargetFeature<"expstate", "HasEXPSTATE", "true",
+                                       "Enable Xtensa EXPSTATE option">;
+def HasEXPSTATE : Predicate<"Subtarget->hasEXPSTATE()">,
+                  AssemblerPredicate<(all_of FeatureEXPSTATE)>;
+
 def FeatureESP32S2Ops : SubtargetFeature<"esp32s2ops", "HasESP32S2Ops", "true",
                                          "Support Xtensa esp32-s2 ISA extension">;
 def HasESP32S2Ops : Predicate<"Subtarget->hasESP32S2Ops()">,

@@ -66,7 +66,8 @@ bool checkRegister(MCRegister RegNo, const FeatureBitset &FeatureBits,
                    RegisterAccessType RA);
 
 // Get Xtensa User Register by register encoding value.
-MCRegister getUserRegister(unsigned Code, const MCRegisterInfo &MRI);
+MCRegister getUserRegister(unsigned Code, const MCRegisterInfo &MRI,
+                           const FeatureBitset &FeatureBits);
 } // namespace Xtensa
 } // end namespace llvm
 
