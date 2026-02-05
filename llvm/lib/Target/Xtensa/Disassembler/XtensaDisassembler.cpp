@@ -215,9 +215,10 @@ static DecodeStatus DecodeURRegisterClass(MCInst &Inst, uint64_t RegNo,
   const XtensaDisassembler *Dis =
       static_cast<const XtensaDisassembler *>(Decoder);
   const MCRegisterInfo *MRI = Dis->getContext().getRegisterInfo();
-  MCPhysReg Reg = Xtensa::getUserRegister(RegNo, *MRI);
-  if (!Xtensa::checkRegister(Reg, Decoder->getSubtargetInfo().getFeatureBits(),
-                             RAType))
+  const FeatureBitset FeatureBits =
+      Decoder->getSubtargetInfo().getFeatureBits();
+  MCPhysReg Reg = Xtensa::getUserRegister(RegNo, *MRI, FeatureBits);
+  if (!Xtensa::checkRegister(Reg, FeatureBits, RAType))
     return MCDisassembler::Fail;
 
   Inst.addOperand(MCOperand::createReg(Reg));
