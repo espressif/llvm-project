@@ -145,7 +145,7 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
     else
       addRegisterClass(MVT::f64, &RISCV::GPRPairRegClass);
   }
-  if (Subtarget.hasVendorXespv()) {
+  if (Subtarget.hasVendorXespv2p1()) {
     initializeESPVTargetLowering(Subtarget);
     // ESPV: Support for v64i8 (512-bit QACC pair)
     // v64i8 needs to be split into two v32i8 parts for return values
