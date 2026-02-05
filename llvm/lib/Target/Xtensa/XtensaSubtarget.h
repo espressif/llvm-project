@@ -95,6 +95,7 @@ public:
   bool hasInterrupt() const { return HasInterrupt; }
   bool hasException() const { return HasException; }
   bool hasTHREADPTR() const { return HasTHREADPTR; }
+  bool hasEXPSTATE() const { return HasEXPSTATE; }
   bool hasESP32S2Ops() const { return HasESP32S2Ops; }
   bool hasESP32S3Ops() const { return HasESP32S3Ops; }
   bool isWindowedABI() const { return hasWindowed(); }

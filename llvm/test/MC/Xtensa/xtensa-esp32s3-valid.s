@@ -440,80 +440,80 @@ ee.zero.q q0
 ee.zero.qacc
 # CHECK: ee.zero.qacc	                        # encoding: [0x44,0x08,0x25]
 rur.accx_0 a11
-# CHECK: rur	a11, accx                       # encoding: [0xd0,0xbe,0xe3]
+# CHECK: rur	a11, accx_0                     # encoding: [0x00,0xb0,0xe3]
 rur.accx_1 a11
-# CHECK: rur	a11, accx                       # encoding: [0xd0,0xbe,0xe3]
+# CHECK: rur	a11, accx_1                     # encoding: [0x10,0xb0,0xe3]
 rur.fft_bit_width a11
-# CHECK: rur	a11, fft_bit_width              # encoding: [0xf0,0xbe,0xe3]
+# CHECK: rur	a11, fft_bit_width              # encoding: [0xe0,0xb0,0xe3]
 rur.gpio_out a3
-# CHECK: rur	a3, gpio_out                    # encoding: [0x00,0x30,0xe3]
+# CHECK: rur	a3, gpio_out                    # encoding: [0xc0,0x30,0xe3]
 rur.qacc_h_0 a1
-# CHECK: rur	a1, qacc                        # encoding: [0xe0,0x1e,0xe3]
+# CHECK: rur	a1, qacc_h_0                    # encoding: [0x20,0x10,0xe3]
 rur.qacc_h_1 a10
-# CHECK: rur	a10, qacc                       # encoding: [0xe0,0xae,0xe3]
+# CHECK: rur	a10, qacc_h_1                   # encoding: [0x30,0xa0,0xe3]
 rur.qacc_h_2 a2
-# CHECK: rur	a2, qacc                        # encoding: [0xe0,0x2e,0xe3]
+# CHECK: rur	a2, qacc_h_2                    # encoding: [0x40,0x20,0xe3]
 rur.qacc_h_3 a11
-# CHECK: rur	a11, qacc                       # encoding: [0xe0,0xbe,0xe3]
+# CHECK: rur	a11, qacc_h_3                   # encoding: [0x50,0xb0,0xe3]
 rur.qacc_h_4 a13
-# CHECK: rur	a13, qacc                       # encoding: [0xe0,0xde,0xe3]
+# CHECK: rur	a13, qacc_h_4                   # encoding: [0x60,0xd0,0xe3]
 rur.qacc_l_0 a8
-# CHECK: rur	a8, qacc                        # encoding: [0xe0,0x8e,0xe3]
+# CHECK: rur	a8, qacc_l_0                    # encoding: [0x70,0x80,0xe3]
 rur.qacc_l_1 a7
-# CHECK: rur	a7, qacc                        # encoding: [0xe0,0x7e,0xe3]
+# CHECK: rur	a7, qacc_l_1                    # encoding: [0x80,0x70,0xe3]
 rur.qacc_l_2 a2
-# CHECK: rur	a2, qacc                        # encoding: [0xe0,0x2e,0xe3]
+# CHECK: rur	a2, qacc_l_2                    # encoding: [0x90,0x20,0xe3]
 rur.qacc_l_3 a13
-# CHECK: rur	a13, qacc                       # encoding: [0xe0,0xde,0xe3]
+# CHECK: rur	a13, qacc_l_3                   # encoding: [0xa0,0xd0,0xe3]
 rur.qacc_l_4 a7
-# CHECK: rur	a7, qacc                        # encoding: [0xe0,0x7e,0xe3]
+# CHECK: rur	a7, qacc_l_4                    # encoding: [0xb0,0x70,0xe3]
 rur.sar_byte a9
-# CHECK: rur	a9, sar_byte                    # encoding: [0x00,0x9f,0xe3]
+# CHECK: rur	a9, sar_byte                    # encoding: [0xd0,0x90,0xe3]
 rur.ua_state_0 a12
-# CHECK: rur	a12, ua_state                   # encoding: [0x10,0xcf,0xe3]
+# CHECK: rur	a12, ua_state_0                 # encoding: [0xf0,0xc0,0xe3]
 rur.ua_state_1 a2
-# CHECK: rur	a2, ua_state                    # encoding: [0x10,0x2f,0xe3]
+# CHECK: rur	a2, ua_state_1                  # encoding: [0x00,0x21,0xe3]
 rur.ua_state_2 a5
-# CHECK: rur	a5, ua_state                    # encoding: [0x10,0x5f,0xe3]
+# CHECK: rur	a5, ua_state_2                  # encoding: [0x10,0x51,0xe3]
 rur.ua_state_3 a3
-# CHECK: rur	a3, ua_state                    # encoding: [0x10,0x3f,0xe3]
+# CHECK: rur	a3, ua_state_3                  # encoding: [0x20,0x31,0xe3]
 wur.accx_0 a6
-# CHECK: wur	a6, accx                        # encoding: [0x60,0xed,0xf3]
+# CHECK: wur	a6, accx_0                      # encoding: [0x60,0x00,0xf3]
 wur.accx_1 a6
-# CHECK: wur	a6, accx                        # encoding: [0x60,0xed,0xf3]
+# CHECK: wur	a6, accx_1                      # encoding: [0x60,0x01,0xf3]
 wur.fft_bit_width a13
-# CHECK: wur	a13, fft_bit_width              # encoding: [0xd0,0xef,0xf3]
+# CHECK: wur	a13, fft_bit_width              # encoding: [0xd0,0x0e,0xf3]
 wur.gpio_out a0
-# CHECK: wur	a0, gpio_out                    # encoding: [0x00,0x00,0xf3]
+# CHECK: wur	a0, gpio_out                    # encoding: [0x00,0x0c,0xf3]
 wur.qacc_h_0 a12
-# CHECK: wur	a12, qacc                       # encoding: [0xc0,0xee,0xf3]
+# CHECK: wur	a12, qacc_h_0                   # encoding: [0xc0,0x02,0xf3]
 wur.qacc_h_1 a1
-# CHECK: wur	a1, qacc                        # encoding: [0x10,0xee,0xf3]
+# CHECK: wur	a1, qacc_h_1                    # encoding: [0x10,0x03,0xf3]
 wur.qacc_h_2 a2
-# CHECK: wur	a2, qacc                        # encoding: [0x20,0xee,0xf3]
+# CHECK: wur	a2, qacc_h_2                    # encoding: [0x20,0x04,0xf3]
 wur.qacc_h_3 a12
-# CHECK: wur	a12, qacc                       # encoding: [0xc0,0xee,0xf3]
+# CHECK: wur	a12, qacc_h_3                   # encoding: [0xc0,0x05,0xf3]
 wur.qacc_h_4 a14
-# CHECK: wur	a14, qacc                       # encoding: [0xe0,0xee,0xf3]
+# CHECK: wur	a14, qacc_h_4                   # encoding: [0xe0,0x06,0xf3]
 wur.qacc_l_0 a6
-# CHECK: wur	a6, qacc                        # encoding: [0x60,0xee,0xf3]
+# CHECK: wur	a6, qacc_l_0                    # encoding: [0x60,0x07,0xf3]
 wur.qacc_l_1 a5
-# CHECK: wur	a5, qacc                        # encoding: [0x50,0xee,0xf3]
+# CHECK: wur	a5, qacc_l_1                    # encoding: [0x50,0x08,0xf3]
 wur.qacc_l_2 a6
-# CHECK: wur	a6, qacc                        # encoding: [0x60,0xee,0xf3]
+# CHECK: wur	a6, qacc_l_2                    # encoding: [0x60,0x09,0xf3]
 wur.qacc_l_3 a6
-# CHECK: wur	a6, qacc                        # encoding: [0x60,0xee,0xf3]
+# CHECK: wur	a6, qacc_l_3                    # encoding: [0x60,0x0a,0xf3]
 wur.qacc_l_4 a7
-# CHECK: wur	a7, qacc                        # encoding: [0x70,0xee,0xf3]
+# CHECK: wur	a7, qacc_l_4                    # encoding: [0x70,0x0b,0xf3]
 wur.sar_byte a9
-# CHECK: wur	a9, sar_byte                    # encoding: [0x90,0xf0,0xf3]
+# CHECK: wur	a9, sar_byte                    # encoding: [0x90,0x0d,0xf3]
 wur.ua_state_0 a8
-# CHECK: wur	a8, ua_state                    # encoding: [0x80,0xf1,0xf3]
+# CHECK: wur	a8, ua_state_0                  # encoding: [0x80,0x0f,0xf3]
 wur.ua_state_1 a14
-# CHECK: wur	a14, ua_state                   # encoding: [0xe0,0xf1,0xf3]
+# CHECK: wur	a14, ua_state_1                 # encoding: [0xe0,0x10,0xf3]
 wur.ua_state_2 a9
-# CHECK: wur	a9, ua_state                    # encoding: [0x90,0xf1,0xf3]
+# CHECK: wur	a9, ua_state_2                  # encoding: [0x90,0x11,0xf3]
 wur.ua_state_3 a10
-# CHECK: wur	a10, ua_state                   # encoding: [0xa0,0xf1,0xf3]
+# CHECK: wur	a10, ua_state_3                 # encoding: [0xa0,0x12,0xf3]
 mv.qr q4, q7
 # CHECK: mv.qr	 q4, q7                         # encoding: [0x24,0x0c,0xaf]

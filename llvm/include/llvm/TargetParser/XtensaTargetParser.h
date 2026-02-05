@@ -65,8 +65,9 @@ enum XtensaFeatureKind : uint64_t {
   XF_PRID = 1ULL << 34,
   XF_REGPROTECT = 1ULL << 35,
   XF_MISCSR = 1ULL << 36,
-  XF_ESP32S2OPS = 1ULL << 37,
-  XF_ESP32S3OPS = 1ULL << 38
+  XF_EXPSTATE = 1ULL << 37,
+  XF_ESP32S2OPS = 1ULL << 38,
+  XF_ESP32S3OPS = 1ULL << 39
 };
 
 LLVM_ABI CPUKind parseCPUKind(StringRef CPU);
