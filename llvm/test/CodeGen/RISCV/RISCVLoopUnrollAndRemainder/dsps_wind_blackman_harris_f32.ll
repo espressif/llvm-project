@@ -11,12 +11,12 @@ define dso_local void @dsps_wind_blackman_harris_f32(ptr nocapture noundef write
 ; CHECK:       for.body.lr.ph:
 ; CHECK-NEXT:    [[SUB:%.*]] = add nsw i32 [[LEN]], -1
 ; CHECK-NEXT:    [[CONV:%.*]] = sitofp i32 [[SUB]] to float
-; CHECK-NEXT:    [[DIV:%.*]] = fdiv float 1.000000e+00, [[CONV]]
-; CHECK-NEXT:    [[CONV4:%.*]] = fpext float [[DIV]] to double
-; CHECK-NEXT:    [[MUL1:%.*]] = fmul double [[CONV4]], 0x401921FB54442D18
+; CHECK-NEXT:    [[DIV:%.*]] = fdiv nnan float 1.000000e+00, [[CONV]]
+; CHECK-NEXT:    [[CONV4:%.*]] = fpext nnan float [[DIV]] to double
+; CHECK-NEXT:    [[MUL1:%.*]] = fmul nnan double [[CONV4]], 0x401921FB54442D18
 ; CHECK-NEXT:    [[CONV22:%.*]] = fptrunc double [[MUL1]] to float
-; CHECK-NEXT:    [[MUL33:%.*]] = fmul float [[CONV22]], 2.000000e+00
-; CHECK-NEXT:    [[MUL4:%.*]] = fmul float [[CONV22]], 3.000000e+00
+; CHECK-NEXT:    [[MUL33:%.*]] = fmul nnan float [[CONV22]], 2.000000e+00
+; CHECK-NEXT:    [[MUL4:%.*]] = fmul nnan float [[CONV22]], 3.000000e+00
 ; CHECK-NEXT:    [[SUB4:%.*]] = add nsw i32 [[LEN]], -7
 ; CHECK-NEXT:    [[CMP169:%.*]] = icmp sgt i32 [[LEN]], 7
 ; CHECK-NEXT:    br i1 [[CMP169]], label [[FOR_BODY_7:%.*]], label [[FOR_COND97_PREHEADER:%.*]]
