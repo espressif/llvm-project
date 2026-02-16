@@ -11,9 +11,9 @@ define dso_local void @dsps_wind_hann_f32(ptr nocapture noundef writeonly %windo
 ; CHECK:       for.body.lr.ph:
 ; CHECK-NEXT:    [[SUB:%.*]] = add nsw i32 [[LEN]], -1
 ; CHECK-NEXT:    [[CONV:%.*]] = sitofp i32 [[SUB]] to float
-; CHECK-NEXT:    [[DIV:%.*]] = fdiv float 1.000000e+00, [[CONV]]
-; CHECK-NEXT:    [[CONV4:%.*]] = fpext float [[DIV]] to double
-; CHECK-NEXT:    [[MUL1:%.*]] = fmul double [[CONV4]], 0x401921FB54442D18
+; CHECK-NEXT:    [[DIV:%.*]] = fdiv nnan float 1.000000e+00, [[CONV]]
+; CHECK-NEXT:    [[CONV4:%.*]] = fpext nnan float [[DIV]] to double
+; CHECK-NEXT:    [[MUL1:%.*]] = fmul nnan double [[CONV4]], 0x401921FB54442D18
 ; CHECK-NEXT:    [[CONV22:%.*]] = fptrunc double [[MUL1]] to float
 ; CHECK-NEXT:    [[SUB4:%.*]] = add nsw i32 [[LEN]], -7
 ; CHECK-NEXT:    [[CMP169:%.*]] = icmp sgt i32 [[LEN]], 7
