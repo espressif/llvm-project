@@ -1421,10 +1421,10 @@ def HasVendorXwchc
       AssemblerPredicate<(all_of FeatureVendorXwchc),
                          "'Xwchc' (WCH/QingKe additional compressed opcodes)">;
 
-def FeatureVendorXespv2p1
+def FeatureVendorXespv1v
     : RISCVExtension<2, 1,
                      "'Espressif ESPV 2.1'">;
-def HasVendorXespv2p1 : Predicate<"Subtarget->hasVendorXespv2p1()">, AssemblerPredicate<(all_of FeatureVendorXespv2p1), "'Espressif ESPV 2.1'">;
+def HasVendorXespv1v : Predicate<"Subtarget->hasVendorXespv1v()">, AssemblerPredicate<(all_of FeatureVendorXespv1v), "'Espressif ESPV 2.1'">;
 
 def FeatureVendorXesploop
     : RISCVExtension<1, 0,
@@ -1441,7 +1441,7 @@ def FeatureVendorXespv
                      "'Espressif ESPV 2.2'">;
 def HasVendorXespv : Predicate<"Subtarget->hasVendorXespv()">, AssemblerPredicate<(all_of FeatureVendorXespv), "'Espressif ESPV 2.2'">;
 
-def HasVendorEspSAT : Predicate<"Subtarget->hasVendorEspSAT()">, AssemblerPredicate<(any_of FeatureVendorXespdsp, FeatureVendorXespv2p1)>;
+def HasVendorEspSAT : Predicate<"Subtarget->hasVendorEspSAT()">, AssemblerPredicate<(any_of FeatureVendorXespdsp, FeatureVendorXespv1v)>;
 
 
 // Qualcomm Extensions

@@ -174,7 +174,7 @@
 // CHECK-NEXT:     xespdsp              2.1       'Xespdsp' ('Espressif ESPDSP')
 // CHECK-NEXT:     xesploop             1.0       'Xesploop' ('Espressif ESPLOOP')
 // CHECK-NEXT:     xespv                2.2       'Xespv' ('Espressif ESPV 2.2')
-// CHECK-NEXT:     xespv2p1             2.1       'Xespv2p1' ('Espressif ESPV 2.1')
+// CHECK-NEXT:     xespv1v              2.1       'Xespv1v' ('Espressif ESPV 2.1')
 // CHECK-NEXT:     xmipscbop            1.0       'XMIPSCBOP' (MIPS Software Prefetch)
 // CHECK-NEXT:     xmipscmov            1.0       'XMIPSCMov' (MIPS conditional move instruction (mips.ccmov))
 // CHECK-NEXT:     xmipslsp             1.0       'XMIPSLSP' (MIPS optimization for hardware load-store bonding)
