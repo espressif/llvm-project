@@ -156,6 +156,7 @@ before_script:
           touch ${BUILD_PATH}/toolchain-tests.log;
           chmod o+w ${BUILD_PATH}/toolchain-tests.log;
           runuser -u test_runner -- ninja -C ${BUILD_PATH} check-llvm-toolchain 2>&1 > ${BUILD_PATH}/toolchain-tests.log;
+          runuser -u test_runner -- ninja -C ${BUILD_PATH} check-llvm-toolchain-runtimes 2>&1 >> ${BUILD_PATH}/toolchain-tests.log;
         fi
         if [[ "${RUN_PKG_TESTS}" == "ON" ]]; then
           echo "Run toolchain package tests";
