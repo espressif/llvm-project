@@ -12,7 +12,7 @@
 // GCC complains about "ambiguating" `__builtin_memmove`.
 // UNSUPPORTED: gcc
 // ESP: Exceeds available memory
-// UNSUPPORTED: target={{.*}}-esp-elf
+// UNSUPPORTED: target={{.*}}-esp{{(-unknown)?}}-elf
 
 // <algorithm>
 

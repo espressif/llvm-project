@@ -8,7 +8,7 @@
 
 // UNSUPPORTED: c++03
 // ESP: Exceeds available memory
-// UNSUPPORTED: target={{.*}}-esp-elf
+// UNSUPPORTED: target={{.*}}-esp{{(-unknown)?}}-elf
 
 // <vector>
 

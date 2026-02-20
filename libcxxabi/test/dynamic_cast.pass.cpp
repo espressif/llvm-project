@@ -10,7 +10,7 @@
 // XFAIL: using-built-library-before-llvm-9
 
 // ESP: Exceeds available memory
-// UNSUPPORTED: target={{.*}}-esp-elf
+// UNSUPPORTED: target={{.*}}-esp{{(-unknown)?}}-elf
 
 #include <cassert>
 
