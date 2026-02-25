@@ -96,6 +96,20 @@ static DecodeStatus DecodeSimpleRegisterClass(MCInst &Inst, uint32_t RegNo,
 constexpr auto DecodeGPRRegisterClass =
     DecodeSimpleRegisterClass<RISCV::X0, 32, /*RVELimit=*/16>;
 
+static DecodeStatus DecodeGPRPIERegisterClass(MCInst &Inst, uint64_t RegNo,
+                                              uint64_t Address,
+                                              const MCDisassembler *Decoder) {
+  auto bit4 = RegNo & 0x8;
+  RegNo |= (bit4 << 4);
+  RegNo |= (1 << 3);
+  if ((RegNo >= 8 && RegNo <= 15) || (RegNo >= 24 && RegNo <= 31)) {
+    MCRegister Reg = RISCV::X0 + RegNo;
+    Inst.addOperand(MCOperand::createReg(Reg));
+    return MCDisassembler::Success;
+  }
+  return MCDisassembler::Fail;
+}
+
 static DecodeStatus DecodeGPRX1X5RegisterClass(MCInst &Inst, uint32_t RegNo,
                                                uint64_t Address,
                                                const MCDisassembler *Decoder) {
@@ -227,6 +241,21 @@ static DecodeStatus DecodeVectorRegisterClass(MCInst &Inst, uint32_t RegNo,
       RI->getMatchingSuperReg(RISCV::V0 + RegNo, RISCV::sub_vrm1_0,
                               &RISCVMCRegisterClasses[RegisterClass]);
 
+  Inst.addOperand(MCOperand::createReg(Reg));
+  return MCDisassembler::Success;
+}
+
+static const unsigned QRDecoderTable[] = {RISCV::Q0, RISCV::Q1, RISCV::Q2,
+                                          RISCV::Q3, RISCV::Q4, RISCV::Q5,
+                                          RISCV::Q6, RISCV::Q7};
+
+static DecodeStatus DecodeQRRegisterClass(MCInst &Inst, uint64_t RegNo,
+                                          uint64_t Address,
+                                          const void *Decoder) {
+  if (RegNo >= std::size(QRDecoderTable))
+    return MCDisassembler::Fail;
+
+  unsigned Reg = QRDecoderTable[RegNo];
   Inst.addOperand(MCOperand::createReg(Reg));
   return MCDisassembler::Success;
 }
@@ -438,6 +467,90 @@ static DecodeStatus decodeXqccmpRlistS0(MCInst &Inst, uint32_t Imm,
   return decodeZcmpRlist(Inst, Imm, Address, Decoder);
 }
 
+static DecodeStatus decodeSelect_2Operand(MCInst &Inst, uint64_t Imm,
+                                          int64_t Address,
+                                          const void *Decoder) {
+  assert(isUInt<8>(Imm) && "Invalid immediate");
+  Inst.addOperand(MCOperand::createImm(Imm));
+  return MCDisassembler::Success;
+}
+
+static DecodeStatus decodeSelect_4Operand(MCInst &Inst, uint64_t Imm,
+                                          int64_t Address,
+                                          const void *Decoder) {
+  assert(isUInt<8>(Imm) && "Invalid immediate");
+  Inst.addOperand(MCOperand::createImm(Imm));
+  return MCDisassembler::Success;
+}
+
+static DecodeStatus decodeSelect_8Operand(MCInst &Inst, uint64_t Imm,
+                                          int64_t Address,
+                                          const void *Decoder) {
+  assert(isUInt<8>(Imm) && "Invalid immediate");
+  Inst.addOperand(MCOperand::createImm(Imm));
+  return MCDisassembler::Success;
+}
+
+static DecodeStatus decodeSelect_16Operand(MCInst &Inst, uint64_t Imm,
+                                           int64_t Address,
+                                           const void *Decoder) {
+  assert(isUInt<8>(Imm) && "Invalid immediate");
+  Inst.addOperand(MCOperand::createImm(Imm));
+  return MCDisassembler::Success;
+}
+
+static DecodeStatus decodeOffset_16_16Operand(MCInst &Inst, int64_t Imm,
+                                              int64_t Address,
+                                              const void *Decoder) {
+  assert(isInt<8>(Imm) && "Invalid immediate");
+  auto ImmSigned = SignExtend64<4>(Imm);
+  Inst.addOperand(MCOperand::createImm(ImmSigned * 16));
+  return MCDisassembler::Success;
+}
+
+static DecodeStatus decodeOffset_256_8Operand(MCInst &Inst, int64_t Imm,
+                                              int64_t Address,
+                                              const void *Decoder) {
+  assert(isInt<16>(Imm) && "Invalid immediate");
+  auto ImmSigned = SignExtend64<4>(Imm);
+  Inst.addOperand(MCOperand::createImm(ImmSigned * 8));
+  return MCDisassembler::Success;
+}
+
+static DecodeStatus decodeOffset_256_16Operand(MCInst &Inst, int64_t Imm,
+                                               int64_t Address,
+                                               const void *Decoder) {
+  assert(isInt<16>(Imm) && "Invalid immediate");
+  auto ImmSigned = SignExtend64<4>(Imm);
+  Inst.addOperand(MCOperand::createImm(ImmSigned * 16));
+  return MCDisassembler::Success;
+}
+
+static DecodeStatus decodeOffset_256_4Operand(MCInst &Inst, int64_t Imm,
+                                              int64_t Address,
+                                              const void *Decoder) {
+  assert(isInt<16>(Imm) && "Invalid immediate");
+  auto ImmSigned = SignExtend64<4>(Imm);
+  Inst.addOperand(MCOperand::createImm(ImmSigned * 4));
+  return MCDisassembler::Success;
+}
+
+static DecodeStatus decodeUImm13_Step4Operand(MCInst &Inst, int64_t Imm,
+                                              int64_t Address,
+                                              const void *Decoder) {
+  assert(isUInt<13>(Imm) && "Invalid immediate");
+  Inst.addOperand(MCOperand::createImm((Imm * 2) * 2));
+  return MCDisassembler::Success;
+}
+
+static DecodeStatus decodeUImm10_Step4Operand(MCInst &Inst, int64_t Imm,
+                                              int64_t Address,
+                                              const void *Decoder) {
+  assert(isUInt<10>(Imm) && "Invalid immediate");
+  Inst.addOperand(MCOperand::createImm(Imm * 2));
+  return MCDisassembler::Success;
+}
+
 #include "RISCVGenDisassemblerTables.inc"
 
 namespace {
@@ -536,6 +649,7 @@ static constexpr DecoderListEntry DecoderList32[]{
     {DecoderTableRV32Only32, {}, "RV32-only standard 32-bit instructions"},
     {DecoderTableZfinx32, {}, "Zfinx (Float in Integer)"},
     {DecoderTableZdinxRV32Only32, {}, "RV32-only Zdinx (Double in Integer)"},
+    {DecoderTableESP32P432, {RISCV::FeatureVendorXesppie}, "ESP32P4 Instruction opcode table"},
 };
 
 namespace {
