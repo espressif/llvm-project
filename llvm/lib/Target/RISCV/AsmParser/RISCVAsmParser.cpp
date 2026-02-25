@@ -933,6 +933,68 @@ public:
         [](int64_t Imm) { return isShiftedUInt<8, 2>(Imm) && (Imm != 0); });
   }
 
+  bool isUImm12() const {
+    return isUImm<12>();
+  }
+
+  bool isUImm13() const {
+    return isUImm<13>();
+  }
+
+  bool isImm8() const {
+    return isSImmPred([](int64_t Imm) {
+      return (Imm >= (-32768 - 128)) && (Imm <= (32512 + 127));
+    });
+  }
+
+  bool isSelect_2() const {
+    return isSImmPred([](int64_t Imm) {
+      return ((Imm == 0) || (Imm == 1));
+    });
+  }
+
+  bool isSelect_4() const  {
+    return isSImmPred([](int64_t Imm) {
+      return ((Imm >= 0) && (Imm <= 3));
+    });
+  }
+
+  bool isSelect_8() const {
+    return isSImmPred([](int64_t Imm) {
+      return ((Imm >= 0) && (Imm <= 7));
+    });
+  }
+
+  bool isSelect_16() const {
+    return isSImmPred([](int64_t Imm) {
+      return ((Imm >= 0) && (Imm <= 16));
+    });
+  }
+
+  bool isOffset_16_16() const {
+    return isSImmPred([](int64_t Imm) {
+      return ((Imm >= -128) && (Imm <= 112) && ((Imm & 0xf) == 0));
+    });
+  }
+
+  bool isOffset_256_8() const {
+    return isSImmPred([](int64_t Imm) {
+      return ((Imm >= -1024) && (Imm <= 1016) && ((Imm & 0x7) == 0));
+    });
+  }
+
+  bool isOffset_256_16() const {
+    return isSImmPred([](int64_t Imm) {
+      return ((Imm >= -2048) && (Imm <= 2032) && ((Imm & 0xf) == 0));
+    });
+  }
+
+  bool isOffset_256_4() const {
+    return isSImmPred([](int64_t Imm) {
+      return ((Imm >= -512) && (Imm <= 508) && ((Imm & 0x3) == 0));
+    });
+  }
+
   // If this a RV32 and the immediate is a uimm32, sign extend it to 32 bits.
   // This allows writing 'addi a0, a0, 0xffffffff'.
   static int64_t fixImmediateForRV32(int64_t Imm, bool IsRV64Imm) {
@@ -1644,6 +1706,8 @@ std::string RISCVAsmParser::getCustomOperandDiag(unsigned MatchError) {
     return Range(0, (1 << 10) - 1);
   case Match_InvalidUImm11:
     return Range(0, (1 << 11) - 1);
+  case Match_InvalidUImm12:
+    return Range(0, (1 << 12) - 1, "immediate must be in the range");
   case Match_InvalidUImm14Lsb00:
     return Range(0, (1 << 14) - 4,
                  "immediate must be a multiple of 4 bytes in the range");

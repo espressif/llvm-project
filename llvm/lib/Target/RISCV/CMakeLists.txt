@@ -49,6 +49,7 @@ add_llvm_target(RISCVCodeGen
   RISCVInterleavedAccess.cpp
   RISCVISelDAGToDAG.cpp
   RISCVISelLowering.cpp
+  RISCVESP32P4ISelLowering.cpp
   RISCVLandingPadSetup.cpp
   RISCVLateBranchOpt.cpp
   RISCVLoadStoreOptimizer.cpp
