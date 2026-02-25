@@ -24569,10 +24569,11 @@ void RISCVTargetLowering::initializeESPVTargetLowering(
   addRegisterClass(MVT::v4i16, &RISCV::QR_64RegClass);
   addRegisterClass(MVT::v8i8, &RISCV::QR_64RegClass);
 
+  // TODO: Is this really needed?
   // Register XACC register class for i64 type (for LD/ST versions of VMULAS XACC)
   // This allows type legalizer to expand i64 XACC results in RV32
   // XACC is 40-bit, but modeled as i64 (only low 40 bits are valid)
-  addRegisterClass(MVT::i64, &RISCV::XACCRegRegClass);
+  // addRegisterClass(MVT::i64, &RISCV::XACCRegRegClass);
 
   addRegisterClass(MVT::v32i8, &RISCV::QACC_LRegClass);
   addRegisterClass(MVT::v32i8, &RISCV::QACC_HRegClass);
