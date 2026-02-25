@@ -2017,3 +2017,7 @@ include "llvm/IR/IntrinsicsRISCVXsf.td"
 include "llvm/IR/IntrinsicsRISCVXCV.td"
 include "llvm/IR/IntrinsicsRISCVXAndes.td"
 include "llvm/IR/IntrinsicsRISCVXMIPS.td"
+
+// Generated code
+// --------------
+include "llvm/IR/IntrinsicsRISCVESP32P4.td"

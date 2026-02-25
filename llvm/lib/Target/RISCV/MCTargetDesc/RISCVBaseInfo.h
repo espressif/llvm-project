@@ -53,8 +53,10 @@ enum OperandType : unsigned {
   OPERAND_UIMM9,
   OPERAND_UIMM10,
   OPERAND_UIMM10_LSB00_NONZERO,
+  OPERAND_UIMM10_STEP4,
   OPERAND_UIMM11,
   OPERAND_UIMM12,
+  OPERAND_UIMM13_STEP4,
   OPERAND_UIMM14_LSB00,
   OPERAND_UIMM16,
   OPERAND_UIMM16_NONZERO,
@@ -164,6 +166,7 @@ enum {
   InstFormatQC_EJ = 25,
   InstFormatQC_ES = 26,
   InstFormatNDS_BRANCH_10 = 27,
+  InstFormatESP32P4 = 28,
   InstFormatOther = 31,
 
   InstFormatMask = 31,
