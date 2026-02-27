@@ -182,6 +182,13 @@ BitVector RISCVRegisterInfo::getReservedRegs(const MachineFunction &MF) const {
   for (MCPhysReg Reg = RISCV::T0; Reg <= RISCV::T15; Reg++)
     markSuperRegs(Reserved, Reg);
 
+  // XTHeadMatrix (RVM 0.6): 8 matrix registers are not allocatable.
+  for (MCPhysReg Reg : {RISCV::THRVM_TR0, RISCV::THRVM_TR1, RISCV::THRVM_TR2,
+                        RISCV::THRVM_TR3, RISCV::THRVM_ACC0,
+                        RISCV::THRVM_ACC1, RISCV::THRVM_ACC2,
+                        RISCV::THRVM_ACC3})
+    markSuperRegs(Reserved, Reg);
+
   assert(checkAllSuperRegsMarked(Reserved));
   return Reserved;
 }

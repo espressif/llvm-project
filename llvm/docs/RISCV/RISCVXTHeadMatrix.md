@@ -21,9 +21,9 @@ rounding modes, and hardware capability queries.
 maintained by C-SKY MicroSystems / T-Head.
 
 **Implementation summary**: 227 instructions, 227 LLVM intrinsics, and
-227 Clang builtins are implemented, covering MC-layer assembly/disassembly
-and builtin-to-intrinsic code generation. No ISel/CodeGen patterns exist
-yet -- programs must use builtins or inline assembly.
+227 Clang builtins are implemented with full ISel/CodeGen support.
+Programs can use Clang builtins or inline assembly and compile directly
+to native assembly or object code.
 
 ## Building the Compiler
 
@@ -106,18 +106,21 @@ llvm-mc -triple=riscv64 -mattr=+experimental-xtheadmatrix \
 
 ### Compiling C/C++ with Builtins
 
-The builtins compile C code to LLVM IR containing matrix intrinsics:
+The builtins compile C code directly to native assembly or object code:
 
 ```bash
-# Generate LLVM IR (works today)
+# Compile to assembly
+clang --target=riscv64 -march=rv64gc_xtheadmatrix0p6 \
+  -menable-experimental-extensions -S matrix_kernel.c -o matrix_kernel.s
+
+# Compile to object code
+clang --target=riscv64 -march=rv64gc_xtheadmatrix0p6 \
+  -menable-experimental-extensions -c matrix_kernel.c -o matrix_kernel.o
+
+# Generate LLVM IR
 clang --target=riscv64 -march=rv64gc_xtheadmatrix0p6 \
   -menable-experimental-extensions -emit-llvm -S matrix_kernel.c -o matrix_kernel.ll
 ```
-
-**Note**: Full compilation to native assembly (`-S`) or object code (`-c`)
-is not yet supported because no ISel/CodeGen patterns exist for the matrix
-intrinsics. This is planned for future work. Assembly files can be
-assembled directly (see above).
 
 ### Combining RVV and RVM
 
@@ -143,11 +146,11 @@ asm volatile(
     "th.msettilemi 4\n\t"
     "th.msettileni 4\n\t"
     "th.msettileki 4\n\t"
-    "th.mzero tr0\n\t"
-    "th.mlae32 tr1, (%0), %1\n\t"
-    "th.mlbe32 tr2, (%2), %3\n\t"
-    "th.mfmacc.s acc0, tr1, tr2\n\t"
-    "th.msae32 acc0, (%4), %5"
+    "th.mzero acc0\n\t"
+    "th.mlae32 tr0, (%0), %1\n\t"
+    "th.mlbe32 tr1, (%2), %3\n\t"
+    "th.mfmacc.s acc0, tr1, tr0\n\t"
+    "th.msce32 acc0, (%4), %5"
     :
     : "r"(a_ptr), "r"(a_stride),
       "r"(b_ptr), "r"(b_stride),
@@ -643,8 +646,8 @@ void int8_gemm_4x4(const int8_t *A, size_t a_stride,
     // Step 4: Matrix multiply-accumulate (signed INT8 -> INT32)
     __builtin_riscv_th_mmacc_w_b();                   // acc0 += A * B
 
-    // Step 5: Store result
-    __builtin_riscv_th_msae32((void *)C, c_stride);   // Store to C
+    // Step 5: Store result (C matrix is in acc0, use msce to store)
+    __builtin_riscv_th_msce32((void *)C, c_stride);   // Store C from acc0
 
     // Step 6: Release
     __builtin_riscv_th_mrelease();
@@ -663,7 +666,7 @@ void int8_gemm(const int8_t *A, size_t a_stride,
     __builtin_riscv_th_mlae8((void *)A, a_stride);
     __builtin_riscv_th_mlbe8((void *)B, b_stride);
     __builtin_riscv_th_mmacc_w_b();
-    __builtin_riscv_th_msae32((void *)C, c_stride);
+    __builtin_riscv_th_msce32((void *)C, c_stride);
     __builtin_riscv_th_mrelease();
 }
 ```
@@ -856,10 +859,18 @@ comprehensive usage examples.
 - **Experimental status**: The extension requires `+experimental-xtheadmatrix`
   and may change in future LLVM releases as the spec evolves.
 
-- **No CodeGen/ISel patterns**: There are no SelectionDAG or GlobalISel
-  patterns. Code generation from plain C arithmetic (e.g., matrix loops)
-  will not automatically use matrix instructions. Users must use builtins
-  or inline assembly.
+- **ISel with fixed register assignment**: The ISel implementation uses
+  table-driven fixed register assignments (e.g., matmul always uses
+  `acc0, tr1, tr0`). Code generation from plain C arithmetic (e.g., matrix
+  loops) will not automatically use matrix instructions -- users must use
+  builtins or inline assembly.
+
+- **Register constraints per spec**: The ISel enforces the RVM 0.6
+  register type constraints:
+  - **Matmul**: `md=acc`, `ms1=tile`, `ms2=tile`
+  - **Element-wise** (arithmetic, conversions, N4clip): all `md/ms1/ms2=acc`
+  - **Load/Store**: register type matches matrix role (A/B=tile, C=acc)
+  - **MISC** (slides, broadcasts, pack): uses tile registers
 
 - **Low-level builtins only**: The current implementation provides low-level
   instruction-mapped builtins where matrix registers are implicit. The spec
@@ -868,14 +879,16 @@ comprehensive usage examples.
   implemented.
 
 - **Known spec errata**:
-  - The matmul instruction group uses `uop=10` (binary), but the spec text
-    in one place incorrectly states `uop=01`. The encoding in the spec's
-    tables is correct.
-  - The `mfmin.h`/`mfmin.s` labels are swapped in one table of the spec.
+  - The matmul instruction group uses `uop=10` (binary), but the spec
+    encoding table incorrectly shows `uop=01` (a typo; `uop=01` is
+    Load/Store). The format description text correctly states `uop=10`.
+  - The `mfmin.h`/`mfmin.s` labels are swapped in the encoding table
+    (encodings are correct, names are wrong).
+  - `pmmaaccus.w.b` has an extra 'a' (typo for `pmmaccus.w.b`).
 
 - **No runtime library**: There is no `<thead_matrix.h>` header or runtime
   support library. All operations must use `__builtin_riscv_th_*` builtins
   or inline assembly.
 
-- **Future work**: Higher-level matrix types, CodeGen integration, and a
-  `<thead_matrix.h>` compatibility header are planned.
+- **Future work**: Higher-level matrix types, register allocation
+  flexibility, and a `<thead_matrix.h>` compatibility header are planned.
