@@ -1211,6 +1211,13 @@ def HasVendorXTHeadVdot : Predicate<"Subtarget->hasVendorXTHeadVdot()">,
                           AssemblerPredicate<(all_of FeatureVendorXTHeadVdot),
                               "'XTHeadVdot' (T-Head Vector Extensions for Dot)">;
 
+def FeatureVendorXTHeadMatrix
+    : RISCVExperimentalExtension<0, 6,
+                     "T-Head Matrix Extension (RVM)">;
+def HasVendorXTHeadMatrix : Predicate<"Subtarget->hasVendorXTHeadMatrix()">,
+                            AssemblerPredicate<(all_of FeatureVendorXTHeadMatrix),
+                                "'XTHeadMatrix' (T-Head Matrix Extension)">;
+
 // SiFive Extensions
 
 def FeatureVendorXSfvcp

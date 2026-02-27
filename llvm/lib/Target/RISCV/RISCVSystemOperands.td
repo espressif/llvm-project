@@ -566,3 +566,20 @@ foreach i = 0 - 3 in {
   def : SysReg<"qc.mwpendaddr" # i,   !add(0x7D4, i)>;
 }
 } // FeatureVendorXqciint, isRV32Only
+
+// XTHeadMatrix (RVM 0.6)
+let FeaturesRequired = [{ {RISCV::FeatureVendorXTHeadMatrix} }] in {
+def : SysReg<"th.xmcsr", 0x802>;
+def : SysReg<"th.mtilem", 0x803>;
+def : SysReg<"th.mtilen", 0x804>;
+def : SysReg<"th.mtilek", 0x805>;
+def : SysReg<"th.xmxrm", 0x806>;
+def : SysReg<"th.xmsat", 0x807>;
+def : SysReg<"th.xmfflags", 0x808>;
+def : SysReg<"th.xmfrm", 0x809>;
+def : SysReg<"th.xmsaten", 0x80a>;
+def : SysReg<"th.xmisa", 0xcc0>;
+def : SysReg<"th.xtlenb", 0xcc1>;
+def : SysReg<"th.xtrlenb", 0xcc2>;
+def : SysReg<"th.xalenb", 0xcc3>;
+}

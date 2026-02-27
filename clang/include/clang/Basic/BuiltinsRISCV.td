@@ -164,6 +164,11 @@ include "clang/Basic/BuiltinsRISCVXCV.td"
 include "clang/Basic/BuiltinsRISCVXAndes.td"
 
 //===----------------------------------------------------------------------===//
+// XTHeadMatrix extensions.
+//===----------------------------------------------------------------------===//
+include "clang/Basic/BuiltinsRISCVXTHeadMatrix.td"
+
+//===----------------------------------------------------------------------===//
 // MIPS extensions.
 //===----------------------------------------------------------------------===//
 include "clang/Basic/BuiltinsRISCVXMIPS.td"

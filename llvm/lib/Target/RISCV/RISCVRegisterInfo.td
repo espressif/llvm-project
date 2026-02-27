@@ -907,3 +907,22 @@ let RegInfos = XLenRI in {
   def TRM2 : RISCVRegisterClass<[untyped], 32, (add (decimate TR, 2))>;
   def TRM4 : RISCVRegisterClass<[untyped], 32, (add (decimate TR, 4))>;
 }
+
+//===----------------------------------------------------------------------===//
+// XTHeadMatrix (RVM 0.6) registers
+//===----------------------------------------------------------------------===//
+// 8 matrix registers: tr0-tr3 (tile), acc0-acc3 (accumulator)
+foreach Index = 0-3 in
+  def THRVM_TR#Index : RISCVReg<Index, "tr"#Index>;
+foreach Index = 0-3 in
+  def THRVM_ACC#Index : RISCVReg<!add(Index, 4), "acc"#Index>;
+
+let RegInfos = XLenRI in {
+  def THRVMMR  : RISCVRegisterClass<[untyped], 32,
+      (add THRVM_TR0, THRVM_TR1, THRVM_TR2, THRVM_TR3,
+           THRVM_ACC0, THRVM_ACC1, THRVM_ACC2, THRVM_ACC3)>;
+  def THRVMTR  : RISCVRegisterClass<[untyped], 32,
+      (add THRVM_TR0, THRVM_TR1, THRVM_TR2, THRVM_TR3)>;
+  def THRVMACC : RISCVRegisterClass<[untyped], 32,
+      (add THRVM_ACC0, THRVM_ACC1, THRVM_ACC2, THRVM_ACC3)>;
+}

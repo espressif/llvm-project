@@ -2372,6 +2372,7 @@ include "RISCVInstrInfoSFB.td"
 
 include "RISCVInstrInfoXVentana.td"
 include "RISCVInstrInfoXTHead.td"
+include "RISCVInstrInfoXTHeadMatrix.td"
 include "RISCVInstrInfoXSf.td"
 include "RISCVInstrInfoXSfmm.td"
 include "RISCVInstrInfoXCV.td"

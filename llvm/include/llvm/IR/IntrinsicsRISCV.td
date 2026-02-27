@@ -1981,6 +1981,7 @@ let TargetPrefix = "riscv" in {
 // Vendor extensions
 //===----------------------------------------------------------------------===//
 include "llvm/IR/IntrinsicsRISCVXTHead.td"
+include "llvm/IR/IntrinsicsRISCVXTHeadMatrix.td"
 include "llvm/IR/IntrinsicsRISCVXsf.td"
 include "llvm/IR/IntrinsicsRISCVXCV.td"
 include "llvm/IR/IntrinsicsRISCVXAndes.td"

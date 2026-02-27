@@ -383,6 +383,41 @@ static DecodeStatus DecodeVMV0RegisterClass(MCInst &Inst, uint32_t RegNo,
   return MCDisassembler::Success;
 }
 
+static constexpr MCPhysReg THRVMRegs[] = {
+    RISCV::THRVM_TR0,  RISCV::THRVM_TR1,  RISCV::THRVM_TR2,
+    RISCV::THRVM_TR3,  RISCV::THRVM_ACC0, RISCV::THRVM_ACC1,
+    RISCV::THRVM_ACC2, RISCV::THRVM_ACC3};
+
+static DecodeStatus DecodeTHRVMMRRegisterClass(MCInst &Inst, uint32_t RegNo,
+                                               uint64_t Address,
+                                               const MCDisassembler *Decoder) {
+  if (RegNo > 7)
+    return MCDisassembler::Fail;
+
+  Inst.addOperand(MCOperand::createReg(THRVMRegs[RegNo]));
+  return MCDisassembler::Success;
+}
+
+static DecodeStatus DecodeTHRVMTRRegisterClass(MCInst &Inst, uint32_t RegNo,
+                                               uint64_t Address,
+                                               const MCDisassembler *Decoder) {
+  if (RegNo > 3)
+    return MCDisassembler::Fail;
+
+  Inst.addOperand(MCOperand::createReg(THRVMRegs[RegNo]));
+  return MCDisassembler::Success;
+}
+
+static DecodeStatus DecodeTHRVMACCRegisterClass(MCInst &Inst, uint32_t RegNo,
+                                                uint64_t Address,
+                                                const MCDisassembler *Decoder) {
+  if (RegNo < 4 || RegNo > 7)
+    return MCDisassembler::Fail;
+
+  Inst.addOperand(MCOperand::createReg(THRVMRegs[RegNo]));
+  return MCDisassembler::Success;
+}
+
 static DecodeStatus DecodeTRRegisterClass(MCInst &Inst, uint32_t RegNo,
                                           uint64_t Address,
                                           const MCDisassembler *Decoder) {
@@ -678,6 +713,9 @@ static constexpr FeatureBitset XTHeadGroup = {
     RISCV::FeatureVendorXTHeadMemPair, RISCV::FeatureVendorXTHeadSync,
     RISCV::FeatureVendorXTHeadVdot};
 
+static constexpr FeatureBitset XTHeadMatrixGroup = {
+    RISCV::FeatureVendorXTHeadMatrix};
+
 static constexpr FeatureBitset XAndesGroup = {
     RISCV::FeatureVendorXAndesPerf,      RISCV::FeatureVendorXAndesBFHCvt,
     RISCV::FeatureVendorXAndesVBFHCvt,   RISCV::FeatureVendorXAndesVSIntH,
@@ -695,6 +733,7 @@ static constexpr DecoderListEntry DecoderList32[]{
      {RISCV::FeatureVendorXVentanaCondOps},
      "XVentanaCondOps"},
     {DecoderTableXTHead32, XTHeadGroup, "T-Head extensions"},
+    {DecoderTableXTHeadMatrix32, XTHeadMatrixGroup, "T-Head Matrix extensions"},
     {DecoderTableXSfvector32, XSfVectorGroup, "SiFive vector extensions"},
     {DecoderTableXSfsystem32, XSfSystemGroup, "SiFive system extensions"},
     {DecoderTableXSfcease32, {RISCV::FeatureVendorXSfcease}, "SiFive sf.cease"},
