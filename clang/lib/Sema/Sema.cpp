@@ -559,6 +559,12 @@ void Sema::Initialize() {
 #include "clang/Basic/RISCVVTypes.def"
   }
 
+  if (Context.getTargetInfo().hasRISCVMatrixTypes()) {
+#define RVM_TYPE(Name, Id, SingletonId)                                        \
+  addImplicitTypedef(Name, Context.SingletonId);
+#include "clang/Basic/RISCVMatrixTypes.def"
+  }
+
   if (Context.getTargetInfo().getTriple().isWasm() &&
       Context.getTargetInfo().hasFeature("reference-types")) {
 #define WASM_TYPE(Name, Id, SingletonId)                                       \
@@ -2254,6 +2260,12 @@ void Sema::checkTypeSupport(QualType Ty, SourceLocation Loc, ValueDecl *D) {
       llvm::StringMap<bool> CallerFeatureMap;
       Context.getFunctionFeatureMap(CallerFeatureMap, FD);
       RISCV().checkRVVTypeSupport(Ty, Loc, D, CallerFeatureMap);
+    }
+
+    if (TI.hasRISCVMatrixTypes() && Ty->isRISCVMatrixBuiltinType() && FD) {
+      llvm::StringMap<bool> CallerFeatureMap;
+      Context.getFunctionFeatureMap(CallerFeatureMap, FD);
+      RISCV().checkRVMTypeSupport(Ty, Loc, D, CallerFeatureMap);
     }
 
     // Don't allow SVE types in functions without a SVE target.

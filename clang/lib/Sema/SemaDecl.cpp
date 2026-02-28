@@ -9192,6 +9192,14 @@ void Sema::CheckVariableDeclarationType(VarDecl *NewVD) {
     RISCV().checkRVVTypeSupport(T, NewVD->getLocation(), cast<Decl>(CurContext),
                                 CallerFeatureMap);
   }
+
+  if (T->isRISCVMatrixBuiltinType() && isa<FunctionDecl>(CurContext)) {
+    const FunctionDecl *FD = cast<FunctionDecl>(CurContext);
+    llvm::StringMap<bool> CallerFeatureMap;
+    Context.getFunctionFeatureMap(CallerFeatureMap, FD);
+    RISCV().checkRVMTypeSupport(T, NewVD->getLocation(),
+                                cast<Decl>(CurContext), CallerFeatureMap);
+  }
 }
 
 bool Sema::CheckVariableDeclaration(VarDecl *NewVD, LookupResult &Previous) {

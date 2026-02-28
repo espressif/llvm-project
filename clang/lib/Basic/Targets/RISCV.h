@@ -46,6 +46,7 @@ public:
     WCharType = SignedInt;
     WIntType = UnsignedInt;
     HasRISCVVTypes = true;
+    HasRISCVMatrixTypes = true;
     MCountName = "_mcount";
     HasFloat16 = true;
     HasStrictFP = true;

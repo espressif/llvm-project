@@ -1929,7 +1929,7 @@ protected:
     unsigned : NumTypeBits;
 
     /// The kind (BuiltinType::Kind) of builtin type this is.
-    static constexpr unsigned NumOfBuiltinTypeBits = 9;
+    static constexpr unsigned NumOfBuiltinTypeBits = 10;
     unsigned Kind : NumOfBuiltinTypeBits;
   };
 
@@ -2434,6 +2434,9 @@ public:
 
   /// Returns true for RVV scalable vector types.
   bool isRVVSizelessBuiltinType() const;
+
+  /// Returns true for RISC-V Matrix (XTHeadMatrix) built-in types.
+  bool isRISCVMatrixBuiltinType() const;
 
   /// Check if this is a WebAssembly Externref Type.
   bool isWebAssemblyExternrefType() const;
@@ -3180,6 +3183,9 @@ public:
 // RVV Types
 #define RVV_TYPE(Name, Id, SingletonId) Id,
 #include "clang/Basic/RISCVVTypes.def"
+// RVM (RISC-V Matrix) Types
+#define RVM_TYPE(Name, Id, SingletonId) Id,
+#include "clang/Basic/RISCVMatrixTypes.def"
 // WebAssembly reference types
 #define WASM_TYPE(Name, Id, SingletonId) Id,
 #include "clang/Basic/WebAssemblyReferenceTypes.def"

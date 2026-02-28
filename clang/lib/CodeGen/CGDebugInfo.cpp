@@ -1075,6 +1075,14 @@ llvm::DIType *CGDebugInfo::CreateType(const BuiltinType *BT) {
                                        SubscriptArray);
     }
 
+#define RVM_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVMatrixTypes.def"
+    {
+      // Matrix types are opaque
+      return DBuilder.createBasicType(BT->getName(CGM.getContext().getPrintingPolicy()),
+                                       0, llvm::dwarf::DW_ATE_unsigned);
+    }
+
 #define WASM_REF_TYPE(Name, MangledName, Id, SingletonId, AS)                  \
   case BuiltinType::Id: {                                                      \
     if (!SingletonId)                                                          \

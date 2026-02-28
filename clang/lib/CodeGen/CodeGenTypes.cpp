@@ -578,6 +578,12 @@ llvm::Type *CodeGenTypes::ConvertType(QualType T) {
         return llvm::ScalableVectorType::get(ConvertType(Info.ElementType),
                                              Info.EC.getKnownMinValue());
       }
+#define RVM_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVMatrixTypes.def"
+      {
+        // Matrix types are opaque - map to a target extension type
+        return llvm::TargetExtType::get(getLLVMContext(), "riscv.matrix");
+      }
 #define WASM_REF_TYPE(Name, MangledName, Id, SingletonId, AS)                  \
   case BuiltinType::Id: {                                                      \
     if (BuiltinType::Id == BuiltinType::WasmExternRef)                         \

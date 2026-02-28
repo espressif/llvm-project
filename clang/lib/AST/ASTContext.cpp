@@ -1382,6 +1382,12 @@ void ASTContext::InitBuiltinTypes(const TargetInfo &Target,
 #include "clang/Basic/RISCVVTypes.def"
   }
 
+  if (Target.hasRISCVMatrixTypes()) {
+#define RVM_TYPE(Name, Id, SingletonId)                                        \
+  InitBuiltinType(SingletonId, BuiltinType::Id);
+#include "clang/Basic/RISCVMatrixTypes.def"
+  }
+
   if (Target.getTriple().isWasm() && Target.hasFeature("reference-types")) {
 #define WASM_TYPE(Name, Id, SingletonId)                                       \
   InitBuiltinType(SingletonId, BuiltinType::Id);
@@ -2307,6 +2313,12 @@ TypeInfo ASTContext::getTypeInfoImpl(const Type *T) const {
     Align = 8;                                                                 \
     break;
 #include "clang/Basic/RISCVVTypes.def"
+#define RVM_TYPE(Name, Id, SingletonId)                                        \
+  case BuiltinType::Id:
+#include "clang/Basic/RISCVMatrixTypes.def"
+    Width = 0;
+    Align = 8;
+    break;
 #define WASM_TYPE(Name, Id, SingletonId)                                       \
   case BuiltinType::Id:                                                        \
     Width = 0;                                                                 \
@@ -3466,6 +3478,8 @@ static void encodeTypeForFunctionPointerAuth(const ASTContext &Ctx,
     case BuiltinType::WasmExternRef:
 #define RVV_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
 #include "clang/Basic/RISCVVTypes.def"
+#define RVM_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVMatrixTypes.def"
       llvm_unreachable("not yet implemented");
     }
     llvm_unreachable("should never get here");
@@ -9101,6 +9115,8 @@ static char getObjCEncodingForPrimitiveType(const ASTContext *C,
 #include "clang/Basic/AArch64ACLETypes.def"
 #define RVV_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
 #include "clang/Basic/RISCVVTypes.def"
+#define RVM_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVMatrixTypes.def"
 #define WASM_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
 #include "clang/Basic/WebAssemblyReferenceTypes.def"
 #define AMDGPU_TYPE(Name, Id, SingletonId, Width, Align) case BuiltinType::Id:
@@ -12553,6 +12569,30 @@ static QualType DecodeTypeFromStr(const char *&Str, const ASTContext &Context,
     }
     case 'r': {
       Type = Context.HLSLResourceTy;
+      break;
+    }
+    case 'm': {
+      char *End;
+      unsigned TypeIndex = strtoul(Str, &End, 10);
+      assert(End != Str && "Missing RVM type index");
+      Str = End;
+
+      static CanQualType ASTContext::*const RvmTypes[] = {
+        &ASTContext::RvmInt8Ty,    &ASTContext::RvmInt16Ty,
+        &ASTContext::RvmInt32Ty,   &ASTContext::RvmInt64Ty,
+        &ASTContext::RvmUint8Ty,   &ASTContext::RvmUint16Ty,
+        &ASTContext::RvmUint32Ty,  &ASTContext::RvmUint64Ty,
+        &ASTContext::RvmFloat16Ty, &ASTContext::RvmFloat32Ty,
+        &ASTContext::RvmFloat64Ty,
+        &ASTContext::RvmInt8x2Ty,  &ASTContext::RvmInt16x2Ty,
+        &ASTContext::RvmInt32x2Ty, &ASTContext::RvmInt64x2Ty,
+        &ASTContext::RvmUint8x2Ty, &ASTContext::RvmUint16x2Ty,
+        &ASTContext::RvmUint32x2Ty,&ASTContext::RvmUint64x2Ty,
+        &ASTContext::RvmFloat16x2Ty,&ASTContext::RvmFloat32x2Ty,
+        &ASTContext::RvmFloat64x2Ty,
+      };
+      assert(TypeIndex < std::size(RvmTypes) && "Invalid RVM type index");
+      Type = Context.*RvmTypes[TypeIndex];
       break;
     }
     default:

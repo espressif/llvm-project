@@ -38,6 +38,8 @@ public:
                                 CallExpr *TheCall);
   void checkRVVTypeSupport(QualType Ty, SourceLocation Loc, Decl *D,
                            const llvm::StringMap<bool> &FeatureMap);
+  void checkRVMTypeSupport(QualType Ty, SourceLocation Loc, Decl *D,
+                           const llvm::StringMap<bool> &FeatureMap);
 
   bool isValidRVVBitcast(QualType srcType, QualType destType);
 

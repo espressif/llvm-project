@@ -137,6 +137,7 @@ set(riscv_files
   sifive_vector.h
   andes_vector.h
   riscv_mips.h
+  thead_matrix.h
   )
 
 set(spirv_files

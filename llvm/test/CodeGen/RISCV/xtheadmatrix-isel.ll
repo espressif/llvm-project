@@ -84,120 +84,120 @@ define dso_local void @test_loads(ptr noundef captures(none) %ptr, i64 noundef %
 ; CHECK-NEXT:    th.mlme64 tr0, (a0)
 ; CHECK-NEXT:    ret
 entry:
-  tail call void @llvm.riscv.th.mlae8.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.mlae16.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.mlae32.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.mlae64.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.mlbe8.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.mlbe16.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.mlbe32.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.mlbe64.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.mlce8.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.mlce16.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.mlce32.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.mlce64.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.mlate8.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.mlate16.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.mlate32.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.mlate64.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.mlbte8.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.mlbte16.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.mlbte32.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.mlbte64.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.mlcte8.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.mlcte16.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.mlcte32.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.mlcte64.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.mlme8(ptr %ptr)
-  tail call void @llvm.riscv.th.mlme16(ptr %ptr)
-  tail call void @llvm.riscv.th.mlme32(ptr %ptr)
-  tail call void @llvm.riscv.th.mlme64(ptr %ptr)
+  tail call void @llvm.riscv.th.mlae8.i64(i32 0, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.mlae16.i64(i32 0, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.mlae32.i64(i32 0, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.mlae64.i64(i32 0, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.mlbe8.i64(i32 1, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.mlbe16.i64(i32 1, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.mlbe32.i64(i32 1, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.mlbe64.i64(i32 1, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.mlce8.i64(i32 4, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.mlce16.i64(i32 4, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.mlce32.i64(i32 4, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.mlce64.i64(i32 4, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.mlate8.i64(i32 2, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.mlate16.i64(i32 2, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.mlate32.i64(i32 2, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.mlate64.i64(i32 2, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.mlbte8.i64(i32 3, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.mlbte16.i64(i32 3, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.mlbte32.i64(i32 3, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.mlbte64.i64(i32 3, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.mlcte8.i64(i32 5, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.mlcte16.i64(i32 5, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.mlcte32.i64(i32 5, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.mlcte64.i64(i32 5, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.mlme8(i32 0, ptr %ptr)
+  tail call void @llvm.riscv.th.mlme16(i32 0, ptr %ptr)
+  tail call void @llvm.riscv.th.mlme32(i32 0, ptr %ptr)
+  tail call void @llvm.riscv.th.mlme64(i32 0, ptr %ptr)
   ret void
 }
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mlae8.i64(ptr captures(none), i64) #1
+declare void @llvm.riscv.th.mlae8.i64(i32 immarg, ptr captures(none), i64) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mlae16.i64(ptr captures(none), i64) #1
+declare void @llvm.riscv.th.mlae16.i64(i32 immarg, ptr captures(none), i64) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mlae32.i64(ptr captures(none), i64) #1
+declare void @llvm.riscv.th.mlae32.i64(i32 immarg, ptr captures(none), i64) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mlae64.i64(ptr captures(none), i64) #1
+declare void @llvm.riscv.th.mlae64.i64(i32 immarg, ptr captures(none), i64) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mlbe8.i64(ptr captures(none), i64) #1
+declare void @llvm.riscv.th.mlbe8.i64(i32 immarg, ptr captures(none), i64) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mlbe16.i64(ptr captures(none), i64) #1
+declare void @llvm.riscv.th.mlbe16.i64(i32 immarg, ptr captures(none), i64) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mlbe32.i64(ptr captures(none), i64) #1
+declare void @llvm.riscv.th.mlbe32.i64(i32 immarg, ptr captures(none), i64) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mlbe64.i64(ptr captures(none), i64) #1
+declare void @llvm.riscv.th.mlbe64.i64(i32 immarg, ptr captures(none), i64) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mlce8.i64(ptr captures(none), i64) #1
+declare void @llvm.riscv.th.mlce8.i64(i32 immarg, ptr captures(none), i64) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mlce16.i64(ptr captures(none), i64) #1
+declare void @llvm.riscv.th.mlce16.i64(i32 immarg, ptr captures(none), i64) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mlce32.i64(ptr captures(none), i64) #1
+declare void @llvm.riscv.th.mlce32.i64(i32 immarg, ptr captures(none), i64) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mlce64.i64(ptr captures(none), i64) #1
+declare void @llvm.riscv.th.mlce64.i64(i32 immarg, ptr captures(none), i64) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mlate8.i64(ptr captures(none), i64) #1
+declare void @llvm.riscv.th.mlate8.i64(i32 immarg, ptr captures(none), i64) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mlate16.i64(ptr captures(none), i64) #1
+declare void @llvm.riscv.th.mlate16.i64(i32 immarg, ptr captures(none), i64) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mlate32.i64(ptr captures(none), i64) #1
+declare void @llvm.riscv.th.mlate32.i64(i32 immarg, ptr captures(none), i64) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mlate64.i64(ptr captures(none), i64) #1
+declare void @llvm.riscv.th.mlate64.i64(i32 immarg, ptr captures(none), i64) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mlbte8.i64(ptr captures(none), i64) #1
+declare void @llvm.riscv.th.mlbte8.i64(i32 immarg, ptr captures(none), i64) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mlbte16.i64(ptr captures(none), i64) #1
+declare void @llvm.riscv.th.mlbte16.i64(i32 immarg, ptr captures(none), i64) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mlbte32.i64(ptr captures(none), i64) #1
+declare void @llvm.riscv.th.mlbte32.i64(i32 immarg, ptr captures(none), i64) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mlbte64.i64(ptr captures(none), i64) #1
+declare void @llvm.riscv.th.mlbte64.i64(i32 immarg, ptr captures(none), i64) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mlcte8.i64(ptr captures(none), i64) #1
+declare void @llvm.riscv.th.mlcte8.i64(i32 immarg, ptr captures(none), i64) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mlcte16.i64(ptr captures(none), i64) #1
+declare void @llvm.riscv.th.mlcte16.i64(i32 immarg, ptr captures(none), i64) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mlcte32.i64(ptr captures(none), i64) #1
+declare void @llvm.riscv.th.mlcte32.i64(i32 immarg, ptr captures(none), i64) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mlcte64.i64(ptr captures(none), i64) #1
+declare void @llvm.riscv.th.mlcte64.i64(i32 immarg, ptr captures(none), i64) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mlme8(ptr captures(none)) #1
+declare void @llvm.riscv.th.mlme8(i32 immarg, ptr captures(none)) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mlme16(ptr captures(none)) #1
+declare void @llvm.riscv.th.mlme16(i32 immarg, ptr captures(none)) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mlme32(ptr captures(none)) #1
+declare void @llvm.riscv.th.mlme32(i32 immarg, ptr captures(none)) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mlme64(ptr captures(none)) #1
+declare void @llvm.riscv.th.mlme64(i32 immarg, ptr captures(none)) #1
 
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn memory(write)
 define dso_local void @test_stores(ptr noundef writeonly captures(none) %ptr, i64 noundef %stride) local_unnamed_addr #2 {
@@ -233,120 +233,120 @@ define dso_local void @test_stores(ptr noundef writeonly captures(none) %ptr, i6
 ; CHECK-NEXT:    th.msme64 tr0, (a0)
 ; CHECK-NEXT:    ret
 entry:
-  tail call void @llvm.riscv.th.msae8.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.msae16.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.msae32.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.msae64.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.msbe8.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.msbe16.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.msbe32.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.msbe64.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.msce8.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.msce16.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.msce32.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.msce64.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.msate8.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.msate16.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.msate32.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.msate64.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.msbte8.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.msbte16.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.msbte32.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.msbte64.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.mscte8.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.mscte16.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.mscte32.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.mscte64.i64(ptr %ptr, i64 %stride)
-  tail call void @llvm.riscv.th.msme8(ptr %ptr)
-  tail call void @llvm.riscv.th.msme16(ptr %ptr)
-  tail call void @llvm.riscv.th.msme32(ptr %ptr)
-  tail call void @llvm.riscv.th.msme64(ptr %ptr)
+  tail call void @llvm.riscv.th.msae8.i64(i32 0, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.msae16.i64(i32 0, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.msae32.i64(i32 0, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.msae64.i64(i32 0, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.msbe8.i64(i32 1, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.msbe16.i64(i32 1, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.msbe32.i64(i32 1, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.msbe64.i64(i32 1, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.msce8.i64(i32 4, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.msce16.i64(i32 4, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.msce32.i64(i32 4, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.msce64.i64(i32 4, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.msate8.i64(i32 2, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.msate16.i64(i32 2, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.msate32.i64(i32 2, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.msate64.i64(i32 2, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.msbte8.i64(i32 3, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.msbte16.i64(i32 3, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.msbte32.i64(i32 3, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.msbte64.i64(i32 3, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.mscte8.i64(i32 5, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.mscte16.i64(i32 5, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.mscte32.i64(i32 5, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.mscte64.i64(i32 5, ptr %ptr, i64 %stride)
+  tail call void @llvm.riscv.th.msme8(i32 0, ptr %ptr)
+  tail call void @llvm.riscv.th.msme16(i32 0, ptr %ptr)
+  tail call void @llvm.riscv.th.msme32(i32 0, ptr %ptr)
+  tail call void @llvm.riscv.th.msme64(i32 0, ptr %ptr)
   ret void
 }
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn memory(write)
-declare void @llvm.riscv.th.msae8.i64(ptr captures(none), i64) #3
+declare void @llvm.riscv.th.msae8.i64(i32 immarg, ptr captures(none), i64) #3
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn memory(write)
-declare void @llvm.riscv.th.msae16.i64(ptr captures(none), i64) #3
+declare void @llvm.riscv.th.msae16.i64(i32 immarg, ptr captures(none), i64) #3
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn memory(write)
-declare void @llvm.riscv.th.msae32.i64(ptr captures(none), i64) #3
+declare void @llvm.riscv.th.msae32.i64(i32 immarg, ptr captures(none), i64) #3
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn memory(write)
-declare void @llvm.riscv.th.msae64.i64(ptr captures(none), i64) #3
+declare void @llvm.riscv.th.msae64.i64(i32 immarg, ptr captures(none), i64) #3
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn memory(write)
-declare void @llvm.riscv.th.msbe8.i64(ptr captures(none), i64) #3
+declare void @llvm.riscv.th.msbe8.i64(i32 immarg, ptr captures(none), i64) #3
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn memory(write)
-declare void @llvm.riscv.th.msbe16.i64(ptr captures(none), i64) #3
+declare void @llvm.riscv.th.msbe16.i64(i32 immarg, ptr captures(none), i64) #3
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn memory(write)
-declare void @llvm.riscv.th.msbe32.i64(ptr captures(none), i64) #3
+declare void @llvm.riscv.th.msbe32.i64(i32 immarg, ptr captures(none), i64) #3
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn memory(write)
-declare void @llvm.riscv.th.msbe64.i64(ptr captures(none), i64) #3
+declare void @llvm.riscv.th.msbe64.i64(i32 immarg, ptr captures(none), i64) #3
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn memory(write)
-declare void @llvm.riscv.th.msce8.i64(ptr captures(none), i64) #3
+declare void @llvm.riscv.th.msce8.i64(i32 immarg, ptr captures(none), i64) #3
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn memory(write)
-declare void @llvm.riscv.th.msce16.i64(ptr captures(none), i64) #3
+declare void @llvm.riscv.th.msce16.i64(i32 immarg, ptr captures(none), i64) #3
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn memory(write)
-declare void @llvm.riscv.th.msce32.i64(ptr captures(none), i64) #3
+declare void @llvm.riscv.th.msce32.i64(i32 immarg, ptr captures(none), i64) #3
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn memory(write)
-declare void @llvm.riscv.th.msce64.i64(ptr captures(none), i64) #3
+declare void @llvm.riscv.th.msce64.i64(i32 immarg, ptr captures(none), i64) #3
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn memory(write)
-declare void @llvm.riscv.th.msate8.i64(ptr captures(none), i64) #3
+declare void @llvm.riscv.th.msate8.i64(i32 immarg, ptr captures(none), i64) #3
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn memory(write)
-declare void @llvm.riscv.th.msate16.i64(ptr captures(none), i64) #3
+declare void @llvm.riscv.th.msate16.i64(i32 immarg, ptr captures(none), i64) #3
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn memory(write)
-declare void @llvm.riscv.th.msate32.i64(ptr captures(none), i64) #3
+declare void @llvm.riscv.th.msate32.i64(i32 immarg, ptr captures(none), i64) #3
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn memory(write)
-declare void @llvm.riscv.th.msate64.i64(ptr captures(none), i64) #3
+declare void @llvm.riscv.th.msate64.i64(i32 immarg, ptr captures(none), i64) #3
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn memory(write)
-declare void @llvm.riscv.th.msbte8.i64(ptr captures(none), i64) #3
+declare void @llvm.riscv.th.msbte8.i64(i32 immarg, ptr captures(none), i64) #3
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn memory(write)
-declare void @llvm.riscv.th.msbte16.i64(ptr captures(none), i64) #3
+declare void @llvm.riscv.th.msbte16.i64(i32 immarg, ptr captures(none), i64) #3
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn memory(write)
-declare void @llvm.riscv.th.msbte32.i64(ptr captures(none), i64) #3
+declare void @llvm.riscv.th.msbte32.i64(i32 immarg, ptr captures(none), i64) #3
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn memory(write)
-declare void @llvm.riscv.th.msbte64.i64(ptr captures(none), i64) #3
+declare void @llvm.riscv.th.msbte64.i64(i32 immarg, ptr captures(none), i64) #3
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn memory(write)
-declare void @llvm.riscv.th.mscte8.i64(ptr captures(none), i64) #3
+declare void @llvm.riscv.th.mscte8.i64(i32 immarg, ptr captures(none), i64) #3
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn memory(write)
-declare void @llvm.riscv.th.mscte16.i64(ptr captures(none), i64) #3
+declare void @llvm.riscv.th.mscte16.i64(i32 immarg, ptr captures(none), i64) #3
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn memory(write)
-declare void @llvm.riscv.th.mscte32.i64(ptr captures(none), i64) #3
+declare void @llvm.riscv.th.mscte32.i64(i32 immarg, ptr captures(none), i64) #3
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn memory(write)
-declare void @llvm.riscv.th.mscte64.i64(ptr captures(none), i64) #3
+declare void @llvm.riscv.th.mscte64.i64(i32 immarg, ptr captures(none), i64) #3
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn memory(write)
-declare void @llvm.riscv.th.msme8(ptr captures(none)) #3
+declare void @llvm.riscv.th.msme8(i32 immarg, ptr captures(none)) #3
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn memory(write)
-declare void @llvm.riscv.th.msme16(ptr captures(none)) #3
+declare void @llvm.riscv.th.msme16(i32 immarg, ptr captures(none)) #3
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn memory(write)
-declare void @llvm.riscv.th.msme32(ptr captures(none)) #3
+declare void @llvm.riscv.th.msme32(i32 immarg, ptr captures(none)) #3
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn memory(write)
-declare void @llvm.riscv.th.msme64(ptr captures(none)) #3
+declare void @llvm.riscv.th.msme64(i32 immarg, ptr captures(none)) #3
 
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn
 define dso_local void @test_matmul() local_unnamed_addr #0 {
@@ -381,150 +381,150 @@ define dso_local void @test_matmul() local_unnamed_addr #0 {
 ; CHECK-NEXT:    th.mmacc.w.bp acc0, tr1, tr0
 ; CHECK-NEXT:    ret
 entry:
-  tail call void @llvm.riscv.th.mfmacc.h.e5()
-  tail call void @llvm.riscv.th.mfmacc.h.e4()
-  tail call void @llvm.riscv.th.mfmacc.bf16.e5()
-  tail call void @llvm.riscv.th.mfmacc.bf16.e4()
-  tail call void @llvm.riscv.th.mfmacc.s.e5()
-  tail call void @llvm.riscv.th.mfmacc.s.e4()
-  tail call void @llvm.riscv.th.mfmacc.h()
-  tail call void @llvm.riscv.th.mfmacc.s.h()
-  tail call void @llvm.riscv.th.mfmacc.s.bf16()
-  tail call void @llvm.riscv.th.mfmacc.s.tf32()
-  tail call void @llvm.riscv.th.mfmacc.s()
-  tail call void @llvm.riscv.th.mfmacc.d.s()
-  tail call void @llvm.riscv.th.mfmacc.d()
-  tail call void @llvm.riscv.th.mmaccu.w.b()
-  tail call void @llvm.riscv.th.mmaccus.w.b()
-  tail call void @llvm.riscv.th.mmaccsu.w.b()
-  tail call void @llvm.riscv.th.mmacc.w.b()
-  tail call void @llvm.riscv.th.pmmaccu.w.b()
-  tail call void @llvm.riscv.th.pmmaccus.w.b()
-  tail call void @llvm.riscv.th.pmmaccsu.w.b()
-  tail call void @llvm.riscv.th.pmmacc.w.b()
-  tail call void @llvm.riscv.th.mmaccu.d.h()
-  tail call void @llvm.riscv.th.mmaccus.d.h()
-  tail call void @llvm.riscv.th.mmaccsu.d.h()
-  tail call void @llvm.riscv.th.mmacc.d.h()
-  tail call void @llvm.riscv.th.mmaccu.w.bp()
-  tail call void @llvm.riscv.th.mmacc.w.bp()
+  tail call void @llvm.riscv.th.mfmacc.h.e5(i32 4, i32 1, i32 0)
+  tail call void @llvm.riscv.th.mfmacc.h.e4(i32 4, i32 1, i32 0)
+  tail call void @llvm.riscv.th.mfmacc.bf16.e5(i32 4, i32 1, i32 0)
+  tail call void @llvm.riscv.th.mfmacc.bf16.e4(i32 4, i32 1, i32 0)
+  tail call void @llvm.riscv.th.mfmacc.s.e5(i32 4, i32 1, i32 0)
+  tail call void @llvm.riscv.th.mfmacc.s.e4(i32 4, i32 1, i32 0)
+  tail call void @llvm.riscv.th.mfmacc.h(i32 4, i32 1, i32 0)
+  tail call void @llvm.riscv.th.mfmacc.s.h(i32 4, i32 1, i32 0)
+  tail call void @llvm.riscv.th.mfmacc.s.bf16(i32 4, i32 1, i32 0)
+  tail call void @llvm.riscv.th.mfmacc.s.tf32(i32 4, i32 1, i32 0)
+  tail call void @llvm.riscv.th.mfmacc.s(i32 4, i32 1, i32 0)
+  tail call void @llvm.riscv.th.mfmacc.d.s(i32 4, i32 1, i32 0)
+  tail call void @llvm.riscv.th.mfmacc.d(i32 4, i32 1, i32 0)
+  tail call void @llvm.riscv.th.mmaccu.w.b(i32 4, i32 1, i32 0)
+  tail call void @llvm.riscv.th.mmaccus.w.b(i32 4, i32 1, i32 0)
+  tail call void @llvm.riscv.th.mmaccsu.w.b(i32 4, i32 1, i32 0)
+  tail call void @llvm.riscv.th.mmacc.w.b(i32 4, i32 1, i32 0)
+  tail call void @llvm.riscv.th.pmmaccu.w.b(i32 4, i32 1, i32 0)
+  tail call void @llvm.riscv.th.pmmaccus.w.b(i32 4, i32 1, i32 0)
+  tail call void @llvm.riscv.th.pmmaccsu.w.b(i32 4, i32 1, i32 0)
+  tail call void @llvm.riscv.th.pmmacc.w.b(i32 4, i32 1, i32 0)
+  tail call void @llvm.riscv.th.mmaccu.d.h(i32 4, i32 1, i32 0)
+  tail call void @llvm.riscv.th.mmaccus.d.h(i32 4, i32 1, i32 0)
+  tail call void @llvm.riscv.th.mmaccsu.d.h(i32 4, i32 1, i32 0)
+  tail call void @llvm.riscv.th.mmacc.d.h(i32 4, i32 1, i32 0)
+  tail call void @llvm.riscv.th.mmaccu.w.bp(i32 4, i32 1, i32 0)
+  tail call void @llvm.riscv.th.mmacc.w.bp(i32 4, i32 1, i32 0)
   ret void
 }
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mfmacc.h.e5() #1
+declare void @llvm.riscv.th.mfmacc.h.e5(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mfmacc.h.e4() #1
+declare void @llvm.riscv.th.mfmacc.h.e4(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mfmacc.bf16.e5() #1
+declare void @llvm.riscv.th.mfmacc.bf16.e5(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mfmacc.bf16.e4() #1
+declare void @llvm.riscv.th.mfmacc.bf16.e4(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mfmacc.s.e5() #1
+declare void @llvm.riscv.th.mfmacc.s.e5(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mfmacc.s.e4() #1
+declare void @llvm.riscv.th.mfmacc.s.e4(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mfmacc.h() #1
+declare void @llvm.riscv.th.mfmacc.h(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mfmacc.s.h() #1
+declare void @llvm.riscv.th.mfmacc.s.h(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mfmacc.s.bf16() #1
+declare void @llvm.riscv.th.mfmacc.s.bf16(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mfmacc.s.tf32() #1
+declare void @llvm.riscv.th.mfmacc.s.tf32(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mfmacc.s() #1
+declare void @llvm.riscv.th.mfmacc.s(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mfmacc.d.s() #1
+declare void @llvm.riscv.th.mfmacc.d.s(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mfmacc.d() #1
+declare void @llvm.riscv.th.mfmacc.d(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mmaccu.w.b() #1
+declare void @llvm.riscv.th.mmaccu.w.b(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mmaccus.w.b() #1
+declare void @llvm.riscv.th.mmaccus.w.b(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mmaccsu.w.b() #1
+declare void @llvm.riscv.th.mmaccsu.w.b(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mmacc.w.b() #1
+declare void @llvm.riscv.th.mmacc.w.b(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.pmmaccu.w.b() #1
+declare void @llvm.riscv.th.pmmaccu.w.b(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.pmmaccus.w.b() #1
+declare void @llvm.riscv.th.pmmaccus.w.b(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.pmmaccsu.w.b() #1
+declare void @llvm.riscv.th.pmmaccsu.w.b(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.pmmacc.w.b() #1
+declare void @llvm.riscv.th.pmmacc.w.b(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mmaccu.d.h() #1
+declare void @llvm.riscv.th.mmaccu.d.h(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mmaccus.d.h() #1
+declare void @llvm.riscv.th.mmaccus.d.h(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mmaccsu.d.h() #1
+declare void @llvm.riscv.th.mmaccsu.d.h(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mmacc.d.h() #1
+declare void @llvm.riscv.th.mmacc.d.h(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mmaccu.w.bp() #1
+declare void @llvm.riscv.th.mmaccu.w.bp(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mmacc.w.bp() #1
+declare void @llvm.riscv.th.mmacc.w.bp(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn
 define dso_local void @test_misc(i64 noundef %idx, i64 noundef %val) local_unnamed_addr #0 {
 ; CHECK-LABEL: test_misc:
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    th.mzero tr0
+; CHECK-NEXT:    th.mzero acc0
 ; CHECK-NEXT:    th.mzero2r tr0
 ; CHECK-NEXT:    th.mzero4r tr0
 ; CHECK-NEXT:    th.mzero8r tr0
 ; CHECK-NEXT:    th.mmov.mm tr0, tr1
 ; CHECK-NEXT:    ret
 entry:
-  tail call void @llvm.riscv.th.mzero()
-  tail call void @llvm.riscv.th.mzero2r()
-  tail call void @llvm.riscv.th.mzero4r()
-  tail call void @llvm.riscv.th.mzero8r()
-  tail call void @llvm.riscv.th.mmov.mm()
+  tail call void @llvm.riscv.th.mzero(i32 4)
+  tail call void @llvm.riscv.th.mzero2r(i32 0)
+  tail call void @llvm.riscv.th.mzero4r(i32 0)
+  tail call void @llvm.riscv.th.mzero8r(i32 0)
+  tail call void @llvm.riscv.th.mmov.mm(i32 0, i32 1)
   ret void
 }
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mzero() #1
+declare void @llvm.riscv.th.mzero(i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mzero2r() #1
+declare void @llvm.riscv.th.mzero2r(i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mzero4r() #1
+declare void @llvm.riscv.th.mzero4r(i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mzero8r() #1
+declare void @llvm.riscv.th.mzero8r(i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mmov.mm() #1
+declare void @llvm.riscv.th.mmov.mm(i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn
 define dso_local i64 @test_mov_togpr(i64 noundef %idx) local_unnamed_addr #0 {
@@ -533,12 +533,12 @@ define dso_local i64 @test_mov_togpr(i64 noundef %idx) local_unnamed_addr #0 {
 ; CHECK-NEXT:    th.mmovw.x.m a0, tr0, a0
 ; CHECK-NEXT:    ret
 entry:
-  %0 = tail call i64 @llvm.riscv.th.mmovw.x.m.i64(i64 %idx)
+  %0 = tail call i64 @llvm.riscv.th.mmovw.x.m.i64(i32 0, i64 %idx)
   ret i64 %0
 }
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare i64 @llvm.riscv.th.mmovw.x.m.i64(i64) #1
+declare i64 @llvm.riscv.th.mmovw.x.m.i64(i32 immarg, i64) #1
 
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn
 define dso_local void @test_mov_fromgpr(i64 noundef %val, i64 noundef %idx) local_unnamed_addr #0 {
@@ -548,16 +548,16 @@ define dso_local void @test_mov_fromgpr(i64 noundef %val, i64 noundef %idx) loca
 ; CHECK-NEXT:    th.mdupw.m.x tr0, a0
 ; CHECK-NEXT:    ret
 entry:
-  tail call void @llvm.riscv.th.mmovw.m.x.i64(i64 %val, i64 %idx)
-  tail call void @llvm.riscv.th.mdupw.m.x.i64(i64 %val)
+  tail call void @llvm.riscv.th.mmovw.m.x.i64(i32 0, i64 %val, i64 %idx)
+  tail call void @llvm.riscv.th.mdupw.m.x.i64(i32 0, i64 %val)
   ret void
 }
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mmovw.m.x.i64(i64, i64) #1
+declare void @llvm.riscv.th.mmovw.m.x.i64(i32 immarg, i64, i64) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mdupw.m.x.i64(i64) #1
+declare void @llvm.riscv.th.mdupw.m.x.i64(i32 immarg, i64) #1
 
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn
 define dso_local void @test_pack() local_unnamed_addr #0 {
@@ -568,20 +568,20 @@ define dso_local void @test_pack() local_unnamed_addr #0 {
 ; CHECK-NEXT:    th.mpackhh tr0, tr2, tr1
 ; CHECK-NEXT:    ret
 entry:
-  tail call void @llvm.riscv.th.mpack()
-  tail call void @llvm.riscv.th.mpackhl()
-  tail call void @llvm.riscv.th.mpackhh()
+  tail call void @llvm.riscv.th.mpack(i32 0, i32 2, i32 1)
+  tail call void @llvm.riscv.th.mpackhl(i32 0, i32 2, i32 1)
+  tail call void @llvm.riscv.th.mpackhh(i32 0, i32 2, i32 1)
   ret void
 }
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mpack() #1
+declare void @llvm.riscv.th.mpack(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mpackhl() #1
+declare void @llvm.riscv.th.mpackhl(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mpackhh() #1
+declare void @llvm.riscv.th.mpackhh(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn
 define dso_local void @test_slides() local_unnamed_addr #0 {
@@ -593,24 +593,24 @@ define dso_local void @test_slides() local_unnamed_addr #0 {
 ; CHECK-NEXT:    th.mcslideup.w tr0, tr1, 4
 ; CHECK-NEXT:    ret
 entry:
-  tail call void @llvm.riscv.th.mrslidedown.i32(i32 3)
-  tail call void @llvm.riscv.th.mrslideup.i32(i32 2)
-  tail call void @llvm.riscv.th.mcslidedown.b.i32(i32 1)
-  tail call void @llvm.riscv.th.mcslideup.w.i32(i32 4)
+  tail call void @llvm.riscv.th.mrslidedown.i32(i32 0, i32 1, i32 3)
+  tail call void @llvm.riscv.th.mrslideup.i32(i32 0, i32 1, i32 2)
+  tail call void @llvm.riscv.th.mcslidedown.b.i32(i32 0, i32 1, i32 1)
+  tail call void @llvm.riscv.th.mcslideup.w.i32(i32 0, i32 1, i32 4)
   ret void
 }
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mrslidedown.i32(i32 immarg) #1
+declare void @llvm.riscv.th.mrslidedown.i32(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mrslideup.i32(i32 immarg) #1
+declare void @llvm.riscv.th.mrslideup.i32(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mcslidedown.b.i32(i32 immarg) #1
+declare void @llvm.riscv.th.mcslidedown.b.i32(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mcslideup.w.i32(i32 immarg) #1
+declare void @llvm.riscv.th.mcslideup.w.i32(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn
 define dso_local void @test_broadcasts() local_unnamed_addr #0 {
@@ -620,16 +620,16 @@ define dso_local void @test_broadcasts() local_unnamed_addr #0 {
 ; CHECK-NEXT:    th.mcbcab.mv.i tr0, tr1, 1
 ; CHECK-NEXT:    ret
 entry:
-  tail call void @llvm.riscv.th.mrbca.mv.i.i32(i32 5)
-  tail call void @llvm.riscv.th.mcbcab.mv.i.i32(i32 1)
+  tail call void @llvm.riscv.th.mrbca.mv.i.i32(i32 0, i32 1, i32 5)
+  tail call void @llvm.riscv.th.mcbcab.mv.i.i32(i32 0, i32 1, i32 1)
   ret void
 }
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mrbca.mv.i.i32(i32 immarg) #1
+declare void @llvm.riscv.th.mrbca.mv.i.i32(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mcbcab.mv.i.i32(i32 immarg) #1
+declare void @llvm.riscv.th.mcbcab.mv.i.i32(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn
 define dso_local void @test_conversions() local_unnamed_addr #0 {
@@ -645,40 +645,40 @@ define dso_local void @test_conversions() local_unnamed_addr #0 {
 ; CHECK-NEXT:    th.mucvtl.b.p acc0, acc1
 ; CHECK-NEXT:    ret
 entry:
-  tail call void @llvm.riscv.th.mfcvtl.h.e4()
-  tail call void @llvm.riscv.th.mfcvth.s.bf16()
-  tail call void @llvm.riscv.th.mfcvt.tf32.s()
-  tail call void @llvm.riscv.th.msfcvtl.h.b()
-  tail call void @llvm.riscv.th.mfucvtl.b.h()
-  tail call void @llvm.riscv.th.msfcvt.s.w()
-  tail call void @llvm.riscv.th.mfscvt.w.s()
-  tail call void @llvm.riscv.th.mucvtl.b.p()
+  tail call void @llvm.riscv.th.mfcvtl.h.e4(i32 4, i32 5)
+  tail call void @llvm.riscv.th.mfcvth.s.bf16(i32 4, i32 5)
+  tail call void @llvm.riscv.th.mfcvt.tf32.s(i32 4, i32 5)
+  tail call void @llvm.riscv.th.msfcvtl.h.b(i32 4, i32 5)
+  tail call void @llvm.riscv.th.mfucvtl.b.h(i32 4, i32 5)
+  tail call void @llvm.riscv.th.msfcvt.s.w(i32 4, i32 5)
+  tail call void @llvm.riscv.th.mfscvt.w.s(i32 4, i32 5)
+  tail call void @llvm.riscv.th.mucvtl.b.p(i32 4, i32 5)
   ret void
 }
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mfcvtl.h.e4() #1
+declare void @llvm.riscv.th.mfcvtl.h.e4(i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mfcvth.s.bf16() #1
+declare void @llvm.riscv.th.mfcvth.s.bf16(i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mfcvt.tf32.s() #1
+declare void @llvm.riscv.th.mfcvt.tf32.s(i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.msfcvtl.h.b() #1
+declare void @llvm.riscv.th.msfcvtl.h.b(i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mfucvtl.b.h() #1
+declare void @llvm.riscv.th.mfucvtl.b.h(i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.msfcvt.s.w() #1
+declare void @llvm.riscv.th.msfcvt.s.w(i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mfscvt.w.s() #1
+declare void @llvm.riscv.th.mfscvt.w.s(i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mucvtl.b.p() #1
+declare void @llvm.riscv.th.mucvtl.b.p(i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn
 define dso_local void @test_ew_arith() local_unnamed_addr #0 {
@@ -692,32 +692,32 @@ define dso_local void @test_ew_arith() local_unnamed_addr #0 {
 ; CHECK-NEXT:    th.mn4clipl.w.mv.i acc0, acc2, acc1, 1
 ; CHECK-NEXT:    ret
 entry:
-  tail call void @llvm.riscv.th.madd.w.mm()
-  tail call void @llvm.riscv.th.madd.w.mv.i.i32(i32 3)
-  tail call void @llvm.riscv.th.mfadd.h.mm()
-  tail call void @llvm.riscv.th.mfadd.s.mv.i.i32(i32 2)
-  tail call void @llvm.riscv.th.mn4clipl.w.mm()
-  tail call void @llvm.riscv.th.mn4clipl.w.mv.i.i32(i32 1)
+  tail call void @llvm.riscv.th.madd.w.mm(i32 4, i32 6, i32 5)
+  tail call void @llvm.riscv.th.madd.w.mv.i.i32(i32 4, i32 6, i32 5, i32 3)
+  tail call void @llvm.riscv.th.mfadd.h.mm(i32 4, i32 6, i32 5)
+  tail call void @llvm.riscv.th.mfadd.s.mv.i.i32(i32 4, i32 6, i32 5, i32 2)
+  tail call void @llvm.riscv.th.mn4clipl.w.mm(i32 4, i32 6, i32 5)
+  tail call void @llvm.riscv.th.mn4clipl.w.mv.i.i32(i32 4, i32 6, i32 5, i32 1)
   ret void
 }
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.madd.w.mm() #1
+declare void @llvm.riscv.th.madd.w.mm(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.madd.w.mv.i.i32(i32 immarg) #1
+declare void @llvm.riscv.th.madd.w.mv.i.i32(i32 immarg, i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mfadd.h.mm() #1
+declare void @llvm.riscv.th.mfadd.h.mm(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mfadd.s.mv.i.i32(i32 immarg) #1
+declare void @llvm.riscv.th.mfadd.s.mv.i.i32(i32 immarg, i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mn4clipl.w.mm() #1
+declare void @llvm.riscv.th.mn4clipl.w.mm(i32 immarg, i32 immarg, i32 immarg) #1
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn
-declare void @llvm.riscv.th.mn4clipl.w.mv.i.i32(i32 immarg) #1
+declare void @llvm.riscv.th.mn4clipl.w.mv.i.i32(i32 immarg, i32 immarg, i32 immarg, i32 immarg) #1
 
 attributes #0 = { mustprogress nofree norecurse nosync nounwind willreturn "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="generic-rv64" "target-features"="+64bit,+experimental,+experimental-xtheadmatrix,+i,+relax,-a,-b,-c,-d,-e,-experimental-p,-experimental-smpmpmt,-experimental-svukte,-experimental-xrivosvisni,-experimental-xrivosvizip,-experimental-xsfmclic,-experimental-xsfsclic,-experimental-zibi,-experimental-zicfilp,-experimental-zicfiss,-experimental-zvbc32e,-experimental-zvfbfa,-experimental-zvfofp8min,-experimental-zvkgs,-experimental-zvqdotq,-f,-h,-m,-q,-sdext,-sdtrig,-sha,-shcounterenw,-shgatpa,-shlcofideleg,-shtvala,-shvsatpa,-shvstvala,-shvstvecd,-smaia,-smcdeleg,-smcntrpmf,-smcsrind,-smctr,-smdbltrp,-smepmp,-smmpm,-smnpm,-smrnmi,-smstateen,-ssaia,-ssccfg,-ssccptr,-sscofpmf,-sscounterenw,-sscsrind,-ssctr,-ssdbltrp,-ssnpm,-sspm,-ssqosid,-ssstateen,-ssstrict,-sstc,-sstvala,-sstvecd,-ssu64xl,-supm,-svade,-svadu,-svbare,-svinval,-svnapot,-svpbmt,-svvptc,-v,-xandesbfhcvt,-xandesperf,-xandesvbfhcvt,-xandesvdot,-xandesvpackfph,-xandesvsinth,-xandesvsintload,-xcvalu,-xcvbi,-xcvbitmanip,-xcvelw,-xcvmac,-xcvmem,-xcvsimd,-xmipscbop,-xmipscmov,-xmipsexectl,-xmipslsp,-xqccmp,-xqci,-xqcia,-xqciac,-xqcibi,-xqcibm,-xqcicli,-xqcicm,-xqcics,-xqcicsr,-xqciint,-xqciio,-xqcilb,-xqcili,-xqcilia,-xqcilo,-xqcilsm,-xqcisim,-xqcisls,-xqcisync,-xsfcease,-xsfmm128t,-xsfmm16t,-xsfmm32a16f,-xsfmm32a32f,-xsfmm32a8f,-xsfmm32a8i,-xsfmm32t,-xsfmm64a64f,-xsfmm64t,-xsfmmbase,-xsfvcp,-xsfvfbfexp16e,-xsfvfexp16e,-xsfvfexp32e,-xsfvfexpa,-xsfvfexpa64e,-xsfvfnrclipxfqf,-xsfvfwmaccqqq,-xsfvqmaccdod,-xsfvqmaccqoq,-xsifivecdiscarddlone,-xsifivecflushdlone,-xsmtvdot,-xtheadba,-xtheadbb,-xtheadbs,-xtheadcmo,-xtheadcondmov,-xtheadfmemidx,-xtheadmac,-xtheadmemidx,-xtheadmempair,-xtheadsync,-xtheadvdot,-xventanacondops,-xwchc,-za128rs,-za64rs,-zaamo,-zabha,-zacas,-zalasr,-zalrsc,-zama16b,-zawrs,-zba,-zbb,-zbc,-zbkb,-zbkc,-zbkx,-zbs,-zca,-zcb,-zcd,-zce,-zcf,-zclsd,-zcmop,-zcmp,-zcmt,-zdinx,-zfa,-zfbfmin,-zfh,-zfhmin,-zfinx,-zhinx,-zhinxmin,-zic64b,-zicbom,-zicbop,-zicboz,-ziccamoa,-ziccamoc,-ziccif,-zicclsm,-ziccrse,-zicntr,-zicond,-zicsr,-zifencei,-zihintntl,-zihintpause,-zihpm,-zilsd,-zimop,-zk,-zkn,-zknd,-zkne,-zknh,-zkr,-zks,-zksed,-zksh,-zkt,-zmmul,-ztso,-zvbb,-zvbc,-zve32f,-zve32x,-zve64d,-zve64f,-zve64x,-zvfbfmin,-zvfbfwma,-zvfh,-zvfhmin,-zvkb,-zvkg,-zvkn,-zvknc,-zvkned,-zvkng,-zvknha,-zvknhb,-zvks,-zvksc,-zvksed,-zvksg,-zvksh,-zvkt,-zvl1024b,-zvl128b,-zvl16384b,-zvl2048b,-zvl256b,-zvl32768b,-zvl32b,-zvl4096b,-zvl512b,-zvl64b,-zvl65536b,-zvl8192b" }
 attributes #1 = { mustprogress nocallback nofree nosync nounwind willreturn }
@@ -727,6 +727,131 @@ attributes #3 = { mustprogress nocallback nofree nosync nounwind willreturn memo
 !llvm.module.flags = !{!0, !1, !2, !4}
 !llvm.ident = !{!5}
 !llvm.errno.tbaa = !{!6}
+
+; ==========================================================================
+; Register flexibility tests — verify ISel reads register indices from args
+; ==========================================================================
+
+; Multi-accumulator matmul: same A/B regs, two different accumulators
+; CHECK-LABEL: test_multi_acc_matmul:
+; CHECK: th.mzero acc0
+; CHECK: th.mfmacc.h.e4 acc0, tr1, tr0
+; CHECK: th.mzero acc1
+; CHECK: th.mfmacc.h.e4 acc1, tr1, tr0
+define void @test_multi_acc_matmul() #0 {
+  call void @llvm.riscv.th.mzero(i32 4)
+  call void @llvm.riscv.th.mfmacc.h.e4(i32 4, i32 1, i32 0)
+  call void @llvm.riscv.th.mzero(i32 5)
+  call void @llvm.riscv.th.mfmacc.h.e4(i32 5, i32 1, i32 0)
+  ret void
+}
+
+; Custom register selection: matmul with tr2/tr3 pair
+; CHECK-LABEL: test_custom_tile_pair:
+; CHECK: th.mfmacc.s acc2, tr3, tr2
+define void @test_custom_tile_pair() #0 {
+  call void @llvm.riscv.th.mfmacc.s(i32 6, i32 3, i32 2)
+  ret void
+}
+
+; Zero targeting different registers
+; CHECK-LABEL: test_mzero_all_regs:
+; CHECK: th.mzero tr0
+; CHECK: th.mzero tr1
+; CHECK: th.mzero tr2
+; CHECK: th.mzero tr3
+; CHECK: th.mzero acc0
+; CHECK: th.mzero acc1
+; CHECK: th.mzero acc2
+; CHECK: th.mzero acc3
+define void @test_mzero_all_regs() #0 {
+  call void @llvm.riscv.th.mzero(i32 0)
+  call void @llvm.riscv.th.mzero(i32 1)
+  call void @llvm.riscv.th.mzero(i32 2)
+  call void @llvm.riscv.th.mzero(i32 3)
+  call void @llvm.riscv.th.mzero(i32 4)
+  call void @llvm.riscv.th.mzero(i32 5)
+  call void @llvm.riscv.th.mzero(i32 6)
+  call void @llvm.riscv.th.mzero(i32 7)
+  ret void
+}
+
+; EW on different acc register combinations
+; CHECK-LABEL: test_ew_custom_acc:
+; CHECK: th.mfadd.h.mm acc1, acc3, acc2
+define void @test_ew_custom_acc() #0 {
+  call void @llvm.riscv.th.mfadd.h.mm(i32 5, i32 7, i32 6)
+  ret void
+}
+
+; Load A into non-default tile register (tr2)
+; CHECK-LABEL: test_custom_load_reg:
+; CHECK: th.mlae8 tr2
+define void @test_custom_load_reg(ptr %p, i64 %s) #0 {
+  call void @llvm.riscv.th.mlae8.i64(i32 2, ptr %p, i64 %s)
+  ret void
+}
+
+; Store C from non-default acc register (acc1)
+; CHECK-LABEL: test_custom_store_reg:
+; CHECK: th.msce32 acc1
+define void @test_custom_store_reg(ptr %p, i64 %s) #0 {
+  call void @llvm.riscv.th.msce32.i64(i32 5, ptr %p, i64 %s)
+  ret void
+}
+
+; Conversion with different acc registers
+; CHECK-LABEL: test_custom_cvt_regs:
+; CHECK: th.mfcvtl.h.e4 acc2, acc3
+define void @test_custom_cvt_regs() #0 {
+  call void @llvm.riscv.th.mfcvtl.h.e4(i32 6, i32 7)
+  ret void
+}
+
+; mmov.mm between acc registers
+; CHECK-LABEL: test_mmov_acc_to_acc:
+; CHECK: th.mmov.mm acc1, acc0
+define void @test_mmov_acc_to_acc() #0 {
+  call void @llvm.riscv.th.mmov.mm(i32 5, i32 4)
+  ret void
+}
+
+; Slide with acc registers
+; CHECK-LABEL: test_slide_acc:
+; CHECK: th.mrslidedown acc0, acc1
+define void @test_slide_acc() #0 {
+  call void @llvm.riscv.th.mrslidedown.i32(i32 4, i32 5, i32 2)
+  ret void
+}
+
+; Full dual-GEMM pipeline: two independent matmuls sharing same tile regs
+; CHECK-LABEL: test_dual_gemm_pipeline:
+; CHECK: th.mlae8 tr0
+; CHECK: th.mlbe8 tr1
+; CHECK: th.mzero acc0
+; CHECK: th.mmacc.w.b acc0, tr1, tr0
+; CHECK: th.mlbe8 tr1
+; CHECK: th.mzero acc1
+; CHECK: th.mmacc.w.b acc1, tr1, tr0
+; CHECK: th.msce32 acc0
+; CHECK: th.msce32 acc1
+define void @test_dual_gemm_pipeline(ptr %a, ptr %b1, ptr %b2,
+                                     ptr %c1, ptr %c2, i64 %s) #0 {
+  ; Load A
+  call void @llvm.riscv.th.mlae8.i64(i32 0, ptr %a, i64 %s)
+  ; GEMM 1: B1 → acc0
+  call void @llvm.riscv.th.mlbe8.i64(i32 1, ptr %b1, i64 %s)
+  call void @llvm.riscv.th.mzero(i32 4)
+  call void @llvm.riscv.th.mmacc.w.b(i32 4, i32 1, i32 0)
+  ; GEMM 2: B2 → acc1
+  call void @llvm.riscv.th.mlbe8.i64(i32 1, ptr %b2, i64 %s)
+  call void @llvm.riscv.th.mzero(i32 5)
+  call void @llvm.riscv.th.mmacc.w.b(i32 5, i32 1, i32 0)
+  ; Store both
+  call void @llvm.riscv.th.msce32.i64(i32 4, ptr %c1, i64 %s)
+  call void @llvm.riscv.th.msce32.i64(i32 5, ptr %c2, i64 %s)
+  ret void
+}
 
 !0 = !{i32 1, !"wchar_size", i32 4}
 !1 = !{i32 1, !"target-abi", !"lp64"}

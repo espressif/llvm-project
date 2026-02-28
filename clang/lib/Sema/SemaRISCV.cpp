@@ -1521,6 +1521,314 @@ bool SemaRISCV::CheckBuiltinFunctionCall(const TargetInfo &TI,
     return false;
   }
 
+  // XTHeadMatrix register index validation.
+  // All register index args are unsigned int ImmArg with range [0, 7].
+  // Some instructions further constrain to tile (0-3) or accumulator (4-7).
+  //
+  // Helper lambda to check one register index argument.
+  auto CheckTHMatrixRegIdx = [&](unsigned ArgNum) -> bool {
+    return SemaRef.BuiltinConstantArgRange(TheCall, ArgNum, 0, 7);
+  };
+
+  // Helper lambda to check a register is a tile register (0-3).
+  auto CheckTHMatrixTileReg = [&](unsigned ArgNum,
+                                  StringRef RegName) -> bool {
+    if (CheckTHMatrixRegIdx(ArgNum))
+      return true;
+    llvm::APSInt Result;
+    if (SemaRef.BuiltinConstantArg(TheCall, ArgNum, Result))
+      return true;
+    int64_t Val = Result.getSExtValue();
+    if (Val >= 0 && Val <= 3)
+      return false;
+    return Diag(TheCall->getArg(ArgNum)->getBeginLoc(),
+                diag::err_xtheadmatrix_tile_reg_required)
+           << RegName << TheCall->getArg(ArgNum)->getSourceRange();
+  };
+
+  // Helper lambda to check a register is an accumulator register (4-7).
+  auto CheckTHMatrixAccReg = [&](unsigned ArgNum,
+                                 StringRef RegName) -> bool {
+    if (CheckTHMatrixRegIdx(ArgNum))
+      return true;
+    llvm::APSInt Result;
+    if (SemaRef.BuiltinConstantArg(TheCall, ArgNum, Result))
+      return true;
+    int64_t Val = Result.getSExtValue();
+    if (Val >= 4 && Val <= 7)
+      return false;
+    return Diag(TheCall->getArg(ArgNum)->getBeginLoc(),
+                diag::err_xtheadmatrix_acc_reg_required)
+           << RegName << TheCall->getArg(ArgNum)->getSourceRange();
+  };
+
+  switch (BuiltinID) {
+  default:
+    break;
+
+  // --- Load A/A^T: md must be tile (0-3) ---
+  case RISCV::BI__builtin_riscv_th_mlae8:
+  case RISCV::BI__builtin_riscv_th_mlae16:
+  case RISCV::BI__builtin_riscv_th_mlae32:
+  case RISCV::BI__builtin_riscv_th_mlae64:
+  case RISCV::BI__builtin_riscv_th_mlate8:
+  case RISCV::BI__builtin_riscv_th_mlate16:
+  case RISCV::BI__builtin_riscv_th_mlate32:
+  case RISCV::BI__builtin_riscv_th_mlate64:
+  // --- Load B/B^T: md must be tile (0-3) ---
+  case RISCV::BI__builtin_riscv_th_mlbe8:
+  case RISCV::BI__builtin_riscv_th_mlbe16:
+  case RISCV::BI__builtin_riscv_th_mlbe32:
+  case RISCV::BI__builtin_riscv_th_mlbe64:
+  case RISCV::BI__builtin_riscv_th_mlbte8:
+  case RISCV::BI__builtin_riscv_th_mlbte16:
+  case RISCV::BI__builtin_riscv_th_mlbte32:
+  case RISCV::BI__builtin_riscv_th_mlbte64:
+    return CheckTHMatrixTileReg(0, "md");
+
+  // --- Store A/A^T: ms3 must be tile (0-3) ---
+  case RISCV::BI__builtin_riscv_th_msae8:
+  case RISCV::BI__builtin_riscv_th_msae16:
+  case RISCV::BI__builtin_riscv_th_msae32:
+  case RISCV::BI__builtin_riscv_th_msae64:
+  case RISCV::BI__builtin_riscv_th_msate8:
+  case RISCV::BI__builtin_riscv_th_msate16:
+  case RISCV::BI__builtin_riscv_th_msate32:
+  case RISCV::BI__builtin_riscv_th_msate64:
+  // --- Store B/B^T: ms3 must be tile (0-3) ---
+  case RISCV::BI__builtin_riscv_th_msbe8:
+  case RISCV::BI__builtin_riscv_th_msbe16:
+  case RISCV::BI__builtin_riscv_th_msbe32:
+  case RISCV::BI__builtin_riscv_th_msbe64:
+  case RISCV::BI__builtin_riscv_th_msbte8:
+  case RISCV::BI__builtin_riscv_th_msbte16:
+  case RISCV::BI__builtin_riscv_th_msbte32:
+  case RISCV::BI__builtin_riscv_th_msbte64:
+    return CheckTHMatrixTileReg(0, "ms3");
+
+  // --- Load C/C^T: md must be accumulator (4-7) ---
+  case RISCV::BI__builtin_riscv_th_mlce8:
+  case RISCV::BI__builtin_riscv_th_mlce16:
+  case RISCV::BI__builtin_riscv_th_mlce32:
+  case RISCV::BI__builtin_riscv_th_mlce64:
+  case RISCV::BI__builtin_riscv_th_mlcte8:
+  case RISCV::BI__builtin_riscv_th_mlcte16:
+  case RISCV::BI__builtin_riscv_th_mlcte32:
+  case RISCV::BI__builtin_riscv_th_mlcte64:
+    return CheckTHMatrixAccReg(0, "md");
+
+  // --- Store C/C^T: ms3 must be accumulator (4-7) ---
+  case RISCV::BI__builtin_riscv_th_msce8:
+  case RISCV::BI__builtin_riscv_th_msce16:
+  case RISCV::BI__builtin_riscv_th_msce32:
+  case RISCV::BI__builtin_riscv_th_msce64:
+  case RISCV::BI__builtin_riscv_th_mscte8:
+  case RISCV::BI__builtin_riscv_th_mscte16:
+  case RISCV::BI__builtin_riscv_th_mscte32:
+  case RISCV::BI__builtin_riscv_th_mscte64:
+    return CheckTHMatrixAccReg(0, "ms3");
+
+  // --- Load/Store M (whole-register): any register (0-7) ---
+  case RISCV::BI__builtin_riscv_th_mlme8:
+  case RISCV::BI__builtin_riscv_th_mlme16:
+  case RISCV::BI__builtin_riscv_th_mlme32:
+  case RISCV::BI__builtin_riscv_th_mlme64:
+  case RISCV::BI__builtin_riscv_th_msme8:
+  case RISCV::BI__builtin_riscv_th_msme16:
+  case RISCV::BI__builtin_riscv_th_msme32:
+  case RISCV::BI__builtin_riscv_th_msme64:
+  // --- mzero/mmov/mdup/mmov.x.m: any register (0-7) ---
+  case RISCV::BI__builtin_riscv_th_mzero:
+  case RISCV::BI__builtin_riscv_th_mzero2r:
+  case RISCV::BI__builtin_riscv_th_mzero4r:
+  case RISCV::BI__builtin_riscv_th_mzero8r:
+  case RISCV::BI__builtin_riscv_th_mmovb_x_m:
+  case RISCV::BI__builtin_riscv_th_mmovh_x_m:
+  case RISCV::BI__builtin_riscv_th_mmovw_x_m:
+  case RISCV::BI__builtin_riscv_th_mmovd_x_m:
+  case RISCV::BI__builtin_riscv_th_mmovb_m_x:
+  case RISCV::BI__builtin_riscv_th_mmovh_m_x:
+  case RISCV::BI__builtin_riscv_th_mmovw_m_x:
+  case RISCV::BI__builtin_riscv_th_mmovd_m_x:
+  case RISCV::BI__builtin_riscv_th_mdupb_m_x:
+  case RISCV::BI__builtin_riscv_th_mduph_m_x:
+  case RISCV::BI__builtin_riscv_th_mdupw_m_x:
+  case RISCV::BI__builtin_riscv_th_mdupd_m_x:
+    return CheckTHMatrixRegIdx(0);
+
+  // --- mmov.mm: 2 registers, both any (0-7) ---
+  case RISCV::BI__builtin_riscv_th_mmov_mm:
+    return CheckTHMatrixRegIdx(0) || CheckTHMatrixRegIdx(1);
+
+  // --- Matmul: md must be acc (4-7), ms2/ms1 must be tile (0-3) ---
+  case RISCV::BI__builtin_riscv_th_mfmacc_h:
+  case RISCV::BI__builtin_riscv_th_mfmacc_s:
+  case RISCV::BI__builtin_riscv_th_mfmacc_d:
+  case RISCV::BI__builtin_riscv_th_mfmacc_h_e4:
+  case RISCV::BI__builtin_riscv_th_mfmacc_h_e5:
+  case RISCV::BI__builtin_riscv_th_mfmacc_bf16_e4:
+  case RISCV::BI__builtin_riscv_th_mfmacc_bf16_e5:
+  case RISCV::BI__builtin_riscv_th_mfmacc_s_h:
+  case RISCV::BI__builtin_riscv_th_mfmacc_s_bf16:
+  case RISCV::BI__builtin_riscv_th_mfmacc_s_e4:
+  case RISCV::BI__builtin_riscv_th_mfmacc_s_e5:
+  case RISCV::BI__builtin_riscv_th_mfmacc_s_tf32:
+  case RISCV::BI__builtin_riscv_th_mfmacc_d_s:
+  case RISCV::BI__builtin_riscv_th_mmacc_w_b:
+  case RISCV::BI__builtin_riscv_th_mmaccu_w_b:
+  case RISCV::BI__builtin_riscv_th_mmaccus_w_b:
+  case RISCV::BI__builtin_riscv_th_mmaccsu_w_b:
+  case RISCV::BI__builtin_riscv_th_mmacc_d_h:
+  case RISCV::BI__builtin_riscv_th_mmaccu_d_h:
+  case RISCV::BI__builtin_riscv_th_mmaccus_d_h:
+  case RISCV::BI__builtin_riscv_th_mmaccsu_d_h:
+  case RISCV::BI__builtin_riscv_th_pmmacc_w_b:
+  case RISCV::BI__builtin_riscv_th_pmmaccu_w_b:
+  case RISCV::BI__builtin_riscv_th_pmmaccus_w_b:
+  case RISCV::BI__builtin_riscv_th_pmmaccsu_w_b:
+  case RISCV::BI__builtin_riscv_th_mmacc_w_bp:
+  case RISCV::BI__builtin_riscv_th_mmaccu_w_bp:
+    // md (arg 0) must be acc, ms2 (arg 1) must be tile, ms1 (arg 2) must be tile
+    return CheckTHMatrixAccReg(0, "md") ||
+           CheckTHMatrixTileReg(1, "ms2") ||
+           CheckTHMatrixTileReg(2, "ms1");
+
+  // --- EW arith/n4clip: all 3 registers must be acc (4-7) ---
+  case RISCV::BI__builtin_riscv_th_madd_w_mm:
+  case RISCV::BI__builtin_riscv_th_msub_w_mm:
+  case RISCV::BI__builtin_riscv_th_mmul_w_mm:
+  case RISCV::BI__builtin_riscv_th_mmulh_w_mm:
+  case RISCV::BI__builtin_riscv_th_mmax_w_mm:
+  case RISCV::BI__builtin_riscv_th_mumax_w_mm:
+  case RISCV::BI__builtin_riscv_th_mmin_w_mm:
+  case RISCV::BI__builtin_riscv_th_mumin_w_mm:
+  case RISCV::BI__builtin_riscv_th_msrl_w_mm:
+  case RISCV::BI__builtin_riscv_th_msll_w_mm:
+  case RISCV::BI__builtin_riscv_th_msra_w_mm:
+  case RISCV::BI__builtin_riscv_th_madd_w_mv_i:
+  case RISCV::BI__builtin_riscv_th_msub_w_mv_i:
+  case RISCV::BI__builtin_riscv_th_mmul_w_mv_i:
+  case RISCV::BI__builtin_riscv_th_mmulh_w_mv_i:
+  case RISCV::BI__builtin_riscv_th_mmax_w_mv_i:
+  case RISCV::BI__builtin_riscv_th_mumax_w_mv_i:
+  case RISCV::BI__builtin_riscv_th_mmin_w_mv_i:
+  case RISCV::BI__builtin_riscv_th_mumin_w_mv_i:
+  case RISCV::BI__builtin_riscv_th_msrl_w_mv_i:
+  case RISCV::BI__builtin_riscv_th_msll_w_mv_i:
+  case RISCV::BI__builtin_riscv_th_msra_w_mv_i:
+  case RISCV::BI__builtin_riscv_th_mfadd_h_mm:
+  case RISCV::BI__builtin_riscv_th_mfadd_s_mm:
+  case RISCV::BI__builtin_riscv_th_mfadd_d_mm:
+  case RISCV::BI__builtin_riscv_th_mfsub_h_mm:
+  case RISCV::BI__builtin_riscv_th_mfsub_s_mm:
+  case RISCV::BI__builtin_riscv_th_mfsub_d_mm:
+  case RISCV::BI__builtin_riscv_th_mfmul_h_mm:
+  case RISCV::BI__builtin_riscv_th_mfmul_s_mm:
+  case RISCV::BI__builtin_riscv_th_mfmul_d_mm:
+  case RISCV::BI__builtin_riscv_th_mfmax_h_mm:
+  case RISCV::BI__builtin_riscv_th_mfmax_s_mm:
+  case RISCV::BI__builtin_riscv_th_mfmax_d_mm:
+  case RISCV::BI__builtin_riscv_th_mfmin_h_mm:
+  case RISCV::BI__builtin_riscv_th_mfmin_s_mm:
+  case RISCV::BI__builtin_riscv_th_mfmin_d_mm:
+  case RISCV::BI__builtin_riscv_th_mfadd_h_mv_i:
+  case RISCV::BI__builtin_riscv_th_mfadd_s_mv_i:
+  case RISCV::BI__builtin_riscv_th_mfadd_d_mv_i:
+  case RISCV::BI__builtin_riscv_th_mfsub_h_mv_i:
+  case RISCV::BI__builtin_riscv_th_mfsub_s_mv_i:
+  case RISCV::BI__builtin_riscv_th_mfsub_d_mv_i:
+  case RISCV::BI__builtin_riscv_th_mfmul_h_mv_i:
+  case RISCV::BI__builtin_riscv_th_mfmul_s_mv_i:
+  case RISCV::BI__builtin_riscv_th_mfmul_d_mv_i:
+  case RISCV::BI__builtin_riscv_th_mfmax_h_mv_i:
+  case RISCV::BI__builtin_riscv_th_mfmax_s_mv_i:
+  case RISCV::BI__builtin_riscv_th_mfmax_d_mv_i:
+  case RISCV::BI__builtin_riscv_th_mfmin_h_mv_i:
+  case RISCV::BI__builtin_riscv_th_mfmin_s_mv_i:
+  case RISCV::BI__builtin_riscv_th_mfmin_d_mv_i:
+  case RISCV::BI__builtin_riscv_th_mn4clipl_w_mm:
+  case RISCV::BI__builtin_riscv_th_mn4cliph_w_mm:
+  case RISCV::BI__builtin_riscv_th_mn4cliplu_w_mm:
+  case RISCV::BI__builtin_riscv_th_mn4cliphu_w_mm:
+  case RISCV::BI__builtin_riscv_th_mn4clipl_w_mv_i:
+  case RISCV::BI__builtin_riscv_th_mn4cliph_w_mv_i:
+  case RISCV::BI__builtin_riscv_th_mn4cliplu_w_mv_i:
+  case RISCV::BI__builtin_riscv_th_mn4cliphu_w_mv_i:
+    return CheckTHMatrixAccReg(0, "md") ||
+           CheckTHMatrixAccReg(1, "ms2") ||
+           CheckTHMatrixAccReg(2, "ms1");
+
+  // --- Conversions / packed conversions: md and ms1 must be acc (4-7) ---
+  case RISCV::BI__builtin_riscv_th_mfcvtl_h_e4:
+  case RISCV::BI__builtin_riscv_th_mfcvth_h_e4:
+  case RISCV::BI__builtin_riscv_th_mfcvtl_h_e5:
+  case RISCV::BI__builtin_riscv_th_mfcvth_h_e5:
+  case RISCV::BI__builtin_riscv_th_mfcvtl_e4_h:
+  case RISCV::BI__builtin_riscv_th_mfcvth_e4_h:
+  case RISCV::BI__builtin_riscv_th_mfcvtl_e5_h:
+  case RISCV::BI__builtin_riscv_th_mfcvth_e5_h:
+  case RISCV::BI__builtin_riscv_th_mfcvtl_s_h:
+  case RISCV::BI__builtin_riscv_th_mfcvth_s_h:
+  case RISCV::BI__builtin_riscv_th_mfcvtl_h_s:
+  case RISCV::BI__builtin_riscv_th_mfcvth_h_s:
+  case RISCV::BI__builtin_riscv_th_mfcvtl_s_bf16:
+  case RISCV::BI__builtin_riscv_th_mfcvth_s_bf16:
+  case RISCV::BI__builtin_riscv_th_mfcvtl_bf16_s:
+  case RISCV::BI__builtin_riscv_th_mfcvth_bf16_s:
+  case RISCV::BI__builtin_riscv_th_mfcvtl_e4_s:
+  case RISCV::BI__builtin_riscv_th_mfcvth_e4_s:
+  case RISCV::BI__builtin_riscv_th_mfcvtl_e5_s:
+  case RISCV::BI__builtin_riscv_th_mfcvth_e5_s:
+  case RISCV::BI__builtin_riscv_th_mfcvtl_d_s:
+  case RISCV::BI__builtin_riscv_th_mfcvth_d_s:
+  case RISCV::BI__builtin_riscv_th_mfcvtl_s_d:
+  case RISCV::BI__builtin_riscv_th_mfcvth_s_d:
+  case RISCV::BI__builtin_riscv_th_mfcvt_s_tf32:
+  case RISCV::BI__builtin_riscv_th_mfcvt_tf32_s:
+  case RISCV::BI__builtin_riscv_th_mufcvtl_h_b:
+  case RISCV::BI__builtin_riscv_th_mufcvth_h_b:
+  case RISCV::BI__builtin_riscv_th_msfcvtl_h_b:
+  case RISCV::BI__builtin_riscv_th_msfcvth_h_b:
+  case RISCV::BI__builtin_riscv_th_mfucvtl_b_h:
+  case RISCV::BI__builtin_riscv_th_mfucvth_b_h:
+  case RISCV::BI__builtin_riscv_th_mfscvtl_b_h:
+  case RISCV::BI__builtin_riscv_th_mfscvth_b_h:
+  case RISCV::BI__builtin_riscv_th_msfcvt_s_w:
+  case RISCV::BI__builtin_riscv_th_mufcvt_s_w:
+  case RISCV::BI__builtin_riscv_th_mfscvt_w_s:
+  case RISCV::BI__builtin_riscv_th_mfucvt_w_s:
+  case RISCV::BI__builtin_riscv_th_mucvtl_b_p:
+  case RISCV::BI__builtin_riscv_th_mscvtl_b_p:
+  case RISCV::BI__builtin_riscv_th_mucvth_b_p:
+  case RISCV::BI__builtin_riscv_th_mscvth_b_p:
+    return CheckTHMatrixAccReg(0, "md") ||
+           CheckTHMatrixAccReg(1, "ms1");
+
+  // --- Pack/slides/broadcasts: any register (0-7) ---
+  case RISCV::BI__builtin_riscv_th_mpack:
+  case RISCV::BI__builtin_riscv_th_mpackhl:
+  case RISCV::BI__builtin_riscv_th_mpackhh:
+    return CheckTHMatrixRegIdx(0) || CheckTHMatrixRegIdx(1) ||
+           CheckTHMatrixRegIdx(2);
+
+  case RISCV::BI__builtin_riscv_th_mrslidedown:
+  case RISCV::BI__builtin_riscv_th_mrslideup:
+  case RISCV::BI__builtin_riscv_th_mcslidedown_b:
+  case RISCV::BI__builtin_riscv_th_mcslidedown_h:
+  case RISCV::BI__builtin_riscv_th_mcslidedown_w:
+  case RISCV::BI__builtin_riscv_th_mcslidedown_d:
+  case RISCV::BI__builtin_riscv_th_mcslideup_b:
+  case RISCV::BI__builtin_riscv_th_mcslideup_h:
+  case RISCV::BI__builtin_riscv_th_mcslideup_w:
+  case RISCV::BI__builtin_riscv_th_mcslideup_d:
+  case RISCV::BI__builtin_riscv_th_mrbca_mv_i:
+  case RISCV::BI__builtin_riscv_th_mcbcab_mv_i:
+  case RISCV::BI__builtin_riscv_th_mcbcah_mv_i:
+  case RISCV::BI__builtin_riscv_th_mcbcaw_mv_i:
+  case RISCV::BI__builtin_riscv_th_mcbcad_mv_i:
+    return CheckTHMatrixRegIdx(0) || CheckTHMatrixRegIdx(1);
+  }
+
   return false;
 }
 
@@ -1567,6 +1875,13 @@ void SemaRISCV::checkRVVTypeSupport(QualType Ty, SourceLocation Loc, Decl *D,
   // if we don't have at least zve32x supported, then we need to emit error.
   else if (!FeatureMap.lookup("zve32x"))
     Diag(Loc, diag::err_riscv_type_requires_extension) << Ty << "zve32x";
+}
+
+void SemaRISCV::checkRVMTypeSupport(QualType Ty, SourceLocation Loc, Decl *D,
+                                    const llvm::StringMap<bool> &FeatureMap) {
+  // Matrix types require xtheadmatrix
+  if (!FeatureMap.lookup("experimental-xtheadmatrix"))
+    Diag(Loc, diag::err_riscv_type_requires_extension) << Ty << "xtheadmatrix";
 }
 
 /// Are the two types RVV-bitcast-compatible types? I.e. is bitcasting from the

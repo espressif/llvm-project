@@ -21,9 +21,20 @@ rounding modes, and hardware capability queries.
 maintained by C-SKY MicroSystems / T-Head.
 
 **Implementation summary**: 227 instructions, 227 LLVM intrinsics, and
-227 Clang builtins are implemented with full ISel/CodeGen support.
-Programs can use Clang builtins or inline assembly and compile directly
-to native assembly or object code.
+249 Clang builtins (227 original + 22 `mundef` constructors) are
+implemented with full ISel/CodeGen support. All intrinsics and builtins
+accept register index parameters that specify which matrix register
+(0-7) to use, enabling flexible register selection and multi-accumulator
+kernels. 121 builtins have typed signatures using native `__rvm_*_t`
+types, enabling Sema-level type checking. Compile-time Sema validation
+enforces register type constraints (tile vs. accumulator) per the RVM
+0.6 spec. A `<thead_matrix.h>` header provides over 400
+higher-level API functions and macros with C matrix types (`mint8_t`,
+`mint32_t`, `mfloat16_t`, etc.) backed by native built-in types. 22 native Clang
+built-in types (`__rvm_int8_t` through `__rvm_float64x2_t`) provide
+first-class type identity, mangling, and debug info support. Programs
+can use either the high-level API, the low-level Clang builtins, or
+inline assembly and compile directly to native assembly or object code.
 
 ## Building the Compiler
 
@@ -104,9 +115,10 @@ llvm-mc -triple=riscv64 -mattr=+experimental-xtheadmatrix \
   -filetype=obj matrix_kernel.s -o matrix_kernel.o
 ```
 
-### Compiling C/C++ with Builtins
+### Compiling C/C++ Programs
 
-The builtins compile C code directly to native assembly or object code:
+Programs using `#include <thead_matrix.h>` or the low-level
+`__builtin_riscv_th_*` builtins compile directly to native code:
 
 ```bash
 # Compile to assembly
@@ -172,18 +184,154 @@ clang --target=riscv64-unknown-linux-gnu \
 ```
 
 When linking, ensure the linker can find RISC-V libraries via `--sysroot`
-or `-L` flags. Since no runtime library support exists for XTHeadMatrix
-types, all matrix operations must go through builtins or inline assembly.
+or `-L` flags.
+
+## Higher-Level Intrinsic API
+
+The `<thead_matrix.h>` header provides a higher-level C API on top of
+the low-level `__builtin_riscv_th_*` builtins. It defines matrix type
+aliases (backed by native `__rvm_*_t` built-in types) and approximately
+over 400 wrapper functions and macros that carry dimension parameters, making matrix code
+more readable and less error-prone. Since Phase C, the header uses typed
+builtins internally, providing Sema-level type checking.
+
+### Including the Header
+
+```c
+#include <thead_matrix.h>
+```
+
+The header is available when compiling with `-march=...xtheadmatrix0p6`
+and `-menable-experimental-extensions`.
+
+### Matrix Types
+
+The header defines 22 matrix types backed by native `__rvm_*_t` built-in types:
+
+| Type | Backed by | Description |
+|------|-----------|-------------|
+| `mint8_t` | `__rvm_int8_t` | Signed 8-bit integer matrix |
+| `muint8_t` | `__rvm_uint8_t` | Unsigned 8-bit integer matrix |
+| `mint16_t` | `__rvm_int16_t` | Signed 16-bit integer matrix |
+| `muint16_t` | `__rvm_uint16_t` | Unsigned 16-bit integer matrix |
+| `mint32_t` | `__rvm_int32_t` | Signed 32-bit integer matrix |
+| `muint32_t` | `__rvm_uint32_t` | Unsigned 32-bit integer matrix |
+| `mint64_t` | `__rvm_int64_t` | Signed 64-bit integer matrix |
+| `muint64_t` | `__rvm_uint64_t` | Unsigned 64-bit integer matrix |
+| `mfloat16_t` | `__rvm_float16_t` | IEEE FP16 matrix |
+| `mfloat32_t` | `__rvm_float32_t` | FP32 matrix |
+| `mfloat64_t` | `__rvm_float64_t` | FP64 matrix |
+| `mint8x2_t` | `__rvm_int8x2_t` | 2-register group, INT8 |
+| `mint16x2_t` | `__rvm_int16x2_t` | 2-register group, INT16 |
+| `mint32x2_t` | `__rvm_int32x2_t` | 2-register group, INT32 |
+| `mint64x2_t` | `__rvm_int64x2_t` | 2-register group, INT64 |
+| `muint8x2_t` | `__rvm_uint8x2_t` | 2-register group, UINT8 |
+| `muint16x2_t` | `__rvm_uint16x2_t` | 2-register group, UINT16 |
+| `muint32x2_t` | `__rvm_uint32x2_t` | 2-register group, UINT32 |
+| `muint64x2_t` | `__rvm_uint64x2_t` | 2-register group, UINT64 |
+| `mfloat16x2_t` | `__rvm_float16x2_t` | 2-register group, FP16 |
+| `mfloat32x2_t` | `__rvm_float32x2_t` | 2-register group, FP32 |
+| `mfloat64x2_t` | `__rvm_float64x2_t` | 2-register group, FP64 |
+
+Two dimension types are also defined:
+
+| Type | Description |
+|------|-------------|
+| `mrow_t` | Row dimension (M or K) |
+| `mcol_t` | Column dimension (N) |
+
+### Example: INT8 GEMM Using the Higher-Level API
+
+```c
+#include <thead_matrix.h>
+
+void int8_gemm(const int8_t *A, long a_stride,
+               const int8_t *B, long b_stride,
+               int32_t *C, long c_stride,
+               mrow_t M, mrow_t K, mcol_t N) {
+    mint8_t a = __riscv_th_mld_a_i8(A, a_stride, M, K);
+    mint8_t b = __riscv_th_mld_b_i8(B, b_stride, K, N);
+    mint32_t c = __riscv_th_mzero_i32();
+    c = __riscv_th_mmaqa_ss_w_b(c, a, b, M, K, N);
+    __riscv_th_mst_c_i32(C, c_stride, c, M, N);
+    __riscv_th_mrelease();
+}
+```
+
+Compare this with the equivalent low-level builtin version in
+[Example 1](#example-1-int8-gemm-kernel) below -- the higher-level API
+carries dimension parameters and returns typed matrix values, making the
+data flow explicit.
+
+### API Categories
+
+The 414 functions and macros in `<thead_matrix.h>` are organized into
+these categories:
+
+| Category | Examples | Description |
+|----------|----------|-------------|
+| Configuration | `__riscv_th_msettilem`, `__riscv_th_mrelease` | Set tile dimensions, release matrix unit |
+| CSR access | `__riscv_th_mread_csr`, `__riscv_th_mwrite_csr` | Read/write matrix CSRs |
+| Load | `__riscv_th_mld_a_i8`, `__riscv_th_mld_b_f32` | Load tiles from memory with type and role |
+| Store | `__riscv_th_mst_c_i32`, `__riscv_th_mst_a_f16` | Store tiles to memory |
+| Matrix multiply | `__riscv_th_mmaqa_ss_w_b`, `__riscv_th_mfmacc_s` | Matmul-accumulate (integer and FP) |
+| EW arithmetic | `__riscv_th_madd_w`, `__riscv_th_mfmul_s` | Element-wise add, sub, mul, min, max, shift |
+| Conversions | `__riscv_th_mfcvt_s_h`, `__riscv_th_msfcvt_h_b` | FP and integer format conversions |
+| Data movement | `__riscv_th_mzero_i32`, `__riscv_th_mmov` | Zero, move, pack, slide, broadcast |
+
+### Immediate Arguments (ImmArg)
+
+Several functions require compile-time constant arguments (e.g., the
+immediate tile-dimension setters `__riscv_th_msettilemi`, slide functions,
+broadcast functions, and MVI variants). These are implemented as macros
+in `<thead_matrix.h>` and will produce a compilation error if passed a
+non-constant value.
+
+### Native Built-in Types (Phase B)
+
+22 first-class Clang built-in types are now available for the XTHeadMatrix
+extension. These types are named `__rvm_int8_t`, `__rvm_uint8_t`,
+`__rvm_int16_t`, ..., through `__rvm_float64x2_t`, mirroring the 22
+matrix element types listed in the [Matrix Types](#matrix-types) table
+above.
+
+The types are registered via `RISCVMatrixTypes.def`, following the same
+pattern used by RVV's `__rvv_int32m1_t` types in `RISCVVTypes.def`. They
+are gated on the `xtheadmatrix` target feature -- using them without the
+feature enabled produces a diagnostic.
+
+The API types (`mint32_t`, `mfloat16_t`, etc.) defined in
+`<thead_matrix.h>` are now aliases to these built-in types (since Phase C).
+The native built-in types provide:
+
+- Proper type identity in the Clang AST
+- Itanium name mangling (enabling C++ overloading and templates)
+- AST serialization and deserialization (precompiled headers, modules)
+- Debug info (DWARF) generation
+- libclang / `CXType` support for tooling
+
+Example:
+
+```c
+// Available with -march=rv64gc_xtheadmatrix0p6 -menable-experimental-extensions
+__rvm_int32_t my_matrix;
+__rvm_float32_t result = my_func(my_matrix);
+```
 
 ## Programming Model
 
 ### Overview
 
 Matrix register state is implicit -- the 8 matrix registers (`tr0`-`tr3`,
-`acc0`-`acc3`) are not exposed as C types in the current low-level builtin
-API. All builtins operate on hardware matrix registers directly. The
-hardware manages register allocation based on the matrix dimension
-configuration.
+`acc0`-`acc3`) are mapped to opaque `__rvm_*_t` built-in types at the
+Clang level. These types provide compile-time type checking but map to
+`PoisonValue` tokens in LLVM IR. Register selection is controlled through
+register index parameters (0-7) passed to each intrinsic/builtin, where
+0-3 select tile registers (`tr0`-`tr3`) and 4-7 select accumulator
+registers (`acc0`-`acc3`). The `<thead_matrix.h>` API passes appropriate
+defaults (e.g., loads to tile registers, matmul destinations to
+accumulator registers), but users of the low-level builtins can specify
+any valid register index.
 
 ### Typical Workflow
 
@@ -207,26 +355,55 @@ The matrix unit operates on tiles whose dimensions are configured via CSRs:
 The hardware clamps these values to implementation-defined maximums.
 Query `th.xtlenb` and `th.xtrlenb` CSRs for the hardware tile dimensions.
 
-### Low-Level vs. Spec API
+### Low-Level Builtins vs. Higher-Level API
 
-The specification defines a higher-level intrinsic API with C++ matrix
-types (`mint32_t`, `mfloat16_t`, etc.) and overloaded functions that carry
-dimension parameters. Our current implementation provides **low-level
-instruction-mapped builtins** where:
+Two programming interfaces are available. **The higher-level API is
+recommended for most users.**
 
-- Matrix registers are implicit (not returned/passed as C values)
-- Each builtin maps 1:1 to a single assembly instruction
-- Users manage register allocation through instruction ordering
+1. **Higher-level API** (`<thead_matrix.h>`, **recommended**): Provides
+   over 400 functions/macros with C matrix types (`mint8_t`,
+   `mfloat16_t`, etc.) and dimension parameters (`mrow_t`, `mcol_t`).
+   Functions like `__riscv_th_mld_a_i8`, `__riscv_th_mmaqa_ss_w_b`, and
+   `__riscv_th_mst_c_i32` carry dimension information and return typed
+   values, making matrix code readable and type-safe. See the
+   [Higher-Level Intrinsic API](#higher-level-intrinsic-api) section and
+   all [Code Examples](#code-examples).
 
-The higher-level spec API (with `__riscv_th_mld`, `__riscv_th_mmul_mm`,
-etc.) is a future goal.
+2. **Low-level builtins** (`__builtin_riscv_th_*`): Each builtin maps
+   1:1 to a single assembly instruction. 121 builtins accept and return
+   native `__rvm_*_t` matrix types, enabling compile-time type checking.
+   106 builtins for stores, configuration, zero, misc, and FP8/BF16/TF32
+   variants retain void signatures. Useful when precise instruction
+   control is needed. See the [Builtins Reference](#builtins-reference)
+   section below.
 
 ## Builtins Reference
 
 All builtins use the `__builtin_riscv_th_` prefix and are available when
-the `xtheadmatrix` target feature is enabled. Matrix registers are implicit
-operands -- only GPR values (pointers, strides, scalars, immediates)
-appear as explicit builtin parameters.
+the `xtheadmatrix` target feature is enabled.
+
+**Register index parameters**: All non-configuration builtins accept 1-3
+`unsigned int` register index parameters as their first arguments,
+specifying which matrix register (0-7) to use for each operand. These
+are compile-time constants (ImmArg). Sema validation enforces register
+type constraints: load-A/B require tile registers (0-3), load-C
+requires accumulator registers (4-7), matmul destinations must be
+accumulators, and element-wise operands must all be accumulators.
+
+**Typed builtins (Phase C)**: 121 builtins accept and return native
+`__rvm_*_t` matrix types (e.g.,
+`__rvm_int32_t __builtin_riscv_th_mlae32(unsigned int, void*, size_t)`).
+This enables Sema-level type checking -- passing a `__rvm_float32_t` where
+`__rvm_int32_t` is expected produces a compile-time error. The LLVM IR
+intrinsics remain void; the CGBuiltin handler bridges the gap by filtering
+matrix-typed arguments and returning `PoisonValue` tokens. 22 `mundef`
+builtins (`__builtin_riscv_th_mundef_i8` through
+`__builtin_riscv_th_mundef_f64x2`) create undefined matrix values for
+initializing variables.
+
+**Untyped builtins**: 106 builtins retain void signatures -- stores,
+configuration, zero, misc, and FP8/BF16/TF32 variants that lack native
+matrix types.
 
 ### Configuration (7 builtins)
 
@@ -242,11 +419,12 @@ appear as explicit builtin parameters.
 
 ### Load Instructions (28 builtins)
 
-All load builtins load data from memory into matrix registers.
+All load builtins load data from memory into matrix registers and
+return a typed matrix value (Phase C).
 
 #### Element-Stride Loads (12 builtins)
 
-Prototype: `void(void *base, size_t stride)`
+Prototype: `__rvm_int<W>_t(unsigned int md_idx, void *base, size_t stride)` where W matches the EEW
 
 | Builtin | Assembly | Description |
 |---------|----------|-------------|
@@ -256,7 +434,7 @@ Prototype: `void(void *base, size_t stride)`
 
 #### Tile-Stride (Transposed) Loads (12 builtins)
 
-Prototype: `void(void *base, size_t stride)`
+Prototype: `__rvm_int<W>_t(unsigned int md_idx, void *base, size_t stride)` where W matches the EEW
 
 | Builtin | Assembly | Description |
 |---------|----------|-------------|
@@ -266,7 +444,7 @@ Prototype: `void(void *base, size_t stride)`
 
 #### Whole-Register Loads (4 builtins)
 
-Prototype: `void(void *base)`
+Prototype: `__rvm_int<W>_t(unsigned int md_idx, void *base)` where W matches the EEW
 
 | Builtin | Assembly | Description |
 |---------|----------|-------------|
@@ -278,7 +456,7 @@ All store builtins store matrix register data to memory.
 
 #### Element-Stride Stores (12 builtins)
 
-Prototype: `void(void *base, size_t stride)`
+Prototype: `void(unsigned int ms3_idx, void *base, size_t stride)`
 
 | Builtin | Assembly | Description |
 |---------|----------|-------------|
@@ -288,7 +466,7 @@ Prototype: `void(void *base, size_t stride)`
 
 #### Tile-Stride (Transposed) Stores (12 builtins)
 
-Prototype: `void(void *base, size_t stride)`
+Prototype: `void(unsigned int ms3_idx, void *base, size_t stride)`
 
 | Builtin | Assembly | Description |
 |---------|----------|-------------|
@@ -298,7 +476,7 @@ Prototype: `void(void *base, size_t stride)`
 
 #### Whole-Register Stores (4 builtins)
 
-Prototype: `void(void *base)`
+Prototype: `void(unsigned int ms3_idx, void *base)`
 
 | Builtin | Assembly | Description |
 |---------|----------|-------------|
@@ -306,8 +484,10 @@ Prototype: `void(void *base)`
 
 ### Matrix Multiply-Accumulate (27 builtins)
 
-All matrix multiply builtins have prototype `void()` -- all operands
-(md, ms2, ms1) are implicit matrix registers.
+Matrix multiply builtins with native types (h, s, d, s_h, d_s, and all
+integer variants) accept and return `__rvm_*_t` typed arguments (Phase C).
+FP8/BF16/TF32 variants remain `void()` since no native matrix types exist
+for these formats.
 
 #### FP Matrix Multiply (13 builtins)
 
@@ -462,10 +642,13 @@ Prototype: `void(unsigned int imm3)`
 
 ### FP Format Conversions (26 builtins)
 
-All have prototype `void()`. The `l` (low) and `h` (high) suffixes
-indicate which half of a widening/narrowing pair is operated on.
+Typed conversions (FP16&harr;FP32, FP32&harr;FP64) accept and return
+`__rvm_float*_t` types. FP8/BF16/TF32 conversions have `void()`
+prototypes since no native matrix types exist for these formats. The
+`l` (low) and `h` (high) suffixes indicate which half of a
+widening/narrowing pair is operated on.
 
-#### FP8 &harr; FP16 (8 builtins)
+#### FP8 &harr; FP16 (8 builtins, void())
 
 | Builtin | Assembly | Description |
 |---------|----------|-------------|
@@ -478,7 +661,7 @@ indicate which half of a widening/narrowing pair is operated on.
 | `__builtin_riscv_th_mfcvtl_e5_h` | `th.mfcvtl.e5.h` | FP16 &rarr; E5M2, low half |
 | `__builtin_riscv_th_mfcvth_e5_h` | `th.mfcvth.e5.h` | FP16 &rarr; E5M2, high half |
 
-#### FP16/BF16 &harr; FP32 (8 builtins)
+#### FP16/BF16 &harr; FP32 (8 builtins: FP16 typed, BF16 void())
 
 | Builtin | Assembly | Description |
 |---------|----------|-------------|
@@ -491,7 +674,7 @@ indicate which half of a widening/narrowing pair is operated on.
 | `__builtin_riscv_th_mfcvtl_bf16_s` | `th.mfcvtl.bf16.s` | FP32 &rarr; BF16, low half |
 | `__builtin_riscv_th_mfcvth_bf16_s` | `th.mfcvth.bf16.s` | FP32 &rarr; BF16, high half |
 
-#### FP32 &harr; FP8 (4 builtins)
+#### FP32 &harr; FP8 (4 builtins, void())
 
 | Builtin | Assembly | Description |
 |---------|----------|-------------|
@@ -500,7 +683,7 @@ indicate which half of a widening/narrowing pair is operated on.
 | `__builtin_riscv_th_mfcvtl_e5_s` | `th.mfcvtl.e5.s` | FP32 &rarr; E5M2, low half |
 | `__builtin_riscv_th_mfcvth_e5_s` | `th.mfcvth.e5.s` | FP32 &rarr; E5M2, high half |
 
-#### FP32 &harr; FP64 (4 builtins)
+#### FP32 &harr; FP64 (4 builtins, typed)
 
 | Builtin | Assembly | Description |
 |---------|----------|-------------|
@@ -509,16 +692,17 @@ indicate which half of a widening/narrowing pair is operated on.
 | `__builtin_riscv_th_mfcvtl_s_d` | `th.mfcvtl.s.d` | FP64 &rarr; FP32, low half |
 | `__builtin_riscv_th_mfcvth_s_d` | `th.mfcvth.s.d` | FP64 &rarr; FP32, high half |
 
-#### TF32 &harr; FP32 (2 builtins)
+#### TF32 &harr; FP32 (2 builtins, void())
 
 | Builtin | Assembly | Description |
 |---------|----------|-------------|
 | `__builtin_riscv_th_mfcvt_s_tf32` | `th.mfcvt.s.tf32` | TF32 &rarr; FP32 |
 | `__builtin_riscv_th_mfcvt_tf32_s` | `th.mfcvt.tf32.s` | FP32 &rarr; TF32 |
 
-### Float-Integer Conversions (12 builtins)
+### Float-Integer Conversions (12 builtins, all typed)
 
-All have prototype `void()`.
+All accept and return `__rvm_*_t` types (e.g.,
+`__rvm_float16_t(__rvm_uint8_t)` for `mufcvtl_h_b`).
 
 #### INT8 &harr; FP16 (8 builtins)
 
@@ -577,11 +761,11 @@ Prototype: `void()`
 | `__builtin_riscv_th_mucvth_b_p` | `th.mucvth.b.p` | Unsigned packed to byte, high |
 | `__builtin_riscv_th_mscvth_b_p` | `th.mscvth.b.p` | Signed packed to byte, high |
 
-### Integer Element-Wise Arithmetic (22 builtins)
+### Integer Element-Wise Arithmetic (22 builtins, all typed)
 
 Each operation has two variants:
-- `.w.mm` (matrix-matrix): Prototype `void()`
-- `.w.mv.i` (matrix-vector, immediate index): Prototype `void(unsigned int imm3)`
+- `.w.mm` (matrix-matrix): Prototype `__rvm_int32_t(__rvm_int32_t, __rvm_int32_t, __rvm_int32_t)`
+- `.w.mv.i` (matrix-vector, immediate index): Prototype `__rvm_int32_t(__rvm_int32_t, __rvm_int32_t, unsigned int)`
 
 | Operation | `.w.mm` Builtin | `.w.mv.i` Builtin | Description |
 |-----------|-----------------|-------------------|-------------|
@@ -597,13 +781,15 @@ Each operation has two variants:
 | SLL | `__builtin_riscv_th_msll_w_mm` | `__builtin_riscv_th_msll_w_mv_i` | Shift left logical |
 | SRA | `__builtin_riscv_th_msra_w_mm` | `__builtin_riscv_th_msra_w_mv_i` | Shift right arithmetic |
 
-### FP Element-Wise Arithmetic (30 builtins)
+### FP Element-Wise Arithmetic (30 builtins, all typed)
 
 Each operation has three precision levels (`.h` FP16, `.s` FP32, `.d` FP64)
 and two variants (`.mm` matrix-matrix, `.mv.i` matrix-vector with immediate).
 
-- `.mm` Prototype: `void()`
-- `.mv.i` Prototype: `void(unsigned int imm3)`
+- `.h.mm` Prototype: `__rvm_float16_t(__rvm_float16_t, __rvm_float16_t, __rvm_float16_t)`
+- `.s.mm` Prototype: `__rvm_float32_t(__rvm_float32_t, __rvm_float32_t, __rvm_float32_t)`
+- `.d.mm` Prototype: `__rvm_float64_t(__rvm_float64_t, __rvm_float64_t, __rvm_float64_t)`
+- `.{h,s,d}.mv.i` Prototype: `__rvm_float{16,32,64}_t(__rvm_float{16,32,64}_t, __rvm_float{16,32,64}_t, unsigned int)`
 
 | Operation | `.h.mm` | `.h.mv.i` | `.s.mm` | `.s.mv.i` | `.d.mm` | `.d.mv.i` |
 |-----------|---------|-----------|---------|-----------|---------|-----------|
@@ -619,133 +805,153 @@ the full name for FP32 add (matrix-matrix) is
 
 ## Code Examples
 
+All examples use the `<thead_matrix.h>` higher-level API, which is the
+recommended programming interface. The API wraps the low-level
+`__builtin_riscv_th_*` builtins with typed functions, dimension parameters,
+and role-specific load/store names for a natural programming experience.
+
 ### Example 1: INT8 GEMM Kernel
 
-This example performs an INT8 matrix multiply-accumulate using builtins.
-
 ```c
-#include <stddef.h>
-#include <stdint.h>
+#include <thead_matrix.h>
 
-// INT8 GEMM: C[M,N] += A[M,K] * B[K,N] (fixed tile size)
-void int8_gemm_4x4(const int8_t *A, size_t a_stride,
-                    const int8_t *B, size_t b_stride,
-                    int32_t *C, size_t c_stride) {
-    // Step 1: Configure tile dimensions (compile-time constants for imm variants)
-    __builtin_riscv_th_msettilemi(4);
-    __builtin_riscv_th_msettileki(4);
-    __builtin_riscv_th_msettileni(4);
+// INT8 GEMM: C[M,N] = A[M,K] * B[K,N]
+void int8_gemm(const int8_t *A, long a_stride,
+               const int8_t *B, long b_stride,
+               int32_t *C, long c_stride,
+               mrow_t M, mrow_t K, mcol_t N) {
+    // Load input matrices (tile config is automatic)
+    mint8_t a = __riscv_th_mld_a_i8(A, a_stride, M, K);
+    mint8_t b = __riscv_th_mld_b_i8(B, b_stride, K, N);
 
-    // Step 2: Zero the accumulator
-    __builtin_riscv_th_mzero();
+    // Zero accumulator and compute: c = a * b
+    mint32_t c = __riscv_th_mzero_i32();
+    c = __riscv_th_mmaqa_ss_w_b(c, a, b, M, K, N);
 
-    // Step 3: Load matrix tiles
-    __builtin_riscv_th_mlae8((void *)A, a_stride);    // Load A
-    __builtin_riscv_th_mlbe8((void *)B, b_stride);    // Load B
-
-    // Step 4: Matrix multiply-accumulate (signed INT8 -> INT32)
-    __builtin_riscv_th_mmacc_w_b();                   // acc0 += A * B
-
-    // Step 5: Store result (C matrix is in acc0, use msce to store)
-    __builtin_riscv_th_msce32((void *)C, c_stride);   // Store C from acc0
-
-    // Step 6: Release
-    __builtin_riscv_th_mrelease();
-}
-
-// Runtime-variable tile dimensions use the register variants
-void int8_gemm(const int8_t *A, size_t a_stride,
-               const int8_t *B, size_t b_stride,
-               int32_t *C, size_t c_stride,
-               size_t M, size_t K, size_t N) {
-    __builtin_riscv_th_msettilem(M);    // register variant for runtime values
-    __builtin_riscv_th_msettilek(K);
-    __builtin_riscv_th_msettilen(N);
-
-    __builtin_riscv_th_mzero();
-    __builtin_riscv_th_mlae8((void *)A, a_stride);
-    __builtin_riscv_th_mlbe8((void *)B, b_stride);
-    __builtin_riscv_th_mmacc_w_b();
-    __builtin_riscv_th_msce32((void *)C, c_stride);
-    __builtin_riscv_th_mrelease();
+    // Store result and release
+    __riscv_th_mst_c_i32(C, c_stride, c, M, N);
+    __riscv_th_mrelease();
 }
 ```
 
-Compile to LLVM IR with:
-```bash
-clang --target=riscv64 -march=rv64gc_xtheadmatrix0p6 \
-  -menable-experimental-extensions -O2 -emit-llvm -S int8_gemm.c -o int8_gemm.ll
-```
-
-### Example 2: FP16 Element-Wise Operations
+### Example 2: FP32 GEMM with Accumulation
 
 ```c
-#include <stddef.h>
+#include <thead_matrix.h>
 
-// Element-wise FP16: C = A + B, then C = max(C, D)
-void fp16_ewise(void *A, void *B, void *C, void *D,
-                size_t stride, size_t M, size_t N) {
-    __builtin_riscv_th_msettilem(M);
-    __builtin_riscv_th_msettilen(N);
-    __builtin_riscv_th_msettilek(N);
+// FP32 GEMM: C[M,N] += A[M,K] * B[K,N]
+void fp32_gemm_acc(const float *A, long a_stride,
+                   const float *B, long b_stride,
+                   float *C, long c_stride,
+                   mrow_t M, mrow_t K, mcol_t N) {
+    // Load existing accumulator from memory
+    mfloat32_t c = __riscv_th_mld_c_f32(C, c_stride, M, N);
 
-    // Load matrices
-    __builtin_riscv_th_mlae16(A, stride);
-    __builtin_riscv_th_mlbe16(B, stride);
+    // Load input tiles
+    mfloat32_t a = __riscv_th_mld_a_f32(A, a_stride, M, K);
+    mfloat32_t b = __riscv_th_mld_b_f32(B, b_stride, K, N);
 
-    // Element-wise add: C = A + B
-    __builtin_riscv_th_mfadd_h_mm();
+    // Accumulate: c += a * b
+    c = __riscv_th_fmmacc_s(c, a, b, M, K, N);
 
-    // Load D for max operation
-    __builtin_riscv_th_mlce16(D, stride);
-
-    // Element-wise max
-    __builtin_riscv_th_mfmax_h_mm();
-
-    // Store result
-    __builtin_riscv_th_msae16(C, stride);
-
-    __builtin_riscv_th_mrelease();
+    // Store and release
+    __riscv_th_mst_c_f32(C, c_stride, c, M, N);
+    __riscv_th_mrelease();
 }
 ```
 
-### Example 3: Inline Assembly CSR Access
+### Example 3: FP16→FP32 Widening Matmul
 
 ```c
-#include <stddef.h>
+#include <thead_matrix.h>
+
+// Widening matmul: FP16 inputs, FP32 output
+void fp16_to_fp32_gemm(const void *A, long a_stride,
+                       const void *B, long b_stride,
+                       float *C, long c_stride,
+                       mrow_t M, mrow_t K, mcol_t N) {
+    mfloat16_t a = __riscv_th_mld_a_f16(A, a_stride, M, K);
+    mfloat16_t b = __riscv_th_mld_b_f16(B, b_stride, K, N);
+    mfloat32_t c = __riscv_th_mzero_f32();
+
+    // Widening matmul: FP16 * FP16 → FP32
+    c = __riscv_th_fwmmacc_s_h(c, a, b, M, K, N);
+
+    __riscv_th_mst_c_f32(C, c_stride, c, M, N);
+    __riscv_th_mrelease();
+}
+```
+
+### Example 4: Element-Wise Operations and Type Conversions
+
+```c
+#include <thead_matrix.h>
+
+// Post-matmul pipeline: int32 result → add bias → shift → clip to int8
+void quantize_output(int32_t *result, long r_stride,
+                     int32_t *bias, long b_stride,
+                     void *output, long o_stride,
+                     mrow_t M, mcol_t N) {
+    // Load matmul result and bias
+    mint32_t r = __riscv_th_mld_c_i32(result, r_stride, M, N);
+    mint32_t b = __riscv_th_mld_c_i32(bias, b_stride, M, N);
+
+    // Element-wise add: r = r + bias
+    r = __riscv_th_madd_w_mm(r, r, b);
+
+    // Element-wise shift right: r >>= shift_amounts
+    mint32_t shift = __riscv_th_mundefined_i32();
+    r = __riscv_th_msra_w_mm(r, r, shift);
+
+    // N4Clip to signed int8
+    mint8_t clipped = __riscv_th_mn4clipl_w_mm(r, shift);
+
+    // Store int8 output
+    __riscv_th_mst_a_i8(output, o_stride, clipped, M, N);
+    __riscv_th_mrelease();
+}
+```
+
+### Example 5: CSR Access and Hardware Query
+
+```c
+#include <thead_matrix.h>
 #include <stdio.h>
 
 void query_matrix_hw(void) {
-    unsigned long xmisa, xtlenb, xtrlenb, xalenb;
+    // Use API functions to read hardware capabilities
+    unsigned long tlen = __riscv_th_xmlenb();   // tile register size in bytes
+    unsigned long rlen = __riscv_th_xrlenb();   // tile row length in bytes
+    unsigned long isa  = __riscv_th_xmsize();   // matrix ISA capabilities
 
-    asm volatile("csrr %0, th.xmisa"   : "=r"(xmisa));
-    asm volatile("csrr %0, th.xtlenb"  : "=r"(xtlenb));
-    asm volatile("csrr %0, th.xtrlenb" : "=r"(xtrlenb));
-    asm volatile("csrr %0, th.xalenb"  : "=r"(xalenb));
+    printf("Tile length:     %lu bytes\n", tlen);
+    printf("Tile row length: %lu bytes\n", rlen);
+    printf("Max rows:        %lu\n", tlen / rlen);
+    printf("Matrix ISA:      0x%lx\n", isa);
 
-    printf("Matrix ISA:        0x%lx\n", xmisa);
-    printf("Tile length:       %lu bytes\n", xtlenb);
-    printf("Tile row length:   %lu bytes\n", xtrlenb);
-    printf("Accum length:      %lu bytes\n", xalenb);
+    // Set FP rounding mode via CSR macro
+    __riscv_th_mwrite_csr(RVM_CSR_XMFRM, 0);  // round-to-nearest
+
+    // Enable saturation for integer matmul
+    __riscv_th_mwrite_csr(RVM_CSR_XMSATEN, 1);
 }
 ```
 
-### Example 4: Mixed RVV + RVM Program
+### Example 6: Mixed RVV + RVM Program
 
 ```c
 #include <riscv_vector.h>
-#include <stddef.h>
-#include <stdint.h>
+#include <thead_matrix.h>
 
 // Vector preprocessing + matrix compute
 // Quantize FP32 input to INT8 using RVV, then use RVM for matmul
 void quantize_and_matmul(const float *input, size_t n,
-                         const int8_t *weights, size_t w_stride,
-                         int32_t *output, size_t o_stride,
-                         float scale, size_t M, size_t K, size_t N) {
+                         const int8_t *weights, long w_stride,
+                         int32_t *output, long o_stride,
+                         float scale, mrow_t M, mrow_t K, mcol_t N) {
     int8_t quantized[1024];
 
-    // Phase 1: RVV quantization (FP32 -> INT8)
+    // Phase 1: RVV quantization (FP32 → INT8)
     size_t remaining = n;
     const float *in = input;
     int8_t *out = quantized;
@@ -762,26 +968,70 @@ void quantize_and_matmul(const float *input, size_t n,
         remaining -= vl;
     }
 
-    // Phase 2: RVM matrix multiply
+    // Phase 2: RVM matrix multiply (using high-level API)
+    mint8_t a = __riscv_th_mld_a_i8(quantized, K, M, K);
+    mint8_t b = __riscv_th_mld_b_i8(weights, w_stride, K, N);
+    mint32_t c = __riscv_th_mzero_i32();
+    c = __riscv_th_mmaqa_ss_w_b(c, a, b, M, K, N);
+    __riscv_th_mst_c_i32(output, o_stride, c, M, N);
+    __riscv_th_mrelease();
+}
+```
+
+Compile with both V and XTHeadMatrix enabled:
+```bash
+clang --target=riscv64 -march=rv64gcv_xtheadmatrix0p6 \
+  -menable-experimental-extensions -O2 -c mixed_kernel.c -o mixed_kernel.o
+```
+
+### Example 7: Multi-Accumulator GEMM
+
+Using register index parameters, different matmul operations can target
+different accumulator registers simultaneously:
+
+```c
+#include <thead_matrix.h>
+
+// Compute two independent GEMMs sharing the same A matrix
+// C1[M,N] = A[M,K] * B1[K,N]
+// C2[M,N] = A[M,K] * B2[K,N]
+void dual_gemm(const int8_t *A, long a_stride,
+               const int8_t *B1, long b1_stride,
+               const int8_t *B2, long b2_stride,
+               int32_t *C1, long c1_stride,
+               int32_t *C2, long c2_stride,
+               mrow_t M, mrow_t K, mcol_t N) {
+    // Configure dimensions
     __builtin_riscv_th_msettilem(M);
     __builtin_riscv_th_msettilek(K);
     __builtin_riscv_th_msettilen(N);
-    __builtin_riscv_th_mzero();
 
-    __builtin_riscv_th_mlae8((void *)quantized, K);
-    __builtin_riscv_th_mlbe8((void *)weights, w_stride);
-    __builtin_riscv_th_mmacc_w_b();
-    __builtin_riscv_th_msae32((void *)output, o_stride);
+    // Load shared A matrix into tr0
+    __builtin_riscv_th_mlae8(__RVM_TR0, (void *)A, a_stride);
 
+    // Zero acc0, load B1 into tr1, INT8 matmul into acc0
+    __builtin_riscv_th_mzero(__RVM_ACC0);
+    __builtin_riscv_th_mlbe8(__RVM_TR1, (void *)B1, b1_stride);
+    __rvm_int32_t i32 = __builtin_riscv_th_mundef_i32();
+    __rvm_int8_t i8 = __builtin_riscv_th_mundef_i8();
+    (void)__builtin_riscv_th_mmacc_w_b(__RVM_ACC0, __RVM_TR1, __RVM_TR0,
+                                        i32, i8, i8);
+
+    // Zero acc1, load B2 into tr1, INT8 matmul into acc1
+    __builtin_riscv_th_mzero(__RVM_ACC1);
+    __builtin_riscv_th_mlbe8(__RVM_TR1, (void *)B2, b2_stride);
+    (void)__builtin_riscv_th_mmacc_w_b(__RVM_ACC1, __RVM_TR1, __RVM_TR0,
+                                        i32, i8, i8);
+
+    // Store both results
+    __builtin_riscv_th_msce32(__RVM_ACC0, (void *)C1, c1_stride);
+    __builtin_riscv_th_msce32(__RVM_ACC1, (void *)C2, c2_stride);
     __builtin_riscv_th_mrelease();
 }
 ```
 
-Compile to LLVM IR with both V and XTHeadMatrix enabled:
-```bash
-clang --target=riscv64 -march=rv64gcv_xtheadmatrix0p6 \
-  -menable-experimental-extensions -O2 -emit-llvm -S mixed_kernel.c -o mixed_kernel.ll
-```
+This pattern was not possible with the previous fixed register assignment
+where all matmul operations were hardcoded to use acc0.
 
 ## CSR Reference
 
@@ -812,16 +1062,22 @@ XTHeadMatrix defines 13 CSRs, all prefixed with `th.`.
 
 ### Accessing CSRs
 
-CSRs are accessed via inline assembly since no builtin accessors exist:
+CSRs are accessed via the `<thead_matrix.h>` API macros or inline assembly:
 
 ```c
-// Read a CSR
+#include <thead_matrix.h>
+
+// Using API macros (recommended)
+unsigned long isa = __riscv_th_mread_csr(RVM_CSR_XMISA);
+__riscv_th_mwrite_csr(RVM_CSR_XMFRM, 0x1);  // round-to-nearest
+
+// Using convenience functions
+unsigned long tlen = __riscv_th_xmlenb();
+unsigned long rlen = __riscv_th_xrlenb();
+
+// Using inline assembly (also works)
 unsigned long val;
 asm volatile("csrr %0, th.xmisa" : "=r"(val));
-
-// Write a CSR
-unsigned long rm = 0x1; // Round-to-nearest
-asm volatile("csrw th.xmfrm, %0" :: "r"(rm));
 ```
 
 ## Assembly Instruction Quick Reference
@@ -859,24 +1115,52 @@ comprehensive usage examples.
 - **Experimental status**: The extension requires `+experimental-xtheadmatrix`
   and may change in future LLVM releases as the spec evolves.
 
-- **ISel with fixed register assignment**: The ISel implementation uses
-  table-driven fixed register assignments (e.g., matmul always uses
-  `acc0, tr1, tr0`). Code generation from plain C arithmetic (e.g., matrix
-  loops) will not automatically use matrix instructions -- users must use
-  builtins or inline assembly.
+- **Flexible register selection**: All builtins accept register index
+  parameters (0-7) specifying which matrix register to use. The
+  `<thead_matrix.h>` API passes default register assignments matching the
+  standard programming model (load A→tr0, load B→tr1, matmul dest→acc0,
+  etc.), but users of the low-level builtins can select any valid register.
+  This enables multi-accumulator kernels where different matmul operations
+  target different accumulator registers (e.g., acc0 and acc1 in parallel).
+  Code generation from plain C arithmetic (e.g., matrix loops) will not
+  automatically use matrix instructions -- users must use builtins or
+  inline assembly.
 
-- **Register constraints per spec**: The ISel enforces the RVM 0.6
-  register type constraints:
-  - **Matmul**: `md=acc`, `ms1=tile`, `ms2=tile`
-  - **Element-wise** (arithmetic, conversions, N4clip): all `md/ms1/ms2=acc`
-  - **Load/Store**: register type matches matrix role (A/B=tile, C=acc)
-  - **MISC** (slides, broadcasts, pack): uses tile registers
+- **Sema register constraint validation**: The compiler enforces RVM 0.6
+  register type constraints at compile time:
+  - **Load A/B** (`mla*`/`mlb*`): `md` must be a tile register (0-3)
+  - **Load C** (`mlc*`): `md` must be an accumulator register (4-7)
+  - **Store A/B** (`msa*`/`msb*`): `ms3` must be a tile register (0-3)
+  - **Store C** (`msc*`): `ms3` must be an accumulator register (4-7)
+  - **Matmul**: `md` must be accumulator (4-7), `ms1`/`ms2` must be tile (0-3)
+  - **Element-wise** (arithmetic, conversions, N4clip): all `md/ms1/ms2` must be accumulator (4-7)
+  - **Load/Store M** (`mlm*`/`msm*`), **zero**, **move**, **duplicate**: any register (0-7)
+  - **Slides**, **broadcasts**, **pack**: any register (0-7)
+  Invalid register usage produces a compile-time error.
 
-- **Low-level builtins only**: The current implementation provides low-level
-  instruction-mapped builtins where matrix registers are implicit. The spec
-  defines a higher-level API with C++ matrix types (`mint32_t`,
-  `mfloat16_t`, etc.) and overloaded functions -- this is not yet
-  implemented.
+- **Register index constants**: The `<thead_matrix.h>` header defines
+  named constants for register indices:
+  ```c
+  #define __RVM_TR0  0   // Tile register 0
+  #define __RVM_TR1  1   // Tile register 1
+  #define __RVM_TR2  2   // Tile register 2
+  #define __RVM_TR3  3   // Tile register 3
+  #define __RVM_ACC0 4   // Accumulator register 0
+  #define __RVM_ACC1 5   // Accumulator register 1
+  #define __RVM_ACC2 6   // Accumulator register 2
+  #define __RVM_ACC3 7   // Accumulator register 3
+  ```
+
+- **Two API levels plus native built-in types**: Both low-level
+  instruction-mapped builtins (`__builtin_riscv_th_*`) and the
+  higher-level `<thead_matrix.h>` API with C matrix types (`mint32_t`,
+  `mfloat16_t`, etc.) are available. 121 low-level builtins accept and
+  return native `__rvm_*_t` matrix types, enabling compile-time type
+  checking at both API levels. The higher-level API wraps the low-level
+  builtins and does not add runtime overhead. Additionally, 22 native
+  Clang built-in types (`__rvm_int8_t` through `__rvm_float64x2_t`)
+  provide first-class type identity, mangling, debug info, and tooling
+  support.
 
 - **Known spec errata**:
   - The matmul instruction group uses `uop=10` (binary), but the spec
@@ -886,9 +1170,23 @@ comprehensive usage examples.
     (encodings are correct, names are wrong).
   - `pmmaaccus.w.b` has an extra 'a' (typo for `pmmaccus.w.b`).
 
-- **No runtime library**: There is no `<thead_matrix.h>` header or runtime
-  support library. All operations must use `__builtin_riscv_th_*` builtins
-  or inline assembly.
+- **Header-only, no runtime library**: The `<thead_matrix.h>` header is a
+  header-only wrapper around the compiler builtins. There is no separate
+  runtime support library -- all matrix operations compile directly to
+  inline instructions.
 
-- **Future work**: Higher-level matrix types, register allocation
-  flexibility, and a `<thead_matrix.h>` compatibility header are planned.
+- **Test coverage**: 16 test files (12 Clang + 4 LLVM) covering:
+  - Assembly encoding: all 227 instructions validated (`xtheadmatrix-valid.s`)
+  - Invalid encoding: error diagnostics verified (`xtheadmatrix-invalid.s`)
+  - CSR names: all 13 CSRs tested (`xtheadmatrix-csr.s`)
+  - ISel patterns: all 227 intrinsic-to-instruction mappings (`xtheadmatrix-isel.ll`)
+  - Low-level builtin codegen: end-to-end C → assembly (`xtheadmatrix-codegen.c`)
+  - High-level API: 26+ API usage patterns (`thead-matrix-api-patterns.c`)
+  - Corner cases: 20 complex pipeline tests (`thead-matrix-corner-cases.c`)
+  - Comprehensive codegen: all instruction categories (`thead-matrix-comprehensive-codegen.c`)
+  - Sema validation: register constraint error detection (`riscv-xtheadmatrix-reg-constraints.c`)
+  - Built-in types: all 22 types compile and mangle correctly (`thead-matrix-builtin-types.c`)
+
+- **Future work**: Auto-vectorization/auto-matmul support is planned.
+  Typed builtins (Phase C) are complete -- 121 builtins accept and return
+  `__rvm_*_t` matrix types. Register flexibility is fully implemented.

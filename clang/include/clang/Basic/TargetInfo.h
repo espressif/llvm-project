@@ -278,6 +278,9 @@ protected:
   unsigned HasRISCVVTypes : 1;
 
   LLVM_PREFERRED_TYPE(bool)
+  unsigned HasRISCVMatrixTypes : 1;
+
+  LLVM_PREFERRED_TYPE(bool)
   unsigned AllowAMDGPUUnsafeFPAtomics : 1;
 
   LLVM_PREFERRED_TYPE(bool)
@@ -1073,6 +1076,10 @@ public:
   /// Returns whether or not the RISC-V V built-in types are
   /// available on this target.
   bool hasRISCVVTypes() const { return HasRISCVVTypes; }
+
+  /// Returns whether or not the RISC-V Matrix (XTHeadMatrix) built-in types
+  /// are available on this target.
+  bool hasRISCVMatrixTypes() const { return HasRISCVMatrixTypes; }
 
   /// For ARM targets returns a mask defining which coprocessors are configured
   /// as Custom Datapath.

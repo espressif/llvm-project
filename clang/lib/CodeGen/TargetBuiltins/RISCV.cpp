@@ -1123,6 +1123,37 @@ Value *CodeGenFunction::EmitRISCVBuiltinExpr(unsigned BuiltinID,
   unsigned SegInstSEW = 8;
   // This is used by XSfmm.
   unsigned TWiden = 0;
+  // This is set for XTHeadMatrix builtins with typed (Qm) signatures.
+  bool IsTypedMatrixBuiltin = false;
+
+  // XTHeadMatrix mundef builtins: return PoisonValue of the result type.
+  switch (BuiltinID) {
+  case RISCV::BI__builtin_riscv_th_mundef_i8:
+  case RISCV::BI__builtin_riscv_th_mundef_i16:
+  case RISCV::BI__builtin_riscv_th_mundef_i32:
+  case RISCV::BI__builtin_riscv_th_mundef_i64:
+  case RISCV::BI__builtin_riscv_th_mundef_u8:
+  case RISCV::BI__builtin_riscv_th_mundef_u16:
+  case RISCV::BI__builtin_riscv_th_mundef_u32:
+  case RISCV::BI__builtin_riscv_th_mundef_u64:
+  case RISCV::BI__builtin_riscv_th_mundef_f16:
+  case RISCV::BI__builtin_riscv_th_mundef_f32:
+  case RISCV::BI__builtin_riscv_th_mundef_f64:
+  case RISCV::BI__builtin_riscv_th_mundef_i8x2:
+  case RISCV::BI__builtin_riscv_th_mundef_i16x2:
+  case RISCV::BI__builtin_riscv_th_mundef_i32x2:
+  case RISCV::BI__builtin_riscv_th_mundef_i64x2:
+  case RISCV::BI__builtin_riscv_th_mundef_u8x2:
+  case RISCV::BI__builtin_riscv_th_mundef_u16x2:
+  case RISCV::BI__builtin_riscv_th_mundef_u32x2:
+  case RISCV::BI__builtin_riscv_th_mundef_u64x2:
+  case RISCV::BI__builtin_riscv_th_mundef_f16x2:
+  case RISCV::BI__builtin_riscv_th_mundef_f32x2:
+  case RISCV::BI__builtin_riscv_th_mundef_f64x2:
+    return llvm::PoisonValue::get(ResultType);
+  default:
+    break;
+  }
 
   // Required for overloaded intrinsics.
   llvm::SmallVector<llvm::Type *, 2> IntrinsicTypes;
@@ -1412,13 +1443,14 @@ Value *CodeGenFunction::EmitRISCVBuiltinExpr(unsigned BuiltinID,
     ID = Intrinsic::riscv_th_mpackhl; break;
   case RISCV::BI__builtin_riscv_th_mpackhh:
     ID = Intrinsic::riscv_th_mpackhh; break;
-  // FP matmul
+  // FP matmul (typed: h, s, d, s_h, d_s)
   case RISCV::BI__builtin_riscv_th_mfmacc_h:
-    ID = Intrinsic::riscv_th_mfmacc_h; break;
+    ID = Intrinsic::riscv_th_mfmacc_h; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfmacc_s:
-    ID = Intrinsic::riscv_th_mfmacc_s; break;
+    ID = Intrinsic::riscv_th_mfmacc_s; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfmacc_d:
-    ID = Intrinsic::riscv_th_mfmacc_d; break;
+    ID = Intrinsic::riscv_th_mfmacc_d; IsTypedMatrixBuiltin = true; break;
+  // FP matmul (untyped: FP8/BF16/TF32 variants stay void)
   case RISCV::BI__builtin_riscv_th_mfmacc_h_e4:
     ID = Intrinsic::riscv_th_mfmacc_h_e4; break;
   case RISCV::BI__builtin_riscv_th_mfmacc_h_e5:
@@ -1427,8 +1459,10 @@ Value *CodeGenFunction::EmitRISCVBuiltinExpr(unsigned BuiltinID,
     ID = Intrinsic::riscv_th_mfmacc_bf16_e4; break;
   case RISCV::BI__builtin_riscv_th_mfmacc_bf16_e5:
     ID = Intrinsic::riscv_th_mfmacc_bf16_e5; break;
+  // FP widening matmul (typed: s_h, d_s)
   case RISCV::BI__builtin_riscv_th_mfmacc_s_h:
-    ID = Intrinsic::riscv_th_mfmacc_s_h; break;
+    ID = Intrinsic::riscv_th_mfmacc_s_h; IsTypedMatrixBuiltin = true; break;
+  // FP widening matmul (untyped: bf16/e4/e5/tf32)
   case RISCV::BI__builtin_riscv_th_mfmacc_s_bf16:
     ID = Intrinsic::riscv_th_mfmacc_s_bf16; break;
   case RISCV::BI__builtin_riscv_th_mfmacc_s_e4:
@@ -1438,39 +1472,39 @@ Value *CodeGenFunction::EmitRISCVBuiltinExpr(unsigned BuiltinID,
   case RISCV::BI__builtin_riscv_th_mfmacc_s_tf32:
     ID = Intrinsic::riscv_th_mfmacc_s_tf32; break;
   case RISCV::BI__builtin_riscv_th_mfmacc_d_s:
-    ID = Intrinsic::riscv_th_mfmacc_d_s; break;
-  // INT matmul (INT8->INT32)
+    ID = Intrinsic::riscv_th_mfmacc_d_s; IsTypedMatrixBuiltin = true; break;
+  // INT matmul (INT8->INT32) — all typed
   case RISCV::BI__builtin_riscv_th_mmacc_w_b:
-    ID = Intrinsic::riscv_th_mmacc_w_b; break;
+    ID = Intrinsic::riscv_th_mmacc_w_b; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mmaccu_w_b:
-    ID = Intrinsic::riscv_th_mmaccu_w_b; break;
+    ID = Intrinsic::riscv_th_mmaccu_w_b; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mmaccus_w_b:
-    ID = Intrinsic::riscv_th_mmaccus_w_b; break;
+    ID = Intrinsic::riscv_th_mmaccus_w_b; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mmaccsu_w_b:
-    ID = Intrinsic::riscv_th_mmaccsu_w_b; break;
-  // INT16->INT64
+    ID = Intrinsic::riscv_th_mmaccsu_w_b; IsTypedMatrixBuiltin = true; break;
+  // INT16->INT64 — all typed
   case RISCV::BI__builtin_riscv_th_mmacc_d_h:
-    ID = Intrinsic::riscv_th_mmacc_d_h; break;
+    ID = Intrinsic::riscv_th_mmacc_d_h; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mmaccu_d_h:
-    ID = Intrinsic::riscv_th_mmaccu_d_h; break;
+    ID = Intrinsic::riscv_th_mmaccu_d_h; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mmaccus_d_h:
-    ID = Intrinsic::riscv_th_mmaccus_d_h; break;
+    ID = Intrinsic::riscv_th_mmaccus_d_h; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mmaccsu_d_h:
-    ID = Intrinsic::riscv_th_mmaccsu_d_h; break;
-  // Partial INT8->INT32
+    ID = Intrinsic::riscv_th_mmaccsu_d_h; IsTypedMatrixBuiltin = true; break;
+  // Partial INT8->INT32 — all typed
   case RISCV::BI__builtin_riscv_th_pmmacc_w_b:
-    ID = Intrinsic::riscv_th_pmmacc_w_b; break;
+    ID = Intrinsic::riscv_th_pmmacc_w_b; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_pmmaccu_w_b:
-    ID = Intrinsic::riscv_th_pmmaccu_w_b; break;
+    ID = Intrinsic::riscv_th_pmmaccu_w_b; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_pmmaccus_w_b:
-    ID = Intrinsic::riscv_th_pmmaccus_w_b; break;
+    ID = Intrinsic::riscv_th_pmmaccus_w_b; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_pmmaccsu_w_b:
-    ID = Intrinsic::riscv_th_pmmaccsu_w_b; break;
-  // Bypass INT
+    ID = Intrinsic::riscv_th_pmmaccsu_w_b; IsTypedMatrixBuiltin = true; break;
+  // Bypass INT — all typed
   case RISCV::BI__builtin_riscv_th_mmacc_w_bp:
-    ID = Intrinsic::riscv_th_mmacc_w_bp; break;
+    ID = Intrinsic::riscv_th_mmacc_w_bp; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mmaccu_w_bp:
-    ID = Intrinsic::riscv_th_mmaccu_w_bp; break;
+    ID = Intrinsic::riscv_th_mmaccu_w_bp; IsTypedMatrixBuiltin = true; break;
   // FP format conversions (FP8 <-> FP16)
   case RISCV::BI__builtin_riscv_th_mfcvtl_h_e4:
     ID = Intrinsic::riscv_th_mfcvtl_h_e4; break;
@@ -1488,15 +1522,16 @@ Value *CodeGenFunction::EmitRISCVBuiltinExpr(unsigned BuiltinID,
     ID = Intrinsic::riscv_th_mfcvtl_e5_h; break;
   case RISCV::BI__builtin_riscv_th_mfcvth_e5_h:
     ID = Intrinsic::riscv_th_mfcvth_e5_h; break;
-  // FP16/BF16 <-> FP32
+  // FP16 <-> FP32 (typed)
   case RISCV::BI__builtin_riscv_th_mfcvtl_s_h:
-    ID = Intrinsic::riscv_th_mfcvtl_s_h; break;
+    ID = Intrinsic::riscv_th_mfcvtl_s_h; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfcvth_s_h:
-    ID = Intrinsic::riscv_th_mfcvth_s_h; break;
+    ID = Intrinsic::riscv_th_mfcvth_s_h; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfcvtl_h_s:
-    ID = Intrinsic::riscv_th_mfcvtl_h_s; break;
+    ID = Intrinsic::riscv_th_mfcvtl_h_s; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfcvth_h_s:
-    ID = Intrinsic::riscv_th_mfcvth_h_s; break;
+    ID = Intrinsic::riscv_th_mfcvth_h_s; IsTypedMatrixBuiltin = true; break;
+  // BF16 <-> FP32 (untyped — no native BF16 matrix type)
   case RISCV::BI__builtin_riscv_th_mfcvtl_s_bf16:
     ID = Intrinsic::riscv_th_mfcvtl_s_bf16; break;
   case RISCV::BI__builtin_riscv_th_mfcvth_s_bf16:
@@ -1514,46 +1549,46 @@ Value *CodeGenFunction::EmitRISCVBuiltinExpr(unsigned BuiltinID,
     ID = Intrinsic::riscv_th_mfcvtl_e5_s; break;
   case RISCV::BI__builtin_riscv_th_mfcvth_e5_s:
     ID = Intrinsic::riscv_th_mfcvth_e5_s; break;
-  // FP32 <-> FP64
+  // FP32 <-> FP64 (typed)
   case RISCV::BI__builtin_riscv_th_mfcvtl_d_s:
-    ID = Intrinsic::riscv_th_mfcvtl_d_s; break;
+    ID = Intrinsic::riscv_th_mfcvtl_d_s; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfcvth_d_s:
-    ID = Intrinsic::riscv_th_mfcvth_d_s; break;
+    ID = Intrinsic::riscv_th_mfcvth_d_s; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfcvtl_s_d:
-    ID = Intrinsic::riscv_th_mfcvtl_s_d; break;
+    ID = Intrinsic::riscv_th_mfcvtl_s_d; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfcvth_s_d:
-    ID = Intrinsic::riscv_th_mfcvth_s_d; break;
+    ID = Intrinsic::riscv_th_mfcvth_s_d; IsTypedMatrixBuiltin = true; break;
   // TF32 <-> FP32
   case RISCV::BI__builtin_riscv_th_mfcvt_s_tf32:
     ID = Intrinsic::riscv_th_mfcvt_s_tf32; break;
   case RISCV::BI__builtin_riscv_th_mfcvt_tf32_s:
     ID = Intrinsic::riscv_th_mfcvt_tf32_s; break;
-  // Float-int conversions (INT8 <-> FP16)
+  // Float-int conversions (INT8 <-> FP16) — all typed
   case RISCV::BI__builtin_riscv_th_mufcvtl_h_b:
-    ID = Intrinsic::riscv_th_mufcvtl_h_b; break;
+    ID = Intrinsic::riscv_th_mufcvtl_h_b; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mufcvth_h_b:
-    ID = Intrinsic::riscv_th_mufcvth_h_b; break;
+    ID = Intrinsic::riscv_th_mufcvth_h_b; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_msfcvtl_h_b:
-    ID = Intrinsic::riscv_th_msfcvtl_h_b; break;
+    ID = Intrinsic::riscv_th_msfcvtl_h_b; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_msfcvth_h_b:
-    ID = Intrinsic::riscv_th_msfcvth_h_b; break;
+    ID = Intrinsic::riscv_th_msfcvth_h_b; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfucvtl_b_h:
-    ID = Intrinsic::riscv_th_mfucvtl_b_h; break;
+    ID = Intrinsic::riscv_th_mfucvtl_b_h; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfucvth_b_h:
-    ID = Intrinsic::riscv_th_mfucvth_b_h; break;
+    ID = Intrinsic::riscv_th_mfucvth_b_h; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfscvtl_b_h:
-    ID = Intrinsic::riscv_th_mfscvtl_b_h; break;
+    ID = Intrinsic::riscv_th_mfscvtl_b_h; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfscvth_b_h:
-    ID = Intrinsic::riscv_th_mfscvth_b_h; break;
-  // INT32 <-> FP32
+    ID = Intrinsic::riscv_th_mfscvth_b_h; IsTypedMatrixBuiltin = true; break;
+  // INT32 <-> FP32 — all typed
   case RISCV::BI__builtin_riscv_th_msfcvt_s_w:
-    ID = Intrinsic::riscv_th_msfcvt_s_w; break;
+    ID = Intrinsic::riscv_th_msfcvt_s_w; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mufcvt_s_w:
-    ID = Intrinsic::riscv_th_mufcvt_s_w; break;
+    ID = Intrinsic::riscv_th_mufcvt_s_w; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfscvt_w_s:
-    ID = Intrinsic::riscv_th_mfscvt_w_s; break;
+    ID = Intrinsic::riscv_th_mfscvt_w_s; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfucvt_w_s:
-    ID = Intrinsic::riscv_th_mfucvt_w_s; break;
+    ID = Intrinsic::riscv_th_mfucvt_w_s; IsTypedMatrixBuiltin = true; break;
   // Fixed-point clip (MM - no args)
   case RISCV::BI__builtin_riscv_th_mn4clipl_w_mm:
     ID = Intrinsic::riscv_th_mn4clipl_w_mm; break;
@@ -1572,60 +1607,60 @@ Value *CodeGenFunction::EmitRISCVBuiltinExpr(unsigned BuiltinID,
     ID = Intrinsic::riscv_th_mucvth_b_p; break;
   case RISCV::BI__builtin_riscv_th_mscvth_b_p:
     ID = Intrinsic::riscv_th_mscvth_b_p; break;
-  // Integer EW MM (no args)
+  // Integer EW MM (typed: Qm2(Qm2, Qm2, Qm2))
   case RISCV::BI__builtin_riscv_th_madd_w_mm:
-    ID = Intrinsic::riscv_th_madd_w_mm; break;
+    ID = Intrinsic::riscv_th_madd_w_mm; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_msub_w_mm:
-    ID = Intrinsic::riscv_th_msub_w_mm; break;
+    ID = Intrinsic::riscv_th_msub_w_mm; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mmul_w_mm:
-    ID = Intrinsic::riscv_th_mmul_w_mm; break;
+    ID = Intrinsic::riscv_th_mmul_w_mm; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mmulh_w_mm:
-    ID = Intrinsic::riscv_th_mmulh_w_mm; break;
+    ID = Intrinsic::riscv_th_mmulh_w_mm; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mmax_w_mm:
-    ID = Intrinsic::riscv_th_mmax_w_mm; break;
+    ID = Intrinsic::riscv_th_mmax_w_mm; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mumax_w_mm:
-    ID = Intrinsic::riscv_th_mumax_w_mm; break;
+    ID = Intrinsic::riscv_th_mumax_w_mm; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mmin_w_mm:
-    ID = Intrinsic::riscv_th_mmin_w_mm; break;
+    ID = Intrinsic::riscv_th_mmin_w_mm; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mumin_w_mm:
-    ID = Intrinsic::riscv_th_mumin_w_mm; break;
+    ID = Intrinsic::riscv_th_mumin_w_mm; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_msrl_w_mm:
-    ID = Intrinsic::riscv_th_msrl_w_mm; break;
+    ID = Intrinsic::riscv_th_msrl_w_mm; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_msll_w_mm:
-    ID = Intrinsic::riscv_th_msll_w_mm; break;
+    ID = Intrinsic::riscv_th_msll_w_mm; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_msra_w_mm:
-    ID = Intrinsic::riscv_th_msra_w_mm; break;
-  // FP EW MM (no args)
+    ID = Intrinsic::riscv_th_msra_w_mm; IsTypedMatrixBuiltin = true; break;
+  // FP EW MM (typed)
   case RISCV::BI__builtin_riscv_th_mfadd_h_mm:
-    ID = Intrinsic::riscv_th_mfadd_h_mm; break;
+    ID = Intrinsic::riscv_th_mfadd_h_mm; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfadd_s_mm:
-    ID = Intrinsic::riscv_th_mfadd_s_mm; break;
+    ID = Intrinsic::riscv_th_mfadd_s_mm; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfadd_d_mm:
-    ID = Intrinsic::riscv_th_mfadd_d_mm; break;
+    ID = Intrinsic::riscv_th_mfadd_d_mm; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfsub_h_mm:
-    ID = Intrinsic::riscv_th_mfsub_h_mm; break;
+    ID = Intrinsic::riscv_th_mfsub_h_mm; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfsub_s_mm:
-    ID = Intrinsic::riscv_th_mfsub_s_mm; break;
+    ID = Intrinsic::riscv_th_mfsub_s_mm; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfsub_d_mm:
-    ID = Intrinsic::riscv_th_mfsub_d_mm; break;
+    ID = Intrinsic::riscv_th_mfsub_d_mm; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfmul_h_mm:
-    ID = Intrinsic::riscv_th_mfmul_h_mm; break;
+    ID = Intrinsic::riscv_th_mfmul_h_mm; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfmul_s_mm:
-    ID = Intrinsic::riscv_th_mfmul_s_mm; break;
+    ID = Intrinsic::riscv_th_mfmul_s_mm; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfmul_d_mm:
-    ID = Intrinsic::riscv_th_mfmul_d_mm; break;
+    ID = Intrinsic::riscv_th_mfmul_d_mm; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfmax_h_mm:
-    ID = Intrinsic::riscv_th_mfmax_h_mm; break;
+    ID = Intrinsic::riscv_th_mfmax_h_mm; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfmax_s_mm:
-    ID = Intrinsic::riscv_th_mfmax_s_mm; break;
+    ID = Intrinsic::riscv_th_mfmax_s_mm; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfmax_d_mm:
-    ID = Intrinsic::riscv_th_mfmax_d_mm; break;
+    ID = Intrinsic::riscv_th_mfmax_d_mm; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfmin_h_mm:
-    ID = Intrinsic::riscv_th_mfmin_h_mm; break;
+    ID = Intrinsic::riscv_th_mfmin_h_mm; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfmin_s_mm:
-    ID = Intrinsic::riscv_th_mfmin_s_mm; break;
+    ID = Intrinsic::riscv_th_mfmin_s_mm; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfmin_d_mm:
-    ID = Intrinsic::riscv_th_mfmin_d_mm; break;
+    ID = Intrinsic::riscv_th_mfmin_d_mm; IsTypedMatrixBuiltin = true; break;
 
   // XTHeadMatrix - Matrix-to-GPR: rd = matrix[rs1]
   // Takes index arg (Ops[0]), returns GPR value
@@ -1639,231 +1674,235 @@ Value *CodeGenFunction::EmitRISCVBuiltinExpr(unsigned BuiltinID,
     ID = Intrinsic::riscv_th_mmovd_x_m; IntrinsicTypes = {ResultType}; break;
 
   // XTHeadMatrix - GPR-to-matrix: matrix[rs1] = rs2
-  // Takes data (Ops[0]) and index (Ops[1])
+  // Takes md_idx (Ops[0]), data (Ops[1]) and index (Ops[2])
   case RISCV::BI__builtin_riscv_th_mmovb_m_x:
-    ID = Intrinsic::riscv_th_mmovb_m_x; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mmovb_m_x; IntrinsicTypes = {Ops[1]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_mmovh_m_x:
-    ID = Intrinsic::riscv_th_mmovh_m_x; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mmovh_m_x; IntrinsicTypes = {Ops[1]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_mmovw_m_x:
-    ID = Intrinsic::riscv_th_mmovw_m_x; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mmovw_m_x; IntrinsicTypes = {Ops[1]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_mmovd_m_x:
-    ID = Intrinsic::riscv_th_mmovd_m_x; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mmovd_m_x; IntrinsicTypes = {Ops[1]->getType()}; break;
   // Duplicate GPR to matrix column
   case RISCV::BI__builtin_riscv_th_mdupb_m_x:
-    ID = Intrinsic::riscv_th_mdupb_m_x; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mdupb_m_x; IntrinsicTypes = {Ops[1]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_mduph_m_x:
-    ID = Intrinsic::riscv_th_mduph_m_x; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mduph_m_x; IntrinsicTypes = {Ops[1]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_mdupw_m_x:
-    ID = Intrinsic::riscv_th_mdupw_m_x; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mdupw_m_x; IntrinsicTypes = {Ops[1]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_mdupd_m_x:
-    ID = Intrinsic::riscv_th_mdupd_m_x; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mdupd_m_x; IntrinsicTypes = {Ops[1]->getType()}; break;
 
-  // XTHeadMatrix - Immediate builtins (IntrinsicTypes = {Ops[0]->getType()})
+  // XTHeadMatrix - 2-index + immediate builtins (IntrinsicTypes = {Ops[2]->getType()})
+  // Ops: [md_idx, ms1_idx, imm3]
   // Row slide
   case RISCV::BI__builtin_riscv_th_mrslidedown:
-    ID = Intrinsic::riscv_th_mrslidedown; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mrslidedown; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_mrslideup:
-    ID = Intrinsic::riscv_th_mrslideup; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mrslideup; IntrinsicTypes = {Ops[2]->getType()}; break;
   // Column slide
   case RISCV::BI__builtin_riscv_th_mcslidedown_b:
-    ID = Intrinsic::riscv_th_mcslidedown_b; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mcslidedown_b; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_mcslidedown_h:
-    ID = Intrinsic::riscv_th_mcslidedown_h; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mcslidedown_h; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_mcslidedown_w:
-    ID = Intrinsic::riscv_th_mcslidedown_w; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mcslidedown_w; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_mcslidedown_d:
-    ID = Intrinsic::riscv_th_mcslidedown_d; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mcslidedown_d; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_mcslideup_b:
-    ID = Intrinsic::riscv_th_mcslideup_b; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mcslideup_b; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_mcslideup_h:
-    ID = Intrinsic::riscv_th_mcslideup_h; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mcslideup_h; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_mcslideup_w:
-    ID = Intrinsic::riscv_th_mcslideup_w; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mcslideup_w; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_mcslideup_d:
-    ID = Intrinsic::riscv_th_mcslideup_d; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mcslideup_d; IntrinsicTypes = {Ops[2]->getType()}; break;
   // Broadcast
   case RISCV::BI__builtin_riscv_th_mrbca_mv_i:
-    ID = Intrinsic::riscv_th_mrbca_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mrbca_mv_i; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_mcbcab_mv_i:
-    ID = Intrinsic::riscv_th_mcbcab_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mcbcab_mv_i; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_mcbcah_mv_i:
-    ID = Intrinsic::riscv_th_mcbcah_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mcbcah_mv_i; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_mcbcaw_mv_i:
-    ID = Intrinsic::riscv_th_mcbcaw_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mcbcaw_mv_i; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_mcbcad_mv_i:
-    ID = Intrinsic::riscv_th_mcbcad_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
-  // Fixed-point clip MVI
+    ID = Intrinsic::riscv_th_mcbcad_mv_i; IntrinsicTypes = {Ops[2]->getType()}; break;
+  // Fixed-point clip MVI (3-index + immediate)
+  // Ops: [md_idx, ms2_idx, ms1_idx, imm3]
   case RISCV::BI__builtin_riscv_th_mn4clipl_w_mv_i:
-    ID = Intrinsic::riscv_th_mn4clipl_w_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mn4clipl_w_mv_i; IntrinsicTypes = {Ops[3]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_mn4cliph_w_mv_i:
-    ID = Intrinsic::riscv_th_mn4cliph_w_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mn4cliph_w_mv_i; IntrinsicTypes = {Ops[3]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_mn4cliplu_w_mv_i:
-    ID = Intrinsic::riscv_th_mn4cliplu_w_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mn4cliplu_w_mv_i; IntrinsicTypes = {Ops[3]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_mn4cliphu_w_mv_i:
-    ID = Intrinsic::riscv_th_mn4cliphu_w_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
-  // Integer EW MVI
+    ID = Intrinsic::riscv_th_mn4cliphu_w_mv_i; IntrinsicTypes = {Ops[3]->getType()}; break;
+  // Integer EW MVI (typed: Qm2(ui, ui, ui, Qm2, Qm2, unsigned int) — imm is Ops[5])
   case RISCV::BI__builtin_riscv_th_madd_w_mv_i:
-    ID = Intrinsic::riscv_th_madd_w_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_madd_w_mv_i; IntrinsicTypes = {Ops[5]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_msub_w_mv_i:
-    ID = Intrinsic::riscv_th_msub_w_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_msub_w_mv_i; IntrinsicTypes = {Ops[5]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mmul_w_mv_i:
-    ID = Intrinsic::riscv_th_mmul_w_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mmul_w_mv_i; IntrinsicTypes = {Ops[5]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mmulh_w_mv_i:
-    ID = Intrinsic::riscv_th_mmulh_w_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mmulh_w_mv_i; IntrinsicTypes = {Ops[5]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mmax_w_mv_i:
-    ID = Intrinsic::riscv_th_mmax_w_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mmax_w_mv_i; IntrinsicTypes = {Ops[5]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mumax_w_mv_i:
-    ID = Intrinsic::riscv_th_mumax_w_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mumax_w_mv_i; IntrinsicTypes = {Ops[5]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mmin_w_mv_i:
-    ID = Intrinsic::riscv_th_mmin_w_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mmin_w_mv_i; IntrinsicTypes = {Ops[5]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mumin_w_mv_i:
-    ID = Intrinsic::riscv_th_mumin_w_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mumin_w_mv_i; IntrinsicTypes = {Ops[5]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_msrl_w_mv_i:
-    ID = Intrinsic::riscv_th_msrl_w_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_msrl_w_mv_i; IntrinsicTypes = {Ops[5]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_msll_w_mv_i:
-    ID = Intrinsic::riscv_th_msll_w_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_msll_w_mv_i; IntrinsicTypes = {Ops[5]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_msra_w_mv_i:
-    ID = Intrinsic::riscv_th_msra_w_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
-  // FP EW MVI
+    ID = Intrinsic::riscv_th_msra_w_mv_i; IntrinsicTypes = {Ops[5]->getType()}; IsTypedMatrixBuiltin = true; break;
+  // FP EW MVI (typed: Qm*(ui, ui, ui, Qm*, Qm*, unsigned int) — imm is Ops[5])
   case RISCV::BI__builtin_riscv_th_mfadd_h_mv_i:
-    ID = Intrinsic::riscv_th_mfadd_h_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mfadd_h_mv_i; IntrinsicTypes = {Ops[5]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfadd_s_mv_i:
-    ID = Intrinsic::riscv_th_mfadd_s_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mfadd_s_mv_i; IntrinsicTypes = {Ops[5]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfadd_d_mv_i:
-    ID = Intrinsic::riscv_th_mfadd_d_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mfadd_d_mv_i; IntrinsicTypes = {Ops[5]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfsub_h_mv_i:
-    ID = Intrinsic::riscv_th_mfsub_h_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mfsub_h_mv_i; IntrinsicTypes = {Ops[5]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfsub_s_mv_i:
-    ID = Intrinsic::riscv_th_mfsub_s_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mfsub_s_mv_i; IntrinsicTypes = {Ops[5]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfsub_d_mv_i:
-    ID = Intrinsic::riscv_th_mfsub_d_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mfsub_d_mv_i; IntrinsicTypes = {Ops[5]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfmul_h_mv_i:
-    ID = Intrinsic::riscv_th_mfmul_h_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mfmul_h_mv_i; IntrinsicTypes = {Ops[5]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfmul_s_mv_i:
-    ID = Intrinsic::riscv_th_mfmul_s_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mfmul_s_mv_i; IntrinsicTypes = {Ops[5]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfmul_d_mv_i:
-    ID = Intrinsic::riscv_th_mfmul_d_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mfmul_d_mv_i; IntrinsicTypes = {Ops[5]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfmax_h_mv_i:
-    ID = Intrinsic::riscv_th_mfmax_h_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mfmax_h_mv_i; IntrinsicTypes = {Ops[5]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfmax_s_mv_i:
-    ID = Intrinsic::riscv_th_mfmax_s_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mfmax_s_mv_i; IntrinsicTypes = {Ops[5]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfmax_d_mv_i:
-    ID = Intrinsic::riscv_th_mfmax_d_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mfmax_d_mv_i; IntrinsicTypes = {Ops[5]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfmin_h_mv_i:
-    ID = Intrinsic::riscv_th_mfmin_h_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mfmin_h_mv_i; IntrinsicTypes = {Ops[5]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfmin_s_mv_i:
-    ID = Intrinsic::riscv_th_mfmin_s_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mfmin_s_mv_i; IntrinsicTypes = {Ops[5]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mfmin_d_mv_i:
-    ID = Intrinsic::riscv_th_mfmin_d_mv_i; IntrinsicTypes = {Ops[0]->getType()}; break;
+    ID = Intrinsic::riscv_th_mfmin_d_mv_i; IntrinsicTypes = {Ops[5]->getType()}; IsTypedMatrixBuiltin = true; break;
 
-  // XTHeadMatrix - Element/tile-stride Load (IntrinsicTypes = {Ops[1]->getType()})
+  // XTHeadMatrix - Element/tile-stride Load (typed, returns Qm)
+  // Ops: [md_idx, ptr, stride] — stride is at Ops[2]
   case RISCV::BI__builtin_riscv_th_mlae8:
-    ID = Intrinsic::riscv_th_mlae8; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_mlae8; IntrinsicTypes = {Ops[2]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mlae16:
-    ID = Intrinsic::riscv_th_mlae16; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_mlae16; IntrinsicTypes = {Ops[2]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mlae32:
-    ID = Intrinsic::riscv_th_mlae32; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_mlae32; IntrinsicTypes = {Ops[2]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mlae64:
-    ID = Intrinsic::riscv_th_mlae64; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_mlae64; IntrinsicTypes = {Ops[2]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mlate8:
-    ID = Intrinsic::riscv_th_mlate8; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_mlate8; IntrinsicTypes = {Ops[2]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mlate16:
-    ID = Intrinsic::riscv_th_mlate16; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_mlate16; IntrinsicTypes = {Ops[2]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mlate32:
-    ID = Intrinsic::riscv_th_mlate32; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_mlate32; IntrinsicTypes = {Ops[2]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mlate64:
-    ID = Intrinsic::riscv_th_mlate64; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_mlate64; IntrinsicTypes = {Ops[2]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mlbe8:
-    ID = Intrinsic::riscv_th_mlbe8; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_mlbe8; IntrinsicTypes = {Ops[2]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mlbe16:
-    ID = Intrinsic::riscv_th_mlbe16; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_mlbe16; IntrinsicTypes = {Ops[2]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mlbe32:
-    ID = Intrinsic::riscv_th_mlbe32; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_mlbe32; IntrinsicTypes = {Ops[2]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mlbe64:
-    ID = Intrinsic::riscv_th_mlbe64; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_mlbe64; IntrinsicTypes = {Ops[2]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mlbte8:
-    ID = Intrinsic::riscv_th_mlbte8; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_mlbte8; IntrinsicTypes = {Ops[2]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mlbte16:
-    ID = Intrinsic::riscv_th_mlbte16; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_mlbte16; IntrinsicTypes = {Ops[2]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mlbte32:
-    ID = Intrinsic::riscv_th_mlbte32; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_mlbte32; IntrinsicTypes = {Ops[2]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mlbte64:
-    ID = Intrinsic::riscv_th_mlbte64; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_mlbte64; IntrinsicTypes = {Ops[2]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mlce8:
-    ID = Intrinsic::riscv_th_mlce8; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_mlce8; IntrinsicTypes = {Ops[2]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mlce16:
-    ID = Intrinsic::riscv_th_mlce16; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_mlce16; IntrinsicTypes = {Ops[2]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mlce32:
-    ID = Intrinsic::riscv_th_mlce32; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_mlce32; IntrinsicTypes = {Ops[2]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mlce64:
-    ID = Intrinsic::riscv_th_mlce64; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_mlce64; IntrinsicTypes = {Ops[2]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mlcte8:
-    ID = Intrinsic::riscv_th_mlcte8; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_mlcte8; IntrinsicTypes = {Ops[2]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mlcte16:
-    ID = Intrinsic::riscv_th_mlcte16; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_mlcte16; IntrinsicTypes = {Ops[2]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mlcte32:
-    ID = Intrinsic::riscv_th_mlcte32; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_mlcte32; IntrinsicTypes = {Ops[2]->getType()}; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mlcte64:
-    ID = Intrinsic::riscv_th_mlcte64; IntrinsicTypes = {Ops[1]->getType()}; break;
-  // Whole-register load (no stride, no IntrinsicTypes needed)
+    ID = Intrinsic::riscv_th_mlcte64; IntrinsicTypes = {Ops[2]->getType()}; IsTypedMatrixBuiltin = true; break;
+  // Whole-register load (typed, returns Qm; no stride, non-overloaded intrinsic)
   case RISCV::BI__builtin_riscv_th_mlme8:
-    ID = Intrinsic::riscv_th_mlme8; break;
+    ID = Intrinsic::riscv_th_mlme8; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mlme16:
-    ID = Intrinsic::riscv_th_mlme16; break;
+    ID = Intrinsic::riscv_th_mlme16; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mlme32:
-    ID = Intrinsic::riscv_th_mlme32; break;
+    ID = Intrinsic::riscv_th_mlme32; IsTypedMatrixBuiltin = true; break;
   case RISCV::BI__builtin_riscv_th_mlme64:
-    ID = Intrinsic::riscv_th_mlme64; break;
+    ID = Intrinsic::riscv_th_mlme64; IsTypedMatrixBuiltin = true; break;
 
-  // XTHeadMatrix - Element/tile-stride Store (IntrinsicTypes = {Ops[1]->getType()})
+  // XTHeadMatrix - Element/tile-stride Store
+  // Ops: [ms3_idx, ptr, stride] — stride is at Ops[2]
   case RISCV::BI__builtin_riscv_th_msae8:
-    ID = Intrinsic::riscv_th_msae8; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_msae8; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_msae16:
-    ID = Intrinsic::riscv_th_msae16; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_msae16; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_msae32:
-    ID = Intrinsic::riscv_th_msae32; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_msae32; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_msae64:
-    ID = Intrinsic::riscv_th_msae64; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_msae64; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_msate8:
-    ID = Intrinsic::riscv_th_msate8; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_msate8; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_msate16:
-    ID = Intrinsic::riscv_th_msate16; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_msate16; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_msate32:
-    ID = Intrinsic::riscv_th_msate32; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_msate32; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_msate64:
-    ID = Intrinsic::riscv_th_msate64; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_msate64; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_msbe8:
-    ID = Intrinsic::riscv_th_msbe8; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_msbe8; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_msbe16:
-    ID = Intrinsic::riscv_th_msbe16; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_msbe16; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_msbe32:
-    ID = Intrinsic::riscv_th_msbe32; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_msbe32; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_msbe64:
-    ID = Intrinsic::riscv_th_msbe64; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_msbe64; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_msbte8:
-    ID = Intrinsic::riscv_th_msbte8; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_msbte8; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_msbte16:
-    ID = Intrinsic::riscv_th_msbte16; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_msbte16; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_msbte32:
-    ID = Intrinsic::riscv_th_msbte32; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_msbte32; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_msbte64:
-    ID = Intrinsic::riscv_th_msbte64; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_msbte64; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_msce8:
-    ID = Intrinsic::riscv_th_msce8; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_msce8; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_msce16:
-    ID = Intrinsic::riscv_th_msce16; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_msce16; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_msce32:
-    ID = Intrinsic::riscv_th_msce32; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_msce32; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_msce64:
-    ID = Intrinsic::riscv_th_msce64; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_msce64; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_mscte8:
-    ID = Intrinsic::riscv_th_mscte8; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_mscte8; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_mscte16:
-    ID = Intrinsic::riscv_th_mscte16; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_mscte16; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_mscte32:
-    ID = Intrinsic::riscv_th_mscte32; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_mscte32; IntrinsicTypes = {Ops[2]->getType()}; break;
   case RISCV::BI__builtin_riscv_th_mscte64:
-    ID = Intrinsic::riscv_th_mscte64; IntrinsicTypes = {Ops[1]->getType()}; break;
+    ID = Intrinsic::riscv_th_mscte64; IntrinsicTypes = {Ops[2]->getType()}; break;
   // Whole-register store (no stride, no IntrinsicTypes needed)
   case RISCV::BI__builtin_riscv_th_msme8:
     ID = Intrinsic::riscv_th_msme8; break;
@@ -1885,6 +1924,19 @@ Value *CodeGenFunction::EmitRISCVBuiltinExpr(unsigned BuiltinID,
   }
 
   assert(ID != Intrinsic::not_intrinsic);
+
+  // Typed matrix builtins: filter out TargetExtType (matrix) args,
+  // call the void intrinsic, and return PoisonValue for the matrix result.
+  if (IsTypedMatrixBuiltin) {
+    SmallVector<Value *, 4> FilteredOps;
+    for (auto *Op : Ops)
+      if (!Op->getType()->isTargetExtTy())
+        FilteredOps.push_back(Op);
+    llvm::Function *F = CGM.getIntrinsic(ID, IntrinsicTypes);
+    Builder.CreateCall(F, FilteredOps, "");
+    return ResultType->isVoidTy() ? nullptr
+                                  : llvm::PoisonValue::get(ResultType);
+  }
 
   llvm::Function *F = CGM.getIntrinsic(ID, IntrinsicTypes);
   return Builder.CreateCall(F, Ops, "");

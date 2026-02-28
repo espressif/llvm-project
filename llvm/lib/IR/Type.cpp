@@ -1059,6 +1059,12 @@ static TargetTypeInfo getTargetTypeInfo(const TargetExtType *Ty) {
                           TargetExtType::CanBeVectorElement);
   }
 
+  // RISC-V Matrix Extension opaque types.
+  if (Name == "riscv.matrix")
+    return TargetTypeInfo(PointerType::get(C, 0),
+                          TargetExtType::HasZeroInit,
+                          TargetExtType::CanBeLocal);
+
   return TargetTypeInfo(Type::getVoidTy(C));
 }
 
