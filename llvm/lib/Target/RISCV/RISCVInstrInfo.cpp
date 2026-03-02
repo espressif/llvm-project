@@ -5392,6 +5392,18 @@ bool RISCVInstrInfo::isVRegCopy(const MachineInstr *MI, unsigned LMul) const {
   return (!RCFractional && LMul == RCLMul) || (RCFractional && LMul == 1);
 }
 
+bool RISCVInstrInfo::isSchedulingBoundary(const MachineInstr &MI,
+                                          const MachineBasicBlock *MBB,
+                                          const MachineFunction &MF) const {
+  if (MI.getOpcode() == RISCV::ESP_VST_128_IP ||
+      MI.getOpcode() == RISCV::ESP_VST_L_64_IP ||
+      MI.getOpcode() == RISCV::ESP_VST_H_64_IP ||
+      MI.getOpcode() == RISCV::ESP_VLDBC_8_IP ||
+      MI.getOpcode() == RISCV::ESP_ZERO_Q)
+    return true;
+  return TargetInstrInfo::isSchedulingBoundary(MI, MBB, MF);
+}
+
 bool RISCVInstrInfo::requiresNTLHint(const MachineInstr &MI) const {
   if (MI.memoperands_empty())
     return false;
