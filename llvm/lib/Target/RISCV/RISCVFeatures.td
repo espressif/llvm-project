@@ -1441,6 +1441,12 @@ def FeatureVendorXespv
                      "'Espressif ESPV 2.2'">;
 def HasVendorXespv : Predicate<"Subtarget->hasVendorXespv()">, AssemblerPredicate<(all_of FeatureVendorXespv), "'Espressif ESPV 2.2'">;
 
+// Enable ESPV target lowering (DAG/instruction selection). Off by default; enable
+// for tests and IDF builds until well tested. When stable, enable by default for
+// ESPV-capable CPUs.
+def FeatureVendorXespvLowering : SubtargetFeature<"espv-lowering", "HasVendorXespvLowering", "true",
+  "Enable Espressif ESPV target lowering (DAG/instruction selection)">;
+
 def HasVendorEspSAT : Predicate<"Subtarget->hasVendorEspSAT()">, AssemblerPredicate<(any_of FeatureVendorXespdsp, FeatureVendorXespv1v)>;
 
 

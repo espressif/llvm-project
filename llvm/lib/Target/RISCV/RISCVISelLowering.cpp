@@ -145,7 +145,7 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
     else
       addRegisterClass(MVT::f64, &RISCV::GPRPairRegClass);
   }
-  if (Subtarget.hasVendorXespv1v()) {
+  if (Subtarget.hasESPVTargetLowering()) {
     initializeESPVTargetLowering(Subtarget);
     // ESPV: Support for v64i8 (512-bit QACC pair)
     // v64i8 needs to be split into two v32i8 parts for return values
@@ -1791,7 +1791,9 @@ bool RISCVTargetLowering::getTgtMemIntrinsic(IntrinsicInfo &Info,
     Info.flags |= MachineMemOperand::MONonTemporal;
 
   Info.flags |= RISCVTargetLowering::getTargetMMOFlags(I);
-  if (RISCV::getESPVTgtMemIntrinsic(Info, I, Intrinsic))
+  const auto &Subtarget = MF.getSubtarget<RISCVSubtarget>();
+  if (Subtarget.hasESPVTargetLowering() &&
+      RISCV::getESPVTgtMemIntrinsic(Info, I, Intrinsic))
     return true;
   switch (Intrinsic) {
   default:
@@ -14628,7 +14630,7 @@ void RISCVTargetLowering::ReplaceNodeResults(SDNode *N,
     
     // Handle ESP32P4 intrinsics that return v64i8
     // These need to be lowered to CONCAT_VECTORS first, then split
-    if (Subtarget.hasVendorXespv() && VT == MVT::v64i8) {
+    if (Subtarget.hasESPVTargetLowering() && VT == MVT::v64i8) {
       if (IntNo == Intrinsic::riscv_esp_mov_s8_qacc_m ||
           IntNo == Intrinsic::riscv_esp_mov_s16_qacc_m ||
           IntNo == Intrinsic::riscv_esp_mov_u8_qacc_m ||
