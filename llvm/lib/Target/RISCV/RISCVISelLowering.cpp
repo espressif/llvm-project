@@ -146,7 +146,7 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
       addRegisterClass(MVT::f64, &RISCV::GPRPairRegClass);
   }
   if (Subtarget.hasVendorXespv1v()) {
-    //initializeESPVTargetLowering(Subtarget);
+    initializeESPVTargetLowering(Subtarget);
     // ESPV: Support for v64i8 (512-bit QACC pair)
     // v64i8 needs to be split into two v32i8 parts for return values
     // Note: We let LLVM's default TypeSplit handle v64i8 -> v32i8 splitting.

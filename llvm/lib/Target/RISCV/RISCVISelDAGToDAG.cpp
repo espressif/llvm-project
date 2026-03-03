@@ -2801,7 +2801,7 @@ void RISCVDAGToDAGISel::Select(SDNode *Node) {
     SDLoc DL(V);
 
     // ESP32P4: Handle special ESPV extract_subvector cases
-    if (Subtarget->hasVendorXespv()) {
+    if (Subtarget->hasVendorXespv1v()) {
       selectESPVExtractSubvector(Node, V, Idx, InVT, VT, DL);
       return;
     }
