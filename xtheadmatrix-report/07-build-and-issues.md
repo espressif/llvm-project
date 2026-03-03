@@ -2,6 +2,12 @@
 
 ## Build Configuration
 
+### Development Build (Minimal)
+
+Used during development for fast iteration. Builds only the compiler,
+assembler, and disassembler -- enough for testing XTHeadMatrix encoding,
+intrinsics, and builtins but **not** sufficient for linking executables.
+
 ```bash
 cmake -G Ninja ../llvm \
   -DCMAKE_BUILD_TYPE=Debug \
@@ -9,7 +15,46 @@ cmake -G Ninja ../llvm \
   -DLLVM_ENABLE_PROJECTS="clang" \
   -DCMAKE_C_COMPILER=clang \
   -DCMAKE_CXX_COMPILER=clang++
+
+ninja -j12 clang llvm-mc llvm-objdump
 ```
+
+What this builds: `clang` (compiler + integrated assembler), `llvm-mc`
+(standalone assembler), `llvm-objdump` (disassembler).
+
+What this does **not** build: linker (`lld`), archiver (`llvm-ar`),
+other binutils (`llvm-nm`, `llvm-readelf`, `llvm-strip`, `llvm-objcopy`),
+runtime libraries (`compiler-rt`), or optimizer/codegen tools (`opt`, `llc`).
+
+### Full Toolchain Build and Install
+
+Builds the complete RISC-V cross-compilation toolchain (compiler, linker,
+assembler, all binutils, and runtime libraries) and installs to a prefix.
+
+```bash
+cmake -S llvm -B build -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DLLVM_TARGETS_TO_BUILD=RISCV \
+  -DLLVM_ENABLE_PROJECTS="clang;lld;llvm" \
+  -DLLVM_ENABLE_RUNTIMES="compiler-rt" \
+  -DCMAKE_INSTALL_PREFIX=/opt/riscv-llvm \
+  -DCMAKE_C_COMPILER=clang \
+  -DCMAKE_CXX_COMPILER=clang++
+
+# Build everything
+ninja -j12
+
+# Install to CMAKE_INSTALL_PREFIX
+cmake --install build
+# -- or equivalently: ninja install
+```
+
+Installed tools include: `clang`, `lld` (linker), `llvm-ar`, `llvm-nm`,
+`llvm-objcopy`, `llvm-objdump`, `llvm-readelf`, `llvm-strip`, `llvm-mc`,
+`opt`, `llc`, plus `compiler-rt` builtins for RISC-V.
+
+To also build the C++ standard library, add `"libcxx;libcxxabi;libunwind"`
+to `LLVM_ENABLE_RUNTIMES`.
 
 ## Build Iterations and Issues
 

@@ -36,7 +36,7 @@ first-class type identity, mangling, and debug info support. Programs
 can use either the high-level API, the low-level Clang builtins, or
 inline assembly and compile directly to native assembly or object code.
 
-## Building the Compiler
+## Building and Installing the Toolchain
 
 ### Prerequisites
 
@@ -45,32 +45,109 @@ inline assembly and compile directly to native assembly or object code.
 - Python 3
 - Ninja (recommended)
 
-### CMake Configuration
+### Option A: Minimal Development Build
+
+This builds only the tools needed for development and testing of
+XTHeadMatrix. It does **not** produce a linker or runtime libraries,
+so it cannot link executables on its own.
 
 ```bash
 cmake -S llvm -B build -G Ninja \
   -DCMAKE_BUILD_TYPE=Release \
   -DLLVM_TARGETS_TO_BUILD=RISCV \
-  -DLLVM_ENABLE_PROJECTS="clang" \
-  -DCMAKE_INSTALL_PREFIX=/path/to/install
+  -DLLVM_ENABLE_PROJECTS="clang"
+
+cmake --build build -- -j$(nproc) clang llvm-mc llvm-objdump
 ```
 
-### Build
+What this builds:
+- `clang` -- compiler with integrated assembler (can produce `.o` / `.s`)
+- `llvm-mc` -- standalone assembler (for MC-layer testing)
+- `llvm-objdump` -- disassembler (for encoding verification)
+
+What this does **not** build: linker (`lld`), archiver (`llvm-ar`),
+runtime libraries (`compiler-rt`, `libc`, `libcxx`), or any other
+LLVM tools (`opt`, `llc`, `llvm-nm`, `llvm-readelf`, etc.).
+
+### Option B: Full Toolchain Build and Install
+
+This builds the complete RISC-V cross-compilation toolchain -- compiler,
+linker, assembler, binutils, and runtime libraries -- and installs it to
+a prefix directory ready for use.
+
+#### 1. Configure
 
 ```bash
-cmake --build build -- -j$(nproc) clang llvm-mc llvm-objdump
+cmake -S llvm -B build -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DLLVM_TARGETS_TO_BUILD=RISCV \
+  -DLLVM_ENABLE_PROJECTS="clang;lld;llvm" \
+  -DLLVM_ENABLE_RUNTIMES="compiler-rt" \
+  -DCMAKE_INSTALL_PREFIX=/opt/riscv-llvm \
+  -DLLVM_INSTALL_TOOLCHAIN_ONLY=OFF
+```
+
+Key options explained:
+
+| Option | Purpose |
+|--------|---------|
+| `LLVM_TARGETS_TO_BUILD=RISCV` | Build only the RISC-V backend (faster build) |
+| `LLVM_ENABLE_PROJECTS="clang;lld;llvm"` | Compiler + linker + all LLVM tools |
+| `LLVM_ENABLE_RUNTIMES="compiler-rt"` | Builtins/sanitizer runtime for RISC-V |
+| `CMAKE_INSTALL_PREFIX` | Where `make install` places binaries, libs, headers |
+
+To also build the C++ standard library for RISC-V bare-metal or Linux
+targets, add `"libcxx;libcxxabi;libunwind"` to `LLVM_ENABLE_RUNTIMES`.
+
+#### 2. Build
+
+```bash
+cmake --build build -- -j$(nproc)
 ```
 
 Or with Ninja directly:
 
 ```bash
-cd build && ninja -j$(nproc) clang llvm-mc llvm-objdump
+cd build && ninja -j$(nproc)
+```
+
+This builds everything: `clang`, `lld` (linker), `llvm-ar` (archiver),
+`llvm-nm`, `llvm-objcopy`, `llvm-objdump`, `llvm-readelf`,
+`llvm-strip`, `llvm-mc`, `opt`, `llc`, and runtime libraries.
+
+#### 3. Install
+
+```bash
+cmake --install build
+```
+
+Or equivalently:
+
+```bash
+cd build && ninja install
+```
+
+This installs into the `CMAKE_INSTALL_PREFIX` directory (e.g.
+`/opt/riscv-llvm/`). The installed layout:
+
+```
+/opt/riscv-llvm/
+├── bin/          # clang, lld, llvm-ar, llvm-mc, llvm-objdump, ...
+├── include/      # Clang/LLVM headers
+├── lib/          # Libraries, compiler-rt builtins, clang resource dir
+└── share/        # Documentation, CMake modules
+```
+
+#### 4. Add to PATH
+
+```bash
+export PATH="/opt/riscv-llvm/bin:$PATH"
 ```
 
 ### Verify Extension Availability
 
 ```bash
-./build/bin/clang --print-supported-extensions 2>&1 | grep xtheadmatrix
+clang --print-supported-extensions 2>&1 | grep xtheadmatrix
 ```
 
 Expected output:
@@ -78,6 +155,22 @@ Expected output:
 ```
 xtheadmatrix             0.6       'XTHeadMatrix' (T-Head Matrix Extension)
 ```
+
+### What Each Tool Does
+
+| Tool | Role |
+|------|------|
+| `clang` | C/C++ compiler with integrated assembler (source → `.o` ELF) |
+| `lld` / `ld.lld` | Linker (`.o` files → linked ELF executable/shared lib) |
+| `llvm-ar` | Archiver (create/manage `.a` static libraries) |
+| `llvm-nm` | List symbols in object files |
+| `llvm-objdump` | Disassembler (inspect machine code in ELF files) |
+| `llvm-objcopy` | Copy/transform object files (strip, convert formats) |
+| `llvm-readelf` | Display ELF file headers, sections, symbols |
+| `llvm-strip` | Strip symbols from binaries |
+| `llvm-mc` | Standalone assembler (`.s` → `.o`, useful for testing) |
+| `opt` | LLVM IR optimizer (for pass development/debugging) |
+| `llc` | LLVM IR → machine code compiler (for backend debugging) |
 
 ## Compiling Programs
 
