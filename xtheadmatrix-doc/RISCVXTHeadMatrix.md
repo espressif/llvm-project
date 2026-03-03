@@ -71,77 +71,211 @@ LLVM tools (`opt`, `llc`, `llvm-nm`, `llvm-readelf`, etc.).
 
 ### Option B: Full Toolchain Build and Install
 
-This builds the complete RISC-V cross-compilation toolchain -- compiler,
-linker, assembler, binutils, and runtime libraries -- and installs it to
-a prefix directory ready for use.
+This builds the complete RISC-V bare-metal cross-compilation toolchain
+-- compiler, linker, assembler, debugger, binutils, runtime libraries,
+C library, and C++ standard library -- and installs it to a prefix
+directory ready for use. The build has four stages:
 
-#### 1. Configure
+1. **LLVM toolchain** -- clang, lld, lldb, all LLVM tools (no runtimes)
+2. **compiler-rt builtins** -- built standalone for both RV32 and RV64
+3. **Newlib + libgloss** -- bare-metal C library (libc, libm) and `libnosys` (empty syscall stubs) for both RV64 and RV32
+4. **C++ runtimes** -- libunwind, libcxxabi, libcxx (static, bare-metal, no threads) built against the newlib sysroot for both RV64 and RV32
+
+A convenience script `riscv-toolchain-build.sh` is provided at the
+repository root. It accepts an optional install prefix argument
+(default: `${HOME}/opt/riscv-llvm`):
+
+```bash
+./riscv-toolchain-build.sh                    # install to ~/opt/riscv-llvm
+./riscv-toolchain-build.sh /path/to/install   # custom prefix
+```
+
+The script runs all four stages automatically. The key cmake options
+for each stage are described below.
+
+#### Stage 1: LLVM Toolchain (no runtimes)
+
+compiler-rt **cannot** be included in `LLVM_ENABLE_RUNTIMES` for
+bare-metal cross-compilation because the in-tree runtimes build tries
+to cross-compile test programs (`test_target_arch`) which fail without
+a C library. Instead, compiler-rt is built standalone in Stage 2.
 
 ```bash
 cmake -S llvm -B build -G Ninja \
   -DCMAKE_BUILD_TYPE=Release \
   -DLLVM_TARGETS_TO_BUILD=RISCV \
-  -DLLVM_ENABLE_PROJECTS="clang;lld;llvm" \
-  -DLLVM_ENABLE_RUNTIMES="compiler-rt" \
-  -DCMAKE_INSTALL_PREFIX=/opt/riscv-llvm \
-  -DLLVM_INSTALL_TOOLCHAIN_ONLY=OFF
+  -DLLVM_ENABLE_PROJECTS="clang;lld;llvm;lldb" \
+  -DCMAKE_INSTALL_PREFIX=${HOME}/opt/riscv-llvm \
+  -DLLVM_INSTALL_TOOLCHAIN_ONLY=OFF \
+  -DLLVM_DEFAULT_TARGET_TRIPLE=riscv64-unknown-elf
+
+cmake --build build -- -j12
+cmake --install build
 ```
 
-Key options explained:
+Key options:
 
 | Option | Purpose |
 |--------|---------|
 | `LLVM_TARGETS_TO_BUILD=RISCV` | Build only the RISC-V backend (faster build) |
-| `LLVM_ENABLE_PROJECTS="clang;lld;llvm"` | Compiler + linker + all LLVM tools |
-| `LLVM_ENABLE_RUNTIMES="compiler-rt"` | Builtins/sanitizer runtime for RISC-V |
-| `CMAKE_INSTALL_PREFIX` | Where `make install` places binaries, libs, headers |
+| `LLVM_ENABLE_PROJECTS="clang;lld;llvm;lldb"` | Compiler + linker + all LLVM tools + debugger |
+| `CMAKE_INSTALL_PREFIX` | Where `cmake --install` places binaries, libs, headers |
+| `LLVM_DEFAULT_TARGET_TRIPLE=riscv64-unknown-elf` | Default target triple (required when building only the RISC-V backend, avoids undefined variable errors in LLDB CMake) |
 
-To also build the C++ standard library for RISC-V bare-metal or Linux
-targets, add `"libcxx;libcxxabi;libunwind"` to `LLVM_ENABLE_RUNTIMES`.
+Note: `LLVM_ENABLE_RUNTIMES` is deliberately **not set** here -- see
+Stage 2 for why.
 
-#### 2. Build
+This installs: `clang`, `lld` (linker), `lldb` (debugger),
+`llvm-ar` (archiver), `llvm-nm`, `llvm-objcopy`, `llvm-objdump`,
+`llvm-readelf`, `llvm-strip`, `llvm-mc`, `opt`, `llc`.
 
-```bash
-cmake --build build -- -j$(nproc)
-```
+#### Stage 2: compiler-rt Builtins (standalone, RV32 + RV64)
 
-Or with Ninja directly:
+compiler-rt is built as a standalone CMake project against the
+`compiler-rt/` source directory. Two critical settings:
 
-```bash
-cd build && ninja -j$(nproc)
-```
-
-This builds everything: `clang`, `lld` (linker), `llvm-ar` (archiver),
-`llvm-nm`, `llvm-objcopy`, `llvm-objdump`, `llvm-readelf`,
-`llvm-strip`, `llvm-mc`, `opt`, `llc`, and runtime libraries.
-
-#### 3. Install
+- `CMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY` -- avoids link-time
+  test programs that fail without a C library
+- `CMAKE_INSTALL_PREFIX` must be the **clang resource directory**
+  (obtained via `clang --print-resource-dir`), not the toolchain
+  prefix, because compiler-rt installs into `lib/clang/<version>/lib/`
 
 ```bash
-cmake --install build
+RESOURCE_DIR=$(${HOME}/opt/riscv-llvm/bin/clang --print-resource-dir)
+
+# Build for each target (riscv64-unknown-elf, riscv32-unknown-elf)
+cmake -G Ninja \
+  -S compiler-rt \
+  -B runtimes-build/compiler-rt-riscv64-unknown-elf \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_C_COMPILER=${HOME}/opt/riscv-llvm/bin/clang \
+  -DCMAKE_CXX_COMPILER=${HOME}/opt/riscv-llvm/bin/clang++ \
+  -DCMAKE_AR=${HOME}/opt/riscv-llvm/bin/llvm-ar \
+  -DCMAKE_NM=${HOME}/opt/riscv-llvm/bin/llvm-nm \
+  -DCMAKE_RANLIB=${HOME}/opt/riscv-llvm/bin/llvm-ranlib \
+  -DCMAKE_C_COMPILER_TARGET=riscv64-unknown-elf \
+  -DCMAKE_CXX_COMPILER_TARGET=riscv64-unknown-elf \
+  -DCMAKE_ASM_COMPILER_TARGET=riscv64-unknown-elf \
+  -DCMAKE_C_FLAGS="-mcmodel=medany" \
+  -DCMAKE_CXX_FLAGS="-mcmodel=medany" \
+  -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \
+  -DCMAKE_INSTALL_PREFIX="${RESOURCE_DIR}" \
+  -DCOMPILER_RT_BAREMETAL_BUILD=ON \
+  -DCOMPILER_RT_BUILD_BUILTINS=ON \
+  -DCOMPILER_RT_BUILD_SANITIZERS=OFF \
+  -DCOMPILER_RT_BUILD_XRAY=OFF \
+  -DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
+  -DCOMPILER_RT_BUILD_PROFILE=OFF \
+  -DCOMPILER_RT_BUILD_MEMPROF=OFF \
+  -DCOMPILER_RT_BUILD_ORC=OFF \
+  -DCOMPILER_RT_BUILD_CTX_PROFILE=OFF \
+  -DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON
 ```
 
-Or equivalently:
+Key options:
+
+| Option | Purpose |
+|--------|---------|
+| `CMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY` | Skip link-time tests (no libc available yet) |
+| `CMAKE_INSTALL_PREFIX="${RESOURCE_DIR}"` | Install into clang resource dir, not toolchain prefix |
+| `COMPILER_RT_BAREMETAL_BUILD=ON` | Skip builtins that need libc headers (`sys/mman.h`, etc.) |
+| `COMPILER_RT_DEFAULT_TARGET_ONLY=ON` | Build only for the specified target triple |
+
+Repeat for `riscv32-unknown-elf` (without `-mcmodel=medany`).
+
+#### Stage 3: Newlib + libgloss (RV32 + RV64)
+
+The script automatically clones
+[newlib](https://sourceware.org/newlib/) and builds both **newlib**
+(libc, libm) and **libgloss** (board support, including `libnosys`)
+for `riscv64-unknown-elf` and `riscv32-unknown-elf` using the
+freshly-built clang. Newlib's `configure` must be run from **inside**
+the build directory (autotools convention), and `--prefix` must be an
+absolute literal path.
+
+Key configure options:
+
+- `--disable-newlib-supplied-syscalls` -- libc.a does **not** embed
+  syscall implementations; they come from an external library instead
+- `--enable-newlib-io-long-long` -- `printf` supports `%lld`
+- `--disable-newlib-multithread` -- no threading support (bare-metal)
+
+The build uses `make all-target-newlib all-target-libgloss` to build
+both components, and `make install-target-newlib install-target-libgloss`
+to install them.
+
+**libnosys** (part of libgloss) provides empty stub implementations of
+all POSIX syscalls that newlib requires (`_read`, `_write`, `_sbrk`,
+`_close`, `_fstat`, `_exit`, etc.). This allows code using `printf`,
+`malloc`, etc. to **link** for bare-metal targets. By default output
+goes nowhere -- override `_write` in your application to redirect it:
+
+```c
+// Override in your application -- printf output goes to UART.
+// Your definition takes priority over the stub in libnosys.a
+// (standard static archive linker behavior).
+int _write(int fd, const char *buf, int len) {
+    for (int i = 0; i < len; i++) uart_putc(buf[i]);
+    return len;
+}
+```
+
+#### Stage 4: C++ Runtimes (RV32 + RV64)
+
+Once newlib is installed, the script builds `libunwind`, `libcxxabi`,
+and `libcxx` for both targets using a standalone CMake invocation
+against the `runtimes/` directory. Three critical gotchas discovered
+during bring-up:
+
+1. **Do NOT use `CMAKE_SYSROOT`** -- the runtimes build system
+   overrides the compiler path when sysroot is set. Pass `--sysroot`
+   via `CMAKE_C_FLAGS` / `CMAKE_CXX_FLAGS` / `CMAKE_ASM_FLAGS` instead.
+2. **`LIBUNWIND_IS_BAREMETAL=ON` is required** -- without it,
+   libunwind tries to include `dlfcn.h` which does not exist in newlib.
+3. **`LLVM_INCLUDE_TESTS=OFF` is required** -- avoids a dependency on
+   system Clang/LLVM packages for test infrastructure.
+
+The runtimes are configured for bare-metal:
+
+- **Static only** -- no shared libraries (`ENABLE_SHARED=OFF`)
+- **No threads** -- `ENABLE_THREADS=OFF` (bare-metal, no OS)
+- **No filesystem / locale / wide chars** -- stripped for embedded use
+- **Uses compiler-rt** -- not libgcc (`USE_COMPILER_RT=ON`)
+- **libcxxabi uses libunwind** -- `USE_LLVM_UNWINDER=ON`
+- **`LIBUNWIND_IS_BAREMETAL=ON`** -- skips `dlfcn.h` and OS-specific includes
+
+The C++ headers install to `<sysroot>/include/c++/v1/` and libraries
+to `<sysroot>/lib/`, so clang finds them automatically.
+
+#### Installed Layout
+
+```
+~/opt/riscv-llvm/
+├── bin/                         # clang, clang++, lld, lldb, llvm-ar, ...
+├── include/                     # Clang/LLVM headers
+├── lib/clang/<ver>/lib/         # compiler-rt builtins (rv32+rv64)
+├── riscv64-unknown-elf/
+│   ├── include/
+│   │   ├── stdio.h, stdlib.h, ...    # newlib C headers
+│   │   └── c++/v1/                   # libc++ C++ headers
+│   └── lib/
+│       ├── libc.a               # newlib C library
+│       ├── libm.a               # newlib math library
+│       ├── libnosys.a           # empty syscall stubs (from libgloss)
+│       ├── libgloss-htif.a      # HTIF syscalls (for RISC-V simulation)
+│       ├── libc++.a             # C++ standard library
+│       ├── libc++abi.a          # C++ ABI library
+│       └── libunwind.a          # stack unwinder
+├── riscv32-unknown-elf/
+│   ├── include/                 # (same structure as rv64)
+│   └── lib/                     # (same libraries as rv64)
+└── share/
+```
+
+#### Add to PATH
 
 ```bash
-cd build && ninja install
-```
-
-This installs into the `CMAKE_INSTALL_PREFIX` directory (e.g.
-`/opt/riscv-llvm/`). The installed layout:
-
-```
-/opt/riscv-llvm/
-├── bin/          # clang, lld, llvm-ar, llvm-mc, llvm-objdump, ...
-├── include/      # Clang/LLVM headers
-├── lib/          # Libraries, compiler-rt builtins, clang resource dir
-└── share/        # Documentation, CMake modules
-```
-
-#### 4. Add to PATH
-
-```bash
-export PATH="/opt/riscv-llvm/bin:$PATH"
+export PATH="${HOME}/opt/riscv-llvm/bin:$PATH"
 ```
 
 ### Verify Extension Availability
@@ -162,6 +296,7 @@ xtheadmatrix             0.6       'XTHeadMatrix' (T-Head Matrix Extension)
 |------|------|
 | `clang` | C/C++ compiler with integrated assembler (source → `.o` ELF) |
 | `lld` / `ld.lld` | Linker (`.o` files → linked ELF executable/shared lib) |
+| `lldb` | Debugger (like GDB but LLVM-native, supports RISC-V targets) |
 | `llvm-ar` | Archiver (create/manage `.a` static libraries) |
 | `llvm-nm` | List symbols in object files |
 | `llvm-objdump` | Disassembler (inspect machine code in ELF files) |
