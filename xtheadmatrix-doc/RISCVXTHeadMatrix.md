@@ -378,7 +378,53 @@ clang --target=riscv64 -march=rv64gcv_xtheadmatrix0p6 \
 
 ### Inline Assembly
 
-Matrix registers can be used in inline assembly:
+Matrix registers can be used in inline assembly with register constraints or
+hardcoded register names.
+
+#### Register Constraints
+
+Three constraint letters are available for matrix registers:
+
+| Constraint | Register Class | Registers |
+|------------|---------------|-----------|
+| `tr` | THRVMMR (any matrix) | tr0-tr3, acc0-acc3 |
+| `tt` | THRVMTR (tile only) | tr0-tr3 |
+| `ta` | THRVMACC (accumulator only) | acc0-acc3 |
+
+Clobber constraints (`"tr0"`, `"acc0"`) are also supported. Named register
+constraints (`{tr0}`, `{acc1}`, etc.) are available at the LLVM IR level via
+`getRegForInlineAsmConstraint`.
+
+```c
+#include <thead_matrix.h>
+
+// Constrained output — register allocator picks a matrix register
+mint32_t result;
+asm volatile("th.mlae8 %0, (%1), %2"
+             : "=tr"(result)
+             : "r"(base), "r"(stride));
+
+// Constrained input
+asm volatile("th.msce8 %0, (%1), %2"
+             : /* no outputs */
+             : "tr"(tile), "r"(base), "r"(stride));
+
+// Accumulator-only constraint
+mint32_t acc;
+asm volatile("th.mlae8 %0, (%1), %2"
+             : "=ta"(acc)
+             : "r"(base), "r"(stride));
+
+// Read-write constraint
+asm volatile("th.mmov.mm %0, %0" : "+tr"(val));
+
+// Clobber constraints
+asm volatile("th.mcfg zero, zero, zero" ::: "tr0", "acc0");
+```
+
+#### Hardcoded Register Names (Legacy)
+
+For pure string-template inline assembly without register allocator interaction:
 
 ```c
 // Read a CSR
@@ -603,30 +649,23 @@ all [Code Examples](#code-examples).
 
 ## Builtins Reference
 
-All builtins use the `__builtin_riscv_th_` prefix and are available when
-the `xtheadmatrix` target feature is enabled. Spec-API builtins accept
+> **Note**: The tables below document the 227 hardware instructions and
+> their assembly mnemonics. The actual Spec-API Clang builtins (defined
+> in `BuiltinsRISCVXTHeadMatrix.td`) use `_spec` suffixed names (e.g.,
+> `__builtin_riscv_th_mfmaqa_spec_h` rather than
+> `__builtin_riscv_th_mfmacc_h`). Users should use the `<thead_matrix.h>`
+> C API (e.g., `__riscv_th_mfmaqa_h`) rather than calling builtins
+> directly.
+
+All Spec-API builtins use the `__builtin_riscv_th_` prefix and are
+available when the `xtheadmatrix` target feature is enabled. They accept
 and return `__rvm_*_t` matrix types; no register index parameters are
 needed. The builtins map to `_internal` intrinsics that produce/consume
-`target("riscv.matrix")` SSA values. These
-are compile-time constants (ImmArg). Sema validation enforces register
-type constraints: load-A/B require tile registers (0-3), load-C
-requires accumulator registers (4-7), matmul destinations must be
-accumulators, and element-wise operands must all be accumulators.
+`target("riscv.matrix")` SSA values.
 
-**Typed builtins (Phase C)**: 121 builtins accept and return native
-`__rvm_*_t` matrix types (e.g.,
-`__rvm_int32_t __builtin_riscv_th_mlae32(unsigned int, void*, size_t)`).
-This enables Sema-level type checking -- passing a `__rvm_float32_t` where
-`__rvm_int32_t` is expected produces a compile-time error. The LLVM IR
-intrinsics remain void; the CGBuiltin handler bridges the gap by filtering
-matrix-typed arguments and returning `PoisonValue` tokens. 22 `mundef`
-builtins (`__builtin_riscv_th_mundef_i8` through
+22 `mundef` builtins (`__builtin_riscv_th_mundef_i8` through
 `__builtin_riscv_th_mundef_f64x2`) create undefined matrix values for
 initializing variables.
-
-**Untyped builtins**: 106 builtins retain void signatures -- stores,
-configuration, zero, misc, and FP8/BF16/TF32 variants that lack native
-matrix types.
 
 ### Configuration (7 builtins)
 
@@ -707,10 +746,13 @@ Prototype: `void(unsigned int ms3_idx, void *base)`
 
 ### Matrix Multiply-Accumulate (27 builtins)
 
-Matrix multiply builtins with native types (h, s, d, s_h, d_s, and all
-integer variants) accept and return `__rvm_*_t` typed arguments (Phase C).
-FP8/BF16/TF32 variants remain `void()` since no native matrix types exist
-for these formats.
+Matrix multiply builtins accept and return `__rvm_*_t` typed arguments.
+Native-precision (h, s, d), typed-widening (s_h, d_s), and all integer
+variants use the corresponding FP or integer matrix types for all operands.
+FP8/BF16/TF32 widening variants use `__rvm_int32_t` (opaque) for the A/B
+source tile operands since no native matrix types exist for these formats;
+the accumulator operand uses the appropriate output type (`__rvm_float16_t`
+or `__rvm_float32_t`).
 
 #### FP Matrix Multiply (13 builtins)
 
@@ -1123,14 +1165,15 @@ void quantize_output(int32_t *result, long r_stride,
     r = __riscv_th_madd_w_mm(r, r, b);
 
     // Element-wise shift right: r >>= shift_amounts
-    mint32_t shift = __riscv_th_mundef_i32();
+    mint32_t shift = __riscv_th_mld_acc_i32(bias, b_stride, M, N);
     r = __riscv_th_msra_w_mm(r, r, shift);
 
-    // N4Clip to signed int8
-    mint8_t clipped = __riscv_th_mn4clipl_w_mm(r, shift);
+    // N4Clip: (acc, scale, data) -> clipped acc (still int32)
+    mint32_t scale = __riscv_th_mld_acc_i32(bias, b_stride, M, N);
+    mint32_t clipped = __riscv_th_mn4clipl_w_mm(r, scale, shift);
 
-    // Store int8 output
-    __riscv_th_mst_i8(output, o_stride, clipped, M, N);
+    // Store int32 output (use packed conversion for int8 output)
+    __riscv_th_mst_i32(output, o_stride, clipped, M, N);
     __riscv_th_mrelease();
 }
 ```
@@ -1461,10 +1504,10 @@ Three errata exist in the RVM 0.6 spec:
   constructors (`__riscv_th_mzeros_*`). All operations available in 11 types
   (i8/i16/i32/i64/u8/u16/u32/u64/f16/f32/f64).
 
-- **Test coverage**: 16 test files (12 Clang + 4 LLVM) cover assembly encoding
-  (227 instructions), error diagnostics, CSR names (13 CSRs), ISel patterns,
-  end-to-end builtin codegen, API usage patterns, corner cases, Sema
-  validation, and built-in type support.
+- **Test coverage**: 17 test files cover assembly encoding (227 instructions),
+  error diagnostics, CSR names (13 CSRs), ISel patterns, end-to-end builtin
+  codegen (including all 8 widening FP matmul variants), inline assembly
+  constraints, API usage patterns, corner cases, and built-in type support.
 
 ### Verification History
 
@@ -1507,3 +1550,54 @@ Three errata exist in the RVM 0.6 spec:
    ManagedRA ISel dispatch. Verified: 9 regression tests + 555 MC tests
    pass; end-to-end RA tests confirm correct register allocation with
    spill/reload under pressure for all operation categories.
+5. **Widening FP matmul fix (2026-03-04, Claude Opus 4.6)**: Found and
+   fixed a HIGH-severity bug in 8 widening FP matmul builtins
+   (FP8/BF16/TF32 variants). The `SpecAPIMatmulWiden` lambda passed
+   the accumulator SSA value as all three intrinsic operands `{acc, acc, acc}`,
+   causing register class conflicts (THRVMACC vs THRVMTR). Fix: changed
+   builtin prototypes from 4-arg `(acc, m, k, n)` to 6-arg
+   `(acc, a, b, m, k, n)` with `__rvm_int32_t` for opaque A/B tile
+   operands, updated the `__THEAD_SPEC_FMMAQA_WIDEN` macro, removed the
+   `SpecAPIMatmulWiden` lambda, and unified all matmul dispatch through
+   `SpecAPIMatmul`. Added 8 widening matmul tests to
+   `xtheadmatrix-spec-api.c`, 3 ISel tests to `xtheadmatrix-managed-ra.ll`,
+   and a new end-to-end example test `xtheadmatrix-spec-api-example.c`.
+   All 8 xtheadmatrix tests pass.
+6. **Independent verification (2026-03-04, Claude Opus 4.6 #5)**: Full
+   independent audit of all 227 instruction encodings, 224 intrinsics, 233
+   Spec-API functions, register class constraints, CSR setting logic, matmul
+   operand swap, signedness mapping, inline asm constraints, and pseudo
+   expansion. **No correctness bugs found.** Design notes documented below.
+
+## Design Notes
+
+### Element-wise tied constraint (optimization opportunity)
+
+Element-wise pseudo instructions (`PTH_MADD_W_MM_V`, `PTH_MSUB_W_MM_V`,
+etc.) use a `$src1 = $dst` tied constraint identical to the matmul
+accumulate pattern. However, the hardware computes `md = ms2 op ms1`
+**without reading the old md value** — these are pure binary operations.
+The spec says e.g. "madd performs the addition of src1 and src2" with no
+`md +` on the RHS.
+
+The tied constraint forces the RA to co-locate the output with the `acc`
+input, causing unnecessary spills when `acc` is still live. A dedicated
+`THMI_BinaryAcc` ISel category with untied
+`(outs THRVMACC:$dst), (ins THRVMACC:$ms2, THRVMACC:$ms1)` would give the
+RA more freedom. This is a minor performance concern, not a correctness bug.
+
+### Unimplemented optional extensions
+
+- **Zmint4**: `mmacc.w.q` (INT4→INT32 matmul) and INT4↔INT8 conversion
+  instructions are not implemented. Zmint4 is optional (xmisa bit 0).
+- **`.mv.x` element-wise variants**: Appear in the intrinsic API design doc
+  (`rvm-intrinsic-api.adoc`) but are absent from the actual instruction list
+  (`instruction_list.adoc`). Correctly omitted.
+
+### Element-wise `msub` operand order
+
+`__riscv_th_msub_w_mm(acc, s2, s1)` computes `ms1 - ms2` (i.e. `s1 - s2`),
+so the subtrahend appears before the minuend in the parameter list. This
+matches the hardware encoding `th.msub.w.mm md, ms2, ms1` directly but may
+be unintuitive for users. The parameter names `__s2`, `__s1` clarify the
+intended mapping.

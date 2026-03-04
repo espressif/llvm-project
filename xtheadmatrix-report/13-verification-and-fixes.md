@@ -2,7 +2,7 @@
 
 ## Summary
 
-Four independent verification rounds were completed against the RVM 0.6 spec.
+Five independent verification rounds were completed against the RVM 0.6 spec.
 All bugs have been fixed. The implementation is verified correct.
 
 ## Bug Fixes (all resolved)
@@ -19,6 +19,7 @@ All bugs have been fixed. The implementation is verified correct.
 | 8 | MEDIUM | Config intrinsics unhandled after `selectTHMatrix()` deletion | Added to ManagedRA ISel table |
 | 9 | LOW | SemaRISCV.cpp referenced deleted DirectReg builtin IDs | Deleted validation section |
 | 10 | LOW | Macro parameter mismatches in header | Removed unused parameters |
+| 11 | HIGH | `SpecAPIMatmulWiden` passed `{acc, acc, acc}` for 8 widening FP matmul builtins (FP8/BF16/TF32), causing THRVMACC vs THRVMTR register class conflict | Changed builtins to 6-arg `(acc, a, b, m, k, n)`, removed `SpecAPIMatmulWiden`, unified through `SpecAPIMatmul` |
 
 ## Spec Errata
 
@@ -47,6 +48,12 @@ All operations verified to use correct register classes:
 - Audit #1 (Gemini): 24/24 programmatic field checks, 0 conflicts
 - Audit #2 (Claude Opus 4.6): every bit field re-verified against spec source
 
+## Verification Round 5 (Claude Opus 4.6 #4)
+
+Fixed `SpecAPIMatmulWiden` bug (bug #11). Updated builtin prototypes,
+header macro, and codegen dispatch. Added 12 new test cases across 3
+test files. Documentation and report files updated for alignment.
+
 ## Spec-API Naming Convention
 
 | Operation | C function | Hardware instruction |
@@ -65,6 +72,56 @@ All operations verified to use correct register classes:
 | Pack | `__riscv_th_mpack` | `th.mpack` |
 | Slide | `__riscv_th_mrslidedown` | `th.mrslidedown` |
 | Broadcast | `__riscv_th_mrbca` | `th.mrbca.mv.i` |
+
+## Design Notes (Verification Round 6 — Claude Opus 4.6)
+
+### 1. Element-wise tied constraint is unnecessary but harmless
+
+Element-wise operations (`madd`, `msub`, `mmul`, etc.) have a `$src1 = $dst`
+tied constraint in their PTH_ pseudo definitions, identical to the matmul
+accumulate pattern. However, the hardware computes `md = ms2 op ms1` **without
+reading the old md value** — these are pure binary operations, not
+accumulate-and-operate. The spec explicitly says e.g. "madd performs the
+addition of src1 and src2" with no mention of md on the RHS.
+
+**Impact**: The tied constraint forces the register allocator to place the
+output in the same physical register as the `acc` input. If the `acc` value
+is still live after the element-wise op, the RA must spill it. Without the
+tied constraint, the RA could freely choose any THRVMACC register for the
+output, avoiding the spill.
+
+**Status**: Not a correctness bug — the tied constraint is a simplification
+for the ManagedRA model (all element-wise ops share the `THMI_MulAcc` ISel
+category). Removing it would require a separate ISel category
+(`THMI_BinaryAcc`) with `(outs THRVMACC:$dst), (ins THRVMACC:$ms2, THRVMACC:$ms1)`
+and no tied constraint.
+
+### 2. INT4 (Zmint4) extension not implemented
+
+The spec defines `mmacc.w.q`, `mmaccu.w.q`, `mmaccus.w.q`, `mmaccsu.w.q`
+(INT4→INT32 matmul) and `mscvtl/h.w.b.q`, `mucvtl/h.w.b.q` (INT4↔INT8
+conversion) under the optional Zmint4 extension. These are not implemented.
+
+**Status**: Acceptable — Zmint4 is marked optional in xmisa bit 0 (mmi4i32).
+
+### 3. `.mv.x` (GPR-indexed vector) element-wise variants not implemented
+
+The spec intrinsic API doc (`rvm-intrinsic-api.adoc`) mentions `.mv.x`
+variants for element-wise operations (e.g. `madd.w.mv.x md, ms2, ms1[rs1]`),
+but these do **not** appear in the actual instruction list
+(`instruction_list.adoc`). The implementation correctly omits them.
+
+### 4. Element-wise `msub` operand order may be unintuitive
+
+The Spec-API exposes `__riscv_th_msub_w_mm(acc, s2, s1)` which maps directly
+to the hardware `th.msub.w.mm md, ms2, ms1`. Per the spec, msub computes
+`md[i,j] = ms1[i,j] - ms2[i,j]` ("subtraction of src2 from src1"). So the
+**subtrahend** (`s2`) appears before the **minuend** (`s1`) in the API, which
+matches hardware convention but may be unintuitive for users expecting
+`result = first_arg - second_arg` order.
+
+**Status**: Correct by design — the Spec-API directly mirrors hardware operand
+order. Users should refer to parameter names (`__s2`, `__s1`) for clarity.
 
 ## Differences from Spec Intrinsic API (rvm-intrinsic-api.adoc v0.2)
 

@@ -11,16 +11,13 @@ To implement:
 3. Add 64-bit decoder list and dispatch
 4. Define 64-bit instruction variants
 
-## Deferred: Inline Asm Register Constraints
+## Implemented: Inline Asm Register Constraints
 
-Matrix registers (`tr0-tr3`, `acc0-acc3`) cannot be used with typed inline
-asm constraints (e.g., `"=vr"` style). Missing:
-- GCC register names in `getGCCRegNames()`
-- Constraint letters in `getRegForInlineAsmConstraint()`
-- `ISD::LOAD`/`ISD::STORE` patterns for `MVT::riscvmatrix`
-
-Pure string-template inline asm with hardcoded register names works but
-cannot interact safely with the register allocator.
+Matrix registers now support typed inline asm constraints:
+- `tr` (any matrix register), `tt` (tile only), `ta` (accumulator only)
+- Named register constraints: `={tr0}`, `={acc1}`, etc.
+- Clobber constraints: `"tr0"`, `"acc0"`, etc.
+- `copyPhysReg` via `PTH_MMOV_MM_V` pseudo for register-to-register copies
 
 ## Possible Improvements
 
@@ -28,6 +25,13 @@ cannot interact safely with the register allocator.
 - Auto-select matmul variants based on data type
 - MLIR linalg integration for automatic matrix tiling
 - C++ overloaded wrapper layer
+- **Remove unnecessary tied constraint on element-wise pseudos**: EW ops
+  (`madd`, `msub`, `mmul`, etc.) are pure binary `md = ms2 op ms1` — they do
+  not read the old md value. The current `$src1 = $dst` tied constraint forces
+  the RA to co-locate the output with the `acc` input, causing unnecessary
+  spills when `acc` is still live. A new `THMI_BinaryAcc` ISel category with
+  untied `(outs THRVMACC:$dst), (ins THRVMACC:$ms2, THRVMACC:$ms1)` would
+  give the RA more allocation freedom.
 
 ## Current Limitations
 
@@ -36,10 +40,12 @@ cannot interact safely with the register allocator.
 3. **No auto-matmul from C loops** (explicit builtins required)
 4. **Limited register file (4+4)** — high pressure for multi-tile kernels
 5. **Whole-register spill granularity** (8192-bit per spill)
-6. **No inline asm register constraints** for matrix registers
-7. **`-O0` support limited** (`RISCVLowerMatrixType` pass; `-O1`+ recommended)
-8. **No `.mx`/`.d` integer EW** (spec aspirational, no RVM 0.6 instructions)
-9. **No stream load/store** (`msld`/`msst` not in RVM 0.6)
+6. **`-O0` support limited** (`RISCVLowerMatrixType` pass; `-O1`+ recommended)
+7. **No `.mx`/`.d` integer EW** (spec aspirational, no RVM 0.6 instructions)
+8. **No stream load/store** (`msld`/`msst` not in RVM 0.6)
+9. **No INT4 (Zmint4)** — optional `mmacc.w.q` variants not implemented
+10. **No `.mv.x` element-wise variants** — not in RVM 0.6 instruction list
+    (only in the intrinsic API design doc)
 
 ## Encoding Verification
 

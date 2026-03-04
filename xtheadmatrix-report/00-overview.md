@@ -44,7 +44,8 @@ All 227 hardware operations are covered:
 
 | Test suite | Result |
 |------------|--------|
-| `xtheadmatrix-spec-api.c` (13 test cases) | PASS |
+| `xtheadmatrix-spec-api.c` (20 test cases) | PASS |
+| `xtheadmatrix-spec-api-example.c` (e2e widening matmul) | PASS |
 | `xtheadmatrix-managed-ra*.ll` (4 tests) | PASS |
 | `xtheadmatrix-lower-O0.ll` | PASS |
 | `thead-matrix-builtin-types.c` | PASS |
@@ -53,12 +54,13 @@ All 227 hardware operations are covered:
 | `xtheadmatrix-invalid.s` | PASS |
 | `xtheadmatrix-csr.s` | PASS |
 | RISCV MC full suite | 555/555 PASS |
+| `xtheadmatrix-inline-asm.c` (inline asm constraints) | PASS |
 | End-to-end RA (EW, conversions, data movement, matmul pipeline) | PASS |
 | Spill-pressure test (5 ACC values, 4 regs) | PASS |
 
 ## Verification History
 
-Four independent verification rounds were completed:
+Five independent verification rounds were completed:
 
 1. **Gemini (2026-03-04)**: Found 2 HIGH bugs (conversion pseudo register classes THRVMMR→THRVMACC; matmul operand swap), filled 3 coverage gaps (B-tile load, FP/unsigned variants, matmul variants).
 
@@ -68,6 +70,8 @@ Four independent verification rounds were completed:
 
 4. **Claude Opus 4.6 #3**: DirectReg removal + Spec-API completion. Removed entire DirectReg model (~3000 lines). Added ~130 new Spec-API builtins for all remaining operations. Fixed FP EW .mv.i signatures, immediate type legalization, config intrinsic ISel dispatch. All tests pass.
 
+5. **Claude Opus 4.6 #4**: Fixed HIGH-severity `SpecAPIMatmulWiden` bug — 8 widening FP matmul builtins passed acc as all 3 intrinsic args `{acc, acc, acc}`. Changed to 6-arg `(acc, a, b, m, k, n)`, unified through `SpecAPIMatmul`. Added 11 new tests (8 widening + 3 ISel + 1 e2e example). All 8 xtheadmatrix tests pass.
+
 ## Current Limitations
 
 1. No 64-bit instruction format (spec defines but not implemented)
@@ -75,6 +79,5 @@ Four independent verification rounds were completed:
 3. No auto-matmul from C loops (explicit builtins required)
 4. Limited register file (4 tile + 4 accumulator)
 5. Whole-register spill granularity (8192-bit per spill)
-6. No inline asm register constraints for matrix registers
-7. `-O0` support limited (RISCVLowerMatrixType pass provides basic support)
-8. Known spec errata: matmul uop=01 should be 10; mfmin.s/mfmin.h names swapped
+6. `-O0` support limited (RISCVLowerMatrixType pass provides basic support)
+7. Known spec errata: matmul uop=01 should be 10; mfmin.s/mfmin.h names swapped

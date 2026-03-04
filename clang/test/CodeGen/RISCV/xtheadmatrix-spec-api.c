@@ -231,3 +231,119 @@ void test_n4clip(int32_t *base, long stride) {
     mint32_t r = __riscv_th_mn4clipl_w_mm(a, b, c);
     __riscv_th_mst_i32(base, stride, r, 4, 4);
 }
+
+// --------------------------------------------------------------------
+// Test 13: Widening FP matmul — FP8 -> FP16 (h_e4)
+// Verifies that A and B tile operands are distinct SSA values, not acc repeated.
+// --------------------------------------------------------------------
+// CHECK-LABEL: @test_widen_h_e4
+// CHECK: %[[A:.+]] = {{.*}}call target("riscv.matrix") @llvm.riscv.th.mlae.internal32
+// CHECK: %[[B:.+]] = {{.*}}call target("riscv.matrix") @llvm.riscv.th.mlbe.internal32
+// CHECK: %[[ACC:.+]] = {{.*}}call target("riscv.matrix") @llvm.riscv.th.mzero.internal
+// CHECK: call target("riscv.matrix") @llvm.riscv.th.mfmacc.h.e4.internal{{.*}}(target("riscv.matrix") %[[ACC]], target("riscv.matrix") %[[B]], target("riscv.matrix") %[[A]])
+void test_widen_h_e4(void *a, void *b, uint16_t *c, long stride,
+                     mrow_t m, mcol_t k, mcol_t n) {
+    mint32_t ta  = __riscv_th_mld_a_i32(a, stride, m, k);
+    mint32_t tb  = __riscv_th_mld_b_i32(b, stride, k, n);
+    mfloat16_t acc = __riscv_th_mzeros_f16(m, n);
+    mfloat16_t res = __riscv_th_mfmaqa_h_e4(acc, ta, tb, m, k, n);
+    __riscv_th_mst_f16(c, stride, res, m, n);
+}
+
+// --------------------------------------------------------------------
+// Test 14: Widening FP matmul — FP8 -> FP16 (h_e5)
+// --------------------------------------------------------------------
+// CHECK-LABEL: @test_widen_h_e5
+// CHECK: call target("riscv.matrix") @llvm.riscv.th.mfmacc.h.e5.internal
+void test_widen_h_e5(void *a, void *b, uint16_t *c, long stride,
+                     mrow_t m, mcol_t k, mcol_t n) {
+    mint32_t ta  = __riscv_th_mld_a_i32(a, stride, m, k);
+    mint32_t tb  = __riscv_th_mld_b_i32(b, stride, k, n);
+    mfloat16_t acc = __riscv_th_mzeros_f16(m, n);
+    mfloat16_t res = __riscv_th_mfmaqa_h_e5(acc, ta, tb, m, k, n);
+    __riscv_th_mst_f16(c, stride, res, m, n);
+}
+
+// --------------------------------------------------------------------
+// Test 15: Widening FP matmul — BF16 -> FP16 (bf16_e4)
+// --------------------------------------------------------------------
+// CHECK-LABEL: @test_widen_bf16_e4
+// CHECK: call target("riscv.matrix") @llvm.riscv.th.mfmacc.bf16.e4.internal
+void test_widen_bf16_e4(void *a, void *b, uint16_t *c, long stride,
+                        mrow_t m, mcol_t k, mcol_t n) {
+    mint32_t ta  = __riscv_th_mld_a_i32(a, stride, m, k);
+    mint32_t tb  = __riscv_th_mld_b_i32(b, stride, k, n);
+    mfloat16_t acc = __riscv_th_mzeros_f16(m, n);
+    mfloat16_t res = __riscv_th_mfmaqa_bf16_e4(acc, ta, tb, m, k, n);
+    __riscv_th_mst_f16(c, stride, res, m, n);
+}
+
+// --------------------------------------------------------------------
+// Test 16: Widening FP matmul — BF16 -> FP16 (bf16_e5)
+// --------------------------------------------------------------------
+// CHECK-LABEL: @test_widen_bf16_e5
+// CHECK: call target("riscv.matrix") @llvm.riscv.th.mfmacc.bf16.e5.internal
+void test_widen_bf16_e5(void *a, void *b, uint16_t *c, long stride,
+                        mrow_t m, mcol_t k, mcol_t n) {
+    mint32_t ta  = __riscv_th_mld_a_i32(a, stride, m, k);
+    mint32_t tb  = __riscv_th_mld_b_i32(b, stride, k, n);
+    mfloat16_t acc = __riscv_th_mzeros_f16(m, n);
+    mfloat16_t res = __riscv_th_mfmaqa_bf16_e5(acc, ta, tb, m, k, n);
+    __riscv_th_mst_f16(c, stride, res, m, n);
+}
+
+// --------------------------------------------------------------------
+// Test 17: Widening FP matmul — BF16 -> FP32 (s_bf16)
+// --------------------------------------------------------------------
+// CHECK-LABEL: @test_widen_s_bf16
+// CHECK: call target("riscv.matrix") @llvm.riscv.th.mfmacc.s.bf16.internal
+void test_widen_s_bf16(void *a, void *b, float *c, long stride,
+                       mrow_t m, mcol_t k, mcol_t n) {
+    mint32_t ta  = __riscv_th_mld_a_i32(a, stride, m, k);
+    mint32_t tb  = __riscv_th_mld_b_i32(b, stride, k, n);
+    mfloat32_t acc = __riscv_th_mzeros_f32(m, n);
+    mfloat32_t res = __riscv_th_mfmaqa_s_bf16(acc, ta, tb, m, k, n);
+    __riscv_th_mst_f32(c, stride, res, m, n);
+}
+
+// --------------------------------------------------------------------
+// Test 18: Widening FP matmul — FP8 -> FP32 (s_e4)
+// --------------------------------------------------------------------
+// CHECK-LABEL: @test_widen_s_e4
+// CHECK: call target("riscv.matrix") @llvm.riscv.th.mfmacc.s.e4.internal
+void test_widen_s_e4(void *a, void *b, float *c, long stride,
+                     mrow_t m, mcol_t k, mcol_t n) {
+    mint32_t ta  = __riscv_th_mld_a_i32(a, stride, m, k);
+    mint32_t tb  = __riscv_th_mld_b_i32(b, stride, k, n);
+    mfloat32_t acc = __riscv_th_mzeros_f32(m, n);
+    mfloat32_t res = __riscv_th_mfmaqa_s_e4(acc, ta, tb, m, k, n);
+    __riscv_th_mst_f32(c, stride, res, m, n);
+}
+
+// --------------------------------------------------------------------
+// Test 19: Widening FP matmul — FP8 -> FP32 (s_e5)
+// --------------------------------------------------------------------
+// CHECK-LABEL: @test_widen_s_e5
+// CHECK: call target("riscv.matrix") @llvm.riscv.th.mfmacc.s.e5.internal
+void test_widen_s_e5(void *a, void *b, float *c, long stride,
+                     mrow_t m, mcol_t k, mcol_t n) {
+    mint32_t ta  = __riscv_th_mld_a_i32(a, stride, m, k);
+    mint32_t tb  = __riscv_th_mld_b_i32(b, stride, k, n);
+    mfloat32_t acc = __riscv_th_mzeros_f32(m, n);
+    mfloat32_t res = __riscv_th_mfmaqa_s_e5(acc, ta, tb, m, k, n);
+    __riscv_th_mst_f32(c, stride, res, m, n);
+}
+
+// --------------------------------------------------------------------
+// Test 20: Widening FP matmul — TF32 -> FP32 (s_tf32)
+// --------------------------------------------------------------------
+// CHECK-LABEL: @test_widen_s_tf32
+// CHECK: call target("riscv.matrix") @llvm.riscv.th.mfmacc.s.tf32.internal
+void test_widen_s_tf32(void *a, void *b, float *c, long stride,
+                       mrow_t m, mcol_t k, mcol_t n) {
+    mint32_t ta  = __riscv_th_mld_a_i32(a, stride, m, k);
+    mint32_t tb  = __riscv_th_mld_b_i32(b, stride, k, n);
+    mfloat32_t acc = __riscv_th_mzeros_f32(m, n);
+    mfloat32_t res = __riscv_th_mfmaqa_s_tf32(acc, ta, tb, m, k, n);
+    __riscv_th_mst_f32(c, stride, res, m, n);
+}

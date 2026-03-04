@@ -105,3 +105,9 @@ Spec-API builtin codegen uses lambda helpers:
 
 Note: Matmul operand swap — spec formula is `md = md + ms1 × ms2`.
 A maps to ms1, B maps to ms2. Codegen passes `{acc, B, A}` (not `{acc, A, B}`).
+
+Note: `SpecAPIMatmulWiden` was removed (bug fix). It previously handled
+8 widening FP matmul builtins (FP8/BF16/TF32) by passing `{acc, acc, acc}`
+as all three intrinsic operands, causing register class conflicts. All
+matmul dispatch (including widening) now goes through `SpecAPIMatmul`,
+which correctly passes `{acc, B, A}` with the operand swap.

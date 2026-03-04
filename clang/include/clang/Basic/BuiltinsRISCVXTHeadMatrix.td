@@ -193,15 +193,15 @@ def mfmaqa_spec_s_h : RISCVXTHeadMatrixBuiltin<
 def mfmaqa_spec_d_s : RISCVXTHeadMatrixBuiltin<
     "__rvm_float64_t(__rvm_float64_t, __rvm_float32_t, __rvm_float32_t, size_t, size_t, size_t)",
     "experimental-xtheadmatrix">;
-// Widening FP8/BF16/TF32 -> various (void — no standard types for FP8/BF16/TF32 sources)
-def mfmaqa_spec_h_e4    : RISCVXTHeadMatrixBuiltin<"__rvm_float16_t(__rvm_float16_t, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
-def mfmaqa_spec_h_e5    : RISCVXTHeadMatrixBuiltin<"__rvm_float16_t(__rvm_float16_t, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
-def mfmaqa_spec_bf16_e4 : RISCVXTHeadMatrixBuiltin<"__rvm_float16_t(__rvm_float16_t, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
-def mfmaqa_spec_bf16_e5 : RISCVXTHeadMatrixBuiltin<"__rvm_float16_t(__rvm_float16_t, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
-def mfmaqa_spec_s_bf16  : RISCVXTHeadMatrixBuiltin<"__rvm_float32_t(__rvm_float32_t, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
-def mfmaqa_spec_s_e4    : RISCVXTHeadMatrixBuiltin<"__rvm_float32_t(__rvm_float32_t, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
-def mfmaqa_spec_s_e5    : RISCVXTHeadMatrixBuiltin<"__rvm_float32_t(__rvm_float32_t, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
-def mfmaqa_spec_s_tf32  : RISCVXTHeadMatrixBuiltin<"__rvm_float32_t(__rvm_float32_t, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+// Widening FP8/BF16/TF32 -> various (opaque source types use __rvm_int32_t for A/B tiles)
+def mfmaqa_spec_h_e4    : RISCVXTHeadMatrixBuiltin<"__rvm_float16_t(__rvm_float16_t, __rvm_int32_t, __rvm_int32_t, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mfmaqa_spec_h_e5    : RISCVXTHeadMatrixBuiltin<"__rvm_float16_t(__rvm_float16_t, __rvm_int32_t, __rvm_int32_t, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mfmaqa_spec_bf16_e4 : RISCVXTHeadMatrixBuiltin<"__rvm_float16_t(__rvm_float16_t, __rvm_int32_t, __rvm_int32_t, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mfmaqa_spec_bf16_e5 : RISCVXTHeadMatrixBuiltin<"__rvm_float16_t(__rvm_float16_t, __rvm_int32_t, __rvm_int32_t, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mfmaqa_spec_s_bf16  : RISCVXTHeadMatrixBuiltin<"__rvm_float32_t(__rvm_float32_t, __rvm_int32_t, __rvm_int32_t, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mfmaqa_spec_s_e4    : RISCVXTHeadMatrixBuiltin<"__rvm_float32_t(__rvm_float32_t, __rvm_int32_t, __rvm_int32_t, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mfmaqa_spec_s_e5    : RISCVXTHeadMatrixBuiltin<"__rvm_float32_t(__rvm_float32_t, __rvm_int32_t, __rvm_int32_t, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mfmaqa_spec_s_tf32  : RISCVXTHeadMatrixBuiltin<"__rvm_float32_t(__rvm_float32_t, __rvm_int32_t, __rvm_int32_t, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
 
 // --- Zero spec-API: (m, n) -> matrix ---
 def mzero_spec_i8  : RISCVXTHeadMatrixBuiltin<"__rvm_int8_t(size_t, size_t)", "experimental-xtheadmatrix">;

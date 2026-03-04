@@ -44,7 +44,11 @@ ArrayRef<const char *> RISCVTargetInfo::getGCCRegNames() const {
       "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31",
 
       // CSRs
-      "fflags", "frm", "vtype", "vl", "vxsat", "vxrm", "sf.vcix_state"
+      "fflags", "frm", "vtype", "vl", "vxsat", "vxrm", "sf.vcix_state",
+
+      // Matrix registers (XTHeadMatrix)
+      "tr0", "tr1", "tr2", "tr3",
+      "acc0", "acc1", "acc2", "acc3"
     };
   // clang-format on
   return llvm::ArrayRef(GCCRegNames);
@@ -120,15 +124,27 @@ bool RISCVTargetInfo::validateAsmConstraint(
       return true;
     }
     return false;
+  case 't':
+    // A matrix register (XTHeadMatrix).
+    // tr = any matrix register (THRVMMR)
+    // tt = tile matrix register (THRVMTR)
+    // ta = accumulator matrix register (THRVMACC)
+    if (Name[1] == 'r' || Name[1] == 't' || Name[1] == 'a') {
+      Info.setAllowsRegister();
+      Name += 1;
+      return true;
+    }
+    return false;
   }
 }
 
 std::string RISCVTargetInfo::convertConstraint(const char *&Constraint) const {
   std::string R;
   switch (*Constraint) {
-  // c* and v* are two-letter constraints on RISC-V.
+  // c*, v*, and t* are two-letter constraints on RISC-V.
   case 'c':
   case 'v':
+  case 't':
     R = std::string("^") + std::string(Constraint, 2);
     Constraint += 1;
     break;

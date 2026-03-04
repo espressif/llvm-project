@@ -58,8 +58,13 @@ void __riscv_th_mst_i32(int32_t *base, long stride, mint32_t val, mrow_t m, mcol
 ### Matrix Multiply (27 functions)
 
 ```c
+// INT matmul (typed sources)
 mint32_t   __riscv_th_mmaq_ss_w_b(mint32_t acc, mint8_t a, mint8_t b, mrow_t m, mcol_t k, mcol_t n);
+// FP matmul (native precision, typed sources)
 mfloat32_t __riscv_th_mfmaqa_s(mfloat32_t acc, mfloat32_t a, mfloat32_t b, mrow_t m, mcol_t k, mcol_t n);
+// FP matmul (widening, opaque FP8/BF16/TF32 sources use mint32_t for A/B)
+mfloat16_t __riscv_th_mfmaqa_h_e4(mfloat16_t acc, mint32_t a, mint32_t b, mrow_t m, mcol_t k, mcol_t n);
+mfloat32_t __riscv_th_mfmaqa_s_tf32(mfloat32_t acc, mint32_t a, mint32_t b, mrow_t m, mcol_t k, mcol_t n);
 ```
 Shorthand aliases: `__riscv_th_mmaq_ss` → `__riscv_th_mmaq_ss_w_b`.
 
@@ -128,7 +133,6 @@ mint32_t __riscv_th_mundef_i32(void);    // undefined value (PoisonValue)
 
 ## Limitations
 
-- No inline asm register constraints for matrix registers
 - Matrix types cannot cross function boundaries
 - No C++ overloading (separate functions per type)
 - No stream load/store (not in RVM 0.6 spec)

@@ -633,6 +633,15 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
     return;
   }
 
+  // Matrix register copies via th.mmov.mm (PTH_MMOV_MM_V pseudo).
+  if (RISCV::THRVMMRRegClass.contains(DstReg, SrcReg) ||
+      RISCV::THRVMTRRegClass.contains(DstReg, SrcReg) ||
+      RISCV::THRVMACCRegClass.contains(DstReg, SrcReg)) {
+    BuildMI(MBB, MBBI, DL, get(RISCV::PTH_MMOV_MM_V), DstReg)
+        .addReg(SrcReg, KillFlag);
+    return;
+  }
+
   // VR->VR copies.
   const TargetRegisterClass *RegClass =
       TRI->getCommonMinimalPhysRegClass(SrcReg, DstReg);

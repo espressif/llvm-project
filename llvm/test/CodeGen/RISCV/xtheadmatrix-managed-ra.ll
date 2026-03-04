@@ -162,6 +162,79 @@ define void @test_pack(ptr %s1_ptr, ptr %s2_ptr, ptr %dst_ptr, i64 %stride) {
 }
 
 ;; ============================================================================
+;; Test 8: Widening FP matmul — FP8 -> FP16 (h_e4)
+;; Verifies proper register class allocation: acc in THRVMACC, a/b in THRVMTR
+;; ============================================================================
+define void @test_widen_h_e4(ptr %a_ptr, ptr %b_ptr, ptr %c_ptr, i64 %stride) {
+; CHECK-LABEL: test_widen_h_e4:
+; CHECK:        th.mlae32
+; CHECK:        th.mlbe32
+; CHECK:        th.mzero
+; CHECK:        th.mfmacc.h.e4
+; CHECK:        th.msce16
+; CHECK:        ret
+  call void @llvm.riscv.th.msettilem.i64(i64 4)
+  call void @llvm.riscv.th.msettilek.i64(i64 8)
+  call void @llvm.riscv.th.msettilen.i64(i64 4)
+  %a = call target("riscv.matrix") @llvm.riscv.th.mlae.internal32.triscv.matrixt.i64(ptr %a_ptr, i64 %stride)
+  %b = call target("riscv.matrix") @llvm.riscv.th.mlbe.internal32.triscv.matrixt.i64(ptr %b_ptr, i64 %stride)
+  %zero = call target("riscv.matrix") @llvm.riscv.th.mzero.internal.triscv.matrixt()
+  %result = call target("riscv.matrix") @llvm.riscv.th.mfmacc.h.e4.internal.triscv.matrixt.triscv.matrixt.triscv.matrixt(
+      target("riscv.matrix") %zero, target("riscv.matrix") %a, target("riscv.matrix") %b)
+  call void @llvm.riscv.th.msce.internal16.triscv.matrixt.i64(
+      target("riscv.matrix") %result, ptr %c_ptr, i64 %stride)
+  ret void
+}
+
+;; ============================================================================
+;; Test 9: Widening FP matmul — BF16 -> FP32 (s_bf16)
+;; ============================================================================
+define void @test_widen_s_bf16(ptr %a_ptr, ptr %b_ptr, ptr %c_ptr, i64 %stride) {
+; CHECK-LABEL: test_widen_s_bf16:
+; CHECK:        th.mlae32
+; CHECK:        th.mlbe32
+; CHECK:        th.mzero
+; CHECK:        th.mfmacc.s.bf16
+; CHECK:        th.msce32
+; CHECK:        ret
+  call void @llvm.riscv.th.msettilem.i64(i64 4)
+  call void @llvm.riscv.th.msettilek.i64(i64 8)
+  call void @llvm.riscv.th.msettilen.i64(i64 4)
+  %a = call target("riscv.matrix") @llvm.riscv.th.mlae.internal32.triscv.matrixt.i64(ptr %a_ptr, i64 %stride)
+  %b = call target("riscv.matrix") @llvm.riscv.th.mlbe.internal32.triscv.matrixt.i64(ptr %b_ptr, i64 %stride)
+  %zero = call target("riscv.matrix") @llvm.riscv.th.mzero.internal.triscv.matrixt()
+  %result = call target("riscv.matrix") @llvm.riscv.th.mfmacc.s.bf16.internal.triscv.matrixt.triscv.matrixt.triscv.matrixt(
+      target("riscv.matrix") %zero, target("riscv.matrix") %a, target("riscv.matrix") %b)
+  call void @llvm.riscv.th.msce.internal32.triscv.matrixt.i64(
+      target("riscv.matrix") %result, ptr %c_ptr, i64 %stride)
+  ret void
+}
+
+;; ============================================================================
+;; Test 10: Widening FP matmul — TF32 -> FP32 (s_tf32)
+;; ============================================================================
+define void @test_widen_s_tf32(ptr %a_ptr, ptr %b_ptr, ptr %c_ptr, i64 %stride) {
+; CHECK-LABEL: test_widen_s_tf32:
+; CHECK:        th.mlae32
+; CHECK:        th.mlbe32
+; CHECK:        th.mzero
+; CHECK:        th.mfmacc.s.tf32
+; CHECK:        th.msce32
+; CHECK:        ret
+  call void @llvm.riscv.th.msettilem.i64(i64 4)
+  call void @llvm.riscv.th.msettilek.i64(i64 4)
+  call void @llvm.riscv.th.msettilen.i64(i64 4)
+  %a = call target("riscv.matrix") @llvm.riscv.th.mlae.internal32.triscv.matrixt.i64(ptr %a_ptr, i64 %stride)
+  %b = call target("riscv.matrix") @llvm.riscv.th.mlbe.internal32.triscv.matrixt.i64(ptr %b_ptr, i64 %stride)
+  %zero = call target("riscv.matrix") @llvm.riscv.th.mzero.internal.triscv.matrixt()
+  %result = call target("riscv.matrix") @llvm.riscv.th.mfmacc.s.tf32.internal.triscv.matrixt.triscv.matrixt.triscv.matrixt(
+      target("riscv.matrix") %zero, target("riscv.matrix") %a, target("riscv.matrix") %b)
+  call void @llvm.riscv.th.msce.internal32.triscv.matrixt.i64(
+      target("riscv.matrix") %result, ptr %c_ptr, i64 %stride)
+  ret void
+}
+
+;; ============================================================================
 ;; Intrinsic declarations
 ;; ============================================================================
 
@@ -180,12 +253,16 @@ declare target("riscv.matrix") @llvm.riscv.th.mlce.internal32.triscv.matrixt.i64
 declare target("riscv.matrix") @llvm.riscv.th.mlme.internal32.triscv.matrixt(ptr)
 
 ; Stores (_internal)
+declare void @llvm.riscv.th.msce.internal16.triscv.matrixt.i64(target("riscv.matrix"), ptr, i64)
 declare void @llvm.riscv.th.msce.internal32.triscv.matrixt.i64(target("riscv.matrix"), ptr, i64)
 declare void @llvm.riscv.th.msme.internal32.triscv.matrixt(target("riscv.matrix"), ptr)
 
 ; Matmul (_internal)
 declare target("riscv.matrix") @llvm.riscv.th.mfmacc.s.internal.triscv.matrixt.triscv.matrixt.triscv.matrixt(target("riscv.matrix"), target("riscv.matrix"), target("riscv.matrix"))
 declare target("riscv.matrix") @llvm.riscv.th.mmacc.w.b.internal.triscv.matrixt.triscv.matrixt.triscv.matrixt(target("riscv.matrix"), target("riscv.matrix"), target("riscv.matrix"))
+declare target("riscv.matrix") @llvm.riscv.th.mfmacc.h.e4.internal.triscv.matrixt.triscv.matrixt.triscv.matrixt(target("riscv.matrix"), target("riscv.matrix"), target("riscv.matrix"))
+declare target("riscv.matrix") @llvm.riscv.th.mfmacc.s.bf16.internal.triscv.matrixt.triscv.matrixt.triscv.matrixt(target("riscv.matrix"), target("riscv.matrix"), target("riscv.matrix"))
+declare target("riscv.matrix") @llvm.riscv.th.mfmacc.s.tf32.internal.triscv.matrixt.triscv.matrixt.triscv.matrixt(target("riscv.matrix"), target("riscv.matrix"), target("riscv.matrix"))
 
 ; Zero
 declare target("riscv.matrix") @llvm.riscv.th.mzero.internal.triscv.matrixt()

@@ -523,9 +523,9 @@ __THEAD_SPEC_FMMAQA(d_s, mfloat32_t, mfloat32_t, mfloat64_t, mfmaqa_spec_d_s)
 /* Widening FP matmul with opaque source types (FP8/BF16/TF32) */
 #define __THEAD_SPEC_FMMAQA_WIDEN(SUFFIX, CTYPE, BUILTIN)                     \
   static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  CTYPE __riscv_th_mfmaqa_##SUFFIX(CTYPE __c,                                 \
+  CTYPE __riscv_th_mfmaqa_##SUFFIX(CTYPE __c, mint32_t __a, mint32_t __b,     \
                                     mrow_t __m, mcol_t __k, mcol_t __n) {      \
-    return __builtin_riscv_th_##BUILTIN(__c, __m, __k, __n);                   \
+    return __builtin_riscv_th_##BUILTIN(__c, __a, __b, __m, __k, __n);         \
   }
 
 __THEAD_SPEC_FMMAQA_WIDEN(h_e4,    mfloat16_t, mfmaqa_spec_h_e4)

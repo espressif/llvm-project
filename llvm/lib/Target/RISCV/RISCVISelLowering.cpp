@@ -300,6 +300,10 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
     }
   }
 
+  // XTHeadMatrix registers
+  if (Subtarget.hasVendorXTHeadMatrix())
+    addRegisterClass(MVT::riscvmatrix, &RISCV::THRVMMRRegClass);
+
   // Compute derived properties from the register classes.
   computeRegisterProperties(STI.getRegisterInfo());
 
@@ -24583,6 +24587,8 @@ RISCVTargetLowering::getConstraintType(StringRef Constraint) const {
       return C_RegisterClass;
     if (Constraint == "cr" || Constraint == "cR" || Constraint == "cf")
       return C_RegisterClass;
+    if (Constraint == "tr" || Constraint == "tt" || Constraint == "ta")
+      return C_RegisterClass;
   }
   return TargetLowering::getConstraintType(Constraint);
 }
@@ -24722,6 +24728,18 @@ RISCVTargetLowering::getRegForInlineAsmConstraint(const TargetRegisterInfo *TRI,
       if (Subtarget.hasStdExtZdinx() && Subtarget.is64Bit())
         return std::make_pair(0U, &RISCV::GPRCRegClass);
     }
+  } else if (Constraint == "tr") {
+    if (Subtarget.hasVendorXTHeadMatrix() &&
+        TRI->isTypeLegalForClass(RISCV::THRVMMRRegClass, VT.SimpleTy))
+      return std::make_pair(0U, &RISCV::THRVMMRRegClass);
+  } else if (Constraint == "tt") {
+    if (Subtarget.hasVendorXTHeadMatrix() &&
+        TRI->isTypeLegalForClass(RISCV::THRVMTRRegClass, VT.SimpleTy))
+      return std::make_pair(0U, &RISCV::THRVMTRRegClass);
+  } else if (Constraint == "ta") {
+    if (Subtarget.hasVendorXTHeadMatrix() &&
+        TRI->isTypeLegalForClass(RISCV::THRVMACCRegClass, VT.SimpleTy))
+      return std::make_pair(0U, &RISCV::THRVMACCRegClass);
   }
 
   // Clang will correctly decode the usage of register name aliases into their
@@ -24871,6 +24889,23 @@ RISCVTargetLowering::getRegForInlineAsmConstraint(const TargetRegisterInfo *TRI,
           return std::make_pair(VReg, RC);
         }
       }
+    }
+  }
+
+  if (Subtarget.hasVendorXTHeadMatrix()) {
+    Register MReg = StringSwitch<Register>(Constraint.lower())
+                        .Case("{tr0}", RISCV::THRVM_TR0)
+                        .Case("{tr1}", RISCV::THRVM_TR1)
+                        .Case("{tr2}", RISCV::THRVM_TR2)
+                        .Case("{tr3}", RISCV::THRVM_TR3)
+                        .Case("{acc0}", RISCV::THRVM_ACC0)
+                        .Case("{acc1}", RISCV::THRVM_ACC1)
+                        .Case("{acc2}", RISCV::THRVM_ACC2)
+                        .Case("{acc3}", RISCV::THRVM_ACC3)
+                        .Default(RISCV::NoRegister);
+    if (MReg != RISCV::NoRegister) {
+      if (TRI->isTypeLegalForClass(RISCV::THRVMMRRegClass, VT.SimpleTy))
+        return std::make_pair(MReg, &RISCV::THRVMMRRegClass);
     }
   }
 

@@ -1243,14 +1243,8 @@ Value *CodeGenFunction::EmitRISCVBuiltinExpr(unsigned BuiltinID,
       llvm::Function *F = CGM.getIntrinsic(IntrID, {MatTy, MatTy, MatTy});
       return Builder.CreateCall(F, {Ops[0], Ops[2], Ops[1]});
     };
-    // Widening matmul with no typed source args: (acc, m, k, n) -> acc
-    // Source tiles are opaque (FP8/BF16/TF32), only acc is an SSA value.
-    auto SpecAPIMatmulWiden = [&](llvm::Intrinsic::ID IntrID) -> llvm::Value * {
-      SetM(Ops[1]); SetK(Ops[2]); SetN(Ops[3]);
-      llvm::Function *F = CGM.getIntrinsic(IntrID, {MatTy, MatTy, MatTy});
-      // Pass acc as all three args (ms2/ms1 will be ignored by RA for opaque sources)
-      return Builder.CreateCall(F, {Ops[0], Ops[0], Ops[0]});
-    };
+    // (SpecAPIMatmulWiden removed — widening matmuls now use SpecAPIMatmul
+    // with proper A/B tile operands instead of repeating acc.)
     auto SpecAPIZero = [&]() -> llvm::Value * {
       SetM(Ops[0]); SetN(Ops[1]);
       llvm::Function *F = CGM.getIntrinsic(
@@ -1395,21 +1389,21 @@ Value *CodeGenFunction::EmitRISCVBuiltinExpr(unsigned BuiltinID,
       return SpecAPIMatmul(llvm::Intrinsic::riscv_th_mfmacc_d_s_internal);
     // FP matmul: widening (opaque sources — FP8/BF16/TF32)
     case RISCV::BI__builtin_riscv_th_mfmaqa_spec_h_e4:
-      return SpecAPIMatmulWiden(llvm::Intrinsic::riscv_th_mfmacc_h_e4_internal);
+      return SpecAPIMatmul(llvm::Intrinsic::riscv_th_mfmacc_h_e4_internal);
     case RISCV::BI__builtin_riscv_th_mfmaqa_spec_h_e5:
-      return SpecAPIMatmulWiden(llvm::Intrinsic::riscv_th_mfmacc_h_e5_internal);
+      return SpecAPIMatmul(llvm::Intrinsic::riscv_th_mfmacc_h_e5_internal);
     case RISCV::BI__builtin_riscv_th_mfmaqa_spec_bf16_e4:
-      return SpecAPIMatmulWiden(llvm::Intrinsic::riscv_th_mfmacc_bf16_e4_internal);
+      return SpecAPIMatmul(llvm::Intrinsic::riscv_th_mfmacc_bf16_e4_internal);
     case RISCV::BI__builtin_riscv_th_mfmaqa_spec_bf16_e5:
-      return SpecAPIMatmulWiden(llvm::Intrinsic::riscv_th_mfmacc_bf16_e5_internal);
+      return SpecAPIMatmul(llvm::Intrinsic::riscv_th_mfmacc_bf16_e5_internal);
     case RISCV::BI__builtin_riscv_th_mfmaqa_spec_s_bf16:
-      return SpecAPIMatmulWiden(llvm::Intrinsic::riscv_th_mfmacc_s_bf16_internal);
+      return SpecAPIMatmul(llvm::Intrinsic::riscv_th_mfmacc_s_bf16_internal);
     case RISCV::BI__builtin_riscv_th_mfmaqa_spec_s_e4:
-      return SpecAPIMatmulWiden(llvm::Intrinsic::riscv_th_mfmacc_s_e4_internal);
+      return SpecAPIMatmul(llvm::Intrinsic::riscv_th_mfmacc_s_e4_internal);
     case RISCV::BI__builtin_riscv_th_mfmaqa_spec_s_e5:
-      return SpecAPIMatmulWiden(llvm::Intrinsic::riscv_th_mfmacc_s_e5_internal);
+      return SpecAPIMatmul(llvm::Intrinsic::riscv_th_mfmacc_s_e5_internal);
     case RISCV::BI__builtin_riscv_th_mfmaqa_spec_s_tf32:
-      return SpecAPIMatmulWiden(llvm::Intrinsic::riscv_th_mfmacc_s_tf32_internal);
+      return SpecAPIMatmul(llvm::Intrinsic::riscv_th_mfmacc_s_tf32_internal);
     // Zero: (m, n) -> matrix
     case RISCV::BI__builtin_riscv_th_mzero_spec_i8:
     case RISCV::BI__builtin_riscv_th_mzero_spec_i16:

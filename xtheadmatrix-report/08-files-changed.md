@@ -34,7 +34,9 @@
 
 | File | Purpose |
 |------|---------|
-| `clang/test/CodeGen/RISCV/xtheadmatrix-spec-api.c` | 13 Spec-API test cases |
+| `clang/test/CodeGen/RISCV/xtheadmatrix-spec-api.c` | 20 Spec-API test cases |
+| `clang/test/CodeGen/RISCV/xtheadmatrix-spec-api-example.c` | End-to-end widening matmul example |
+| `clang/test/CodeGen/RISCV/xtheadmatrix-inline-asm.c` | Inline asm register constraint test |
 | `clang/test/CodeGen/RISCV/thead-matrix-builtin-types.c` | Built-in type compilation test |
 | `clang/test/CodeGen/RISCV/thead-matrix-types-extended.c` | Extended type test |
 | `llvm/test/CodeGen/RISCV/xtheadmatrix-managed-ra.ll` | ManagedRA ISel test |
@@ -73,3 +75,10 @@
 - `MatrixProgModelEnum` simplified to `{None, ManagedRA}`
 - Fixed: FP EW .mv.i signatures, immediate type legalization, macro parameters
 - Renamed A-tile loads `__riscv_th_mld_*` → `__riscv_th_mld_a_*`, B-tile `__riscv_th_mldb_*` → `__riscv_th_mld_b_*`
+
+### Widening FP matmul fix
+- Fixed `SpecAPIMatmulWiden` bug: 8 widening FP matmul builtins passed `{acc, acc, acc}` instead of `{acc, b, a}`
+- Changed builtin prototypes from 4-arg `(acc, m, k, n)` to 6-arg `(acc, a, b, m, k, n)`
+- Updated `__THEAD_SPEC_FMMAQA_WIDEN` macro to accept `mint32_t` A/B tile args
+- Removed `SpecAPIMatmulWiden` lambda, all matmul dispatch unified through `SpecAPIMatmul`
+- Added 8 widening matmul tests, 3 ISel tests, 1 end-to-end example test
