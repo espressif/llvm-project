@@ -5078,6 +5078,11 @@ lldb::Encoding TypeSystemClang::GetEncoding(lldb::opaque_compiler_type_t type) {
 #include "clang/Basic/RISCVVTypes.def"
       break;
 
+    // RISC-V Matrix (RVM) builtin types.
+#define RVM_TYPE(Name, Id, SingletonId) case clang::BuiltinType::Id:
+#include "clang/Basic/RISCVMatrixTypes.def"
+      break;
+
     // WebAssembly builtin types.
     case clang::BuiltinType::WasmExternRef:
       break;

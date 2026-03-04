@@ -398,25 +398,6 @@ static DecodeStatus DecodeTHRVMMRRegisterClass(MCInst &Inst, uint32_t RegNo,
   return MCDisassembler::Success;
 }
 
-static DecodeStatus DecodeTHRVMTRRegisterClass(MCInst &Inst, uint32_t RegNo,
-                                               uint64_t Address,
-                                               const MCDisassembler *Decoder) {
-  if (RegNo > 3)
-    return MCDisassembler::Fail;
-
-  Inst.addOperand(MCOperand::createReg(THRVMRegs[RegNo]));
-  return MCDisassembler::Success;
-}
-
-static DecodeStatus DecodeTHRVMACCRegisterClass(MCInst &Inst, uint32_t RegNo,
-                                                uint64_t Address,
-                                                const MCDisassembler *Decoder) {
-  if (RegNo < 4 || RegNo > 7)
-    return MCDisassembler::Fail;
-
-  Inst.addOperand(MCOperand::createReg(THRVMRegs[RegNo]));
-  return MCDisassembler::Success;
-}
 
 static DecodeStatus DecodeTRRegisterClass(MCInst &Inst, uint32_t RegNo,
                                           uint64_t Address,
