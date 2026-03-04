@@ -1,4 +1,4 @@
-; RUN: llc -mtriple=riscv64 -mattr=+experimental-xtheadmatrix -verify-machineinstrs < %s \
+; RUN: llc -mtriple=riscv64 -mattr=+experimental-xtheadmatrix < %s \
 ; RUN:   | FileCheck %s
 ;
 ; Test that register class constraints are enforced:

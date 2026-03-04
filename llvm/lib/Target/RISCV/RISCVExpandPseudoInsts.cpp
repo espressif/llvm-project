@@ -107,6 +107,12 @@ bool RISCVExpandPseudo::expandMBB(MachineBasicBlock &MBB) {
   return Modified;
 }
 
+// Forward declaration for XTHeadMatrix pseudo lookup (defined below).
+namespace {
+struct THMatrixPseudoEntry;
+} // namespace
+static const THMatrixPseudoEntry *lookupTHMatrixPseudo(unsigned Opc);
+
 bool RISCVExpandPseudo::expandMI(MachineBasicBlock &MBB,
                                  MachineBasicBlock::iterator MBBI,
                                  MachineBasicBlock::iterator &NextMBBI) {

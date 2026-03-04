@@ -1,115 +1,75 @@
-# Complete File Change Summary
+# File Change Summary
 
-## Files Created (8)
+## Key Files (current state)
 
-### 1. `llvm/lib/Target/RISCV/RISCVInstrInfoXTHeadMatrix.td` (1012 lines)
-Main instruction definition file containing:
-- 2 operand definitions (`thrvmuimm10`, `thrvmuimm3`)
-- 17 instruction format classes
-- 8 multiclasses for systematic instruction generation
-- 227 instruction definitions organized in 5 categories (7 config, 56 load/store, 27 matmul, 35 misc, 102 element-wise)
+### LLVM Backend
 
-### 2. `llvm/include/llvm/IR/IntrinsicsRISCVXTHeadMatrix.td` (371 lines)
-LLVM IR intrinsics for all instruction categories (~230 intrinsics):
-- 6 helper classes (THMatrix_NoArgs, THMatrix_Load, THMatrix_Store, THMatrix_Imm, THMatrix_ToGPR, THMatrix_FromGPR)
-- Configuration (7), load (28), store (28), matmul (31), misc (35)
-- Element-wise: FP conversions (20), float-int conversions (12), fixed-point clip (8), packed conversions (8), integer arithmetic (22), FP arithmetic (30)
+| File | Purpose |
+|------|---------|
+| `llvm/lib/Target/RISCV/RISCVInstrInfoXTHeadMatrix.td` | 227 instruction definitions + ~220 PTH_*_V pseudos + spill/reload pseudos |
+| `llvm/include/llvm/IR/IntrinsicsRISCVXTHeadMatrix.td` | ~220 `_internal` intrinsics + 7 config intrinsics + helper classes |
+| `llvm/lib/Target/RISCV/RISCVISelDAGToDAG.cpp` | `selectTHMatrixInternal()` with ~227 table entries, 16 dispatch categories |
+| `llvm/lib/Target/RISCV/RISCVISelDAGToDAG.h` | `selectTHMatrixInternal()` declaration |
+| `llvm/lib/Target/RISCV/RISCVExpandPseudoInsts.cpp` | `lookupTHMatrixPseudo()` table — ~220 PTH_*_V → TH_* expansion |
+| `llvm/lib/Target/RISCV/RISCVLowerMatrixType.cpp` | `-O0` support pass for `target("riscv.matrix")` |
+| `llvm/lib/Target/RISCV/RISCVMachineFunctionInfo.h` | `MatrixProgModelEnum {None, ManagedRA}` |
+| `llvm/lib/Target/RISCV/RISCVRegisterInfo.cpp` | Conditional matrix register reservation |
+| `llvm/lib/Target/RISCV/RISCVRegisterInfo.td` | THRVMMR, THRVMTR, THRVMACC register classes |
+| `llvm/lib/Target/RISCV/RISCVFeatures.td` | `FeatureVendorXTHeadMatrix` (experimental, v0.6) |
+| `llvm/lib/Target/RISCV/RISCVSystemOperands.td` | 13 CSRs with `th.` prefix |
+| `llvm/lib/Target/RISCV/Disassembler/RISCVDisassembler.cpp` | Matrix register decode functions |
+| `llvm/include/llvm/CodeGen/ValueTypes.td` | `MVT::riscvmatrix` (8192-bit) |
+| `llvm/lib/CodeGen/ValueTypes.cpp` | `riscv.matrix` ↔ `MVT` mapping |
 
-### 3. `clang/include/clang/Basic/BuiltinsRISCVXTHeadMatrix.td` (275 lines)
-Clang builtins for all instruction categories (~230 builtins):
-- 1:1 mapping with LLVM IR intrinsics
-- All gated by `"xtheadmatrix"` feature with `NoThrow` attribute
-- Prototypes: `void()`, `void(void*, size_t)`, `void(size_t)`, `void(unsigned int)`, `size_t()`, `size_t(size_t)`
+### Clang Frontend
 
-### 4. `llvm/test/MC/RISCV/xtheadmatrix-valid.s` (1154 lines)
-Assembly test cases covering all 227 instructions with CHECK-INST, CHECK-ENCODING, and CHECK-ERROR.
+| File | Purpose |
+|------|---------|
+| `clang/include/clang/Basic/BuiltinsRISCVXTHeadMatrix.td` | ~250 Clang builtins (Spec-API + config + mundef) |
+| `clang/lib/CodeGen/TargetBuiltins/RISCV.cpp` | Spec-API codegen with lambda helpers |
+| `clang/lib/Headers/thead_matrix.h` | 300+ C API functions/macros |
+| `clang/include/clang/Basic/RISCVMatrixTypes.def` | 22 native built-in type definitions |
 
-### 5. `llvm/test/MC/RISCV/xtheadmatrix-invalid.s` (85 lines)
-Error cases for invalid operands, wrong register classes, and out-of-range immediates.
+### Tests
 
-### 6. `llvm/test/MC/RISCV/xtheadmatrix-csr.s` (63 lines)
-CSR name resolution tests covering all 13 CSRs via csrr and csrw.
+| File | Purpose |
+|------|---------|
+| `clang/test/CodeGen/RISCV/xtheadmatrix-spec-api.c` | 13 Spec-API test cases |
+| `clang/test/CodeGen/RISCV/thead-matrix-builtin-types.c` | Built-in type compilation test |
+| `clang/test/CodeGen/RISCV/thead-matrix-types-extended.c` | Extended type test |
+| `llvm/test/CodeGen/RISCV/xtheadmatrix-managed-ra.ll` | ManagedRA ISel test |
+| `llvm/test/CodeGen/RISCV/xtheadmatrix-managed-ra-spill.ll` | Spill/reload test |
+| `llvm/test/CodeGen/RISCV/xtheadmatrix-managed-ra-regclass.ll` | Register class constraint test |
+| `llvm/test/CodeGen/RISCV/xtheadmatrix-managed-ra-misc.ll` | Misc ManagedRA operations |
+| `llvm/test/CodeGen/RISCV/xtheadmatrix-lower-O0.ll` | -O0 lowering test |
+| `llvm/test/MC/RISCV/xtheadmatrix-valid.s` | 227 instruction encoding tests (1154 lines) |
+| `llvm/test/MC/RISCV/xtheadmatrix-invalid.s` | Invalid operand tests |
+| `llvm/test/MC/RISCV/xtheadmatrix-csr.s` | 13 CSR resolution tests |
 
-### 7. `llvm/test/CodeGen/RISCV/xtheadmatrix-isel.ll` (~300 lines)
-ISel pattern tests verifying intrinsic-to-instruction selection and fixed register assignment for representative instructions from each category.
+## Change History
 
-### 8. `clang/test/CodeGen/RISCV/xtheadmatrix-codegen.c` (~250 lines)
-End-to-end Clang tests verifying builtin calls compile through to correct assembly output for all 22 instruction subcategories.
+### Initial implementation
+- 227 instructions, intrinsics, builtins, ISel, tests, docs
+- 22 native built-in types (`__rvm_*_t`)
+- `<thead_matrix.h>` header with typed API
 
-## Files Modified (11)
+### Verification round 1 (Gemini)
+- Fixed 42 conversion pseudo register classes (THRVMMR → THRVMACC)
+- Fixed matmul operand swap in Spec-API codegen
+- Added B-tile loads, FP/unsigned variants, all matmul variants to Spec-API
 
-### 1. `llvm/lib/Target/RISCV/RISCVFeatures.td`
-- Added `FeatureVendorXTHeadMatrix` experimental extension (v0.6)
-- Added `HasVendorXTHeadMatrix` predicate
+### Verification round 2 (Claude Opus 4.6)
+- Full re-verification of all 227 encodings — no new bugs
 
-### 2. `llvm/lib/Target/RISCV/RISCVRegisterInfo.td`
-- Added 8 registers: `THRVM_TR0-TR3`, `THRVM_ACC0-ACC3`
-- Added 3 register classes: `THRVMMR`, `THRVMTR`, `THRVMACC`
+### Verification round 3 (Claude Opus 4.6)
+- Fixed forward declaration of `lookupTHMatrixPseudo()`
+- Fixed 32 name collisions in `thead_matrix.h`
+- Fixed config intrinsics forcing DirectReg mode (critical RA fix)
 
-### 3. `llvm/lib/Target/RISCV/RISCVSystemOperands.td`
-- Added 13 CSRs with `th.` prefix, gated by `FeatureVendorXTHeadMatrix`
-
-### 4. `llvm/lib/Target/RISCV/Disassembler/RISCVDisassembler.cpp`
-- Added `THRVMRegs[]` lookup table
-- Added 3 decode functions: `DecodeTHRVMMRRegisterClass`, `DecodeTHRVMTRRegisterClass`, `DecodeTHRVMACCRegisterClass`
-- Added `XTHeadMatrixGroup` feature group
-- Added decoder list entry for `DecoderTableXTHeadMatrix32`
-
-### 5. `llvm/lib/Target/RISCV/RISCVInstrInfo.td`
-- Added `include "RISCVInstrInfoXTHeadMatrix.td"`
-
-### 6. `llvm/include/llvm/IR/IntrinsicsRISCV.td`
-- Added `include "llvm/IR/IntrinsicsRISCVXTHeadMatrix.td"`
-
-### 7. `clang/include/clang/Basic/BuiltinsRISCV.td`
-- Added `include "clang/Basic/BuiltinsRISCVXTHeadMatrix.td"`
-
-### 8. `llvm/docs/RISCVUsage.rst`
-- Added documentation entry for `XTHeadMatrix` vendor extension with full feature description
-
-### 9. `llvm/lib/Target/RISCV/RISCVISelDAGToDAG.cpp` (+400 lines)
-- Added `THMatrixCategory` enum (15 dispatch categories)
-- Added `THMatrixIntrEntry` struct and `THMatrixTable` (227 intrinsic-to-instruction entries)
-- Added `getTHMatrixReg()` helper and `lookupTHMatrixIntr()` lookup
-- Added `selectTHMatrix()` dispatch function
-- Added call sites in `Select()` for `INTRINSIC_VOID` (223 intrinsics) and `INTRINSIC_W_CHAIN` (4 mmov.x.m intrinsics)
-
-### 10. `llvm/lib/Target/RISCV/RISCVISelDAGToDAG.h` (+1 line)
-- Added `selectTHMatrix(SDNode *)` declaration
-
-### 11. `llvm/lib/Target/RISCV/RISCVRegisterInfo.cpp` (+10 lines)
-- Reserve all 8 THRVMMR registers (TR0-TR3, ACC0-ACC3) when `HasVendorXTHeadMatrix` is enabled
-
-*Note: `RISCVInstrInfoXTHeadMatrix.td` (listed above as created) was also modified for ISel compatibility: `hasSideEffects = 1` on all instruction classes; THRVMMR operands moved to `(ins)` from `(outs)`.*
-
-*Note: `llvm/docs/RISCV/RISCVXTHeadMatrix.md` was updated with ISel/CodeGen documentation, register constraints, and current limitations.*
-
-## Files Modified by Independent Verification (2026-03-04)
-
-### Bug Fixes
-
-| File | Change | Description |
-|------|--------|-------------|
-| `llvm/lib/Target/RISCV/RISCVInstrInfoXTHeadMatrix.td` | Bug fix | 42 conversion pseudos: THRVMMR → THRVMACC (spec requires acc registers) |
-| `clang/lib/CodeGen/TargetBuiltins/RISCV.cpp` | Bug fix | Matmul operand swap: `{acc, a, b}` → `{acc, b, a}` (A→ms1, B→ms2) |
-
-### Coverage Gaps Filled
-
-| File | Change | Description |
-|------|--------|-------------|
-| `clang/include/clang/Basic/BuiltinsRISCVXTHeadMatrix.td` | New builtins | B-tile loads (11), FP/unsigned load/store/zero variants (63), all matmul variants (21) |
-| `clang/lib/CodeGen/TargetBuiltins/RISCV.cpp` | New codegen | Refactored to helper lambdas; added all new spec-API case handlers |
-| `clang/lib/Headers/thead_matrix.h` | New wrappers | Macro-based C wrappers for all new spec-API builtins |
-| `clang/test/CodeGen/RISCV/xtheadmatrix-spec-api.c` | Updated test | Uses B-tile load; updated CHECK lines for mlbe.internal8 |
-
-### Documentation Updated by Second Verification (2026-03-04, Claude Opus 4.6)
-
-A second independent verification confirmed all fixes are correct and found no new bugs.
-Documentation was updated to reflect comprehensive limitations and spec differences:
-
-| File | Change | Description |
-|------|--------|-------------|
-| `xtheadmatrix-report/00-overview.md` | Updated | Added second verification results |
-| `xtheadmatrix-report/10-future-work.md` | Updated | Added current limitations list |
-| `xtheadmatrix-report/13-verification-and-fixes.md` | Updated | Added second audit results, limitations, and spec differences |
-| `xtheadmatrix-doc/RISCVXTHeadMatrix.md` | Updated | Comprehensive limitations, spec API differences, verification history |
+### DirectReg removal + Spec-API completion
+- Deleted ~3000 lines: DirectReg ISel, intrinsics, builtins, codegen, Sema, 8 test files
+- Added ~1300 lines: ~130 Spec-API builtins, codegen, C wrappers for EW/conversions/data movement
+- Config intrinsics moved to ManagedRA ISel table
+- `MatrixProgModelEnum` simplified to `{None, ManagedRA}`
+- Fixed: FP EW .mv.i signatures, immediate type legalization, macro parameters
+- Renamed A-tile loads `__riscv_th_mld_*` → `__riscv_th_mld_a_*`, B-tile `__riscv_th_mldb_*` → `__riscv_th_mld_b_*`

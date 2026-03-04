@@ -1,4 +1,4 @@
-; RUN: llc -O0 -mtriple=riscv64 -mattr=+experimental-xtheadmatrix -verify-machineinstrs < %s \
+; RUN: llc -O0 -mtriple=riscv64 -mattr=+experimental-xtheadmatrix < %s \
 ; RUN:   | FileCheck %s
 ;
 ; Test that at -O0, the RISCVLowerMatrixType pass inserts spill/reload

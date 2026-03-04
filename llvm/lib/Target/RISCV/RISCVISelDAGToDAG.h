@@ -166,7 +166,6 @@ public:
 
   void selectVSETVLI(SDNode *Node);
   void selectXSfmmVSET(SDNode *Node);
-  void selectTHMatrix(SDNode *Node);
   void selectTHMatrixInternal(SDNode *Node);
 
   void selectSF_VC_X_SE(SDNode *Node);

@@ -117,7 +117,7 @@ mrow_t __riscv_th_msetmrow_m(mrow_t m) {
 }
 
 static __inline__ __attribute__((__always_inline__, __nodebug__))
-mrow_t __riscv_th_msetmrow_n(mrow_t n) {
+mcol_t __riscv_th_msetmrow_n(mcol_t n) {
   __builtin_riscv_th_msettilen(n);
   return n;
 }
@@ -263,48 +263,6 @@ unsigned long __riscv_th_xmsize(void) {
 }
 
 /* ============================================================================
- * Section 4: Zero Functions (22)
- * ============================================================================ */
-
-#define __THEAD_MZERO_SINGLE(SUFFIX, TYPE, MUNDEF)                             \
-  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  TYPE __riscv_th_mzero_##SUFFIX(void) {                                       \
-    __builtin_riscv_th_mzero(__RVM_ACC0);                                      \
-    return __builtin_riscv_th_##MUNDEF();                                      \
-  }
-
-#define __THEAD_MZERO_PAIR(SUFFIX, TYPE, MUNDEF)                               \
-  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  TYPE __riscv_th_mzero_##SUFFIX(void) {                                       \
-    __builtin_riscv_th_mzero2r(__RVM_ACC0);                                    \
-    return __builtin_riscv_th_##MUNDEF();                                      \
-  }
-
-__THEAD_MZERO_SINGLE(i8,  mint8_t,     mundef_i8)
-__THEAD_MZERO_SINGLE(i16, mint16_t,    mundef_i16)
-__THEAD_MZERO_SINGLE(i32, mint32_t,    mundef_i32)
-__THEAD_MZERO_SINGLE(i64, mint64_t,    mundef_i64)
-__THEAD_MZERO_SINGLE(u8,  muint8_t,    mundef_u8)
-__THEAD_MZERO_SINGLE(u16, muint16_t,   mundef_u16)
-__THEAD_MZERO_SINGLE(u32, muint32_t,   mundef_u32)
-__THEAD_MZERO_SINGLE(u64, muint64_t,   mundef_u64)
-__THEAD_MZERO_SINGLE(f16, mfloat16_t,  mundef_f16)
-__THEAD_MZERO_SINGLE(f32, mfloat32_t,  mundef_f32)
-__THEAD_MZERO_SINGLE(f64, mfloat64_t,  mundef_f64)
-
-__THEAD_MZERO_PAIR(i8x2,  mint8x2_t,    mundef_i8x2)
-__THEAD_MZERO_PAIR(i16x2, mint16x2_t,   mundef_i16x2)
-__THEAD_MZERO_PAIR(i32x2, mint32x2_t,   mundef_i32x2)
-__THEAD_MZERO_PAIR(i64x2, mint64x2_t,   mundef_i64x2)
-__THEAD_MZERO_PAIR(u8x2,  muint8x2_t,   mundef_u8x2)
-__THEAD_MZERO_PAIR(u16x2, muint16x2_t,  mundef_u16x2)
-__THEAD_MZERO_PAIR(u32x2, muint32x2_t,  mundef_u32x2)
-__THEAD_MZERO_PAIR(u64x2, muint64x2_t,  mundef_u64x2)
-__THEAD_MZERO_PAIR(f16x2, mfloat16x2_t, mundef_f16x2)
-__THEAD_MZERO_PAIR(f32x2, mfloat32x2_t, mundef_f32x2)
-__THEAD_MZERO_PAIR(f64x2, mfloat64x2_t, mundef_f64x2)
-
-/* ============================================================================
  * Section 5: Undefined Functions (22)
  * ============================================================================ */
 
@@ -427,844 +385,19 @@ __THEAD_MSET(f32, mfloat32_t,  mfloat32x2_t, mundef_f32x2)
 __THEAD_MSET(f64, mfloat64_t,  mfloat64x2_t, mundef_f64x2)
 
 /* ============================================================================
- * Section 8: Load Functions
+ * Section 8: Spec-API — Register-Allocator-Managed Intrinsics
  *
- * Role-specific loads:
- *   mld_a_TYPE  : Load A matrix (to tr0, sets M rows, K cols)
- *   mld_b_TYPE  : Load B matrix (to tr1, sets K rows, N cols)
- *   mld_c_TYPE  : Load C/accumulator (to acc0, sets M rows, N cols)
- * Transposed variants: mld_at_TYPE, mld_bt_TYPE, mld_ct_TYPE
- * Whole-register load: mld_whole_TYPE
- *
- * EEW (element width) is encoded in the suffix: i8/i16/i32/i64/u8/u16/u32/u64
- * FP types: f16/f32/f64 map to e16/e32/e64
- *
- * Load builtins return Qm types (signed int by EEW). For unsigned/float API
- * types, the load is called for its side effect and mundef returns the token.
- * ============================================================================ */
-
-/* Element-stride loads: A matrix (tr0) */
-#define __THEAD_MLD_A(SUFFIX, TYPE, EEW, MUNDEF)                               \
-  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  TYPE __riscv_th_mld_a_##SUFFIX(const void *__base, long __stride,            \
-                                 mrow_t __m, mcol_t __k) {                     \
-    __builtin_riscv_th_msettilem(__m);                                         \
-    __builtin_riscv_th_msettilek(__k);                                         \
-    __builtin_riscv_th_mlae##EEW(__RVM_TR0, (void *)__base, (size_t)__stride); \
-    return __builtin_riscv_th_##MUNDEF();                                      \
-  }
-
-/* Element-stride loads: B matrix (tr1) */
-#define __THEAD_MLD_B(SUFFIX, TYPE, EEW, MUNDEF)                               \
-  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  TYPE __riscv_th_mld_b_##SUFFIX(const void *__base, long __stride,            \
-                                 mrow_t __k, mcol_t __n) {                     \
-    __builtin_riscv_th_msettilek(__k);                                         \
-    __builtin_riscv_th_msettilen(__n);                                         \
-    __builtin_riscv_th_mlbe##EEW(__RVM_TR1, (void *)__base, (size_t)__stride); \
-    return __builtin_riscv_th_##MUNDEF();                                      \
-  }
-
-/* Element-stride loads: C/accumulator (acc0) */
-#define __THEAD_MLD_C(SUFFIX, TYPE, EEW, MUNDEF)                               \
-  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  TYPE __riscv_th_mld_c_##SUFFIX(const void *__base, long __stride,            \
-                                 mrow_t __m, mcol_t __n) {                     \
-    __builtin_riscv_th_msettilem(__m);                                         \
-    __builtin_riscv_th_msettilen(__n);                                         \
-    __builtin_riscv_th_mlce##EEW(__RVM_ACC0, (void *)__base, (size_t)__stride); \
-    return __builtin_riscv_th_##MUNDEF();                                      \
-  }
-
-/* Transposed loads: A-transposed (tr2) */
-#define __THEAD_MLD_AT(SUFFIX, TYPE, EEW, MUNDEF)                              \
-  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  TYPE __riscv_th_mld_at_##SUFFIX(const void *__base, long __stride,           \
-                                  mrow_t __m, mcol_t __k) {                    \
-    __builtin_riscv_th_msettilem(__m);                                         \
-    __builtin_riscv_th_msettilek(__k);                                         \
-    __builtin_riscv_th_mlate##EEW(__RVM_TR2, (void *)__base, (size_t)__stride); \
-    return __builtin_riscv_th_##MUNDEF();                                      \
-  }
-
-/* Transposed loads: B-transposed (tr3) */
-#define __THEAD_MLD_BT(SUFFIX, TYPE, EEW, MUNDEF)                              \
-  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  TYPE __riscv_th_mld_bt_##SUFFIX(const void *__base, long __stride,           \
-                                  mrow_t __k, mcol_t __n) {                    \
-    __builtin_riscv_th_msettilek(__k);                                         \
-    __builtin_riscv_th_msettilen(__n);                                         \
-    __builtin_riscv_th_mlbte##EEW(__RVM_TR3, (void *)__base, (size_t)__stride); \
-    return __builtin_riscv_th_##MUNDEF();                                      \
-  }
-
-/* Transposed loads: C-transposed (acc1) */
-#define __THEAD_MLD_CT(SUFFIX, TYPE, EEW, MUNDEF)                              \
-  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  TYPE __riscv_th_mld_ct_##SUFFIX(const void *__base, long __stride,           \
-                                  mrow_t __m, mcol_t __n) {                    \
-    __builtin_riscv_th_msettilem(__m);                                         \
-    __builtin_riscv_th_msettilen(__n);                                         \
-    __builtin_riscv_th_mlcte##EEW(__RVM_ACC1, (void *)__base, (size_t)__stride); \
-    return __builtin_riscv_th_##MUNDEF();                                      \
-  }
-
-/* Whole-register loads */
-#define __THEAD_MLD_WHOLE(SUFFIX, TYPE, EEW, MUNDEF)                           \
-  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  TYPE __riscv_th_mld_whole_##SUFFIX(const void *__base) {                     \
-    __builtin_riscv_th_mlme##EEW(__RVM_TR0, (void *)__base);                   \
-    return __builtin_riscv_th_##MUNDEF();                                      \
-  }
-
-/* Instantiate loads for all types */
-/* INT8 */
-__THEAD_MLD_A(i8,  mint8_t,  8, mundef_i8)
-__THEAD_MLD_B(i8,  mint8_t,  8, mundef_i8)
-__THEAD_MLD_C(i8,  mint8_t,  8, mundef_i8)
-__THEAD_MLD_AT(i8, mint8_t,  8, mundef_i8)
-__THEAD_MLD_BT(i8, mint8_t,  8, mundef_i8)
-__THEAD_MLD_CT(i8, mint8_t,  8, mundef_i8)
-__THEAD_MLD_WHOLE(i8, mint8_t, 8, mundef_i8)
-/* INT16 */
-__THEAD_MLD_A(i16,  mint16_t,  16, mundef_i16)
-__THEAD_MLD_B(i16,  mint16_t,  16, mundef_i16)
-__THEAD_MLD_C(i16,  mint16_t,  16, mundef_i16)
-__THEAD_MLD_AT(i16, mint16_t,  16, mundef_i16)
-__THEAD_MLD_BT(i16, mint16_t,  16, mundef_i16)
-__THEAD_MLD_CT(i16, mint16_t,  16, mundef_i16)
-__THEAD_MLD_WHOLE(i16, mint16_t, 16, mundef_i16)
-/* INT32 */
-__THEAD_MLD_A(i32,  mint32_t,  32, mundef_i32)
-__THEAD_MLD_B(i32,  mint32_t,  32, mundef_i32)
-__THEAD_MLD_C(i32,  mint32_t,  32, mundef_i32)
-__THEAD_MLD_AT(i32, mint32_t,  32, mundef_i32)
-__THEAD_MLD_BT(i32, mint32_t,  32, mundef_i32)
-__THEAD_MLD_CT(i32, mint32_t,  32, mundef_i32)
-__THEAD_MLD_WHOLE(i32, mint32_t, 32, mundef_i32)
-/* INT64 */
-__THEAD_MLD_A(i64,  mint64_t,  64, mundef_i64)
-__THEAD_MLD_B(i64,  mint64_t,  64, mundef_i64)
-__THEAD_MLD_C(i64,  mint64_t,  64, mundef_i64)
-__THEAD_MLD_AT(i64, mint64_t,  64, mundef_i64)
-__THEAD_MLD_BT(i64, mint64_t,  64, mundef_i64)
-__THEAD_MLD_CT(i64, mint64_t,  64, mundef_i64)
-__THEAD_MLD_WHOLE(i64, mint64_t, 64, mundef_i64)
-/* UINT8 */
-__THEAD_MLD_A(u8,  muint8_t,  8, mundef_u8)
-__THEAD_MLD_B(u8,  muint8_t,  8, mundef_u8)
-__THEAD_MLD_C(u8,  muint8_t,  8, mundef_u8)
-__THEAD_MLD_AT(u8, muint8_t,  8, mundef_u8)
-__THEAD_MLD_BT(u8, muint8_t,  8, mundef_u8)
-__THEAD_MLD_CT(u8, muint8_t,  8, mundef_u8)
-__THEAD_MLD_WHOLE(u8, muint8_t, 8, mundef_u8)
-/* UINT16 */
-__THEAD_MLD_A(u16,  muint16_t,  16, mundef_u16)
-__THEAD_MLD_B(u16,  muint16_t,  16, mundef_u16)
-__THEAD_MLD_C(u16,  muint16_t,  16, mundef_u16)
-__THEAD_MLD_AT(u16, muint16_t,  16, mundef_u16)
-__THEAD_MLD_BT(u16, muint16_t,  16, mundef_u16)
-__THEAD_MLD_CT(u16, muint16_t,  16, mundef_u16)
-__THEAD_MLD_WHOLE(u16, muint16_t, 16, mundef_u16)
-/* UINT32 */
-__THEAD_MLD_A(u32,  muint32_t,  32, mundef_u32)
-__THEAD_MLD_B(u32,  muint32_t,  32, mundef_u32)
-__THEAD_MLD_C(u32,  muint32_t,  32, mundef_u32)
-__THEAD_MLD_AT(u32, muint32_t,  32, mundef_u32)
-__THEAD_MLD_BT(u32, muint32_t,  32, mundef_u32)
-__THEAD_MLD_CT(u32, muint32_t,  32, mundef_u32)
-__THEAD_MLD_WHOLE(u32, muint32_t, 32, mundef_u32)
-/* UINT64 */
-__THEAD_MLD_A(u64,  muint64_t,  64, mundef_u64)
-__THEAD_MLD_B(u64,  muint64_t,  64, mundef_u64)
-__THEAD_MLD_C(u64,  muint64_t,  64, mundef_u64)
-__THEAD_MLD_AT(u64, muint64_t,  64, mundef_u64)
-__THEAD_MLD_BT(u64, muint64_t,  64, mundef_u64)
-__THEAD_MLD_CT(u64, muint64_t,  64, mundef_u64)
-__THEAD_MLD_WHOLE(u64, muint64_t, 64, mundef_u64)
-/* FP16 */
-__THEAD_MLD_A(f16,  mfloat16_t,  16, mundef_f16)
-__THEAD_MLD_B(f16,  mfloat16_t,  16, mundef_f16)
-__THEAD_MLD_C(f16,  mfloat16_t,  16, mundef_f16)
-__THEAD_MLD_AT(f16, mfloat16_t,  16, mundef_f16)
-__THEAD_MLD_BT(f16, mfloat16_t,  16, mundef_f16)
-__THEAD_MLD_CT(f16, mfloat16_t,  16, mundef_f16)
-__THEAD_MLD_WHOLE(f16, mfloat16_t, 16, mundef_f16)
-/* FP32 */
-__THEAD_MLD_A(f32,  mfloat32_t,  32, mundef_f32)
-__THEAD_MLD_B(f32,  mfloat32_t,  32, mundef_f32)
-__THEAD_MLD_C(f32,  mfloat32_t,  32, mundef_f32)
-__THEAD_MLD_AT(f32, mfloat32_t,  32, mundef_f32)
-__THEAD_MLD_BT(f32, mfloat32_t,  32, mundef_f32)
-__THEAD_MLD_CT(f32, mfloat32_t,  32, mundef_f32)
-__THEAD_MLD_WHOLE(f32, mfloat32_t, 32, mundef_f32)
-/* FP64 */
-__THEAD_MLD_A(f64,  mfloat64_t,  64, mundef_f64)
-__THEAD_MLD_B(f64,  mfloat64_t,  64, mundef_f64)
-__THEAD_MLD_C(f64,  mfloat64_t,  64, mundef_f64)
-__THEAD_MLD_AT(f64, mfloat64_t,  64, mundef_f64)
-__THEAD_MLD_BT(f64, mfloat64_t,  64, mundef_f64)
-__THEAD_MLD_CT(f64, mfloat64_t,  64, mundef_f64)
-__THEAD_MLD_WHOLE(f64, mfloat64_t, 64, mundef_f64)
-
-/* ============================================================================
- * Section 9: Store Functions
- *
- * Role-specific stores only (no generic dispatch -- opaque types have no tag).
- * ============================================================================ */
-
-/* Role-specific stores */
-#define __THEAD_MST_A(SUFFIX, TYPE, EEW)                                       \
-  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  void __riscv_th_mst_a_##SUFFIX(void *__base, long __stride,                  \
-                                 TYPE __val, mrow_t __m, mcol_t __k) {         \
-    (void)__val;                                                               \
-    __builtin_riscv_th_msettilem(__m);                                         \
-    __builtin_riscv_th_msettilek(__k);                                         \
-    __builtin_riscv_th_msae##EEW(__RVM_TR0, __base, (size_t)__stride);         \
-  }
-
-#define __THEAD_MST_B(SUFFIX, TYPE, EEW)                                       \
-  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  void __riscv_th_mst_b_##SUFFIX(void *__base, long __stride,                  \
-                                 TYPE __val, mrow_t __k, mcol_t __n) {         \
-    (void)__val;                                                               \
-    __builtin_riscv_th_msettilek(__k);                                         \
-    __builtin_riscv_th_msettilen(__n);                                         \
-    __builtin_riscv_th_msbe##EEW(__RVM_TR1, __base, (size_t)__stride);         \
-  }
-
-#define __THEAD_MST_C(SUFFIX, TYPE, EEW)                                       \
-  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  void __riscv_th_mst_c_##SUFFIX(void *__base, long __stride,                  \
-                                 TYPE __val, mrow_t __m, mcol_t __n) {         \
-    (void)__val;                                                               \
-    __builtin_riscv_th_msettilem(__m);                                         \
-    __builtin_riscv_th_msettilen(__n);                                         \
-    __builtin_riscv_th_msce##EEW(__RVM_ACC0, __base, (size_t)__stride);        \
-  }
-
-/* Transposed stores */
-#define __THEAD_MST_AT(SUFFIX, TYPE, EEW)                                      \
-  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  void __riscv_th_mst_at_##SUFFIX(void *__base, long __stride,                 \
-                                  TYPE __val, mrow_t __m, mcol_t __k) {        \
-    (void)__val;                                                               \
-    __builtin_riscv_th_msettilem(__m);                                         \
-    __builtin_riscv_th_msettilek(__k);                                         \
-    __builtin_riscv_th_msate##EEW(__RVM_TR2, __base, (size_t)__stride);        \
-  }
-
-#define __THEAD_MST_BT(SUFFIX, TYPE, EEW)                                      \
-  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  void __riscv_th_mst_bt_##SUFFIX(void *__base, long __stride,                 \
-                                  TYPE __val, mrow_t __k, mcol_t __n) {        \
-    (void)__val;                                                               \
-    __builtin_riscv_th_msettilek(__k);                                         \
-    __builtin_riscv_th_msettilen(__n);                                         \
-    __builtin_riscv_th_msbte##EEW(__RVM_TR3, __base, (size_t)__stride);        \
-  }
-
-#define __THEAD_MST_CT(SUFFIX, TYPE, EEW)                                      \
-  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  void __riscv_th_mst_ct_##SUFFIX(void *__base, long __stride,                 \
-                                  TYPE __val, mrow_t __m, mcol_t __n) {        \
-    (void)__val;                                                               \
-    __builtin_riscv_th_msettilem(__m);                                         \
-    __builtin_riscv_th_msettilen(__n);                                         \
-    __builtin_riscv_th_mscte##EEW(__RVM_ACC1, __base, (size_t)__stride);       \
-  }
-
-/* Whole-register store */
-#define __THEAD_MST_WHOLE(SUFFIX, TYPE, EEW)                                   \
-  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  void __riscv_th_mst_whole_##SUFFIX(void *__base, TYPE __val) {               \
-    (void)__val;                                                               \
-    __builtin_riscv_th_msme##EEW(__RVM_TR0, __base);                           \
-  }
-
-/* Instantiate stores for all types */
-#define __THEAD_MST_ALL(SUFFIX, TYPE, EEW)                                     \
-  __THEAD_MST_A(SUFFIX, TYPE, EEW)                                            \
-  __THEAD_MST_B(SUFFIX, TYPE, EEW)                                            \
-  __THEAD_MST_C(SUFFIX, TYPE, EEW)                                            \
-  __THEAD_MST_AT(SUFFIX, TYPE, EEW)                                           \
-  __THEAD_MST_BT(SUFFIX, TYPE, EEW)                                           \
-  __THEAD_MST_CT(SUFFIX, TYPE, EEW)                                           \
-  __THEAD_MST_WHOLE(SUFFIX, TYPE, EEW)
-
-__THEAD_MST_ALL(i8,  mint8_t,     8)
-__THEAD_MST_ALL(i16, mint16_t,    16)
-__THEAD_MST_ALL(i32, mint32_t,    32)
-__THEAD_MST_ALL(i64, mint64_t,    64)
-__THEAD_MST_ALL(u8,  muint8_t,    8)
-__THEAD_MST_ALL(u16, muint16_t,   16)
-__THEAD_MST_ALL(u32, muint32_t,   32)
-__THEAD_MST_ALL(u64, muint64_t,   64)
-__THEAD_MST_ALL(f16, mfloat16_t,  16)
-__THEAD_MST_ALL(f32, mfloat32_t,  32)
-__THEAD_MST_ALL(f64, mfloat64_t,  64)
-
-/* ============================================================================
- * Section 10: FP Matrix Multiply-Accumulate (13 functions)
- *
- * All matmul: acc0 = acc0 + tr1 * tr0
- * Params: dest (acc), src1 (A/tr0), src2 (B/tr1), row1(M), row2(K), col(N)
- * ============================================================================ */
-
-/* Typed FP matmul (builtins take and return Qm types) */
-#define __THEAD_FMMACC(SUFFIX, ATYPE, BTYPE, CTYPE, BUILTIN)                  \
-  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  CTYPE __riscv_th_fmmacc_##SUFFIX(CTYPE __dest, ATYPE __a, BTYPE __b,        \
-                                   mrow_t __m, mrow_t __k, mcol_t __n) {      \
-    __builtin_riscv_th_msettilem(__m);                                         \
-    __builtin_riscv_th_msettilek(__k);                                         \
-    __builtin_riscv_th_msettilen(__n);                                         \
-    return BUILTIN(__RVM_ACC0, __RVM_TR1, __RVM_TR0, __dest, __a, __b);        \
-  }
-
-/* Native-precision FP matmul */
-__THEAD_FMMACC(h,   mfloat16_t, mfloat16_t, mfloat16_t, __builtin_riscv_th_mfmacc_h)
-__THEAD_FMMACC(s,   mfloat32_t, mfloat32_t, mfloat32_t, __builtin_riscv_th_mfmacc_s)
-__THEAD_FMMACC(d,   mfloat64_t, mfloat64_t, mfloat64_t, __builtin_riscv_th_mfmacc_d)
-
-/* Typed widening FP matmul (builtins take and return Qm types) */
-#define __THEAD_FWMMACC_TYPED(SUFFIX, ATYPE, BTYPE, CTYPE, BUILTIN)           \
-  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  CTYPE __riscv_th_fwmmacc_##SUFFIX(CTYPE __dest, ATYPE __a, BTYPE __b,       \
-                                    mrow_t __m, mrow_t __k, mcol_t __n) {     \
-    __builtin_riscv_th_msettilem(__m);                                         \
-    __builtin_riscv_th_msettilek(__k);                                         \
-    __builtin_riscv_th_msettilen(__n);                                         \
-    return BUILTIN(__RVM_ACC0, __RVM_TR1, __RVM_TR0, __dest, __a, __b);        \
-  }
-
-/* Untyped widening FP matmul (void builtins for FP8/BF16/TF32) */
-#define __THEAD_FWMMACC(SUFFIX, ATYPE, BTYPE, CTYPE, BUILTIN, MUNDEF)         \
-  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  CTYPE __riscv_th_fwmmacc_##SUFFIX(CTYPE __dest, ATYPE __a, BTYPE __b,       \
-                                    mrow_t __m, mrow_t __k, mcol_t __n) {     \
-    (void)__dest; (void)__a; (void)__b;                                        \
-    __builtin_riscv_th_msettilem(__m);                                         \
-    __builtin_riscv_th_msettilek(__k);                                         \
-    __builtin_riscv_th_msettilen(__n);                                         \
-    BUILTIN(__RVM_ACC0, __RVM_TR1, __RVM_TR0);                                 \
-    return __builtin_riscv_th_##MUNDEF();                                      \
-  }
-
-/* FP8 -> FP16 widening */
-__THEAD_FWMMACC(h_e4,     muint8_t,    muint8_t,    mfloat16_t,  __builtin_riscv_th_mfmacc_h_e4,  mundef_f16)
-__THEAD_FWMMACC(h_e5,     muint8_t,    muint8_t,    mfloat16_t,  __builtin_riscv_th_mfmacc_h_e5,  mundef_f16)
-/* FP8 -> BF16 widening */
-__THEAD_FWMMACC(bf16_e4,  muint8_t,    muint8_t,    mfloat16_t,  __builtin_riscv_th_mfmacc_bf16_e4, mundef_f16)
-__THEAD_FWMMACC(bf16_e5,  muint8_t,    muint8_t,    mfloat16_t,  __builtin_riscv_th_mfmacc_bf16_e5, mundef_f16)
-/* FP16 -> FP32 widening (typed) */
-__THEAD_FWMMACC_TYPED(s_h, mfloat16_t, mfloat16_t, mfloat32_t, __builtin_riscv_th_mfmacc_s_h)
-/* BF16/FP8/TF32 -> FP32 widening */
-__THEAD_FWMMACC(s_bf16,   mfloat16_t,  mfloat16_t,  mfloat32_t,  __builtin_riscv_th_mfmacc_s_bf16, mundef_f32)
-__THEAD_FWMMACC(s_e4,     muint8_t,    muint8_t,    mfloat32_t,  __builtin_riscv_th_mfmacc_s_e4,  mundef_f32)
-__THEAD_FWMMACC(s_e5,     muint8_t,    muint8_t,    mfloat32_t,  __builtin_riscv_th_mfmacc_s_e5,  mundef_f32)
-__THEAD_FWMMACC(s_tf32,   mfloat32_t,  mfloat32_t,  mfloat32_t,  __builtin_riscv_th_mfmacc_s_tf32, mundef_f32)
-/* FP32 -> FP64 widening (typed) */
-__THEAD_FWMMACC_TYPED(d_s, mfloat32_t, mfloat32_t, mfloat64_t, __builtin_riscv_th_mfmacc_d_s)
-
-/* ============================================================================
- * Section 11: Integer Matrix Multiply-Accumulate (14 functions)
- *
- * All INT matmul builtins are now typed. For unsigned-unsigned (uu) variants,
- * the accumulator type matches the builtin (unsigned).
- * ============================================================================ */
-
-#define __THEAD_MMAQA(SUFFIX, ATYPE, BTYPE, CTYPE, BUILTIN)                   \
-  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  CTYPE __riscv_th_mmaqa_##SUFFIX(CTYPE __dest, ATYPE __a, BTYPE __b,         \
-                                  mrow_t __m, mrow_t __k, mcol_t __n) {       \
-    __builtin_riscv_th_msettilem(__m);                                         \
-    __builtin_riscv_th_msettilek(__k);                                         \
-    __builtin_riscv_th_msettilen(__n);                                         \
-    return BUILTIN(__RVM_ACC0, __RVM_TR1, __RVM_TR0, __dest, __a, __b);        \
-  }
-
-/* INT8 -> INT32 (4 sign variants) */
-__THEAD_MMAQA(ss_w_b,  mint8_t,   mint8_t,   mint32_t,   __builtin_riscv_th_mmacc_w_b)
-__THEAD_MMAQA(uu_w_b,  muint8_t,  muint8_t,  muint32_t,  __builtin_riscv_th_mmaccu_w_b)
-__THEAD_MMAQA(us_w_b,  muint8_t,  mint8_t,   mint32_t,   __builtin_riscv_th_mmaccus_w_b)
-__THEAD_MMAQA(su_w_b,  mint8_t,   muint8_t,  mint32_t,   __builtin_riscv_th_mmaccsu_w_b)
-
-/* INT16 -> INT64 (4 sign variants) */
-__THEAD_MMAQA(ss_d_h,  mint16_t,  mint16_t,  mint64_t,   __builtin_riscv_th_mmacc_d_h)
-__THEAD_MMAQA(uu_d_h,  muint16_t, muint16_t, muint64_t,  __builtin_riscv_th_mmaccu_d_h)
-__THEAD_MMAQA(us_d_h,  muint16_t, mint16_t,  mint64_t,   __builtin_riscv_th_mmaccus_d_h)
-__THEAD_MMAQA(su_d_h,  mint16_t,  muint16_t, mint64_t,   __builtin_riscv_th_mmaccsu_d_h)
-
-/* Partial INT matmul (INT8 -> INT32, 4 sign variants) */
-#define __THEAD_PMMAQA(SUFFIX, ATYPE, BTYPE, CTYPE, BUILTIN)                  \
-  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  CTYPE __riscv_th_pmmaqa_##SUFFIX(CTYPE __dest, ATYPE __a, BTYPE __b,        \
-                                   mrow_t __m, mrow_t __k, mcol_t __n) {      \
-    __builtin_riscv_th_msettilem(__m);                                         \
-    __builtin_riscv_th_msettilek(__k);                                         \
-    __builtin_riscv_th_msettilen(__n);                                         \
-    return BUILTIN(__RVM_ACC0, __RVM_TR1, __RVM_TR0, __dest, __a, __b);        \
-  }
-
-__THEAD_PMMAQA(ss_w_b, mint8_t,  mint8_t,  mint32_t,  __builtin_riscv_th_pmmacc_w_b)
-__THEAD_PMMAQA(uu_w_b, muint8_t, muint8_t, muint32_t, __builtin_riscv_th_pmmaccu_w_b)
-__THEAD_PMMAQA(us_w_b, muint8_t, mint8_t,  mint32_t,  __builtin_riscv_th_pmmaccus_w_b)
-__THEAD_PMMAQA(su_w_b, mint8_t,  muint8_t, mint32_t,  __builtin_riscv_th_pmmaccsu_w_b)
-
-/* Bypass INT matmul (2 functions) */
-static __inline__ __attribute__((__always_inline__, __nodebug__))
-mint32_t __riscv_th_mmaqa_bp_ss(mint32_t __dest, mint8_t __a, mint8_t __b,
-                                mrow_t __m, mrow_t __k, mcol_t __n) {
-  __builtin_riscv_th_msettilem(__m);
-  __builtin_riscv_th_msettilek(__k);
-  __builtin_riscv_th_msettilen(__n);
-  return __builtin_riscv_th_mmacc_w_bp(__RVM_ACC0, __RVM_TR1, __RVM_TR0,
-                                       __dest, __a, __b);
-}
-
-static __inline__ __attribute__((__always_inline__, __nodebug__))
-muint32_t __riscv_th_mmaqa_bp_uu(muint32_t __dest, muint8_t __a, muint8_t __b,
-                                 mrow_t __m, mrow_t __k, mcol_t __n) {
-  __builtin_riscv_th_msettilem(__m);
-  __builtin_riscv_th_msettilek(__k);
-  __builtin_riscv_th_msettilen(__n);
-  return __builtin_riscv_th_mmaccu_w_bp(__RVM_ACC0, __RVM_TR1, __RVM_TR0,
-                                        __dest, __a, __b);
-}
-
-/* ============================================================================
- * Section 12: Integer Element-Wise Arithmetic (22 functions)
- *
- * All EW ops use accumulator registers: Md=ACC0, Ms1=ACC1, Ms2=ACC2
- * MM variants: typed Qm2(Qm2, Qm2, Qm2)
- * MV.I variants: typed Qm2(Qm2, Qm2, unsigned int) -- must be macros (ImmArg)
- * ============================================================================ */
-
-#define __THEAD_INT_EW_MM(NAME, BUILTIN)                                       \
-  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  mint32_t __riscv_th_##NAME##_w_mm(mint32_t __dest, mint32_t __src1,          \
-                                    mint32_t __src2) {                         \
-    return BUILTIN(__RVM_ACC0, __RVM_ACC2, __RVM_ACC1,                         \
-                   __dest, __src1, __src2);                                     \
-  }
-
-#define __THEAD_INT_EW_MVI(NAME, BUILTIN)                                      \
-  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  mint32_t __riscv_th_##NAME##_w_mv(mint32_t __dest, mint32_t __src1,          \
-                                    unsigned int __imm)                        \
-      __attribute__((__unavailable__(                                           \
-          "use macro form: __riscv_th_" #NAME "_w_mv(d, s, imm)")));
-
-/* Macro forms for ImmArg int EW MV.I functions */
-#define __riscv_th_madd_w_mv(d, s1, imm)                                      \
-  __extension__({                                                              \
-    __builtin_riscv_th_madd_w_mv_i(__RVM_ACC0, __RVM_ACC2, __RVM_ACC1,        \
-                                   (d), (s1), (imm));                          \
-  })
-#define __riscv_th_msub_w_mv(d, s1, imm)                                      \
-  __extension__({                                                              \
-    __builtin_riscv_th_msub_w_mv_i(__RVM_ACC0, __RVM_ACC2, __RVM_ACC1,        \
-                                   (d), (s1), (imm));                          \
-  })
-#define __riscv_th_mmul_w_mv(d, s1, imm)                                      \
-  __extension__({                                                              \
-    __builtin_riscv_th_mmul_w_mv_i(__RVM_ACC0, __RVM_ACC2, __RVM_ACC1,        \
-                                   (d), (s1), (imm));                          \
-  })
-#define __riscv_th_mmulh_w_mv(d, s1, imm)                                     \
-  __extension__({                                                              \
-    __builtin_riscv_th_mmulh_w_mv_i(__RVM_ACC0, __RVM_ACC2, __RVM_ACC1,       \
-                                    (d), (s1), (imm));                         \
-  })
-#define __riscv_th_mmax_w_mv(d, s1, imm)                                      \
-  __extension__({                                                              \
-    __builtin_riscv_th_mmax_w_mv_i(__RVM_ACC0, __RVM_ACC2, __RVM_ACC1,        \
-                                   (d), (s1), (imm));                          \
-  })
-#define __riscv_th_mumax_w_mv(d, s1, imm)                                     \
-  __extension__({                                                              \
-    __builtin_riscv_th_mumax_w_mv_i(__RVM_ACC0, __RVM_ACC2, __RVM_ACC1,       \
-                                    (d), (s1), (imm));                         \
-  })
-#define __riscv_th_mmin_w_mv(d, s1, imm)                                      \
-  __extension__({                                                              \
-    __builtin_riscv_th_mmin_w_mv_i(__RVM_ACC0, __RVM_ACC2, __RVM_ACC1,        \
-                                   (d), (s1), (imm));                          \
-  })
-#define __riscv_th_mumin_w_mv(d, s1, imm)                                     \
-  __extension__({                                                              \
-    __builtin_riscv_th_mumin_w_mv_i(__RVM_ACC0, __RVM_ACC2, __RVM_ACC1,       \
-                                    (d), (s1), (imm));                         \
-  })
-#define __riscv_th_msrl_w_mv(d, s1, imm)                                      \
-  __extension__({                                                              \
-    __builtin_riscv_th_msrl_w_mv_i(__RVM_ACC0, __RVM_ACC2, __RVM_ACC1,        \
-                                   (d), (s1), (imm));                          \
-  })
-#define __riscv_th_msll_w_mv(d, s1, imm)                                      \
-  __extension__({                                                              \
-    __builtin_riscv_th_msll_w_mv_i(__RVM_ACC0, __RVM_ACC2, __RVM_ACC1,        \
-                                   (d), (s1), (imm));                          \
-  })
-#define __riscv_th_msra_w_mv(d, s1, imm)                                      \
-  __extension__({                                                              \
-    __builtin_riscv_th_msra_w_mv_i(__RVM_ACC0, __RVM_ACC2, __RVM_ACC1,        \
-                                   (d), (s1), (imm));                          \
-  })
-
-__THEAD_INT_EW_MM(madd,   __builtin_riscv_th_madd_w_mm)
-__THEAD_INT_EW_MM(msub,   __builtin_riscv_th_msub_w_mm)
-__THEAD_INT_EW_MM(mmul,   __builtin_riscv_th_mmul_w_mm)
-__THEAD_INT_EW_MM(mmulh,  __builtin_riscv_th_mmulh_w_mm)
-__THEAD_INT_EW_MM(mmax,   __builtin_riscv_th_mmax_w_mm)
-__THEAD_INT_EW_MM(mumax,  __builtin_riscv_th_mumax_w_mm)
-__THEAD_INT_EW_MM(mmin,   __builtin_riscv_th_mmin_w_mm)
-__THEAD_INT_EW_MM(mumin,  __builtin_riscv_th_mumin_w_mm)
-__THEAD_INT_EW_MM(msrl,   __builtin_riscv_th_msrl_w_mm)
-__THEAD_INT_EW_MM(msll,   __builtin_riscv_th_msll_w_mm)
-__THEAD_INT_EW_MM(msra,   __builtin_riscv_th_msra_w_mm)
-
-/* ============================================================================
- * Section 13: FP Element-Wise Arithmetic (30 functions)
- * ============================================================================ */
-
-#define __THEAD_FP_EW_MM(NAME, FPSUFFIX, FPTYPE, BUILTIN)                      \
-  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  FPTYPE __riscv_th_##NAME##_##FPSUFFIX##_mm(                                  \
-      FPTYPE __dest, FPTYPE __src1, FPTYPE __src2) {                           \
-    return BUILTIN(__RVM_ACC0, __RVM_ACC2, __RVM_ACC1,                         \
-                   __dest, __src1, __src2);                                     \
-  }
-
-/* FP add */
-__THEAD_FP_EW_MM(mfadd,  h, mfloat16_t, __builtin_riscv_th_mfadd_h_mm)
-__THEAD_FP_EW_MM(mfadd,  s, mfloat32_t, __builtin_riscv_th_mfadd_s_mm)
-__THEAD_FP_EW_MM(mfadd,  d, mfloat64_t, __builtin_riscv_th_mfadd_d_mm)
-/* FP sub */
-__THEAD_FP_EW_MM(mfsub,  h, mfloat16_t, __builtin_riscv_th_mfsub_h_mm)
-__THEAD_FP_EW_MM(mfsub,  s, mfloat32_t, __builtin_riscv_th_mfsub_s_mm)
-__THEAD_FP_EW_MM(mfsub,  d, mfloat64_t, __builtin_riscv_th_mfsub_d_mm)
-/* FP mul */
-__THEAD_FP_EW_MM(mfmul,  h, mfloat16_t, __builtin_riscv_th_mfmul_h_mm)
-__THEAD_FP_EW_MM(mfmul,  s, mfloat32_t, __builtin_riscv_th_mfmul_s_mm)
-__THEAD_FP_EW_MM(mfmul,  d, mfloat64_t, __builtin_riscv_th_mfmul_d_mm)
-/* FP max */
-__THEAD_FP_EW_MM(mfmax,  h, mfloat16_t, __builtin_riscv_th_mfmax_h_mm)
-__THEAD_FP_EW_MM(mfmax,  s, mfloat32_t, __builtin_riscv_th_mfmax_s_mm)
-__THEAD_FP_EW_MM(mfmax,  d, mfloat64_t, __builtin_riscv_th_mfmax_d_mm)
-/* FP min */
-__THEAD_FP_EW_MM(mfmin,  h, mfloat16_t, __builtin_riscv_th_mfmin_h_mm)
-__THEAD_FP_EW_MM(mfmin,  s, mfloat32_t, __builtin_riscv_th_mfmin_s_mm)
-__THEAD_FP_EW_MM(mfmin,  d, mfloat64_t, __builtin_riscv_th_mfmin_d_mm)
-
-/* FP EW MV.I macro forms (ImmArg requires compile-time constants) */
-#define __riscv_th_mfadd_h_mv(d, s1, imm)                                    \
-  __extension__({ __builtin_riscv_th_mfadd_h_mv_i(                           \
-      __RVM_ACC0, __RVM_ACC2, __RVM_ACC1, (d), (s1), (imm)); })
-#define __riscv_th_mfadd_s_mv(d, s1, imm)                                    \
-  __extension__({ __builtin_riscv_th_mfadd_s_mv_i(                           \
-      __RVM_ACC0, __RVM_ACC2, __RVM_ACC1, (d), (s1), (imm)); })
-#define __riscv_th_mfadd_d_mv(d, s1, imm)                                    \
-  __extension__({ __builtin_riscv_th_mfadd_d_mv_i(                           \
-      __RVM_ACC0, __RVM_ACC2, __RVM_ACC1, (d), (s1), (imm)); })
-#define __riscv_th_mfsub_h_mv(d, s1, imm)                                    \
-  __extension__({ __builtin_riscv_th_mfsub_h_mv_i(                           \
-      __RVM_ACC0, __RVM_ACC2, __RVM_ACC1, (d), (s1), (imm)); })
-#define __riscv_th_mfsub_s_mv(d, s1, imm)                                    \
-  __extension__({ __builtin_riscv_th_mfsub_s_mv_i(                           \
-      __RVM_ACC0, __RVM_ACC2, __RVM_ACC1, (d), (s1), (imm)); })
-#define __riscv_th_mfsub_d_mv(d, s1, imm)                                    \
-  __extension__({ __builtin_riscv_th_mfsub_d_mv_i(                           \
-      __RVM_ACC0, __RVM_ACC2, __RVM_ACC1, (d), (s1), (imm)); })
-#define __riscv_th_mfmul_h_mv(d, s1, imm)                                    \
-  __extension__({ __builtin_riscv_th_mfmul_h_mv_i(                           \
-      __RVM_ACC0, __RVM_ACC2, __RVM_ACC1, (d), (s1), (imm)); })
-#define __riscv_th_mfmul_s_mv(d, s1, imm)                                    \
-  __extension__({ __builtin_riscv_th_mfmul_s_mv_i(                           \
-      __RVM_ACC0, __RVM_ACC2, __RVM_ACC1, (d), (s1), (imm)); })
-#define __riscv_th_mfmul_d_mv(d, s1, imm)                                    \
-  __extension__({ __builtin_riscv_th_mfmul_d_mv_i(                           \
-      __RVM_ACC0, __RVM_ACC2, __RVM_ACC1, (d), (s1), (imm)); })
-#define __riscv_th_mfmax_h_mv(d, s1, imm)                                    \
-  __extension__({ __builtin_riscv_th_mfmax_h_mv_i(                           \
-      __RVM_ACC0, __RVM_ACC2, __RVM_ACC1, (d), (s1), (imm)); })
-#define __riscv_th_mfmax_s_mv(d, s1, imm)                                    \
-  __extension__({ __builtin_riscv_th_mfmax_s_mv_i(                           \
-      __RVM_ACC0, __RVM_ACC2, __RVM_ACC1, (d), (s1), (imm)); })
-#define __riscv_th_mfmax_d_mv(d, s1, imm)                                    \
-  __extension__({ __builtin_riscv_th_mfmax_d_mv_i(                           \
-      __RVM_ACC0, __RVM_ACC2, __RVM_ACC1, (d), (s1), (imm)); })
-#define __riscv_th_mfmin_h_mv(d, s1, imm)                                    \
-  __extension__({ __builtin_riscv_th_mfmin_h_mv_i(                           \
-      __RVM_ACC0, __RVM_ACC2, __RVM_ACC1, (d), (s1), (imm)); })
-#define __riscv_th_mfmin_s_mv(d, s1, imm)                                    \
-  __extension__({ __builtin_riscv_th_mfmin_s_mv_i(                           \
-      __RVM_ACC0, __RVM_ACC2, __RVM_ACC1, (d), (s1), (imm)); })
-#define __riscv_th_mfmin_d_mv(d, s1, imm)                                    \
-  __extension__({ __builtin_riscv_th_mfmin_d_mv_i(                           \
-      __RVM_ACC0, __RVM_ACC2, __RVM_ACC1, (d), (s1), (imm)); })
-
-/* ============================================================================
- * Section 14: FP Format Conversions (26 functions)
- * ============================================================================ */
-
-/* Typed conversions (builtins take/return Qm types) */
-#define __THEAD_MFCVT_TYPED(NAME, DTYPE, STYPE, BUILTIN)                      \
-  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  DTYPE __riscv_th_##NAME(STYPE __src) {                                       \
-    return BUILTIN(__RVM_ACC0, __RVM_ACC1, __src);                             \
-  }
-
-/* Untyped conversions (void builtins for FP8/BF16/TF32) */
-#define __THEAD_MFCVT(NAME, DTYPE, STYPE, BUILTIN, MUNDEF)                    \
-  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  DTYPE __riscv_th_##NAME(STYPE __src) {                                       \
-    (void)__src;                                                               \
-    BUILTIN(__RVM_ACC0, __RVM_ACC1);                                           \
-    return __builtin_riscv_th_##MUNDEF();                                      \
-  }
-
-/* FP8(e4m3) <-> FP16 */
-__THEAD_MFCVT(mfcvtl_h_e4,  mfloat16_t, muint8_t,    __builtin_riscv_th_mfcvtl_h_e4,  mundef_f16)
-__THEAD_MFCVT(mfcvth_h_e4,  mfloat16_t, muint8_t,    __builtin_riscv_th_mfcvth_h_e4,  mundef_f16)
-__THEAD_MFCVT(mfcvtl_h_e5,  mfloat16_t, muint8_t,    __builtin_riscv_th_mfcvtl_h_e5,  mundef_f16)
-__THEAD_MFCVT(mfcvth_h_e5,  mfloat16_t, muint8_t,    __builtin_riscv_th_mfcvth_h_e5,  mundef_f16)
-__THEAD_MFCVT(mfcvtl_e4_h,  muint8_t,   mfloat16_t,  __builtin_riscv_th_mfcvtl_e4_h,  mundef_u8)
-__THEAD_MFCVT(mfcvth_e4_h,  muint8_t,   mfloat16_t,  __builtin_riscv_th_mfcvth_e4_h,  mundef_u8)
-__THEAD_MFCVT(mfcvtl_e5_h,  muint8_t,   mfloat16_t,  __builtin_riscv_th_mfcvtl_e5_h,  mundef_u8)
-__THEAD_MFCVT(mfcvth_e5_h,  muint8_t,   mfloat16_t,  __builtin_riscv_th_mfcvth_e5_h,  mundef_u8)
-/* FP16 <-> FP32 (typed) */
-__THEAD_MFCVT_TYPED(mfcvtl_s_h,   mfloat32_t, mfloat16_t,  __builtin_riscv_th_mfcvtl_s_h)
-__THEAD_MFCVT_TYPED(mfcvth_s_h,   mfloat32_t, mfloat16_t,  __builtin_riscv_th_mfcvth_s_h)
-__THEAD_MFCVT_TYPED(mfcvtl_h_s,   mfloat16_t, mfloat32_t,  __builtin_riscv_th_mfcvtl_h_s)
-__THEAD_MFCVT_TYPED(mfcvth_h_s,   mfloat16_t, mfloat32_t,  __builtin_riscv_th_mfcvth_h_s)
-/* BF16 <-> FP32 */
-__THEAD_MFCVT(mfcvtl_s_bf16, mfloat32_t, mfloat16_t, __builtin_riscv_th_mfcvtl_s_bf16, mundef_f32)
-__THEAD_MFCVT(mfcvth_s_bf16, mfloat32_t, mfloat16_t, __builtin_riscv_th_mfcvth_s_bf16, mundef_f32)
-__THEAD_MFCVT(mfcvtl_bf16_s, mfloat16_t, mfloat32_t, __builtin_riscv_th_mfcvtl_bf16_s, mundef_f16)
-__THEAD_MFCVT(mfcvth_bf16_s, mfloat16_t, mfloat32_t, __builtin_riscv_th_mfcvth_bf16_s, mundef_f16)
-/* FP32 <-> FP8 */
-__THEAD_MFCVT(mfcvtl_e4_s,  muint8_t,   mfloat32_t,  __builtin_riscv_th_mfcvtl_e4_s,  mundef_u8)
-__THEAD_MFCVT(mfcvth_e4_s,  muint8_t,   mfloat32_t,  __builtin_riscv_th_mfcvth_e4_s,  mundef_u8)
-__THEAD_MFCVT(mfcvtl_e5_s,  muint8_t,   mfloat32_t,  __builtin_riscv_th_mfcvtl_e5_s,  mundef_u8)
-__THEAD_MFCVT(mfcvth_e5_s,  muint8_t,   mfloat32_t,  __builtin_riscv_th_mfcvth_e5_s,  mundef_u8)
-/* FP32 <-> FP64 (typed) */
-__THEAD_MFCVT_TYPED(mfcvtl_d_s,   mfloat64_t, mfloat32_t,  __builtin_riscv_th_mfcvtl_d_s)
-__THEAD_MFCVT_TYPED(mfcvth_d_s,   mfloat64_t, mfloat32_t,  __builtin_riscv_th_mfcvth_d_s)
-__THEAD_MFCVT_TYPED(mfcvtl_s_d,   mfloat32_t, mfloat64_t,  __builtin_riscv_th_mfcvtl_s_d)
-__THEAD_MFCVT_TYPED(mfcvth_s_d,   mfloat32_t, mfloat64_t,  __builtin_riscv_th_mfcvth_s_d)
-/* TF32 <-> FP32 */
-__THEAD_MFCVT(mfcvt_s_tf32, mfloat32_t, mfloat32_t,  __builtin_riscv_th_mfcvt_s_tf32, mundef_f32)
-__THEAD_MFCVT(mfcvt_tf32_s, mfloat32_t, mfloat32_t,  __builtin_riscv_th_mfcvt_tf32_s, mundef_f32)
-
-/* ============================================================================
- * Section 15: Float-Integer Conversions (12 functions)
- * ============================================================================ */
-
-/* UINT8 <-> FP16 (typed) */
-__THEAD_MFCVT_TYPED(mufcvtl_h_b,  mfloat16_t, muint8_t,    __builtin_riscv_th_mufcvtl_h_b)
-__THEAD_MFCVT_TYPED(mufcvth_h_b,  mfloat16_t, muint8_t,    __builtin_riscv_th_mufcvth_h_b)
-__THEAD_MFCVT_TYPED(mfucvtl_b_h,  muint8_t,   mfloat16_t,  __builtin_riscv_th_mfucvtl_b_h)
-__THEAD_MFCVT_TYPED(mfucvth_b_h,  muint8_t,   mfloat16_t,  __builtin_riscv_th_mfucvth_b_h)
-/* SINT8 <-> FP16 (typed) */
-__THEAD_MFCVT_TYPED(msfcvtl_h_b,  mfloat16_t, mint8_t,     __builtin_riscv_th_msfcvtl_h_b)
-__THEAD_MFCVT_TYPED(msfcvth_h_b,  mfloat16_t, mint8_t,     __builtin_riscv_th_msfcvth_h_b)
-__THEAD_MFCVT_TYPED(mfscvtl_b_h,  mint8_t,    mfloat16_t,  __builtin_riscv_th_mfscvtl_b_h)
-__THEAD_MFCVT_TYPED(mfscvth_b_h,  mint8_t,    mfloat16_t,  __builtin_riscv_th_mfscvth_b_h)
-/* INT32 <-> FP32 (typed) */
-__THEAD_MFCVT_TYPED(msfcvt_s_w,   mfloat32_t, mint32_t,    __builtin_riscv_th_msfcvt_s_w)
-__THEAD_MFCVT_TYPED(mufcvt_s_w,   mfloat32_t, muint32_t,   __builtin_riscv_th_mufcvt_s_w)
-__THEAD_MFCVT_TYPED(mfscvt_w_s,   mint32_t,   mfloat32_t,  __builtin_riscv_th_mfscvt_w_s)
-__THEAD_MFCVT_TYPED(mfucvt_w_s,   muint32_t,  mfloat32_t,  __builtin_riscv_th_mfucvt_w_s)
-
-/* ============================================================================
- * Section 16: Packed Conversions (4 functions)
- * ============================================================================ */
-
-__THEAD_MFCVT(mucvtl_b_p,   muint8_t,   muint8_t,    __builtin_riscv_th_mucvtl_b_p,   mundef_u8)
-__THEAD_MFCVT(mscvtl_b_p,   mint8_t,    muint8_t,    __builtin_riscv_th_mscvtl_b_p,   mundef_i8)
-__THEAD_MFCVT(mucvth_b_p,   muint8_t,   muint8_t,    __builtin_riscv_th_mucvth_b_p,   mundef_u8)
-__THEAD_MFCVT(mscvth_b_p,   mint8_t,    muint8_t,    __builtin_riscv_th_mscvth_b_p,   mundef_i8)
-
-/* ============================================================================
- * Section 17: N4Clip Functions (8 functions)
- * ============================================================================ */
-
-/* N4Clip MM variants (signed: return mint8_t, unsigned: return muint8_t) */
-#define __THEAD_N4CLIP_MM(NAME, RTYPE, BUILTIN, MUNDEF)                        \
-  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  RTYPE __riscv_th_##NAME(mint32_t __src1, mint32_t __src2) {                  \
-    (void)__src1; (void)__src2;                                                \
-    BUILTIN(__RVM_ACC0, __RVM_ACC2, __RVM_ACC1);                               \
-    return __builtin_riscv_th_##MUNDEF();                                      \
-  }
-
-__THEAD_N4CLIP_MM(mn4clipl_w_mm,   mint8_t,  __builtin_riscv_th_mn4clipl_w_mm,  mundef_i8)
-__THEAD_N4CLIP_MM(mn4cliph_w_mm,   mint8_t,  __builtin_riscv_th_mn4cliph_w_mm,  mundef_i8)
-__THEAD_N4CLIP_MM(mn4cliplu_w_mm,  muint8_t, __builtin_riscv_th_mn4cliplu_w_mm, mundef_u8)
-__THEAD_N4CLIP_MM(mn4cliphu_w_mm,  muint8_t, __builtin_riscv_th_mn4cliphu_w_mm, mundef_u8)
-
-/* N4Clip MV.I macro forms (ImmArg requires compile-time constants) */
-/* Signed variants return mint8_t, unsigned variants return muint8_t */
-#define __riscv_th_mn4clipl_w_mv(s1, imm)                                     \
-  __extension__({ (void)(s1); __builtin_riscv_th_mn4clipl_w_mv_i(             \
-      __RVM_ACC0, __RVM_ACC2, __RVM_ACC1, (imm));                             \
-      __builtin_riscv_th_mundef_i8(); })
-#define __riscv_th_mn4cliph_w_mv(s1, imm)                                     \
-  __extension__({ (void)(s1); __builtin_riscv_th_mn4cliph_w_mv_i(             \
-      __RVM_ACC0, __RVM_ACC2, __RVM_ACC1, (imm));                             \
-      __builtin_riscv_th_mundef_i8(); })
-#define __riscv_th_mn4cliplu_w_mv(s1, imm)                                    \
-  __extension__({ (void)(s1); __builtin_riscv_th_mn4cliplu_w_mv_i(            \
-      __RVM_ACC0, __RVM_ACC2, __RVM_ACC1, (imm));                             \
-      __builtin_riscv_th_mundef_u8(); })
-#define __riscv_th_mn4cliphu_w_mv(s1, imm)                                    \
-  __extension__({ (void)(s1); __builtin_riscv_th_mn4cliphu_w_mv_i(            \
-      __RVM_ACC0, __RVM_ACC2, __RVM_ACC1, (imm));                             \
-      __builtin_riscv_th_mundef_u8(); })
-
-/* ============================================================================
- * Section 18: Move / Duplicate Functions (13 functions)
- * ============================================================================ */
-
-/* mmov_mm: copy matrix register (md = ms1) */
-static __inline__ __attribute__((__always_inline__, __nodebug__))
-void __riscv_th_mmov_mm(void) {
-  __builtin_riscv_th_mmov_mm(__RVM_TR0, __RVM_TR1);
-}
-
-/* mmov_x_m: extract element from matrix to GPR */
-#define __THEAD_MMOV_X_M(SUFFIX, STYPE, BUILTIN)                              \
-  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  size_t __riscv_th_mmov_x_m_##SUFFIX(STYPE __src, size_t __index) {          \
-    (void)__src;                                                               \
-    return BUILTIN(__RVM_TR0, __index);                                         \
-  }
-
-__THEAD_MMOV_X_M(b, mint8_t,  __builtin_riscv_th_mmovb_x_m)
-__THEAD_MMOV_X_M(h, mint16_t, __builtin_riscv_th_mmovh_x_m)
-__THEAD_MMOV_X_M(w, mint32_t, __builtin_riscv_th_mmovw_x_m)
-__THEAD_MMOV_X_M(d, mint64_t, __builtin_riscv_th_mmovd_x_m)
-
-/* mmov_m_x: insert scalar into matrix element */
-#define __THEAD_MMOV_M_X(SUFFIX, DTYPE, BUILTIN, MUNDEF)                      \
-  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  DTYPE __riscv_th_mmov_m_x_##SUFFIX(DTYPE __dest, size_t __data,             \
-                                     size_t __index) {                         \
-    (void)__dest;                                                              \
-    BUILTIN(__RVM_TR0, __data, __index);                                        \
-    return __builtin_riscv_th_##MUNDEF();                                      \
-  }
-
-__THEAD_MMOV_M_X(b, mint8_t,  __builtin_riscv_th_mmovb_m_x, mundef_i8)
-__THEAD_MMOV_M_X(h, mint16_t, __builtin_riscv_th_mmovh_m_x, mundef_i16)
-__THEAD_MMOV_M_X(w, mint32_t, __builtin_riscv_th_mmovw_m_x, mundef_i32)
-__THEAD_MMOV_M_X(d, mint64_t, __builtin_riscv_th_mmovd_m_x, mundef_i64)
-
-/* mdup_m_x: broadcast scalar to all elements in a matrix column */
-#define __THEAD_MDUP(SUFFIX, DTYPE, BUILTIN, MUNDEF)                           \
-  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  DTYPE __riscv_th_mdup_m_x_##SUFFIX(size_t __data) {                         \
-    BUILTIN(__RVM_TR0, __data);                                                 \
-    return __builtin_riscv_th_##MUNDEF();                                      \
-  }
-
-__THEAD_MDUP(b, mint8_t,  __builtin_riscv_th_mdupb_m_x, mundef_i8)
-__THEAD_MDUP(h, mint16_t, __builtin_riscv_th_mduph_m_x, mundef_i16)
-__THEAD_MDUP(w, mint32_t, __builtin_riscv_th_mdupw_m_x, mundef_i32)
-__THEAD_MDUP(d, mint64_t, __builtin_riscv_th_mdupd_m_x, mundef_i64)
-
-/* ============================================================================
- * Section 19: Pack Functions (3 functions)
- * ============================================================================ */
-
-static __inline__ __attribute__((__always_inline__, __nodebug__))
-void __riscv_th_mpack(void) {
-  __builtin_riscv_th_mpack(__RVM_TR0, __RVM_TR2, __RVM_TR1);
-}
-
-static __inline__ __attribute__((__always_inline__, __nodebug__))
-void __riscv_th_mpackhl(void) {
-  __builtin_riscv_th_mpackhl(__RVM_TR0, __RVM_TR2, __RVM_TR1);
-}
-
-static __inline__ __attribute__((__always_inline__, __nodebug__))
-void __riscv_th_mpackhh(void) {
-  __builtin_riscv_th_mpackhh(__RVM_TR0, __RVM_TR2, __RVM_TR1);
-}
-
-/* ============================================================================
- * Section 20: Slide Functions (10 functions)
- * ============================================================================ */
-
-/* Row slide (ImmArg: must be compile-time constants) */
-#define __riscv_th_mrslidedown(imm) \
-  __builtin_riscv_th_mrslidedown(__RVM_TR0, __RVM_TR1, (imm))
-#define __riscv_th_mrslideup(imm) \
-  __builtin_riscv_th_mrslideup(__RVM_TR0, __RVM_TR1, (imm))
-
-/* Column slide (ImmArg: must be compile-time constants) */
-#define __riscv_th_mcslidedown_b(imm) \
-  __builtin_riscv_th_mcslidedown_b(__RVM_TR0, __RVM_TR1, (imm))
-#define __riscv_th_mcslideup_b(imm) \
-  __builtin_riscv_th_mcslideup_b(__RVM_TR0, __RVM_TR1, (imm))
-#define __riscv_th_mcslidedown_h(imm) \
-  __builtin_riscv_th_mcslidedown_h(__RVM_TR0, __RVM_TR1, (imm))
-#define __riscv_th_mcslideup_h(imm) \
-  __builtin_riscv_th_mcslideup_h(__RVM_TR0, __RVM_TR1, (imm))
-#define __riscv_th_mcslidedown_w(imm) \
-  __builtin_riscv_th_mcslidedown_w(__RVM_TR0, __RVM_TR1, (imm))
-#define __riscv_th_mcslideup_w(imm) \
-  __builtin_riscv_th_mcslideup_w(__RVM_TR0, __RVM_TR1, (imm))
-#define __riscv_th_mcslidedown_d(imm) \
-  __builtin_riscv_th_mcslidedown_d(__RVM_TR0, __RVM_TR1, (imm))
-#define __riscv_th_mcslideup_d(imm) \
-  __builtin_riscv_th_mcslideup_d(__RVM_TR0, __RVM_TR1, (imm))
-
-/* ============================================================================
- * Section 21: Broadcast Functions (5 functions)
- * ============================================================================ */
-
-/* Row broadcast (ImmArg: must be compile-time constants) */
-#define __riscv_th_mrbca(imm) \
-  __builtin_riscv_th_mrbca_mv_i(__RVM_TR0, __RVM_TR1, (imm))
-
-/* Column broadcast (ImmArg: must be compile-time constants) */
-#define __riscv_th_mcbca_b(imm) \
-  __builtin_riscv_th_mcbcab_mv_i(__RVM_TR0, __RVM_TR1, (imm))
-#define __riscv_th_mcbca_h(imm) \
-  __builtin_riscv_th_mcbcah_mv_i(__RVM_TR0, __RVM_TR1, (imm))
-#define __riscv_th_mcbca_w(imm) \
-  __builtin_riscv_th_mcbcaw_mv_i(__RVM_TR0, __RVM_TR1, (imm))
-#define __riscv_th_mcbca_d(imm) \
-  __builtin_riscv_th_mcbcad_mv_i(__RVM_TR0, __RVM_TR1, (imm))
-
-/* ============================================================================
- * Section 22: mmov_mv - Matrix-Vector Move (row extract)
- * ============================================================================ */
-
-/* mmov_mv: not directly available as a single builtin in RVM 0.6.
- * Use mrbca (row broadcast) + mmov_x_m to extract individual rows.
- * This is documented as a limitation. */
-
-/* ============================================================================
- * Section 23: Spec-API (ManagedRA) — Register-Allocator-Managed Intrinsics
- *
- * These functions use the ManagedRA programming model where the compiler's
- * register allocator manages matrix registers. Matrix values are returned
- * and passed as opaque types (mint32_t etc.) with proper SSA dataflow.
- *
- * Unlike the DirectReg API above, these do NOT require manual register
- * index management. The compiler handles register assignment automatically.
+ * The compiler's register allocator manages matrix registers (TR0-TR3,
+ * ACC0-ACC3). Matrix values are returned and passed as opaque types
+ * (mint32_t etc.) with proper SSA dataflow. No manual register index
+ * management is needed.
  * ============================================================================ */
 
 /* --- A-tile loads (mlae: M×K dimensions) --- */
 #define __THEAD_SPEC_MLD(SUFFIX, CTYPE, MTYPE, BUILTIN)                        \
   static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  MTYPE __riscv_th_mld_##SUFFIX(const CTYPE *__base, long __stride,            \
-                                 mrow_t __m, mcol_t __k) {                      \
+  MTYPE __riscv_th_mld_a_##SUFFIX(const CTYPE *__base, long __stride,          \
+                                   mrow_t __m, mcol_t __k) {                    \
     return __builtin_riscv_th_##BUILTIN((void *)__base, __stride, __m, __k);   \
   }
 
@@ -1341,10 +474,11 @@ __THEAD_SPEC_MST(f32, float,      mfloat32_t,  mst_spec_f32)
 __THEAD_SPEC_MST(f64, double,     mfloat64_t,  mst_spec_f64)
 
 /* --- INT matmul: acc = acc + A * B --- */
+/* Note: uses 'mmaq' to avoid collision with DirectReg mmaqa */
 #define __THEAD_SPEC_MMAQA(SUFFIX, ATYPE, BTYPE, CTYPE, BUILTIN)              \
   static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  CTYPE __riscv_th_mmaqa_##SUFFIX(CTYPE __c, ATYPE __a, BTYPE __b,            \
-                                   mrow_t __m, mcol_t __k, mcol_t __n) {       \
+  CTYPE __riscv_th_mmaq_##SUFFIX(CTYPE __c, ATYPE __a, BTYPE __b,             \
+                                  mrow_t __m, mcol_t __k, mcol_t __n) {        \
     return __builtin_riscv_th_##BUILTIN(__c, __a, __b, __m, __k, __n);         \
   }
 
@@ -1366,9 +500,9 @@ __THEAD_SPEC_MMAQA(p_su_w_b, mint8_t,  muint8_t, mint32_t,  pmmaqa_spec_su_w_b)
 /* Bypass INT */
 __THEAD_SPEC_MMAQA(bp_ss, mint8_t,  mint8_t,  mint32_t,  mmaqa_spec_bp_ss)
 __THEAD_SPEC_MMAQA(bp_uu, muint8_t, muint8_t, muint32_t, mmaqa_spec_bp_uu)
-/* Shorthand aliases (old names from initial spec-API) */
-#define __riscv_th_mmaqa_ss __riscv_th_mmaqa_ss_w_b
-#define __riscv_th_mmaqa_uu __riscv_th_mmaqa_uu_w_b
+/* Shorthand aliases */
+#define __riscv_th_mmaq_ss __riscv_th_mmaq_ss_w_b
+#define __riscv_th_mmaq_uu __riscv_th_mmaq_uu_w_b
 
 /* --- FP matmul --- */
 #define __THEAD_SPEC_FMMAQA(SUFFIX, ATYPE, BTYPE, CTYPE, BUILTIN)             \
@@ -1404,9 +538,10 @@ __THEAD_SPEC_FMMAQA_WIDEN(s_e5,    mfloat32_t, mfmaqa_spec_s_e5)
 __THEAD_SPEC_FMMAQA_WIDEN(s_tf32,  mfloat32_t, mfmaqa_spec_s_tf32)
 
 /* --- Zero --- */
+/* Note: uses 'mzeros' to avoid collision with DirectReg mzero */
 #define __THEAD_SPEC_MZERO(SUFFIX, MTYPE, BUILTIN)                             \
   static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  MTYPE __riscv_th_mzero_##SUFFIX(mrow_t __m, mcol_t __n) {                    \
+  MTYPE __riscv_th_mzeros_##SUFFIX(mrow_t __m, mcol_t __n) {                   \
     return __builtin_riscv_th_##BUILTIN(__m, __n);                             \
   }
 
@@ -1421,6 +556,282 @@ __THEAD_SPEC_MZERO(u64, muint64_t,   mzero_spec_u64)
 __THEAD_SPEC_MZERO(f16, mfloat16_t,  mzero_spec_f16)
 __THEAD_SPEC_MZERO(f32, mfloat32_t,  mzero_spec_f32)
 __THEAD_SPEC_MZERO(f64, mfloat64_t,  mzero_spec_f64)
+
+/* --- Move / Copy --- */
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+mint32_t __riscv_th_mmov_mm(mint32_t __src) {
+  return __builtin_riscv_th_mmov_mm_spec(__src);
+}
+
+/* --- Matrix-to-GPR (element extract) --- */
+#define __THEAD_SPEC_MMOV_X_M(SUFFIX)                                           \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  unsigned long __riscv_th_mmov##SUFFIX##_x_m(mint32_t __src,                  \
+                                               unsigned long __idx) {          \
+    return __builtin_riscv_th_mmov##SUFFIX##_x_m_spec(__src, __idx);           \
+  }
+
+__THEAD_SPEC_MMOV_X_M(b)
+__THEAD_SPEC_MMOV_X_M(h)
+__THEAD_SPEC_MMOV_X_M(w)
+__THEAD_SPEC_MMOV_X_M(d)
+
+/* --- GPR-to-matrix (element insert) --- */
+#define __THEAD_SPEC_MMOV_M_X(SUFFIX)                                           \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  mint32_t __riscv_th_mmov##SUFFIX##_m_x(mint32_t __dst,                       \
+                                          unsigned long __data,                \
+                                          unsigned long __idx) {               \
+    return __builtin_riscv_th_mmov##SUFFIX##_m_x_spec(__dst, __data, __idx);   \
+  }
+
+__THEAD_SPEC_MMOV_M_X(b)
+__THEAD_SPEC_MMOV_M_X(h)
+__THEAD_SPEC_MMOV_M_X(w)
+__THEAD_SPEC_MMOV_M_X(d)
+
+/* --- Duplicate GPR to matrix column --- */
+#define __THEAD_SPEC_MDUP_M_X(SUFFIX)                                           \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  mint32_t __riscv_th_mdup##SUFFIX##_m_x(mint32_t __dst,                       \
+                                          unsigned long __data) {              \
+    return __builtin_riscv_th_mdup##SUFFIX##_m_x_spec(__dst, __data);          \
+  }
+
+__THEAD_SPEC_MDUP_M_X(b)
+__THEAD_SPEC_MDUP_M_X(h)
+__THEAD_SPEC_MDUP_M_X(w)
+__THEAD_SPEC_MDUP_M_X(d)
+
+/* --- Pack --- */
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+mint32_t __riscv_th_mpack(mint32_t __s2, mint32_t __s1) {
+  return __builtin_riscv_th_mpack_spec(__s2, __s1);
+}
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+mint32_t __riscv_th_mpackhl(mint32_t __s2, mint32_t __s1) {
+  return __builtin_riscv_th_mpackhl_spec(__s2, __s1);
+}
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+mint32_t __riscv_th_mpackhh(mint32_t __s2, mint32_t __s1) {
+  return __builtin_riscv_th_mpackhh_spec(__s2, __s1);
+}
+
+/* --- Row slide --- */
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+mint32_t __riscv_th_mrslidedown(mint32_t __src, unsigned int __imm) {
+  return __builtin_riscv_th_mrslidedown_spec(__src, __imm);
+}
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+mint32_t __riscv_th_mrslideup(mint32_t __src, unsigned int __imm) {
+  return __builtin_riscv_th_mrslideup_spec(__src, __imm);
+}
+
+/* --- Column slide --- */
+#define __THEAD_SPEC_MCSLIDE(SUFFIX, DIR)                                      \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  mint32_t __riscv_th_mcslide##DIR##_##SUFFIX(mint32_t __src,                  \
+                                               unsigned int __imm) {           \
+    return __builtin_riscv_th_mcslide##DIR##_##SUFFIX##_spec(__src, __imm);    \
+  }
+
+__THEAD_SPEC_MCSLIDE(b, down)
+__THEAD_SPEC_MCSLIDE(h, down)
+__THEAD_SPEC_MCSLIDE(w, down)
+__THEAD_SPEC_MCSLIDE(d, down)
+__THEAD_SPEC_MCSLIDE(b, up)
+__THEAD_SPEC_MCSLIDE(h, up)
+__THEAD_SPEC_MCSLIDE(w, up)
+__THEAD_SPEC_MCSLIDE(d, up)
+
+/* --- Row broadcast --- */
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+mint32_t __riscv_th_mrbca(mint32_t __src, unsigned int __imm) {
+  return __builtin_riscv_th_mrbca_mv_i_spec(__src, __imm);
+}
+
+/* --- Column broadcast --- */
+#define __THEAD_SPEC_MCBCA(SUFFIX)                                             \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  mint32_t __riscv_th_mcbca_##SUFFIX(mint32_t __src, unsigned int __imm) {     \
+    return __builtin_riscv_th_mcbca##SUFFIX##_mv_i_spec(__src, __imm);         \
+  }
+
+__THEAD_SPEC_MCBCA(b)
+__THEAD_SPEC_MCBCA(h)
+__THEAD_SPEC_MCBCA(w)
+__THEAD_SPEC_MCBCA(d)
+
+/* --- FP format conversions (unary: src -> dst) --- */
+#define __THEAD_SPEC_FCVT(NAME, RET, ARG)                                      \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  RET __riscv_th_##NAME(ARG __src) {                                           \
+    return __builtin_riscv_th_##NAME##_spec(__src);                            \
+  }
+
+/* FP8 <-> FP16 (opaque types, use mint32_t) */
+__THEAD_SPEC_FCVT(mfcvtl_h_e4, mint32_t, mint32_t)
+__THEAD_SPEC_FCVT(mfcvth_h_e4, mint32_t, mint32_t)
+__THEAD_SPEC_FCVT(mfcvtl_h_e5, mint32_t, mint32_t)
+__THEAD_SPEC_FCVT(mfcvth_h_e5, mint32_t, mint32_t)
+__THEAD_SPEC_FCVT(mfcvtl_e4_h, mint32_t, mint32_t)
+__THEAD_SPEC_FCVT(mfcvth_e4_h, mint32_t, mint32_t)
+__THEAD_SPEC_FCVT(mfcvtl_e5_h, mint32_t, mint32_t)
+__THEAD_SPEC_FCVT(mfcvth_e5_h, mint32_t, mint32_t)
+/* FP16 <-> FP32 */
+__THEAD_SPEC_FCVT(mfcvtl_s_h, mfloat32_t, mfloat16_t)
+__THEAD_SPEC_FCVT(mfcvth_s_h, mfloat32_t, mfloat16_t)
+__THEAD_SPEC_FCVT(mfcvtl_h_s, mfloat16_t, mfloat32_t)
+__THEAD_SPEC_FCVT(mfcvth_h_s, mfloat16_t, mfloat32_t)
+/* BF16 <-> FP32 (opaque) */
+__THEAD_SPEC_FCVT(mfcvtl_s_bf16, mint32_t, mint32_t)
+__THEAD_SPEC_FCVT(mfcvth_s_bf16, mint32_t, mint32_t)
+__THEAD_SPEC_FCVT(mfcvtl_bf16_s, mint32_t, mint32_t)
+__THEAD_SPEC_FCVT(mfcvth_bf16_s, mint32_t, mint32_t)
+/* FP32 <-> FP8 (opaque) */
+__THEAD_SPEC_FCVT(mfcvtl_e4_s, mint32_t, mint32_t)
+__THEAD_SPEC_FCVT(mfcvth_e4_s, mint32_t, mint32_t)
+__THEAD_SPEC_FCVT(mfcvtl_e5_s, mint32_t, mint32_t)
+__THEAD_SPEC_FCVT(mfcvth_e5_s, mint32_t, mint32_t)
+/* FP32 <-> FP64 */
+__THEAD_SPEC_FCVT(mfcvtl_d_s, mfloat64_t, mfloat32_t)
+__THEAD_SPEC_FCVT(mfcvth_d_s, mfloat64_t, mfloat32_t)
+__THEAD_SPEC_FCVT(mfcvtl_s_d, mfloat32_t, mfloat64_t)
+__THEAD_SPEC_FCVT(mfcvth_s_d, mfloat32_t, mfloat64_t)
+/* TF32 <-> FP32 (opaque) */
+__THEAD_SPEC_FCVT(mfcvt_s_tf32, mint32_t, mint32_t)
+__THEAD_SPEC_FCVT(mfcvt_tf32_s, mint32_t, mint32_t)
+
+/* --- Float-int conversions --- */
+__THEAD_SPEC_FCVT(mufcvtl_h_b, mfloat16_t, muint8_t)
+__THEAD_SPEC_FCVT(mufcvth_h_b, mfloat16_t, muint8_t)
+__THEAD_SPEC_FCVT(mfucvtl_b_h, muint8_t, mfloat16_t)
+__THEAD_SPEC_FCVT(mfucvth_b_h, muint8_t, mfloat16_t)
+__THEAD_SPEC_FCVT(msfcvtl_h_b, mfloat16_t, mint8_t)
+__THEAD_SPEC_FCVT(msfcvth_h_b, mfloat16_t, mint8_t)
+__THEAD_SPEC_FCVT(mfscvtl_b_h, mint8_t, mfloat16_t)
+__THEAD_SPEC_FCVT(mfscvth_b_h, mint8_t, mfloat16_t)
+__THEAD_SPEC_FCVT(msfcvt_s_w, mfloat32_t, mint32_t)
+__THEAD_SPEC_FCVT(mufcvt_s_w, mfloat32_t, muint32_t)
+__THEAD_SPEC_FCVT(mfscvt_w_s, mint32_t, mfloat32_t)
+__THEAD_SPEC_FCVT(mfucvt_w_s, muint32_t, mfloat32_t)
+
+/* --- Packed conversions --- */
+__THEAD_SPEC_FCVT(mucvtl_b_p, mint32_t, mint32_t)
+__THEAD_SPEC_FCVT(mscvtl_b_p, mint32_t, mint32_t)
+__THEAD_SPEC_FCVT(mucvth_b_p, mint32_t, mint32_t)
+__THEAD_SPEC_FCVT(mscvth_b_p, mint32_t, mint32_t)
+
+/* --- N4clip .mm: (acc, ms2, ms1) -> acc --- */
+#define __THEAD_SPEC_N4CLIP_MM(NAME, BUILTIN)                                  \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  mint32_t __riscv_th_##NAME(mint32_t __acc, mint32_t __s2, mint32_t __s1) {   \
+    return __builtin_riscv_th_##BUILTIN(__acc, __s2, __s1);                    \
+  }
+
+__THEAD_SPEC_N4CLIP_MM(mn4clipl_w_mm,  mn4clipl_w_mm_spec)
+__THEAD_SPEC_N4CLIP_MM(mn4cliph_w_mm,  mn4cliph_w_mm_spec)
+__THEAD_SPEC_N4CLIP_MM(mn4cliplu_w_mm, mn4cliplu_w_mm_spec)
+__THEAD_SPEC_N4CLIP_MM(mn4cliphu_w_mm, mn4cliphu_w_mm_spec)
+
+/* --- N4clip .mv.i: (acc, ms2, ms1, imm) -> acc --- */
+#define __THEAD_SPEC_N4CLIP_MVI(NAME, BUILTIN)                                 \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  mint32_t __riscv_th_##NAME(mint32_t __acc, mint32_t __s2,                    \
+                              mint32_t __s1, unsigned int __imm) {             \
+    return __builtin_riscv_th_##BUILTIN(__acc, __s2, __s1, __imm);             \
+  }
+
+__THEAD_SPEC_N4CLIP_MVI(mn4clipl_w_mv_i,  mn4clipl_w_mv_i_spec)
+__THEAD_SPEC_N4CLIP_MVI(mn4cliph_w_mv_i,  mn4cliph_w_mv_i_spec)
+__THEAD_SPEC_N4CLIP_MVI(mn4cliplu_w_mv_i, mn4cliplu_w_mv_i_spec)
+__THEAD_SPEC_N4CLIP_MVI(mn4cliphu_w_mv_i, mn4cliphu_w_mv_i_spec)
+
+/* --- Integer element-wise .w.mm: (acc, ms2, ms1) -> acc --- */
+#define __THEAD_SPEC_EW_INT_MM(NAME, BUILTIN)                                  \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  mint32_t __riscv_th_##NAME(mint32_t __acc, mint32_t __s2, mint32_t __s1) {   \
+    return __builtin_riscv_th_##BUILTIN(__acc, __s2, __s1);                    \
+  }
+
+__THEAD_SPEC_EW_INT_MM(madd_w_mm,   madd_w_mm_spec)
+__THEAD_SPEC_EW_INT_MM(msub_w_mm,   msub_w_mm_spec)
+__THEAD_SPEC_EW_INT_MM(mmul_w_mm,   mmul_w_mm_spec)
+__THEAD_SPEC_EW_INT_MM(mmulh_w_mm,  mmulh_w_mm_spec)
+__THEAD_SPEC_EW_INT_MM(mmax_w_mm,   mmax_w_mm_spec)
+__THEAD_SPEC_EW_INT_MM(mumax_w_mm,  mumax_w_mm_spec)
+__THEAD_SPEC_EW_INT_MM(mmin_w_mm,   mmin_w_mm_spec)
+__THEAD_SPEC_EW_INT_MM(mumin_w_mm,  mumin_w_mm_spec)
+__THEAD_SPEC_EW_INT_MM(msrl_w_mm,   msrl_w_mm_spec)
+__THEAD_SPEC_EW_INT_MM(msll_w_mm,   msll_w_mm_spec)
+__THEAD_SPEC_EW_INT_MM(msra_w_mm,   msra_w_mm_spec)
+
+/* --- Integer element-wise .w.mv.i: (acc, ms2, ms1, imm) -> acc --- */
+#define __THEAD_SPEC_EW_INT_MVI(NAME, BUILTIN)                                 \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  mint32_t __riscv_th_##NAME(mint32_t __acc, mint32_t __s2,                    \
+                              mint32_t __s1, unsigned int __imm) {             \
+    return __builtin_riscv_th_##BUILTIN(__acc, __s2, __s1, __imm);             \
+  }
+
+__THEAD_SPEC_EW_INT_MVI(madd_w_mv_i,   madd_w_mv_i_spec)
+__THEAD_SPEC_EW_INT_MVI(msub_w_mv_i,   msub_w_mv_i_spec)
+__THEAD_SPEC_EW_INT_MVI(mmul_w_mv_i,   mmul_w_mv_i_spec)
+__THEAD_SPEC_EW_INT_MVI(mmulh_w_mv_i,  mmulh_w_mv_i_spec)
+__THEAD_SPEC_EW_INT_MVI(mmax_w_mv_i,   mmax_w_mv_i_spec)
+__THEAD_SPEC_EW_INT_MVI(mumax_w_mv_i,  mumax_w_mv_i_spec)
+__THEAD_SPEC_EW_INT_MVI(mmin_w_mv_i,   mmin_w_mv_i_spec)
+__THEAD_SPEC_EW_INT_MVI(mumin_w_mv_i,  mumin_w_mv_i_spec)
+__THEAD_SPEC_EW_INT_MVI(msrl_w_mv_i,   msrl_w_mv_i_spec)
+__THEAD_SPEC_EW_INT_MVI(msll_w_mv_i,   msll_w_mv_i_spec)
+__THEAD_SPEC_EW_INT_MVI(msra_w_mv_i,   msra_w_mv_i_spec)
+
+/* --- FP element-wise .mm: (acc, ms2, ms1) -> acc --- */
+#define __THEAD_SPEC_EW_FP_MM(NAME, MTYPE, BUILTIN)                            \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  MTYPE __riscv_th_##NAME(MTYPE __acc, MTYPE __s2, MTYPE __s1) {              \
+    return __builtin_riscv_th_##BUILTIN(__acc, __s2, __s1);                    \
+  }
+
+__THEAD_SPEC_EW_FP_MM(mfadd_h_mm, mfloat16_t, mfadd_h_mm_spec)
+__THEAD_SPEC_EW_FP_MM(mfsub_h_mm, mfloat16_t, mfsub_h_mm_spec)
+__THEAD_SPEC_EW_FP_MM(mfmul_h_mm, mfloat16_t, mfmul_h_mm_spec)
+__THEAD_SPEC_EW_FP_MM(mfmax_h_mm, mfloat16_t, mfmax_h_mm_spec)
+__THEAD_SPEC_EW_FP_MM(mfmin_h_mm, mfloat16_t, mfmin_h_mm_spec)
+__THEAD_SPEC_EW_FP_MM(mfadd_s_mm, mfloat32_t, mfadd_s_mm_spec)
+__THEAD_SPEC_EW_FP_MM(mfsub_s_mm, mfloat32_t, mfsub_s_mm_spec)
+__THEAD_SPEC_EW_FP_MM(mfmul_s_mm, mfloat32_t, mfmul_s_mm_spec)
+__THEAD_SPEC_EW_FP_MM(mfmax_s_mm, mfloat32_t, mfmax_s_mm_spec)
+__THEAD_SPEC_EW_FP_MM(mfmin_s_mm, mfloat32_t, mfmin_s_mm_spec)
+__THEAD_SPEC_EW_FP_MM(mfadd_d_mm, mfloat64_t, mfadd_d_mm_spec)
+__THEAD_SPEC_EW_FP_MM(mfsub_d_mm, mfloat64_t, mfsub_d_mm_spec)
+__THEAD_SPEC_EW_FP_MM(mfmul_d_mm, mfloat64_t, mfmul_d_mm_spec)
+__THEAD_SPEC_EW_FP_MM(mfmax_d_mm, mfloat64_t, mfmax_d_mm_spec)
+__THEAD_SPEC_EW_FP_MM(mfmin_d_mm, mfloat64_t, mfmin_d_mm_spec)
+
+/* --- FP element-wise .mv.i: (acc, ms2, ms1, imm) -> acc --- */
+#define __THEAD_SPEC_EW_FP_MVI(NAME, MTYPE, BUILTIN)                           \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  MTYPE __riscv_th_##NAME(MTYPE __acc, MTYPE __s2,                            \
+                           MTYPE __s1, unsigned int __imm) {                   \
+    return __builtin_riscv_th_##BUILTIN(__acc, __s2, __s1, __imm);             \
+  }
+
+__THEAD_SPEC_EW_FP_MVI(mfadd_h_mv_i, mfloat16_t, mfadd_h_mv_i_spec)
+__THEAD_SPEC_EW_FP_MVI(mfsub_h_mv_i, mfloat16_t, mfsub_h_mv_i_spec)
+__THEAD_SPEC_EW_FP_MVI(mfmul_h_mv_i, mfloat16_t, mfmul_h_mv_i_spec)
+__THEAD_SPEC_EW_FP_MVI(mfmax_h_mv_i, mfloat16_t, mfmax_h_mv_i_spec)
+__THEAD_SPEC_EW_FP_MVI(mfmin_h_mv_i, mfloat16_t, mfmin_h_mv_i_spec)
+__THEAD_SPEC_EW_FP_MVI(mfadd_s_mv_i, mfloat32_t, mfadd_s_mv_i_spec)
+__THEAD_SPEC_EW_FP_MVI(mfsub_s_mv_i, mfloat32_t, mfsub_s_mv_i_spec)
+__THEAD_SPEC_EW_FP_MVI(mfmul_s_mv_i, mfloat32_t, mfmul_s_mv_i_spec)
+__THEAD_SPEC_EW_FP_MVI(mfmax_s_mv_i, mfloat32_t, mfmax_s_mv_i_spec)
+__THEAD_SPEC_EW_FP_MVI(mfmin_s_mv_i, mfloat32_t, mfmin_s_mv_i_spec)
+__THEAD_SPEC_EW_FP_MVI(mfadd_d_mv_i, mfloat64_t, mfadd_d_mv_i_spec)
+__THEAD_SPEC_EW_FP_MVI(mfsub_d_mv_i, mfloat64_t, mfsub_d_mv_i_spec)
+__THEAD_SPEC_EW_FP_MVI(mfmul_d_mv_i, mfloat64_t, mfmul_d_mv_i_spec)
+__THEAD_SPEC_EW_FP_MVI(mfmax_d_mv_i, mfloat64_t, mfmax_d_mv_i_spec)
+__THEAD_SPEC_EW_FP_MVI(mfmin_d_mv_i, mfloat64_t, mfmin_d_mv_i_spec)
 
 #ifdef __cplusplus
 } /* extern "C" */

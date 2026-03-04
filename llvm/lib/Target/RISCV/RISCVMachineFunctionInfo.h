@@ -21,8 +21,7 @@
 namespace llvm {
 
 /// Programming model for XTHeadMatrix (RVM 0.6) register management.
-/// Mirrors Intel AMX's AMXProgModelEnum dual-model architecture.
-enum class MatrixProgModelEnum { None = 0, DirectReg = 1, ManagedRA = 2 };
+enum class MatrixProgModelEnum { None = 0, ManagedRA = 1 };
 
 class RISCVMachineFunctionInfo;
 
@@ -31,7 +30,6 @@ namespace yaml {
 template <> struct ScalarEnumerationTraits<MatrixProgModelEnum> {
   static void enumeration(IO &YamlIO, MatrixProgModelEnum &Value) {
     YamlIO.enumCase(Value, "None", MatrixProgModelEnum::None);
-    YamlIO.enumCase(Value, "DirectReg", MatrixProgModelEnum::DirectReg);
     YamlIO.enumCase(Value, "ManagedRA", MatrixProgModelEnum::ManagedRA);
   }
 };
@@ -239,9 +237,6 @@ public:
 
   MatrixProgModelEnum getMatrixProgModel() const { return MatrixProgModel; }
   void setMatrixProgModel(MatrixProgModelEnum Model) {
-    assert((MatrixProgModel == MatrixProgModelEnum::None ||
-            MatrixProgModel == Model) &&
-           "mixed matrix programming model is not supported");
     MatrixProgModel = Model;
   }
 };

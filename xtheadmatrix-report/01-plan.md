@@ -1,5 +1,10 @@
 # Original Implementation Plan
 
+> **Note**: This documents the initial plan. The implementation has since evolved
+> significantly: DirectReg model removed, Spec-API (ManagedRA) is the sole model,
+> ISel rewritten to `selectTHMatrixInternal()`, 22 native built-in types added,
+> 300+ C API functions in `<thead_matrix.h>`. See `00-overview.md` for current state.
+
 ## Context
 
 The XuanTie RVM 0.6 spec defines a decoupled matrix extension for RISC-V targeting AI/ML workloads. It provides ~140+ instructions for matrix multiplication, load/store, configuration, data movement, and element-wise arithmetic across data types from INT4 to FP64. This plan adds full assembler/disassembler support, intrinsics, tests, and documentation to LLVM.

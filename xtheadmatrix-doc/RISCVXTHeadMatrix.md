@@ -20,30 +20,25 @@ rounding modes, and hardware capability queries.
 [RISC-V Matrix Extension Spec (RVM)](https://github.com/AII-SDU/riscv-matrix-extension-spec)
 maintained by C-SKY MicroSystems / T-Head.
 
-**Implementation summary**: 227 instructions, 227 LLVM intrinsics, and
-249+ Clang builtins (227 original + 22 `mundef` + 90+ spec-API) are
-implemented with full ISel/CodeGen support. Two programming models are
-available:
+**Implementation summary**: 227 instructions, ~220 `_internal` LLVM
+intrinsics, 7 config intrinsics, 22 `mundef` builtins, and ~220
+Spec-API Clang builtins are implemented with full ISel/CodeGen support.
 
-1. **DirectReg** (low-level): All intrinsics/builtins accept register
-   index parameters (0-7) that specify which matrix register to use,
-   enabling flexible register selection and multi-accumulator kernels.
-   121 builtins have typed signatures using native `__rvm_*_t` types.
-   All 8 matrix registers are reserved.
+The **Spec-API (ManagedRA)** programming model is used exclusively:
+`_internal` intrinsics produce/consume `target("riscv.matrix")` SSA
+values. The register allocator manages tr0-tr3 / acc0-acc3
+automatically. ~220 pseudo-instructions with proper register class
+constraints (THRVMTR/THRVMACC/THRVMMR) expand post-RA to hardware
+instructions. Spec-API builtins cover all operations: loads (A/B/C
+tile, whole-register), stores, all 27 matmul variants, element-wise
+arithmetic (integer + FP), format conversions, data movement (move,
+duplicate, pack, slide, broadcast), fixed-point clip, and zero.
 
-2. **ManagedRA / Spec-API** (high-level): `_internal` intrinsics
-   produce/consume `target("riscv.matrix")` SSA values. The register
-   allocator manages tr0-tr3 / acc0-acc3 automatically. Spec-API
-   builtins cover all 11 types for A/B/C-tile loads, stores, zero,
-   and all 27 matmul variants. ~200 pseudo-instructions with proper
-   register class constraints (THRVMTR/THRVMACC) expand post-RA to
-   hardware instructions.
-
-A `<thead_matrix.h>` header provides over 500 higher-level API
+A `<thead_matrix.h>` header provides over 300 higher-level API
 functions and macros with C matrix types (`mint8_t`, `mint32_t`,
 `mfloat16_t`, etc.) backed by 22 native Clang built-in types
 (`__rvm_int8_t` through `__rvm_float64x2_t`). Programs can use either
-the high-level API, the low-level Clang builtins, or inline assembly.
+the high-level API or inline assembly.
 
 ## Building and Installing the Toolchain
 
@@ -485,12 +480,12 @@ Two dimension types are also defined:
 void int8_gemm(const int8_t *A, long a_stride,
                const int8_t *B, long b_stride,
                int32_t *C, long c_stride,
-               mrow_t M, mrow_t K, mcol_t N) {
-    mint8_t a = __riscv_th_mld_a_i8(A, a_stride, M, K);
-    mint8_t b = __riscv_th_mld_b_i8(B, b_stride, K, N);
-    mint32_t c = __riscv_th_mzero_i32();
-    c = __riscv_th_mmaqa_ss_w_b(c, a, b, M, K, N);
-    __riscv_th_mst_c_i32(C, c_stride, c, M, N);
+               mrow_t M, mcol_t K, mcol_t N) {
+    mint8_t  a = __riscv_th_mld_a_i8(A, a_stride, M, K);
+    mint8_t  b = __riscv_th_mld_b_i8(B, b_stride, K, N);
+    mint32_t c = __riscv_th_mzeros_i32(M, N);
+    c = __riscv_th_mmaq_ss_w_b(c, a, b, M, K, N);
+    __riscv_th_mst_i32(C, c_stride, c, M, N);
     __riscv_th_mrelease();
 }
 ```
@@ -510,11 +505,11 @@ these categories:
 | Configuration | `__riscv_th_msettilem`, `__riscv_th_mrelease` | Set tile dimensions, release matrix unit |
 | CSR access | `__riscv_th_mread_csr`, `__riscv_th_mwrite_csr` | Read/write matrix CSRs |
 | Load | `__riscv_th_mld_a_i8`, `__riscv_th_mld_b_f32` | Load tiles from memory with type and role |
-| Store | `__riscv_th_mst_c_i32`, `__riscv_th_mst_a_f16` | Store tiles to memory |
-| Matrix multiply | `__riscv_th_mmaqa_ss_w_b`, `__riscv_th_mfmacc_s` | Matmul-accumulate (integer and FP) |
-| EW arithmetic | `__riscv_th_madd_w`, `__riscv_th_mfmul_s` | Element-wise add, sub, mul, min, max, shift |
-| Conversions | `__riscv_th_mfcvt_s_h`, `__riscv_th_msfcvt_h_b` | FP and integer format conversions |
-| Data movement | `__riscv_th_mzero_i32`, `__riscv_th_mmov` | Zero, move, pack, slide, broadcast |
+| Store | `__riscv_th_mst_i32`, `__riscv_th_mst_f16` | Store tiles to memory |
+| Matrix multiply | `__riscv_th_mmaq_ss_w_b`, `__riscv_th_mfmaqa_s` | Matmul-accumulate (integer and FP) |
+| EW arithmetic | `__riscv_th_madd_w_mm`, `__riscv_th_mfmul_s_mm` | Element-wise add, sub, mul, min, max, shift |
+| Conversions | `__riscv_th_mfcvtl_s_h`, `__riscv_th_msfcvt_s_w` | FP and integer format conversions |
+| Data movement | `__riscv_th_mzeros_i32`, `__riscv_th_mmov_mm` | Zero, move, pack, slide, broadcast |
 
 ### Immediate Arguments (ImmArg)
 
@@ -559,27 +554,25 @@ __rvm_float32_t result = my_func(my_matrix);
 
 ### Overview
 
-Matrix register state is implicit -- the 8 matrix registers (`tr0`-`tr3`,
-`acc0`-`acc3`) are mapped to opaque `__rvm_*_t` built-in types at the
-Clang level. These types provide compile-time type checking but map to
-`PoisonValue` tokens in LLVM IR. Register selection is controlled through
-register index parameters (0-7) passed to each intrinsic/builtin, where
-0-3 select tile registers (`tr0`-`tr3`) and 4-7 select accumulator
-registers (`acc0`-`acc3`). The `<thead_matrix.h>` API passes appropriate
-defaults (e.g., loads to tile registers, matmul destinations to
-accumulator registers), but users of the low-level builtins can specify
-any valid register index.
+The implementation uses the **Spec-API (ManagedRA)** programming model
+exclusively. Matrix values are represented as opaque `__rvm_*_t` built-in
+types at the Clang level, which map to `target("riscv.matrix")` SSA
+values in LLVM IR. The register allocator automatically assigns matrix
+registers (tr0-tr3 for tile operations, acc0-acc3 for accumulator
+operations) based on register class constraints in the pseudo-instructions.
+
+No manual register index management is needed. The compiler handles all
+register assignment, spilling, and reloading automatically.
 
 ### Typical Workflow
 
 A typical matrix computation follows these steps:
 
-1. **Configure** -- Set the tile dimensions (M, K, N) using `msettile*`
-2. **Zero** -- Initialize accumulators using `mzero`
-3. **Load** -- Load matrix tiles from memory using `mla`/`mlb`/`mlc`
-4. **Compute** -- Perform matrix multiply or element-wise operations
-5. **Store** -- Store results back to memory using `msa`/`msb`/`msc`
-6. **Release** -- Release the matrix unit using `mrelease`
+1. **Load** -- Load matrix tiles from memory (dimension CSRs are set automatically)
+2. **Zero** -- Initialize accumulators using `__riscv_th_mzeros_*`
+3. **Compute** -- Perform matrix multiply or element-wise operations
+4. **Store** -- Store results back to memory
+5. **Release** -- Release the matrix unit using `mrelease` (optional)
 
 ### Matrix Dimensions
 
@@ -592,36 +585,29 @@ The matrix unit operates on tiles whose dimensions are configured via CSRs:
 The hardware clamps these values to implementation-defined maximums.
 Query `th.xtlenb` and `th.xtrlenb` CSRs for the hardware tile dimensions.
 
-### Low-Level Builtins vs. Higher-Level API
+The Spec-API wrapper functions automatically emit the appropriate CSR
+configuration calls (msettilem/k/n) before each load/store/matmul/zero
+operation, so users do not need to call them manually.
 
-Two programming interfaces are available. **The higher-level API is
-recommended for most users.**
+### The `<thead_matrix.h>` Header
 
-1. **Higher-level API** (`<thead_matrix.h>`, **recommended**): Provides
-   over 400 functions/macros with C matrix types (`mint8_t`,
-   `mfloat16_t`, etc.) and dimension parameters (`mrow_t`, `mcol_t`).
-   Functions like `__riscv_th_mld_a_i8`, `__riscv_th_mmaqa_ss_w_b`, and
-   `__riscv_th_mst_c_i32` carry dimension information and return typed
-   values, making matrix code readable and type-safe. See the
-   [Higher-Level Intrinsic API](#higher-level-intrinsic-api) section and
-   all [Code Examples](#code-examples).
-
-2. **Low-level builtins** (`__builtin_riscv_th_*`): Each builtin maps
-   1:1 to a single assembly instruction. 121 builtins accept and return
-   native `__rvm_*_t` matrix types, enabling compile-time type checking.
-   106 builtins for stores, configuration, zero, misc, and FP8/BF16/TF32
-   variants retain void signatures. Useful when precise instruction
-   control is needed. See the [Builtins Reference](#builtins-reference)
-   section below.
+The `<thead_matrix.h>` header provides the complete programming
+interface with C matrix types (`mint8_t`, `mfloat16_t`, etc.) and
+dimension parameters (`mrow_t`, `mcol_t`). Functions like
+`__riscv_th_mld_a_i8`, `__riscv_th_mmaq_ss_w_b`, and
+`__riscv_th_mst_i32` carry dimension information, return typed values,
+and automatically configure tile dimensions, making matrix code
+readable and type-safe. See the
+[Higher-Level Intrinsic API](#higher-level-intrinsic-api) section and
+all [Code Examples](#code-examples).
 
 ## Builtins Reference
 
 All builtins use the `__builtin_riscv_th_` prefix and are available when
-the `xtheadmatrix` target feature is enabled.
-
-**Register index parameters**: All non-configuration builtins accept 1-3
-`unsigned int` register index parameters as their first arguments,
-specifying which matrix register (0-7) to use for each operand. These
+the `xtheadmatrix` target feature is enabled. Spec-API builtins accept
+and return `__rvm_*_t` matrix types; no register index parameters are
+needed. The builtins map to `_internal` intrinsics that produce/consume
+`target("riscv.matrix")` SSA values. These
 are compile-time constants (ImmArg). Sema validation enforces register
 type constraints: load-A/B require tile registers (0-3), load-C
 requires accumulator registers (4-7), matmul destinations must be
@@ -1056,17 +1042,17 @@ and role-specific load/store names for a natural programming experience.
 void int8_gemm(const int8_t *A, long a_stride,
                const int8_t *B, long b_stride,
                int32_t *C, long c_stride,
-               mrow_t M, mrow_t K, mcol_t N) {
+               mrow_t M, mcol_t K, mcol_t N) {
     // Load input matrices (tile config is automatic)
     mint8_t a = __riscv_th_mld_a_i8(A, a_stride, M, K);
     mint8_t b = __riscv_th_mld_b_i8(B, b_stride, K, N);
 
     // Zero accumulator and compute: c = a * b
-    mint32_t c = __riscv_th_mzero_i32();
-    c = __riscv_th_mmaqa_ss_w_b(c, a, b, M, K, N);
+    mint32_t c = __riscv_th_mzeros_i32(M, N);
+    c = __riscv_th_mmaq_ss_w_b(c, a, b, M, K, N);
 
     // Store result and release
-    __riscv_th_mst_c_i32(C, c_stride, c, M, N);
+    __riscv_th_mst_i32(C, c_stride, c, M, N);
     __riscv_th_mrelease();
 }
 ```
@@ -1080,19 +1066,19 @@ void int8_gemm(const int8_t *A, long a_stride,
 void fp32_gemm_acc(const float *A, long a_stride,
                    const float *B, long b_stride,
                    float *C, long c_stride,
-                   mrow_t M, mrow_t K, mcol_t N) {
+                   mrow_t M, mcol_t K, mcol_t N) {
     // Load existing accumulator from memory
-    mfloat32_t c = __riscv_th_mld_c_f32(C, c_stride, M, N);
+    mfloat32_t c = __riscv_th_mld_acc_f32(C, c_stride, M, N);
 
     // Load input tiles
     mfloat32_t a = __riscv_th_mld_a_f32(A, a_stride, M, K);
     mfloat32_t b = __riscv_th_mld_b_f32(B, b_stride, K, N);
 
     // Accumulate: c += a * b
-    c = __riscv_th_fmmacc_s(c, a, b, M, K, N);
+    c = __riscv_th_mfmaqa_s(c, a, b, M, K, N);
 
     // Store and release
-    __riscv_th_mst_c_f32(C, c_stride, c, M, N);
+    __riscv_th_mst_f32(C, c_stride, c, M, N);
     __riscv_th_mrelease();
 }
 ```
@@ -1106,15 +1092,15 @@ void fp32_gemm_acc(const float *A, long a_stride,
 void fp16_to_fp32_gemm(const void *A, long a_stride,
                        const void *B, long b_stride,
                        float *C, long c_stride,
-                       mrow_t M, mrow_t K, mcol_t N) {
+                       mrow_t M, mcol_t K, mcol_t N) {
     mfloat16_t a = __riscv_th_mld_a_f16(A, a_stride, M, K);
     mfloat16_t b = __riscv_th_mld_b_f16(B, b_stride, K, N);
-    mfloat32_t c = __riscv_th_mzero_f32();
+    mfloat32_t c = __riscv_th_mzeros_f32(M, N);
 
     // Widening matmul: FP16 * FP16 → FP32
-    c = __riscv_th_fwmmacc_s_h(c, a, b, M, K, N);
+    c = __riscv_th_mfmaqa_s_h(c, a, b, M, K, N);
 
-    __riscv_th_mst_c_f32(C, c_stride, c, M, N);
+    __riscv_th_mst_f32(C, c_stride, c, M, N);
     __riscv_th_mrelease();
 }
 ```
@@ -1130,21 +1116,21 @@ void quantize_output(int32_t *result, long r_stride,
                      void *output, long o_stride,
                      mrow_t M, mcol_t N) {
     // Load matmul result and bias
-    mint32_t r = __riscv_th_mld_c_i32(result, r_stride, M, N);
-    mint32_t b = __riscv_th_mld_c_i32(bias, b_stride, M, N);
+    mint32_t r = __riscv_th_mld_acc_i32(result, r_stride, M, N);
+    mint32_t b = __riscv_th_mld_acc_i32(bias, b_stride, M, N);
 
     // Element-wise add: r = r + bias
     r = __riscv_th_madd_w_mm(r, r, b);
 
     // Element-wise shift right: r >>= shift_amounts
-    mint32_t shift = __riscv_th_mundefined_i32();
+    mint32_t shift = __riscv_th_mundef_i32();
     r = __riscv_th_msra_w_mm(r, r, shift);
 
     // N4Clip to signed int8
     mint8_t clipped = __riscv_th_mn4clipl_w_mm(r, shift);
 
     // Store int8 output
-    __riscv_th_mst_a_i8(output, o_stride, clipped, M, N);
+    __riscv_th_mst_i8(output, o_stride, clipped, M, N);
     __riscv_th_mrelease();
 }
 ```
@@ -1185,7 +1171,7 @@ void query_matrix_hw(void) {
 void quantize_and_matmul(const float *input, size_t n,
                          const int8_t *weights, long w_stride,
                          int32_t *output, long o_stride,
-                         float scale, mrow_t M, mrow_t K, mcol_t N) {
+                         float scale, mrow_t M, mcol_t K, mcol_t N) {
     int8_t quantized[1024];
 
     // Phase 1: RVV quantization (FP32 → INT8)
@@ -1208,9 +1194,9 @@ void quantize_and_matmul(const float *input, size_t n,
     // Phase 2: RVM matrix multiply (using high-level API)
     mint8_t a = __riscv_th_mld_a_i8(quantized, K, M, K);
     mint8_t b = __riscv_th_mld_b_i8(weights, w_stride, K, N);
-    mint32_t c = __riscv_th_mzero_i32();
-    c = __riscv_th_mmaqa_ss_w_b(c, a, b, M, K, N);
-    __riscv_th_mst_c_i32(output, o_stride, c, M, N);
+    mint32_t c = __riscv_th_mzeros_i32(M, N);
+    c = __riscv_th_mmaq_ss_w_b(c, a, b, M, K, N);
+    __riscv_th_mst_i32(output, o_stride, c, M, N);
     __riscv_th_mrelease();
 }
 ```
@@ -1237,7 +1223,7 @@ void dual_gemm(const int8_t *A, long a_stride,
                const int8_t *B2, long b2_stride,
                int32_t *C1, long c1_stride,
                int32_t *C2, long c2_stride,
-               mrow_t M, mrow_t K, mcol_t N) {
+               mrow_t M, mcol_t K, mcol_t N) {
     // Configure dimensions
     __builtin_riscv_th_msettilem(M);
     __builtin_riscv_th_msettilek(K);
@@ -1364,17 +1350,6 @@ comprehensive usage examples.
   as function parameters or returned from functions. Matrix operations must stay
   within a single function scope (or be inlined via `always_inline`).
 
-- **DirectReg typed builtins use PoisonValue tokens**: In the DirectReg model,
-  the 121 typed builtins accept `__rvm_*_t` matrix arguments for compile-time
-  type checking, but the codegen discards these values (they are
-  `TargetExtType`) and returns `PoisonValue`. Actual data flows through
-  physical registers managed by register index arguments. Users must load data
-  into registers via separate load calls before invoking matmul/EW operations.
-
-- **All 8 matrix registers reserved in DirectReg mode**: When any DirectReg
-  intrinsic is used, `RISCVRegisterInfo::getReservedRegs()` reserves all 8
-  matrix registers. In ManagedRA mode, only actively used registers are allocated.
-
 - **Limited register file (4+4)**: Only 4 tile registers and 4 accumulator
   registers are available. Complex multi-tile GEMM kernels face high register
   pressure.
@@ -1400,15 +1375,14 @@ C intrinsic API definition:
 
 - **No C++ overloading**: The spec envisions C++ overloaded functions
   (e.g., a single `__riscv_th_mld` overloaded by pointer type). The
-  implementation uses separate C functions per type (`__riscv_th_mld_i8`,
-  `__riscv_th_mld_i16`, etc.) since C does not support overloading.
+  implementation uses separate C functions per type (`__riscv_th_mld_a_i8`,
+  `__riscv_th_mld_a_i16`, etc.) since C does not support overloading.
 
-- **Role-specific loads in DirectReg API**: The spec uses a unified
-  `__riscv_th_mld(base, stride, row, col)`. The DirectReg implementation
-  uses role-specific functions (`mld_a`, `mld_b`, `mld_c`) because each
-  maps to a different hardware instruction (`mlae`, `mlbe`, `mlce`). The
-  Spec-API provides `__riscv_th_mld_*` (A-tile), `__riscv_th_mld_b_*`
-  (B-tile), and `__riscv_th_mld_acc_*` (C-tile).
+- **Role-specific loads**: The spec uses a unified
+  `__riscv_th_mld(base, stride, row, col)`. The implementation uses
+  role-specific functions because each maps to a different hardware
+  instruction: `__riscv_th_mld_a_*` (A-tile, mlae), `__riscv_th_mld_b_*`
+  (B-tile, mlbe), and `__riscv_th_mld_acc_*` (C-tile, mlce).
 
 - **Matmul naming convention**: The spec uses `mmaqa`/`mmaqau`/`mmaqaus`/
   `mmaqasu` naming for the high-level API. The hardware instructions use
@@ -1480,10 +1454,11 @@ Three errata exist in the RVM 0.6 spec:
   first-class type identity, mangling, debug info, and tooling support.
 
 - **ManagedRA / Spec-API**: Full register-allocator-managed programming model
-  with A-tile loads (`__riscv_th_mld_*`, sets M/K), B-tile loads
+  with A-tile loads (`__riscv_th_mld_a_*`, sets M/K), B-tile loads
   (`__riscv_th_mld_b_*`, sets K/N), accumulator loads (`__riscv_th_mld_acc_*`,
-  sets M/N), stores (`__riscv_th_mst_*`, sets M/N), all matmul variants, and
-  zero constructors. All operations available in 11 types
+  sets M/N), stores (`__riscv_th_mst_*`, sets M/N), INT matmul
+  (`__riscv_th_mmaq_*`), FP matmul (`__riscv_th_mfmaqa_*`), and zero
+  constructors (`__riscv_th_mzeros_*`). All operations available in 11 types
   (i8/i16/i32/i64/u8/u16/u32/u64/f16/f32/f64).
 
 - **Test coverage**: 16 test files (12 Clang + 4 LLVM) cover assembly encoding
@@ -1500,3 +1475,35 @@ Three errata exist in the RVM 0.6 spec:
   spec source files. All 227 encodings, 447 ISel entries, 220 pseudo expansion
   entries, spec-API codegen, 13 CSRs, and 447 intrinsic signatures confirmed
   correct. No new bugs found.
+- **Verification #3** (2026-03-04, Claude Opus 4.6): End-to-end compilation
+  verification and spec-API usability audit. Found and fixed:
+  - **Build error**: Forward declaration of `lookupTHMatrixPseudo()` missing in
+    `RISCVExpandPseudoInsts.cpp` (called at line 229, defined at line 874).
+  - **32 name collisions** in `thead_matrix.h`: DirectReg and Spec-API defined
+    functions with the same names (`mld_b_*`, `mmaqa_*`, `mzero_*`). Fixed by
+    renaming Spec-API functions: B-load `mld_b_*` → `mldb_*`, INT matmul
+    `mmaqa_*` → `mmaq_*`, zero `mzero_*` → `mzeros_*`.
+  - **Type inconsistencies**: `__riscv_th_msetmrow_n` return/param type
+    `mrow_t` → `mcol_t`; K dimension param in 7 DirectReg matmul macros
+    `mrow_t` → `mcol_t`.
+  - **Spec-API test rewritten**: `xtheadmatrix-spec-api.c` now uses
+    `#include <thead_matrix.h>`, native types (`mint8_t`, `mfloat32_t`), and
+    the public C wrapper functions (7 test cases covering INT8/INT16/UINT8/FP32
+    matmul pipelines, zero init, and shorthand aliases).
+  - **Critical RA fix**: Config intrinsics (`msettilem/k/n`) no longer force
+    DirectReg programming model, which was preventing ManagedRA register
+    allocation from working entirely. Now Spec-API code compiles with correct
+    tile/accumulator register assignment and automatic spill/reload under
+    register pressure.
+
+4. **DirectReg removal and Spec-API completion (2026-03-04)**: Removed the
+   DirectReg programming model entirely. All DirectReg intrinsics (~160),
+   builtins (~265), ISel infrastructure (~530 lines), Sema validation, and
+   test files were deleted. Added ~130 new Spec-API builtins for all
+   remaining operations (EW arithmetic, format conversions, float-int
+   conversions, packed conversions, n4clip, data movement, pack,
+   slide/broadcast). The Spec-API now covers ALL 227 hardware instructions.
+   Config intrinsics (msettilem/k/n, mrelease) were moved into the
+   ManagedRA ISel dispatch. Verified: 9 regression tests + 555 MC tests
+   pass; end-to-end RA tests confirm correct register allocation with
+   spill/reload under pressure for all operation categories.

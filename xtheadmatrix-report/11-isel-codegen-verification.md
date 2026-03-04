@@ -1,182 +1,107 @@
-# ISel/CodeGen Implementation and Verification
+# ISel / CodeGen Implementation
 
-## 1. Implementation Summary
+## Overview
 
-The XTHeadMatrix ISel/CodeGen layer provides a complete path from LLVM IR intrinsics and Clang builtins down to machine instructions. The implementation uses a table-driven approach in `RISCVISelDAGToDAG.cpp`, avoiding pattern-based ISel entirely because all matrix registers are fixed (not allocatable by the register allocator).
+ISel uses a table-driven approach via `selectTHMatrixInternal()` with ~227
+entries mapping `_internal` intrinsics (plus config intrinsics) to PTH_*_V
+pseudo-instructions. Post-RA, `RISCVExpandPseudoInsts` expands each pseudo
+to the corresponding hardware `TH_*` instruction.
 
-### Architecture
+## ISel Dispatch Categories
 
-- **227 intrinsic-to-instruction mappings** in a single lookup table (`THMatrixTable`)
-- **15 `THMatrixCategory` dispatch cases** covering all operand formats
-- **Fixed register assignment** -- every intrinsic maps to predetermined physical matrix registers
-- **`hasSideEffects = 1`** on all instructions to model implicit matrix state correctly
-- **THRVMMR operands in `(ins)` not `(outs)`** to prevent register allocator interaction
+```
+THMI_Load        (ptr, stride) → matrix
+THMI_LoadWhole   (ptr) → matrix
+THMI_Store       (matrix, ptr, stride) → void
+THMI_StoreWhole  (matrix, ptr) → void
+THMI_Zero        () → matrix
+THMI_MulAcc      (acc, ms2, ms1) → acc        [tied $src1 = $dst]
+THMI_MulAccImm   (acc, ms2, ms1, imm) → acc   [tied $src1 = $dst]
+THMI_Unary       (ms1) → md
+THMI_Binary      (ms2, ms1) → md
+THMI_UnaryImm    (ms1, imm) → md
+THMI_ToGPR       (matrix, idx) → gpr
+THMI_FromGPR2    (matrix, data, idx) → matrix  [tied $md_in = $dst]
+THMI_FromGPR     (matrix, data) → matrix       [tied $md_in = $dst]
+THMI_CfgImm      (imm) → void
+THMI_CfgReg      (reg) → void
+THMI_NoArgs       () → void
+```
 
-### Dispatch Flow
+## Register Class Constraints on Pseudos
 
-The `selectTHMatrix()` function is invoked from two points in `RISCVDAGToDAGISel::Select()`:
+| Operation | Pseudo register class | Spec constraint |
+|-----------|----------------------|-----------------|
+| Load A/B (mlae/mlbe) | THRVMTR | Tile (0-3) |
+| Load C (mlce) | THRVMACC | Acc (4-7) |
+| Load M (mlme) | THRVMMR | Any (0-7) |
+| Store A/B (msae/msbe) | THRVMTR | Tile (0-3) |
+| Store C (msce) | THRVMACC | Acc (4-7) |
+| Store M (msme) | THRVMMR | Any (0-7) |
+| Matmul (acc) | THRVMACC, tied | Acc (4-7) |
+| Matmul (operands) | THRVMTR | Tile (0-3) |
+| EW INT/FP .mm/.mv.i | THRVMACC, all, tied | Acc (4-7) |
+| N4clip .mm/.mv.i | THRVMACC, all, tied | Acc (4-7) |
+| Conversions | THRVMACC | Acc (4-7) |
+| Pack | THRVMMR | Any (0-7) |
+| Slide/broadcast | THRVMMR | Any (0-7) |
+| Move/dup | THRVMMR | Any (0-7) |
+| Zero | THRVMMR | Any (0-7) |
 
-| ISD Opcode | Intrinsic Count | Description |
-|---|---|---|
-| `INTRINSIC_VOID` | 223 | All void-returning intrinsics (loads, stores, config, matmul, EW, conversions, misc) |
-| `INTRINSIC_W_CHAIN` | 4 | `mmov{b,h,w,d}.x.m` -- return a GPR value from matrix register |
+## Programming Model Tracking
 
-The function performs a linear scan of `THMatrixTable` to find the matching intrinsic ID, then dispatches on the `THMatrixCategory` enum to emit the correct operand sequence.
+`MatrixProgModelEnum` in `RISCVMachineFunctionInfo.h`:
+- `None` — no matrix intrinsics used; all 8 matrix registers reserved
+- `ManagedRA` — `_internal` intrinsics used; registers managed by RA
 
-### THMatrixCategory Enum (15 cases)
+Set to `ManagedRA` when any non-config `_internal` intrinsic is selected.
+Config intrinsics (`msettilem/k/n`, `mrelease`) do not change the model.
 
-| Category | Operand Pattern | Example Instructions |
-|---|---|---|
-| `THM_NoArgsOnly` | (none) | `mrelease` |
-| `THM_NoArgs1Reg` | md | `mzero`, `mzero2r`, `mzero4r`, `mzero8r` |
-| `THM_NoArgs2Reg` | md, ms1 | `mmov.mm`, all conversions |
-| `THM_NoArgs3Reg` | md, ms2, ms1 | matmul, EW arith `.mm`, n4clip `.mm`, pack |
-| `THM_LoadStrided` | md, (rs1), rs2 | `mla/b/c/at/bt/ct.e{8,16,32,64}` |
-| `THM_LoadWhole` | md, (rs1) | `mlm.e{8,16,32,64}` |
-| `THM_StoreStrided` | ms3, (rs1), rs2 | `msa/b/c/at/bt/ct.e{8,16,32,64}` |
-| `THM_StoreWhole` | ms3, (rs1) | `msm.e{8,16,32,64}` |
-| `THM_CfgImm` | uimm10 | `msettile{m,n,k}i` |
-| `THM_CfgReg` | rs1 | `msettile{m,n,k}` |
-| `THM_Imm2Reg` | md, ms1, uimm3 | slides, broadcasts |
-| `THM_Imm3Reg` | md, ms2, ms1, uimm3 | EW arith `.mv.i`, n4clip `.mv.i` |
-| `THM_ToGPR` | rd(GPR), ms2, rs1 | `mmov{b,h,w,d}.x.m` |
-| `THM_FromGPR2` | md, rs2, rs1 | `mmov{b,h,w,d}.m.x` |
-| `THM_FromGPR1` | md, rs2 | `mdup{b,h,w,d}.m.x` |
+## Pseudo Expansion
 
-## 2. Register Assignment Convention
+`RISCVExpandPseudoInsts.cpp` contains a `lookupTHMatrixPseudo()` table
+mapping ~220 PTH_*_V pseudos to TH_* hardware instructions:
 
-All matrix register assignments are fixed at compile time. The 8 matrix registers encode as 3-bit values: TR0=0, TR1=1, TR2=2, TR3=3, ACC0=4, ACC1=5, ACC2=6, ACC3=7.
+```cpp
+struct THMatrixPseudoEntry {
+  unsigned PseudoOpc;
+  unsigned RealOpc;
+  bool SkipTiedInput;  // skip first input if tied ($src1 = $dst)
+};
+```
 
-### Load/Store Registers
+`SkipTiedInput` is set for MulAcc/MulAccImm/FromGPR/FromGPR2 pseudos
+where the tied `$src1` operand duplicates `$dst` and must not be emitted
+as an explicit operand in the hardware instruction.
 
-| Operation | Register | Encoding | Rationale |
-|---|---|---|---|
-| Load A (`mla`) | TR0 | 0 | Tile register for first matmul operand |
-| Load B (`mlb`) | TR1 | 1 | Tile register for second matmul operand |
-| Load C (`mlc`) | ACC0 | 4 | Accumulator for matmul result |
-| Load A^T (`mlat`) | TR2 | 2 | Transposed tile, separate from A |
-| Load B^T (`mlbt`) | TR3 | 3 | Transposed tile, separate from B |
-| Load C^T (`mlct`) | ACC1 | 5 | Transposed accumulator |
-| Load M (`mlm`) | TR0 | 0 | Whole-register load to first tile |
-| Stores | Mirror loads | -- | Same register as corresponding load |
+## Spill / Reload
 
-### Matmul Registers
+Matrix register spills use the RVV-style pattern (no immediate offset):
+- Spill: `PTH_MSME_E8_SPILL` → `TH_MSME_E8` (whole-register store)
+- Reload: `PTH_MLME_E8_RELOAD` → `TH_MLME_E8` (whole-register load)
+- Registered in `isRVVSpill()` for correct stack frame handling
+- `eliminateFrameIndex()` materializes the stack address into a GPR
 
-All matmul instructions (`mfmacc`, `mmacc`, `pmmacc`):
-- **md = ACC0 (4)** -- accumulator destination per spec
-- **ms1 = TR0 (0)** -- first tile operand
-- **ms2 = TR1 (1)** -- second tile operand
-- Semantics: `acc0 = acc0 + tr1 * tr0`
+## Clang Codegen (`RISCV.cpp`)
 
-### Element-wise and Conversion Registers (102 instructions)
+Spec-API builtin codegen uses lambda helpers:
 
-All element-wise arithmetic (integer and FP), type conversions, n4clip, and packed conversions use **accumulator registers only**, per spec:
-- **md = ACC0 (4)**
-- **ms1 = ACC1 (5)** (for 2-operand) or **ms1 = ACC2 (6)** (for 3-operand)
-- **ms2 = ACC1 (5)** (for 3-operand)
+| Helper | Emits | Used for |
+|--------|-------|----------|
+| `SpecAPILoadA(EEW)` | SetM+SetK → mlae_internal | A-tile loads |
+| `SpecAPILoadB(EEW)` | SetK+SetN → mlbe_internal | B-tile loads |
+| `SpecAPILoadAcc(EEW)` | SetM+SetN → mlce_internal | Acc loads |
+| `SpecAPIStore(EEW)` | SetM+SetN → msce_internal | Stores |
+| `SpecAPIMatmul(ID)` | SetM+SetK+SetN, swap A/B | Matmul |
+| `SpecAPIZero()` | SetM+SetN → mzero_internal | Zero |
+| `SpecAPIUnary(ID)` | Direct call | Conversions, move |
+| `SpecAPIBinary(ID)` | Direct call | Pack |
+| `SpecAPIMulAcc(ID)` | 3 matrix args | EW .mm, n4clip .mm |
+| `SpecAPIMulAccImm(ID)` | 3 matrix + ZExt(imm) | EW .mv.i, n4clip .mv.i |
+| `SpecAPIUnaryImm(ID)` | matrix + ZExt(imm) | Slide, broadcast |
+| `SpecAPIToGPR(ID)` | Returns GPR | mmov_x_m |
+| `SpecAPIFromGPR2(ID)` | Tied matrix + data + idx | mmov_m_x |
+| `SpecAPIFromGPR(ID)` | Tied matrix + data | mdup_m_x |
 
-Spec references:
-- `inst32_format.adoc`: "md/ms1/ms2 should be 100-111" (accumulator range)
-- `integer_ew.adoc`: "accumulation registers"
-- `float_ew.adoc`: "accumulation registers"
-- `type_convert.adoc`: "both accumulation registers"
-
-### MISC Registers (slides, broadcasts, pack, mzero, mmov)
-
-- **md = TR0 (0)**, **ms1 = TR1 (1)**, **ms2 = TR2 (2)** -- tile registers
-- Pack: `md=TR0, ms2=TR2, ms1=TR1`
-
-### GPR Move Registers
-
-- `mmov.x.m` (ToGPR): ms2 = TR0
-- `mmov.m.x` (FromGPR2): md = TR0
-- `mdup.m.x` (FromGPR1): md = TR0
-
-## 3. Critical Bug Fixes
-
-### Bug Fix A: DirectReg Register Assignment Correction (Phase 4)
-
-During initial implementation, 102 ISel table entries for element-wise and conversion instructions incorrectly used **tile registers** (TR0/TR1/TR2) where the RVM 0.6 spec requires **accumulator registers** (ACC0/ACC1/ACC2). This affected:
-
-- 26 FP format conversions (md=TR0, ms1=TR1)
-- 12 float-int conversions (md=TR0, ms1=TR1)
-- 8 n4clip `.mm` and `.mv.i` variants (md=TR0, ms1=TR1, ms2=TR2)
-- 4 packed conversions (md=TR0, ms1=TR1)
-- 22 integer EW `.w.mm` and `.w.mv.i` variants (md=TR0, ms1=TR1, ms2=TR2)
-- 30 FP EW `.h/.s/.d.mm` and `.mv.i` variants (md=TR0, ms1=TR1, ms2=TR2)
-
-**Root cause**: The initial implementation treated all non-matmul 3-register instructions identically, using the same tile register convention as MISC operations.
-
-**Fix**: Changed all 102 affected entries from `TR0/TR1/TR2` to `ACC0/ACC1/ACC2`.
-
-### Bug Fix B: ManagedRA Conversion Pseudo Register Classes (2026-03-04)
-
-**Independent verification found** that the same register class issue existed in the
-ManagedRA pseudo-instructions: 42 conversion pseudos (`PTH_MFCVT*_V`, `PTH_MUCVT*_V`,
-etc.) used `THRVMMR` (allows tr0-tr3) instead of `THRVMACC` (acc0-acc3 only).
-
-**Spec reference** (`type_convert.adoc`): "The input and output matrices of type-convert
-instructions are both accumulation registers."
-
-**Fix**: Changed all 42 conversion pseudo-instructions from `THRVMMR` to `THRVMACC`.
-File: `RISCVInstrInfoXTHeadMatrix.td`.
-
-### Bug Fix C: Spec-API Matmul Operand Swap (2026-03-04)
-
-**Independent verification found** that the spec-API codegen passed matmul operands
-in the wrong order. The `_internal` intrinsic signature is `(acc, ms2, ms1)`, but
-the codegen passed `{acc, a, b}` — placing A into ms2 and B into ms1. Per the spec
-formula `md = md + ms1 * ms2` and the DirectReg convention (A→ms1=TR0, B→ms2=TR1),
-the correct call is `{acc, b, a}`.
-
-This caused wrong results for non-commutative variants (`mmaccus`: ms1=unsigned,
-ms2=signed; `mmaccsu`: ms1=signed, ms2=unsigned).
-
-**Fix**: Swapped `Ops[1]` and `Ops[2]` in all matmul `CreateCall` invocations in
-`clang/lib/CodeGen/TargetBuiltins/RISCV.cpp`.
-
-## 4. Verification Results
-
-### Round 1: Initial Review (4 independent agents)
-
-- **Encoding verification**: 227/227 intrinsic-to-instruction mappings correct
-- **Category dispatch**: All 15 categories produce correct operand sequences
-- **Bug found**: 102 element-wise/conversion entries used tile registers instead of accumulator registers
-
-### Round 2: Post-fix Verification (4 independent agents)
-
-- **Register assignments**: All 227 entries verified correct against RVM 0.6 spec
-- **End-to-end compilation**: All 22 instruction categories tested through `clang -> LLVM IR -> ISel -> machine code`
-- **ISel test**: `xtheadmatrix-isel.ll` -- all patterns match expected machine instructions
-- **E2E test**: `xtheadmatrix-codegen.c` -- all builtins compile through to correct assembly
-- **XTHeadMatrix tests**: 5/5 pass (3 MC + 1 ISel + 1 E2E)
-- **RISCV MC regression**: 557/557 tests pass (no regressions)
-
-## 5. Files Changed for ISel/CodeGen
-
-### New Files
-
-| File | Lines | Description |
-|---|---|---|
-| `llvm/test/CodeGen/RISCV/xtheadmatrix-isel.ll` | ~300 | ISel pattern tests: intrinsic calls verify correct instruction selection and register assignment |
-| `clang/test/CodeGen/RISCV/xtheadmatrix-codegen.c` | ~250 | End-to-end tests: builtin calls compile to expected assembly output |
-
-### Modified Files
-
-| File | Changes | Description |
-|---|---|---|
-| `llvm/lib/Target/RISCV/RISCVISelDAGToDAG.cpp` | +400 lines | `THMatrixCategory` enum, `THMatrixIntrEntry` struct, `THMatrixTable` (227 entries), `getTHMatrixReg()` helper, `lookupTHMatrixIntr()`, `selectTHMatrix()` dispatch, two call sites in `Select()` |
-| `llvm/lib/Target/RISCV/RISCVISelDAGToDAG.h` | +1 line | `selectTHMatrix(SDNode *)` declaration |
-| `llvm/lib/Target/RISCV/RISCVRegisterInfo.cpp` | +10 lines | Reserve all 8 THRVMMR registers when `HasVendorXTHeadMatrix` is enabled |
-| `llvm/lib/Target/RISCV/RISCVInstrInfoXTHeadMatrix.td` | Modified | `hasSideEffects = 1` on all instruction classes; THRVMMR operands moved to `(ins)` from `(outs)` for ISel compatibility |
-| `llvm/docs/RISCV/RISCVXTHeadMatrix.md` | Updated | Documented register constraints, ISel approach, and current limitations |
-
-### Design Decisions
-
-1. **Table-driven, not pattern-based**: Matrix registers are not allocatable, so standard ISel patterns (which assume virtual registers) do not apply. The table-driven approach with `CurDAG->getRegister()` for physical registers is the correct design.
-
-2. **`hasSideEffects = 1`**: All instructions carry implicit matrix state. Without this flag, the compiler could reorder or eliminate matrix operations.
-
-3. **THRVMMR in `(ins)` not `(outs)`**: Placing matrix register operands in `(ins)` prevents the register allocator from trying to assign virtual registers to them, since all assignments are fixed.
-
-4. **All 8 matrix registers reserved**: `RISCVRegisterInfo::getReservedRegs()` marks TR0-TR3 and ACC0-ACC3 as reserved when the extension is enabled, ensuring no other code generator pass touches them.
+Note: Matmul operand swap — spec formula is `md = md + ms1 × ms2`.
+A maps to ms1, B maps to ms2. Codegen passes `{acc, B, A}` (not `{acc, A, B}`).
