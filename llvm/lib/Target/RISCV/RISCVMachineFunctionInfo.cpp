@@ -18,7 +18,8 @@ using namespace llvm;
 yaml::RISCVMachineFunctionInfo::RISCVMachineFunctionInfo(
     const llvm::RISCVMachineFunctionInfo &MFI)
     : VarArgsFrameIndex(MFI.getVarArgsFrameIndex()),
-      VarArgsSaveSize(MFI.getVarArgsSaveSize()) {}
+      VarArgsSaveSize(MFI.getVarArgsSaveSize()),
+      MatrixProgModel(MFI.getMatrixProgModel()) {}
 
 MachineFunctionInfo *RISCVMachineFunctionInfo::clone(
     BumpPtrAllocator &Allocator, MachineFunction &DestMF,
@@ -136,6 +137,7 @@ void RISCVMachineFunctionInfo::initializeBaseYamlFields(
     const yaml::RISCVMachineFunctionInfo &YamlMFI) {
   VarArgsFrameIndex = YamlMFI.VarArgsFrameIndex;
   VarArgsSaveSize = YamlMFI.VarArgsSaveSize;
+  MatrixProgModel = YamlMFI.MatrixProgModel;
 }
 
 void RISCVMachineFunctionInfo::addSExt32Register(Register Reg) {

@@ -20,12 +20,26 @@
 
 namespace llvm {
 
+/// Programming model for XTHeadMatrix (RVM 0.6) register management.
+/// Mirrors Intel AMX's AMXProgModelEnum dual-model architecture.
+enum class MatrixProgModelEnum { None = 0, DirectReg = 1, ManagedRA = 2 };
+
 class RISCVMachineFunctionInfo;
 
 namespace yaml {
+
+template <> struct ScalarEnumerationTraits<MatrixProgModelEnum> {
+  static void enumeration(IO &YamlIO, MatrixProgModelEnum &Value) {
+    YamlIO.enumCase(Value, "None", MatrixProgModelEnum::None);
+    YamlIO.enumCase(Value, "DirectReg", MatrixProgModelEnum::DirectReg);
+    YamlIO.enumCase(Value, "ManagedRA", MatrixProgModelEnum::ManagedRA);
+  }
+};
+
 struct RISCVMachineFunctionInfo final : public yaml::MachineFunctionInfo {
   int VarArgsFrameIndex;
   int VarArgsSaveSize;
+  MatrixProgModelEnum MatrixProgModel = MatrixProgModelEnum::None;
 
   RISCVMachineFunctionInfo() = default;
   RISCVMachineFunctionInfo(const llvm::RISCVMachineFunctionInfo &MFI);
@@ -38,6 +52,7 @@ template <> struct MappingTraits<RISCVMachineFunctionInfo> {
   static void mapping(IO &YamlIO, RISCVMachineFunctionInfo &MFI) {
     YamlIO.mapOptional("varArgsFrameIndex", MFI.VarArgsFrameIndex);
     YamlIO.mapOptional("varArgsSaveSize", MFI.VarArgsSaveSize);
+    YamlIO.mapOptional("matrixProgModel", MFI.MatrixProgModel);
   }
 };
 } // end namespace yaml
@@ -85,6 +100,9 @@ private:
 
   /// Does it probe the stack for a dynamic allocation?
   bool HasDynamicAllocation = false;
+
+  /// The XTHeadMatrix programming model used in this function.
+  MatrixProgModelEnum MatrixProgModel = MatrixProgModelEnum::None;
 
 public:
   RISCVMachineFunctionInfo(const Function &F, const RISCVSubtarget *STI);
@@ -218,6 +236,14 @@ public:
 
   bool hasDynamicAllocation() const { return HasDynamicAllocation; }
   void setDynamicAllocation() { HasDynamicAllocation = true; }
+
+  MatrixProgModelEnum getMatrixProgModel() const { return MatrixProgModel; }
+  void setMatrixProgModel(MatrixProgModelEnum Model) {
+    assert((MatrixProgModel == MatrixProgModelEnum::None ||
+            MatrixProgModel == Model) &&
+           "mixed matrix programming model is not supported");
+    MatrixProgModel = Model;
+  }
 };
 
 } // end namespace llvm

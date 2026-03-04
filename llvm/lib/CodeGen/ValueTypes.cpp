@@ -186,6 +186,7 @@ std::string EVT::getEVTString() const {
   case MVT::Glue:      return "glue";
   case MVT::x86mmx:    return "x86mmx";
   case MVT::x86amx:    return "x86amx";
+  case MVT::riscvmatrix: return "riscvmatrix";
   case MVT::i64x8:     return "i64x8";
   case MVT::Metadata:  return "Metadata";
   case MVT::Untyped:   return "Untyped";
@@ -228,6 +229,8 @@ Type *EVT::getTypeForEVT(LLVMContext &Context) const {
   case MVT::aarch64mfp8:
     return FixedVectorType::get(IntegerType::get(Context, 8), 1);
   case MVT::x86amx:  return Type::getX86_AMXTy(Context);
+  case MVT::riscvmatrix:
+    return TargetExtType::get(Context, "riscv.matrix");
   case MVT::i64x8:   return IntegerType::get(Context, 512);
   case MVT::amdgpuBufferFatPointer:  return IntegerType::get(Context, 160);
   case MVT::amdgpuBufferStridedPointer:  return IntegerType::get(Context, 192);
@@ -268,6 +271,8 @@ MVT MVT::getVT(Type *Ty, bool HandleUnknown){
       return MVT(MVT::aarch64svcount);
     else if (TargetExtTy->getName().starts_with("spirv."))
       return MVT(MVT::spirvbuiltin);
+    if (TargetExtTy->getName() == "riscv.matrix")
+      return MVT(MVT::riscvmatrix);
     if (TargetExtTy->getName() == "riscv.vector.tuple") {
       unsigned Sz = cast<ScalableVectorType>(TargetExtTy->getTypeParameter(0))
                         ->getMinNumElements() *

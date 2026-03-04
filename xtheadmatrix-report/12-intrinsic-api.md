@@ -71,12 +71,56 @@ Sema validates that register indices are within valid ranges for each instructio
 | Slide | 10 | macros (ImmArg) |
 | Broadcast | 5 | macros (ImmArg) |
 
+## Spec-API (ManagedRA) — Register-Allocator-Managed Intrinsics (2026-03-04)
+
+The spec-API provides a higher-level programming model where the compiler's register
+allocator manages matrix registers. Matrix values are returned and passed as opaque
+types (`mint32_t` etc.) with proper SSA dataflow.
+
+### Function Count
+
+| Category | Count | Notes |
+|----------|-------|-------|
+| Load A-tile (mlae) | 11 | All types (i/u/f × 8/16/32/64) |
+| Load B-tile (mlbe) | 11 | All types, sets K/N dimensions |
+| Load Acc (mlce) | 11 | All types, sets M/N dimensions |
+| Store (msce) | 11 | All types, sets M/N dimensions |
+| INT matmul (w_b) | 4 | INT8→INT32, 4 sign variants |
+| INT matmul (d_h) | 4 | INT16→INT64, 4 sign variants |
+| Partial INT matmul | 4 | INT8→INT32, 4 sign variants |
+| Bypass INT matmul | 2 | ss, uu |
+| FP matmul native | 3 | h, s, d |
+| FP matmul widening typed | 2 | s_h, d_s |
+| FP matmul widening opaque | 8 | h_e4/e5, bf16_e4/e5, s_bf16/e4/e5/tf32 |
+| Zero | 11 | All types |
+| **Total** | **82** | |
+
+### Key Design Decisions
+
+1. **Three load roles**: `mld` (A-tile, M×K), `mld_b` (B-tile, K×N), `mld_acc` (C/acc, M×N)
+2. **Dimension auto-config**: Each builtin emits `msettilem`/`msettilek`/`msettilen` calls
+3. **Operand ordering**: Intrinsic signature is `(acc, ms2, ms1)`; codegen passes `{acc, b, a}` so A→ms1, B→ms2 per spec
+4. **Opaque widening matmul**: FP8/BF16/TF32 sources have no C type representation; builtin takes `(acc, m, k, n)` only
+5. **Type-neutral hardware**: All type variants at same EEW map to same instruction (e.g., `mld_spec_i32` and `mld_spec_f32` both emit `mlae_internal32`)
+
+### C Header Wrappers
+
+All spec-API functions are defined in `<thead_matrix.h>` Section 23 using macro patterns:
+- `__THEAD_SPEC_MLD(SUFFIX, CTYPE, MTYPE, BUILTIN)` — A-tile loads
+- `__THEAD_SPEC_MLD_B(SUFFIX, CTYPE, MTYPE, BUILTIN)` — B-tile loads
+- `__THEAD_SPEC_MLD_ACC(SUFFIX, CTYPE, MTYPE, BUILTIN)` — Accumulator loads
+- `__THEAD_SPEC_MST(SUFFIX, CTYPE, MTYPE, BUILTIN)` — Stores
+- `__THEAD_SPEC_MMAQA(SUFFIX, ATYPE, BTYPE, CTYPE, BUILTIN)` — INT matmul
+- `__THEAD_SPEC_FMMAQA(SUFFIX, ATYPE, BTYPE, CTYPE, BUILTIN)` — FP matmul (typed)
+- `__THEAD_SPEC_FMMAQA_WIDEN(SUFFIX, CTYPE, BUILTIN)` — FP matmul (opaque sources)
+- `__THEAD_SPEC_MZERO(SUFFIX, MTYPE, BUILTIN)` — Zero constructors
+
 ## Limitations / Not Mapped
 
-- Stream load/store (msld/msst) - no RVM 0.6 instruction
-- Matrix-scalar EW (.mx) - no RVM 0.6 instruction
-- Generic `__riscv_th_mld` - requires compiler register allocation
-- 64-bit INT EW (.d variants) - not in RVM 0.6
+- Stream load/store (msld/msst) — no RVM 0.6 instruction
+- Matrix-scalar EW (.mx) — no RVM 0.6 instruction
+- 64-bit INT EW (.d variants) — not in RVM 0.6
+- 64-bit instruction support — deferred (no LLVM infrastructure for custom-1 64-bit)
 
 ## Files
 

@@ -1155,6 +1155,240 @@ Value *CodeGenFunction::EmitRISCVBuiltinExpr(unsigned BuiltinID,
     break;
   }
 
+  // XTHeadMatrix spec-API builtins: emit config + _internal intrinsics.
+  // These produce/consume real target("riscv.matrix") SSA values.
+  {
+    llvm::Type *MatTy = llvm::TargetExtType::get(getLLVMContext(), "riscv.matrix");
+    llvm::Type *XLenTy = llvm::IntegerType::get(
+        getLLVMContext(), getTarget().getPointerWidth(LangAS::Default));
+    auto EmitCfg = [&](llvm::Intrinsic::ID CfgID, llvm::Value *Val) {
+      llvm::Function *CfgF = CGM.getIntrinsic(CfgID, {Val->getType()});
+      Builder.CreateCall(CfgF, {Val});
+    };
+    auto SetM = [&](llvm::Value *V) {
+      EmitCfg(llvm::Intrinsic::riscv_th_msettilem, V);
+    };
+    auto SetK = [&](llvm::Value *V) {
+      EmitCfg(llvm::Intrinsic::riscv_th_msettilek, V);
+    };
+    auto SetN = [&](llvm::Value *V) {
+      EmitCfg(llvm::Intrinsic::riscv_th_msettilen, V);
+    };
+    (void)XLenTy;
+
+    // Helper: select mlae_internal intrinsic ID by EEW suffix
+    auto GetMlaeID = [](unsigned EEW) -> llvm::Intrinsic::ID {
+      switch (EEW) {
+      case 8:  return llvm::Intrinsic::riscv_th_mlae_internal8;
+      case 16: return llvm::Intrinsic::riscv_th_mlae_internal16;
+      case 32: return llvm::Intrinsic::riscv_th_mlae_internal32;
+      case 64: return llvm::Intrinsic::riscv_th_mlae_internal64;
+      default: llvm_unreachable("bad EEW");
+      }
+    };
+    auto GetMlbeID = [](unsigned EEW) -> llvm::Intrinsic::ID {
+      switch (EEW) {
+      case 8:  return llvm::Intrinsic::riscv_th_mlbe_internal8;
+      case 16: return llvm::Intrinsic::riscv_th_mlbe_internal16;
+      case 32: return llvm::Intrinsic::riscv_th_mlbe_internal32;
+      case 64: return llvm::Intrinsic::riscv_th_mlbe_internal64;
+      default: llvm_unreachable("bad EEW");
+      }
+    };
+    auto GetMlceID = [](unsigned EEW) -> llvm::Intrinsic::ID {
+      switch (EEW) {
+      case 8:  return llvm::Intrinsic::riscv_th_mlce_internal8;
+      case 16: return llvm::Intrinsic::riscv_th_mlce_internal16;
+      case 32: return llvm::Intrinsic::riscv_th_mlce_internal32;
+      case 64: return llvm::Intrinsic::riscv_th_mlce_internal64;
+      default: llvm_unreachable("bad EEW");
+      }
+    };
+    auto GetMsceID = [](unsigned EEW) -> llvm::Intrinsic::ID {
+      switch (EEW) {
+      case 8:  return llvm::Intrinsic::riscv_th_msce_internal8;
+      case 16: return llvm::Intrinsic::riscv_th_msce_internal16;
+      case 32: return llvm::Intrinsic::riscv_th_msce_internal32;
+      case 64: return llvm::Intrinsic::riscv_th_msce_internal64;
+      default: llvm_unreachable("bad EEW");
+      }
+    };
+
+    // Helper: get EEW from builtin suffix pattern (i8/u8/f16 -> 8/8/16 etc.)
+    // We use a lambda that takes the builtin ID and base IDs for each EEW.
+    // For load/store/zero, all type variants (i/u/f) at same EEW map to the
+    // same hardware instruction.
+    auto SpecAPILoadA = [&](unsigned EEW) -> llvm::Value * {
+      SetM(Ops[2]); SetK(Ops[3]);
+      llvm::Function *F = CGM.getIntrinsic(GetMlaeID(EEW), {MatTy, Ops[1]->getType()});
+      return Builder.CreateCall(F, {Ops[0], Ops[1]});
+    };
+    auto SpecAPILoadB = [&](unsigned EEW) -> llvm::Value * {
+      SetK(Ops[2]); SetN(Ops[3]);
+      llvm::Function *F = CGM.getIntrinsic(GetMlbeID(EEW), {MatTy, Ops[1]->getType()});
+      return Builder.CreateCall(F, {Ops[0], Ops[1]});
+    };
+    auto SpecAPILoadAcc = [&](unsigned EEW) -> llvm::Value * {
+      SetM(Ops[2]); SetN(Ops[3]);
+      llvm::Function *F = CGM.getIntrinsic(GetMlceID(EEW), {MatTy, Ops[1]->getType()});
+      return Builder.CreateCall(F, {Ops[0], Ops[1]});
+    };
+    auto SpecAPIStore = [&](unsigned EEW) -> llvm::Value * {
+      SetM(Ops[3]); SetN(Ops[4]);
+      llvm::Function *F = CGM.getIntrinsic(GetMsceID(EEW), {MatTy, Ops[1]->getType()});
+      return Builder.CreateCall(F, {Ops[2], Ops[0], Ops[1]});
+    };
+    // Matmul helper: (acc, a, b, m, k, n) -> acc
+    // Intrinsic signature is (acc, ms2, ms1). Per spec, md = md + ms1 * ms2.
+    // A maps to ms1, B maps to ms2, so pass {acc, b=Ops[2], a=Ops[1]}.
+    auto SpecAPIMatmul = [&](llvm::Intrinsic::ID IntrID) -> llvm::Value * {
+      SetM(Ops[3]); SetK(Ops[4]); SetN(Ops[5]);
+      llvm::Function *F = CGM.getIntrinsic(IntrID, {MatTy, MatTy, MatTy});
+      return Builder.CreateCall(F, {Ops[0], Ops[2], Ops[1]});
+    };
+    // Widening matmul with no typed source args: (acc, m, k, n) -> acc
+    // Source tiles are opaque (FP8/BF16/TF32), only acc is an SSA value.
+    auto SpecAPIMatmulWiden = [&](llvm::Intrinsic::ID IntrID) -> llvm::Value * {
+      SetM(Ops[1]); SetK(Ops[2]); SetN(Ops[3]);
+      llvm::Function *F = CGM.getIntrinsic(IntrID, {MatTy, MatTy, MatTy});
+      // Pass acc as all three args (ms2/ms1 will be ignored by RA for opaque sources)
+      return Builder.CreateCall(F, {Ops[0], Ops[0], Ops[0]});
+    };
+    auto SpecAPIZero = [&]() -> llvm::Value * {
+      SetM(Ops[0]); SetN(Ops[1]);
+      llvm::Function *F = CGM.getIntrinsic(
+          llvm::Intrinsic::riscv_th_mzero_internal, {MatTy});
+      return Builder.CreateCall(F, {});
+    };
+
+    switch (BuiltinID) {
+    // Load A-tile (mlae): (base, stride, m, k) -> matrix
+    case RISCV::BI__builtin_riscv_th_mld_spec_i8:
+    case RISCV::BI__builtin_riscv_th_mld_spec_u8:   return SpecAPILoadA(8);
+    case RISCV::BI__builtin_riscv_th_mld_spec_i16:
+    case RISCV::BI__builtin_riscv_th_mld_spec_u16:
+    case RISCV::BI__builtin_riscv_th_mld_spec_f16:  return SpecAPILoadA(16);
+    case RISCV::BI__builtin_riscv_th_mld_spec_i32:
+    case RISCV::BI__builtin_riscv_th_mld_spec_u32:
+    case RISCV::BI__builtin_riscv_th_mld_spec_f32:  return SpecAPILoadA(32);
+    case RISCV::BI__builtin_riscv_th_mld_spec_i64:
+    case RISCV::BI__builtin_riscv_th_mld_spec_u64:
+    case RISCV::BI__builtin_riscv_th_mld_spec_f64:  return SpecAPILoadA(64);
+    // Load B-tile (mlbe): (base, stride, k, n) -> matrix
+    case RISCV::BI__builtin_riscv_th_mld_b_spec_i8:
+    case RISCV::BI__builtin_riscv_th_mld_b_spec_u8:  return SpecAPILoadB(8);
+    case RISCV::BI__builtin_riscv_th_mld_b_spec_i16:
+    case RISCV::BI__builtin_riscv_th_mld_b_spec_u16:
+    case RISCV::BI__builtin_riscv_th_mld_b_spec_f16: return SpecAPILoadB(16);
+    case RISCV::BI__builtin_riscv_th_mld_b_spec_i32:
+    case RISCV::BI__builtin_riscv_th_mld_b_spec_u32:
+    case RISCV::BI__builtin_riscv_th_mld_b_spec_f32: return SpecAPILoadB(32);
+    case RISCV::BI__builtin_riscv_th_mld_b_spec_i64:
+    case RISCV::BI__builtin_riscv_th_mld_b_spec_u64:
+    case RISCV::BI__builtin_riscv_th_mld_b_spec_f64: return SpecAPILoadB(64);
+    // Load accumulator (mlce): (base, stride, m, n) -> matrix
+    case RISCV::BI__builtin_riscv_th_mld_acc_spec_i8:
+    case RISCV::BI__builtin_riscv_th_mld_acc_spec_u8:  return SpecAPILoadAcc(8);
+    case RISCV::BI__builtin_riscv_th_mld_acc_spec_i16:
+    case RISCV::BI__builtin_riscv_th_mld_acc_spec_u16:
+    case RISCV::BI__builtin_riscv_th_mld_acc_spec_f16: return SpecAPILoadAcc(16);
+    case RISCV::BI__builtin_riscv_th_mld_acc_spec_i32:
+    case RISCV::BI__builtin_riscv_th_mld_acc_spec_u32:
+    case RISCV::BI__builtin_riscv_th_mld_acc_spec_f32: return SpecAPILoadAcc(32);
+    case RISCV::BI__builtin_riscv_th_mld_acc_spec_i64:
+    case RISCV::BI__builtin_riscv_th_mld_acc_spec_u64:
+    case RISCV::BI__builtin_riscv_th_mld_acc_spec_f64: return SpecAPILoadAcc(64);
+    // Store (msce): (base, stride, val, m, n) -> void
+    case RISCV::BI__builtin_riscv_th_mst_spec_i8:
+    case RISCV::BI__builtin_riscv_th_mst_spec_u8:  return SpecAPIStore(8);
+    case RISCV::BI__builtin_riscv_th_mst_spec_i16:
+    case RISCV::BI__builtin_riscv_th_mst_spec_u16:
+    case RISCV::BI__builtin_riscv_th_mst_spec_f16: return SpecAPIStore(16);
+    case RISCV::BI__builtin_riscv_th_mst_spec_i32:
+    case RISCV::BI__builtin_riscv_th_mst_spec_u32:
+    case RISCV::BI__builtin_riscv_th_mst_spec_f32: return SpecAPIStore(32);
+    case RISCV::BI__builtin_riscv_th_mst_spec_i64:
+    case RISCV::BI__builtin_riscv_th_mst_spec_u64:
+    case RISCV::BI__builtin_riscv_th_mst_spec_f64: return SpecAPIStore(64);
+    // INT matmul: (acc, a, b, m, k, n) -> acc
+    case RISCV::BI__builtin_riscv_th_mmaqa_spec_ss_w_b:
+      return SpecAPIMatmul(llvm::Intrinsic::riscv_th_mmacc_w_b_internal);
+    case RISCV::BI__builtin_riscv_th_mmaqa_spec_uu_w_b:
+      return SpecAPIMatmul(llvm::Intrinsic::riscv_th_mmaccu_w_b_internal);
+    case RISCV::BI__builtin_riscv_th_mmaqa_spec_us_w_b:
+      return SpecAPIMatmul(llvm::Intrinsic::riscv_th_mmaccus_w_b_internal);
+    case RISCV::BI__builtin_riscv_th_mmaqa_spec_su_w_b:
+      return SpecAPIMatmul(llvm::Intrinsic::riscv_th_mmaccsu_w_b_internal);
+    // INT16 -> INT64
+    case RISCV::BI__builtin_riscv_th_mmaqa_spec_ss_d_h:
+      return SpecAPIMatmul(llvm::Intrinsic::riscv_th_mmacc_d_h_internal);
+    case RISCV::BI__builtin_riscv_th_mmaqa_spec_uu_d_h:
+      return SpecAPIMatmul(llvm::Intrinsic::riscv_th_mmaccu_d_h_internal);
+    case RISCV::BI__builtin_riscv_th_mmaqa_spec_us_d_h:
+      return SpecAPIMatmul(llvm::Intrinsic::riscv_th_mmaccus_d_h_internal);
+    case RISCV::BI__builtin_riscv_th_mmaqa_spec_su_d_h:
+      return SpecAPIMatmul(llvm::Intrinsic::riscv_th_mmaccsu_d_h_internal);
+    // Partial INT8 -> INT32
+    case RISCV::BI__builtin_riscv_th_pmmaqa_spec_ss_w_b:
+      return SpecAPIMatmul(llvm::Intrinsic::riscv_th_pmmacc_w_b_internal);
+    case RISCV::BI__builtin_riscv_th_pmmaqa_spec_uu_w_b:
+      return SpecAPIMatmul(llvm::Intrinsic::riscv_th_pmmaccu_w_b_internal);
+    case RISCV::BI__builtin_riscv_th_pmmaqa_spec_us_w_b:
+      return SpecAPIMatmul(llvm::Intrinsic::riscv_th_pmmaccus_w_b_internal);
+    case RISCV::BI__builtin_riscv_th_pmmaqa_spec_su_w_b:
+      return SpecAPIMatmul(llvm::Intrinsic::riscv_th_pmmaccsu_w_b_internal);
+    // Bypass INT
+    case RISCV::BI__builtin_riscv_th_mmaqa_spec_bp_ss:
+      return SpecAPIMatmul(llvm::Intrinsic::riscv_th_mmacc_w_bp_internal);
+    case RISCV::BI__builtin_riscv_th_mmaqa_spec_bp_uu:
+      return SpecAPIMatmul(llvm::Intrinsic::riscv_th_mmaccu_w_bp_internal);
+    // FP matmul: native precision
+    case RISCV::BI__builtin_riscv_th_mfmaqa_spec_h:
+      return SpecAPIMatmul(llvm::Intrinsic::riscv_th_mfmacc_h_internal);
+    case RISCV::BI__builtin_riscv_th_mfmaqa_spec_s:
+      return SpecAPIMatmul(llvm::Intrinsic::riscv_th_mfmacc_s_internal);
+    case RISCV::BI__builtin_riscv_th_mfmaqa_spec_d:
+      return SpecAPIMatmul(llvm::Intrinsic::riscv_th_mfmacc_d_internal);
+    // FP matmul: widening (typed sources)
+    case RISCV::BI__builtin_riscv_th_mfmaqa_spec_s_h:
+      return SpecAPIMatmul(llvm::Intrinsic::riscv_th_mfmacc_s_h_internal);
+    case RISCV::BI__builtin_riscv_th_mfmaqa_spec_d_s:
+      return SpecAPIMatmul(llvm::Intrinsic::riscv_th_mfmacc_d_s_internal);
+    // FP matmul: widening (opaque sources — FP8/BF16/TF32)
+    case RISCV::BI__builtin_riscv_th_mfmaqa_spec_h_e4:
+      return SpecAPIMatmulWiden(llvm::Intrinsic::riscv_th_mfmacc_h_e4_internal);
+    case RISCV::BI__builtin_riscv_th_mfmaqa_spec_h_e5:
+      return SpecAPIMatmulWiden(llvm::Intrinsic::riscv_th_mfmacc_h_e5_internal);
+    case RISCV::BI__builtin_riscv_th_mfmaqa_spec_bf16_e4:
+      return SpecAPIMatmulWiden(llvm::Intrinsic::riscv_th_mfmacc_bf16_e4_internal);
+    case RISCV::BI__builtin_riscv_th_mfmaqa_spec_bf16_e5:
+      return SpecAPIMatmulWiden(llvm::Intrinsic::riscv_th_mfmacc_bf16_e5_internal);
+    case RISCV::BI__builtin_riscv_th_mfmaqa_spec_s_bf16:
+      return SpecAPIMatmulWiden(llvm::Intrinsic::riscv_th_mfmacc_s_bf16_internal);
+    case RISCV::BI__builtin_riscv_th_mfmaqa_spec_s_e4:
+      return SpecAPIMatmulWiden(llvm::Intrinsic::riscv_th_mfmacc_s_e4_internal);
+    case RISCV::BI__builtin_riscv_th_mfmaqa_spec_s_e5:
+      return SpecAPIMatmulWiden(llvm::Intrinsic::riscv_th_mfmacc_s_e5_internal);
+    case RISCV::BI__builtin_riscv_th_mfmaqa_spec_s_tf32:
+      return SpecAPIMatmulWiden(llvm::Intrinsic::riscv_th_mfmacc_s_tf32_internal);
+    // Zero: (m, n) -> matrix
+    case RISCV::BI__builtin_riscv_th_mzero_spec_i8:
+    case RISCV::BI__builtin_riscv_th_mzero_spec_i16:
+    case RISCV::BI__builtin_riscv_th_mzero_spec_i32:
+    case RISCV::BI__builtin_riscv_th_mzero_spec_i64:
+    case RISCV::BI__builtin_riscv_th_mzero_spec_u8:
+    case RISCV::BI__builtin_riscv_th_mzero_spec_u16:
+    case RISCV::BI__builtin_riscv_th_mzero_spec_u32:
+    case RISCV::BI__builtin_riscv_th_mzero_spec_u64:
+    case RISCV::BI__builtin_riscv_th_mzero_spec_f16:
+    case RISCV::BI__builtin_riscv_th_mzero_spec_f32:
+    case RISCV::BI__builtin_riscv_th_mzero_spec_f64:
+      return SpecAPIZero();
+    default:
+      break;
+    }
+  }
+
   // Required for overloaded intrinsics.
   llvm::SmallVector<llvm::Type *, 2> IntrinsicTypes;
   switch (BuiltinID) {

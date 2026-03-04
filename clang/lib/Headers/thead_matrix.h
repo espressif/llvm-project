@@ -1249,6 +1249,179 @@ void __riscv_th_mpackhh(void) {
  * Use mrbca (row broadcast) + mmov_x_m to extract individual rows.
  * This is documented as a limitation. */
 
+/* ============================================================================
+ * Section 23: Spec-API (ManagedRA) — Register-Allocator-Managed Intrinsics
+ *
+ * These functions use the ManagedRA programming model where the compiler's
+ * register allocator manages matrix registers. Matrix values are returned
+ * and passed as opaque types (mint32_t etc.) with proper SSA dataflow.
+ *
+ * Unlike the DirectReg API above, these do NOT require manual register
+ * index management. The compiler handles register assignment automatically.
+ * ============================================================================ */
+
+/* --- A-tile loads (mlae: M×K dimensions) --- */
+#define __THEAD_SPEC_MLD(SUFFIX, CTYPE, MTYPE, BUILTIN)                        \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  MTYPE __riscv_th_mld_##SUFFIX(const CTYPE *__base, long __stride,            \
+                                 mrow_t __m, mcol_t __k) {                      \
+    return __builtin_riscv_th_##BUILTIN((void *)__base, __stride, __m, __k);   \
+  }
+
+__THEAD_SPEC_MLD(i8,  int8_t,     mint8_t,     mld_spec_i8)
+__THEAD_SPEC_MLD(i16, int16_t,    mint16_t,    mld_spec_i16)
+__THEAD_SPEC_MLD(i32, int32_t,    mint32_t,    mld_spec_i32)
+__THEAD_SPEC_MLD(i64, int64_t,    mint64_t,    mld_spec_i64)
+__THEAD_SPEC_MLD(u8,  uint8_t,    muint8_t,    mld_spec_u8)
+__THEAD_SPEC_MLD(u16, uint16_t,   muint16_t,   mld_spec_u16)
+__THEAD_SPEC_MLD(u32, uint32_t,   muint32_t,   mld_spec_u32)
+__THEAD_SPEC_MLD(u64, uint64_t,   muint64_t,   mld_spec_u64)
+__THEAD_SPEC_MLD(f16, uint16_t,   mfloat16_t,  mld_spec_f16)
+__THEAD_SPEC_MLD(f32, float,      mfloat32_t,  mld_spec_f32)
+__THEAD_SPEC_MLD(f64, double,     mfloat64_t,  mld_spec_f64)
+
+/* --- B-tile loads (mlbe: K×N dimensions) --- */
+#define __THEAD_SPEC_MLD_B(SUFFIX, CTYPE, MTYPE, BUILTIN)                      \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  MTYPE __riscv_th_mld_b_##SUFFIX(const CTYPE *__base, long __stride,          \
+                                   mcol_t __k, mcol_t __n) {                    \
+    return __builtin_riscv_th_##BUILTIN((void *)__base, __stride, __k, __n);   \
+  }
+
+__THEAD_SPEC_MLD_B(i8,  int8_t,     mint8_t,     mld_b_spec_i8)
+__THEAD_SPEC_MLD_B(i16, int16_t,    mint16_t,    mld_b_spec_i16)
+__THEAD_SPEC_MLD_B(i32, int32_t,    mint32_t,    mld_b_spec_i32)
+__THEAD_SPEC_MLD_B(i64, int64_t,    mint64_t,    mld_b_spec_i64)
+__THEAD_SPEC_MLD_B(u8,  uint8_t,    muint8_t,    mld_b_spec_u8)
+__THEAD_SPEC_MLD_B(u16, uint16_t,   muint16_t,   mld_b_spec_u16)
+__THEAD_SPEC_MLD_B(u32, uint32_t,   muint32_t,   mld_b_spec_u32)
+__THEAD_SPEC_MLD_B(u64, uint64_t,   muint64_t,   mld_b_spec_u64)
+__THEAD_SPEC_MLD_B(f16, uint16_t,   mfloat16_t,  mld_b_spec_f16)
+__THEAD_SPEC_MLD_B(f32, float,      mfloat32_t,  mld_b_spec_f32)
+__THEAD_SPEC_MLD_B(f64, double,     mfloat64_t,  mld_b_spec_f64)
+
+/* --- Accumulator loads (mlce: M×N dimensions) --- */
+#define __THEAD_SPEC_MLD_ACC(SUFFIX, CTYPE, MTYPE, BUILTIN)                    \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  MTYPE __riscv_th_mld_acc_##SUFFIX(const CTYPE *__base, long __stride,        \
+                                     mrow_t __m, mcol_t __n) {                  \
+    return __builtin_riscv_th_##BUILTIN((void *)__base, __stride, __m, __n);   \
+  }
+
+__THEAD_SPEC_MLD_ACC(i8,  int8_t,     mint8_t,     mld_acc_spec_i8)
+__THEAD_SPEC_MLD_ACC(i16, int16_t,    mint16_t,    mld_acc_spec_i16)
+__THEAD_SPEC_MLD_ACC(i32, int32_t,    mint32_t,    mld_acc_spec_i32)
+__THEAD_SPEC_MLD_ACC(i64, int64_t,    mint64_t,    mld_acc_spec_i64)
+__THEAD_SPEC_MLD_ACC(u8,  uint8_t,    muint8_t,    mld_acc_spec_u8)
+__THEAD_SPEC_MLD_ACC(u16, uint16_t,   muint16_t,   mld_acc_spec_u16)
+__THEAD_SPEC_MLD_ACC(u32, uint32_t,   muint32_t,   mld_acc_spec_u32)
+__THEAD_SPEC_MLD_ACC(u64, uint64_t,   muint64_t,   mld_acc_spec_u64)
+__THEAD_SPEC_MLD_ACC(f16, uint16_t,   mfloat16_t,  mld_acc_spec_f16)
+__THEAD_SPEC_MLD_ACC(f32, float,      mfloat32_t,  mld_acc_spec_f32)
+__THEAD_SPEC_MLD_ACC(f64, double,     mfloat64_t,  mld_acc_spec_f64)
+
+/* --- Stores (msce: M×N dimensions) --- */
+#define __THEAD_SPEC_MST(SUFFIX, CTYPE, MTYPE, BUILTIN)                        \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  void __riscv_th_mst_##SUFFIX(CTYPE *__base, long __stride, MTYPE __val,      \
+                                mrow_t __m, mcol_t __n) {                       \
+    __builtin_riscv_th_##BUILTIN((void *)__base, __stride, __val, __m, __n);   \
+  }
+
+__THEAD_SPEC_MST(i8,  int8_t,     mint8_t,     mst_spec_i8)
+__THEAD_SPEC_MST(i16, int16_t,    mint16_t,    mst_spec_i16)
+__THEAD_SPEC_MST(i32, int32_t,    mint32_t,    mst_spec_i32)
+__THEAD_SPEC_MST(i64, int64_t,    mint64_t,    mst_spec_i64)
+__THEAD_SPEC_MST(u8,  uint8_t,    muint8_t,    mst_spec_u8)
+__THEAD_SPEC_MST(u16, uint16_t,   muint16_t,   mst_spec_u16)
+__THEAD_SPEC_MST(u32, uint32_t,   muint32_t,   mst_spec_u32)
+__THEAD_SPEC_MST(u64, uint64_t,   muint64_t,   mst_spec_u64)
+__THEAD_SPEC_MST(f16, uint16_t,   mfloat16_t,  mst_spec_f16)
+__THEAD_SPEC_MST(f32, float,      mfloat32_t,  mst_spec_f32)
+__THEAD_SPEC_MST(f64, double,     mfloat64_t,  mst_spec_f64)
+
+/* --- INT matmul: acc = acc + A * B --- */
+#define __THEAD_SPEC_MMAQA(SUFFIX, ATYPE, BTYPE, CTYPE, BUILTIN)              \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  CTYPE __riscv_th_mmaqa_##SUFFIX(CTYPE __c, ATYPE __a, BTYPE __b,            \
+                                   mrow_t __m, mcol_t __k, mcol_t __n) {       \
+    return __builtin_riscv_th_##BUILTIN(__c, __a, __b, __m, __k, __n);         \
+  }
+
+/* INT8 -> INT32 */
+__THEAD_SPEC_MMAQA(ss_w_b, mint8_t,  mint8_t,  mint32_t,  mmaqa_spec_ss_w_b)
+__THEAD_SPEC_MMAQA(uu_w_b, muint8_t, muint8_t, muint32_t, mmaqa_spec_uu_w_b)
+__THEAD_SPEC_MMAQA(us_w_b, muint8_t, mint8_t,  mint32_t,  mmaqa_spec_us_w_b)
+__THEAD_SPEC_MMAQA(su_w_b, mint8_t,  muint8_t, mint32_t,  mmaqa_spec_su_w_b)
+/* INT16 -> INT64 */
+__THEAD_SPEC_MMAQA(ss_d_h, mint16_t,  mint16_t,  mint64_t,  mmaqa_spec_ss_d_h)
+__THEAD_SPEC_MMAQA(uu_d_h, muint16_t, muint16_t, muint64_t, mmaqa_spec_uu_d_h)
+__THEAD_SPEC_MMAQA(us_d_h, muint16_t, mint16_t,  mint64_t,  mmaqa_spec_us_d_h)
+__THEAD_SPEC_MMAQA(su_d_h, mint16_t,  muint16_t, mint64_t,  mmaqa_spec_su_d_h)
+/* Partial INT8 -> INT32 */
+__THEAD_SPEC_MMAQA(p_ss_w_b, mint8_t,  mint8_t,  mint32_t,  pmmaqa_spec_ss_w_b)
+__THEAD_SPEC_MMAQA(p_uu_w_b, muint8_t, muint8_t, muint32_t, pmmaqa_spec_uu_w_b)
+__THEAD_SPEC_MMAQA(p_us_w_b, muint8_t, mint8_t,  mint32_t,  pmmaqa_spec_us_w_b)
+__THEAD_SPEC_MMAQA(p_su_w_b, mint8_t,  muint8_t, mint32_t,  pmmaqa_spec_su_w_b)
+/* Bypass INT */
+__THEAD_SPEC_MMAQA(bp_ss, mint8_t,  mint8_t,  mint32_t,  mmaqa_spec_bp_ss)
+__THEAD_SPEC_MMAQA(bp_uu, muint8_t, muint8_t, muint32_t, mmaqa_spec_bp_uu)
+/* Shorthand aliases (old names from initial spec-API) */
+#define __riscv_th_mmaqa_ss __riscv_th_mmaqa_ss_w_b
+#define __riscv_th_mmaqa_uu __riscv_th_mmaqa_uu_w_b
+
+/* --- FP matmul --- */
+#define __THEAD_SPEC_FMMAQA(SUFFIX, ATYPE, BTYPE, CTYPE, BUILTIN)             \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  CTYPE __riscv_th_mfmaqa_##SUFFIX(CTYPE __c, ATYPE __a, BTYPE __b,           \
+                                    mrow_t __m, mcol_t __k, mcol_t __n) {      \
+    return __builtin_riscv_th_##BUILTIN(__c, __a, __b, __m, __k, __n);         \
+  }
+
+/* Native-precision */
+__THEAD_SPEC_FMMAQA(h, mfloat16_t, mfloat16_t, mfloat16_t, mfmaqa_spec_h)
+__THEAD_SPEC_FMMAQA(s, mfloat32_t, mfloat32_t, mfloat32_t, mfmaqa_spec_s)
+__THEAD_SPEC_FMMAQA(d, mfloat64_t, mfloat64_t, mfloat64_t, mfmaqa_spec_d)
+/* Widening (typed sources) */
+__THEAD_SPEC_FMMAQA(s_h, mfloat16_t, mfloat16_t, mfloat32_t, mfmaqa_spec_s_h)
+__THEAD_SPEC_FMMAQA(d_s, mfloat32_t, mfloat32_t, mfloat64_t, mfmaqa_spec_d_s)
+
+/* Widening FP matmul with opaque source types (FP8/BF16/TF32) */
+#define __THEAD_SPEC_FMMAQA_WIDEN(SUFFIX, CTYPE, BUILTIN)                     \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  CTYPE __riscv_th_mfmaqa_##SUFFIX(CTYPE __c,                                 \
+                                    mrow_t __m, mcol_t __k, mcol_t __n) {      \
+    return __builtin_riscv_th_##BUILTIN(__c, __m, __k, __n);                   \
+  }
+
+__THEAD_SPEC_FMMAQA_WIDEN(h_e4,    mfloat16_t, mfmaqa_spec_h_e4)
+__THEAD_SPEC_FMMAQA_WIDEN(h_e5,    mfloat16_t, mfmaqa_spec_h_e5)
+__THEAD_SPEC_FMMAQA_WIDEN(bf16_e4, mfloat16_t, mfmaqa_spec_bf16_e4)
+__THEAD_SPEC_FMMAQA_WIDEN(bf16_e5, mfloat16_t, mfmaqa_spec_bf16_e5)
+__THEAD_SPEC_FMMAQA_WIDEN(s_bf16,  mfloat32_t, mfmaqa_spec_s_bf16)
+__THEAD_SPEC_FMMAQA_WIDEN(s_e4,    mfloat32_t, mfmaqa_spec_s_e4)
+__THEAD_SPEC_FMMAQA_WIDEN(s_e5,    mfloat32_t, mfmaqa_spec_s_e5)
+__THEAD_SPEC_FMMAQA_WIDEN(s_tf32,  mfloat32_t, mfmaqa_spec_s_tf32)
+
+/* --- Zero --- */
+#define __THEAD_SPEC_MZERO(SUFFIX, MTYPE, BUILTIN)                             \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  MTYPE __riscv_th_mzero_##SUFFIX(mrow_t __m, mcol_t __n) {                    \
+    return __builtin_riscv_th_##BUILTIN(__m, __n);                             \
+  }
+
+__THEAD_SPEC_MZERO(i8,  mint8_t,     mzero_spec_i8)
+__THEAD_SPEC_MZERO(i16, mint16_t,    mzero_spec_i16)
+__THEAD_SPEC_MZERO(i32, mint32_t,    mzero_spec_i32)
+__THEAD_SPEC_MZERO(i64, mint64_t,    mzero_spec_i64)
+__THEAD_SPEC_MZERO(u8,  muint8_t,    mzero_spec_u8)
+__THEAD_SPEC_MZERO(u16, muint16_t,   mzero_spec_u16)
+__THEAD_SPEC_MZERO(u32, muint32_t,   mzero_spec_u32)
+__THEAD_SPEC_MZERO(u64, muint64_t,   mzero_spec_u64)
+__THEAD_SPEC_MZERO(f16, mfloat16_t,  mzero_spec_f16)
+__THEAD_SPEC_MZERO(f32, mfloat32_t,  mzero_spec_f32)
+__THEAD_SPEC_MZERO(f64, mfloat64_t,  mzero_spec_f64)
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

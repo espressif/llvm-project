@@ -348,6 +348,7 @@ def funcref   : ValueType<0>;            // WebAssembly's funcref type
 def externref : ValueType<0>;            // WebAssembly's externref type
 def exnref    : ValueType<0>;            // WebAssembly's exnref type
 def x86amx    : ValueType<8192>;         // X86 AMX value
+def riscvmatrix : ValueType<8192>;       // RISC-V XTHeadMatrix value
 def i64x8     : ValueType<512>;          // 8 Consecutive GPRs (AArch64)
 def aarch64svcount
               : ValueType<16>;   // AArch64 predicate-as-counter

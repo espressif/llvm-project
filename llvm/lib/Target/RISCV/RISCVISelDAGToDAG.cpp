@@ -16,6 +16,7 @@
 #include "MCTargetDesc/RISCVMatInt.h"
 #include "RISCVISelLowering.h"
 #include "RISCVInstrInfo.h"
+#include "RISCVMachineFunctionInfo.h"
 #include "RISCVSelectionDAGInfo.h"
 #include "llvm/CodeGen/MachineFrameInfo.h"
 #include "llvm/CodeGen/SDPatternMatch.h"
@@ -1289,6 +1290,10 @@ void RISCVDAGToDAGISel::selectTHMatrix(SDNode *Node) {
   if (!Entry)
     return;
 
+  // Mark this function as using the DirectReg programming model.
+  auto *MFI = CurDAG->getMachineFunction().getInfo<RISCVMachineFunctionInfo>();
+  MFI->setMatrixProgModel(MatrixProgModelEnum::DirectReg);
+
   SDValue Chain;
   if (Opc != ISD::INTRINSIC_WO_CHAIN)
     Chain = Node->getOperand(0);
@@ -1432,6 +1437,455 @@ void RISCVDAGToDAGISel::selectTHMatrix(SDNode *Node) {
   MachineSDNode *NewNode =
       CurDAG->getMachineNode(Entry->MachineOpc, DL, Node->getVTList(),
                              Operands);
+  ReplaceNode(Node, NewNode);
+}
+
+//===----------------------------------------------------------------------===//
+// ManagedRA _internal intrinsic ISel
+//===----------------------------------------------------------------------===//
+
+namespace {
+enum THMatrixInternalCategory {
+  THMI_Load,       // (ptr, stride) -> matrix
+  THMI_LoadWhole,  // (ptr) -> matrix
+  THMI_Store,      // (matrix, ptr, stride) -> void
+  THMI_StoreWhole, // (matrix, ptr) -> void
+  THMI_Zero,       // () -> matrix
+  THMI_MulAcc,     // (acc, ms2, ms1) -> acc_out [tied]
+  THMI_Unary,      // (ms1) -> md
+  THMI_Binary,     // (ms2, ms1) -> md
+  THMI_ToGPR,      // (matrix, gpr_idx) -> gpr
+  THMI_FromGPR2,   // (matrix_in, data, idx) -> matrix_out [tied]
+  THMI_FromGPR,    // (matrix_in, data) -> matrix_out [tied]
+  THMI_UnaryImm,   // (ms1, imm) -> md
+  THMI_MulAccImm,  // (acc, ms2, ms1, imm) -> acc_out [tied]
+};
+
+struct THMatrixInternalEntry {
+  unsigned IntrinID;
+  unsigned MachineOpc;
+  THMatrixInternalCategory Cat;
+};
+} // namespace
+
+// clang-format off
+static const THMatrixInternalEntry THMatrixInternalTable[] = {
+    // --- Load A (tile-register output) ---
+    {Intrinsic::riscv_th_mlae_internal8,   RISCV::PTH_MLAE_E8V,   THMI_Load},
+    {Intrinsic::riscv_th_mlae_internal16,  RISCV::PTH_MLAE_E16V,  THMI_Load},
+    {Intrinsic::riscv_th_mlae_internal32,  RISCV::PTH_MLAE_E32V,  THMI_Load},
+    {Intrinsic::riscv_th_mlae_internal64,  RISCV::PTH_MLAE_E64V,  THMI_Load},
+    {Intrinsic::riscv_th_mlate_internal8,  RISCV::PTH_MLATE_E8V,  THMI_Load},
+    {Intrinsic::riscv_th_mlate_internal16, RISCV::PTH_MLATE_E16V, THMI_Load},
+    {Intrinsic::riscv_th_mlate_internal32, RISCV::PTH_MLATE_E32V, THMI_Load},
+    {Intrinsic::riscv_th_mlate_internal64, RISCV::PTH_MLATE_E64V, THMI_Load},
+    // --- Load B (tile-register output) ---
+    {Intrinsic::riscv_th_mlbe_internal8,   RISCV::PTH_MLBE_E8V,   THMI_Load},
+    {Intrinsic::riscv_th_mlbe_internal16,  RISCV::PTH_MLBE_E16V,  THMI_Load},
+    {Intrinsic::riscv_th_mlbe_internal32,  RISCV::PTH_MLBE_E32V,  THMI_Load},
+    {Intrinsic::riscv_th_mlbe_internal64,  RISCV::PTH_MLBE_E64V,  THMI_Load},
+    {Intrinsic::riscv_th_mlbte_internal8,  RISCV::PTH_MLBTE_E8V,  THMI_Load},
+    {Intrinsic::riscv_th_mlbte_internal16, RISCV::PTH_MLBTE_E16V, THMI_Load},
+    {Intrinsic::riscv_th_mlbte_internal32, RISCV::PTH_MLBTE_E32V, THMI_Load},
+    {Intrinsic::riscv_th_mlbte_internal64, RISCV::PTH_MLBTE_E64V, THMI_Load},
+    // --- Load C (accumulator output) ---
+    {Intrinsic::riscv_th_mlce_internal8,   RISCV::PTH_MLCE_E8V,   THMI_Load},
+    {Intrinsic::riscv_th_mlce_internal16,  RISCV::PTH_MLCE_E16V,  THMI_Load},
+    {Intrinsic::riscv_th_mlce_internal32,  RISCV::PTH_MLCE_E32V,  THMI_Load},
+    {Intrinsic::riscv_th_mlce_internal64,  RISCV::PTH_MLCE_E64V,  THMI_Load},
+    {Intrinsic::riscv_th_mlcte_internal8,  RISCV::PTH_MLCTE_E8V,  THMI_Load},
+    {Intrinsic::riscv_th_mlcte_internal16, RISCV::PTH_MLCTE_E16V, THMI_Load},
+    {Intrinsic::riscv_th_mlcte_internal32, RISCV::PTH_MLCTE_E32V, THMI_Load},
+    {Intrinsic::riscv_th_mlcte_internal64, RISCV::PTH_MLCTE_E64V, THMI_Load},
+    // --- Load M (whole-register) ---
+    {Intrinsic::riscv_th_mlme_internal8,   RISCV::PTH_MLME_E8V,   THMI_LoadWhole},
+    {Intrinsic::riscv_th_mlme_internal16,  RISCV::PTH_MLME_E16V,  THMI_LoadWhole},
+    {Intrinsic::riscv_th_mlme_internal32,  RISCV::PTH_MLME_E32V,  THMI_LoadWhole},
+    {Intrinsic::riscv_th_mlme_internal64,  RISCV::PTH_MLME_E64V,  THMI_LoadWhole},
+
+    // --- Store A (tile-register input) ---
+    {Intrinsic::riscv_th_msae_internal8,   RISCV::PTH_MSAE_E8V,   THMI_Store},
+    {Intrinsic::riscv_th_msae_internal16,  RISCV::PTH_MSAE_E16V,  THMI_Store},
+    {Intrinsic::riscv_th_msae_internal32,  RISCV::PTH_MSAE_E32V,  THMI_Store},
+    {Intrinsic::riscv_th_msae_internal64,  RISCV::PTH_MSAE_E64V,  THMI_Store},
+    {Intrinsic::riscv_th_msate_internal8,  RISCV::PTH_MSATE_E8V,  THMI_Store},
+    {Intrinsic::riscv_th_msate_internal16, RISCV::PTH_MSATE_E16V, THMI_Store},
+    {Intrinsic::riscv_th_msate_internal32, RISCV::PTH_MSATE_E32V, THMI_Store},
+    {Intrinsic::riscv_th_msate_internal64, RISCV::PTH_MSATE_E64V, THMI_Store},
+    // --- Store B ---
+    {Intrinsic::riscv_th_msbe_internal8,   RISCV::PTH_MSBE_E8V,   THMI_Store},
+    {Intrinsic::riscv_th_msbe_internal16,  RISCV::PTH_MSBE_E16V,  THMI_Store},
+    {Intrinsic::riscv_th_msbe_internal32,  RISCV::PTH_MSBE_E32V,  THMI_Store},
+    {Intrinsic::riscv_th_msbe_internal64,  RISCV::PTH_MSBE_E64V,  THMI_Store},
+    {Intrinsic::riscv_th_msbte_internal8,  RISCV::PTH_MSBTE_E8V,  THMI_Store},
+    {Intrinsic::riscv_th_msbte_internal16, RISCV::PTH_MSBTE_E16V, THMI_Store},
+    {Intrinsic::riscv_th_msbte_internal32, RISCV::PTH_MSBTE_E32V, THMI_Store},
+    {Intrinsic::riscv_th_msbte_internal64, RISCV::PTH_MSBTE_E64V, THMI_Store},
+    // --- Store C ---
+    {Intrinsic::riscv_th_msce_internal8,   RISCV::PTH_MSCE_E8V,   THMI_Store},
+    {Intrinsic::riscv_th_msce_internal16,  RISCV::PTH_MSCE_E16V,  THMI_Store},
+    {Intrinsic::riscv_th_msce_internal32,  RISCV::PTH_MSCE_E32V,  THMI_Store},
+    {Intrinsic::riscv_th_msce_internal64,  RISCV::PTH_MSCE_E64V,  THMI_Store},
+    {Intrinsic::riscv_th_mscte_internal8,  RISCV::PTH_MSCTE_E8V,  THMI_Store},
+    {Intrinsic::riscv_th_mscte_internal16, RISCV::PTH_MSCTE_E16V, THMI_Store},
+    {Intrinsic::riscv_th_mscte_internal32, RISCV::PTH_MSCTE_E32V, THMI_Store},
+    {Intrinsic::riscv_th_mscte_internal64, RISCV::PTH_MSCTE_E64V, THMI_Store},
+    // --- Store M (whole-register) ---
+    {Intrinsic::riscv_th_msme_internal8,   RISCV::PTH_MSME_E8V,   THMI_StoreWhole},
+    {Intrinsic::riscv_th_msme_internal16,  RISCV::PTH_MSME_E16V,  THMI_StoreWhole},
+    {Intrinsic::riscv_th_msme_internal32,  RISCV::PTH_MSME_E32V,  THMI_StoreWhole},
+    {Intrinsic::riscv_th_msme_internal64,  RISCV::PTH_MSME_E64V,  THMI_StoreWhole},
+
+    // --- FP matmul ---
+    {Intrinsic::riscv_th_mfmacc_h_internal,       RISCV::PTH_MFMACC_H_V,       THMI_MulAcc},
+    {Intrinsic::riscv_th_mfmacc_s_internal,       RISCV::PTH_MFMACC_S_V,       THMI_MulAcc},
+    {Intrinsic::riscv_th_mfmacc_d_internal,       RISCV::PTH_MFMACC_D_V,       THMI_MulAcc},
+    {Intrinsic::riscv_th_mfmacc_h_e4_internal,    RISCV::PTH_MFMACC_H_E4_V,    THMI_MulAcc},
+    {Intrinsic::riscv_th_mfmacc_h_e5_internal,    RISCV::PTH_MFMACC_H_E5_V,    THMI_MulAcc},
+    {Intrinsic::riscv_th_mfmacc_bf16_e4_internal, RISCV::PTH_MFMACC_BF16_E4_V, THMI_MulAcc},
+    {Intrinsic::riscv_th_mfmacc_bf16_e5_internal, RISCV::PTH_MFMACC_BF16_E5_V, THMI_MulAcc},
+    {Intrinsic::riscv_th_mfmacc_s_h_internal,     RISCV::PTH_MFMACC_S_H_V,     THMI_MulAcc},
+    {Intrinsic::riscv_th_mfmacc_s_bf16_internal,  RISCV::PTH_MFMACC_S_BF16_V,  THMI_MulAcc},
+    {Intrinsic::riscv_th_mfmacc_s_e4_internal,    RISCV::PTH_MFMACC_S_E4_V,    THMI_MulAcc},
+    {Intrinsic::riscv_th_mfmacc_s_e5_internal,    RISCV::PTH_MFMACC_S_E5_V,    THMI_MulAcc},
+    {Intrinsic::riscv_th_mfmacc_s_tf32_internal,  RISCV::PTH_MFMACC_S_TF32_V,  THMI_MulAcc},
+    {Intrinsic::riscv_th_mfmacc_d_s_internal,     RISCV::PTH_MFMACC_D_S_V,     THMI_MulAcc},
+    // --- INT matmul ---
+    {Intrinsic::riscv_th_mmacc_w_b_internal,      RISCV::PTH_MMACC_W_B_V,      THMI_MulAcc},
+    {Intrinsic::riscv_th_mmaccu_w_b_internal,     RISCV::PTH_MMACCU_W_B_V,     THMI_MulAcc},
+    {Intrinsic::riscv_th_mmaccus_w_b_internal,    RISCV::PTH_MMACCUS_W_B_V,    THMI_MulAcc},
+    {Intrinsic::riscv_th_mmaccsu_w_b_internal,    RISCV::PTH_MMACCSU_W_B_V,    THMI_MulAcc},
+    {Intrinsic::riscv_th_mmacc_d_h_internal,      RISCV::PTH_MMACC_D_H_V,      THMI_MulAcc},
+    {Intrinsic::riscv_th_mmaccu_d_h_internal,     RISCV::PTH_MMACCU_D_H_V,     THMI_MulAcc},
+    {Intrinsic::riscv_th_mmaccus_d_h_internal,    RISCV::PTH_MMACCUS_D_H_V,    THMI_MulAcc},
+    {Intrinsic::riscv_th_mmaccsu_d_h_internal,    RISCV::PTH_MMACCSU_D_H_V,    THMI_MulAcc},
+    {Intrinsic::riscv_th_pmmacc_w_b_internal,     RISCV::PTH_PMMACC_W_B_V,     THMI_MulAcc},
+    {Intrinsic::riscv_th_pmmaccu_w_b_internal,    RISCV::PTH_PMMACCU_W_B_V,    THMI_MulAcc},
+    {Intrinsic::riscv_th_pmmaccus_w_b_internal,   RISCV::PTH_PMMACCUS_W_B_V,   THMI_MulAcc},
+    {Intrinsic::riscv_th_pmmaccsu_w_b_internal,   RISCV::PTH_PMMACCSU_W_B_V,   THMI_MulAcc},
+    {Intrinsic::riscv_th_mmacc_w_bp_internal,     RISCV::PTH_MMACC_W_BP_V,     THMI_MulAcc},
+    {Intrinsic::riscv_th_mmaccu_w_bp_internal,    RISCV::PTH_MMACCU_W_BP_V,    THMI_MulAcc},
+
+    // --- Zero ---
+    {Intrinsic::riscv_th_mzero_internal,   RISCV::PTH_MZERO_V,   THMI_Zero},
+    {Intrinsic::riscv_th_mzero2r_internal, RISCV::PTH_MZERO2R_V, THMI_Zero},
+    {Intrinsic::riscv_th_mzero4r_internal, RISCV::PTH_MZERO4R_V, THMI_Zero},
+    {Intrinsic::riscv_th_mzero8r_internal, RISCV::PTH_MZERO8R_V, THMI_Zero},
+
+    // --- Move mm ---
+    {Intrinsic::riscv_th_mmov_mm_internal, RISCV::PTH_MMOV_MM_V, THMI_Unary},
+
+    // --- Conversions ---
+    {Intrinsic::riscv_th_mfcvtl_h_e4_internal, RISCV::PTH_MFCVTL_H_E4_V, THMI_Unary},
+    {Intrinsic::riscv_th_mfcvth_h_e4_internal, RISCV::PTH_MFCVTH_H_E4_V, THMI_Unary},
+    {Intrinsic::riscv_th_mfcvtl_h_e5_internal, RISCV::PTH_MFCVTL_H_E5_V, THMI_Unary},
+    {Intrinsic::riscv_th_mfcvth_h_e5_internal, RISCV::PTH_MFCVTH_H_E5_V, THMI_Unary},
+    {Intrinsic::riscv_th_mfcvtl_e4_h_internal, RISCV::PTH_MFCVTL_E4_H_V, THMI_Unary},
+    {Intrinsic::riscv_th_mfcvth_e4_h_internal, RISCV::PTH_MFCVTH_E4_H_V, THMI_Unary},
+    {Intrinsic::riscv_th_mfcvtl_e5_h_internal, RISCV::PTH_MFCVTL_E5_H_V, THMI_Unary},
+    {Intrinsic::riscv_th_mfcvth_e5_h_internal, RISCV::PTH_MFCVTH_E5_H_V, THMI_Unary},
+    {Intrinsic::riscv_th_mfcvtl_s_h_internal,    RISCV::PTH_MFCVTL_S_H_V,    THMI_Unary},
+    {Intrinsic::riscv_th_mfcvth_s_h_internal,    RISCV::PTH_MFCVTH_S_H_V,    THMI_Unary},
+    {Intrinsic::riscv_th_mfcvtl_h_s_internal,    RISCV::PTH_MFCVTL_H_S_V,    THMI_Unary},
+    {Intrinsic::riscv_th_mfcvth_h_s_internal,    RISCV::PTH_MFCVTH_H_S_V,    THMI_Unary},
+    {Intrinsic::riscv_th_mfcvtl_s_bf16_internal, RISCV::PTH_MFCVTL_S_BF16_V, THMI_Unary},
+    {Intrinsic::riscv_th_mfcvth_s_bf16_internal, RISCV::PTH_MFCVTH_S_BF16_V, THMI_Unary},
+    {Intrinsic::riscv_th_mfcvtl_bf16_s_internal, RISCV::PTH_MFCVTL_BF16_S_V, THMI_Unary},
+    {Intrinsic::riscv_th_mfcvth_bf16_s_internal, RISCV::PTH_MFCVTH_BF16_S_V, THMI_Unary},
+    {Intrinsic::riscv_th_mfcvtl_e4_s_internal, RISCV::PTH_MFCVTL_E4_S_V, THMI_Unary},
+    {Intrinsic::riscv_th_mfcvth_e4_s_internal, RISCV::PTH_MFCVTH_E4_S_V, THMI_Unary},
+    {Intrinsic::riscv_th_mfcvtl_e5_s_internal, RISCV::PTH_MFCVTL_E5_S_V, THMI_Unary},
+    {Intrinsic::riscv_th_mfcvth_e5_s_internal, RISCV::PTH_MFCVTH_E5_S_V, THMI_Unary},
+    {Intrinsic::riscv_th_mfcvtl_d_s_internal, RISCV::PTH_MFCVTL_D_S_V, THMI_Unary},
+    {Intrinsic::riscv_th_mfcvth_d_s_internal, RISCV::PTH_MFCVTH_D_S_V, THMI_Unary},
+    {Intrinsic::riscv_th_mfcvtl_s_d_internal, RISCV::PTH_MFCVTL_S_D_V, THMI_Unary},
+    {Intrinsic::riscv_th_mfcvth_s_d_internal, RISCV::PTH_MFCVTH_S_D_V, THMI_Unary},
+    {Intrinsic::riscv_th_mfcvt_s_tf32_internal, RISCV::PTH_MFCVT_S_TF32_V, THMI_Unary},
+    {Intrinsic::riscv_th_mfcvt_tf32_s_internal, RISCV::PTH_MFCVT_TF32_S_V, THMI_Unary},
+    // Float-int conversions
+    {Intrinsic::riscv_th_mufcvtl_h_b_internal, RISCV::PTH_MUFCVTL_H_B_V, THMI_Unary},
+    {Intrinsic::riscv_th_mufcvth_h_b_internal, RISCV::PTH_MUFCVTH_H_B_V, THMI_Unary},
+    {Intrinsic::riscv_th_msfcvtl_h_b_internal, RISCV::PTH_MSFCVTL_H_B_V, THMI_Unary},
+    {Intrinsic::riscv_th_msfcvth_h_b_internal, RISCV::PTH_MSFCVTH_H_B_V, THMI_Unary},
+    {Intrinsic::riscv_th_mfucvtl_b_h_internal, RISCV::PTH_MFUCVTL_B_H_V, THMI_Unary},
+    {Intrinsic::riscv_th_mfucvth_b_h_internal, RISCV::PTH_MFUCVTH_B_H_V, THMI_Unary},
+    {Intrinsic::riscv_th_mfscvtl_b_h_internal, RISCV::PTH_MFSCVTL_B_H_V, THMI_Unary},
+    {Intrinsic::riscv_th_mfscvth_b_h_internal, RISCV::PTH_MFSCVTH_B_H_V, THMI_Unary},
+    {Intrinsic::riscv_th_msfcvt_s_w_internal, RISCV::PTH_MSFCVT_S_W_V, THMI_Unary},
+    {Intrinsic::riscv_th_mufcvt_s_w_internal, RISCV::PTH_MUFCVT_S_W_V, THMI_Unary},
+    {Intrinsic::riscv_th_mfscvt_w_s_internal, RISCV::PTH_MFSCVT_W_S_V, THMI_Unary},
+    {Intrinsic::riscv_th_mfucvt_w_s_internal, RISCV::PTH_MFUCVT_W_S_V, THMI_Unary},
+    // Packed conversions
+    {Intrinsic::riscv_th_mucvtl_b_p_internal, RISCV::PTH_MUCVTL_B_P_V, THMI_Unary},
+    {Intrinsic::riscv_th_mscvtl_b_p_internal, RISCV::PTH_MSCVTL_B_P_V, THMI_Unary},
+    {Intrinsic::riscv_th_mucvth_b_p_internal, RISCV::PTH_MUCVTH_B_P_V, THMI_Unary},
+    {Intrinsic::riscv_th_mscvth_b_p_internal, RISCV::PTH_MSCVTH_B_P_V, THMI_Unary},
+
+    // --- Move to GPR ---
+    {Intrinsic::riscv_th_mmovb_x_m_internal, RISCV::PTH_MMOVB_X_M_V, THMI_ToGPR},
+    {Intrinsic::riscv_th_mmovh_x_m_internal, RISCV::PTH_MMOVH_X_M_V, THMI_ToGPR},
+    {Intrinsic::riscv_th_mmovw_x_m_internal, RISCV::PTH_MMOVW_X_M_V, THMI_ToGPR},
+    {Intrinsic::riscv_th_mmovd_x_m_internal, RISCV::PTH_MMOVD_X_M_V, THMI_ToGPR},
+
+    // --- Move from GPR ---
+    {Intrinsic::riscv_th_mmovb_m_x_internal, RISCV::PTH_MMOVB_M_X_V, THMI_FromGPR2},
+    {Intrinsic::riscv_th_mmovh_m_x_internal, RISCV::PTH_MMOVH_M_X_V, THMI_FromGPR2},
+    {Intrinsic::riscv_th_mmovw_m_x_internal, RISCV::PTH_MMOVW_M_X_V, THMI_FromGPR2},
+    {Intrinsic::riscv_th_mmovd_m_x_internal, RISCV::PTH_MMOVD_M_X_V, THMI_FromGPR2},
+
+    // --- Dup ---
+    {Intrinsic::riscv_th_mdupb_m_x_internal, RISCV::PTH_MDUPB_M_X_V, THMI_FromGPR},
+    {Intrinsic::riscv_th_mduph_m_x_internal, RISCV::PTH_MDUPH_M_X_V, THMI_FromGPR},
+    {Intrinsic::riscv_th_mdupw_m_x_internal, RISCV::PTH_MDUPW_M_X_V, THMI_FromGPR},
+    {Intrinsic::riscv_th_mdupd_m_x_internal, RISCV::PTH_MDUPD_M_X_V, THMI_FromGPR},
+
+    // --- Pack ---
+    {Intrinsic::riscv_th_mpack_internal,   RISCV::PTH_MPACK_V,   THMI_Binary},
+    {Intrinsic::riscv_th_mpackhl_internal, RISCV::PTH_MPACKHL_V, THMI_Binary},
+    {Intrinsic::riscv_th_mpackhh_internal, RISCV::PTH_MPACKHH_V, THMI_Binary},
+
+    // --- Row slide ---
+    {Intrinsic::riscv_th_mrslidedown_internal, RISCV::PTH_MRSLIDEDOWN_V, THMI_UnaryImm},
+    {Intrinsic::riscv_th_mrslideup_internal,   RISCV::PTH_MRSLIDEUP_V,   THMI_UnaryImm},
+
+    // --- Column slide ---
+    {Intrinsic::riscv_th_mcslidedown_b_internal, RISCV::PTH_MCSLIDEDOWN_B_V, THMI_UnaryImm},
+    {Intrinsic::riscv_th_mcslidedown_h_internal, RISCV::PTH_MCSLIDEDOWN_H_V, THMI_UnaryImm},
+    {Intrinsic::riscv_th_mcslidedown_w_internal, RISCV::PTH_MCSLIDEDOWN_W_V, THMI_UnaryImm},
+    {Intrinsic::riscv_th_mcslidedown_d_internal, RISCV::PTH_MCSLIDEDOWN_D_V, THMI_UnaryImm},
+    {Intrinsic::riscv_th_mcslideup_b_internal, RISCV::PTH_MCSLIDEUP_B_V, THMI_UnaryImm},
+    {Intrinsic::riscv_th_mcslideup_h_internal, RISCV::PTH_MCSLIDEUP_H_V, THMI_UnaryImm},
+    {Intrinsic::riscv_th_mcslideup_w_internal, RISCV::PTH_MCSLIDEUP_W_V, THMI_UnaryImm},
+    {Intrinsic::riscv_th_mcslideup_d_internal, RISCV::PTH_MCSLIDEUP_D_V, THMI_UnaryImm},
+
+    // --- Row broadcast ---
+    {Intrinsic::riscv_th_mrbca_mv_i_internal, RISCV::PTH_MRBCA_MV_I_V, THMI_UnaryImm},
+
+    // --- Column broadcast ---
+    {Intrinsic::riscv_th_mcbcab_mv_i_internal, RISCV::PTH_MCBCAB_MV_I_V, THMI_UnaryImm},
+    {Intrinsic::riscv_th_mcbcah_mv_i_internal, RISCV::PTH_MCBCAH_MV_I_V, THMI_UnaryImm},
+    {Intrinsic::riscv_th_mcbcaw_mv_i_internal, RISCV::PTH_MCBCAW_MV_I_V, THMI_UnaryImm},
+    {Intrinsic::riscv_th_mcbcad_mv_i_internal, RISCV::PTH_MCBCAD_MV_I_V, THMI_UnaryImm},
+
+    // --- N4clip .mm ---
+    {Intrinsic::riscv_th_mn4clipl_w_mm_internal,  RISCV::PTH_MN4CLIPL_W_MM_V,  THMI_MulAcc},
+    {Intrinsic::riscv_th_mn4cliph_w_mm_internal,  RISCV::PTH_MN4CLIPH_W_MM_V,  THMI_MulAcc},
+    {Intrinsic::riscv_th_mn4cliplu_w_mm_internal, RISCV::PTH_MN4CLIPLU_W_MM_V, THMI_MulAcc},
+    {Intrinsic::riscv_th_mn4cliphu_w_mm_internal, RISCV::PTH_MN4CLIPHU_W_MM_V, THMI_MulAcc},
+
+    // --- N4clip .mv.i ---
+    {Intrinsic::riscv_th_mn4clipl_w_mv_i_internal,  RISCV::PTH_MN4CLIPL_W_MV_I_V,  THMI_MulAccImm},
+    {Intrinsic::riscv_th_mn4cliph_w_mv_i_internal,  RISCV::PTH_MN4CLIPH_W_MV_I_V,  THMI_MulAccImm},
+    {Intrinsic::riscv_th_mn4cliplu_w_mv_i_internal, RISCV::PTH_MN4CLIPLU_W_MV_I_V, THMI_MulAccImm},
+    {Intrinsic::riscv_th_mn4cliphu_w_mv_i_internal, RISCV::PTH_MN4CLIPHU_W_MV_I_V, THMI_MulAccImm},
+
+    // --- Integer EW .mm ---
+    {Intrinsic::riscv_th_madd_w_mm_internal,   RISCV::PTH_MADD_W_MM_V,   THMI_MulAcc},
+    {Intrinsic::riscv_th_msub_w_mm_internal,   RISCV::PTH_MSUB_W_MM_V,   THMI_MulAcc},
+    {Intrinsic::riscv_th_mmul_w_mm_internal,   RISCV::PTH_MMUL_W_MM_V,   THMI_MulAcc},
+    {Intrinsic::riscv_th_mmulh_w_mm_internal,  RISCV::PTH_MMULH_W_MM_V,  THMI_MulAcc},
+    {Intrinsic::riscv_th_mmax_w_mm_internal,   RISCV::PTH_MMAX_W_MM_V,   THMI_MulAcc},
+    {Intrinsic::riscv_th_mumax_w_mm_internal,  RISCV::PTH_MUMAX_W_MM_V,  THMI_MulAcc},
+    {Intrinsic::riscv_th_mmin_w_mm_internal,   RISCV::PTH_MMIN_W_MM_V,   THMI_MulAcc},
+    {Intrinsic::riscv_th_mumin_w_mm_internal,  RISCV::PTH_MUMIN_W_MM_V,  THMI_MulAcc},
+    {Intrinsic::riscv_th_msrl_w_mm_internal,   RISCV::PTH_MSRL_W_MM_V,   THMI_MulAcc},
+    {Intrinsic::riscv_th_msll_w_mm_internal,   RISCV::PTH_MSLL_W_MM_V,   THMI_MulAcc},
+    {Intrinsic::riscv_th_msra_w_mm_internal,   RISCV::PTH_MSRA_W_MM_V,   THMI_MulAcc},
+
+    // --- Integer EW .mv.i ---
+    {Intrinsic::riscv_th_madd_w_mv_i_internal,   RISCV::PTH_MADD_W_MV_I_V,   THMI_MulAccImm},
+    {Intrinsic::riscv_th_msub_w_mv_i_internal,   RISCV::PTH_MSUB_W_MV_I_V,   THMI_MulAccImm},
+    {Intrinsic::riscv_th_mmul_w_mv_i_internal,   RISCV::PTH_MMUL_W_MV_I_V,   THMI_MulAccImm},
+    {Intrinsic::riscv_th_mmulh_w_mv_i_internal,  RISCV::PTH_MMULH_W_MV_I_V,  THMI_MulAccImm},
+    {Intrinsic::riscv_th_mmax_w_mv_i_internal,   RISCV::PTH_MMAX_W_MV_I_V,   THMI_MulAccImm},
+    {Intrinsic::riscv_th_mumax_w_mv_i_internal,  RISCV::PTH_MUMAX_W_MV_I_V,  THMI_MulAccImm},
+    {Intrinsic::riscv_th_mmin_w_mv_i_internal,   RISCV::PTH_MMIN_W_MV_I_V,   THMI_MulAccImm},
+    {Intrinsic::riscv_th_mumin_w_mv_i_internal,  RISCV::PTH_MUMIN_W_MV_I_V,  THMI_MulAccImm},
+    {Intrinsic::riscv_th_msrl_w_mv_i_internal,   RISCV::PTH_MSRL_W_MV_I_V,   THMI_MulAccImm},
+    {Intrinsic::riscv_th_msll_w_mv_i_internal,   RISCV::PTH_MSLL_W_MV_I_V,   THMI_MulAccImm},
+    {Intrinsic::riscv_th_msra_w_mv_i_internal,   RISCV::PTH_MSRA_W_MV_I_V,   THMI_MulAccImm},
+
+    // --- FP EW .mm ---
+    {Intrinsic::riscv_th_mfadd_h_mm_internal, RISCV::PTH_MFADD_H_MM_V, THMI_MulAcc},
+    {Intrinsic::riscv_th_mfadd_s_mm_internal, RISCV::PTH_MFADD_S_MM_V, THMI_MulAcc},
+    {Intrinsic::riscv_th_mfadd_d_mm_internal, RISCV::PTH_MFADD_D_MM_V, THMI_MulAcc},
+    {Intrinsic::riscv_th_mfsub_h_mm_internal, RISCV::PTH_MFSUB_H_MM_V, THMI_MulAcc},
+    {Intrinsic::riscv_th_mfsub_s_mm_internal, RISCV::PTH_MFSUB_S_MM_V, THMI_MulAcc},
+    {Intrinsic::riscv_th_mfsub_d_mm_internal, RISCV::PTH_MFSUB_D_MM_V, THMI_MulAcc},
+    {Intrinsic::riscv_th_mfmul_h_mm_internal, RISCV::PTH_MFMUL_H_MM_V, THMI_MulAcc},
+    {Intrinsic::riscv_th_mfmul_s_mm_internal, RISCV::PTH_MFMUL_S_MM_V, THMI_MulAcc},
+    {Intrinsic::riscv_th_mfmul_d_mm_internal, RISCV::PTH_MFMUL_D_MM_V, THMI_MulAcc},
+    {Intrinsic::riscv_th_mfmax_h_mm_internal, RISCV::PTH_MFMAX_H_MM_V, THMI_MulAcc},
+    {Intrinsic::riscv_th_mfmax_s_mm_internal, RISCV::PTH_MFMAX_S_MM_V, THMI_MulAcc},
+    {Intrinsic::riscv_th_mfmax_d_mm_internal, RISCV::PTH_MFMAX_D_MM_V, THMI_MulAcc},
+    {Intrinsic::riscv_th_mfmin_h_mm_internal, RISCV::PTH_MFMIN_H_MM_V, THMI_MulAcc},
+    {Intrinsic::riscv_th_mfmin_s_mm_internal, RISCV::PTH_MFMIN_S_MM_V, THMI_MulAcc},
+    {Intrinsic::riscv_th_mfmin_d_mm_internal, RISCV::PTH_MFMIN_D_MM_V, THMI_MulAcc},
+
+    // --- FP EW .mv.i ---
+    {Intrinsic::riscv_th_mfadd_h_mv_i_internal, RISCV::PTH_MFADD_H_MV_I_V, THMI_MulAccImm},
+    {Intrinsic::riscv_th_mfadd_s_mv_i_internal, RISCV::PTH_MFADD_S_MV_I_V, THMI_MulAccImm},
+    {Intrinsic::riscv_th_mfadd_d_mv_i_internal, RISCV::PTH_MFADD_D_MV_I_V, THMI_MulAccImm},
+    {Intrinsic::riscv_th_mfsub_h_mv_i_internal, RISCV::PTH_MFSUB_H_MV_I_V, THMI_MulAccImm},
+    {Intrinsic::riscv_th_mfsub_s_mv_i_internal, RISCV::PTH_MFSUB_S_MV_I_V, THMI_MulAccImm},
+    {Intrinsic::riscv_th_mfsub_d_mv_i_internal, RISCV::PTH_MFSUB_D_MV_I_V, THMI_MulAccImm},
+    {Intrinsic::riscv_th_mfmul_h_mv_i_internal, RISCV::PTH_MFMUL_H_MV_I_V, THMI_MulAccImm},
+    {Intrinsic::riscv_th_mfmul_s_mv_i_internal, RISCV::PTH_MFMUL_S_MV_I_V, THMI_MulAccImm},
+    {Intrinsic::riscv_th_mfmul_d_mv_i_internal, RISCV::PTH_MFMUL_D_MV_I_V, THMI_MulAccImm},
+    {Intrinsic::riscv_th_mfmax_h_mv_i_internal, RISCV::PTH_MFMAX_H_MV_I_V, THMI_MulAccImm},
+    {Intrinsic::riscv_th_mfmax_s_mv_i_internal, RISCV::PTH_MFMAX_S_MV_I_V, THMI_MulAccImm},
+    {Intrinsic::riscv_th_mfmax_d_mv_i_internal, RISCV::PTH_MFMAX_D_MV_I_V, THMI_MulAccImm},
+    {Intrinsic::riscv_th_mfmin_h_mv_i_internal, RISCV::PTH_MFMIN_H_MV_I_V, THMI_MulAccImm},
+    {Intrinsic::riscv_th_mfmin_s_mv_i_internal, RISCV::PTH_MFMIN_S_MV_I_V, THMI_MulAccImm},
+    {Intrinsic::riscv_th_mfmin_d_mv_i_internal, RISCV::PTH_MFMIN_D_MV_I_V, THMI_MulAccImm},
+};
+// clang-format on
+
+static const THMatrixInternalEntry *lookupTHMatrixInternal(unsigned IntNo) {
+  for (const auto &E : THMatrixInternalTable)
+    if (E.IntrinID == IntNo)
+      return &E;
+  return nullptr;
+}
+
+void RISCVDAGToDAGISel::selectTHMatrixInternal(SDNode *Node) {
+  if (!Subtarget->hasVendorXTHeadMatrix())
+    return;
+
+  unsigned Opc = Node->getOpcode();
+  SDLoc DL(Node);
+  MVT XLenVT = Subtarget->getXLenVT();
+
+  unsigned IntNo;
+  if (Opc == ISD::INTRINSIC_WO_CHAIN)
+    IntNo = Node->getConstantOperandVal(0);
+  else
+    IntNo = Node->getConstantOperandVal(1);
+
+  const THMatrixInternalEntry *Entry = lookupTHMatrixInternal(IntNo);
+  if (!Entry)
+    return;
+
+  // Set ManagedRA programming model.
+  auto *MFI = CurDAG->getMachineFunction().getInfo<RISCVMachineFunctionInfo>();
+  MFI->setMatrixProgModel(MatrixProgModelEnum::ManagedRA);
+
+  SDValue Chain;
+  bool HasChain = (Opc != ISD::INTRINSIC_WO_CHAIN);
+  if (HasChain)
+    Chain = Node->getOperand(0);
+
+  // ArgBase: first intrinsic argument index
+  unsigned ArgBase = HasChain ? 2 : 1;
+
+  SmallVector<SDValue, 6> Operands;
+  MVT MatVT = MVT::riscvmatrix;
+
+  switch (Entry->Cat) {
+  case THMI_Load: {
+    // (ptr, stride) -> matrix
+    Operands.push_back(Node->getOperand(ArgBase));     // ptr
+    Operands.push_back(Node->getOperand(ArgBase + 1)); // stride
+    break;
+  }
+  case THMI_LoadWhole: {
+    // (ptr) -> matrix
+    Operands.push_back(Node->getOperand(ArgBase));     // ptr
+    break;
+  }
+  case THMI_Store: {
+    // (matrix, ptr, stride) -> void
+    Operands.push_back(Node->getOperand(ArgBase));     // matrix src
+    Operands.push_back(Node->getOperand(ArgBase + 1)); // ptr
+    Operands.push_back(Node->getOperand(ArgBase + 2)); // stride
+    break;
+  }
+  case THMI_StoreWhole: {
+    // (matrix, ptr) -> void
+    Operands.push_back(Node->getOperand(ArgBase));     // matrix src
+    Operands.push_back(Node->getOperand(ArgBase + 1)); // ptr
+    break;
+  }
+  case THMI_Zero: {
+    // () -> matrix — no operands
+    break;
+  }
+  case THMI_MulAcc: {
+    // (acc, ms2, ms1) -> acc_out
+    Operands.push_back(Node->getOperand(ArgBase));     // acc (tied to output)
+    Operands.push_back(Node->getOperand(ArgBase + 1)); // ms2
+    Operands.push_back(Node->getOperand(ArgBase + 2)); // ms1
+    break;
+  }
+  case THMI_Unary: {
+    // (ms1) -> md
+    Operands.push_back(Node->getOperand(ArgBase));     // ms1
+    break;
+  }
+  case THMI_Binary: {
+    // (ms2, ms1) -> md
+    Operands.push_back(Node->getOperand(ArgBase));     // ms2
+    Operands.push_back(Node->getOperand(ArgBase + 1)); // ms1
+    break;
+  }
+  case THMI_ToGPR: {
+    // (matrix, gpr_idx) -> gpr
+    Operands.push_back(Node->getOperand(ArgBase));     // matrix
+    Operands.push_back(Node->getOperand(ArgBase + 1)); // gpr index
+    break;
+  }
+  case THMI_FromGPR2: {
+    // (matrix_in, data, idx) -> matrix_out
+    Operands.push_back(Node->getOperand(ArgBase));     // matrix_in (tied)
+    Operands.push_back(Node->getOperand(ArgBase + 1)); // gpr data
+    Operands.push_back(Node->getOperand(ArgBase + 2)); // gpr index
+    break;
+  }
+  case THMI_FromGPR: {
+    // (matrix_in, data) -> matrix_out
+    Operands.push_back(Node->getOperand(ArgBase));     // matrix_in (tied)
+    Operands.push_back(Node->getOperand(ArgBase + 1)); // gpr data
+    break;
+  }
+  case THMI_UnaryImm: {
+    // (ms1, imm) -> md
+    Operands.push_back(Node->getOperand(ArgBase));     // ms1
+    uint64_t ImmVal = Node->getConstantOperandVal(ArgBase + 1);
+    Operands.push_back(CurDAG->getTargetConstant(ImmVal, DL, XLenVT));
+    break;
+  }
+  case THMI_MulAccImm: {
+    // (acc, ms2, ms1, imm) -> acc_out
+    Operands.push_back(Node->getOperand(ArgBase));     // acc (tied)
+    Operands.push_back(Node->getOperand(ArgBase + 1)); // ms2
+    Operands.push_back(Node->getOperand(ArgBase + 2)); // ms1
+    uint64_t ImmVal = Node->getConstantOperandVal(ArgBase + 3);
+    Operands.push_back(CurDAG->getTargetConstant(ImmVal, DL, XLenVT));
+    break;
+  }
+  }
+
+  if (Chain)
+    Operands.push_back(Chain);
+
+  // Build result VT list.
+  SDVTList VTs;
+  bool ReturnsMatrix = (Entry->Cat != THMI_Store &&
+                        Entry->Cat != THMI_StoreWhole);
+  bool ReturnsGPR = (Entry->Cat == THMI_ToGPR);
+
+  if (ReturnsGPR) {
+    VTs = HasChain ? CurDAG->getVTList(XLenVT, MVT::Other)
+                   : CurDAG->getVTList(XLenVT);
+  } else if (ReturnsMatrix) {
+    VTs = HasChain ? CurDAG->getVTList(MatVT, MVT::Other)
+                   : CurDAG->getVTList(MatVT);
+  } else {
+    VTs = CurDAG->getVTList(MVT::Other);
+  }
+
+  MachineSDNode *NewNode =
+      CurDAG->getMachineNode(Entry->MachineOpc, DL, VTs, Operands);
   ReplaceNode(Node, NewNode);
 }
 
@@ -2701,6 +3155,12 @@ void RISCVDAGToDAGISel::Select(SDNode *Node) {
     switch (IntNo) {
       // By default we do not custom select any intrinsic.
     default:
+      // XTHeadMatrix _internal intrinsics (ManagedRA SSA).
+      if (Subtarget->hasVendorXTHeadMatrix() &&
+          lookupTHMatrixInternal(IntNo)) {
+        selectTHMatrixInternal(Node);
+        return;
+      }
       // XTHeadMatrix ToGPR intrinsics (mmov{b,h,w,d}.x.m) return a GPR value.
       if (Subtarget->hasVendorXTHeadMatrix() &&
           lookupTHMatrixIntr(IntNo)) {
@@ -3260,6 +3720,12 @@ void RISCVDAGToDAGISel::Select(SDNode *Node) {
     }
     // XTHeadMatrix intrinsics (INTRINSIC_VOID: all void-returning intrinsics)
     default:
+      // _internal store intrinsics (ManagedRA SSA).
+      if (Subtarget->hasVendorXTHeadMatrix() &&
+          lookupTHMatrixInternal(IntNo)) {
+        selectTHMatrixInternal(Node);
+        return;
+      }
       if (Subtarget->hasVendorXTHeadMatrix() &&
           lookupTHMatrixIntr(IntNo)) {
         selectTHMatrix(Node);

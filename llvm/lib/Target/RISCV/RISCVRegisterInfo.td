@@ -917,12 +917,18 @@ foreach Index = 0-3 in
 foreach Index = 0-3 in
   def THRVM_ACC#Index : RISCVReg<!add(Index, 4), "acc"#Index>;
 
-let RegInfos = XLenRI in {
-  def THRVMMR  : RISCVRegisterClass<[untyped], 32,
+let CopyCost = -1 in {
+  def THRVMMR  : RegisterClass<"RISCV", [riscvmatrix], 8192,
       (add THRVM_TR0, THRVM_TR1, THRVM_TR2, THRVM_TR3,
-           THRVM_ACC0, THRVM_ACC1, THRVM_ACC2, THRVM_ACC3)>;
-  def THRVMTR  : RISCVRegisterClass<[untyped], 32,
-      (add THRVM_TR0, THRVM_TR1, THRVM_TR2, THRVM_TR3)>;
-  def THRVMACC : RISCVRegisterClass<[untyped], 32,
-      (add THRVM_ACC0, THRVM_ACC1, THRVM_ACC2, THRVM_ACC3)>;
+           THRVM_ACC0, THRVM_ACC1, THRVM_ACC2, THRVM_ACC3)> {
+    let Size = 8192;
+  }
+  def THRVMTR  : RegisterClass<"RISCV", [riscvmatrix], 8192,
+      (add THRVM_TR0, THRVM_TR1, THRVM_TR2, THRVM_TR3)> {
+    let Size = 8192;
+  }
+  def THRVMACC : RegisterClass<"RISCV", [riscvmatrix], 8192,
+      (add THRVM_ACC0, THRVM_ACC1, THRVM_ACC2, THRVM_ACC3)> {
+    let Size = 8192;
+  }
 }

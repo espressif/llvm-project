@@ -60,6 +60,8 @@ private:
                            MachineBasicBlock::iterator MBBI);
   bool expandPseudoReadVLENBViaVSETVLIX0(MachineBasicBlock &MBB,
                                          MachineBasicBlock::iterator MBBI);
+  bool expandTHMatrixPseudo(MachineBasicBlock &MBB,
+                            MachineBasicBlock::iterator MBBI);
 #ifndef NDEBUG
   unsigned getInstSizeInBytes(const MachineFunction &MF) const {
     unsigned Size = 0;
@@ -192,6 +194,41 @@ bool RISCVExpandPseudo::expandMI(MachineBasicBlock &MBB,
     return expandVMSET_VMCLR(MBB, MBBI, RISCV::VMXNOR_MM);
   case RISCV::PseudoReadVLENBViaVSETVLIX0:
     return expandPseudoReadVLENBViaVSETVLIX0(MBB, MBBI);
+  case RISCV::PTH_MATRIX_SPILL: {
+    // Expand spill: PTH_MATRIX_SPILL $src, $base
+    // → TH_MSME_E8 $src, $base
+    // eliminateFrameIndex has already materialized the full address into $base.
+    MachineInstr &MI = *MBBI;
+    DebugLoc DL = MI.getDebugLoc();
+    Register SrcReg = MI.getOperand(0).getReg();
+    Register BaseReg = MI.getOperand(1).getReg();
+    BuildMI(MBB, MBBI, DL, TII->get(RISCV::TH_MSME_E8))
+        .addReg(SrcReg, getKillRegState(MI.getOperand(0).isKill()))
+        .addReg(BaseReg);
+    MI.eraseFromParent();
+    return true;
+  }
+  case RISCV::PTH_MATRIX_RELOAD: {
+    // Expand reload: PTH_MATRIX_RELOAD $dst, $base
+    // → TH_MLME_E8 $dst, $base
+    MachineInstr &MI = *MBBI;
+    DebugLoc DL = MI.getDebugLoc();
+    Register DstReg = MI.getOperand(0).getReg();
+    Register BaseReg = MI.getOperand(1).getReg();
+    auto NewMI = BuildMI(MBB, MBBI, DL, TII->get(RISCV::TH_MLME_E8))
+        .addReg(DstReg)
+        .addReg(BaseReg);
+    // TH_MLME_E8 has $md in (ins) not (outs), but it semantically defines
+    // the register. Add an implicit def for correct liveness tracking.
+    NewMI.addReg(DstReg, RegState::Implicit | RegState::Define);
+    MI.eraseFromParent();
+    return true;
+  }
+  default:
+    // Try expanding XTHeadMatrix pseudos (PTH_* → TH_*).
+    if (lookupTHMatrixPseudo(MBBI->getOpcode()))
+      return expandTHMatrixPseudo(MBB, MBBI);
+    break;
   }
 
   return false;
@@ -579,6 +616,301 @@ bool RISCVExpandPseudo::expandPseudoReadVLENBViaVSETVLIX0(
       .addImm(VTypeImm);
 
   MBBI->eraseFromParent();
+  return true;
+}
+
+// XTHeadMatrix pseudo-to-real instruction mapping.
+// SkipTiedInput: if true, the first (ins) operand is a tied input that must
+// be dropped when expanding to the real instruction.
+namespace {
+struct THMatrixPseudoEntry {
+  unsigned PseudoOpc;
+  unsigned RealOpc;
+  bool SkipTiedInput;
+};
+} // namespace
+
+// clang-format off
+static const THMatrixPseudoEntry THMatrixPseudoTable[] = {
+    // Loads (no tied)
+    {RISCV::PTH_MLAE_E8V,   RISCV::TH_MLAE_E8,   false},
+    {RISCV::PTH_MLAE_E16V,  RISCV::TH_MLAE_E16,  false},
+    {RISCV::PTH_MLAE_E32V,  RISCV::TH_MLAE_E32,  false},
+    {RISCV::PTH_MLAE_E64V,  RISCV::TH_MLAE_E64,  false},
+    {RISCV::PTH_MLATE_E8V,  RISCV::TH_MLATE_E8,  false},
+    {RISCV::PTH_MLATE_E16V, RISCV::TH_MLATE_E16, false},
+    {RISCV::PTH_MLATE_E32V, RISCV::TH_MLATE_E32, false},
+    {RISCV::PTH_MLATE_E64V, RISCV::TH_MLATE_E64, false},
+    {RISCV::PTH_MLBE_E8V,   RISCV::TH_MLBE_E8,   false},
+    {RISCV::PTH_MLBE_E16V,  RISCV::TH_MLBE_E16,  false},
+    {RISCV::PTH_MLBE_E32V,  RISCV::TH_MLBE_E32,  false},
+    {RISCV::PTH_MLBE_E64V,  RISCV::TH_MLBE_E64,  false},
+    {RISCV::PTH_MLBTE_E8V,  RISCV::TH_MLBTE_E8,  false},
+    {RISCV::PTH_MLBTE_E16V, RISCV::TH_MLBTE_E16, false},
+    {RISCV::PTH_MLBTE_E32V, RISCV::TH_MLBTE_E32, false},
+    {RISCV::PTH_MLBTE_E64V, RISCV::TH_MLBTE_E64, false},
+    {RISCV::PTH_MLCE_E8V,   RISCV::TH_MLCE_E8,   false},
+    {RISCV::PTH_MLCE_E16V,  RISCV::TH_MLCE_E16,  false},
+    {RISCV::PTH_MLCE_E32V,  RISCV::TH_MLCE_E32,  false},
+    {RISCV::PTH_MLCE_E64V,  RISCV::TH_MLCE_E64,  false},
+    {RISCV::PTH_MLCTE_E8V,  RISCV::TH_MLCTE_E8,  false},
+    {RISCV::PTH_MLCTE_E16V, RISCV::TH_MLCTE_E16, false},
+    {RISCV::PTH_MLCTE_E32V, RISCV::TH_MLCTE_E32, false},
+    {RISCV::PTH_MLCTE_E64V, RISCV::TH_MLCTE_E64, false},
+    {RISCV::PTH_MLME_E8V,   RISCV::TH_MLME_E8,   false},
+    {RISCV::PTH_MLME_E16V,  RISCV::TH_MLME_E16,  false},
+    {RISCV::PTH_MLME_E32V,  RISCV::TH_MLME_E32,  false},
+    {RISCV::PTH_MLME_E64V,  RISCV::TH_MLME_E64,  false},
+    // Stores (no tied)
+    {RISCV::PTH_MSAE_E8V,   RISCV::TH_MSAE_E8,   false},
+    {RISCV::PTH_MSAE_E16V,  RISCV::TH_MSAE_E16,  false},
+    {RISCV::PTH_MSAE_E32V,  RISCV::TH_MSAE_E32,  false},
+    {RISCV::PTH_MSAE_E64V,  RISCV::TH_MSAE_E64,  false},
+    {RISCV::PTH_MSATE_E8V,  RISCV::TH_MSATE_E8,  false},
+    {RISCV::PTH_MSATE_E16V, RISCV::TH_MSATE_E16, false},
+    {RISCV::PTH_MSATE_E32V, RISCV::TH_MSATE_E32, false},
+    {RISCV::PTH_MSATE_E64V, RISCV::TH_MSATE_E64, false},
+    {RISCV::PTH_MSBE_E8V,   RISCV::TH_MSBE_E8,   false},
+    {RISCV::PTH_MSBE_E16V,  RISCV::TH_MSBE_E16,  false},
+    {RISCV::PTH_MSBE_E32V,  RISCV::TH_MSBE_E32,  false},
+    {RISCV::PTH_MSBE_E64V,  RISCV::TH_MSBE_E64,  false},
+    {RISCV::PTH_MSBTE_E8V,  RISCV::TH_MSBTE_E8,  false},
+    {RISCV::PTH_MSBTE_E16V, RISCV::TH_MSBTE_E16, false},
+    {RISCV::PTH_MSBTE_E32V, RISCV::TH_MSBTE_E32, false},
+    {RISCV::PTH_MSBTE_E64V, RISCV::TH_MSBTE_E64, false},
+    {RISCV::PTH_MSCE_E8V,   RISCV::TH_MSCE_E8,   false},
+    {RISCV::PTH_MSCE_E16V,  RISCV::TH_MSCE_E16,  false},
+    {RISCV::PTH_MSCE_E32V,  RISCV::TH_MSCE_E32,  false},
+    {RISCV::PTH_MSCE_E64V,  RISCV::TH_MSCE_E64,  false},
+    {RISCV::PTH_MSCTE_E8V,  RISCV::TH_MSCTE_E8,  false},
+    {RISCV::PTH_MSCTE_E16V, RISCV::TH_MSCTE_E16, false},
+    {RISCV::PTH_MSCTE_E32V, RISCV::TH_MSCTE_E32, false},
+    {RISCV::PTH_MSCTE_E64V, RISCV::TH_MSCTE_E64, false},
+    {RISCV::PTH_MSME_E8V,   RISCV::TH_MSME_E8,   false},
+    {RISCV::PTH_MSME_E16V,  RISCV::TH_MSME_E16,  false},
+    {RISCV::PTH_MSME_E32V,  RISCV::TH_MSME_E32,  false},
+    {RISCV::PTH_MSME_E64V,  RISCV::TH_MSME_E64,  false},
+    // Matmul (tied acc)
+    {RISCV::PTH_MFMACC_H_V,       RISCV::TH_MFMACC_H,       true},
+    {RISCV::PTH_MFMACC_S_V,       RISCV::TH_MFMACC_S,       true},
+    {RISCV::PTH_MFMACC_D_V,       RISCV::TH_MFMACC_D,       true},
+    {RISCV::PTH_MFMACC_H_E4_V,    RISCV::TH_MFMACC_H_E4,    true},
+    {RISCV::PTH_MFMACC_H_E5_V,    RISCV::TH_MFMACC_H_E5,    true},
+    {RISCV::PTH_MFMACC_BF16_E4_V, RISCV::TH_MFMACC_BF16_E4, true},
+    {RISCV::PTH_MFMACC_BF16_E5_V, RISCV::TH_MFMACC_BF16_E5, true},
+    {RISCV::PTH_MFMACC_S_H_V,     RISCV::TH_MFMACC_S_H,     true},
+    {RISCV::PTH_MFMACC_S_BF16_V,  RISCV::TH_MFMACC_S_BF16,  true},
+    {RISCV::PTH_MFMACC_S_E4_V,    RISCV::TH_MFMACC_S_E4,    true},
+    {RISCV::PTH_MFMACC_S_E5_V,    RISCV::TH_MFMACC_S_E5,    true},
+    {RISCV::PTH_MFMACC_S_TF32_V,  RISCV::TH_MFMACC_S_TF32,  true},
+    {RISCV::PTH_MFMACC_D_S_V,     RISCV::TH_MFMACC_D_S,     true},
+    {RISCV::PTH_MMACC_W_B_V,      RISCV::TH_MMACC_W_B,      true},
+    {RISCV::PTH_MMACCU_W_B_V,     RISCV::TH_MMACCU_W_B,     true},
+    {RISCV::PTH_MMACCUS_W_B_V,    RISCV::TH_MMACCUS_W_B,    true},
+    {RISCV::PTH_MMACCSU_W_B_V,    RISCV::TH_MMACCSU_W_B,    true},
+    {RISCV::PTH_MMACC_D_H_V,      RISCV::TH_MMACC_D_H,      true},
+    {RISCV::PTH_MMACCU_D_H_V,     RISCV::TH_MMACCU_D_H,     true},
+    {RISCV::PTH_MMACCUS_D_H_V,    RISCV::TH_MMACCUS_D_H,    true},
+    {RISCV::PTH_MMACCSU_D_H_V,    RISCV::TH_MMACCSU_D_H,    true},
+    {RISCV::PTH_PMMACC_W_B_V,     RISCV::TH_PMMACC_W_B,     true},
+    {RISCV::PTH_PMMACCU_W_B_V,    RISCV::TH_PMMACCU_W_B,    true},
+    {RISCV::PTH_PMMACCUS_W_B_V,   RISCV::TH_PMMACCUS_W_B,   true},
+    {RISCV::PTH_PMMACCSU_W_B_V,   RISCV::TH_PMMACCSU_W_B,   true},
+    {RISCV::PTH_MMACC_W_BP_V,     RISCV::TH_MMACC_W_BP,     true},
+    {RISCV::PTH_MMACCU_W_BP_V,    RISCV::TH_MMACCU_W_BP,    true},
+    // Zero (no tied)
+    {RISCV::PTH_MZERO_V,   RISCV::TH_MZERO,   false},
+    {RISCV::PTH_MZERO2R_V, RISCV::TH_MZERO2R, false},
+    {RISCV::PTH_MZERO4R_V, RISCV::TH_MZERO4R, false},
+    {RISCV::PTH_MZERO8R_V, RISCV::TH_MZERO8R, false},
+    // Move, conversions (no tied)
+    {RISCV::PTH_MMOV_MM_V, RISCV::TH_MMOV_MM, false},
+    {RISCV::PTH_MFCVTL_H_E4_V, RISCV::TH_MFCVTL_H_E4, false},
+    {RISCV::PTH_MFCVTH_H_E4_V, RISCV::TH_MFCVTH_H_E4, false},
+    {RISCV::PTH_MFCVTL_H_E5_V, RISCV::TH_MFCVTL_H_E5, false},
+    {RISCV::PTH_MFCVTH_H_E5_V, RISCV::TH_MFCVTH_H_E5, false},
+    {RISCV::PTH_MFCVTL_E4_H_V, RISCV::TH_MFCVTL_E4_H, false},
+    {RISCV::PTH_MFCVTH_E4_H_V, RISCV::TH_MFCVTH_E4_H, false},
+    {RISCV::PTH_MFCVTL_E5_H_V, RISCV::TH_MFCVTL_E5_H, false},
+    {RISCV::PTH_MFCVTH_E5_H_V, RISCV::TH_MFCVTH_E5_H, false},
+    {RISCV::PTH_MFCVTL_S_H_V,    RISCV::TH_MFCVTL_S_H,    false},
+    {RISCV::PTH_MFCVTH_S_H_V,    RISCV::TH_MFCVTH_S_H,    false},
+    {RISCV::PTH_MFCVTL_H_S_V,    RISCV::TH_MFCVTL_H_S,    false},
+    {RISCV::PTH_MFCVTH_H_S_V,    RISCV::TH_MFCVTH_H_S,    false},
+    {RISCV::PTH_MFCVTL_S_BF16_V, RISCV::TH_MFCVTL_S_BF16, false},
+    {RISCV::PTH_MFCVTH_S_BF16_V, RISCV::TH_MFCVTH_S_BF16, false},
+    {RISCV::PTH_MFCVTL_BF16_S_V, RISCV::TH_MFCVTL_BF16_S, false},
+    {RISCV::PTH_MFCVTH_BF16_S_V, RISCV::TH_MFCVTH_BF16_S, false},
+    {RISCV::PTH_MFCVTL_E4_S_V, RISCV::TH_MFCVTL_E4_S, false},
+    {RISCV::PTH_MFCVTH_E4_S_V, RISCV::TH_MFCVTH_E4_S, false},
+    {RISCV::PTH_MFCVTL_E5_S_V, RISCV::TH_MFCVTL_E5_S, false},
+    {RISCV::PTH_MFCVTH_E5_S_V, RISCV::TH_MFCVTH_E5_S, false},
+    {RISCV::PTH_MFCVTL_D_S_V, RISCV::TH_MFCVTL_D_S, false},
+    {RISCV::PTH_MFCVTH_D_S_V, RISCV::TH_MFCVTH_D_S, false},
+    {RISCV::PTH_MFCVTL_S_D_V, RISCV::TH_MFCVTL_S_D, false},
+    {RISCV::PTH_MFCVTH_S_D_V, RISCV::TH_MFCVTH_S_D, false},
+    {RISCV::PTH_MFCVT_S_TF32_V, RISCV::TH_MFCVT_S_TF32, false},
+    {RISCV::PTH_MFCVT_TF32_S_V, RISCV::TH_MFCVT_TF32_S, false},
+    {RISCV::PTH_MUFCVTL_H_B_V, RISCV::TH_MUFCVTL_H_B, false},
+    {RISCV::PTH_MUFCVTH_H_B_V, RISCV::TH_MUFCVTH_H_B, false},
+    {RISCV::PTH_MSFCVTL_H_B_V, RISCV::TH_MSFCVTL_H_B, false},
+    {RISCV::PTH_MSFCVTH_H_B_V, RISCV::TH_MSFCVTH_H_B, false},
+    {RISCV::PTH_MFUCVTL_B_H_V, RISCV::TH_MFUCVTL_B_H, false},
+    {RISCV::PTH_MFUCVTH_B_H_V, RISCV::TH_MFUCVTH_B_H, false},
+    {RISCV::PTH_MFSCVTL_B_H_V, RISCV::TH_MFSCVTL_B_H, false},
+    {RISCV::PTH_MFSCVTH_B_H_V, RISCV::TH_MFSCVTH_B_H, false},
+    {RISCV::PTH_MSFCVT_S_W_V, RISCV::TH_MSFCVT_S_W, false},
+    {RISCV::PTH_MUFCVT_S_W_V, RISCV::TH_MUFCVT_S_W, false},
+    {RISCV::PTH_MFSCVT_W_S_V, RISCV::TH_MFSCVT_W_S, false},
+    {RISCV::PTH_MFUCVT_W_S_V, RISCV::TH_MFUCVT_W_S, false},
+    {RISCV::PTH_MUCVTL_B_P_V, RISCV::TH_MUCVTL_B_P, false},
+    {RISCV::PTH_MSCVTL_B_P_V, RISCV::TH_MSCVTL_B_P, false},
+    {RISCV::PTH_MUCVTH_B_P_V, RISCV::TH_MUCVTH_B_P, false},
+    {RISCV::PTH_MSCVTH_B_P_V, RISCV::TH_MSCVTH_B_P, false},
+    // ToGPR (no tied)
+    {RISCV::PTH_MMOVB_X_M_V, RISCV::TH_MMOVB_X_M, false},
+    {RISCV::PTH_MMOVH_X_M_V, RISCV::TH_MMOVH_X_M, false},
+    {RISCV::PTH_MMOVW_X_M_V, RISCV::TH_MMOVW_X_M, false},
+    {RISCV::PTH_MMOVD_X_M_V, RISCV::TH_MMOVD_X_M, false},
+    // FromGPR2 (tied: md_in=dst, skip tied)
+    {RISCV::PTH_MMOVB_M_X_V, RISCV::TH_MMOVB_M_X, true},
+    {RISCV::PTH_MMOVH_M_X_V, RISCV::TH_MMOVH_M_X, true},
+    {RISCV::PTH_MMOVW_M_X_V, RISCV::TH_MMOVW_M_X, true},
+    {RISCV::PTH_MMOVD_M_X_V, RISCV::TH_MMOVD_M_X, true},
+    // FromGPR/Dup (tied: md_in=dst, skip tied)
+    {RISCV::PTH_MDUPB_M_X_V, RISCV::TH_MDUPB_M_X, true},
+    {RISCV::PTH_MDUPH_M_X_V, RISCV::TH_MDUPH_M_X, true},
+    {RISCV::PTH_MDUPW_M_X_V, RISCV::TH_MDUPW_M_X, true},
+    {RISCV::PTH_MDUPD_M_X_V, RISCV::TH_MDUPD_M_X, true},
+    // Pack (no tied)
+    {RISCV::PTH_MPACK_V,   RISCV::TH_MPACK,   false},
+    {RISCV::PTH_MPACKHL_V, RISCV::TH_MPACKHL, false},
+    {RISCV::PTH_MPACKHH_V, RISCV::TH_MPACKHH, false},
+    // Slides/broadcasts (no tied)
+    {RISCV::PTH_MRSLIDEDOWN_V,  RISCV::TH_MRSLIDEDOWN,  false},
+    {RISCV::PTH_MRSLIDEUP_V,    RISCV::TH_MRSLIDEUP,    false},
+    {RISCV::PTH_MCSLIDEDOWN_B_V, RISCV::TH_MCSLIDEDOWN_B, false},
+    {RISCV::PTH_MCSLIDEDOWN_H_V, RISCV::TH_MCSLIDEDOWN_H, false},
+    {RISCV::PTH_MCSLIDEDOWN_W_V, RISCV::TH_MCSLIDEDOWN_W, false},
+    {RISCV::PTH_MCSLIDEDOWN_D_V, RISCV::TH_MCSLIDEDOWN_D, false},
+    {RISCV::PTH_MCSLIDEUP_B_V,  RISCV::TH_MCSLIDEUP_B,  false},
+    {RISCV::PTH_MCSLIDEUP_H_V,  RISCV::TH_MCSLIDEUP_H,  false},
+    {RISCV::PTH_MCSLIDEUP_W_V,  RISCV::TH_MCSLIDEUP_W,  false},
+    {RISCV::PTH_MCSLIDEUP_D_V,  RISCV::TH_MCSLIDEUP_D,  false},
+    {RISCV::PTH_MRBCA_MV_I_V,   RISCV::TH_MRBCA_MV_I,   false},
+    {RISCV::PTH_MCBCAB_MV_I_V,  RISCV::TH_MCBCAB_MV_I,  false},
+    {RISCV::PTH_MCBCAH_MV_I_V,  RISCV::TH_MCBCAH_MV_I,  false},
+    {RISCV::PTH_MCBCAW_MV_I_V,  RISCV::TH_MCBCAW_MV_I,  false},
+    {RISCV::PTH_MCBCAD_MV_I_V,  RISCV::TH_MCBCAD_MV_I,  false},
+    // N4clip .mm (tied)
+    {RISCV::PTH_MN4CLIPL_W_MM_V,  RISCV::TH_MN4CLIPL_W_MM,  true},
+    {RISCV::PTH_MN4CLIPH_W_MM_V,  RISCV::TH_MN4CLIPH_W_MM,  true},
+    {RISCV::PTH_MN4CLIPLU_W_MM_V, RISCV::TH_MN4CLIPLU_W_MM, true},
+    {RISCV::PTH_MN4CLIPHU_W_MM_V, RISCV::TH_MN4CLIPHU_W_MM, true},
+    // N4clip .mv.i (tied)
+    {RISCV::PTH_MN4CLIPL_W_MV_I_V,  RISCV::TH_MN4CLIPL_W_MV_I,  true},
+    {RISCV::PTH_MN4CLIPH_W_MV_I_V,  RISCV::TH_MN4CLIPH_W_MV_I,  true},
+    {RISCV::PTH_MN4CLIPLU_W_MV_I_V, RISCV::TH_MN4CLIPLU_W_MV_I, true},
+    {RISCV::PTH_MN4CLIPHU_W_MV_I_V, RISCV::TH_MN4CLIPHU_W_MV_I, true},
+    // Int EW .mm (tied)
+    {RISCV::PTH_MADD_W_MM_V,   RISCV::TH_MADD_W_MM,   true},
+    {RISCV::PTH_MSUB_W_MM_V,   RISCV::TH_MSUB_W_MM,   true},
+    {RISCV::PTH_MMUL_W_MM_V,   RISCV::TH_MMUL_W_MM,   true},
+    {RISCV::PTH_MMULH_W_MM_V,  RISCV::TH_MMULH_W_MM,  true},
+    {RISCV::PTH_MMAX_W_MM_V,   RISCV::TH_MMAX_W_MM,   true},
+    {RISCV::PTH_MUMAX_W_MM_V,  RISCV::TH_MUMAX_W_MM,  true},
+    {RISCV::PTH_MMIN_W_MM_V,   RISCV::TH_MMIN_W_MM,   true},
+    {RISCV::PTH_MUMIN_W_MM_V,  RISCV::TH_MUMIN_W_MM,  true},
+    {RISCV::PTH_MSRL_W_MM_V,   RISCV::TH_MSRL_W_MM,   true},
+    {RISCV::PTH_MSLL_W_MM_V,   RISCV::TH_MSLL_W_MM,   true},
+    {RISCV::PTH_MSRA_W_MM_V,   RISCV::TH_MSRA_W_MM,   true},
+    // Int EW .mv.i (tied)
+    {RISCV::PTH_MADD_W_MV_I_V,   RISCV::TH_MADD_W_MV_I,   true},
+    {RISCV::PTH_MSUB_W_MV_I_V,   RISCV::TH_MSUB_W_MV_I,   true},
+    {RISCV::PTH_MMUL_W_MV_I_V,   RISCV::TH_MMUL_W_MV_I,   true},
+    {RISCV::PTH_MMULH_W_MV_I_V,  RISCV::TH_MMULH_W_MV_I,  true},
+    {RISCV::PTH_MMAX_W_MV_I_V,   RISCV::TH_MMAX_W_MV_I,   true},
+    {RISCV::PTH_MUMAX_W_MV_I_V,  RISCV::TH_MUMAX_W_MV_I,  true},
+    {RISCV::PTH_MMIN_W_MV_I_V,   RISCV::TH_MMIN_W_MV_I,   true},
+    {RISCV::PTH_MUMIN_W_MV_I_V,  RISCV::TH_MUMIN_W_MV_I,  true},
+    {RISCV::PTH_MSRL_W_MV_I_V,   RISCV::TH_MSRL_W_MV_I,   true},
+    {RISCV::PTH_MSLL_W_MV_I_V,   RISCV::TH_MSLL_W_MV_I,   true},
+    {RISCV::PTH_MSRA_W_MV_I_V,   RISCV::TH_MSRA_W_MV_I,   true},
+    // FP EW .mm (tied)
+    {RISCV::PTH_MFADD_H_MM_V, RISCV::TH_MFADD_H_MM, true},
+    {RISCV::PTH_MFADD_S_MM_V, RISCV::TH_MFADD_S_MM, true},
+    {RISCV::PTH_MFADD_D_MM_V, RISCV::TH_MFADD_D_MM, true},
+    {RISCV::PTH_MFSUB_H_MM_V, RISCV::TH_MFSUB_H_MM, true},
+    {RISCV::PTH_MFSUB_S_MM_V, RISCV::TH_MFSUB_S_MM, true},
+    {RISCV::PTH_MFSUB_D_MM_V, RISCV::TH_MFSUB_D_MM, true},
+    {RISCV::PTH_MFMUL_H_MM_V, RISCV::TH_MFMUL_H_MM, true},
+    {RISCV::PTH_MFMUL_S_MM_V, RISCV::TH_MFMUL_S_MM, true},
+    {RISCV::PTH_MFMUL_D_MM_V, RISCV::TH_MFMUL_D_MM, true},
+    {RISCV::PTH_MFMAX_H_MM_V, RISCV::TH_MFMAX_H_MM, true},
+    {RISCV::PTH_MFMAX_S_MM_V, RISCV::TH_MFMAX_S_MM, true},
+    {RISCV::PTH_MFMAX_D_MM_V, RISCV::TH_MFMAX_D_MM, true},
+    {RISCV::PTH_MFMIN_H_MM_V, RISCV::TH_MFMIN_H_MM, true},
+    {RISCV::PTH_MFMIN_S_MM_V, RISCV::TH_MFMIN_S_MM, true},
+    {RISCV::PTH_MFMIN_D_MM_V, RISCV::TH_MFMIN_D_MM, true},
+    // FP EW .mv.i (tied)
+    {RISCV::PTH_MFADD_H_MV_I_V, RISCV::TH_MFADD_H_MV_I, true},
+    {RISCV::PTH_MFADD_S_MV_I_V, RISCV::TH_MFADD_S_MV_I, true},
+    {RISCV::PTH_MFADD_D_MV_I_V, RISCV::TH_MFADD_D_MV_I, true},
+    {RISCV::PTH_MFSUB_H_MV_I_V, RISCV::TH_MFSUB_H_MV_I, true},
+    {RISCV::PTH_MFSUB_S_MV_I_V, RISCV::TH_MFSUB_S_MV_I, true},
+    {RISCV::PTH_MFSUB_D_MV_I_V, RISCV::TH_MFSUB_D_MV_I, true},
+    {RISCV::PTH_MFMUL_H_MV_I_V, RISCV::TH_MFMUL_H_MV_I, true},
+    {RISCV::PTH_MFMUL_S_MV_I_V, RISCV::TH_MFMUL_S_MV_I, true},
+    {RISCV::PTH_MFMUL_D_MV_I_V, RISCV::TH_MFMUL_D_MV_I, true},
+    {RISCV::PTH_MFMAX_H_MV_I_V, RISCV::TH_MFMAX_H_MV_I, true},
+    {RISCV::PTH_MFMAX_S_MV_I_V, RISCV::TH_MFMAX_S_MV_I, true},
+    {RISCV::PTH_MFMAX_D_MV_I_V, RISCV::TH_MFMAX_D_MV_I, true},
+    {RISCV::PTH_MFMIN_H_MV_I_V, RISCV::TH_MFMIN_H_MV_I, true},
+    {RISCV::PTH_MFMIN_S_MV_I_V, RISCV::TH_MFMIN_S_MV_I, true},
+    {RISCV::PTH_MFMIN_D_MV_I_V, RISCV::TH_MFMIN_D_MV_I, true},
+};
+// clang-format on
+
+static const THMatrixPseudoEntry *lookupTHMatrixPseudo(unsigned Opc) {
+  for (const auto &E : THMatrixPseudoTable)
+    if (E.PseudoOpc == Opc)
+      return &E;
+  return nullptr;
+}
+
+bool RISCVExpandPseudo::expandTHMatrixPseudo(MachineBasicBlock &MBB,
+                                             MachineBasicBlock::iterator MBBI) {
+  MachineInstr &MI = *MBBI;
+  const THMatrixPseudoEntry *Entry = lookupTHMatrixPseudo(MI.getOpcode());
+  if (!Entry)
+    return false;
+
+  DebugLoc DL = MI.getDebugLoc();
+  MachineInstrBuilder MIB = BuildMI(MBB, MBBI, DL, TII->get(Entry->RealOpc));
+
+  // Copy def operands (outputs).
+  for (unsigned I = 0, E = MI.getNumDefs(); I < E; ++I) {
+    MachineOperand &MO = MI.getOperand(I);
+    MIB.add(MO);
+  }
+
+  // Copy use operands (inputs), optionally skipping the first input
+  // (tied operand that duplicates the output).
+  bool SkippedTied = false;
+  for (unsigned I = MI.getNumDefs(), E = MI.getNumOperands(); I < E; ++I) {
+    MachineOperand &MO = MI.getOperand(I);
+    // Skip implicit operands.
+    if (MO.isImplicit())
+      continue;
+    // Skip the first tied input if requested.
+    if (Entry->SkipTiedInput && !SkippedTied && MO.isReg() && MO.isTied()) {
+      SkippedTied = true;
+      continue;
+    }
+    MIB.add(MO);
+  }
+
+  MI.eraseFromParent();
   return true;
 }
 

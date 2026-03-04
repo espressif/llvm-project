@@ -335,4 +335,156 @@ def mundef_f16x2  : RISCVXTHeadMatrixBuiltin<"__rvm_float16x2_t()", "experimenta
 def mundef_f32x2  : RISCVXTHeadMatrixBuiltin<"__rvm_float32x2_t()", "experimental-xtheadmatrix">;
 def mundef_f64x2  : RISCVXTHeadMatrixBuiltin<"__rvm_float64x2_t()", "experimental-xtheadmatrix">;
 
+//===----------------------------------------------------------------------===//
+// Spec-API builtins (ManagedRA: no register index, returns matrix type)
+//===----------------------------------------------------------------------===//
+// These builtins emit _internal intrinsics that produce/consume real
+// target("riscv.matrix") SSA values for register-allocator-managed code.
+//
+// Load spec-API: (void *base, size_t stride, size_t m, size_t n) -> matrix
+// Store spec-API: (void *base, size_t stride, matrix val, size_t m, size_t n) -> void
+// Matmul spec-API: (matrix acc, matrix a, matrix b, size_t m, size_t k, size_t n) -> matrix
+
+// --- Load A-tile (mlae): (base, stride, m, k) -> matrix ---
+def mld_spec_i8  : RISCVXTHeadMatrixBuiltin<"__rvm_int8_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mld_spec_i16 : RISCVXTHeadMatrixBuiltin<"__rvm_int16_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mld_spec_i32 : RISCVXTHeadMatrixBuiltin<"__rvm_int32_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mld_spec_i64 : RISCVXTHeadMatrixBuiltin<"__rvm_int64_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mld_spec_u8  : RISCVXTHeadMatrixBuiltin<"__rvm_uint8_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mld_spec_u16 : RISCVXTHeadMatrixBuiltin<"__rvm_uint16_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mld_spec_u32 : RISCVXTHeadMatrixBuiltin<"__rvm_uint32_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mld_spec_u64 : RISCVXTHeadMatrixBuiltin<"__rvm_uint64_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mld_spec_f16 : RISCVXTHeadMatrixBuiltin<"__rvm_float16_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mld_spec_f32 : RISCVXTHeadMatrixBuiltin<"__rvm_float32_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mld_spec_f64 : RISCVXTHeadMatrixBuiltin<"__rvm_float64_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+
+// --- Load B-tile (mlbe): (base, stride, k, n) -> matrix ---
+def mld_b_spec_i8  : RISCVXTHeadMatrixBuiltin<"__rvm_int8_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mld_b_spec_i16 : RISCVXTHeadMatrixBuiltin<"__rvm_int16_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mld_b_spec_i32 : RISCVXTHeadMatrixBuiltin<"__rvm_int32_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mld_b_spec_i64 : RISCVXTHeadMatrixBuiltin<"__rvm_int64_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mld_b_spec_u8  : RISCVXTHeadMatrixBuiltin<"__rvm_uint8_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mld_b_spec_u16 : RISCVXTHeadMatrixBuiltin<"__rvm_uint16_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mld_b_spec_u32 : RISCVXTHeadMatrixBuiltin<"__rvm_uint32_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mld_b_spec_u64 : RISCVXTHeadMatrixBuiltin<"__rvm_uint64_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mld_b_spec_f16 : RISCVXTHeadMatrixBuiltin<"__rvm_float16_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mld_b_spec_f32 : RISCVXTHeadMatrixBuiltin<"__rvm_float32_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mld_b_spec_f64 : RISCVXTHeadMatrixBuiltin<"__rvm_float64_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+
+// --- Load accumulator (mlce): (base, stride, m, n) -> matrix ---
+def mld_acc_spec_i8  : RISCVXTHeadMatrixBuiltin<"__rvm_int8_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mld_acc_spec_i16 : RISCVXTHeadMatrixBuiltin<"__rvm_int16_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mld_acc_spec_i32 : RISCVXTHeadMatrixBuiltin<"__rvm_int32_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mld_acc_spec_i64 : RISCVXTHeadMatrixBuiltin<"__rvm_int64_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mld_acc_spec_u8  : RISCVXTHeadMatrixBuiltin<"__rvm_uint8_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mld_acc_spec_u16 : RISCVXTHeadMatrixBuiltin<"__rvm_uint16_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mld_acc_spec_u32 : RISCVXTHeadMatrixBuiltin<"__rvm_uint32_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mld_acc_spec_u64 : RISCVXTHeadMatrixBuiltin<"__rvm_uint64_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mld_acc_spec_f16 : RISCVXTHeadMatrixBuiltin<"__rvm_float16_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mld_acc_spec_f32 : RISCVXTHeadMatrixBuiltin<"__rvm_float32_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mld_acc_spec_f64 : RISCVXTHeadMatrixBuiltin<"__rvm_float64_t(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+
+// --- Store (msce): (base, stride, val, m, n) -> void ---
+def mst_spec_i8  : RISCVXTHeadMatrixBuiltin<"void(void *, size_t, __rvm_int8_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mst_spec_i16 : RISCVXTHeadMatrixBuiltin<"void(void *, size_t, __rvm_int16_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mst_spec_i32 : RISCVXTHeadMatrixBuiltin<"void(void *, size_t, __rvm_int32_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mst_spec_i64 : RISCVXTHeadMatrixBuiltin<"void(void *, size_t, __rvm_int64_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mst_spec_u8  : RISCVXTHeadMatrixBuiltin<"void(void *, size_t, __rvm_uint8_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mst_spec_u16 : RISCVXTHeadMatrixBuiltin<"void(void *, size_t, __rvm_uint16_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mst_spec_u32 : RISCVXTHeadMatrixBuiltin<"void(void *, size_t, __rvm_uint32_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mst_spec_u64 : RISCVXTHeadMatrixBuiltin<"void(void *, size_t, __rvm_uint64_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mst_spec_f16 : RISCVXTHeadMatrixBuiltin<"void(void *, size_t, __rvm_float16_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mst_spec_f32 : RISCVXTHeadMatrixBuiltin<"void(void *, size_t, __rvm_float32_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mst_spec_f64 : RISCVXTHeadMatrixBuiltin<"void(void *, size_t, __rvm_float64_t, size_t, size_t)", "experimental-xtheadmatrix">;
+
+// --- INT matmul spec-API: (acc, a, b, m, k, n) -> acc ---
+// INT8 -> INT32
+def mmaqa_spec_ss_w_b : RISCVXTHeadMatrixBuiltin<
+    "__rvm_int32_t(__rvm_int32_t, __rvm_int8_t, __rvm_int8_t, size_t, size_t, size_t)",
+    "experimental-xtheadmatrix">;
+def mmaqa_spec_uu_w_b : RISCVXTHeadMatrixBuiltin<
+    "__rvm_uint32_t(__rvm_uint32_t, __rvm_uint8_t, __rvm_uint8_t, size_t, size_t, size_t)",
+    "experimental-xtheadmatrix">;
+def mmaqa_spec_us_w_b : RISCVXTHeadMatrixBuiltin<
+    "__rvm_int32_t(__rvm_int32_t, __rvm_uint8_t, __rvm_int8_t, size_t, size_t, size_t)",
+    "experimental-xtheadmatrix">;
+def mmaqa_spec_su_w_b : RISCVXTHeadMatrixBuiltin<
+    "__rvm_int32_t(__rvm_int32_t, __rvm_int8_t, __rvm_uint8_t, size_t, size_t, size_t)",
+    "experimental-xtheadmatrix">;
+// INT16 -> INT64
+def mmaqa_spec_ss_d_h : RISCVXTHeadMatrixBuiltin<
+    "__rvm_int64_t(__rvm_int64_t, __rvm_int16_t, __rvm_int16_t, size_t, size_t, size_t)",
+    "experimental-xtheadmatrix">;
+def mmaqa_spec_uu_d_h : RISCVXTHeadMatrixBuiltin<
+    "__rvm_uint64_t(__rvm_uint64_t, __rvm_uint16_t, __rvm_uint16_t, size_t, size_t, size_t)",
+    "experimental-xtheadmatrix">;
+def mmaqa_spec_us_d_h : RISCVXTHeadMatrixBuiltin<
+    "__rvm_int64_t(__rvm_int64_t, __rvm_uint16_t, __rvm_int16_t, size_t, size_t, size_t)",
+    "experimental-xtheadmatrix">;
+def mmaqa_spec_su_d_h : RISCVXTHeadMatrixBuiltin<
+    "__rvm_int64_t(__rvm_int64_t, __rvm_int16_t, __rvm_uint16_t, size_t, size_t, size_t)",
+    "experimental-xtheadmatrix">;
+// Partial INT8 -> INT32
+def pmmaqa_spec_ss_w_b : RISCVXTHeadMatrixBuiltin<
+    "__rvm_int32_t(__rvm_int32_t, __rvm_int8_t, __rvm_int8_t, size_t, size_t, size_t)",
+    "experimental-xtheadmatrix">;
+def pmmaqa_spec_uu_w_b : RISCVXTHeadMatrixBuiltin<
+    "__rvm_uint32_t(__rvm_uint32_t, __rvm_uint8_t, __rvm_uint8_t, size_t, size_t, size_t)",
+    "experimental-xtheadmatrix">;
+def pmmaqa_spec_us_w_b : RISCVXTHeadMatrixBuiltin<
+    "__rvm_int32_t(__rvm_int32_t, __rvm_uint8_t, __rvm_int8_t, size_t, size_t, size_t)",
+    "experimental-xtheadmatrix">;
+def pmmaqa_spec_su_w_b : RISCVXTHeadMatrixBuiltin<
+    "__rvm_int32_t(__rvm_int32_t, __rvm_int8_t, __rvm_uint8_t, size_t, size_t, size_t)",
+    "experimental-xtheadmatrix">;
+// Bypass INT
+def mmaqa_spec_bp_ss : RISCVXTHeadMatrixBuiltin<
+    "__rvm_int32_t(__rvm_int32_t, __rvm_int8_t, __rvm_int8_t, size_t, size_t, size_t)",
+    "experimental-xtheadmatrix">;
+def mmaqa_spec_bp_uu : RISCVXTHeadMatrixBuiltin<
+    "__rvm_uint32_t(__rvm_uint32_t, __rvm_uint8_t, __rvm_uint8_t, size_t, size_t, size_t)",
+    "experimental-xtheadmatrix">;
+
+// --- FP matmul spec-API: (acc, a, b, m, k, n) -> acc ---
+// Native-precision
+def mfmaqa_spec_h : RISCVXTHeadMatrixBuiltin<
+    "__rvm_float16_t(__rvm_float16_t, __rvm_float16_t, __rvm_float16_t, size_t, size_t, size_t)",
+    "experimental-xtheadmatrix">;
+def mfmaqa_spec_s : RISCVXTHeadMatrixBuiltin<
+    "__rvm_float32_t(__rvm_float32_t, __rvm_float32_t, __rvm_float32_t, size_t, size_t, size_t)",
+    "experimental-xtheadmatrix">;
+def mfmaqa_spec_d : RISCVXTHeadMatrixBuiltin<
+    "__rvm_float64_t(__rvm_float64_t, __rvm_float64_t, __rvm_float64_t, size_t, size_t, size_t)",
+    "experimental-xtheadmatrix">;
+// Widening FP16 -> FP32
+def mfmaqa_spec_s_h : RISCVXTHeadMatrixBuiltin<
+    "__rvm_float32_t(__rvm_float32_t, __rvm_float16_t, __rvm_float16_t, size_t, size_t, size_t)",
+    "experimental-xtheadmatrix">;
+// Widening FP32 -> FP64
+def mfmaqa_spec_d_s : RISCVXTHeadMatrixBuiltin<
+    "__rvm_float64_t(__rvm_float64_t, __rvm_float32_t, __rvm_float32_t, size_t, size_t, size_t)",
+    "experimental-xtheadmatrix">;
+// Widening FP8/BF16/TF32 -> various (void — no standard types for FP8/BF16/TF32 sources)
+def mfmaqa_spec_h_e4    : RISCVXTHeadMatrixBuiltin<"__rvm_float16_t(__rvm_float16_t, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mfmaqa_spec_h_e5    : RISCVXTHeadMatrixBuiltin<"__rvm_float16_t(__rvm_float16_t, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mfmaqa_spec_bf16_e4 : RISCVXTHeadMatrixBuiltin<"__rvm_float16_t(__rvm_float16_t, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mfmaqa_spec_bf16_e5 : RISCVXTHeadMatrixBuiltin<"__rvm_float16_t(__rvm_float16_t, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mfmaqa_spec_s_bf16  : RISCVXTHeadMatrixBuiltin<"__rvm_float32_t(__rvm_float32_t, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mfmaqa_spec_s_e4    : RISCVXTHeadMatrixBuiltin<"__rvm_float32_t(__rvm_float32_t, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mfmaqa_spec_s_e5    : RISCVXTHeadMatrixBuiltin<"__rvm_float32_t(__rvm_float32_t, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+def mfmaqa_spec_s_tf32  : RISCVXTHeadMatrixBuiltin<"__rvm_float32_t(__rvm_float32_t, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+
+// --- Zero spec-API: (m, n) -> matrix ---
+def mzero_spec_i8  : RISCVXTHeadMatrixBuiltin<"__rvm_int8_t(size_t, size_t)", "experimental-xtheadmatrix">;
+def mzero_spec_i16 : RISCVXTHeadMatrixBuiltin<"__rvm_int16_t(size_t, size_t)", "experimental-xtheadmatrix">;
+def mzero_spec_i32 : RISCVXTHeadMatrixBuiltin<"__rvm_int32_t(size_t, size_t)", "experimental-xtheadmatrix">;
+def mzero_spec_i64 : RISCVXTHeadMatrixBuiltin<"__rvm_int64_t(size_t, size_t)", "experimental-xtheadmatrix">;
+def mzero_spec_u8  : RISCVXTHeadMatrixBuiltin<"__rvm_uint8_t(size_t, size_t)", "experimental-xtheadmatrix">;
+def mzero_spec_u16 : RISCVXTHeadMatrixBuiltin<"__rvm_uint16_t(size_t, size_t)", "experimental-xtheadmatrix">;
+def mzero_spec_u32 : RISCVXTHeadMatrixBuiltin<"__rvm_uint32_t(size_t, size_t)", "experimental-xtheadmatrix">;
+def mzero_spec_u64 : RISCVXTHeadMatrixBuiltin<"__rvm_uint64_t(size_t, size_t)", "experimental-xtheadmatrix">;
+def mzero_spec_f16 : RISCVXTHeadMatrixBuiltin<"__rvm_float16_t(size_t, size_t)", "experimental-xtheadmatrix">;
+def mzero_spec_f32 : RISCVXTHeadMatrixBuiltin<"__rvm_float32_t(size_t, size_t)", "experimental-xtheadmatrix">;
+def mzero_spec_f64 : RISCVXTHeadMatrixBuiltin<"__rvm_float64_t(size_t, size_t)", "experimental-xtheadmatrix">;
+
 } // Attributes = [NoThrow]

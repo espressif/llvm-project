@@ -92,9 +92,9 @@ Spec references:
 - `mmov.m.x` (FromGPR2): md = TR0
 - `mdup.m.x` (FromGPR1): md = TR0
 
-## 3. Critical Bug Fix: Register Assignment Correction
+## 3. Critical Bug Fixes
 
-### Bug Description
+### Bug Fix A: DirectReg Register Assignment Correction (Phase 4)
 
 During initial implementation, 102 ISel table entries for element-wise and conversion instructions incorrectly used **tile registers** (TR0/TR1/TR2) where the RVM 0.6 spec requires **accumulator registers** (ACC0/ACC1/ACC2). This affected:
 
@@ -105,25 +105,35 @@ During initial implementation, 102 ISel table entries for element-wise and conve
 - 22 integer EW `.w.mm` and `.w.mv.i` variants (md=TR0, ms1=TR1, ms2=TR2)
 - 30 FP EW `.h/.s/.d.mm` and `.mv.i` variants (md=TR0, ms1=TR1, ms2=TR2)
 
-### Root Cause
+**Root cause**: The initial implementation treated all non-matmul 3-register instructions identically, using the same tile register convention as MISC operations.
 
-The initial implementation treated all non-matmul 3-register instructions identically, using the same tile register convention as MISC operations. It did not distinguish the register constraints for element-wise/conversion operations from those for slides/pack/broadcast.
+**Fix**: Changed all 102 affected entries from `TR0/TR1/TR2` to `ACC0/ACC1/ACC2`.
 
-### Fix
+### Bug Fix B: ManagedRA Conversion Pseudo Register Classes (2026-03-04)
 
-Changed all 102 affected entries from `TR0/TR1/TR2` to `ACC0/ACC1/ACC2`. Also added the `ACC2 = 6` constant which was previously unused.
+**Independent verification found** that the same register class issue existed in the
+ManagedRA pseudo-instructions: 42 conversion pseudos (`PTH_MFCVT*_V`, `PTH_MUCVT*_V`,
+etc.) used `THRVMMR` (allows tr0-tr3) instead of `THRVMACC` (acc0-acc3 only).
 
-Before:
-```cpp
-{Intrinsic::riscv_th_mfcvtl_h_e4, RISCV::TH_MFCVTL_H_E4, THM_NoArgs2Reg, TR0, TR1, 0},
-{Intrinsic::riscv_th_madd_w_mm,    RISCV::TH_MADD_W_MM,    THM_NoArgs3Reg, TR0, TR1, TR2},
-```
+**Spec reference** (`type_convert.adoc`): "The input and output matrices of type-convert
+instructions are both accumulation registers."
 
-After:
-```cpp
-{Intrinsic::riscv_th_mfcvtl_h_e4, RISCV::TH_MFCVTL_H_E4, THM_NoArgs2Reg, ACC0, ACC1, 0},
-{Intrinsic::riscv_th_madd_w_mm,    RISCV::TH_MADD_W_MM,    THM_NoArgs3Reg, ACC0, ACC1, ACC2},
-```
+**Fix**: Changed all 42 conversion pseudo-instructions from `THRVMMR` to `THRVMACC`.
+File: `RISCVInstrInfoXTHeadMatrix.td`.
+
+### Bug Fix C: Spec-API Matmul Operand Swap (2026-03-04)
+
+**Independent verification found** that the spec-API codegen passed matmul operands
+in the wrong order. The `_internal` intrinsic signature is `(acc, ms2, ms1)`, but
+the codegen passed `{acc, a, b}` — placing A into ms2 and B into ms1. Per the spec
+formula `md = md + ms1 * ms2` and the DirectReg convention (A→ms1=TR0, B→ms2=TR1),
+the correct call is `{acc, b, a}`.
+
+This caused wrong results for non-commutative variants (`mmaccus`: ms1=unsigned,
+ms2=signed; `mmaccsu`: ms1=signed, ms2=unsigned).
+
+**Fix**: Swapped `Ops[1]` and `Ops[2]` in all matmul `CreateCall` invocations in
+`clang/lib/CodeGen/TargetBuiltins/RISCV.cpp`.
 
 ## 4. Verification Results
 

@@ -472,6 +472,10 @@ void RISCVPassConfig::addIRPasses() {
     addPass(createRISCVCodeGenPrepareLegacyPass());
   }
 
+  // XTHeadMatrix: At -O0, lower matrix types to shorten live ranges for
+  // fast register allocation.
+  addPass(createRISCVLowerMatrixTypePass());
+
   TargetPassConfig::addIRPasses();
 }
 

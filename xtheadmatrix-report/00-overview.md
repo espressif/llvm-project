@@ -11,9 +11,10 @@ Implemented full assembler/disassembler support, LLVM IR intrinsics, Clang built
 - **Register class**: 8 matrix registers: `tr0-tr3` (tile) and `acc0-acc3` (accumulator), 3-bit encoded
 - **CSR names**: 13 CSRs prefixed with `th.` (e.g. `th.xmcsr`, `th.mtilem`)
 - **Intrinsics**: 371 lines of LLVM IR intrinsics (`int_riscv_th_*`) covering all instruction categories
-- **Builtins**: 249 Clang builtins (227 original + 22 mundef); 121 have typed `__rvm_*_t` signatures (Phase C)
-- **ISel/CodeGen**: Table-driven `selectTHMatrix()` with 227 intrinsic-to-instruction mappings, 15 dispatch categories, flexible register selection via ImmArg register index parameters (no longer hardcoded), Sema constraint validation, and all 8 matrix registers reserved
-- **Intrinsic API**: `<thead_matrix.h>` header with 414 API functions/macros, 22 matrix types backed by native built-in types, following the RVM Intrinsic API Reference Manual v0.2
+- **Builtins**: 249+ Clang builtins (227 original + 22 mundef + 90+ spec-API); 121 have typed `__rvm_*_t` signatures (Phase C)
+- **ISel/CodeGen**: Table-driven `selectTHMatrix()` with 227 intrinsic-to-instruction mappings, 15 dispatch categories, flexible register selection via ImmArg register index parameters (no longer hardcoded), Sema constraint validation, and all 8 matrix registers reserved. ManagedRA path: `selectTHMatrixInternal()` with 220 `_internal` intrinsic-to-pseudo mappings + post-RA expansion.
+- **Intrinsic API**: `<thead_matrix.h>` header with 500+ API functions/macros, 22 matrix types backed by native built-in types, following the RVM Intrinsic API Reference Manual v0.2
+- **Spec-API (ManagedRA)**: Full register-allocator-managed programming model with A/B/C-tile loads (11 types each), stores (11 types), all matmul variants (27), and zero constructors (11 types)
 - **Built-in types**: 22 native Clang built-in types (`__rvm_int8_t` .. `__rvm_float64x2_t`) via `RISCVMatrixTypes.def`, integrated across ~27 Clang source files
 - **Typed builtins (Phase C)**: 121 builtins accept/return `__rvm_*_t` types for Sema-level type checking; CGBuiltin filters TargetExtType args and returns PoisonValue tokens
 
@@ -35,3 +36,14 @@ Implemented full assembler/disassembler support, LLVM IR intrinsics, Clang built
 - Register index restructure: all intrinsics/builtins accept register index parameters; Sema validates constraints per instruction category
 - Bug fix: `mzero` was hardcoded to tr0 (incorrect); now correctly targets acc0 via register index parameter
 - Audit fixes: N4clip signed return type corrected (mint8_t), reinterpret casts accept src parameter per spec
+- **Independent verification #1 (2026-03-04, Gemini)**: 2 bugs found and fixed, 3 coverage gaps eliminated (see report 13)
+  - Bug fix: 42 conversion pseudo-instructions changed THRVMMR → THRVMACC per spec
+  - Bug fix: spec-API matmul operand swap (A→ms1, B→ms2) for non-commutative correctness
+  - New: B-tile spec-API load (mlbe), FP/unsigned type variants, all matmul variants in spec-API
+- **Independent verification #2 (2026-03-04, Claude Opus 4.6)**: Full re-verification against spec source files, **no new bugs found**
+  - 227 instruction encodings: every bit field re-verified against spec/instruction_list.adoc
+  - 447 ISel entries (227 DirectReg + 220 ManagedRA): all correct
+  - 220 pseudo expansion entries: all SkipTiedInput flags verified against .td Constraints
+  - Spec-API codegen: matmul swap, load/store selection, CSR calls all confirmed correct
+  - 13 CSR addresses verified, 447 intrinsic signatures verified
+  - Limitations and differences from spec documented (see report 13)

@@ -83,3 +83,33 @@ End-to-end Clang tests verifying builtin calls compile through to correct assemb
 *Note: `RISCVInstrInfoXTHeadMatrix.td` (listed above as created) was also modified for ISel compatibility: `hasSideEffects = 1` on all instruction classes; THRVMMR operands moved to `(ins)` from `(outs)`.*
 
 *Note: `llvm/docs/RISCV/RISCVXTHeadMatrix.md` was updated with ISel/CodeGen documentation, register constraints, and current limitations.*
+
+## Files Modified by Independent Verification (2026-03-04)
+
+### Bug Fixes
+
+| File | Change | Description |
+|------|--------|-------------|
+| `llvm/lib/Target/RISCV/RISCVInstrInfoXTHeadMatrix.td` | Bug fix | 42 conversion pseudos: THRVMMR → THRVMACC (spec requires acc registers) |
+| `clang/lib/CodeGen/TargetBuiltins/RISCV.cpp` | Bug fix | Matmul operand swap: `{acc, a, b}` → `{acc, b, a}` (A→ms1, B→ms2) |
+
+### Coverage Gaps Filled
+
+| File | Change | Description |
+|------|--------|-------------|
+| `clang/include/clang/Basic/BuiltinsRISCVXTHeadMatrix.td` | New builtins | B-tile loads (11), FP/unsigned load/store/zero variants (63), all matmul variants (21) |
+| `clang/lib/CodeGen/TargetBuiltins/RISCV.cpp` | New codegen | Refactored to helper lambdas; added all new spec-API case handlers |
+| `clang/lib/Headers/thead_matrix.h` | New wrappers | Macro-based C wrappers for all new spec-API builtins |
+| `clang/test/CodeGen/RISCV/xtheadmatrix-spec-api.c` | Updated test | Uses B-tile load; updated CHECK lines for mlbe.internal8 |
+
+### Documentation Updated by Second Verification (2026-03-04, Claude Opus 4.6)
+
+A second independent verification confirmed all fixes are correct and found no new bugs.
+Documentation was updated to reflect comprehensive limitations and spec differences:
+
+| File | Change | Description |
+|------|--------|-------------|
+| `xtheadmatrix-report/00-overview.md` | Updated | Added second verification results |
+| `xtheadmatrix-report/10-future-work.md` | Updated | Added current limitations list |
+| `xtheadmatrix-report/13-verification-and-fixes.md` | Updated | Added second audit results, limitations, and spec differences |
+| `xtheadmatrix-doc/RISCVXTHeadMatrix.md` | Updated | Comprehensive limitations, spec API differences, verification history |

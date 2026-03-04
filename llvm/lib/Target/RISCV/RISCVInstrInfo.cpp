@@ -705,10 +705,27 @@ void RISCVInstrInfo::storeRegToStackSlot(MachineBasicBlock &MBB,
     Opcode = RISCV::PseudoVSPILL7_M1;
   else if (RISCV::VRN8M1RegClass.hasSubClassEq(RC))
     Opcode = RISCV::PseudoVSPILL8_M1;
+  else if (RISCV::THRVMMRRegClass.hasSubClassEq(RC) ||
+           RISCV::THRVMTRRegClass.hasSubClassEq(RC) ||
+           RISCV::THRVMACCRegClass.hasSubClassEq(RC))
+    Opcode = RISCV::PTH_MATRIX_SPILL;
   else
     llvm_unreachable("Can't store this register to stack slot");
 
-  if (RISCVRegisterInfo::isRVVRegClass(RC)) {
+  if (RISCV::THRVMMRRegClass.hasSubClassEq(RC) ||
+      RISCV::THRVMTRRegClass.hasSubClassEq(RC) ||
+      RISCV::THRVMACCRegClass.hasSubClassEq(RC)) {
+    // Use RVV-style spill pattern: no immediate offset operand.
+    // eliminateFrameIndex will materialize the full address into a register.
+    MachineMemOperand *MMO = MF->getMachineMemOperand(
+        MachinePointerInfo::getFixedStack(*MF, FI), MachineMemOperand::MOStore,
+        MFI.getObjectSize(FI), Alignment);
+    BuildMI(MBB, I, DebugLoc(), get(Opcode))
+        .addReg(SrcReg, getKillRegState(IsKill))
+        .addFrameIndex(FI)
+        .addMemOperand(MMO)
+        .setMIFlag(Flags);
+  } else if (RISCVRegisterInfo::isRVVRegClass(RC)) {
     MachineMemOperand *MMO = MF->getMachineMemOperand(
         MachinePointerInfo::getFixedStack(*MF, FI), MachineMemOperand::MOStore,
         TypeSize::getScalable(MFI.getObjectSize(FI)), Alignment);
@@ -797,10 +814,25 @@ void RISCVInstrInfo::loadRegFromStackSlot(MachineBasicBlock &MBB,
     Opcode = RISCV::PseudoVRELOAD7_M1;
   else if (RISCV::VRN8M1RegClass.hasSubClassEq(RC))
     Opcode = RISCV::PseudoVRELOAD8_M1;
+  else if (RISCV::THRVMMRRegClass.hasSubClassEq(RC) ||
+           RISCV::THRVMTRRegClass.hasSubClassEq(RC) ||
+           RISCV::THRVMACCRegClass.hasSubClassEq(RC))
+    Opcode = RISCV::PTH_MATRIX_RELOAD;
   else
     llvm_unreachable("Can't load this register from stack slot");
 
-  if (RISCVRegisterInfo::isRVVRegClass(RC)) {
+  if (RISCV::THRVMMRRegClass.hasSubClassEq(RC) ||
+      RISCV::THRVMTRRegClass.hasSubClassEq(RC) ||
+      RISCV::THRVMACCRegClass.hasSubClassEq(RC)) {
+    // Use RVV-style spill pattern: no immediate offset operand.
+    MachineMemOperand *MMO = MF->getMachineMemOperand(
+        MachinePointerInfo::getFixedStack(*MF, FI), MachineMemOperand::MOLoad,
+        MFI.getObjectSize(FI), Alignment);
+    BuildMI(MBB, I, DL, get(Opcode), DstReg)
+        .addFrameIndex(FI)
+        .addMemOperand(MMO)
+        .setMIFlag(Flags);
+  } else if (RISCVRegisterInfo::isRVVRegClass(RC)) {
     MachineMemOperand *MMO = MF->getMachineMemOperand(
         MachinePointerInfo::getFixedStack(*MF, FI), MachineMemOperand::MOLoad,
         TypeSize::getScalable(MFI.getObjectSize(FI)), Alignment);
@@ -4920,9 +4952,12 @@ unsigned RISCVInstrInfo::getTailDuplicateSize(CodeGenOptLevel OptLevel) const {
 }
 
 bool RISCV::isRVVSpill(const MachineInstr &MI) {
-  // RVV lacks any support for immediate addressing for stack addresses, so be
-  // conservative.
+  // RVV (and matrix) spills lack any support for immediate addressing for
+  // stack addresses, so be conservative.
   unsigned Opcode = MI.getOpcode();
+  // XTHeadMatrix spill/reload pseudos use the same no-offset pattern as RVV.
+  if (Opcode == RISCV::PTH_MATRIX_SPILL || Opcode == RISCV::PTH_MATRIX_RELOAD)
+    return true;
   if (!RISCVVPseudosTable::getPseudoInfo(Opcode) &&
       !getLMULForRVVWholeLoadStore(Opcode) && !isRVVSpillForZvlsseg(Opcode))
     return false;

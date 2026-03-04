@@ -52,6 +52,7 @@ add_llvm_target(RISCVCodeGen
   RISCVLandingPadSetup.cpp
   RISCVLateBranchOpt.cpp
   RISCVLoadStoreOptimizer.cpp
+  RISCVLowerMatrixType.cpp
   RISCVMachineFunctionInfo.cpp
   RISCVMakeCompressible.cpp
   RISCVMachineScheduler.cpp

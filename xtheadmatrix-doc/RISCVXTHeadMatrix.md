@@ -21,20 +21,29 @@ rounding modes, and hardware capability queries.
 maintained by C-SKY MicroSystems / T-Head.
 
 **Implementation summary**: 227 instructions, 227 LLVM intrinsics, and
-249 Clang builtins (227 original + 22 `mundef` constructors) are
-implemented with full ISel/CodeGen support. All intrinsics and builtins
-accept register index parameters that specify which matrix register
-(0-7) to use, enabling flexible register selection and multi-accumulator
-kernels. 121 builtins have typed signatures using native `__rvm_*_t`
-types, enabling Sema-level type checking. Compile-time Sema validation
-enforces register type constraints (tile vs. accumulator) per the RVM
-0.6 spec. A `<thead_matrix.h>` header provides over 400
-higher-level API functions and macros with C matrix types (`mint8_t`,
-`mint32_t`, `mfloat16_t`, etc.) backed by native built-in types. 22 native Clang
-built-in types (`__rvm_int8_t` through `__rvm_float64x2_t`) provide
-first-class type identity, mangling, and debug info support. Programs
-can use either the high-level API, the low-level Clang builtins, or
-inline assembly and compile directly to native assembly or object code.
+249+ Clang builtins (227 original + 22 `mundef` + 90+ spec-API) are
+implemented with full ISel/CodeGen support. Two programming models are
+available:
+
+1. **DirectReg** (low-level): All intrinsics/builtins accept register
+   index parameters (0-7) that specify which matrix register to use,
+   enabling flexible register selection and multi-accumulator kernels.
+   121 builtins have typed signatures using native `__rvm_*_t` types.
+   All 8 matrix registers are reserved.
+
+2. **ManagedRA / Spec-API** (high-level): `_internal` intrinsics
+   produce/consume `target("riscv.matrix")` SSA values. The register
+   allocator manages tr0-tr3 / acc0-acc3 automatically. Spec-API
+   builtins cover all 11 types for A/B/C-tile loads, stores, zero,
+   and all 27 matmul variants. ~200 pseudo-instructions with proper
+   register class constraints (THRVMTR/THRVMACC) expand post-RA to
+   hardware instructions.
+
+A `<thead_matrix.h>` header provides over 500 higher-level API
+functions and macros with C matrix types (`mint8_t`, `mint32_t`,
+`mfloat16_t`, etc.) backed by 22 native Clang built-in types
+(`__rvm_int8_t` through `__rvm_float64x2_t`). Programs can use either
+the high-level API, the low-level Clang builtins, or inline assembly.
 
 ## Building and Installing the Toolchain
 
@@ -1340,22 +1349,88 @@ comprehensive usage examples.
 
 ## Limitations and Notes
 
+### Implementation Limitations
+
 - **Experimental status**: The extension requires `+experimental-xtheadmatrix`
   and may change in future LLVM releases as the spec evolves.
 
-- **Flexible register selection**: All builtins accept register index
-  parameters (0-7) specifying which matrix register to use. The
-  `<thead_matrix.h>` API passes default register assignments matching the
-  standard programming model (load A→tr0, load B→tr1, matmul dest→acc0,
-  etc.), but users of the low-level builtins can select any valid register.
-  This enables multi-accumulator kernels where different matmul operations
-  target different accumulator registers (e.g., acc0 and acc1 in parallel).
-  Code generation from plain C arithmetic (e.g., matrix loops) will not
-  automatically use matrix instructions -- users must use builtins or
-  inline assembly.
+- **No auto-matmul from C loops**: Code generation from plain C arithmetic
+  (e.g., `for (i) for (j) C[i][j] += A[i][k]*B[k][j]`) will not automatically
+  use matrix instructions. Users must use builtins, the `<thead_matrix.h>` API,
+  or inline assembly.
 
-- **Sema register constraint validation**: The compiler enforces RVM 0.6
-  register type constraints at compile time:
+- **Matrix types cannot cross function boundaries**: `target("riscv.matrix")` /
+  `__rvm_*_t` values have no ABI-level calling convention. They cannot be passed
+  as function parameters or returned from functions. Matrix operations must stay
+  within a single function scope (or be inlined via `always_inline`).
+
+- **DirectReg typed builtins use PoisonValue tokens**: In the DirectReg model,
+  the 121 typed builtins accept `__rvm_*_t` matrix arguments for compile-time
+  type checking, but the codegen discards these values (they are
+  `TargetExtType`) and returns `PoisonValue`. Actual data flows through
+  physical registers managed by register index arguments. Users must load data
+  into registers via separate load calls before invoking matmul/EW operations.
+
+- **All 8 matrix registers reserved in DirectReg mode**: When any DirectReg
+  intrinsic is used, `RISCVRegisterInfo::getReservedRegs()` reserves all 8
+  matrix registers. In ManagedRA mode, only actively used registers are allocated.
+
+- **Limited register file (4+4)**: Only 4 tile registers and 4 accumulator
+  registers are available. Complex multi-tile GEMM kernels face high register
+  pressure.
+
+- **Whole-register spill granularity**: Spill and reload use whole-register
+  load/store (`TH_MSME_E8`/`TH_MLME_E8`). No partial-register spill
+  optimization is available. Each spill/reload transfers the full 8192-bit
+  (1024-byte) register.
+
+- **64-bit instruction format not supported**: The spec defines 64-bit
+  instruction formats (`inst64_format.adoc`), but only the 32-bit format
+  is implemented. All 227 defined instructions use 32-bit encoding.
+
+- **`-O0` support is limited for ManagedRA**: The `RISCVLowerMatrixType` pass
+  provides basic `-O0` support by lowering `target("riscv.matrix")` to allocas.
+  Full optimization (`-O1` or higher) is recommended for the ManagedRA model.
+
+### Differences from Spec Intrinsic API (rvm-intrinsic-api.adoc v0.2)
+
+The implementation provides complete coverage of all RVM 0.6 hardware
+instructions. The following differences exist relative to the spec's
+C intrinsic API definition:
+
+- **No C++ overloading**: The spec envisions C++ overloaded functions
+  (e.g., a single `__riscv_th_mld` overloaded by pointer type). The
+  implementation uses separate C functions per type (`__riscv_th_mld_i8`,
+  `__riscv_th_mld_i16`, etc.) since C does not support overloading.
+
+- **Role-specific loads in DirectReg API**: The spec uses a unified
+  `__riscv_th_mld(base, stride, row, col)`. The DirectReg implementation
+  uses role-specific functions (`mld_a`, `mld_b`, `mld_c`) because each
+  maps to a different hardware instruction (`mlae`, `mlbe`, `mlce`). The
+  Spec-API provides `__riscv_th_mld_*` (A-tile), `__riscv_th_mld_b_*`
+  (B-tile), and `__riscv_th_mld_acc_*` (C-tile).
+
+- **Matmul naming convention**: The spec uses `mmaqa`/`mmaqau`/`mmaqaus`/
+  `mmaqasu` naming for the high-level API. The hardware instructions use
+  `mmacc`/`mmaccu`/`mmaccus`/`mmaccsu`. The implementation uses `mmacc_*`
+  for low-level builtins (matching hardware mnemonics) and `mmaqa_*` for
+  the high-level `<thead_matrix.h>` API (matching the spec naming).
+
+- **Spec features with no hardware instructions** (not implementation gaps):
+  - **Stream load/store** (`msld`, `msst`): Mentioned in the spec but no
+    instructions exist in `instruction_list.adoc`.
+  - **Matrix-scalar EW operations** (`.mx` variants): Listed in the spec
+    API but no corresponding hardware instructions in RVM 0.6.
+  - **64-bit integer EW arithmetic** (`.d` variants): The spec lists
+    `mint64_t` variants for `madd`, `msub`, etc. but `instruction_list.adoc`
+    only defines `.w` (32-bit) integer element-wise operations.
+  - **`mmov.mv.x` / `mmov.mv.i`**: Mentioned in the spec but not present
+    as separate instructions. The functionality can be achieved via
+    `mrslidedown`/`mrbca` instructions.
+
+### Register Constraints and Sema Validation
+
+The compiler enforces RVM 0.6 register type constraints at compile time:
   - **Load A/B** (`mla*`/`mlb*`): `md` must be a tile register (0-3)
   - **Load C** (`mlc*`): `md` must be an accumulator register (4-7)
   - **Store A/B** (`msa*`/`msb*`): `ms3` must be a tile register (0-3)
@@ -1364,57 +1439,64 @@ comprehensive usage examples.
   - **Element-wise** (arithmetic, conversions, N4clip): all `md/ms1/ms2` must be accumulator (4-7)
   - **Load/Store M** (`mlm*`/`msm*`), **zero**, **move**, **duplicate**: any register (0-7)
   - **Slides**, **broadcasts**, **pack**: any register (0-7)
-  Invalid register usage produces a compile-time error.
 
-- **Register index constants**: The `<thead_matrix.h>` header defines
-  named constants for register indices:
-  ```c
-  #define __RVM_TR0  0   // Tile register 0
-  #define __RVM_TR1  1   // Tile register 1
-  #define __RVM_TR2  2   // Tile register 2
-  #define __RVM_TR3  3   // Tile register 3
-  #define __RVM_ACC0 4   // Accumulator register 0
-  #define __RVM_ACC1 5   // Accumulator register 1
-  #define __RVM_ACC2 6   // Accumulator register 2
-  #define __RVM_ACC3 7   // Accumulator register 3
-  ```
+Invalid register usage produces a compile-time error.
 
-- **Two API levels plus native built-in types**: Both low-level
-  instruction-mapped builtins (`__builtin_riscv_th_*`) and the
-  higher-level `<thead_matrix.h>` API with C matrix types (`mint32_t`,
-  `mfloat16_t`, etc.) are available. 121 low-level builtins accept and
-  return native `__rvm_*_t` matrix types, enabling compile-time type
-  checking at both API levels. The higher-level API wraps the low-level
-  builtins and does not add runtime overhead. Additionally, 22 native
-  Clang built-in types (`__rvm_int8_t` through `__rvm_float64x2_t`)
-  provide first-class type identity, mangling, debug info, and tooling
-  support.
+### Register Index Constants
 
-- **Known spec errata**:
-  - The matmul instruction group uses `uop=10` (binary), but the spec
-    encoding table incorrectly shows `uop=01` (a typo; `uop=01` is
-    Load/Store). The format description text correctly states `uop=10`.
-  - The `mfmin.h`/`mfmin.s` labels are swapped in the encoding table
-    (encodings are correct, names are wrong).
-  - `pmmaaccus.w.b` has an extra 'a' (typo for `pmmaccus.w.b`).
+The `<thead_matrix.h>` header defines named constants:
+```c
+#define __RVM_TR0  0   // Tile register 0
+#define __RVM_TR1  1   // Tile register 1
+#define __RVM_TR2  2   // Tile register 2
+#define __RVM_TR3  3   // Tile register 3
+#define __RVM_ACC0 4   // Accumulator register 0
+#define __RVM_ACC1 5   // Accumulator register 1
+#define __RVM_ACC2 6   // Accumulator register 2
+#define __RVM_ACC3 7   // Accumulator register 3
+```
+
+### Known Spec Errata
+
+Three errata exist in the RVM 0.6 spec:
+1. **Matmul uop field**: `instruction_list.adoc` shows `uop=01` for all
+   matmul instructions. The correct value is `uop=10` (per
+   `inst32_format.adoc`; `uop=01` is Load/Store). LLVM uses the correct `10`.
+2. **mfmin name swap**: `mfmin.h`/`mfmin.s` labels are swapped in the
+   encoding table (encodings are correct, names are wrong). LLVM correctly
+   maps `.h`→s_size=01, `.s`→s_size=10.
+3. **Typo**: `pmmaaccus.w.b` has an extra 'a' (should be `pmmaccus.w.b`).
+
+### Other Notes
 
 - **Header-only, no runtime library**: The `<thead_matrix.h>` header is a
-  header-only wrapper around the compiler builtins. There is no separate
-  runtime support library -- all matrix operations compile directly to
-  inline instructions.
+  header-only wrapper around compiler builtins. All matrix operations compile
+  directly to inline instructions. No separate runtime support library exists.
 
-- **Test coverage**: 16 test files (12 Clang + 4 LLVM) covering:
-  - Assembly encoding: all 227 instructions validated (`xtheadmatrix-valid.s`)
-  - Invalid encoding: error diagnostics verified (`xtheadmatrix-invalid.s`)
-  - CSR names: all 13 CSRs tested (`xtheadmatrix-csr.s`)
-  - ISel patterns: all 227 intrinsic-to-instruction mappings (`xtheadmatrix-isel.ll`)
-  - Low-level builtin codegen: end-to-end C → assembly (`xtheadmatrix-codegen.c`)
-  - High-level API: 26+ API usage patterns (`thead-matrix-api-patterns.c`)
-  - Corner cases: 20 complex pipeline tests (`thead-matrix-corner-cases.c`)
-  - Comprehensive codegen: all instruction categories (`thead-matrix-comprehensive-codegen.c`)
-  - Sema validation: register constraint error detection (`riscv-xtheadmatrix-reg-constraints.c`)
-  - Built-in types: all 22 types compile and mangle correctly (`thead-matrix-builtin-types.c`)
+- **Two API levels**: Both low-level instruction-mapped builtins
+  (`__builtin_riscv_th_*`) and the higher-level `<thead_matrix.h>` API with
+  C matrix types (`mint32_t`, `mfloat16_t`, etc.) are available. 22 native
+  Clang built-in types (`__rvm_int8_t` through `__rvm_float64x2_t`) provide
+  first-class type identity, mangling, debug info, and tooling support.
 
-- **Future work**: Auto-vectorization/auto-matmul support is planned.
-  Typed builtins (Phase C) are complete -- 121 builtins accept and return
-  `__rvm_*_t` matrix types. Register flexibility is fully implemented.
+- **ManagedRA / Spec-API**: Full register-allocator-managed programming model
+  with A-tile loads (`__riscv_th_mld_*`, sets M/K), B-tile loads
+  (`__riscv_th_mld_b_*`, sets K/N), accumulator loads (`__riscv_th_mld_acc_*`,
+  sets M/N), stores (`__riscv_th_mst_*`, sets M/N), all matmul variants, and
+  zero constructors. All operations available in 11 types
+  (i8/i16/i32/i64/u8/u16/u32/u64/f16/f32/f64).
+
+- **Test coverage**: 16 test files (12 Clang + 4 LLVM) cover assembly encoding
+  (227 instructions), error diagnostics, CSR names (13 CSRs), ISel patterns,
+  end-to-end builtin codegen, API usage patterns, corner cases, Sema
+  validation, and built-in type support.
+
+### Verification History
+
+- **Verification #1** (2026-03-04, Gemini): Found and fixed 2 bugs (42
+  conversion pseudo register classes, spec-API matmul operand swap), filled 3
+  coverage gaps (B-tile load, FP/unsigned types, all matmul variants).
+- **Verification #2** (2026-03-04, Claude Opus 4.6): Full re-verification against
+  spec source files. All 227 encodings, 447 ISel entries, 220 pseudo expansion
+  entries, spec-API codegen, 13 CSRs, and 447 intrinsic signatures confirmed
+  correct. No new bugs found.

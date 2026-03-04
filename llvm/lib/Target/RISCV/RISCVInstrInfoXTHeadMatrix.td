@@ -999,4 +999,277 @@ defm TH_MFMAX : THRVMEWFPArith<"mfmax", 0b0011>;
 defm TH_MFMIN : THRVMEWFPArith<"mfmin", 0b0100>;
 
 } // hasSideEffects = 1
+
+//===----------------------------------------------------------------------===//
+// ManagedRA Pseudo-Instructions
+//===----------------------------------------------------------------------===//
+// These pseudo-instructions have proper (outs) register class constraints for
+// use with the register allocator. They are expanded to real instructions
+// post-RA by RISCVExpandPseudoInsts.
+
+let hasSideEffects = 1, mayLoad = 1, mayStore = 0, isCodeGenOnly = 1 in {
+
+// --- Load A (tile-register output) ---
+foreach eew = [8, 16, 32, 64] in {
+  def PTH_MLAE_E # eew # V
+      : Pseudo<(outs THRVMTR:$dst), (ins GPR:$base, GPR:$stride), []>;
+  def PTH_MLATE_E # eew # V
+      : Pseudo<(outs THRVMTR:$dst), (ins GPR:$base, GPR:$stride), []>;
+}
+
+// --- Load B (tile-register output) ---
+foreach eew = [8, 16, 32, 64] in {
+  def PTH_MLBE_E # eew # V
+      : Pseudo<(outs THRVMTR:$dst), (ins GPR:$base, GPR:$stride), []>;
+  def PTH_MLBTE_E # eew # V
+      : Pseudo<(outs THRVMTR:$dst), (ins GPR:$base, GPR:$stride), []>;
+}
+
+// --- Load C (accumulator output) ---
+foreach eew = [8, 16, 32, 64] in {
+  def PTH_MLCE_E # eew # V
+      : Pseudo<(outs THRVMACC:$dst), (ins GPR:$base, GPR:$stride), []>;
+  def PTH_MLCTE_E # eew # V
+      : Pseudo<(outs THRVMACC:$dst), (ins GPR:$base, GPR:$stride), []>;
+}
+
+// --- Load M (whole-register, any matrix register) ---
+foreach eew = [8, 16, 32, 64] in {
+  def PTH_MLME_E # eew # V
+      : Pseudo<(outs THRVMMR:$dst), (ins GPR:$base), []>;
+}
+
+} // hasSideEffects = 1, mayLoad = 1
+
+let hasSideEffects = 1, mayLoad = 0, mayStore = 1, isCodeGenOnly = 1 in {
+
+// --- Store A (tile-register input) ---
+foreach eew = [8, 16, 32, 64] in {
+  def PTH_MSAE_E # eew # V
+      : Pseudo<(outs), (ins THRVMTR:$src, GPR:$base, GPR:$stride), []>;
+  def PTH_MSATE_E # eew # V
+      : Pseudo<(outs), (ins THRVMTR:$src, GPR:$base, GPR:$stride), []>;
+}
+
+// --- Store B (tile-register input) ---
+foreach eew = [8, 16, 32, 64] in {
+  def PTH_MSBE_E # eew # V
+      : Pseudo<(outs), (ins THRVMTR:$src, GPR:$base, GPR:$stride), []>;
+  def PTH_MSBTE_E # eew # V
+      : Pseudo<(outs), (ins THRVMTR:$src, GPR:$base, GPR:$stride), []>;
+}
+
+// --- Store C (accumulator input) ---
+foreach eew = [8, 16, 32, 64] in {
+  def PTH_MSCE_E # eew # V
+      : Pseudo<(outs), (ins THRVMACC:$src, GPR:$base, GPR:$stride), []>;
+  def PTH_MSCTE_E # eew # V
+      : Pseudo<(outs), (ins THRVMACC:$src, GPR:$base, GPR:$stride), []>;
+}
+
+// --- Store M (whole-register) ---
+foreach eew = [8, 16, 32, 64] in {
+  def PTH_MSME_E # eew # V
+      : Pseudo<(outs), (ins THRVMMR:$src, GPR:$base), []>;
+}
+
+} // hasSideEffects = 1, mayStore = 1
+
+let hasSideEffects = 1, mayLoad = 0, mayStore = 0, isCodeGenOnly = 1 in {
+
+// --- Matmul (accumulate): dst/acc = acc + f(ms2, ms1) ---
+let Constraints = "$acc = $dst" in {
+def PTH_MFMACC_H_V       : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$acc, THRVMTR:$ms2, THRVMTR:$ms1), []>;
+def PTH_MFMACC_S_V       : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$acc, THRVMTR:$ms2, THRVMTR:$ms1), []>;
+def PTH_MFMACC_D_V       : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$acc, THRVMTR:$ms2, THRVMTR:$ms1), []>;
+def PTH_MFMACC_H_E4_V    : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$acc, THRVMTR:$ms2, THRVMTR:$ms1), []>;
+def PTH_MFMACC_H_E5_V    : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$acc, THRVMTR:$ms2, THRVMTR:$ms1), []>;
+def PTH_MFMACC_BF16_E4_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$acc, THRVMTR:$ms2, THRVMTR:$ms1), []>;
+def PTH_MFMACC_BF16_E5_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$acc, THRVMTR:$ms2, THRVMTR:$ms1), []>;
+def PTH_MFMACC_S_H_V     : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$acc, THRVMTR:$ms2, THRVMTR:$ms1), []>;
+def PTH_MFMACC_S_BF16_V  : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$acc, THRVMTR:$ms2, THRVMTR:$ms1), []>;
+def PTH_MFMACC_S_E4_V    : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$acc, THRVMTR:$ms2, THRVMTR:$ms1), []>;
+def PTH_MFMACC_S_E5_V    : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$acc, THRVMTR:$ms2, THRVMTR:$ms1), []>;
+def PTH_MFMACC_S_TF32_V  : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$acc, THRVMTR:$ms2, THRVMTR:$ms1), []>;
+def PTH_MFMACC_D_S_V     : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$acc, THRVMTR:$ms2, THRVMTR:$ms1), []>;
+def PTH_MMACC_W_B_V      : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$acc, THRVMTR:$ms2, THRVMTR:$ms1), []>;
+def PTH_MMACCU_W_B_V     : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$acc, THRVMTR:$ms2, THRVMTR:$ms1), []>;
+def PTH_MMACCUS_W_B_V    : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$acc, THRVMTR:$ms2, THRVMTR:$ms1), []>;
+def PTH_MMACCSU_W_B_V    : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$acc, THRVMTR:$ms2, THRVMTR:$ms1), []>;
+def PTH_MMACC_D_H_V      : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$acc, THRVMTR:$ms2, THRVMTR:$ms1), []>;
+def PTH_MMACCU_D_H_V     : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$acc, THRVMTR:$ms2, THRVMTR:$ms1), []>;
+def PTH_MMACCUS_D_H_V    : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$acc, THRVMTR:$ms2, THRVMTR:$ms1), []>;
+def PTH_MMACCSU_D_H_V    : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$acc, THRVMTR:$ms2, THRVMTR:$ms1), []>;
+def PTH_PMMACC_W_B_V     : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$acc, THRVMTR:$ms2, THRVMTR:$ms1), []>;
+def PTH_PMMACCU_W_B_V    : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$acc, THRVMTR:$ms2, THRVMTR:$ms1), []>;
+def PTH_PMMACCUS_W_B_V   : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$acc, THRVMTR:$ms2, THRVMTR:$ms1), []>;
+def PTH_PMMACCSU_W_B_V   : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$acc, THRVMTR:$ms2, THRVMTR:$ms1), []>;
+def PTH_MMACC_W_BP_V     : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$acc, THRVMTR:$ms2, THRVMTR:$ms1), []>;
+def PTH_MMACCU_W_BP_V    : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$acc, THRVMTR:$ms2, THRVMTR:$ms1), []>;
+} // Constraints = "$acc = $dst"
+
+// --- Zero (produces matrix value, no input) ---
+def PTH_MZERO_V   : Pseudo<(outs THRVMMR:$dst), (ins), []>;
+def PTH_MZERO2R_V : Pseudo<(outs THRVMMR:$dst), (ins), []>;
+def PTH_MZERO4R_V : Pseudo<(outs THRVMMR:$dst), (ins), []>;
+def PTH_MZERO8R_V : Pseudo<(outs THRVMMR:$dst), (ins), []>;
+
+// --- Move matrix-to-matrix ---
+def PTH_MMOV_MM_V : Pseudo<(outs THRVMMR:$dst), (ins THRVMMR:$ms1), []>;
+
+// --- Move matrix-element-to-GPR ---
+def PTH_MMOVB_X_M_V : Pseudo<(outs GPR:$rd), (ins THRVMMR:$ms2, GPR:$rs1), []>;
+def PTH_MMOVH_X_M_V : Pseudo<(outs GPR:$rd), (ins THRVMMR:$ms2, GPR:$rs1), []>;
+def PTH_MMOVW_X_M_V : Pseudo<(outs GPR:$rd), (ins THRVMMR:$ms2, GPR:$rs1), []>;
+def PTH_MMOVD_X_M_V : Pseudo<(outs GPR:$rd), (ins THRVMMR:$ms2, GPR:$rs1), []>;
+
+// --- Move GPR-to-matrix-element (modify, tied) ---
+let Constraints = "$md_in = $dst" in {
+def PTH_MMOVB_M_X_V : Pseudo<(outs THRVMMR:$dst), (ins THRVMMR:$md_in, GPR:$rs2, GPR:$rs1), []>;
+def PTH_MMOVH_M_X_V : Pseudo<(outs THRVMMR:$dst), (ins THRVMMR:$md_in, GPR:$rs2, GPR:$rs1), []>;
+def PTH_MMOVW_M_X_V : Pseudo<(outs THRVMMR:$dst), (ins THRVMMR:$md_in, GPR:$rs2, GPR:$rs1), []>;
+def PTH_MMOVD_M_X_V : Pseudo<(outs THRVMMR:$dst), (ins THRVMMR:$md_in, GPR:$rs2, GPR:$rs1), []>;
+}
+
+// --- Dup GPR to matrix column (modify, tied) ---
+let Constraints = "$md_in = $dst" in {
+def PTH_MDUPB_M_X_V : Pseudo<(outs THRVMMR:$dst), (ins THRVMMR:$md_in, GPR:$rs2), []>;
+def PTH_MDUPH_M_X_V : Pseudo<(outs THRVMMR:$dst), (ins THRVMMR:$md_in, GPR:$rs2), []>;
+def PTH_MDUPW_M_X_V : Pseudo<(outs THRVMMR:$dst), (ins THRVMMR:$md_in, GPR:$rs2), []>;
+def PTH_MDUPD_M_X_V : Pseudo<(outs THRVMMR:$dst), (ins THRVMMR:$md_in, GPR:$rs2), []>;
+}
+
+// --- Pack (no accumulate) ---
+def PTH_MPACK_V   : Pseudo<(outs THRVMMR:$dst), (ins THRVMMR:$ms2, THRVMMR:$ms1), []>;
+def PTH_MPACKHL_V : Pseudo<(outs THRVMMR:$dst), (ins THRVMMR:$ms2, THRVMMR:$ms1), []>;
+def PTH_MPACKHH_V : Pseudo<(outs THRVMMR:$dst), (ins THRVMMR:$ms2, THRVMMR:$ms1), []>;
+
+// --- Row slide ---
+def PTH_MRSLIDEDOWN_V : Pseudo<(outs THRVMMR:$dst), (ins THRVMMR:$ms1, thrvmuimm3:$imm3), []>;
+def PTH_MRSLIDEUP_V   : Pseudo<(outs THRVMMR:$dst), (ins THRVMMR:$ms1, thrvmuimm3:$imm3), []>;
+
+// --- Column slide ---
+foreach sz = ["B", "H", "W", "D"] in {
+  def PTH_MCSLIDEDOWN_ # sz # _V : Pseudo<(outs THRVMMR:$dst), (ins THRVMMR:$ms1, thrvmuimm3:$imm3), []>;
+  def PTH_MCSLIDEUP_ # sz # _V   : Pseudo<(outs THRVMMR:$dst), (ins THRVMMR:$ms1, thrvmuimm3:$imm3), []>;
+}
+
+// --- Row broadcast ---
+def PTH_MRBCA_MV_I_V : Pseudo<(outs THRVMMR:$dst), (ins THRVMMR:$ms1, thrvmuimm3:$imm3), []>;
+
+// --- Column broadcast ---
+def PTH_MCBCAB_MV_I_V : Pseudo<(outs THRVMMR:$dst), (ins THRVMMR:$ms1, thrvmuimm3:$imm3), []>;
+def PTH_MCBCAH_MV_I_V : Pseudo<(outs THRVMMR:$dst), (ins THRVMMR:$ms1, thrvmuimm3:$imm3), []>;
+def PTH_MCBCAW_MV_I_V : Pseudo<(outs THRVMMR:$dst), (ins THRVMMR:$ms1, thrvmuimm3:$imm3), []>;
+def PTH_MCBCAD_MV_I_V : Pseudo<(outs THRVMMR:$dst), (ins THRVMMR:$ms1, thrvmuimm3:$imm3), []>;
+
+// --- Conversions (unary: ms1 -> md) ---
+// Per RVM 0.6 spec: "The input and output matrices of type-convert
+// instructions are both accumulation registers."
+def PTH_MFCVTL_H_E4_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MFCVTH_H_E4_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MFCVTL_H_E5_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MFCVTH_H_E5_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MFCVTL_E4_H_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MFCVTH_E4_H_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MFCVTL_E5_H_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MFCVTH_E5_H_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MFCVTL_S_H_V    : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MFCVTH_S_H_V    : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MFCVTL_H_S_V    : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MFCVTH_H_S_V    : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MFCVTL_S_BF16_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MFCVTH_S_BF16_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MFCVTL_BF16_S_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MFCVTH_BF16_S_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MFCVTL_E4_S_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MFCVTH_E4_S_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MFCVTL_E5_S_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MFCVTH_E5_S_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MFCVTL_D_S_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MFCVTH_D_S_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MFCVTL_S_D_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MFCVTH_S_D_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MFCVT_S_TF32_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MFCVT_TF32_S_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+
+// Float-int conversions
+def PTH_MUFCVTL_H_B_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MUFCVTH_H_B_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MSFCVTL_H_B_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MSFCVTH_H_B_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MFUCVTL_B_H_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MFUCVTH_B_H_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MFSCVTL_B_H_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MFSCVTH_B_H_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MSFCVT_S_W_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MUFCVT_S_W_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MFSCVT_W_S_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MFUCVT_W_S_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+
+// Packed conversions
+def PTH_MUCVTL_B_P_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MSCVTL_B_P_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MUCVTH_B_P_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+def PTH_MSCVTH_B_P_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$ms1), []>;
+
+// --- N4clip .mm (accumulate, tied) ---
+let Constraints = "$src1 = $dst" in {
+def PTH_MN4CLIPL_W_MM_V  : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$src1, THRVMACC:$ms2, THRVMACC:$ms1), []>;
+def PTH_MN4CLIPH_W_MM_V  : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$src1, THRVMACC:$ms2, THRVMACC:$ms1), []>;
+def PTH_MN4CLIPLU_W_MM_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$src1, THRVMACC:$ms2, THRVMACC:$ms1), []>;
+def PTH_MN4CLIPHU_W_MM_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$src1, THRVMACC:$ms2, THRVMACC:$ms1), []>;
+}
+
+// --- N4clip .mv.i (accumulate + imm, tied) ---
+let Constraints = "$src1 = $dst" in {
+def PTH_MN4CLIPL_W_MV_I_V  : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$src1, THRVMACC:$ms2, THRVMACC:$ms1, thrvmuimm3:$imm3), []>;
+def PTH_MN4CLIPH_W_MV_I_V  : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$src1, THRVMACC:$ms2, THRVMACC:$ms1, thrvmuimm3:$imm3), []>;
+def PTH_MN4CLIPLU_W_MV_I_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$src1, THRVMACC:$ms2, THRVMACC:$ms1, thrvmuimm3:$imm3), []>;
+def PTH_MN4CLIPHU_W_MV_I_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$src1, THRVMACC:$ms2, THRVMACC:$ms1, thrvmuimm3:$imm3), []>;
+}
+
+// --- Integer EW .mm (accumulate, tied) ---
+let Constraints = "$src1 = $dst" in {
+foreach op = ["MADD", "MSUB", "MMUL", "MMULH",
+              "MMAX", "MUMAX", "MMIN", "MUMIN",
+              "MSRL", "MSLL", "MSRA"] in
+  def PTH_ # op # _W_MM_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$src1, THRVMACC:$ms2, THRVMACC:$ms1), []>;
+}
+
+// --- Integer EW .mv.i (accumulate + imm, tied) ---
+let Constraints = "$src1 = $dst" in {
+foreach op = ["MADD", "MSUB", "MMUL", "MMULH",
+              "MMAX", "MUMAX", "MMIN", "MUMIN",
+              "MSRL", "MSLL", "MSRA"] in
+  def PTH_ # op # _W_MV_I_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$src1, THRVMACC:$ms2, THRVMACC:$ms1, thrvmuimm3:$imm3), []>;
+}
+
+// --- FP EW .mm (accumulate, tied) ---
+let Constraints = "$src1 = $dst" in {
+foreach op = ["MFADD", "MFSUB", "MFMUL", "MFMAX", "MFMIN"] in {
+  foreach sz = ["H", "S", "D"] in
+    def PTH_ # op # _ # sz # _MM_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$src1, THRVMACC:$ms2, THRVMACC:$ms1), []>;
+}
+}
+
+// --- FP EW .mv.i (accumulate + imm, tied) ---
+let Constraints = "$src1 = $dst" in {
+foreach op = ["MFADD", "MFSUB", "MFMUL", "MFMAX", "MFMIN"] in {
+  foreach sz = ["H", "S", "D"] in
+    def PTH_ # op # _ # sz # _MV_I_V : Pseudo<(outs THRVMACC:$dst), (ins THRVMACC:$src1, THRVMACC:$ms2, THRVMACC:$ms1, thrvmuimm3:$imm3), []>;
+}
+}
+
+} // hasSideEffects = 1, mayLoad = 0, mayStore = 0
+
+// --- Spill/Reload pseudos for register allocator ---
+// These use the RVV-style spill pattern: no immediate offset operand.
+// eliminateFrameIndex materializes the full address into the GPR operand.
+let hasSideEffects = 0, mayLoad = 0, mayStore = 1, isCodeGenOnly = 1 in
+def PTH_MATRIX_SPILL : Pseudo<(outs), (ins THRVMMR:$src, GPR:$addr), []>;
+
+let hasSideEffects = 0, mayLoad = 1, mayStore = 0, isCodeGenOnly = 1 in
+def PTH_MATRIX_RELOAD : Pseudo<(outs THRVMMR:$dst), (ins GPR:$addr), []>;
+
 } // Predicates = [HasVendorXTHeadMatrix]

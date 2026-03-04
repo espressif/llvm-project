@@ -63,18 +63,42 @@ The `<thead_matrix.h>` header is now available with 414 API functions/macros imp
 - Reinterpret cast functions now accept a source parameter per spec (changed from `void()` to macro `(src)`)
 - 4 new test files added (2,193 lines, 91 test functions) for comprehensive coverage
 
+### Spec-API (ManagedRA) Coverage (IMPLEMENTED — 2026-03-04)
+
+The spec-API surface has been expanded to cover:
+- **All 11 types** (i8/i16/i32/i64/u8/u16/u32/u64/f16/f32/f64) for load/store/zero
+- **B-tile loads** (`mld_b_spec_*` → `mlbe_internal`, sets K/N dimensions)
+- **All matmul variants**: INT8→INT32 (4 sign), INT16→INT64 (4 sign), partial (4 sign), bypass (2), FP native (h/s/d), widening typed (s_h, d_s), widening opaque (8 FP8/BF16/TF32 variants)
+- **Bug fix**: Matmul operand swap (A→ms1, B→ms2) for correct non-commutative behavior
+- **Bug fix**: Conversion pseudo register classes (THRVMMR → THRVMACC)
+
+See `13-verification-and-fixes.md` for full details.
+
 ### Further API Improvements
 - Provide tiling and loop-nest abstractions for common GEMM patterns
 - Auto-select matmul variants based on data type and accumulation semantics
 - Integrate with MLIR linalg or similar frameworks for automatic matrix tiling
 - Generic `__riscv_th_mld` with compiler register allocation (requires register allocator support)
 
+## Current Limitations (as of 2026-03-04)
+
+1. **No 64-bit instruction format**: `inst64_format.adoc` defines extended formats; not implemented.
+2. **Matrix types cannot cross function boundaries**: No ABI support for `target("riscv.matrix")` in function params/returns.
+3. **DirectReg typed builtins use PoisonValue**: Matrix SSA values are opaque tokens; actual data flows through physical registers.
+4. **No auto-matmul from C loops**: Users must explicitly use builtins or inline assembly.
+5. **All matrix registers reserved in DirectReg mode**: 8 registers removed from allocator pool.
+6. **Limited register file (4+4)**: High register pressure for complex multi-tile kernels.
+7. **Whole-register spill granularity**: No partial-register spill optimization (8192-bit spills).
+8. **No `.mx` or `.d` integer EW operations**: Spec aspirational API lists these but no hardware instructions exist in RVM 0.6.
+9. **No stream load/store**: Spec mentions `msld`/`msst` but no instructions exist in RVM 0.6.
+
+See `13-verification-and-fixes.md` for detailed comparison with spec intrinsic API.
+
 ## Attribute/Arch Tests
 The `-march` acceptance of `xtheadmatrix0p6` was not explicitly tested in a separate attribute test file. It is implicitly tested via the `--mattr=+experimental-xtheadmatrix` flag used in all test files.
 
 ## Encoding Verification Status
-All 227 instruction encodings have been verified against the RVM 0.6 spec:
-- 24/24 programmatic bit-field checks passed (covering all 5 categories)
-- 0 encoding conflicts detected
-- All 5 original discrepancy categories (CONFIG, LOAD/STORE, MATMUL, MISC, ELEMENT-WISE) resolved and second-pass verified
+All 227 instruction encodings have been verified against the RVM 0.6 spec (two independent audits):
+- Audit #1 (Gemini): 24/24 programmatic bit-field checks passed, 0 conflicts
+- Audit #2 (Claude Opus 4.6): every bit field re-verified against spec source files, no discrepancies
 - Known spec errata documented: matmul uop=01 in instruction_list.adoc should be uop=10; mfmin.s/mfmin.h names swapped in spec

@@ -88,3 +88,4 @@ pythonenv*
 # in-tree risc-v toolchain libc/libcxx support
 newlib-build
 runtimes-build
+newlib-src
