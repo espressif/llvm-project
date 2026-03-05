@@ -1707,6 +1707,17 @@ foreach i = {1-31} in
 def FeatureSaveRestore : SubtargetFeature<"save-restore", "EnableSaveRestore",
                                           "true", "Enable save/restore.">;
 
+// Workaround: disable POP+RET fusion so codegen avoids cm.popret/cm.popretz.
+def FeatureCMPopRetWorkaround
+    : SubtargetFeature<"cm-popret", "EnableCMPopRetWorkaround", "false",
+                       "Enable workaround for cm.popret/cm.popretz">;
+
+// Workaround: use non-reversed callee-saved offset mapping for cm.push/cm.pop.
+def FeatureCMPushReverseWorkaround
+    : SubtargetFeature<"cm-push-reverse", "EnableCMPushReverseWorkaround",
+                       "false",
+                       "Enable workaround for cm.push/cm.pop register order">;
+
 def FeatureNoTrailingSeqCstFence : SubtargetFeature<"no-trailing-seq-cst-fence",
                                           "EnableTrailingSeqCstFence",
                                           "false",

@@ -5125,6 +5125,16 @@ def msave_restore : Flag<["-"], "msave-restore">, Group<m_riscv_Features_Group>,
   HelpText<"Enable using library calls for save and restore">;
 def mno_save_restore : Flag<["-"], "mno-save-restore">, Group<m_riscv_Features_Group>,
   HelpText<"Disable using library calls for save and restore">;
+def mcm_popret : Flag<["-"], "mcm-popret">, Group<m_Group>,
+  HelpText<"Disable the cm.popret/cm.popretz workaround and use canonical Zcmp popret behavior">;
+def mno_cm_popret : Flag<["-"], "mno-cm-popret">, Group<m_Group>,
+  HelpText<"Enable the cm.popret/cm.popretz workaround for cores that need the popret compatibility behavior">;
+def mcm_push_reverse : Flag<["-"], "mcm-push-reverse">,
+  Group<m_Group>,
+  HelpText<"Disable the cm.push/cm.pop register-order workaround and use canonical Zcmp push/pop ordering">;
+def mno_cm_push_reverse : Flag<["-"], "mno-cm-push-reverse">,
+  Group<m_Group>,
+  HelpText<"Enable the cm.push/cm.pop register-order workaround for cores that need direct push/pop compatibility ordering">;
 } // let Flags = [TargetSpecific]
 let Flags = [TargetSpecific] in {
 def menable_experimental_extensions : Flag<["-"], "menable-experimental-extensions">, Group<m_Group>,

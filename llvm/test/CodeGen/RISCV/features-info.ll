@@ -10,6 +10,8 @@
 ; CHECK-NEXT:   auipc-addi-fusion                - Enable AUIPC+ADDI macrofusion.
 ; CHECK-NEXT:   b                                - 'B' (the collection of the Zba, Zbb, Zbs extensions).
 ; CHECK-NEXT:   c                                - 'C' (Compressed Instructions).
+; CHECK-NEXT:   cm-popret                        - Enable workaround for cm.popret/cm.popretz.
+; CHECK-NEXT:   cm-push-reverse                  - Enable workaround for cm.push/cm.pop register order.
 ; CHECK-NEXT:   conditional-cmv-fusion           - Enable branch+c.mv fusion.
 ; CHECK-NEXT:   d                                - 'D' (Double-Precision Floating-Point).
 ; CHECK-NEXT:   disable-latency-sched-heuristic  - Disable latency scheduling heuristic.

@@ -1973,7 +1973,8 @@ bool RISCVFrameLowering::assignCalleeSavedSpillSlots(
       if (FII != std::end(FixedCSRFIMap)) {
         int64_t Offset;
         if (RVFI->getPushPopKind(MF) ==
-            RISCVMachineFunctionInfo::PushPopKind::StdExtZcmp)
+                RISCVMachineFunctionInfo::PushPopKind::StdExtZcmp &&
+            STI.enableCMPushReverseWorkaround())
           Offset = -int64_t(RVFI->getRVPushRegs() - RegNum) * Size;
         else
           Offset = -int64_t(RegNum + 1) * Size;

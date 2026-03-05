@@ -180,6 +180,20 @@ void riscv::getRISCVTargetFeatures(const Driver &D, const llvm::Triple &Triple,
   // which may override the defaults.
   handleTargetFeaturesGroup(D, Triple, Args, Features,
                             options::OPT_m_riscv_Features_Group);
+
+  // These flags intentionally use inverted feature polarity compared to the
+  // option spelling for user-facing compatibility semantics.
+  if (const Arg *A =
+          Args.getLastArg(options::OPT_mcm_popret, options::OPT_mno_cm_popret))
+    Features.push_back(A->getOption().matches(options::OPT_mcm_popret)
+                           ? "-cm-popret"
+                           : "+cm-popret");
+
+  if (const Arg *A = Args.getLastArg(options::OPT_mcm_push_reverse,
+                                     options::OPT_mno_cm_push_reverse))
+    Features.push_back(A->getOption().matches(options::OPT_mcm_push_reverse)
+                           ? "-cm-push-reverse"
+                           : "+cm-push-reverse");
 }
 
 StringRef riscv::getRISCVABI(const ArgList &Args, const llvm::Triple &Triple) {

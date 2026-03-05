@@ -23,11 +23,23 @@
 
 // RUN: %clang --target=riscv32-unknown-elf -### %s -msave-restore 2>&1 | FileCheck %s -check-prefix=SAVE-RESTORE
 // RUN: %clang --target=riscv32-unknown-elf -### %s -mno-save-restore 2>&1 | FileCheck %s -check-prefix=NO-SAVE-RESTORE
+// RUN: %clang --target=riscv32-unknown-elf -### %s -mcm-popret 2>&1 | FileCheck %s -check-prefix=CM-POPRET
+// RUN: %clang --target=riscv32-unknown-elf -### %s -mno-cm-popret 2>&1 | FileCheck %s -check-prefix=NO-CM-POPRET
+// RUN: %clang --target=riscv32-unknown-elf -### %s -mcm-push-reverse 2>&1 | FileCheck %s -check-prefix=CM-PUSH-REVERSE
+// RUN: %clang --target=riscv32-unknown-elf -### %s -mno-cm-push-reverse 2>&1 | FileCheck %s -check-prefix=NO-CM-PUSH-REVERSE
 
 // SAVE-RESTORE: "-target-feature" "+save-restore"
 // NO-SAVE-RESTORE: "-target-feature" "-save-restore"
+// CM-POPRET: "-target-feature" "-cm-popret"
+// NO-CM-POPRET: "-target-feature" "+cm-popret"
+// CM-PUSH-REVERSE: "-target-feature" "-cm-push-reverse"
+// NO-CM-PUSH-REVERSE: "-target-feature" "+cm-push-reverse"
 // DEFAULT-NOT: "-target-feature" "-save-restore"
 // DEFAULT-NOT: "-target-feature" "+save-restore"
+// DEFAULT-NOT: "-target-feature" "-cm-popret"
+// DEFAULT-NOT: "-target-feature" "+cm-popret"
+// DEFAULT-NOT: "-target-feature" "-cm-push-reverse"
+// DEFAULT-NOT: "-target-feature" "+cm-push-reverse"
 
 // RUN: %clang --target=riscv32-unknown-elf -### %s -mno-strict-align 2>&1 | FileCheck %s -check-prefixes=FAST-SCALAR-UNALIGNED-ACCESS,FAST-VECTOR-UNALIGNED-ACCESS
 // RUN: %clang --target=riscv32-unknown-elf -### %s -mstrict-align 2>&1 | FileCheck %s -check-prefixes=NO-FAST-SCALAR-UNALIGNED-ACCESS,NO-FAST-VECTOR-UNALIGNED-ACCESS
