@@ -9,18 +9,38 @@ NEWLIB_BUILD="${SCRIPT_DIR}/newlib-build"
 RUNTIMES_BUILD="${SCRIPT_DIR}/runtimes-build"
 NPROC=$(( $(nproc 2>/dev/null || sysctl -n hw.ncpu) / 2 ))
 
-echo "=== RISC-V LLVM Toolchain Build ==="
+# Multilib: libraries are installed under lib/clang-runtimes/<variant>/
+CLANG_RUNTIMES="${INSTALL_PREFIX}/lib/clang-runtimes"
+
+echo "=== RISC-V LLVM Toolchain Build (multilib) ==="
 echo "Source:  ${SCRIPT_DIR}"
 echo "Build:   ${BUILD_DIR}"
 echo "Install: ${INSTALL_PREFIX}"
 echo ""
 
 # ===========================================================================
-# Stage 1: LLVM toolchain (clang, lld, lldb, llvm tools -- no runtimes)
+# Multilib variant definitions
 #
-# compiler-rt is built separately in Stage 2 because the in-tree runtimes
-# build cannot cross-compile test programs for bare-metal targets (no libc
-# yet), causing test_target_arch to fail.
+# Each variant is: TARGET|CFLAGS|MULTILIB_DIR
+#
+# TARGET       -- compiler target triple
+# CFLAGS       -- -march/-mabi/-mcmodel flags for this variant
+# MULTILIB_DIR -- subdirectory under lib/clang-runtimes/
+#
+# The multilib.yaml Mappings normalize canonical -march strings to
+# simplified flags that match these variant directories.
+# ===========================================================================
+MULTILIB_VARIANTS=(
+  "riscv64-unknown-elf|-mcmodel=medany -march=rv64gc -mabi=lp64d|rv64imafdc/lp64d"
+  "riscv32-unknown-elf|-march=rv32gc -mabi=ilp32d|rv32imafdc/ilp32d"
+  "riscv64-unknown-elf|-mcmodel=medany -march=rv64imafc -mabi=lp64f|rv64imafc/lp64f"
+  "riscv32-unknown-elf|-march=rv32imafc -mabi=ilp32f|rv32imafc/ilp32f"
+  "riscv64-unknown-elf|-mcmodel=medany -march=rv64imac -mabi=lp64|rv64imac/lp64"
+  "riscv32-unknown-elf|-march=rv32imac -mabi=ilp32|rv32imac/ilp32"
+)
+
+# ===========================================================================
+# Stage 1: LLVM toolchain (clang, lld, lldb, llvm tools -- no runtimes)
 # ===========================================================================
 echo "=== Stage 1: LLVM Toolchain ==="
 
@@ -36,28 +56,38 @@ cmake --build "${BUILD_DIR}" -- -j${NPROC}
 cmake --install "${BUILD_DIR}"
 
 # ===========================================================================
-# Stage 2: compiler-rt builtins (standalone, for both RV32 and RV64)
+# Install multilib.yaml
+# ===========================================================================
+echo ""
+echo "=== Installing multilib.yaml ==="
+mkdir -p "${CLANG_RUNTIMES}"
+cp "${SCRIPT_DIR}/riscv-multilib.yaml" "${CLANG_RUNTIMES}/multilib.yaml"
+
+# ===========================================================================
+# Stage 2: compiler-rt builtins (one build per multilib variant)
 #
-# Built standalone with CMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY to
-# avoid linking test programs. CMAKE_INSTALL_PREFIX must point to the clang
-# resource directory (not the toolchain prefix) since compiler-rt installs
-# into lib/clang/<version>/lib/.
+# Built standalone with CMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY.
+# Each variant's libclang_rt.builtins.a is installed into its multilib
+# lib directory so that clang finds it via getLibraryPaths().
 # ===========================================================================
 echo ""
 echo "=== Stage 2: compiler-rt builtins ==="
 
-RESOURCE_DIR=$("${INSTALL_PREFIX}/bin/clang" --print-resource-dir)
-
 build_compiler_rt() {
   local TARGET="$1"
-  local EXTRA_FLAGS="$2"
+  local CFLAGS="$2"
+  local MULTILIB_DIR="$3"
+  local VARIANT_ID="${MULTILIB_DIR//\//-}"  # rv64imafdc/lp64d -> rv64imafdc-lp64d
+  local RT_BUILD="${RUNTIMES_BUILD}/compiler-rt-${VARIANT_ID}"
+  local RT_INSTALL="${RUNTIMES_BUILD}/compiler-rt-${VARIANT_ID}-install"
+  local DEST="${CLANG_RUNTIMES}/${MULTILIB_DIR}/lib"
 
-  echo "--- Building compiler-rt builtins for ${TARGET} ---"
-  rm -rf "${RUNTIMES_BUILD}/compiler-rt-${TARGET}"
+  echo "--- compiler-rt: ${MULTILIB_DIR} ---"
+  rm -rf "${RT_BUILD}" "${RT_INSTALL}"
 
   cmake -G Ninja \
     -S "${SCRIPT_DIR}/compiler-rt" \
-    -B "${RUNTIMES_BUILD}/compiler-rt-${TARGET}" \
+    -B "${RT_BUILD}" \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_C_COMPILER="${INSTALL_PREFIX}/bin/clang" \
     -DCMAKE_CXX_COMPILER="${INSTALL_PREFIX}/bin/clang++" \
@@ -67,10 +97,10 @@ build_compiler_rt() {
     -DCMAKE_C_COMPILER_TARGET="${TARGET}" \
     -DCMAKE_CXX_COMPILER_TARGET="${TARGET}" \
     -DCMAKE_ASM_COMPILER_TARGET="${TARGET}" \
-    -DCMAKE_C_FLAGS="${EXTRA_FLAGS}" \
-    -DCMAKE_CXX_FLAGS="${EXTRA_FLAGS}" \
+    -DCMAKE_C_FLAGS="${CFLAGS}" \
+    -DCMAKE_CXX_FLAGS="${CFLAGS}" \
     -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \
-    -DCMAKE_INSTALL_PREFIX="${RESOURCE_DIR}" \
+    -DCMAKE_INSTALL_PREFIX="${RT_INSTALL}" \
     -DCOMPILER_RT_BAREMETAL_BUILD=ON \
     -DCOMPILER_RT_BUILD_BUILTINS=ON \
     -DCOMPILER_RT_BUILD_SANITIZERS=OFF \
@@ -83,19 +113,24 @@ build_compiler_rt() {
     -DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON \
     -DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON
 
-  cmake --build "${RUNTIMES_BUILD}/compiler-rt-${TARGET}" -- -j${NPROC}
-  cmake --install "${RUNTIMES_BUILD}/compiler-rt-${TARGET}"
+  cmake --build "${RT_BUILD}" -- -j${NPROC}
+  cmake --install "${RT_BUILD}"
+
+  # Copy libclang_rt.builtins.a to the multilib lib directory
+  mkdir -p "${DEST}"
+  find "${RT_INSTALL}" -name "libclang_rt.builtins.a" -exec cp {} "${DEST}/" \;
 }
 
-build_compiler_rt riscv64-unknown-elf "-mcmodel=medany"
-build_compiler_rt riscv32-unknown-elf ""
+for V in "${MULTILIB_VARIANTS[@]}"; do
+  IFS='|' read -r TARGET CFLAGS MULTILIB_DIR <<< "$V"
+  build_compiler_rt "${TARGET}" "${CFLAGS}" "${MULTILIB_DIR}"
+done
 
 # ===========================================================================
 # Stage 3: Newlib + libgloss (libc/libm/libnosys for bare-metal)
 #
-# Newlib's configure must be run from within the build directory (autotools
-# convention). The --prefix must be an absolute literal path (shell variables
-# may not expand in all contexts).
+# Newlib always installs to <prefix>/<target>/{lib,include}, so each
+# variant is built with a temporary prefix and copied to the multilib dir.
 # ===========================================================================
 echo ""
 echo "=== Stage 3: Newlib + libgloss ==="
@@ -108,16 +143,21 @@ fi
 
 build_newlib() {
   local TARGET="$1"
-  local EXTRA_CFLAGS="$2"
+  local CFLAGS="$2"
+  local MULTILIB_DIR="$3"
+  local VARIANT_ID="${MULTILIB_DIR//\//-}"
+  local NL_BUILD="${NEWLIB_BUILD}/${VARIANT_ID}"
+  local NL_INSTALL="${NEWLIB_BUILD}/${VARIANT_ID}-install"
+  local DEST="${CLANG_RUNTIMES}/${MULTILIB_DIR}"
 
-  echo "--- Building newlib + libgloss for ${TARGET} ---"
-  rm -rf "${NEWLIB_BUILD}/${TARGET}"
-  mkdir -p "${NEWLIB_BUILD}/${TARGET}"
+  echo "--- newlib: ${MULTILIB_DIR} ---"
+  rm -rf "${NL_BUILD}"
+  mkdir -p "${NL_BUILD}"
 
-  (cd "${NEWLIB_BUILD}/${TARGET}" && \
+  (cd "${NL_BUILD}" && \
    "${NEWLIB_SRC}/configure" \
     --target="${TARGET}" \
-    --prefix="${INSTALL_PREFIX}" \
+    --prefix="${NL_INSTALL}" \
     --disable-newlib-supplied-syscalls \
     --enable-newlib-io-long-long \
     --enable-newlib-register-fini \
@@ -127,41 +167,47 @@ build_newlib() {
     AS_FOR_TARGET="${INSTALL_PREFIX}/bin/clang --target=${TARGET}" \
     AR_FOR_TARGET="${INSTALL_PREFIX}/bin/llvm-ar" \
     RANLIB_FOR_TARGET="${INSTALL_PREFIX}/bin/llvm-ranlib" \
-    CFLAGS_FOR_TARGET="-O2 ${EXTRA_CFLAGS}")
+    CFLAGS_FOR_TARGET="-O2 ${CFLAGS}")
 
-  make -C "${NEWLIB_BUILD}/${TARGET}" -j${NPROC} all-target-newlib all-target-libgloss
-  make -C "${NEWLIB_BUILD}/${TARGET}" install-target-newlib install-target-libgloss
+  make -C "${NL_BUILD}" -j${NPROC} all-target-newlib all-target-libgloss
+  make -C "${NL_BUILD}" install-target-newlib install-target-libgloss
+
+  # Copy headers and libraries to multilib directory
+  mkdir -p "${DEST}/include" "${DEST}/lib"
+  cp -a "${NL_INSTALL}/${TARGET}/include/." "${DEST}/include/"
+  cp -a "${NL_INSTALL}/${TARGET}/lib/"*.a "${DEST}/lib/" 2>/dev/null || true
+  # Also copy linker scripts and crt objects if present
+  cp -a "${NL_INSTALL}/${TARGET}/lib/"*.o "${DEST}/lib/" 2>/dev/null || true
+  cp -a "${NL_INSTALL}/${TARGET}/lib/"*.ld "${DEST}/lib/" 2>/dev/null || true
 }
 
-build_newlib riscv64-unknown-elf "-mcmodel=medany"
-build_newlib riscv32-unknown-elf ""
+for V in "${MULTILIB_VARIANTS[@]}"; do
+  IFS='|' read -r TARGET CFLAGS MULTILIB_DIR <<< "$V"
+  build_newlib "${TARGET}" "${CFLAGS}" "${MULTILIB_DIR}"
+done
 
 # ===========================================================================
-# Stage 4: C++ runtimes (libunwind, libcxxabi, libcxx) against newlib sysroot
+# Stage 4: C++ runtimes (libunwind, libcxxabi, libcxx)
 #
-# Key gotchas discovered during bring-up:
-# - Do NOT use CMAKE_SYSROOT: the runtimes build system may override the
-#   compiler path when sysroot is set. Pass --sysroot via CMAKE_C/CXX_FLAGS.
-# - LIBUNWIND_IS_BAREMETAL=ON is required to skip dlfcn.h and other
-#   OS-specific includes.
-# - LLVM_INCLUDE_TESTS=OFF avoids a dependency on system Clang packages.
-# - Compiler paths must be absolute literals (shell variable expansion in
-#   cmake -D flags may silently produce empty strings).
+# Built against the newlib sysroot in each multilib directory.
+# CMAKE_INSTALL_PREFIX points directly to the multilib variant dir.
 # ===========================================================================
 echo ""
 echo "=== Stage 4: C++ runtimes (libunwind + libcxxabi + libcxx) ==="
 
 build_cxx_runtimes() {
   local TARGET="$1"
-  local EXTRA_FLAGS="$2"
-  local SYSROOT="${INSTALL_PREFIX}/${TARGET}"
+  local CFLAGS="$2"
+  local MULTILIB_DIR="$3"
+  local VARIANT_ID="${MULTILIB_DIR//\//-}"
+  local VARIANT_DIR="${CLANG_RUNTIMES}/${MULTILIB_DIR}"
 
-  echo "--- Building C++ runtimes for ${TARGET} ---"
-  rm -rf "${RUNTIMES_BUILD}/cxx-${TARGET}"
+  echo "--- C++ runtimes: ${MULTILIB_DIR} ---"
+  rm -rf "${RUNTIMES_BUILD}/cxx-${VARIANT_ID}"
 
   cmake -G Ninja \
     -S "${SCRIPT_DIR}/runtimes" \
-    -B "${RUNTIMES_BUILD}/cxx-${TARGET}" \
+    -B "${RUNTIMES_BUILD}/cxx-${VARIANT_ID}" \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_C_COMPILER="${INSTALL_PREFIX}/bin/clang" \
     -DCMAKE_CXX_COMPILER="${INSTALL_PREFIX}/bin/clang++" \
@@ -171,11 +217,11 @@ build_cxx_runtimes() {
     -DCMAKE_C_COMPILER_TARGET="${TARGET}" \
     -DCMAKE_CXX_COMPILER_TARGET="${TARGET}" \
     -DCMAKE_ASM_COMPILER_TARGET="${TARGET}" \
-    -DCMAKE_C_FLAGS="${EXTRA_FLAGS} --sysroot=${SYSROOT}" \
-    -DCMAKE_CXX_FLAGS="${EXTRA_FLAGS} --sysroot=${SYSROOT}" \
-    -DCMAKE_ASM_FLAGS="--sysroot=${SYSROOT}" \
+    -DCMAKE_C_FLAGS="${CFLAGS} --sysroot=${VARIANT_DIR}" \
+    -DCMAKE_CXX_FLAGS="${CFLAGS} --sysroot=${VARIANT_DIR}" \
+    -DCMAKE_ASM_FLAGS="--sysroot=${VARIANT_DIR}" \
     -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \
-    -DCMAKE_INSTALL_PREFIX="${SYSROOT}" \
+    -DCMAKE_INSTALL_PREFIX="${VARIANT_DIR}" \
     -DLLVM_ENABLE_RUNTIMES="libunwind;libcxxabi;libcxx" \
     -DLLVM_INCLUDE_TESTS=OFF \
     -DLIBUNWIND_ENABLE_SHARED=OFF \
@@ -201,26 +247,45 @@ build_cxx_runtimes() {
     -DLIBCXX_CXX_ABI=libcxxabi \
     -DLIBCXX_USE_COMPILER_RT=ON
 
-  cmake --build "${RUNTIMES_BUILD}/cxx-${TARGET}" -- -j${NPROC}
-  cmake --install "${RUNTIMES_BUILD}/cxx-${TARGET}"
+  cmake --build "${RUNTIMES_BUILD}/cxx-${VARIANT_ID}" -- -j${NPROC}
+  cmake --install "${RUNTIMES_BUILD}/cxx-${VARIANT_ID}"
 }
 
-build_cxx_runtimes riscv64-unknown-elf "-mcmodel=medany"
-build_cxx_runtimes riscv32-unknown-elf ""
+for V in "${MULTILIB_VARIANTS[@]}"; do
+  IFS='|' read -r TARGET CFLAGS MULTILIB_DIR <<< "$V"
+  build_cxx_runtimes "${TARGET}" "${CFLAGS}" "${MULTILIB_DIR}"
+done
 
 echo ""
 echo "=== Done ==="
 echo "Add to PATH: export PATH=\"${INSTALL_PREFIX}/bin:\$PATH\""
 echo ""
+echo "Installed multilib variants:"
+for V in "${MULTILIB_VARIANTS[@]}"; do
+  IFS='|' read -r TARGET CFLAGS MULTILIB_DIR <<< "$V"
+  echo "  ${MULTILIB_DIR}"
+done
+echo ""
+echo "Clang selects the correct variant automatically based on -march/-mabi."
+echo ""
 echo "Usage examples:"
-echo "  # RV64 bare-metal C with printf"
-echo "  clang --target=riscv64-unknown-elf -march=rv64gc -O2 test.c -lnosys -o test"
+echo "  # RV64 with double FPU (selects rv64imafdc/lp64d)"
+echo "  clang --target=riscv64-unknown-elf -march=rv64gc -mabi=lp64d -O2 test.c -lnosys -o test"
 echo ""
-echo "  # RV32 bare-metal C"
-echo "  clang --target=riscv32-unknown-elf -march=rv32gc -O2 test.c -lnosys -o test"
+echo "  # RV32 with double FPU (selects rv32imafdc/ilp32d)"
+echo "  clang --target=riscv32-unknown-elf -march=rv32gc -mabi=ilp32d -O2 test.c -lnosys -o test"
 echo ""
-echo "  # RV64 bare-metal C++"
-echo "  clang++ --target=riscv64-unknown-elf -march=rv64gc -O2 -stdlib=libc++ test.cpp -lnosys -o test"
+echo "  # RV32 with single-precision FPU only (selects rv32imafc/ilp32f)"
+echo "  clang --target=riscv32-unknown-elf -march=rv32imafc -mabi=ilp32f -O2 test.c -lnosys -o test"
+echo ""
+echo "  # RV64 soft-float (selects rv64imac/lp64)"
+echo "  clang --target=riscv64-unknown-elf -march=rv64imac -mabi=lp64 -O2 test.c -lnosys -o test"
+echo ""
+echo "  # RV64 C++ with libc++"
+echo "  clang++ --target=riscv64-unknown-elf -march=rv64gc -mabi=lp64d -O2 -stdlib=libc++ test.cpp -lnosys -o test"
+echo ""
+echo "  # Check which variant is selected"
+echo "  clang --target=riscv64-unknown-elf -march=rv64gc -print-multi-directory"
 echo ""
 echo "  # Override _write in your code to redirect printf to UART;"
 echo "  # your definition takes priority over the stub in libnosys.a"

@@ -78,12 +78,29 @@ LLVM tools (`opt`, `llc`, `llvm-nm`, `llvm-readelf`, etc.).
 This builds the complete RISC-V bare-metal cross-compilation toolchain
 -- compiler, linker, assembler, debugger, binutils, runtime libraries,
 C library, and C++ standard library -- and installs it to a prefix
-directory ready for use. The build has four stages:
+directory ready for use. The toolchain uses **multilib** to provide
+libraries for multiple arch+ABI combinations from a single install.
+
+The build has four stages, each building all multilib variants:
 
 1. **LLVM toolchain** -- clang, lld, lldb, all LLVM tools (no runtimes)
-2. **compiler-rt builtins** -- built standalone for both RV32 and RV64
-3. **Newlib + libgloss** -- bare-metal C library (libc, libm) and `libnosys` (empty syscall stubs) for both RV64 and RV32
-4. **C++ runtimes** -- libunwind, libcxxabi, libcxx (static, bare-metal, no threads) built against the newlib sysroot for both RV64 and RV32
+2. **compiler-rt builtins** -- built standalone for each multilib variant
+3. **Newlib + libgloss** -- bare-metal C library (libc, libm) and `libnosys` for each variant
+4. **C++ runtimes** -- libunwind, libcxxabi, libcxx (static, bare-metal, no threads) for each variant
+
+The default multilib variants are:
+
+| Variant | `-march` | `-mabi` | Use case |
+|---------|----------|---------|----------|
+| `rv64imafdc/lp64d` | `rv64gc` | `lp64d` | 64-bit with double-precision FPU |
+| `rv32imafdc/ilp32d` | `rv32gc` | `ilp32d` | 32-bit with double-precision FPU |
+| `rv64imafc/lp64f` | `rv64imafc` | `lp64f` | 64-bit with single-precision FPU only |
+| `rv32imafc/ilp32f` | `rv32imafc` | `ilp32f` | 32-bit with single-precision FPU only |
+| `rv64imac/lp64` | `rv64imac` | `lp64` | 64-bit soft-float |
+| `rv32imac/ilp32` | `rv32imac` | `ilp32` | 32-bit soft-float |
+
+Clang automatically selects the correct variant based on `-march` and
+`-mabi` flags via the `multilib.yaml` configuration file.
 
 A convenience script `riscv-toolchain-build.sh` is provided at the
 repository root. It accepts an optional install prefix argument
@@ -94,8 +111,8 @@ repository root. It accepts an optional install prefix argument
 ./riscv-toolchain-build.sh /path/to/install   # custom prefix
 ```
 
-The script runs all four stages automatically. The key cmake options
-for each stage are described below.
+The script runs all four stages for all variants automatically. The key
+cmake options for each stage are described below.
 
 #### Stage 1: LLVM Toolchain (no runtimes)
 
@@ -133,69 +150,42 @@ This installs: `clang`, `lld` (linker), `lldb` (debugger),
 `llvm-ar` (archiver), `llvm-nm`, `llvm-objcopy`, `llvm-objdump`,
 `llvm-readelf`, `llvm-strip`, `llvm-mc`, `opt`, `llc`.
 
-#### Stage 2: compiler-rt Builtins (standalone, RV32 + RV64)
+#### Stage 2: compiler-rt Builtins (one build per multilib variant)
 
 compiler-rt is built as a standalone CMake project against the
-`compiler-rt/` source directory. Two critical settings:
+`compiler-rt/` source directory for **each multilib variant**. Each
+build uses the variant's `-march`/`-mabi` flags and installs
+`libclang_rt.builtins.a` into the variant's `lib/` directory under
+`lib/clang-runtimes/`. Clang's `getCompilerRT()` searches the multilib
+library paths first, so it finds the correct variant automatically.
+
+Two critical settings:
 
 - `CMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY` -- avoids link-time
   test programs that fail without a C library
-- `CMAKE_INSTALL_PREFIX` must be the **clang resource directory**
-  (obtained via `clang --print-resource-dir`), not the toolchain
-  prefix, because compiler-rt installs into `lib/clang/<version>/lib/`
-
-```bash
-RESOURCE_DIR=$(${HOME}/opt/riscv-llvm/bin/clang --print-resource-dir)
-
-# Build for each target (riscv64-unknown-elf, riscv32-unknown-elf)
-cmake -G Ninja \
-  -S compiler-rt \
-  -B runtimes-build/compiler-rt-riscv64-unknown-elf \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_C_COMPILER=${HOME}/opt/riscv-llvm/bin/clang \
-  -DCMAKE_CXX_COMPILER=${HOME}/opt/riscv-llvm/bin/clang++ \
-  -DCMAKE_AR=${HOME}/opt/riscv-llvm/bin/llvm-ar \
-  -DCMAKE_NM=${HOME}/opt/riscv-llvm/bin/llvm-nm \
-  -DCMAKE_RANLIB=${HOME}/opt/riscv-llvm/bin/llvm-ranlib \
-  -DCMAKE_C_COMPILER_TARGET=riscv64-unknown-elf \
-  -DCMAKE_CXX_COMPILER_TARGET=riscv64-unknown-elf \
-  -DCMAKE_ASM_COMPILER_TARGET=riscv64-unknown-elf \
-  -DCMAKE_C_FLAGS="-mcmodel=medany" \
-  -DCMAKE_CXX_FLAGS="-mcmodel=medany" \
-  -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \
-  -DCMAKE_INSTALL_PREFIX="${RESOURCE_DIR}" \
-  -DCOMPILER_RT_BAREMETAL_BUILD=ON \
-  -DCOMPILER_RT_BUILD_BUILTINS=ON \
-  -DCOMPILER_RT_BUILD_SANITIZERS=OFF \
-  -DCOMPILER_RT_BUILD_XRAY=OFF \
-  -DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
-  -DCOMPILER_RT_BUILD_PROFILE=OFF \
-  -DCOMPILER_RT_BUILD_MEMPROF=OFF \
-  -DCOMPILER_RT_BUILD_ORC=OFF \
-  -DCOMPILER_RT_BUILD_CTX_PROFILE=OFF \
-  -DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON
-```
+- `COMPILER_RT_BAREMETAL_BUILD=ON` -- skips builtins needing libc headers
 
 Key options:
 
 | Option | Purpose |
 |--------|---------|
 | `CMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY` | Skip link-time tests (no libc available yet) |
-| `CMAKE_INSTALL_PREFIX="${RESOURCE_DIR}"` | Install into clang resource dir, not toolchain prefix |
 | `COMPILER_RT_BAREMETAL_BUILD=ON` | Skip builtins that need libc headers (`sys/mman.h`, etc.) |
 | `COMPILER_RT_DEFAULT_TARGET_ONLY=ON` | Build only for the specified target triple |
+| `CMAKE_C_FLAGS="-march=... -mabi=..."` | Match the multilib variant's arch and ABI |
 
-Repeat for `riscv32-unknown-elf` (without `-mcmodel=medany`).
+Built once per variant (4 total). The builtins `.a` file is copied from
+a temporary install prefix into the multilib `lib/` directory.
 
-#### Stage 3: Newlib + libgloss (RV32 + RV64)
+#### Stage 3: Newlib + libgloss (per multilib variant)
 
 The script automatically clones
 [newlib](https://sourceware.org/newlib/) and builds both **newlib**
 (libc, libm) and **libgloss** (board support, including `libnosys`)
-for `riscv64-unknown-elf` and `riscv32-unknown-elf` using the
-freshly-built clang. Newlib's `configure` must be run from **inside**
-the build directory (autotools convention), and `--prefix` must be an
-absolute literal path.
+for each multilib variant using the freshly-built clang. Each variant
+is built to a temporary prefix (newlib always installs to
+`<prefix>/<target>/`) and the headers and libraries are copied to the
+variant's multilib directory.
 
 Key configure options:
 
@@ -203,6 +193,7 @@ Key configure options:
   syscall implementations; they come from an external library instead
 - `--enable-newlib-io-long-long` -- `printf` supports `%lld`
 - `--disable-newlib-multithread` -- no threading support (bare-metal)
+- `CFLAGS_FOR_TARGET="-O2 -march=... -mabi=..."` -- variant-specific flags
 
 The build uses `make all-target-newlib all-target-libgloss` to build
 both components, and `make install-target-newlib install-target-libgloss`
@@ -224,12 +215,15 @@ int _write(int fd, const char *buf, int len) {
 }
 ```
 
-#### Stage 4: C++ Runtimes (RV32 + RV64)
+#### Stage 4: C++ Runtimes (per multilib variant)
 
 Once newlib is installed, the script builds `libunwind`, `libcxxabi`,
-and `libcxx` for both targets using a standalone CMake invocation
-against the `runtimes/` directory. Three critical gotchas discovered
-during bring-up:
+and `libcxx` for each multilib variant using a standalone CMake
+invocation against the `runtimes/` directory. Each variant's
+`CMAKE_INSTALL_PREFIX` points to its multilib directory, and
+`--sysroot` points to the same directory (where newlib was installed).
+
+Three critical gotchas discovered during bring-up:
 
 1. **Do NOT use `CMAKE_SYSROOT`** -- the runtimes build system
    overrides the compiler path when sysroot is set. Pass `--sysroot`
@@ -248,31 +242,63 @@ The runtimes are configured for bare-metal:
 - **libcxxabi uses libunwind** -- `USE_LLVM_UNWINDER=ON`
 - **`LIBUNWIND_IS_BAREMETAL=ON`** -- skips `dlfcn.h` and OS-specific includes
 
-The C++ headers install to `<sysroot>/include/c++/v1/` and libraries
-to `<sysroot>/lib/`, so clang finds them automatically.
+The C++ headers install to `<variant-dir>/include/c++/v1/` and
+libraries to `<variant-dir>/lib/`, so clang finds them automatically
+via the multilib selection.
+
+#### Multilib Configuration
+
+The `multilib.yaml` file at `lib/clang-runtimes/multilib.yaml` tells
+clang how to map `-march`/`-mabi` flags to library directories. It
+uses regex-based `Mappings` to normalize the canonical `-march` string
+(with version numbers like `rv64i2p1_m2p0_a2p1_f2p2_d2p2_...`) to
+simplified flags that the `Variants` can match.
+
+Use `clang -print-multi-flags-experimental` to see the flags clang
+generates, and `clang -print-multi-directory` to see which variant is
+selected:
+
+```bash
+clang --target=riscv64-unknown-elf -march=rv64gc -print-multi-directory
+# rv64imafdc/lp64d
+```
 
 #### Installed Layout
 
 ```
 ~/opt/riscv-llvm/
-├── bin/                         # clang, clang++, lld, lldb, llvm-ar, ...
-├── include/                     # Clang/LLVM headers
-├── lib/clang/<ver>/lib/         # compiler-rt builtins (rv32+rv64)
-├── riscv64-unknown-elf/
-│   ├── include/
-│   │   ├── stdio.h, stdlib.h, ...    # newlib C headers
-│   │   └── c++/v1/                   # libc++ C++ headers
-│   └── lib/
-│       ├── libc.a               # newlib C library
-│       ├── libm.a               # newlib math library
-│       ├── libnosys.a           # empty syscall stubs (from libgloss)
-│       ├── libgloss-htif.a      # HTIF syscalls (for RISC-V simulation)
-│       ├── libc++.a             # C++ standard library
-│       ├── libc++abi.a          # C++ ABI library
-│       └── libunwind.a          # stack unwinder
-├── riscv32-unknown-elf/
-│   ├── include/                 # (same structure as rv64)
-│   └── lib/                     # (same libraries as rv64)
+├── bin/                                     # clang, clang++, lld, lldb, ...
+├── include/                                 # Clang/LLVM headers
+├── lib/
+│   └── clang-runtimes/
+│       ├── multilib.yaml                    # multilib configuration
+│       ├── rv64imafdc/lp64d/                # rv64gc + lp64d variant
+│       │   ├── include/
+│       │   │   ├── stdio.h, stdlib.h, ...   # newlib C headers
+│       │   │   └── c++/v1/                  # libc++ C++ headers
+│       │   └── lib/
+│       │       ├── libclang_rt.builtins.a   # compiler-rt builtins
+│       │       ├── libc.a                   # newlib C library
+│       │       ├── libm.a                   # newlib math library
+│       │       ├── libnosys.a               # empty syscall stubs
+│       │       ├── libc++.a                 # C++ standard library
+│       │       ├── libc++abi.a              # C++ ABI library
+│       │       └── libunwind.a              # stack unwinder
+│       ├── rv32imafdc/ilp32d/               # rv32gc + ilp32d variant
+│       │   ├── include/                     # (same structure)
+│       │   └── lib/
+│       ├── rv64imafc/lp64f/                 # rv64imafc + lp64f variant
+│       │   ├── include/
+│       │   └── lib/
+│       ├── rv32imafc/ilp32f/                # rv32imafc + ilp32f variant
+│       │   ├── include/
+│       │   └── lib/
+│       ├── rv64imac/lp64/                   # rv64imac + lp64 variant
+│       │   ├── include/
+│       │   └── lib/
+│       └── rv32imac/ilp32/                  # rv32imac + ilp32 variant
+│           ├── include/
+│           └── lib/
 └── share/
 ```
 

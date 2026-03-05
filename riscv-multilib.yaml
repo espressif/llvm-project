@@ -1,0 +1,73 @@
+# RISC-V bare-metal multilib configuration
+#
+# Installed to: <prefix>/lib/clang-runtimes/multilib.yaml
+# Used by: Clang BareMetal toolchain (auto-detected)
+#
+# Provides library variants for 6 arch+ABI combinations:
+#   rv64gc / lp64d      -- 64-bit with double-precision FPU
+#   rv32gc / ilp32d     -- 32-bit with double-precision FPU
+#   rv64imafc / lp64f   -- 64-bit with single-precision FPU only
+#   rv32imafc / ilp32f  -- 32-bit with single-precision FPU only
+#   rv64imac / lp64     -- 64-bit soft-float
+#   rv32imac / ilp32    -- 32-bit soft-float
+#
+# The Mappings section normalizes canonical -march strings (with version
+# numbers) to simplified flags that the Variants can match against.
+# Use `clang -print-multi-flags-experimental --target=riscv64-unknown-elf
+# -march=rv64gc` to see what flags clang generates.
+
+MultilibVersion: 1.0
+
+Variants:
+- Dir: rv64imafdc/lp64d
+  Flags: [-march=rv64imafdc, -mabi=lp64d]
+
+- Dir: rv32imafdc/ilp32d
+  Flags: [-march=rv32imafdc, -mabi=ilp32d]
+
+- Dir: rv64imafc/lp64f
+  Flags: [-march=rv64imafc, -mabi=lp64f]
+
+- Dir: rv32imafc/ilp32f
+  Flags: [-march=rv32imafc, -mabi=ilp32f]
+
+- Dir: rv64imac/lp64
+  Flags: [-march=rv64imac, -mabi=lp64]
+
+- Dir: rv32imac/ilp32
+  Flags: [-march=rv32imac, -mabi=ilp32]
+
+Mappings:
+# rv64 with F+D extensions (matches rv64gc, rv64imafdc, and any superset).
+# Canonical form: rv64i<v>_m<v>_a<v>_f<v>_d<v>...
+# Implies imafc and imac compatibility (superset hierarchy), so ABI-based
+# fallback works: -march=rv64gc -mabi=lp64f → rv64imafc/lp64f,
+#                 -march=rv64gc -mabi=lp64  → rv64imac/lp64.
+- Match: -march=rv64i[0-9]+p[0-9]+_m[0-9]+p[0-9]+_a[0-9]+p[0-9]+_f[0-9]+p[0-9]+_d[0-9]+p[0-9]+.*
+  Flags: [-march=rv64imafdc, -march=rv64imafc, -march=rv64imac]
+
+# rv32 with F+D extensions (matches rv32gc, rv32imafdc, and any superset).
+- Match: -march=rv32i[0-9]+p[0-9]+_m[0-9]+p[0-9]+_a[0-9]+p[0-9]+_f[0-9]+p[0-9]+_d[0-9]+p[0-9]+.*
+  Flags: [-march=rv32imafdc, -march=rv32imafc, -march=rv32imac]
+
+# rv64 with F but no D (matches rv64imafc and similar).
+# Canonical order: i, m, a, f, [d,] c, z*... After _f<v>, the next
+# extension is either _d (has double → matched above) or _c/_z (no double).
+# Implies imac compatibility for soft-float fallback.
+- Match: -march=rv64i[0-9]+p[0-9]+_m[0-9]+p[0-9]+_a[0-9]+p[0-9]+_f[0-9]+p[0-9]+(_c[0-9]+p[0-9]+)?(_z.*)?
+  Flags: [-march=rv64imafc, -march=rv64imac]
+
+# rv32 with F but no D.
+- Match: -march=rv32i[0-9]+p[0-9]+_m[0-9]+p[0-9]+_a[0-9]+p[0-9]+_f[0-9]+p[0-9]+(_c[0-9]+p[0-9]+)?(_z.*)?
+  Flags: [-march=rv32imafc, -march=rv32imac]
+
+# rv64 with M+A but no F/D (matches rv64imac and subsets like rv64ima).
+# Canonical order is i, m, a, [f, d,] c, z*... so after _a<v>, the next
+# single-letter extension is either _c (no float) or _f (has float).
+# This regex requires no _f after _a, only optional _c and _z extensions.
+- Match: -march=rv64i[0-9]+p[0-9]+_m[0-9]+p[0-9]+_a[0-9]+p[0-9]+(_c[0-9]+p[0-9]+)?(_z.*)?
+  Flags: [-march=rv64imac]
+
+# rv32 with M+A but no F/D.
+- Match: -march=rv32i[0-9]+p[0-9]+_m[0-9]+p[0-9]+_a[0-9]+p[0-9]+(_c[0-9]+p[0-9]+)?(_z.*)?
+  Flags: [-march=rv32imac]

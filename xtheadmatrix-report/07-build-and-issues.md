@@ -26,18 +26,32 @@ What this does **not** build: linker (`lld`), archiver (`llvm-ar`),
 other binutils (`llvm-nm`, `llvm-readelf`, `llvm-strip`, `llvm-objcopy`),
 runtime libraries (`compiler-rt`), or optimizer/codegen tools (`opt`, `llc`).
 
-### Full Toolchain Build and Install
+### Full Toolchain Build and Install (Multilib)
 
 Builds the complete RISC-V bare-metal cross-compilation toolchain
 (compiler, linker, debugger, all binutils, runtime libraries, C library,
-and C++ standard library) for both RV32 and RV64, and installs to a
-prefix. A convenience script `riscv-toolchain-build.sh` at the repo root
-automates all four stages:
+and C++ standard library) with **multilib** support for multiple
+arch+ABI combinations, and installs to a prefix. A convenience script
+`riscv-toolchain-build.sh` at the repo root automates all four stages:
 
 ```bash
 ./riscv-toolchain-build.sh                    # install to ~/opt/riscv-llvm
 ./riscv-toolchain-build.sh /path/to/install   # custom prefix
 ```
+
+**Multilib variants:**
+
+| Variant dir | `-march` | `-mabi` | Use case |
+|-------------|----------|---------|----------|
+| `rv64imafdc/lp64d` | `rv64gc` | `lp64d` | 64-bit with double FPU |
+| `rv32imafdc/ilp32d` | `rv32gc` | `ilp32d` | 32-bit with double FPU |
+| `rv64imafc/lp64f` | `rv64imafc` | `lp64f` | 64-bit with single FPU only |
+| `rv32imafc/ilp32f` | `rv32imafc` | `ilp32f` | 32-bit with single FPU only |
+| `rv64imac/lp64` | `rv64imac` | `lp64` | 64-bit soft-float |
+| `rv32imac/ilp32` | `rv32imac` | `ilp32` | 32-bit soft-float |
+
+Clang selects the correct variant automatically via `multilib.yaml`
+based on the `-march` and `-mabi` flags.
 
 **Stage 1: LLVM toolchain (no runtimes)**
 
@@ -46,65 +60,29 @@ for bare-metal cross-compilation because the runtimes build tries to
 cross-compile test programs (`test_target_arch`) which fail without a
 C library. It is built standalone in Stage 2 instead.
 
-```bash
-cmake -S llvm -B build -G Ninja \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DLLVM_TARGETS_TO_BUILD=RISCV \
-  -DLLVM_ENABLE_PROJECTS="clang;lld;llvm;lldb" \
-  -DCMAKE_INSTALL_PREFIX=${HOME}/opt/riscv-llvm \
-  -DLLVM_INSTALL_TOOLCHAIN_ONLY=OFF \
-  -DLLVM_DEFAULT_TARGET_TRIPLE=riscv64-unknown-elf
-
-cmake --build build -- -j12
-cmake --install build
-```
-
 Key options:
 - `LLVM_DEFAULT_TARGET_TRIPLE=riscv64-unknown-elf` -- required when
   building only the RISC-V backend (fixes LLDB `cmake_path` errors)
 - No `LLVM_ENABLE_RUNTIMES` -- compiler-rt is built standalone in Stage 2
 
-Installed tools: `clang`, `clang++`, `lld`, `lldb`, `llvm-ar`, `llvm-nm`,
-`llvm-objcopy`, `llvm-objdump`, `llvm-readelf`, `llvm-strip`, `llvm-mc`,
-`opt`, `llc`.
-
-**Stage 2: compiler-rt builtins (standalone, RV32 + RV64)**
+**Stage 2: compiler-rt builtins (one build per multilib variant)**
 
 Built as a standalone CMake project against `compiler-rt/` with
 `CMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY` to skip link-time tests.
-The install prefix must be the **clang resource directory** (obtained via
-`clang --print-resource-dir`), not the toolchain prefix, because
-compiler-rt installs into `lib/clang/<version>/lib/`.
+Each variant's `libclang_rt.builtins.a` is installed into its multilib
+`lib/` directory (clang finds it via `getLibraryPaths()`).
 
-Key cmake options:
-- `CMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY` -- avoids test program linking
-- `CMAKE_INSTALL_PREFIX="$(clang --print-resource-dir)"` -- resource dir, not prefix
-- `COMPILER_RT_BAREMETAL_BUILD=ON` -- skips builtins needing libc headers
-- `COMPILER_RT_DEFAULT_TARGET_ONLY=ON` -- one invocation per target triple
-
-Built once per target (`riscv64-unknown-elf` with `-mcmodel=medany`,
-`riscv32-unknown-elf` without).
-
-**Stage 3: Newlib + libgloss (RV32 + RV64)**
+**Stage 3: Newlib + libgloss (per multilib variant)**
 
 Newlib is cloned from [sourceware](https://sourceware.org/git/newlib-cygwin.git)
-and built for both `riscv64-unknown-elf` and `riscv32-unknown-elf` using
-the freshly-built clang. Both newlib (libc, libm) and libgloss (including
-`libnosys` with empty syscall stubs) are built and installed.
+and built for each multilib variant. Since newlib always installs to
+`<prefix>/<target>/`, each variant uses a temp prefix and the headers
+and libraries are copied to the multilib directory.
 
-Key configure options:
-- `--disable-newlib-supplied-syscalls` -- syscalls come from libnosys or
-  user application, not embedded in libc.a
-- `--enable-newlib-io-long-long` -- `printf` supports `%lld`
-- Configure must run from inside the build directory (autotools convention)
-- `--prefix` must be an absolute literal path
-- Build command: `make all-target-newlib all-target-libgloss`
+**Stage 4: C++ runtimes (per multilib variant)**
 
-**Stage 4: C++ runtimes (libunwind + libcxxabi + libcxx, RV32 + RV64)**
-
-Built as a standalone CMake invocation against `runtimes/`. Configured
-for bare-metal: static only, no threads, no filesystem, no locale, uses
-compiler-rt and llvm-unwinder.
+Built as a standalone CMake invocation against `runtimes/`. Each
+variant's `CMAKE_INSTALL_PREFIX` points to its multilib directory.
 
 Key gotchas discovered during bring-up:
 - **Do NOT use `CMAKE_SYSROOT`** -- the runtimes build system overrides
@@ -114,39 +92,47 @@ Key gotchas discovered during bring-up:
   tries to include `dlfcn.h` which does not exist in newlib.
 - **`LLVM_INCLUDE_TESTS=OFF` is required** -- avoids a dependency on
   system Clang/LLVM packages for test infrastructure.
-- `CMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY` is needed for
-  cross-compile CMake checks.
 
 **Installed layout:**
 
 ```
 ~/opt/riscv-llvm/
-├── bin/                         # clang, clang++, lld, lldb, llvm-ar, ...
-├── include/                     # Clang/LLVM headers
-├── lib/clang/<ver>/lib/         # compiler-rt builtins (rv32+rv64)
-├── riscv64-unknown-elf/
-│   ├── include/
-│   │   ├── stdio.h, stdlib.h, ...    # newlib C headers
-│   │   └── c++/v1/                   # libc++ C++ headers
-│   └── lib/
-│       ├── libc.a               # newlib C library
-│       ├── libm.a               # newlib math library
-│       ├── libnosys.a           # empty syscall stubs (from libgloss)
-│       ├── libc++.a             # C++ standard library
-│       ├── libc++abi.a          # C++ ABI library
-│       └── libunwind.a          # stack unwinder
-├── riscv32-unknown-elf/         # (same structure as rv64)
+├── bin/                                     # clang, clang++, lld, lldb, ...
+├── include/                                 # Clang/LLVM headers
+├── lib/
+│   └── clang-runtimes/
+│       ├── multilib.yaml                    # multilib configuration
+│       ├── rv64imafdc/lp64d/                # rv64gc + lp64d variant
+│       │   ├── include/                     # newlib + libc++ headers
+│       │   └── lib/                         # all libraries
+│       │       ├── libclang_rt.builtins.a
+│       │       ├── libc.a, libm.a, libnosys.a
+│       │       ├── libc++.a, libc++abi.a, libunwind.a
+│       ├── rv32imafdc/ilp32d/               # (same structure)
+│       ├── rv64imafc/lp64f/
+│       ├── rv32imafc/ilp32f/
+│       ├── rv64imac/lp64/
+│       └── rv32imac/ilp32/
 └── share/
 ```
 
 **Usage:**
 
 ```bash
-# C with printf (link -lnosys for empty syscall stubs)
-clang --target=riscv64-unknown-elf -march=rv64gc -O2 test.c -lnosys -o test
+# RV64 with double FPU (auto-selects rv64imafdc/lp64d)
+clang --target=riscv64-unknown-elf -march=rv64gc -mabi=lp64d -O2 test.c -lnosys -o test
+
+# RV32 single-precision FPU only (auto-selects rv32imafc/ilp32f)
+clang --target=riscv32-unknown-elf -march=rv32imafc -mabi=ilp32f -O2 test.c -lnosys -o test
+
+# RV64 soft-float (auto-selects rv64imac/lp64)
+clang --target=riscv64-unknown-elf -march=rv64imac -mabi=lp64 -O2 test.c -lnosys -o test
 
 # C++ with libc++
-clang++ --target=riscv64-unknown-elf -march=rv64gc -O2 -stdlib=libc++ test.cpp -lnosys -o test
+clang++ --target=riscv64-unknown-elf -march=rv64gc -mabi=lp64d -O2 -stdlib=libc++ test.cpp -lnosys -o test
+
+# Check which variant is selected
+clang --target=riscv64-unknown-elf -march=rv64gc -print-multi-directory
 
 # Override _write in your code to redirect printf to UART;
 # your definition takes priority over the stub in libnosys.a
@@ -236,5 +222,5 @@ LLVM build: 0 errors (2 pre-existing unused function warnings in disassembler)
 Tests: All 16 XTHeadMatrix tests pass (11 Clang CodeGen + 1 Sema + 4 LLVM)
 Instruction count: 227 total (119 standalone defs + 108 multiclass expansions)
 Encoding verification: 227/227 verified against RVM 0.6 spec, 0 conflicts
-Full toolchain: 4-stage build (LLVM tools + compiler-rt + newlib/libgloss + C++ runtimes) for rv32 + rv64
+Full toolchain: 4-stage multilib build (LLVM tools + compiler-rt + newlib/libgloss + C++ runtimes) for 6 variants (rv64gc/lp64d, rv32gc/ilp32d, rv64imafc/lp64f, rv32imafc/ilp32f, rv64imac/lp64, rv32imac/ilp32)
 ```
