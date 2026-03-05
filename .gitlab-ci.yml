@@ -185,7 +185,7 @@ test_pie_optimizations:
     - ls -l $PWD
     - export PATH=${PWD}/bin:${PATH}
     - popd
-    - git clone --shallow-submodules --recursive --single-branch --branch $TEST_APP_ESP_DSP_CUSTOM_BRANCH -- https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}:${CI_SERVER_PORT}/idf/esp-dsp.git esp-dsp
+    - git clone --shallow-submodules --recursive --single-branch --branch $TEST_APP_ESP_DSP_CUSTOM_BRANCH -- ${GITLAB_SERVER_URL}/idf/esp-dsp.git esp-dsp
     - pushd $PWD/esp-dsp/
     - echo ${LLVM_PROJECT_PATH}/llvm/utils/update_test_checks.py
     - ./test_all.sh ${LLVM_PROJECT_PATH}/llvm/utils/update_test_checks.py
