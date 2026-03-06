@@ -86,6 +86,6 @@ pythonenv*
 # automodapi puts generated documentation files here.
 /lldb/docs/python_api/
 # in-tree risc-v toolchain libc/libcxx support
-newlib-build
-runtimes-build
+*-build
 newlib-src
+llvm_static

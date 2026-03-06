@@ -1,22 +1,87 @@
 #!/bin/bash
 set -euo pipefail
 
+# ---------------------------------------------------------------------------
+# Usage
+# ---------------------------------------------------------------------------
+usage() {
+  cat <<'USAGE'
+Usage: riscv-toolchain-build.sh [OPTIONS] [INSTALL_PREFIX]
+
+Build a RISC-V LLVM bare-metal toolchain with multilib support.
+
+Arguments:
+  INSTALL_PREFIX    Installation directory (default: ~/opt/llvm)
+
+Options:
+  --portable        Statically link libstdc++, libgcc, zlib, and zstd so the
+                    installed toolchain can be tarred and moved to another
+                    Linux system (only glibc is still dynamically linked)
+  -h, --help        Show this help message
+USAGE
+  exit 0
+}
+
+# ---------------------------------------------------------------------------
+# Argument parsing
+# ---------------------------------------------------------------------------
+PORTABLE=0
+INSTALL_PREFIX=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --portable)  PORTABLE=1; shift ;;
+    -h|--help)   usage ;;
+    -*)          echo "Unknown option: $1" >&2; usage ;;
+    *)
+      if [ -z "${INSTALL_PREFIX}" ]; then
+        INSTALL_PREFIX="$1"
+      else
+        echo "Unexpected argument: $1" >&2; usage
+      fi
+      shift
+      ;;
+  esac
+done
+
+INSTALL_PREFIX="${INSTALL_PREFIX:-${HOME}/opt/llvm}"
+
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BUILD_DIR="${SCRIPT_DIR}/build"
-INSTALL_PREFIX="${1:-${HOME}/opt/riscv-llvm}"
 NEWLIB_SRC="${SCRIPT_DIR}/newlib-src"
 NEWLIB_BUILD="${SCRIPT_DIR}/newlib-build"
 RUNTIMES_BUILD="${SCRIPT_DIR}/runtimes-build"
-NPROC=$(( $(nproc 2>/dev/null || sysctl -n hw.ncpu) / 2 ))
+NPROC="${NPROC:-$(( $(nproc 2>/dev/null || sysctl -n hw.ncpu) / 2 ))}"
 
 # Multilib: libraries are installed under lib/clang-runtimes/<variant>/
 CLANG_RUNTIMES="${INSTALL_PREFIX}/lib/clang-runtimes"
 
 echo "=== RISC-V LLVM Toolchain Build (multilib) ==="
-echo "Source:  ${SCRIPT_DIR}"
-echo "Build:   ${BUILD_DIR}"
-echo "Install: ${INSTALL_PREFIX}"
+echo "Source:   ${SCRIPT_DIR}"
+echo "Build:    ${BUILD_DIR}"
+echo "Install:  ${INSTALL_PREFIX}"
+echo "Portable: ${PORTABLE}"
 echo ""
+
+# ---------------------------------------------------------------------------
+# Portable build flags
+#
+# When --portable is given, statically link libstdc++, libgcc, zlib, and zstd
+# so the resulting binaries have no dependencies beyond glibc (which is always
+# dynamically linked on Linux).  This makes it safe to tar the install prefix
+# and move it to another Linux system.
+# ---------------------------------------------------------------------------
+PORTABLE_CMAKE_FLAGS=()
+if [ "${PORTABLE}" = "1" ]; then
+  PORTABLE_CMAKE_FLAGS=(
+    -DLLVM_STATIC_LINK_CXX_STDLIB=ON
+    -DLLVM_ENABLE_ZLIB=FORCE_ON
+    -DLLVM_ENABLE_ZSTD=FORCE_ON
+    -DLLVM_USE_STATIC_ZSTD=ON
+    -DZLIB_USE_STATIC_LIBS=ON
+    -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc"
+  )
+fi
 
 # ===========================================================================
 # Multilib variant definitions
@@ -44,13 +109,26 @@ MULTILIB_VARIANTS=(
 # ===========================================================================
 echo "=== Stage 1: LLVM Toolchain ==="
 
+# Remove stale CMake cache entries that would override our portable flags.
+# CMake caches found library paths; switching between shared and static
+# builds requires clearing these.
+if [ "${PORTABLE}" = "1" ] && [ -f "${BUILD_DIR}/CMakeCache.txt" ]; then
+  echo "-- Clearing cached library paths for portable build"
+  cmake -B "${BUILD_DIR}" \
+    -UZLIB_LIBRARY_RELEASE -UZLIB_LIBRARY_DEBUG \
+    -Uzstd_LIBRARY -Uzstd_STATIC_LIBRARY \
+    -ULLVM_USE_STATIC_ZSTD -UZLIB_USE_STATIC_LIBS \
+    2>/dev/null || true
+fi
+
 cmake -S "${SCRIPT_DIR}/llvm" -B "${BUILD_DIR}" -G Ninja \
   -DCMAKE_BUILD_TYPE=Release \
   -DLLVM_TARGETS_TO_BUILD=RISCV \
   -DLLVM_ENABLE_PROJECTS="clang;lld;llvm;lldb" \
   -DCMAKE_INSTALL_PREFIX="${INSTALL_PREFIX}" \
   -DLLVM_INSTALL_TOOLCHAIN_ONLY=OFF \
-  -DLLVM_DEFAULT_TARGET_TRIPLE=riscv64-unknown-elf
+  -DLLVM_DEFAULT_TARGET_TRIPLE=riscv64-unknown-elf \
+  "${PORTABLE_CMAKE_FLAGS[@]}"
 
 cmake --build "${BUILD_DIR}" -- -j${NPROC}
 cmake --install "${BUILD_DIR}"

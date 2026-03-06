@@ -104,12 +104,17 @@ Clang automatically selects the correct variant based on `-march` and
 
 A convenience script `riscv-toolchain-build.sh` is provided at the
 repository root. It accepts an optional install prefix argument
-(default: `${HOME}/opt/riscv-llvm`):
+(default: `${HOME}/opt/llvm`):
 
 ```bash
-./riscv-toolchain-build.sh                    # install to ~/opt/riscv-llvm
+./riscv-toolchain-build.sh                    # install to ~/opt/llvm
 ./riscv-toolchain-build.sh /path/to/install   # custom prefix
+./riscv-toolchain-build.sh --portable         # portable build (static deps)
 ```
+
+The `--portable` flag statically links libstdc++, libgcc, zlib, and zstd
+into the host tools, so the installed toolchain can be tarred and moved
+to another Linux system (only glibc remains dynamically linked).
 
 The script runs all four stages for all variants automatically. The key
 cmake options for each stage are described below.
@@ -126,7 +131,7 @@ cmake -S llvm -B build -G Ninja \
   -DCMAKE_BUILD_TYPE=Release \
   -DLLVM_TARGETS_TO_BUILD=RISCV \
   -DLLVM_ENABLE_PROJECTS="clang;lld;llvm;lldb" \
-  -DCMAKE_INSTALL_PREFIX=${HOME}/opt/riscv-llvm \
+  -DCMAKE_INSTALL_PREFIX=${HOME}/opt/llvm \
   -DLLVM_INSTALL_TOOLCHAIN_ONLY=OFF \
   -DLLVM_DEFAULT_TARGET_TRIPLE=riscv64-unknown-elf
 
@@ -271,7 +276,7 @@ clang --target=riscv64-unknown-elf -march=rv64gc -print-multi-directory
 #### Installed Layout
 
 ```
-~/opt/riscv-llvm/
+~/opt/llvm/
 ├── bin/                                     # clang, clang++, lld, lldb, ...
 ├── include/                                 # Clang/LLVM headers
 ├── lib/
@@ -310,7 +315,7 @@ clang --target=riscv64-unknown-elf -march=rv64gc -print-multi-directory
 #### Add to PATH
 
 ```bash
-export PATH="${HOME}/opt/riscv-llvm/bin:$PATH"
+export PATH="${HOME}/opt/llvm/bin:$PATH"
 ```
 
 #### Relocatable Toolchain

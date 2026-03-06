@@ -35,8 +35,9 @@ arch+ABI combinations, and installs to a prefix. A convenience script
 `riscv-toolchain-build.sh` at the repo root automates all four stages:
 
 ```bash
-./riscv-toolchain-build.sh                    # install to ~/opt/riscv-llvm
+./riscv-toolchain-build.sh                    # install to ~/opt/llvm
 ./riscv-toolchain-build.sh /path/to/install   # custom prefix
+./riscv-toolchain-build.sh --portable         # portable build (static deps)
 ```
 
 **Multilib variants:**
@@ -99,7 +100,7 @@ Key gotchas discovered during bring-up:
 **Installed layout:**
 
 ```
-~/opt/riscv-llvm/
+~/opt/llvm/
 ├── bin/                                     # clang, clang++, lld, lldb, ...
 ├── include/                                 # Clang/LLVM headers
 ├── lib/
