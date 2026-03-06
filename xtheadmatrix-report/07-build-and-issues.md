@@ -88,6 +88,9 @@ Key gotchas discovered during bring-up:
 - **Do NOT use `CMAKE_SYSROOT`** -- the runtimes build system overrides
   the compiler path when sysroot is set. Pass `--sysroot` via
   `CMAKE_C_FLAGS` / `CMAKE_CXX_FLAGS` / `CMAKE_ASM_FLAGS` instead.
+- **`--sysroot` must point to `clang-runtimes/` base**, not the variant
+  subdir. Pointing to a variant dir breaks multilib.yaml lookup and
+  doubles the variant suffix on include paths.
 - **`LIBUNWIND_IS_BAREMETAL=ON` is required** -- without it, libunwind
   tries to include `dlfcn.h` which does not exist in newlib.
 - **`LLVM_INCLUDE_TESTS=OFF` is required** -- avoids a dependency on
@@ -137,6 +140,11 @@ clang --target=riscv64-unknown-elf -march=rv64gc -print-multi-directory
 # Override _write in your code to redirect printf to UART;
 # your definition takes priority over the stub in libnosys.a
 ```
+
+**Relocatable:** The toolchain is fully relocatable -- `tar` the install
+directory and extract it anywhere. All paths are resolved relative to
+the `clang` binary (`bin/../lib/clang-runtimes/`, etc.). The only host
+requirement is compatible Linux (same or newer glibc/kernel).
 
 ## Build Iterations and Issues
 

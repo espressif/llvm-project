@@ -220,14 +220,19 @@ int _write(int fd, const char *buf, int len) {
 Once newlib is installed, the script builds `libunwind`, `libcxxabi`,
 and `libcxx` for each multilib variant using a standalone CMake
 invocation against the `runtimes/` directory. Each variant's
-`CMAKE_INSTALL_PREFIX` points to its multilib directory, and
-`--sysroot` points to the same directory (where newlib was installed).
+`CMAKE_INSTALL_PREFIX` points to its multilib directory.
 
-Three critical gotchas discovered during bring-up:
+Four critical gotchas discovered during bring-up:
 
 1. **Do NOT use `CMAKE_SYSROOT`** -- the runtimes build system
    overrides the compiler path when sysroot is set. Pass `--sysroot`
    via `CMAKE_C_FLAGS` / `CMAKE_CXX_FLAGS` / `CMAKE_ASM_FLAGS` instead.
+4. **`--sysroot` must point to the `clang-runtimes/` base directory**,
+   not the individual variant directory. Pointing it to a variant dir
+   causes clang to look for `multilib.yaml` inside the variant
+   (where it doesn't exist) and doubles the variant suffix on include
+   paths. The multilib mechanism selects the correct variant
+   automatically based on `-march`/`-mabi`.
 2. **`LIBUNWIND_IS_BAREMETAL=ON` is required** -- without it,
    libunwind tries to include `dlfcn.h` which does not exist in newlib.
 3. **`LLVM_INCLUDE_TESTS=OFF` is required** -- avoids a dependency on
@@ -307,6 +312,34 @@ clang --target=riscv64-unknown-elf -march=rv64gc -print-multi-directory
 ```bash
 export PATH="${HOME}/opt/riscv-llvm/bin:$PATH"
 ```
+
+#### Relocatable Toolchain
+
+The installed toolchain is fully relocatable -- it can be tarred up and
+moved to a different directory or machine without rebuilding:
+
+```bash
+# Package
+tar -czf riscv-llvm-toolchain.tar.gz -C ~/opt riscv-llvm
+
+# Deploy to another machine (same or newer Linux version)
+tar -xzf riscv-llvm-toolchain.tar.gz -C /some/path
+export PATH="/some/path/riscv-llvm/bin:$PATH"
+```
+
+This works because:
+
+- **No hardcoded paths** -- clang finds all resources (multilib.yaml,
+  headers, libraries) relative to its own binary location
+  (`bin/../lib/clang-runtimes/`, `bin/../lib/clang/<ver>/`)
+- **All target libraries are static** -- `.a` archives have no rpaths
+  or dynamic linker dependencies
+- **multilib.yaml uses relative `Dir`** -- variant paths like
+  `rv64imafdc/lp64d` are resolved relative to the sysroot
+
+The only host requirement is a compatible Linux (same or newer kernel
+and glibc) since the host tools (`clang`, `lld`, `lldb`) are
+dynamically linked against the host C library.
 
 ### Verify Extension Availability
 
