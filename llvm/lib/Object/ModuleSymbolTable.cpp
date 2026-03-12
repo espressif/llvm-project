@@ -90,8 +90,27 @@ initializeRecordStreamer(const Module &M,
   if (!MAI)
     return;
 
+  // Extract the target CPU and features from function attributes in the module
+  // so that the asm parser is initialized with the correct subtarget features.
+  // Without this, backends that gate instructions on subtarget features (e.g.
+  // Xtensa's "entry" requiring HasWindowed, or RISC-V multiply instructions)
+  // would reject valid inline assembly when the default CPU lacks those
+  // features.
+  StringRef CPU;
+  StringRef FS;
+  for (const Function &F : M) {
+    if (F.isDeclaration())
+      continue;
+    if (const Attribute &A = F.getFnAttribute("target-cpu"); A.isValid())
+      CPU = A.getValueAsString();
+    if (const Attribute &A = F.getFnAttribute("target-features"); A.isValid())
+      FS = A.getValueAsString();
+    if (!CPU.empty() && !FS.empty())
+      break;
+  }
+
   std::unique_ptr<MCSubtargetInfo> STI(
-      T->createMCSubtargetInfo(TT.str(), "", ""));
+      T->createMCSubtargetInfo(TT.str(), CPU, FS));
   if (!STI)
     return;
 
