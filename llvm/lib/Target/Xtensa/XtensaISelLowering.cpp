@@ -181,6 +181,11 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
   // make BRCOND legal, its actually only legal for a subset of conds
   setOperationAction(ISD::BRCOND, MVT::Other, Legal);
 
+  // Xtensa has the BREAK instruction for traps (requires HasDebug).
+  // Without this, ISD::TRAP is expanded to a call to abort() by default.
+  if (Subtarget.hasDebug())
+    setOperationAction(ISD::TRAP, MVT::Other, Legal);
+
   setOperationAction(ISD::BR_CC, MVT::i32, Legal);
   setOperationAction(ISD::BR_CC, MVT::i64, Expand);
 
