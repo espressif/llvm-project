@@ -21,8 +21,9 @@ rounding modes, and hardware capability queries.
 maintained by C-SKY MicroSystems / T-Head.
 
 **Implementation summary**: 227 instructions, ~220 `_internal` LLVM
-intrinsics, 7 config intrinsics, 22 `mundef` builtins, and ~220
-Spec-API Clang builtins are implemented with full ISel/CodeGen support.
+intrinsics, 7 config intrinsics, 22 `mundef` builtins, 22 `mget`/`mset`
+tuple builtins, and ~220 Spec-API Clang builtins are implemented with
+full ISel/CodeGen support.
 
 The **Spec-API (ManagedRA)** programming model is used exclusively:
 `_internal` intrinsics produce/consume `target("riscv.matrix")` SSA
@@ -34,10 +35,13 @@ tile, whole-register), stores, all 27 matmul variants, element-wise
 arithmetic (integer + FP), format conversions, data movement (move,
 duplicate, pack, slide, broadcast), fixed-point clip, and zero.
 
-A `<thead_matrix.h>` header provides over 300 higher-level API
+A `<thead_matrix.h>` header provides over 420 higher-level API
 functions and macros with C matrix types (`mint8_t`, `mint32_t`,
 `mfloat16_t`, etc.) backed by 22 native Clang built-in types
-(`__rvm_int8_t` through `__rvm_float64x2_t`). Programs can use either
+(`__rvm_int8_t` through `__rvm_float64x2_t`). The x2 (register-pair)
+types map to `{ target("riscv.matrix"), target("riscv.matrix") }`
+structs at the LLVM IR level, with `mget`/`mset` builtins for
+extracting and inserting individual registers. Programs can use either
 the high-level API or inline assembly.
 
 ## Building and Installing the Toolchain
@@ -605,9 +609,36 @@ Compare this with the equivalent low-level builtin version in
 carries dimension parameters and returns typed matrix values, making the
 data flow explicit.
 
+### Example: FP64 GEMM Using x2 Types
+
+Some matmul variants use x2 (register-pair) types for the accumulator
+or B operand. The `mget`/`mset` functions extract and insert individual
+registers from x2 pairs. At `-O2`, these struct operations are folded
+away to direct value passing.
+
+```c
+#include <thead_matrix.h>
+
+void fp64_gemm_x2(const double *A, long a_stride,
+                  const double *B, long b_stride,
+                  double *C, long c_stride,
+                  mrow_t M, mcol_t K, mcol_t N) {
+    mfloat64_t ta = __riscv_th_mld_a_f64(A, a_stride, M, K);
+    mfloat64_t tb = __riscv_th_mld_b_f64(B, b_stride, K, N);
+    mfloat64_t c0 = __riscv_th_mld_acc_f64(C, c_stride, M, N);
+    // Build an x2 pair with c0 in slot 0
+    mfloat64x2_t c_pair = __riscv_th_mset_f64(
+        __builtin_riscv_th_mundef_f64x2(), 0, c0);
+    // x2 matmul — operates on component 0 internally
+    mfloat64x2_t res_pair = __riscv_th_mfmaqa_d_x2(c_pair, ta, tb, M, K, N);
+    mfloat64_t res = __riscv_th_mget_f64(res_pair, 0);
+    __riscv_th_mst_f64(C, c_stride, res, M, N);
+}
+```
+
 ### API Categories
 
-The 414 functions and macros in `<thead_matrix.h>` are organized into
+The 421 functions and macros in `<thead_matrix.h>` are organized into
 these categories:
 
 | Category | Examples | Description |
@@ -619,6 +650,8 @@ these categories:
 | Matrix multiply | `__riscv_th_mmaq_ss_w_b`, `__riscv_th_mfmaqa_s` | Matmul-accumulate (integer and FP) |
 | EW arithmetic | `__riscv_th_madd_w_mm`, `__riscv_th_mfmul_s_mm` | Element-wise add, sub, mul, min, max, shift |
 | Conversions | `__riscv_th_mfcvtl_s_h`, `__riscv_th_msfcvt_s_w` | FP and integer format conversions |
+| Tuple ops | `__riscv_th_mget_f16`, `__riscv_th_mset_f64` | Extract/insert single register from x2 pair |
+| x2 matmul | `__riscv_th_mfmaqa_d_x2`, `__riscv_th_mmaq_ss_d_h_x2` | Matmul with x2 pair operand/result |
 | Data movement | `__riscv_th_mzeros_i32`, `__riscv_th_mmov_mm` | Zero, move, pack, slide, broadcast |
 
 ### Immediate Arguments (ImmArg)
@@ -730,6 +763,12 @@ needed. The builtins map to `_internal` intrinsics that produce/consume
 22 `mundef` builtins (`__builtin_riscv_th_mundef_i8` through
 `__builtin_riscv_th_mundef_f64x2`) create undefined matrix values for
 initializing variables.
+
+22 `mget`/`mset` tuple builtins (`__builtin_riscv_th_mget_spec_i8`
+through `__builtin_riscv_th_mset_spec_f64`) extract and insert single
+registers from x2 (register-pair) types. At the IR level, `mget` emits
+`extractvalue` + `select` and `mset` emits `insertvalue` + `select`;
+at `-O2` with constant indices, these fold to direct struct access.
 
 ### Configuration (7 builtins)
 

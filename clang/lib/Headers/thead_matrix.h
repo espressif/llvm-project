@@ -345,44 +345,42 @@ __THEAD_MUNDEFINED_PAIR(f64x2, mfloat64x2_t, mundef_f64x2)
  * With opaque native types, tuple operations return mundef tokens.
  * ============================================================================ */
 
-#define __THEAD_MGET(SUFFIX, STYPE, PTYPE, MUNDEF_S)                           \
+#define __THEAD_MGET(SUFFIX, STYPE, PTYPE)                                     \
   static __inline__ __attribute__((__always_inline__, __nodebug__))             \
   STYPE __riscv_th_mget_##SUFFIX(PTYPE __src, size_t __index) {                \
-    (void)__src; (void)__index;                                                \
-    return __builtin_riscv_th_##MUNDEF_S();                                    \
+    return __builtin_riscv_th_mget_spec_##SUFFIX(__src, __index);               \
   }
 
-#define __THEAD_MSET(SUFFIX, STYPE, PTYPE, MUNDEF_P)                           \
+#define __THEAD_MSET(SUFFIX, STYPE, PTYPE)                                     \
   static __inline__ __attribute__((__always_inline__, __nodebug__))             \
   PTYPE __riscv_th_mset_##SUFFIX(PTYPE __src, size_t __index,                  \
                                  STYPE __val) {                                \
-    (void)__src; (void)__index; (void)__val;                                   \
-    return __builtin_riscv_th_##MUNDEF_P();                                    \
+    return __builtin_riscv_th_mset_spec_##SUFFIX(__src, __index, __val);        \
   }
 
-__THEAD_MGET(i8,  mint8_t,     mint8x2_t,    mundef_i8)
-__THEAD_MGET(i16, mint16_t,    mint16x2_t,   mundef_i16)
-__THEAD_MGET(i32, mint32_t,    mint32x2_t,   mundef_i32)
-__THEAD_MGET(i64, mint64_t,    mint64x2_t,   mundef_i64)
-__THEAD_MGET(u8,  muint8_t,    muint8x2_t,   mundef_u8)
-__THEAD_MGET(u16, muint16_t,   muint16x2_t,  mundef_u16)
-__THEAD_MGET(u32, muint32_t,   muint32x2_t,  mundef_u32)
-__THEAD_MGET(u64, muint64_t,   muint64x2_t,  mundef_u64)
-__THEAD_MGET(f16, mfloat16_t,  mfloat16x2_t, mundef_f16)
-__THEAD_MGET(f32, mfloat32_t,  mfloat32x2_t, mundef_f32)
-__THEAD_MGET(f64, mfloat64_t,  mfloat64x2_t, mundef_f64)
+__THEAD_MGET(i8,  mint8_t,     mint8x2_t)
+__THEAD_MGET(i16, mint16_t,    mint16x2_t)
+__THEAD_MGET(i32, mint32_t,    mint32x2_t)
+__THEAD_MGET(i64, mint64_t,    mint64x2_t)
+__THEAD_MGET(u8,  muint8_t,    muint8x2_t)
+__THEAD_MGET(u16, muint16_t,   muint16x2_t)
+__THEAD_MGET(u32, muint32_t,   muint32x2_t)
+__THEAD_MGET(u64, muint64_t,   muint64x2_t)
+__THEAD_MGET(f16, mfloat16_t,  mfloat16x2_t)
+__THEAD_MGET(f32, mfloat32_t,  mfloat32x2_t)
+__THEAD_MGET(f64, mfloat64_t,  mfloat64x2_t)
 
-__THEAD_MSET(i8,  mint8_t,     mint8x2_t,    mundef_i8x2)
-__THEAD_MSET(i16, mint16_t,    mint16x2_t,   mundef_i16x2)
-__THEAD_MSET(i32, mint32_t,    mint32x2_t,   mundef_i32x2)
-__THEAD_MSET(i64, mint64_t,    mint64x2_t,   mundef_i64x2)
-__THEAD_MSET(u8,  muint8_t,    muint8x2_t,   mundef_u8x2)
-__THEAD_MSET(u16, muint16_t,   muint16x2_t,  mundef_u16x2)
-__THEAD_MSET(u32, muint32_t,   muint32x2_t,  mundef_u32x2)
-__THEAD_MSET(u64, muint64_t,   muint64x2_t,  mundef_u64x2)
-__THEAD_MSET(f16, mfloat16_t,  mfloat16x2_t, mundef_f16x2)
-__THEAD_MSET(f32, mfloat32_t,  mfloat32x2_t, mundef_f32x2)
-__THEAD_MSET(f64, mfloat64_t,  mfloat64x2_t, mundef_f64x2)
+__THEAD_MSET(i8,  mint8_t,     mint8x2_t)
+__THEAD_MSET(i16, mint16_t,    mint16x2_t)
+__THEAD_MSET(i32, mint32_t,    mint32x2_t)
+__THEAD_MSET(i64, mint64_t,    mint64x2_t)
+__THEAD_MSET(u8,  muint8_t,    muint8x2_t)
+__THEAD_MSET(u16, muint16_t,   muint16x2_t)
+__THEAD_MSET(u32, muint32_t,   muint32x2_t)
+__THEAD_MSET(u64, muint64_t,   muint64x2_t)
+__THEAD_MSET(f16, mfloat16_t,  mfloat16x2_t)
+__THEAD_MSET(f32, mfloat32_t,  mfloat32x2_t)
+__THEAD_MSET(f64, mfloat64_t,  mfloat64x2_t)
 
 /* ============================================================================
  * Section 8: Spec-API — Register-Allocator-Managed Intrinsics
@@ -487,11 +485,32 @@ __THEAD_SPEC_MMAQA(ss_w_b, mint8_t,  mint8_t,  mint32_t,  mmaqa_spec_ss_w_b)
 __THEAD_SPEC_MMAQA(uu_w_b, muint8_t, muint8_t, muint32_t, mmaqa_spec_uu_w_b)
 __THEAD_SPEC_MMAQA(us_w_b, muint8_t, mint8_t,  mint32_t,  mmaqa_spec_us_w_b)
 __THEAD_SPEC_MMAQA(su_w_b, mint8_t,  muint8_t, mint32_t,  mmaqa_spec_su_w_b)
-/* INT16 -> INT64 */
+/* INT16 -> INT64 (single-register — maps directly to hardware) */
 __THEAD_SPEC_MMAQA(ss_d_h, mint16_t,  mint16_t,  mint64_t,  mmaqa_spec_ss_d_h)
 __THEAD_SPEC_MMAQA(uu_d_h, muint16_t, muint16_t, muint64_t, mmaqa_spec_uu_d_h)
 __THEAD_SPEC_MMAQA(us_d_h, muint16_t, mint16_t,  mint64_t,  mmaqa_spec_us_d_h)
 __THEAD_SPEC_MMAQA(su_d_h, mint16_t,  muint16_t, mint64_t,  mmaqa_spec_su_d_h)
+/* INT16 -> INT64 spec-aligned x2 overloads */
+#define __THEAD_SPEC_MMAQA_X2(SUFFIX, ATYPE, BTYPE, CTYPE, CTYPE_X2,          \
+                              GET_SUFFIX, SET_SUFFIX, BUILTIN)                 \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  CTYPE_X2 __riscv_th_mmaq_##SUFFIX##_x2(CTYPE_X2 __c, ATYPE __a,             \
+                                          BTYPE __b,                           \
+                                          mrow_t __m, mcol_t __k,              \
+                                          mcol_t __n) {                        \
+    CTYPE __c0 = __riscv_th_mget_##GET_SUFFIX(__c, 0);                         \
+    CTYPE __r0 = __builtin_riscv_th_##BUILTIN(__c0, __a, __b,                  \
+                                               __m, __k, __n);                \
+    return __riscv_th_mset_##SET_SUFFIX(__c, 0, __r0);                         \
+  }
+__THEAD_SPEC_MMAQA_X2(ss_d_h, mint16_t,  mint16_t,  mint64_t,  mint64x2_t,
+                       i64, i64, mmaqa_spec_ss_d_h)
+__THEAD_SPEC_MMAQA_X2(uu_d_h, muint16_t, muint16_t, muint64_t, muint64x2_t,
+                       u64, u64, mmaqa_spec_uu_d_h)
+__THEAD_SPEC_MMAQA_X2(us_d_h, muint16_t, mint16_t,  mint64_t,  mint64x2_t,
+                       i64, i64, mmaqa_spec_us_d_h)
+__THEAD_SPEC_MMAQA_X2(su_d_h, mint16_t,  muint16_t, mint64_t,  mint64x2_t,
+                       i64, i64, mmaqa_spec_su_d_h)
 /* Partial INT8 -> INT32 */
 __THEAD_SPEC_MMAQA(p_ss_w_b, mint8_t,  mint8_t,  mint32_t,  pmmaqa_spec_ss_w_b)
 __THEAD_SPEC_MMAQA(p_uu_w_b, muint8_t, muint8_t, muint32_t, pmmaqa_spec_uu_w_b)
@@ -512,13 +531,41 @@ __THEAD_SPEC_MMAQA(bp_uu, muint8_t, muint8_t, muint32_t, mmaqa_spec_bp_uu)
     return __builtin_riscv_th_##BUILTIN(__c, __a, __b, __m, __k, __n);         \
   }
 
-/* Native-precision */
+/* Native-precision (single-register — maps directly to hardware) */
 __THEAD_SPEC_FMMAQA(h, mfloat16_t, mfloat16_t, mfloat16_t, mfmaqa_spec_h)
 __THEAD_SPEC_FMMAQA(s, mfloat32_t, mfloat32_t, mfloat32_t, mfmaqa_spec_s)
 __THEAD_SPEC_FMMAQA(d, mfloat64_t, mfloat64_t, mfloat64_t, mfmaqa_spec_d)
-/* Widening (typed sources) */
+/* Widening (typed sources, single-register) */
 __THEAD_SPEC_FMMAQA(s_h, mfloat16_t, mfloat16_t, mfloat32_t, mfmaqa_spec_s_h)
 __THEAD_SPEC_FMMAQA(d_s, mfloat32_t, mfloat32_t, mfloat64_t, mfmaqa_spec_d_s)
+
+/* Spec-aligned x2 overloads (software-level pair abstraction per intrinsic API).
+   These wrap the single-register builtins, extracting/inserting component 0. */
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+mfloat16_t __riscv_th_mfmaqa_h_x2(mfloat16_t __c, mfloat16_t __a,
+                                    mfloat16x2_t __b,
+                                    mrow_t __m, mcol_t __k, mcol_t __n) {
+  mfloat16_t __b0 = __riscv_th_mget_f16(__b, 0);
+  return __builtin_riscv_th_mfmaqa_spec_h(__c, __a, __b0, __m, __k, __n);
+}
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+mfloat64x2_t __riscv_th_mfmaqa_d_x2(mfloat64x2_t __c, mfloat64_t __a,
+                                      mfloat64_t __b,
+                                      mrow_t __m, mcol_t __k, mcol_t __n) {
+  mfloat64_t __c0 = __riscv_th_mget_f64(__c, 0);
+  mfloat64_t __r0 = __builtin_riscv_th_mfmaqa_spec_d(__c0, __a, __b,
+                                                       __m, __k, __n);
+  return __riscv_th_mset_f64(__c, 0, __r0);
+}
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+mfloat64x2_t __riscv_th_mfmaqa_d_s_x2(mfloat64x2_t __c, mfloat32_t __a,
+                                        mfloat32_t __b,
+                                        mrow_t __m, mcol_t __k, mcol_t __n) {
+  mfloat64_t __c0 = __riscv_th_mget_f64(__c, 0);
+  mfloat64_t __r0 = __builtin_riscv_th_mfmaqa_spec_d_s(__c0, __a, __b,
+                                                         __m, __k, __n);
+  return __riscv_th_mset_f64(__c, 0, __r0);
+}
 
 /* Widening FP matmul with opaque source types (FP8/BF16/TF32) */
 #define __THEAD_SPEC_FMMAQA_WIDEN(SUFFIX, CTYPE, BUILTIN)                     \

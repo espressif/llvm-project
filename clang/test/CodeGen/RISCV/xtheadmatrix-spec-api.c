@@ -347,3 +347,48 @@ void test_widen_s_tf32(void *a, void *b, float *c, long stride,
     mfloat32_t res = __riscv_th_mfmaqa_s_tf32(acc, ta, tb, m, k, n);
     __riscv_th_mst_f32(c, stride, res, m, n);
 }
+
+// --------------------------------------------------------------------
+// Test: mget/mset tuple operations on x2 types
+// --------------------------------------------------------------------
+// At -O2, mget/mset struct ops are folded away; check the resulting dataflow.
+// CHECK-LABEL: @test_mget_mset_f16
+// CHECK: call target("riscv.matrix") @llvm.riscv.th.mlae.internal16
+// CHECK: call void @llvm.riscv.th.msce.internal16
+void test_mget_mset_f16(uint16_t *ptr, long stride, mrow_t m, mcol_t k) {
+    mfloat16_t a = __riscv_th_mld_a_f16(ptr, stride, m, k);
+    mfloat16_t b = __riscv_th_mld_b_f16(ptr + 64, stride, m, k);
+    mfloat16x2_t pair = __riscv_th_mset_f16(
+        __riscv_th_mset_f16(__builtin_riscv_th_mundef_f16x2(), 0, a), 1, b);
+    mfloat16_t got = __riscv_th_mget_f16(pair, 0);
+    __riscv_th_mst_f16(ptr, stride, got, m, k);
+}
+
+// CHECK-LABEL: @test_native_fp16_matmul
+// CHECK: call target("riscv.matrix") @llvm.riscv.th.mfmacc.h.internal
+void test_native_fp16_matmul(uint16_t *a_ptr, uint16_t *b_ptr,
+                              uint16_t *c_ptr, long stride,
+                              mrow_t m, mcol_t k, mcol_t n) {
+    mfloat16_t ta = __riscv_th_mld_a_f16(a_ptr, stride, m, k);
+    mfloat16_t tb = __riscv_th_mld_b_f16(b_ptr, stride, k, n);
+    mfloat16_t acc = __riscv_th_mld_acc_f16(c_ptr, stride, m, n);
+    mfloat16x2_t b_pair = __riscv_th_mset_f16(
+        __builtin_riscv_th_mundef_f16x2(), 0, tb);
+    mfloat16_t res = __riscv_th_mfmaqa_h_x2(acc, ta, b_pair, m, k, n);
+    __riscv_th_mst_f16(c_ptr, stride, res, m, n);
+}
+
+// CHECK-LABEL: @test_native_fp64_matmul
+// CHECK: call target("riscv.matrix") @llvm.riscv.th.mfmacc.d.internal
+void test_native_fp64_matmul(double *a_ptr, double *b_ptr,
+                              double *c_ptr, long stride,
+                              mrow_t m, mcol_t k, mcol_t n) {
+    mfloat64_t ta = __riscv_th_mld_a_f64(a_ptr, stride, m, k);
+    mfloat64_t tb = __riscv_th_mld_b_f64(b_ptr, stride, k, n);
+    mfloat64_t c0 = __riscv_th_mld_acc_f64(c_ptr, stride, m, n);
+    mfloat64x2_t c_pair = __riscv_th_mset_f64(
+        __builtin_riscv_th_mundef_f64x2(), 0, c0);
+    mfloat64x2_t res_pair = __riscv_th_mfmaqa_d_x2(c_pair, ta, tb, m, k, n);
+    mfloat64_t res = __riscv_th_mget_f64(res_pair, 0);
+    __riscv_th_mst_f64(c_ptr, stride, res, m, n);
+}

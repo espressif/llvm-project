@@ -2,7 +2,7 @@
 
 ## Summary
 
-Five independent verification rounds were completed against the RVM 0.6 spec.
+Six independent verification rounds were completed against the RVM 0.6 spec.
 All bugs have been fixed. The implementation is verified correct.
 
 ## Bug Fixes (all resolved)
@@ -122,6 +122,31 @@ matches hardware convention but may be unintuitive for users expecting
 
 **Status**: Correct by design — the Spec-API directly mirrors hardware operand
 order. Users should refer to parameter names (`__s2`, `__s1`) for clarity.
+
+## Verification Round 6 (Claude Opus 4.6 #5) — x2 Type Support
+
+Reviewed all uncommitted changes implementing proper x2 (register-pair) type
+support. Verified 6 files changed, 222 new lines, 53 removed.
+
+**Components verified:**
+
+1. `RVM_X2_TYPE` macro in `RISCVMatrixTypes.def`: backward-compatible `#ifndef`
+   guard, correct `#undef` order, all 27 existing consumers unaffected.
+2. `CodeGenTypes.cpp`: two-pass `#define`/`#include` correctly separates single
+   types → `target("riscv.matrix")` from x2 types → `{ target("riscv.matrix"),
+   target("riscv.matrix") }` struct.
+3. 22 `mget`/`mset` builtins: prototypes match (x2→single, x2+single→x2).
+   Codegen uses extractvalue/insertvalue with select — standard approach.
+4. 7 x2 matmul wrappers: FP16 h (x2 B), FP64 d (x2 dest), FP64 d.s (x2 dest),
+   INT16→INT64 ss/uu/us/su (x2 dest). All extract component 0, call
+   single-register builtin, insert back. Sign variants correct (us/su acc is
+   signed `mint64_t`; uu acc is unsigned `muint64_t`).
+5. Matmul operand order: correctly delegated to underlying builtins which
+   handle the B/A swap per spec formula `md = md + ms1 × ms2`.
+6. Tests: 15 cases in `xtheadmatrix-x2-types.c` (O0 IR generation + O2
+   optimization folding) + 3 cases in `xtheadmatrix-spec-api.c`.
+
+**Result: No issues found.** All implementations are correct and consistent.
 
 ## Differences from Spec Intrinsic API (rvm-intrinsic-api.adoc v0.2)
 

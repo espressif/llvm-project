@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `<thead_matrix.h>` header provides 300+ C API functions/macros following
+The `<thead_matrix.h>` header provides 420+ C API functions/macros following
 the RVM Intrinsic API Reference Manual v0.2. All operations use the Spec-API
 (ManagedRA) programming model — no manual register index management needed.
 
@@ -124,11 +124,45 @@ mint32_t      __riscv_th_mrbca(mint32_t src, unsigned int imm);
 mint32_t      __riscv_th_mcbca_w(mint32_t src, unsigned int imm);
 ```
 
+### Tuple Operations (mget/mset — 22 functions)
+
+Extract or insert a single register from/to an x2 (register-pair) type.
+Backed by 22 dedicated Clang builtins (`mget_spec_*` / `mset_spec_*`).
+At the IR level, these emit `extractvalue`/`insertvalue` with a `select`
+on the index. At `-O2`, constant indices are folded to direct struct access.
+
+```c
+mfloat16_t  __riscv_th_mget_f16(mfloat16x2_t pair, size_t idx);  // extract
+mfloat16x2_t __riscv_th_mset_f16(mfloat16x2_t pair, size_t idx, mfloat16_t val); // insert
+```
+11 type variants each (i8/i16/i32/i64/u8/u16/u32/u64/f16/f32/f64).
+
+### x2 Matrix Multiply Overloads (7 functions)
+
+Spec-aligned x2 wrapper functions for matmul variants that use register-pair
+types. These are software-level pair abstractions — the hardware instruction
+uses a single 3-bit register. Each wrapper extracts component 0, calls the
+single-register matmul builtin, then inserts the result back.
+
+```c
+// FP16: x2 B operand
+mfloat16_t __riscv_th_mfmaqa_h_x2(mfloat16_t c, mfloat16_t a, mfloat16x2_t b,
+                                    mrow_t m, mcol_t k, mcol_t n);
+// FP64: x2 dest
+mfloat64x2_t __riscv_th_mfmaqa_d_x2(mfloat64x2_t c, mfloat64_t a, mfloat64_t b,
+                                      mrow_t m, mcol_t k, mcol_t n);
+// FP64 widening: x2 dest
+mfloat64x2_t __riscv_th_mfmaqa_d_s_x2(mfloat64x2_t c, mfloat32_t a, mfloat32_t b,
+                                        mrow_t m, mcol_t k, mcol_t n);
+// INT16→INT64: x2 dest (4 sign variants: ss/uu/us/su)
+mint64x2_t __riscv_th_mmaq_ss_d_h_x2(mint64x2_t c, mint16_t a, mint16_t b,
+                                       mrow_t m, mcol_t k, mcol_t n);
+```
+
 ### Utility
 
 ```c
 mint32_t __riscv_th_mundef_i32(void);    // undefined value (PoisonValue)
-// + reinterpret casts, tuple get/set
 ```
 
 ## Limitations

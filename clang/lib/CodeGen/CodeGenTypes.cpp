@@ -579,10 +579,20 @@ llvm::Type *CodeGenTypes::ConvertType(QualType T) {
                                              Info.EC.getKnownMinValue());
       }
 #define RVM_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#define RVM_X2_TYPE(Name, Id, SingletonId)
 #include "clang/Basic/RISCVMatrixTypes.def"
       {
-        // Matrix types are opaque - map to a target extension type
+        // Single-register matrix types map to target("riscv.matrix").
         return llvm::TargetExtType::get(getLLVMContext(), "riscv.matrix");
+      }
+#define RVM_TYPE(Name, Id, SingletonId)
+#define RVM_X2_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVMatrixTypes.def"
+      {
+        // X2 (register-pair) matrix types map to a struct of two singles.
+        auto *MatTy =
+            llvm::TargetExtType::get(getLLVMContext(), "riscv.matrix");
+        return llvm::StructType::get(getLLVMContext(), {MatTy, MatTy});
       }
 #define WASM_REF_TYPE(Name, MangledName, Id, SingletonId, AS)                  \
   case BuiltinType::Id: {                                                      \

@@ -64,6 +64,26 @@ def mundef_f16x2  : RISCVXTHeadMatrixBuiltin<"__rvm_float16x2_t()", "experimenta
 def mundef_f32x2  : RISCVXTHeadMatrixBuiltin<"__rvm_float32x2_t()", "experimental-xtheadmatrix">;
 def mundef_f64x2  : RISCVXTHeadMatrixBuiltin<"__rvm_float64x2_t()", "experimental-xtheadmatrix">;
 
+// --- Tuple get/set: extract/insert single register from x2 pair ---
+// mget: (x2_pair, index) -> single
+// mset: (x2_pair, index, single_val) -> x2_pair
+foreach info = [["i8",  "__rvm_int8_t",     "__rvm_int8x2_t"],
+                ["i16", "__rvm_int16_t",    "__rvm_int16x2_t"],
+                ["i32", "__rvm_int32_t",    "__rvm_int32x2_t"],
+                ["i64", "__rvm_int64_t",    "__rvm_int64x2_t"],
+                ["u8",  "__rvm_uint8_t",    "__rvm_uint8x2_t"],
+                ["u16", "__rvm_uint16_t",   "__rvm_uint16x2_t"],
+                ["u32", "__rvm_uint32_t",   "__rvm_uint32x2_t"],
+                ["u64", "__rvm_uint64_t",   "__rvm_uint64x2_t"],
+                ["f16", "__rvm_float16_t",  "__rvm_float16x2_t"],
+                ["f32", "__rvm_float32_t",  "__rvm_float32x2_t"],
+                ["f64", "__rvm_float64_t",  "__rvm_float64x2_t"]] in {
+  def mget_spec_ # info[0] : RISCVXTHeadMatrixBuiltin<
+      info[1] # "(" # info[2] # ", size_t)", "experimental-xtheadmatrix">;
+  def mset_spec_ # info[0] : RISCVXTHeadMatrixBuiltin<
+      info[2] # "(" # info[2] # ", size_t, " # info[1] # ")", "experimental-xtheadmatrix">;
+}
+
 //===----------------------------------------------------------------------===//
 // Spec-API builtins (ManagedRA: no register index, returns matrix type)
 //===----------------------------------------------------------------------===//

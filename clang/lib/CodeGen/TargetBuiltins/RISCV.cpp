@@ -1148,6 +1148,51 @@ Value *CodeGenFunction::EmitRISCVBuiltinExpr(unsigned BuiltinID,
   case RISCV::BI__builtin_riscv_th_mundef_f32x2:
   case RISCV::BI__builtin_riscv_th_mundef_f64x2:
     return llvm::PoisonValue::get(ResultType);
+  // mget: extract single register from x2 pair
+  case RISCV::BI__builtin_riscv_th_mget_spec_i8:
+  case RISCV::BI__builtin_riscv_th_mget_spec_i16:
+  case RISCV::BI__builtin_riscv_th_mget_spec_i32:
+  case RISCV::BI__builtin_riscv_th_mget_spec_i64:
+  case RISCV::BI__builtin_riscv_th_mget_spec_u8:
+  case RISCV::BI__builtin_riscv_th_mget_spec_u16:
+  case RISCV::BI__builtin_riscv_th_mget_spec_u32:
+  case RISCV::BI__builtin_riscv_th_mget_spec_u64:
+  case RISCV::BI__builtin_riscv_th_mget_spec_f16:
+  case RISCV::BI__builtin_riscv_th_mget_spec_f32:
+  case RISCV::BI__builtin_riscv_th_mget_spec_f64: {
+    // (x2_pair, index) -> single
+    // Emit: idx == 0 ? extractvalue %pair, 0 : extractvalue %pair, 1
+    llvm::Value *Pair = Ops[0];
+    llvm::Value *Idx = Ops[1];
+    llvm::Value *V0 = Builder.CreateExtractValue(Pair, 0);
+    llvm::Value *V1 = Builder.CreateExtractValue(Pair, 1);
+    llvm::Value *IsZero = Builder.CreateICmpEQ(
+        Idx, llvm::ConstantInt::get(Idx->getType(), 0));
+    return Builder.CreateSelect(IsZero, V0, V1);
+  }
+  // mset: insert single register into x2 pair
+  case RISCV::BI__builtin_riscv_th_mset_spec_i8:
+  case RISCV::BI__builtin_riscv_th_mset_spec_i16:
+  case RISCV::BI__builtin_riscv_th_mset_spec_i32:
+  case RISCV::BI__builtin_riscv_th_mset_spec_i64:
+  case RISCV::BI__builtin_riscv_th_mset_spec_u8:
+  case RISCV::BI__builtin_riscv_th_mset_spec_u16:
+  case RISCV::BI__builtin_riscv_th_mset_spec_u32:
+  case RISCV::BI__builtin_riscv_th_mset_spec_u64:
+  case RISCV::BI__builtin_riscv_th_mset_spec_f16:
+  case RISCV::BI__builtin_riscv_th_mset_spec_f32:
+  case RISCV::BI__builtin_riscv_th_mset_spec_f64: {
+    // (x2_pair, index, single_val) -> x2_pair
+    // Emit: idx == 0 ? insertvalue %pair, %val, 0 : insertvalue %pair, %val, 1
+    llvm::Value *Pair = Ops[0];
+    llvm::Value *Idx = Ops[1];
+    llvm::Value *Val = Ops[2];
+    llvm::Value *R0 = Builder.CreateInsertValue(Pair, Val, 0);
+    llvm::Value *R1 = Builder.CreateInsertValue(Pair, Val, 1);
+    llvm::Value *IsZero = Builder.CreateICmpEQ(
+        Idx, llvm::ConstantInt::get(Idx->getType(), 0));
+    return Builder.CreateSelect(IsZero, R0, R1);
+  }
   default:
     break;
   }

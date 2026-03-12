@@ -25,7 +25,7 @@
 
 | File | Purpose |
 |------|---------|
-| `clang/include/clang/Basic/BuiltinsRISCVXTHeadMatrix.td` | ~250 Clang builtins (Spec-API + config + mundef) |
+| `clang/include/clang/Basic/BuiltinsRISCVXTHeadMatrix.td` | ~272 Clang builtins (Spec-API + mget/mset + config + mundef) |
 | `clang/lib/CodeGen/TargetBuiltins/RISCV.cpp` | Spec-API codegen with lambda helpers |
 | `clang/lib/Headers/thead_matrix.h` | 300+ C API functions/macros |
 | `clang/include/clang/Basic/RISCVMatrixTypes.def` | 22 native built-in type definitions |
@@ -34,7 +34,8 @@
 
 | File | Purpose |
 |------|---------|
-| `clang/test/CodeGen/RISCV/xtheadmatrix-spec-api.c` | 20 Spec-API test cases |
+| `clang/test/CodeGen/RISCV/xtheadmatrix-spec-api.c` | 23 Spec-API test cases |
+| `clang/test/CodeGen/RISCV/xtheadmatrix-x2-types.c` | 15 x2 type test cases (O0+O2) |
 | `clang/test/CodeGen/RISCV/xtheadmatrix-spec-api-example.c` | End-to-end widening matmul example |
 | `clang/test/CodeGen/RISCV/xtheadmatrix-inline-asm.c` | Inline asm register constraint test |
 | `clang/test/CodeGen/RISCV/thead-matrix-builtin-types.c` | Built-in type compilation test |
@@ -82,3 +83,17 @@
 - Updated `__THEAD_SPEC_FMMAQA_WIDEN` macro to accept `mint32_t` A/B tile args
 - Removed `SpecAPIMatmulWiden` lambda, all matmul dispatch unified through `SpecAPIMatmul`
 - Added 8 widening matmul tests, 3 ISel tests, 1 end-to-end example test
+
+### x2 (register-pair) type support
+- Added `RVM_X2_TYPE` macro to `RISCVMatrixTypes.def` (backward-compatible default)
+- `CodeGenTypes.cpp`: x2 types now lower to `{ target("riscv.matrix"), target("riscv.matrix") }` struct
+- Added 22 `mget`/`mset` builtins (`mget_spec_*` / `mset_spec_*`, 11 types each)
+- `mget` codegen: extractvalue+select; `mset` codegen: insertvalue+select
+- Replaced mundef stubs in `thead_matrix.h` with real builtin calls
+- Added 7 x2 matmul wrapper functions:
+  - `__THEAD_SPEC_MMAQA_X2` macro: 4 INT16→INT64 x2 dest variants (ss/uu/us/su)
+  - `__riscv_th_mfmaqa_h_x2`: FP16 x2 B operand
+  - `__riscv_th_mfmaqa_d_x2`: FP64 x2 dest
+  - `__riscv_th_mfmaqa_d_s_x2`: FP64 widening x2 dest
+- New `xtheadmatrix-x2-types.c` test (15 test cases at O0+O2)
+- 3 new tests in `xtheadmatrix-spec-api.c` (mget/mset, FP16 x2, FP64 x2)

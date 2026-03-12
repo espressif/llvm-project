@@ -59,12 +59,14 @@ index parameters. Each builtin emits the corresponding `_internal` intrinsic
 with `target("riscv.matrix")` SSA values, plus CSR configuration calls
 (msettilem/k/n) where needed.
 
-### Builtin categories (~250 total)
+### Builtin categories (~272 total)
 
 | Category | Count | Prototype pattern |
 |----------|-------|-------------------|
 | Config | 7 | `void(size_t)` or `void()` |
 | Mundef | 22 | `__rvm_*_t()` — returns PoisonValue |
+| Tuple mget | 11 | `__rvm_*_t(__rvm_*x2_t, size_t)` — extractvalue+select |
+| Tuple mset | 11 | `__rvm_*x2_t(__rvm_*x2_t, size_t, __rvm_*_t)` — insertvalue+select |
 | Spec-API loads | 33 | `__rvm_*_t(void*, size_t, size_t, size_t)` |
 | Spec-API stores | 11 | `void(void*, size_t, __rvm_*_t, size_t, size_t)` |
 | Spec-API matmul | 27 | `__rvm_*_t(__rvm_*_t, __rvm_*_t, __rvm_*_t, size_t, size_t, size_t)` |

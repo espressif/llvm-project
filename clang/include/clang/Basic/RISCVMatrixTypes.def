@@ -8,23 +8,23 @@
 //
 // This file defines the RISC-V Matrix (XTHeadMatrix / RVM 0.6) built-in types.
 //
-// The macro is:
+// Macros:
 //
 // - RVM_TYPE(Name, Id, SingletonId)
-//   A built-in opaque matrix type.
+//   A built-in opaque single-register matrix type.
 //
-// where:
-//
-// - Name is the name of the built-in type (e.g., "__rvm_int8_t").
-//
-// - Id is the enumerator in BuiltinType::Kind (e.g., RvmInt8).
-//
-// - SingletonId is the ASTContext singleton member (e.g., RvmInt8Ty).
+// - RVM_X2_TYPE(Name, Id, SingletonId)
+//   A built-in opaque register-pair (x2) matrix type.
+//   Defaults to RVM_TYPE if not separately defined.
 //
 //===----------------------------------------------------------------------===//
 
 #ifndef RVM_TYPE
 #define RVM_TYPE(Name, Id, SingletonId)
+#endif
+
+#ifndef RVM_X2_TYPE
+#define RVM_X2_TYPE(Name, Id, SingletonId) RVM_TYPE(Name, Id, SingletonId)
 #endif
 
 // Single-register matrix types (11 types)
@@ -41,16 +41,18 @@ RVM_TYPE("__rvm_float32_t",  RvmFloat32,  RvmFloat32Ty)
 RVM_TYPE("__rvm_float64_t",  RvmFloat64,  RvmFloat64Ty)
 
 // Register-pair (x2) matrix types (11 types)
-RVM_TYPE("__rvm_int8x2_t",    RvmInt8x2,    RvmInt8x2Ty)
-RVM_TYPE("__rvm_int16x2_t",   RvmInt16x2,   RvmInt16x2Ty)
-RVM_TYPE("__rvm_int32x2_t",   RvmInt32x2,   RvmInt32x2Ty)
-RVM_TYPE("__rvm_int64x2_t",   RvmInt64x2,   RvmInt64x2Ty)
-RVM_TYPE("__rvm_uint8x2_t",   RvmUint8x2,   RvmUint8x2Ty)
-RVM_TYPE("__rvm_uint16x2_t",  RvmUint16x2,  RvmUint16x2Ty)
-RVM_TYPE("__rvm_uint32x2_t",  RvmUint32x2,  RvmUint32x2Ty)
-RVM_TYPE("__rvm_uint64x2_t",  RvmUint64x2,  RvmUint64x2Ty)
-RVM_TYPE("__rvm_float16x2_t", RvmFloat16x2, RvmFloat16x2Ty)
-RVM_TYPE("__rvm_float32x2_t", RvmFloat32x2, RvmFloat32x2Ty)
-RVM_TYPE("__rvm_float64x2_t", RvmFloat64x2, RvmFloat64x2Ty)
+// At the LLVM IR level these map to { target("riscv.matrix"), target("riscv.matrix") }.
+RVM_X2_TYPE("__rvm_int8x2_t",    RvmInt8x2,    RvmInt8x2Ty)
+RVM_X2_TYPE("__rvm_int16x2_t",   RvmInt16x2,   RvmInt16x2Ty)
+RVM_X2_TYPE("__rvm_int32x2_t",   RvmInt32x2,   RvmInt32x2Ty)
+RVM_X2_TYPE("__rvm_int64x2_t",   RvmInt64x2,   RvmInt64x2Ty)
+RVM_X2_TYPE("__rvm_uint8x2_t",   RvmUint8x2,   RvmUint8x2Ty)
+RVM_X2_TYPE("__rvm_uint16x2_t",  RvmUint16x2,  RvmUint16x2Ty)
+RVM_X2_TYPE("__rvm_uint32x2_t",  RvmUint32x2,  RvmUint32x2Ty)
+RVM_X2_TYPE("__rvm_uint64x2_t",  RvmUint64x2,  RvmUint64x2Ty)
+RVM_X2_TYPE("__rvm_float16x2_t", RvmFloat16x2, RvmFloat16x2Ty)
+RVM_X2_TYPE("__rvm_float32x2_t", RvmFloat32x2, RvmFloat32x2Ty)
+RVM_X2_TYPE("__rvm_float64x2_t", RvmFloat64x2, RvmFloat64x2Ty)
 
+#undef RVM_X2_TYPE
 #undef RVM_TYPE
