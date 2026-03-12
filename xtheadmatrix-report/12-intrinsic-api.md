@@ -170,3 +170,90 @@ mint32_t __riscv_th_mundef_i32(void);    // undefined value (PoisonValue)
 - Matrix types cannot cross function boundaries
 - No C++ overloading (separate functions per type)
 - No stream load/store (not in RVM 0.6 spec)
+
+## Zmpanel Panel-Aware API
+
+The Zmpanel extension adds 30 fire-and-forget macro instructions for panel-aware 2x2 matrix tiling.
+These operate on implicit hardware state and do not use compiler-managed matrix register values.
+
+### Panel Configuration (12 functions)
+
+```c
+void __riscv_th_mset22adra(size_t addr);   // Set base address of matrix A
+void __riscv_th_mset22adrb(size_t addr);   // Set base address of matrix B
+void __riscv_th_mset22adrd(size_t addr);   // Set base address of matrix D
+void __riscv_th_mset22rsba(size_t stride); // Set row stride of A in bytes
+void __riscv_th_mset22rsbb(size_t stride); // Set row stride of B in bytes
+void __riscv_th_mset22rsbd(size_t stride); // Set row stride of D in bytes
+void __riscv_th_mset22m(size_t m);         // Set panel M dimension
+void __riscv_th_mset22n(size_t n);         // Set panel N dimension
+void __riscv_th_mset22k(size_t k);         // Set panel K dimension
+void __riscv_th_msetrstptr(size_t val);    // Reset all HW pointers
+void __riscv_th_msetaccum(size_t mode);    // 0=zero, 1=preload
+void __riscv_th_msetoob(size_t policy);    // OOB policy
+```
+
+### Panel Load/Store (4 functions)
+
+```c
+void __riscv_th_ml22e8(void);    // Load 2x2 panel tiles, 8-bit
+void __riscv_th_ml22e16(void);   // Load 2x2 panel tiles, 16-bit
+void __riscv_th_msc22e16(void);  // Store 2x2 panel results, 16-bit
+void __riscv_th_msc22e32(void);  // Store 2x2 panel results, 32-bit
+```
+
+### Panel Compute (14 functions)
+
+```c
+// INT8 -> INT32
+void __riscv_th_mmacc22_w_b(void);     // signed x signed
+void __riscv_th_mmaccu22_w_b(void);    // unsigned x unsigned
+void __riscv_th_mmaccus22_w_b(void);   // unsigned x signed
+void __riscv_th_mmaccsu22_w_b(void);   // signed x unsigned
+
+// FP8 -> FP16/BF16/FP32
+void __riscv_th_mfmacc22_h_e5(void);   // fp8(E5M2) -> fp16
+void __riscv_th_mfmacc22_h_e4(void);   // fp8(E4M3) -> fp16
+void __riscv_th_mfmacc22_bf16_e5(void);// fp8(E5M2) -> bf16
+void __riscv_th_mfmacc22_bf16_e4(void);// fp8(E4M3) -> bf16
+void __riscv_th_mfmacc22_s_e5(void);   // fp8(E5M2) -> fp32
+void __riscv_th_mfmacc22_s_e4(void);   // fp8(E4M3) -> fp32
+
+// Standard FP
+void __riscv_th_mfmacc22_h(void);      // fp16 -> fp16
+void __riscv_th_mfmacc22_s_h(void);    // fp16 -> fp32
+void __riscv_th_mfmacc22_s_bf16(void); // bf16 -> fp32
+void __riscv_th_mfmacc22_s(void);      // fp32 -> fp32
+```
+
+### Usage Example: Panel GEMM Pipeline
+
+```c
+#include <thead_matrix.h>
+
+void panel_gemm_int8(const void *A, const void *B, void *D,
+                     size_t rsa, size_t rsb, size_t rsd,
+                     size_t M, size_t N, size_t K) {
+  // 1. Configure panel parameters
+  __riscv_th_mset22adra((size_t)A);
+  __riscv_th_mset22adrb((size_t)B);
+  __riscv_th_mset22adrd((size_t)D);
+  __riscv_th_mset22rsba(rsa);
+  __riscv_th_mset22rsbb(rsb);
+  __riscv_th_mset22rsbd(rsd);
+  __riscv_th_mset22m(M);
+  __riscv_th_mset22n(N);
+  __riscv_th_mset22k(K);
+  __riscv_th_msetaccum(0);     // zero mode
+  __riscv_th_msetoob(2);       // load=zero-pad, store=skip
+  __riscv_th_msetrstptr(1);    // reset HW pointers
+
+  // 2. Execute: load 2x2 tiles -> compute -> store results
+  __riscv_th_ml22e8();         // load 8 tile registers
+  __riscv_th_mmacc22_w_b();    // signed int8 panel MAC
+  __riscv_th_msc22e32();       // store 4 acc registers
+
+  // 3. Fence before reading results
+  asm volatile("fence");
+}
+```

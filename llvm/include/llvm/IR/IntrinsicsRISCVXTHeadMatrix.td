@@ -356,4 +356,48 @@ foreach op = ["mfadd", "mfsub", "mfmul", "mfmax", "mfmin"] in {
   }
 }
 
+//===----------------------------------------------------------------------===//
+// Zmpanel: Panel-Aware 2x2 Matrix Tiling intrinsics
+//===----------------------------------------------------------------------===//
+
+// Panel configuration: (value) -> void
+def int_riscv_th_mset22adra : DefaultAttrsIntrinsic<[], [llvm_anyint_ty], [IntrHasSideEffects]>;
+def int_riscv_th_mset22adrb : DefaultAttrsIntrinsic<[], [llvm_anyint_ty], [IntrHasSideEffects]>;
+def int_riscv_th_mset22adrd : DefaultAttrsIntrinsic<[], [llvm_anyint_ty], [IntrHasSideEffects]>;
+def int_riscv_th_mset22rsba : DefaultAttrsIntrinsic<[], [llvm_anyint_ty], [IntrHasSideEffects]>;
+def int_riscv_th_mset22rsbb : DefaultAttrsIntrinsic<[], [llvm_anyint_ty], [IntrHasSideEffects]>;
+def int_riscv_th_mset22rsbd : DefaultAttrsIntrinsic<[], [llvm_anyint_ty], [IntrHasSideEffects]>;
+def int_riscv_th_mset22m    : DefaultAttrsIntrinsic<[], [llvm_anyint_ty], [IntrHasSideEffects]>;
+def int_riscv_th_mset22n    : DefaultAttrsIntrinsic<[], [llvm_anyint_ty], [IntrHasSideEffects]>;
+def int_riscv_th_mset22k    : DefaultAttrsIntrinsic<[], [llvm_anyint_ty], [IntrHasSideEffects]>;
+def int_riscv_th_msetrstptr : DefaultAttrsIntrinsic<[], [llvm_anyint_ty], [IntrHasSideEffects]>;
+def int_riscv_th_msetaccum  : DefaultAttrsIntrinsic<[], [llvm_anyint_ty], [IntrHasSideEffects]>;
+def int_riscv_th_msetoob    : DefaultAttrsIntrinsic<[], [llvm_anyint_ty], [IntrHasSideEffects]>;
+
+// Panel load: () -> void
+def int_riscv_th_ml22e8  : DefaultAttrsIntrinsic<[], [], [IntrHasSideEffects]>;
+def int_riscv_th_ml22e16 : DefaultAttrsIntrinsic<[], [], [IntrHasSideEffects]>;
+
+// Panel store: () -> void
+def int_riscv_th_msc22e16 : DefaultAttrsIntrinsic<[], [], [IntrHasSideEffects]>;
+def int_riscv_th_msc22e32 : DefaultAttrsIntrinsic<[], [], [IntrHasSideEffects]>;
+
+// Panel FP compute: () -> void
+def int_riscv_th_mfmacc22_h_e5    : DefaultAttrsIntrinsic<[], [], [IntrHasSideEffects]>;
+def int_riscv_th_mfmacc22_h_e4    : DefaultAttrsIntrinsic<[], [], [IntrHasSideEffects]>;
+def int_riscv_th_mfmacc22_bf16_e5 : DefaultAttrsIntrinsic<[], [], [IntrHasSideEffects]>;
+def int_riscv_th_mfmacc22_bf16_e4 : DefaultAttrsIntrinsic<[], [], [IntrHasSideEffects]>;
+def int_riscv_th_mfmacc22_s_e5    : DefaultAttrsIntrinsic<[], [], [IntrHasSideEffects]>;
+def int_riscv_th_mfmacc22_s_e4    : DefaultAttrsIntrinsic<[], [], [IntrHasSideEffects]>;
+def int_riscv_th_mfmacc22_h       : DefaultAttrsIntrinsic<[], [], [IntrHasSideEffects]>;
+def int_riscv_th_mfmacc22_s_h     : DefaultAttrsIntrinsic<[], [], [IntrHasSideEffects]>;
+def int_riscv_th_mfmacc22_s_bf16  : DefaultAttrsIntrinsic<[], [], [IntrHasSideEffects]>;
+def int_riscv_th_mfmacc22_s       : DefaultAttrsIntrinsic<[], [], [IntrHasSideEffects]>;
+
+// Panel INT compute: () -> void
+def int_riscv_th_mmacc22_w_b   : DefaultAttrsIntrinsic<[], [], [IntrHasSideEffects]>;
+def int_riscv_th_mmaccu22_w_b  : DefaultAttrsIntrinsic<[], [], [IntrHasSideEffects]>;
+def int_riscv_th_mmaccus22_w_b : DefaultAttrsIntrinsic<[], [], [IntrHasSideEffects]>;
+def int_riscv_th_mmaccsu22_w_b : DefaultAttrsIntrinsic<[], [], [IntrHasSideEffects]>;
+
 } // TargetPrefix = "riscv"

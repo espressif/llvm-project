@@ -19,9 +19,25 @@ Matrix registers now support typed inline asm constraints:
 - Clobber constraints: `"tr0"`, `"acc0"`, etc.
 - `copyPhysReg` via `PTH_MMOV_MM_V` pseudo for register-to-register copies
 
+## Implemented: Zmpanel Panel-Aware 2x2 Tiling
+
+The Zmpanel extension has been fully implemented with 30 fire-and-forget macro
+instructions for panel-aware 2x2 matrix tiling. Feature
+`FeatureVendorXTHeadZmpanel` implies `FeatureVendorXTHeadMatrix`. These operate
+on implicit hardware state and do not require pseudo instructions or
+compiler-managed matrix register values.
+
+### Zmpanel Future Work
+
+- Higher-level tiling abstractions for the panel GEMM pipeline (auto-generating
+  the config+load+compute+store sequence from loop-nest descriptions)
+- Integration with MLIR/linalg to automatically lower tiled matmul to Zmpanel
+  config+ml22+compute+msc22 sequences
+- Auto-selection of Zmpanel vs base XTHeadMatrix paths based on tile dimensions
+- OOB policy optimization (compiler-driven selection of zero-pad vs skip modes)
+
 ## Possible Improvements
 
-- Tiling and loop-nest abstractions for common GEMM patterns
 - Auto-select matmul variants based on data type
 - MLIR linalg integration for automatic matrix tiling
 - C++ overloaded wrapper layer
@@ -49,5 +65,5 @@ Matrix registers now support typed inline asm constraints:
 
 ## Encoding Verification
 
-All 227 instruction encodings verified (2 independent audits, 0 discrepancies).
+All 257 instruction encodings verified (227 base + 30 Zmpanel; 2 independent audits on base, 0 discrepancies).
 Known spec errata: matmul uop=01 should be 10; mfmin.s/mfmin.h names swapped.

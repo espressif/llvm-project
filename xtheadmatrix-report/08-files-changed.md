@@ -6,18 +6,18 @@
 
 | File | Purpose |
 |------|---------|
-| `llvm/lib/Target/RISCV/RISCVInstrInfoXTHeadMatrix.td` | 227 instruction definitions + ~220 PTH_*_V pseudos + spill/reload pseudos |
-| `llvm/include/llvm/IR/IntrinsicsRISCVXTHeadMatrix.td` | ~220 `_internal` intrinsics + 7 config intrinsics + helper classes |
-| `llvm/lib/Target/RISCV/RISCVISelDAGToDAG.cpp` | `selectTHMatrixInternal()` with ~227 table entries, 16 dispatch categories |
+| `llvm/lib/Target/RISCV/RISCVInstrInfoXTHeadMatrix.td` | 227 instruction definitions + ~220 PTH_*_V pseudos + spill/reload pseudos + 30 Zmpanel panel-aware instructions |
+| `llvm/include/llvm/IR/IntrinsicsRISCVXTHeadMatrix.td` | ~220 `_internal` intrinsics + 7 config intrinsics + helper classes + 30 Zmpanel intrinsics |
+| `llvm/lib/Target/RISCV/RISCVISelDAGToDAG.cpp` | `selectTHMatrixInternal()` with ~257 table entries, 16 dispatch categories |
 | `llvm/lib/Target/RISCV/RISCVISelDAGToDAG.h` | `selectTHMatrixInternal()` declaration |
 | `llvm/lib/Target/RISCV/RISCVExpandPseudoInsts.cpp` | `lookupTHMatrixPseudo()` table — ~220 PTH_*_V → TH_* expansion |
 | `llvm/lib/Target/RISCV/RISCVLowerMatrixType.cpp` | `-O0` support pass for `target("riscv.matrix")` |
-| `llvm/lib/Target/RISCV/RISCVMachineFunctionInfo.h` | `MatrixProgModelEnum {None, ManagedRA}` |
+| `llvm/lib/Target/RISCV/RISCVMachineFunctionInfo.h` | `MatrixProgModelEnum {None, ManagedRA}` + `UsesZmpanelFireAndForget` flag for mixed-mode conflict detection |
 | `llvm/lib/Target/RISCV/RISCVRegisterInfo.cpp` | Conditional matrix register reservation |
 | `llvm/lib/Target/RISCV/RISCVRegisterInfo.td` | THRVMMR, THRVMTR, THRVMACC register classes |
-| `llvm/lib/Target/RISCV/RISCVFeatures.td` | `FeatureVendorXTHeadMatrix` (experimental, v0.6) |
+| `llvm/lib/Target/RISCV/RISCVFeatures.td` | `FeatureVendorXTHeadMatrix` (experimental, v0.6) + `FeatureVendorXTHeadZmpanel` (implies XTHeadMatrix) |
 | `llvm/lib/Target/RISCV/RISCVSystemOperands.td` | 13 CSRs with `th.` prefix |
-| `llvm/lib/Target/RISCV/Disassembler/RISCVDisassembler.cpp` | Matrix register decode functions |
+| `llvm/lib/Target/RISCV/Disassembler/RISCVDisassembler.cpp` | Matrix register decode functions + `XTHeadZmpanel` decoder table entry |
 | `llvm/include/llvm/CodeGen/ValueTypes.td` | `MVT::riscvmatrix` (8192-bit) |
 | `llvm/lib/CodeGen/ValueTypes.cpp` | `riscv.matrix` ↔ `MVT` mapping |
 
@@ -25,9 +25,9 @@
 
 | File | Purpose |
 |------|---------|
-| `clang/include/clang/Basic/BuiltinsRISCVXTHeadMatrix.td` | ~272 Clang builtins (Spec-API + mget/mset + config + mundef) |
-| `clang/lib/CodeGen/TargetBuiltins/RISCV.cpp` | Spec-API codegen with lambda helpers |
-| `clang/lib/Headers/thead_matrix.h` | 300+ C API functions/macros |
+| `clang/include/clang/Basic/BuiltinsRISCVXTHeadMatrix.td` | ~272 Clang builtins (Spec-API + mget/mset + config + mundef) + 30 Zmpanel builtins |
+| `clang/lib/CodeGen/TargetBuiltins/RISCV.cpp` | Spec-API codegen with lambda helpers + Zmpanel builtin codegen |
+| `clang/lib/Headers/thead_matrix.h` | 450+ C API functions/macros (including 30+ Zmpanel wrappers) |
 | `clang/include/clang/Basic/RISCVMatrixTypes.def` | 22 native built-in type definitions |
 
 ### Tests
@@ -48,6 +48,11 @@
 | `llvm/test/MC/RISCV/xtheadmatrix-valid.s` | 227 instruction encoding tests (1154 lines) |
 | `llvm/test/MC/RISCV/xtheadmatrix-invalid.s` | Invalid operand tests |
 | `llvm/test/MC/RISCV/xtheadmatrix-csr.s` | 13 CSR resolution tests |
+| `llvm/test/MC/RISCV/xtheadzmpanel-valid.s` | 30 Zmpanel instruction encoding tests |
+| `llvm/test/CodeGen/RISCV/xtheadzmpanel-intrinsics.ll` | Zmpanel intrinsic codegen tests |
+| `clang/test/CodeGen/RISCV/xtheadzmpanel-builtins.c` | Zmpanel builtin codegen tests |
+| `clang/test/CodeGen/RISCV/xtheadzmpanel-inline-asm.c` | Zmpanel inline asm tests |
+| `clang/test/CodeGen/RISCV/xtheadzmpanel-header-api.c` | Zmpanel header API tests |
 
 ## Change History
 
@@ -97,3 +102,11 @@
   - `__riscv_th_mfmaqa_d_s_x2`: FP64 widening x2 dest
 - New `xtheadmatrix-x2-types.c` test (15 test cases at O0+O2)
 - 3 new tests in `xtheadmatrix-spec-api.c` (mget/mset, FP16 x2, FP64 x2)
+
+### Zmpanel extension (2026-03-12)
+- Added `FeatureVendorXTHeadZmpanel` experimental extension (implies XTHeadMatrix)
+- 30 new instructions: 12 config, 2 load, 2 store, 14 compute (10 FP + 4 INT)
+- All use func3=010 (panel macro), separate decoder namespace `XTHeadZmpanel`
+- No pseudos needed — fire-and-forget instructions map directly to real opcodes
+- 30 intrinsics, 30 builtins, 30+ C API wrapper functions
+- 5 new test files (assembly, intrinsics, builtins, inline asm, header API)

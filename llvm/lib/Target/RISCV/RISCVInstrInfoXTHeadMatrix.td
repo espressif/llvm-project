@@ -1273,3 +1273,176 @@ let hasSideEffects = 0, mayLoad = 1, mayStore = 0, isCodeGenOnly = 1 in
 def PTH_MATRIX_RELOAD : Pseudo<(outs THRVMMR:$dst), (ins GPR:$addr), []>;
 
 } // Predicates = [HasVendorXTHeadMatrix]
+
+//===----------------------------------------------------------------------===//
+// Zmpanel: Panel-Aware 2x2 Matrix Tiling Extension
+//===----------------------------------------------------------------------===//
+// All panel-aware instructions use func3=010 (bits[14:12]) to distinguish
+// from standard RVM instructions (func3=000). They operate on implicit
+// hardware state and do not have explicit matrix register operands.
+
+// --- Panel-aware format classes ---
+
+// Panel config: func3=010, uop=00, ctrl=0, takes GPR rs1
+class THRVMInstPanelCfg<bits<4> func4,
+                         dag outs, dag ins, string opcodestr, string argstr>
+    : THRVMInst<outs, ins, opcodestr, argstr> {
+  bits<5> rs1;
+
+  let Inst{31-28} = func4;
+  let Inst{27-26} = 0b00;
+  let Inst{25} = 0;
+  let Inst{24-20} = 0b00000;
+  let Inst{19-15} = rs1;
+  let Inst{14-12} = 0b010;
+  let Inst{11-7} = 0b00000;
+  let DecoderNamespace = "XTHeadZmpanel";
+}
+
+// Panel load: func3=010, uop=01, ls=0, no operands
+class THRVMInstPanelLoad<bits<2> dsize,
+                          dag outs, dag ins, string opcodestr, string argstr>
+    : THRVMInst<outs, ins, opcodestr, argstr> {
+  let Inst{31-28} = 0b0000;
+  let Inst{27-26} = 0b01;
+  let Inst{25} = 0;        // ls=0: load
+  let Inst{24-20} = 0b00000;
+  let Inst{19-15} = 0b00000;
+  let Inst{14-12} = 0b010;
+  let Inst{11-10} = dsize;
+  let Inst{9-7} = 0b000;
+  let mayLoad = 1;
+  let mayStore = 0;
+  let DecoderNamespace = "XTHeadZmpanel";
+}
+
+// Panel store: func3=010, func4=0010, uop=01, ls=1, no operands
+class THRVMInstPanelStore<bits<2> dsize,
+                           dag outs, dag ins, string opcodestr, string argstr>
+    : THRVMInst<outs, ins, opcodestr, argstr> {
+  let Inst{31-28} = 0b0010;
+  let Inst{27-26} = 0b01;
+  let Inst{25} = 1;        // ls=1: store
+  let Inst{24-20} = 0b00000;
+  let Inst{19-15} = 0b00000;
+  let Inst{14-12} = 0b010;
+  let Inst{11-10} = dsize;
+  let Inst{9-7} = 0b000;
+  let mayLoad = 0;
+  let mayStore = 1;
+  let DecoderNamespace = "XTHeadZmpanel";
+}
+
+// Panel compute: func3=010, uop=10, no register operands
+// Mirrors standard matmul encoding with func3=010 and ms2/ms1/md all zero
+class THRVMInstPanelCompute<bits<4> func4, bits<3> size_sup, bits<2> ssize,
+                             bits<2> dsize,
+                             dag outs, dag ins, string opcodestr, string argstr>
+    : THRVMInst<outs, ins, opcodestr, argstr> {
+  let Inst{31-28} = func4;
+  let Inst{27-26} = 0b10;
+  let Inst{25-23} = size_sup;
+  let Inst{22-20} = 0b000;
+  let Inst{19-18} = ssize;
+  let Inst{17-15} = 0b000;
+  let Inst{14-12} = 0b010;
+  let Inst{11-10} = dsize;
+  let Inst{9-7} = 0b000;
+  let mayLoad = 0;
+  let mayStore = 0;
+  let DecoderNamespace = "XTHeadZmpanel";
+}
+
+// --- Panel-aware instruction definitions ---
+
+let Predicates = [HasVendorXTHeadZmpanel] in {
+let hasSideEffects = 1 in {
+
+//--- Configuration instructions ---
+let mayLoad = 0, mayStore = 0 in {
+def TH_MSET22ADRA : THRVMInstPanelCfg<0b0000,
+    (outs), (ins GPR:$rs1), "th.mset22adra", "$rs1">;
+def TH_MSET22ADRB : THRVMInstPanelCfg<0b0001,
+    (outs), (ins GPR:$rs1), "th.mset22adrb", "$rs1">;
+def TH_MSET22ADRD : THRVMInstPanelCfg<0b0010,
+    (outs), (ins GPR:$rs1), "th.mset22adrd", "$rs1">;
+def TH_MSET22RSBA : THRVMInstPanelCfg<0b0011,
+    (outs), (ins GPR:$rs1), "th.mset22rsba", "$rs1">;
+def TH_MSET22RSBB : THRVMInstPanelCfg<0b0100,
+    (outs), (ins GPR:$rs1), "th.mset22rsbb", "$rs1">;
+def TH_MSET22RSBD : THRVMInstPanelCfg<0b0101,
+    (outs), (ins GPR:$rs1), "th.mset22rsbd", "$rs1">;
+def TH_MSET22M    : THRVMInstPanelCfg<0b0110,
+    (outs), (ins GPR:$rs1), "th.mset22m", "$rs1">;
+def TH_MSET22N    : THRVMInstPanelCfg<0b0111,
+    (outs), (ins GPR:$rs1), "th.mset22n", "$rs1">;
+def TH_MSET22K    : THRVMInstPanelCfg<0b1000,
+    (outs), (ins GPR:$rs1), "th.mset22k", "$rs1">;
+def TH_MSETRSTPTR : THRVMInstPanelCfg<0b1001,
+    (outs), (ins GPR:$rs1), "th.msetrstptr", "$rs1">;
+def TH_MSETACCUM  : THRVMInstPanelCfg<0b1010,
+    (outs), (ins GPR:$rs1), "th.msetaccum", "$rs1">;
+def TH_MSETOOB    : THRVMInstPanelCfg<0b1011,
+    (outs), (ins GPR:$rs1), "th.msetoob", "$rs1">;
+} // mayLoad = 0, mayStore = 0
+
+//--- Load macro instructions ---
+// Panel loads clobber all 4 compiler-visible tile registers (tr0-tr3).
+// They also write tr4-tr7 but those are not in the compiler's register file.
+let Defs = [THRVM_TR0, THRVM_TR1, THRVM_TR2, THRVM_TR3] in {
+def TH_ML22E8  : THRVMInstPanelLoad<0b00,
+    (outs), (ins), "th.ml22e8", "">;
+def TH_ML22E16 : THRVMInstPanelLoad<0b01,
+    (outs), (ins), "th.ml22e16", "">;
+}
+
+//--- Store macro instructions ---
+// Panel stores read all 4 accumulator registers (acc0-acc3).
+let Uses = [THRVM_ACC0, THRVM_ACC1, THRVM_ACC2, THRVM_ACC3] in {
+def TH_MSC22E16 : THRVMInstPanelStore<0b01,
+    (outs), (ins), "th.msc22e16", "">;
+def TH_MSC22E32 : THRVMInstPanelStore<0b10,
+    (outs), (ins), "th.msc22e32", "">;
+}
+
+//--- FP compute macro instructions (func4=0000) ---
+// Panel computes read tr0-tr3 (tile inputs) and write acc0-acc3 (results).
+// In accumulate mode they also read acc0-acc3, so we mark them as both
+// Defs and Uses to be conservative.
+let Defs = [THRVM_ACC0, THRVM_ACC1, THRVM_ACC2, THRVM_ACC3],
+    Uses = [THRVM_TR0, THRVM_TR1, THRVM_TR2, THRVM_TR3,
+            THRVM_ACC0, THRVM_ACC1, THRVM_ACC2, THRVM_ACC3] in {
+def TH_MFMACC22_H_E5    : THRVMInstPanelCompute<0b0000, 0b000, 0b00, 0b01,
+    (outs), (ins), "th.mfmacc22.h.e5", "">;
+def TH_MFMACC22_H_E4    : THRVMInstPanelCompute<0b0000, 0b001, 0b00, 0b01,
+    (outs), (ins), "th.mfmacc22.h.e4", "">;
+def TH_MFMACC22_BF16_E5 : THRVMInstPanelCompute<0b0000, 0b100, 0b00, 0b01,
+    (outs), (ins), "th.mfmacc22.bf16.e5", "">;
+def TH_MFMACC22_BF16_E4 : THRVMInstPanelCompute<0b0000, 0b101, 0b00, 0b01,
+    (outs), (ins), "th.mfmacc22.bf16.e4", "">;
+def TH_MFMACC22_S_E5    : THRVMInstPanelCompute<0b0000, 0b000, 0b00, 0b10,
+    (outs), (ins), "th.mfmacc22.s.e5", "">;
+def TH_MFMACC22_S_E4    : THRVMInstPanelCompute<0b0000, 0b001, 0b00, 0b10,
+    (outs), (ins), "th.mfmacc22.s.e4", "">;
+def TH_MFMACC22_H       : THRVMInstPanelCompute<0b0000, 0b000, 0b01, 0b01,
+    (outs), (ins), "th.mfmacc22.h", "">;
+def TH_MFMACC22_S_H     : THRVMInstPanelCompute<0b0000, 0b000, 0b01, 0b10,
+    (outs), (ins), "th.mfmacc22.s.h", "">;
+def TH_MFMACC22_S_BF16  : THRVMInstPanelCompute<0b0000, 0b001, 0b01, 0b10,
+    (outs), (ins), "th.mfmacc22.s.bf16", "">;
+def TH_MFMACC22_S       : THRVMInstPanelCompute<0b0000, 0b000, 0b10, 0b10,
+    (outs), (ins), "th.mfmacc22.s", "">;
+
+//--- INT compute macro instructions (func4=0001) ---
+def TH_MMACC22_W_B      : THRVMInstPanelCompute<0b0001, 0b011, 0b00, 0b10,
+    (outs), (ins), "th.mmacc22.w.b", "">;
+def TH_MMACCU22_W_B     : THRVMInstPanelCompute<0b0001, 0b000, 0b00, 0b10,
+    (outs), (ins), "th.mmaccu22.w.b", "">;
+def TH_MMACCUS22_W_B    : THRVMInstPanelCompute<0b0001, 0b001, 0b00, 0b10,
+    (outs), (ins), "th.mmaccus22.w.b", "">;
+def TH_MMACCSU22_W_B    : THRVMInstPanelCompute<0b0001, 0b010, 0b00, 0b10,
+    (outs), (ins), "th.mmaccsu22.w.b", "">;
+} // Defs, Uses
+
+} // hasSideEffects = 1
+} // Predicates = [HasVendorXTHeadZmpanel]

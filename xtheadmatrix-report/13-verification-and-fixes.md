@@ -2,7 +2,7 @@
 
 ## Summary
 
-Six independent verification rounds were completed against the RVM 0.6 spec.
+Seven independent verification rounds were completed against the RVM 0.6 spec.
 All bugs have been fixed. The implementation is verified correct.
 
 ## Bug Fixes (all resolved)
@@ -147,6 +147,33 @@ support. Verified 6 files changed, 222 new lines, 53 removed.
    optimization folding) + 3 cases in `xtheadmatrix-spec-api.c`.
 
 **Result: No issues found.** All implementations are correct and consistent.
+
+## Verification Round 7 (Claude Opus 4.6 #6) — Zmpanel Extension
+
+Implemented and verified the Zmpanel panel-aware 2x2 matrix tiling extension.
+
+**Components verified:**
+
+1. Feature definition: `FeatureVendorXTHeadZmpanel` correctly implies `FeatureVendorXTHeadMatrix`
+2. 30 instruction encodings: all use func3=010 to distinguish from standard RVM (func3=000)
+3. Decoder namespace: separate `XTHeadZmpanel` decoder table added to disassembler
+4. Panel compute encoding: mirrors standard matmul format (uop=10, confirmed) with ms2/ms1/md=000; ssize field (bits[19:18]) still distinguishes FP source types
+5. Implicit Defs/Uses added to panel load/store/compute instructions to prevent incorrect reordering by the compiler
+6. `THMI_PanelFireForget` ISel dispatch category introduced for panel load/store/compute (replacing `THMI_NoArgs` which is reserved for `mrelease`); config instructions remain on `THMI_CfgReg`
+7. Mixed-mode conflict detection: a fatal error is emitted at ISel time if a function uses both ManagedRA (base XTHeadMatrix) and Zmpanel fire-and-forget instructions, since the two models have incompatible assumptions about matrix register ownership
+8. `UsesZmpanelFireAndForget` flag added to `RISCVMachineFunctionInfo` to track panel usage for the conflict check
+9. Header API (`<thead_matrix.h>`) Zmpanel section guarded with `#if defined(__riscv_xtheadzmpanel)` feature guard
+10. Assembly round-trip verified: encode -> binary -> disassemble produces original instructions
+11. Full-stack test: builtins -> intrinsics -> ISel -> instruction emission verified for all 30 operations
+12. No regressions: all 15 existing XTHeadMatrix tests pass unchanged
+
+**Key design decisions:**
+- No pseudo instructions needed -- Zmpanel instructions operate on implicit hardware state, not compiler-managed matrix register values
+- Config instructions use THMI_CfgReg (same category as existing msettilem/k/n)
+- Load/store/compute use THMI_PanelFireForget (dedicated category with implicit Defs/Uses)
+- `UsesZmpanelFireAndForget` flag in MFI enables mixed-mode conflict detection against ManagedRA
+
+**Result: All 20 tests pass (5 new Zmpanel + 15 existing XTHeadMatrix). Zero regressions.**
 
 ## Differences from Spec Intrinsic API (rvm-intrinsic-api.adoc v0.2)
 

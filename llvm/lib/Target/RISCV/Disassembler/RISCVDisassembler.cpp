@@ -697,6 +697,9 @@ static constexpr FeatureBitset XTHeadGroup = {
 static constexpr FeatureBitset XTHeadMatrixGroup = {
     RISCV::FeatureVendorXTHeadMatrix};
 
+static constexpr FeatureBitset XTHeadZmpanelGroup = {
+    RISCV::FeatureVendorXTHeadZmpanel};
+
 static constexpr FeatureBitset XAndesGroup = {
     RISCV::FeatureVendorXAndesPerf,      RISCV::FeatureVendorXAndesBFHCvt,
     RISCV::FeatureVendorXAndesVBFHCvt,   RISCV::FeatureVendorXAndesVSIntH,
@@ -715,6 +718,7 @@ static constexpr DecoderListEntry DecoderList32[]{
      "XVentanaCondOps"},
     {DecoderTableXTHead32, XTHeadGroup, "T-Head extensions"},
     {DecoderTableXTHeadMatrix32, XTHeadMatrixGroup, "T-Head Matrix extensions"},
+    {DecoderTableXTHeadZmpanel32, XTHeadZmpanelGroup, "T-Head Panel-Aware Matrix extensions"},
     {DecoderTableXSfvector32, XSfVectorGroup, "SiFive vector extensions"},
     {DecoderTableXSfsystem32, XSfSystemGroup, "SiFive system extensions"},
     {DecoderTableXSfcease32, {RISCV::FeatureVendorXSfcease}, "SiFive sf.cease"},

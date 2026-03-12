@@ -912,9 +912,10 @@ enum THMatrixInternalCategory {
   THMI_FromGPR,    // (matrix_in, data) -> matrix_out [tied]
   THMI_UnaryImm,   // (ms1, imm) -> md
   THMI_MulAccImm,  // (acc, ms2, ms1, imm) -> acc_out [tied]
-  THMI_CfgImm,     // (imm) -> void  [config with immediate]
-  THMI_CfgReg,     // (reg) -> void  [config with GPR]
-  THMI_NoArgs,     // () -> void     [mrelease]
+  THMI_CfgImm,         // (imm) -> void  [config with immediate]
+  THMI_CfgReg,         // (reg) -> void  [config with GPR]
+  THMI_NoArgs,         // () -> void     [mrelease]
+  THMI_PanelFireForget, // () -> void    [Zmpanel load/store/compute]
 };
 
 struct THMatrixInternalEntry {
@@ -1203,6 +1204,43 @@ static const THMatrixInternalEntry THMatrixInternalTable[] = {
     {Intrinsic::riscv_th_msettilek,  RISCV::TH_MSETTILEK,  THMI_CfgReg},
     {Intrinsic::riscv_th_msettilen,  RISCV::TH_MSETTILEN,  THMI_CfgReg},
     {Intrinsic::riscv_th_mrelease,   RISCV::TH_MRELEASE,   THMI_NoArgs},
+
+    // Zmpanel: Panel-Aware 2x2 Matrix Tiling
+    // Config (GPR source)
+    {Intrinsic::riscv_th_mset22adra, RISCV::TH_MSET22ADRA, THMI_CfgReg},
+    {Intrinsic::riscv_th_mset22adrb, RISCV::TH_MSET22ADRB, THMI_CfgReg},
+    {Intrinsic::riscv_th_mset22adrd, RISCV::TH_MSET22ADRD, THMI_CfgReg},
+    {Intrinsic::riscv_th_mset22rsba, RISCV::TH_MSET22RSBA, THMI_CfgReg},
+    {Intrinsic::riscv_th_mset22rsbb, RISCV::TH_MSET22RSBB, THMI_CfgReg},
+    {Intrinsic::riscv_th_mset22rsbd, RISCV::TH_MSET22RSBD, THMI_CfgReg},
+    {Intrinsic::riscv_th_mset22m,    RISCV::TH_MSET22M,    THMI_CfgReg},
+    {Intrinsic::riscv_th_mset22n,    RISCV::TH_MSET22N,    THMI_CfgReg},
+    {Intrinsic::riscv_th_mset22k,    RISCV::TH_MSET22K,    THMI_CfgReg},
+    {Intrinsic::riscv_th_msetrstptr, RISCV::TH_MSETRSTPTR, THMI_CfgReg},
+    {Intrinsic::riscv_th_msetaccum,  RISCV::TH_MSETACCUM,  THMI_CfgReg},
+    {Intrinsic::riscv_th_msetoob,    RISCV::TH_MSETOOB,    THMI_CfgReg},
+    // Load (panel fire-and-forget: clobbers tr0-tr3)
+    {Intrinsic::riscv_th_ml22e8,     RISCV::TH_ML22E8,     THMI_PanelFireForget},
+    {Intrinsic::riscv_th_ml22e16,    RISCV::TH_ML22E16,    THMI_PanelFireForget},
+    // Store (panel fire-and-forget: reads acc0-acc3)
+    {Intrinsic::riscv_th_msc22e16,   RISCV::TH_MSC22E16,   THMI_PanelFireForget},
+    {Intrinsic::riscv_th_msc22e32,   RISCV::TH_MSC22E32,   THMI_PanelFireForget},
+    // FP compute (panel fire-and-forget: reads tr0-tr3, clobbers acc0-acc3)
+    {Intrinsic::riscv_th_mfmacc22_h_e5,    RISCV::TH_MFMACC22_H_E5,    THMI_PanelFireForget},
+    {Intrinsic::riscv_th_mfmacc22_h_e4,    RISCV::TH_MFMACC22_H_E4,    THMI_PanelFireForget},
+    {Intrinsic::riscv_th_mfmacc22_bf16_e5, RISCV::TH_MFMACC22_BF16_E5, THMI_PanelFireForget},
+    {Intrinsic::riscv_th_mfmacc22_bf16_e4, RISCV::TH_MFMACC22_BF16_E4, THMI_PanelFireForget},
+    {Intrinsic::riscv_th_mfmacc22_s_e5,    RISCV::TH_MFMACC22_S_E5,    THMI_PanelFireForget},
+    {Intrinsic::riscv_th_mfmacc22_s_e4,    RISCV::TH_MFMACC22_S_E4,    THMI_PanelFireForget},
+    {Intrinsic::riscv_th_mfmacc22_h,       RISCV::TH_MFMACC22_H,       THMI_PanelFireForget},
+    {Intrinsic::riscv_th_mfmacc22_s_h,     RISCV::TH_MFMACC22_S_H,     THMI_PanelFireForget},
+    {Intrinsic::riscv_th_mfmacc22_s_bf16,  RISCV::TH_MFMACC22_S_BF16,  THMI_PanelFireForget},
+    {Intrinsic::riscv_th_mfmacc22_s,       RISCV::TH_MFMACC22_S,       THMI_PanelFireForget},
+    // INT compute (panel fire-and-forget: reads tr0-tr3, clobbers acc0-acc3)
+    {Intrinsic::riscv_th_mmacc22_w_b,      RISCV::TH_MMACC22_W_B,      THMI_PanelFireForget},
+    {Intrinsic::riscv_th_mmaccu22_w_b,     RISCV::TH_MMACCU22_W_B,     THMI_PanelFireForget},
+    {Intrinsic::riscv_th_mmaccus22_w_b,    RISCV::TH_MMACCUS22_W_B,    THMI_PanelFireForget},
+    {Intrinsic::riscv_th_mmaccsu22_w_b,    RISCV::TH_MMACCSU22_W_B,    THMI_PanelFireForget},
 };
 // clang-format on
 
@@ -1231,11 +1269,25 @@ void RISCVDAGToDAGISel::selectTHMatrixInternal(SDNode *Node) {
   if (!Entry)
     return;
 
-  // Set ManagedRA programming model (skip for config-only intrinsics).
+  // Set ManagedRA programming model (skip for config-only and panel intrinsics).
+  auto *MFI = CurDAG->getMachineFunction().getInfo<RISCVMachineFunctionInfo>();
   if (Entry->Cat != THMI_CfgImm && Entry->Cat != THMI_CfgReg &&
-      Entry->Cat != THMI_NoArgs) {
-    auto *MFI = CurDAG->getMachineFunction().getInfo<RISCVMachineFunctionInfo>();
+      Entry->Cat != THMI_NoArgs && Entry->Cat != THMI_PanelFireForget) {
+    // Detect conflict: standard RVM (ManagedRA) + Zmpanel fire-and-forget
+    if (MFI->usesZmpanelFireAndForget())
+      report_fatal_error("cannot mix standard XTHeadMatrix (ManagedRA) "
+                         "intrinsics with Zmpanel panel-aware load/store/"
+                         "compute intrinsics in the same function");
     MFI->setMatrixProgModel(MatrixProgModelEnum::ManagedRA);
+  }
+
+  // Zmpanel fire-and-forget: mark and detect conflict with ManagedRA.
+  if (Entry->Cat == THMI_PanelFireForget) {
+    if (MFI->getMatrixProgModel() == MatrixProgModelEnum::ManagedRA)
+      report_fatal_error("cannot mix Zmpanel panel-aware load/store/compute "
+                         "intrinsics with standard XTHeadMatrix (ManagedRA) "
+                         "intrinsics in the same function");
+    MFI->setUsesZmpanelFireAndForget();
   }
 
   SDValue Chain;
@@ -1342,6 +1394,7 @@ void RISCVDAGToDAGISel::selectTHMatrixInternal(SDNode *Node) {
     Operands.push_back(Node->getOperand(ArgBase));
     break;
   case THMI_NoArgs:
+  case THMI_PanelFireForget:
     // () -> void
     break;
   }
@@ -1355,7 +1408,8 @@ void RISCVDAGToDAGISel::selectTHMatrixInternal(SDNode *Node) {
                         Entry->Cat != THMI_StoreWhole &&
                         Entry->Cat != THMI_CfgImm &&
                         Entry->Cat != THMI_CfgReg &&
-                        Entry->Cat != THMI_NoArgs);
+                        Entry->Cat != THMI_NoArgs &&
+                        Entry->Cat != THMI_PanelFireForget);
   bool ReturnsGPR = (Entry->Cat == THMI_ToGPR);
 
   if (ReturnsGPR) {

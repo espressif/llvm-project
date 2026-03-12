@@ -405,4 +405,48 @@ foreach op = ["mfadd", "mfsub", "mfmul", "mfmax", "mfmin"] in {
   def op # _d_mv_i_spec : RISCVXTHeadMatrixBuiltin<"__rvm_float64_t(__rvm_float64_t, __rvm_float64_t, __rvm_float64_t, unsigned int)", "experimental-xtheadmatrix">;
 }
 
+//===----------------------------------------------------------------------===//
+// Zmpanel: Panel-Aware 2x2 Matrix Tiling builtins
+//===----------------------------------------------------------------------===//
+
+// --- Configuration: (size_t) -> void ---
+def mset22adra : RISCVXTHeadMatrixBuiltin<"void(size_t)", "experimental-xtheadzmpanel">;
+def mset22adrb : RISCVXTHeadMatrixBuiltin<"void(size_t)", "experimental-xtheadzmpanel">;
+def mset22adrd : RISCVXTHeadMatrixBuiltin<"void(size_t)", "experimental-xtheadzmpanel">;
+def mset22rsba : RISCVXTHeadMatrixBuiltin<"void(size_t)", "experimental-xtheadzmpanel">;
+def mset22rsbb : RISCVXTHeadMatrixBuiltin<"void(size_t)", "experimental-xtheadzmpanel">;
+def mset22rsbd : RISCVXTHeadMatrixBuiltin<"void(size_t)", "experimental-xtheadzmpanel">;
+def mset22m    : RISCVXTHeadMatrixBuiltin<"void(size_t)", "experimental-xtheadzmpanel">;
+def mset22n    : RISCVXTHeadMatrixBuiltin<"void(size_t)", "experimental-xtheadzmpanel">;
+def mset22k    : RISCVXTHeadMatrixBuiltin<"void(size_t)", "experimental-xtheadzmpanel">;
+def msetrstptr : RISCVXTHeadMatrixBuiltin<"void(size_t)", "experimental-xtheadzmpanel">;
+def msetaccum  : RISCVXTHeadMatrixBuiltin<"void(size_t)", "experimental-xtheadzmpanel">;
+def msetoob    : RISCVXTHeadMatrixBuiltin<"void(size_t)", "experimental-xtheadzmpanel">;
+
+// --- Load: () -> void ---
+def ml22e8  : RISCVXTHeadMatrixBuiltin<"void()", "experimental-xtheadzmpanel">;
+def ml22e16 : RISCVXTHeadMatrixBuiltin<"void()", "experimental-xtheadzmpanel">;
+
+// --- Store: () -> void ---
+def msc22e16 : RISCVXTHeadMatrixBuiltin<"void()", "experimental-xtheadzmpanel">;
+def msc22e32 : RISCVXTHeadMatrixBuiltin<"void()", "experimental-xtheadzmpanel">;
+
+// --- FP compute: () -> void ---
+def mfmacc22_h_e5    : RISCVXTHeadMatrixBuiltin<"void()", "experimental-xtheadzmpanel">;
+def mfmacc22_h_e4    : RISCVXTHeadMatrixBuiltin<"void()", "experimental-xtheadzmpanel">;
+def mfmacc22_bf16_e5 : RISCVXTHeadMatrixBuiltin<"void()", "experimental-xtheadzmpanel">;
+def mfmacc22_bf16_e4 : RISCVXTHeadMatrixBuiltin<"void()", "experimental-xtheadzmpanel">;
+def mfmacc22_s_e5    : RISCVXTHeadMatrixBuiltin<"void()", "experimental-xtheadzmpanel">;
+def mfmacc22_s_e4    : RISCVXTHeadMatrixBuiltin<"void()", "experimental-xtheadzmpanel">;
+def mfmacc22_h       : RISCVXTHeadMatrixBuiltin<"void()", "experimental-xtheadzmpanel">;
+def mfmacc22_s_h     : RISCVXTHeadMatrixBuiltin<"void()", "experimental-xtheadzmpanel">;
+def mfmacc22_s_bf16  : RISCVXTHeadMatrixBuiltin<"void()", "experimental-xtheadzmpanel">;
+def mfmacc22_s       : RISCVXTHeadMatrixBuiltin<"void()", "experimental-xtheadzmpanel">;
+
+// --- INT compute: () -> void ---
+def mmacc22_w_b   : RISCVXTHeadMatrixBuiltin<"void()", "experimental-xtheadzmpanel">;
+def mmaccu22_w_b  : RISCVXTHeadMatrixBuiltin<"void()", "experimental-xtheadzmpanel">;
+def mmaccus22_w_b : RISCVXTHeadMatrixBuiltin<"void()", "experimental-xtheadzmpanel">;
+def mmaccsu22_w_b : RISCVXTHeadMatrixBuiltin<"void()", "experimental-xtheadzmpanel">;
+
 } // Attributes = [NoThrow]

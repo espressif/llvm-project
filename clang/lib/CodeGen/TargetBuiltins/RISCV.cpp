@@ -2038,6 +2038,76 @@ Value *CodeGenFunction::EmitRISCVBuiltinExpr(unsigned BuiltinID,
   case RISCV::BI__builtin_riscv_th_mrelease:
     ID = Intrinsic::riscv_th_mrelease; break;
 
+  // Zmpanel - Configuration (void, no rd; IntrinsicTypes resolves anyint arg)
+  case RISCV::BI__builtin_riscv_th_mset22adra:
+    ID = Intrinsic::riscv_th_mset22adra; IntrinsicTypes = {Ops[0]->getType()}; break;
+  case RISCV::BI__builtin_riscv_th_mset22adrb:
+    ID = Intrinsic::riscv_th_mset22adrb; IntrinsicTypes = {Ops[0]->getType()}; break;
+  case RISCV::BI__builtin_riscv_th_mset22adrd:
+    ID = Intrinsic::riscv_th_mset22adrd; IntrinsicTypes = {Ops[0]->getType()}; break;
+  case RISCV::BI__builtin_riscv_th_mset22rsba:
+    ID = Intrinsic::riscv_th_mset22rsba; IntrinsicTypes = {Ops[0]->getType()}; break;
+  case RISCV::BI__builtin_riscv_th_mset22rsbb:
+    ID = Intrinsic::riscv_th_mset22rsbb; IntrinsicTypes = {Ops[0]->getType()}; break;
+  case RISCV::BI__builtin_riscv_th_mset22rsbd:
+    ID = Intrinsic::riscv_th_mset22rsbd; IntrinsicTypes = {Ops[0]->getType()}; break;
+  case RISCV::BI__builtin_riscv_th_mset22m:
+    ID = Intrinsic::riscv_th_mset22m; IntrinsicTypes = {Ops[0]->getType()}; break;
+  case RISCV::BI__builtin_riscv_th_mset22n:
+    ID = Intrinsic::riscv_th_mset22n; IntrinsicTypes = {Ops[0]->getType()}; break;
+  case RISCV::BI__builtin_riscv_th_mset22k:
+    ID = Intrinsic::riscv_th_mset22k; IntrinsicTypes = {Ops[0]->getType()}; break;
+  case RISCV::BI__builtin_riscv_th_msetrstptr:
+    ID = Intrinsic::riscv_th_msetrstptr; IntrinsicTypes = {Ops[0]->getType()}; break;
+  case RISCV::BI__builtin_riscv_th_msetaccum:
+    ID = Intrinsic::riscv_th_msetaccum; IntrinsicTypes = {Ops[0]->getType()}; break;
+  case RISCV::BI__builtin_riscv_th_msetoob:
+    ID = Intrinsic::riscv_th_msetoob; IntrinsicTypes = {Ops[0]->getType()}; break;
+
+  // Zmpanel - Loads (no-arg void intrinsics)
+  case RISCV::BI__builtin_riscv_th_ml22e8:
+    ID = Intrinsic::riscv_th_ml22e8; break;
+  case RISCV::BI__builtin_riscv_th_ml22e16:
+    ID = Intrinsic::riscv_th_ml22e16; break;
+
+  // Zmpanel - Stores (no-arg void intrinsics)
+  case RISCV::BI__builtin_riscv_th_msc22e16:
+    ID = Intrinsic::riscv_th_msc22e16; break;
+  case RISCV::BI__builtin_riscv_th_msc22e32:
+    ID = Intrinsic::riscv_th_msc22e32; break;
+
+  // Zmpanel - FP compute (no-arg void intrinsics)
+  case RISCV::BI__builtin_riscv_th_mfmacc22_h_e5:
+    ID = Intrinsic::riscv_th_mfmacc22_h_e5; break;
+  case RISCV::BI__builtin_riscv_th_mfmacc22_h_e4:
+    ID = Intrinsic::riscv_th_mfmacc22_h_e4; break;
+  case RISCV::BI__builtin_riscv_th_mfmacc22_bf16_e5:
+    ID = Intrinsic::riscv_th_mfmacc22_bf16_e5; break;
+  case RISCV::BI__builtin_riscv_th_mfmacc22_bf16_e4:
+    ID = Intrinsic::riscv_th_mfmacc22_bf16_e4; break;
+  case RISCV::BI__builtin_riscv_th_mfmacc22_s_e5:
+    ID = Intrinsic::riscv_th_mfmacc22_s_e5; break;
+  case RISCV::BI__builtin_riscv_th_mfmacc22_s_e4:
+    ID = Intrinsic::riscv_th_mfmacc22_s_e4; break;
+  case RISCV::BI__builtin_riscv_th_mfmacc22_h:
+    ID = Intrinsic::riscv_th_mfmacc22_h; break;
+  case RISCV::BI__builtin_riscv_th_mfmacc22_s_h:
+    ID = Intrinsic::riscv_th_mfmacc22_s_h; break;
+  case RISCV::BI__builtin_riscv_th_mfmacc22_s_bf16:
+    ID = Intrinsic::riscv_th_mfmacc22_s_bf16; break;
+  case RISCV::BI__builtin_riscv_th_mfmacc22_s:
+    ID = Intrinsic::riscv_th_mfmacc22_s; break;
+
+  // Zmpanel - INT compute (no-arg void intrinsics)
+  case RISCV::BI__builtin_riscv_th_mmacc22_w_b:
+    ID = Intrinsic::riscv_th_mmacc22_w_b; break;
+  case RISCV::BI__builtin_riscv_th_mmaccu22_w_b:
+    ID = Intrinsic::riscv_th_mmaccu22_w_b; break;
+  case RISCV::BI__builtin_riscv_th_mmaccus22_w_b:
+    ID = Intrinsic::riscv_th_mmaccus22_w_b; break;
+  case RISCV::BI__builtin_riscv_th_mmaccsu22_w_b:
+    ID = Intrinsic::riscv_th_mmaccsu22_w_b; break;
+
     // Vector builtins are handled from here.
 #include "clang/Basic/riscv_vector_builtin_cg.inc"
 

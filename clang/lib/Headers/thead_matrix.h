@@ -880,6 +880,186 @@ __THEAD_SPEC_EW_FP_MVI(mfmul_d_mv_i, mfloat64_t, mfmul_d_mv_i_spec)
 __THEAD_SPEC_EW_FP_MVI(mfmax_d_mv_i, mfloat64_t, mfmax_d_mv_i_spec)
 __THEAD_SPEC_EW_FP_MVI(mfmin_d_mv_i, mfloat64_t, mfmin_d_mv_i_spec)
 
+/* ===== Section: Zmpanel Panel-Aware 2x2 Matrix Tiling ===== */
+#if defined(__riscv_xtheadzmpanel)
+
+/* Panel-Aware CSR addresses */
+#define __RVM_CSR_CUSTOM_CTRL 0xcc4
+#define __RVM_CSR_BASE_ADDR_A 0xcc5
+#define __RVM_CSR_BASE_ADDR_B 0xcc6
+#define __RVM_CSR_BASE_ADDR_D 0xcc7
+#define __RVM_CSR_RSTRIDEB_A  0xcc8
+#define __RVM_CSR_RSTRIDEB_B  0xcc9
+#define __RVM_CSR_RSTRIDEB_D  0xcca
+#define __RVM_CSR_PANEL_M     0xccb
+#define __RVM_CSR_PANEL_N     0xccc
+#define __RVM_CSR_PANEL_K     0xccd
+#define __RVM_CSR_MPTR_LD     0xcce
+#define __RVM_CSR_NPTR_LD     0xccf
+#define __RVM_CSR_KPTR_LD     0xcd0
+#define __RVM_CSR_MPTR_ST     0xcd1
+#define __RVM_CSR_NPTR_ST     0xcd2
+#define __RVM_CSR_ADDR_A      0xcd3
+#define __RVM_CSR_ADDR_B      0xcd4
+#define __RVM_CSR_ADDR_D      0xcd5
+
+/* --- Panel configuration --- */
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+void __riscv_th_mset22adra(size_t val) {
+  __builtin_riscv_th_mset22adra(val);
+}
+
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+void __riscv_th_mset22adrb(size_t val) {
+  __builtin_riscv_th_mset22adrb(val);
+}
+
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+void __riscv_th_mset22adrd(size_t val) {
+  __builtin_riscv_th_mset22adrd(val);
+}
+
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+void __riscv_th_mset22rsba(size_t val) {
+  __builtin_riscv_th_mset22rsba(val);
+}
+
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+void __riscv_th_mset22rsbb(size_t val) {
+  __builtin_riscv_th_mset22rsbb(val);
+}
+
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+void __riscv_th_mset22rsbd(size_t val) {
+  __builtin_riscv_th_mset22rsbd(val);
+}
+
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+void __riscv_th_mset22m(size_t val) {
+  __builtin_riscv_th_mset22m(val);
+}
+
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+void __riscv_th_mset22n(size_t val) {
+  __builtin_riscv_th_mset22n(val);
+}
+
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+void __riscv_th_mset22k(size_t val) {
+  __builtin_riscv_th_mset22k(val);
+}
+
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+void __riscv_th_msetrstptr(size_t val) {
+  __builtin_riscv_th_msetrstptr(val);
+}
+
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+void __riscv_th_msetaccum(size_t val) {
+  __builtin_riscv_th_msetaccum(val);
+}
+
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+void __riscv_th_msetoob(size_t val) {
+  __builtin_riscv_th_msetoob(val);
+}
+
+/* --- Panel load --- */
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+void __riscv_th_ml22e8(void) {
+  __builtin_riscv_th_ml22e8();
+}
+
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+void __riscv_th_ml22e16(void) {
+  __builtin_riscv_th_ml22e16();
+}
+
+/* --- Panel store --- */
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+void __riscv_th_msc22e16(void) {
+  __builtin_riscv_th_msc22e16();
+}
+
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+void __riscv_th_msc22e32(void) {
+  __builtin_riscv_th_msc22e32();
+}
+
+/* --- Panel FP compute --- */
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+void __riscv_th_mfmacc22_h_e5(void) {
+  __builtin_riscv_th_mfmacc22_h_e5();
+}
+
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+void __riscv_th_mfmacc22_h_e4(void) {
+  __builtin_riscv_th_mfmacc22_h_e4();
+}
+
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+void __riscv_th_mfmacc22_bf16_e5(void) {
+  __builtin_riscv_th_mfmacc22_bf16_e5();
+}
+
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+void __riscv_th_mfmacc22_bf16_e4(void) {
+  __builtin_riscv_th_mfmacc22_bf16_e4();
+}
+
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+void __riscv_th_mfmacc22_s_e5(void) {
+  __builtin_riscv_th_mfmacc22_s_e5();
+}
+
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+void __riscv_th_mfmacc22_s_e4(void) {
+  __builtin_riscv_th_mfmacc22_s_e4();
+}
+
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+void __riscv_th_mfmacc22_h(void) {
+  __builtin_riscv_th_mfmacc22_h();
+}
+
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+void __riscv_th_mfmacc22_s_h(void) {
+  __builtin_riscv_th_mfmacc22_s_h();
+}
+
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+void __riscv_th_mfmacc22_s_bf16(void) {
+  __builtin_riscv_th_mfmacc22_s_bf16();
+}
+
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+void __riscv_th_mfmacc22_s(void) {
+  __builtin_riscv_th_mfmacc22_s();
+}
+
+/* --- Panel INT compute --- */
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+void __riscv_th_mmacc22_w_b(void) {
+  __builtin_riscv_th_mmacc22_w_b();
+}
+
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+void __riscv_th_mmaccu22_w_b(void) {
+  __builtin_riscv_th_mmaccu22_w_b();
+}
+
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+void __riscv_th_mmaccus22_w_b(void) {
+  __builtin_riscv_th_mmaccus22_w_b();
+}
+
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+void __riscv_th_mmaccsu22_w_b(void) {
+  __builtin_riscv_th_mmaccsu22_w_b();
+}
+
+#endif /* defined(__riscv_xtheadzmpanel) */
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

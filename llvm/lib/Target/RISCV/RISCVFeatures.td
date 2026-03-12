@@ -1218,6 +1218,14 @@ def HasVendorXTHeadMatrix : Predicate<"Subtarget->hasVendorXTHeadMatrix()">,
                             AssemblerPredicate<(all_of FeatureVendorXTHeadMatrix),
                                 "'XTHeadMatrix' (T-Head Matrix Extension)">;
 
+def FeatureVendorXTHeadZmpanel
+    : RISCVExperimentalExtension<0, 6,
+                     "T-Head Panel-Aware 2x2 Matrix Tiling (Zmpanel)",
+                     [FeatureVendorXTHeadMatrix]>;
+def HasVendorXTHeadZmpanel : Predicate<"Subtarget->hasVendorXTHeadZmpanel()">,
+                             AssemblerPredicate<(all_of FeatureVendorXTHeadZmpanel),
+                                 "'XTHeadZmpanel' (T-Head Panel-Aware Matrix Tiling)">;
+
 // SiFive Extensions
 
 def FeatureVendorXSfvcp

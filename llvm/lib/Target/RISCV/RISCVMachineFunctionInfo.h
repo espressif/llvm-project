@@ -102,6 +102,10 @@ private:
   /// The XTHeadMatrix programming model used in this function.
   MatrixProgModelEnum MatrixProgModel = MatrixProgModelEnum::None;
 
+  /// Whether this function uses Zmpanel fire-and-forget instructions
+  /// (load/store/compute) that implicitly clobber matrix registers.
+  bool UsesZmpanelFireAndForget = false;
+
 public:
   RISCVMachineFunctionInfo(const Function &F, const RISCVSubtarget *STI);
 
@@ -239,6 +243,9 @@ public:
   void setMatrixProgModel(MatrixProgModelEnum Model) {
     MatrixProgModel = Model;
   }
+
+  bool usesZmpanelFireAndForget() const { return UsesZmpanelFireAndForget; }
+  void setUsesZmpanelFireAndForget() { UsesZmpanelFireAndForget = true; }
 };
 
 } // end namespace llvm

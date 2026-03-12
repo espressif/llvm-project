@@ -14,16 +14,18 @@ and 4 accumulator registers (`acc0`-`acc3`) -- encoded with 3 bits each.
 It also defines 13 control/status registers for matrix configuration,
 rounding modes, and hardware capability queries.
 
-**Status**: Experimental (requires `+experimental-xtheadmatrix` to enable).
+**Status**: Experimental (requires `+experimental-xtheadmatrix` to enable;
+Zmpanel additionally requires `+experimental-xtheadzmpanel`).
 
 **Specification**: The official specification is the
 [RISC-V Matrix Extension Spec (RVM)](https://github.com/AII-SDU/riscv-matrix-extension-spec)
 maintained by C-SKY MicroSystems / T-Head.
 
-**Implementation summary**: 227 instructions, ~220 `_internal` LLVM
-intrinsics, 7 config intrinsics, 22 `mundef` builtins, 22 `mget`/`mset`
-tuple builtins, and ~220 Spec-API Clang builtins are implemented with
-full ISel/CodeGen support.
+**Implementation summary**: 257 instructions (227 base + 30 Zmpanel),
+~220 `_internal` LLVM intrinsics, 7 config intrinsics, 30 Zmpanel
+intrinsics, 22 `mundef` builtins, 22 `mget`/`mset` tuple builtins,
+~220 Spec-API Clang builtins, and 30 Zmpanel builtins are implemented
+with full ISel/CodeGen support.
 
 The **Spec-API (ManagedRA)** programming model is used exclusively:
 `_internal` intrinsics produce/consume `target("riscv.matrix")` SSA
@@ -35,7 +37,7 @@ tile, whole-register), stores, all 27 matmul variants, element-wise
 arithmetic (integer + FP), format conversions, data movement (move,
 duplicate, pack, slide, broadcast), fixed-point clip, and zero.
 
-A `<thead_matrix.h>` header provides over 420 higher-level API
+A `<thead_matrix.h>` header provides over 450 higher-level API
 functions and macros with C matrix types (`mint8_t`, `mint32_t`,
 `mfloat16_t`, etc.) backed by 22 native Clang built-in types
 (`__rvm_int8_t` through `__rvm_float64x2_t`). The x2 (register-pair)
@@ -43,6 +45,18 @@ types map to `{ target("riscv.matrix"), target("riscv.matrix") }`
 structs at the LLVM IR level, with `mget`/`mset` builtins for
 extracting and inserting individual registers. Programs can use either
 the high-level API or inline assembly.
+
+The **Zmpanel** extension adds 30 panel-aware 2x2 matrix tiling
+instructions that operate as fire-and-forget macro instructions on
+implicit hardware state (extended tile registers tr4-tr7 and panel
+CSRs). These instructions load/compute/store entire 2x2 blocks of
+tiles in a single instruction dispatch for higher compute throughput.
+Panel load/store/compute instructions carry implicit Defs/Uses on
+matrix registers to prevent incorrect reordering. ISel uses the
+`THMI_PanelFireForget` dispatch category for these instructions.
+Mixed-mode usage (ManagedRA base instructions combined with Zmpanel
+fire-and-forget in the same function) is detected and rejected with
+a fatal error at ISel time.
 
 ## Building and Installing the Toolchain
 
@@ -1402,9 +1416,143 @@ void dual_gemm(const int8_t *A, long a_stride,
 This pattern was not possible with the previous fixed register assignment
 where all matmul operations were hardcoded to use acc0.
 
+### Example 8: Zmpanel INT8 Panel GEMM (Fire-and-Forget)
+
+The Zmpanel extension provides panel-aware 2x2 tiling instructions that
+operate on implicit hardware state. A single load instruction loads all 8
+tile registers (tr0-tr7), a single compute instruction performs the full
+2x2 block GEMM, and a single store instruction writes all 4 accumulator
+results. This is significantly more efficient than orchestrating individual
+tile operations.
+
+```c
+#include <thead_matrix.h>
+
+// Panel 2x2 INT8 GEMM: D[2M,2N] += A[2M,2K] * B[2K,2N]
+// Uses fire-and-forget macro instructions (Zmpanel)
+void panel_gemm_int8(const void *A, const void *B, void *D,
+                     size_t stride_a, size_t stride_b, size_t stride_d,
+                     size_t M, size_t N, size_t K) {
+    // 1. Configure panel parameters (addresses, strides, dimensions)
+    __riscv_th_mset22adra((size_t)A);
+    __riscv_th_mset22adrb((size_t)B);
+    __riscv_th_mset22adrd((size_t)D);
+    __riscv_th_mset22rsba(stride_a);
+    __riscv_th_mset22rsbb(stride_b);
+    __riscv_th_mset22rsbd(stride_d);
+    __riscv_th_mset22m(M);
+    __riscv_th_mset22n(N);
+    __riscv_th_mset22k(K);
+    __riscv_th_msetaccum(0);       // zero mode: zero acc before first compute
+    __riscv_th_msetoob(2);         // load=zero-pad (1), store=skip (0) -> 0b10 = 2
+    __riscv_th_msetrstptr(1);      // reset all HW pointers
+
+    // 2. Execute the panel pipeline:
+    //    - ml22e8: loads tr0-tr7 (8 tile regs) from A and B memory
+    //    - mmacc22.w.b: computes 2x2 block MAC → acc0-acc3
+    //    - msc22e32: stores acc0-acc3 to D memory
+    __riscv_th_ml22e8();
+    __riscv_th_mmacc22_w_b();
+    __riscv_th_msc22e32();
+
+    // 3. Fence before reading results from memory
+    asm volatile("fence");
+}
+```
+
+Compile with Zmpanel enabled:
+```bash
+clang --target=riscv64 -march=rv64i_xtheadzmpanel0p6 \
+  -menable-experimental-extensions -O2 -c panel_gemm.c -o panel_gemm.o
+```
+
+### Example 9: Zmpanel FP16 Panel GEMM with K-Loop
+
+For larger K dimensions, the panel GEMM can be iterated in a loop. The
+hardware pointer CSRs automatically advance through the K dimension on
+each load/compute iteration.
+
+```c
+#include <thead_matrix.h>
+
+// Panel 2x2 FP16 GEMM with K-dimension loop
+// The hardware automatically advances pointers through K iterations
+void panel_gemm_fp16_k_loop(const void *A, const void *B, void *D,
+                            size_t stride_a, size_t stride_b, size_t stride_d,
+                            size_t M, size_t N, size_t K,
+                            size_t k_iters) {
+    // Setup
+    __riscv_th_mset22adra((size_t)A);
+    __riscv_th_mset22adrb((size_t)B);
+    __riscv_th_mset22adrd((size_t)D);
+    __riscv_th_mset22rsba(stride_a);
+    __riscv_th_mset22rsbb(stride_b);
+    __riscv_th_mset22rsbd(stride_d);
+    __riscv_th_mset22m(M);
+    __riscv_th_mset22n(N);
+    __riscv_th_mset22k(K);
+    __riscv_th_msetaccum(0);       // zero acc on first iter
+    __riscv_th_msetoob(2);
+    __riscv_th_msetrstptr(1);
+
+    // K-dimension loop: load and accumulate
+    for (size_t ki = 0; ki < k_iters; ki++) {
+        __riscv_th_ml22e16();
+        __riscv_th_mfmacc22_s_h();     // fp16 -> fp32 widening MAC
+    }
+
+    // Store accumulated results
+    __riscv_th_msc22e32();
+
+    asm volatile("fence");
+}
+```
+
+### Example 10: Zmpanel with Inline Assembly
+
+For low-level control, Zmpanel instructions can be used directly via
+inline assembly. This is useful for hand-tuned kernels.
+
+```c
+#include <stddef.h>
+
+void panel_gemm_asm(const void *A, const void *B, void *D,
+                    size_t stride_a, size_t stride_b, size_t stride_d,
+                    size_t M, size_t N, size_t K) {
+    asm volatile(
+        // Configure
+        "th.mset22adra  %[a]\n\t"
+        "th.mset22adrb  %[b]\n\t"
+        "th.mset22adrd  %[d]\n\t"
+        "th.mset22rsba  %[sa]\n\t"
+        "th.mset22rsbb  %[sb]\n\t"
+        "th.mset22rsbd  %[sd]\n\t"
+        "th.mset22m     %[m]\n\t"
+        "th.mset22n     %[n]\n\t"
+        "th.mset22k     %[k]\n\t"
+        "th.msetaccum   zero\n\t"       // zero mode
+        "li             t0, 2\n\t"
+        "th.msetoob     t0\n\t"         // load=zero-pad, store=skip
+        "li             t0, 1\n\t"
+        "th.msetrstptr  t0\n\t"         // reset pointers
+        // Execute
+        "th.ml22e8\n\t"                 // load 2x2 tiles
+        "th.mmacc22.w.b\n\t"           // int8 panel MAC
+        "th.msc22e32\n\t"              // store results
+        "fence\n\t"
+        :
+        : [a] "r"(A), [b] "r"(B), [d] "r"(D),
+          [sa] "r"(stride_a), [sb] "r"(stride_b), [sd] "r"(stride_d),
+          [m] "r"(M), [n] "r"(N), [k] "r"(K)
+        : "t0", "memory"
+    );
+}
+```
+
 ## CSR Reference
 
-XTHeadMatrix defines 13 CSRs, all prefixed with `th.`.
+XTHeadMatrix defines 13 base CSRs, all prefixed with `th.`.
+The Zmpanel extension adds 18 additional CSRs (addresses 0xcc4-0xcd5).
 
 ### Read/Write CSRs (addresses 0x802-0x80a)
 
@@ -1428,6 +1576,33 @@ XTHeadMatrix defines 13 CSRs, all prefixed with `th.`.
 | `th.xtlenb` | 0xcc1 | Tile length in bytes |
 | `th.xtrlenb` | 0xcc2 | Tile row length in bytes |
 | `th.xalenb` | 0xcc3 | Accumulator length in bytes |
+
+### Zmpanel Panel-Aware CSRs (addresses 0xcc4-0xcd5, all URO)
+
+Written via panel configuration instructions (`th.mset22*`), read-only via CSR reads.
+
+| Address | Name | Description |
+|---------|------|-------------|
+| 0xcc4 | CUSTOM_CTRL | `[0]`: custom_cap, `[1]`: accum_mode, `[2]`: oob_load, `[3]`: oob_store |
+| 0xcc5 | BASE_ADDR_A | Base address of matrix A |
+| 0xcc6 | BASE_ADDR_B | Base address of matrix B |
+| 0xcc7 | BASE_ADDR_D | Base address of matrix D (output) |
+| 0xcc8 | RSTRIDEB_A | Row stride of matrix A in bytes |
+| 0xcc9 | RSTRIDEB_B | Row stride of matrix B in bytes |
+| 0xcca | RSTRIDEB_D | Row stride of matrix D in bytes |
+| 0xccb | PANEL_M | Panel M dimension |
+| 0xccc | PANEL_N | Panel N dimension |
+| 0xccd | PANEL_K | Panel K dimension |
+| 0xcce | MPTR_LD | `[16:1]`=PTR_M_LD, `[0]`=PTR_22M_LD |
+| 0xccf | NPTR_LD | `[16:1]`=PTR_N_LD, `[0]`=PTR_22N_LD |
+| 0xcd0 | KPTR_LD | `[16:1]`=PTR_K_LD, `[0]`=PTR_22K_LD |
+| 0xcd1 | MPTR_ST | `[16:1]`=PTR_M_ST, `[0]`=PTR_22M_ST |
+| 0xcd2 | NPTR_ST | `[16:1]`=PTR_N_ST, `[0]`=PTR_22N_ST |
+| 0xcd3 | ADDR_A | Current computed address of A |
+| 0xcd4 | ADDR_B | Current computed address of B |
+| 0xcd5 | ADDR_D | Current computed address of D |
+
+C header defines: `__RVM_CSR_CUSTOM_CTRL` (0xcc4) through `__RVM_CSR_ADDR_D` (0xcd5).
 
 ### Accessing CSRs
 
@@ -1477,7 +1652,19 @@ comprehensive usage examples.
 | Packed Conv | 4 | `m{u,s}cvt{l,h}.b.p` |
 | INT EW Arith | 22 | `m{add,sub,mul,...}.w.{mm,mv.i}` |
 | FP EW Arith | 30 | `mf{add,sub,mul,max,min}.{h,s,d}.{mm,mv.i}` |
-| **Total** | **227** | |
+| **Base Total** | **227** | |
+
+### Zmpanel Panel-Aware Instructions (func3=010)
+
+| Category | Count | Mnemonics |
+|----------|-------|-----------|
+| Panel Config | 12 | `mset22adr{a,b,d}`, `mset22rsb{a,b,d}`, `mset22{m,n,k}`, `msetrstptr`, `msetaccum`, `msetoob` |
+| Panel Load | 2 | `ml22e{8,16}` |
+| Panel Store | 2 | `msc22e{16,32}` |
+| Panel FP Compute | 10 | `mfmacc22.{h.e5,h.e4,bf16.e5,bf16.e4,s.e5,s.e4,h,s.h,s.bf16,s}` |
+| Panel INT Compute | 4 | `m{,u}macc{us,su,u,}22.w.b` |
+| **Zmpanel Total** | **30** | |
+| **Grand Total** | **257** | |
 
 ## Limitations and Notes
 
@@ -1507,7 +1694,18 @@ comprehensive usage examples.
 
 - **64-bit instruction format not supported**: The spec defines 64-bit
   instruction formats (`inst64_format.adoc`), but only the 32-bit format
-  is implemented. All 227 defined instructions use 32-bit encoding.
+  is implemented. All 257 defined instructions use 32-bit encoding.
+
+- **Zmpanel is fire-and-forget**: Panel-aware instructions operate on
+  implicit hardware state (extended tile registers tr4-tr7 and panel CSRs).
+  The compiler cannot schedule, reorder, or optimize across panel macro
+  instructions. No register allocation is performed for panel registers --
+  the hardware manages them autonomously. Panel load/store/compute
+  instructions carry implicit Defs/Uses to prevent reordering. Mixed-mode
+  usage (combining ManagedRA base instructions with Zmpanel fire-and-forget
+  in the same function) is detected at ISel time and rejected with a fatal
+  error, since the two models have incompatible assumptions about matrix
+  register ownership.
 
 - **`-O0` support is limited for ManagedRA**: The `RISCVLowerMatrixType` pass
   provides basic `-O0` support by lowering `target("riscv.matrix")` to allocas.
