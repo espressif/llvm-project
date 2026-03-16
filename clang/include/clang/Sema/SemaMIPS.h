@@ -30,6 +30,7 @@ public:
                            CallExpr *TheCall);
   bool CheckMipsBuiltinArgument(unsigned BuiltinID, CallExpr *TheCall);
   void handleInterruptAttr(Decl *D, const ParsedAttr &AL);
+  void handleMipsShortCall(Decl *D, const ParsedAttr &AL);
 };
 } // namespace clang
 

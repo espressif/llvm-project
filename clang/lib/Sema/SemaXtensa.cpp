@@ -11,7 +11,11 @@
 //===----------------------------------------------------------------------===//
 
 #include "clang/Sema/SemaXtensa.h"
+#include "clang/AST/DeclBase.h"
+#include "clang/Basic/DiagnosticSema.h"
 #include "clang/Basic/TargetBuiltins.h"
+#include "clang/Sema/Attr.h"
+#include "clang/Sema/ParsedAttr.h"
 #include "clang/Sema/Sema.h"
 
 namespace clang {
@@ -342,6 +346,19 @@ bool SemaXtensa::CheckXtensaBuiltinFunctionCall(const TargetInfo &TI,
            SemaRef.BuiltinConstantArgRange(TheCall, 5, 0, 7);
   }
   return SemaRef.BuiltinConstantArgRange(TheCall, i, l, u);
+}
+
+void SemaXtensa::handleXtensaShortCall(Decl *D, const ParsedAttr &AL){
+  if (!isFuncOrMethodForAttrSubject(D)) {
+    Diag(D->getLocation(), diag::warn_attribute_wrong_decl_type)
+        << "'short_call'" << ExpectedFunction;
+    return;
+  }
+
+  if (!AL.checkExactlyNumArgs(SemaRef, 0))
+    return;
+
+  handleSimpleAttribute<XtensaShortCallAttr>(*this, D, AL);
 }
 
 } // namespace clang
