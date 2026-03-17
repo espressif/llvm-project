@@ -1694,8 +1694,10 @@ let isBarrier = 1, isTerminator = 1, isTrap = 1 in {
 
 def : InstAlias<"_break.n\t$imm", (BREAK_N uimm4:$imm)>;
 
-def : Pat<(trap), (ILL)>;
-def : Pat<(debugtrap), (ILL)>;
+let AddedComplexity = 10 in {
+  def : Pat<(trap), (ILL)>;
+  def : Pat<(debugtrap), (ILL)>;
+}
 
 let AddedComplexity = 15 in {
   def : Pat<(trap), (ILL_N)>,
@@ -1708,7 +1710,6 @@ let AddedComplexity = 20 in {
   def : Pat<(debugtrap), (BREAK (i32 1), (i32 15))>,
       Requires<[HasDebug]>;
 }
-
 let AddedComplexity = 25 in {
   def : Pat<(debugtrap), (BREAK_N (i32 1))>,
       Requires<[HasDensity, HasDebug]>;
