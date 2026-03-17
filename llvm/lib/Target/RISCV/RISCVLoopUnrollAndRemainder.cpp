@@ -2236,7 +2236,8 @@ bool DspsF32DotprodLoopUnroller::transformOneLoopDepth(Function &F) {
       Instruction *Icmp = I.getNextNode();
       Instruction *Br = Icmp->getNextNode();
       assert(Icmp->getOpcode() == Instruction::ICmp &&
-             Br->getOpcode() == Instruction::Br &&
+             (Br->getOpcode() == Instruction::UncondBr ||
+              Br->getOpcode() == Instruction::CondBr) &&
              "Unexpected instruction sequence");
       I.moveAfter(&ForBodyBB->back());
       LoopMD = Br->getMetadata(LLVMContext::MD_loop);
