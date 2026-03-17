@@ -1,4 +1,5 @@
 stages:
+  - pre_check
   - test_build
   - build
   - pack
@@ -42,6 +43,27 @@ workflow:
 before_script:
   - *use_ci_tools
   - *add_gitlab_key
+
+.check_pre_commit_template:
+  stage: pre_check
+  tags: [ "amd64", "build" ]
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+      when: on_success
+    - when: never
+
+check_code_format:
+  extends: .check_pre_commit_template
+  script:
+    - python3 $PWD/llvm/utils/git/code-format-helper.py
+      --start-rev $CI_MERGE_REQUEST_DIFF_BASE_SHA
+      --end-rev HEAD
+
+check_commit_message:
+  extends: .check_pre_commit_template
+  script:
+    - python3 $PWD/llvm/utils/git/esp-commit-msg-check.py
+      $CI_MERGE_REQUEST_DIFF_BASE_SHA..HEAD
 
 .build_toolchain_template:
   tags: [ "amd64", "build" ]
@@ -220,6 +242,7 @@ before_script:
 build_and_test:
   tags: [ "amd64", "build" ]
   stage: test_build
+  needs: []
   artifacts:
     paths:
       - ${DIST_DIR}/
@@ -286,7 +309,8 @@ build_and_test:
 # but also it runs package tests. So keep it in 'test_build' stage
 build_x86_64-linux-gnu:
   extends: .build_linux-gnu_template
-  stage: test_build
+  stage: build
+  needs: []
   variables:
     CONF_HOST: "x86_64-linux-gnu"
     # Build complete distro it is necessary for running package tests
@@ -301,6 +325,7 @@ build_x86_64-linux-gnu:
 build_target_libs:
   extends: .build_linux-gnu_template
   stage: build
+  needs: []
   variables:
     CONF_HOST: "x86_64-linux-gnu"
     PACK_TARGET_LIBS: "ON"

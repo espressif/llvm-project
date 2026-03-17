@@ -336,7 +336,17 @@ class UndefGetFormatHelper(FormatHelper):
         filtered_files = []
         for path in changed_files:
             _, ext = os.path.splitext(path)
-            if ext in (".cpp", ".c", ".h", ".hpp", ".hxx", ".cxx", ".inc", ".cppm", ".ll"):
+            if ext in (
+                ".cpp",
+                ".c",
+                ".h",
+                ".hpp",
+                ".hxx",
+                ".cxx",
+                ".inc",
+                ".cppm",
+                ".ll",
+            ):
                 filtered_files.append(path)
         return filtered_files
 
@@ -445,6 +455,58 @@ Please refer to the [Undefined Behavior Manual](https://llvm.org/docs/UndefinedB
 ALL_FORMATTERS = (DarkerFormatHelper(), ClangFormatHelper(), UndefGetFormatHelper())
 
 
+def get_changed_files_in_range(start_rev: str, end_rev: str) -> List[str]:
+    """Return the list of files changed between start_rev and end_rev (inclusive)."""
+    cmd = ["git", "diff", "--name-only", "--diff-filter=d", start_rev, end_rev]
+    proc = subprocess.run(
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8"
+    )
+    if proc.returncode != 0:
+        raise RuntimeError(
+            f"git diff failed (exit code {proc.returncode}): {proc.stderr}"
+        )
+    return [f for f in proc.stdout.splitlines() if f.strip()]
+
+
+def check_format_commit_range(
+    start_rev: str,
+    end_rev: str,
+    verbose: bool = True,
+) -> bool:
+    """
+    Check code format for all files changed between start_rev and end_rev
+    in the local repository. Returns True if all formatters pass, False otherwise.
+    """
+    changed_files = get_changed_files_in_range(start_rev, end_rev)
+    if not changed_files:
+        if verbose:
+            print(f"No files changed between {start_rev} and {end_rev}.")
+        return True
+
+    args = FormatArgs()
+    args.start_rev = start_rev
+    args.end_rev = end_rev
+    args.changed_files = changed_files
+    args.verbose = verbose
+    args.token = None
+    args.repo = None
+    args.issue_number = 0
+
+    failed_formatters = []
+    for fmt in ALL_FORMATTERS:
+        if fmt.has_tool():
+            if not fmt.run(changed_files, args):
+                failed_formatters.append(fmt.name)
+        elif verbose:
+            print(f"Couldn't find {fmt.name}, skipping " + fmt.friendly_name.lower())
+
+    if failed_formatters:
+        if verbose:
+            print(f"Format check failed: {' '.join(failed_formatters)}")
+        return False
+    return True
+
+
 def hook_main():
     # fill out args
     args = FormatArgs()
@@ -484,7 +546,10 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--token", type=str, required=True, help="GitHub authentiation token"
+        "--token",
+        type=str,
+        default=None,
+        help="GitHub authentication token (omit for local commit-range check)",
     )
     parser.add_argument(
         "--repo",
@@ -492,15 +557,15 @@ if __name__ == "__main__":
         default=os.getenv("GITHUB_REPOSITORY", "llvm/llvm-project"),
         help="The GitHub repository that we are working with in the form of <owner>/<repo> (e.g. llvm/llvm-project)",
     )
-    parser.add_argument("--issue-number", type=int, required=True)
+    parser.add_argument("--issue-number", type=int, default=None)
     parser.add_argument(
         "--start-rev",
         type=str,
-        required=True,
-        help="Compute changes from this revision.",
+        default=None,
+        help="Compute changes from this revision (use with --end-rev for local commit-range check).",
     )
     parser.add_argument(
-        "--end-rev", type=str, required=True, help="Compute changes to this revision"
+        "--end-rev", type=str, default=None, help="Compute changes to this revision"
     )
     parser.add_argument(
         "--changed-files",
@@ -512,8 +577,27 @@ if __name__ == "__main__":
         action="store_true",
         help="Don't post comments on the PR, instead write the comments and metadata a file called 'comment'",
     )
+    parser.add_argument(
+        "--quiet",
+        action="store_true",
+        help="Reduce output (for local commit-range check).",
+    )
 
-    args = FormatArgs(parser.parse_args())
+    parsed = parser.parse_args()
+
+    # Local commit-range check: no token, start-rev and end-rev provided
+    if parsed.token is None and parsed.start_rev and parsed.end_rev:
+        ok = check_format_commit_range(
+            parsed.start_rev, parsed.end_rev, verbose=not parsed.quiet
+        )
+        sys.exit(0 if ok else 1)
+
+    if parsed.token is None or parsed.issue_number is None:
+        parser.error(
+            "--token and --issue-number are required for PR/CI mode (or use --start-rev and --end-rev for local commit-range check)"
+        )
+
+    args = FormatArgs(parsed)
 
     changed_files = []
     if args.changed_files:
