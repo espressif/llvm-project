@@ -1615,7 +1615,7 @@ SDValue XtensaTargetLowering::LowerConstantPool(SDValue Op,
         DAG.getMachineFunction().getFunction().getParent());
     auto GV = new GlobalVariable(
         *M, T, /*isConstant=*/true, GlobalVariable::InternalLinkage, C,
-        Twine(DAG.getDataLayout().getPrivateGlobalPrefix()) + "CP" +
+        Twine(DAG.getDataLayout().getInternalSymbolPrefix()) + "CP" +
             Twine(DAG.getMachineFunction().getFunctionNumber()) + "_" +
             Twine(AFI->createCPLabelId()));
     Result = DAG.getTargetConstantPool(GV, PtrVT, Align(4));
