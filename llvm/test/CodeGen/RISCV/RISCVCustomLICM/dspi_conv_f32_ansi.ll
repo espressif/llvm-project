@@ -71,7 +71,7 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-NEXT:    [[MUL42:%.*]] = mul nsw i32 [[TMP12]], [[Y_0940]]
 ; CHECK-NEXT:    [[CMP19895:%.*]] = icmp slt i32 [[SUB16]], [[TMP5]]
 ; CHECK-NEXT:    [[MUL44:%.*]] = mul nsw i32 [[MUL42]], [[TMP11]]
-; CHECK-NEXT:    [[INVARIANT_GEP:%.*]] = getelementptr float, ptr [[TMP3]], i32 [[MUL44]]
+; CHECK-NEXT:    [[INVARIANT_GEP:%.*]] = getelementptr [4 x i8], ptr [[TMP3]], i32 [[MUL44]]
 ; CHECK-NEXT:    br i1 [[CMP12901]], label [[FOR_BODY14_LR_PH:%.*]], label [[FOR_COND51_PREHEADER:%.*]]
 ; CHECK:       for.body14.lr.ph:
 ; CHECK-NEXT:    br label [[FOR_BODY14:%.*]]
@@ -102,7 +102,7 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-NEXT:    [[ACC_0_LCSSA:%.*]] = phi float [ 0.000000e+00, [[FOR_BODY14]] ], [ [[ACC_1_LCSSA:%.*]], [[FOR_COND_CLEANUP26:%.*]] ]
 ; CHECK-NEXT:    [[ADD38]] = add nsw i32 [[TMP14]], [[I_POS_Y_0902]]
 ; CHECK-NEXT:    [[MUL40:%.*]] = mul nsw i32 [[TMP13]], [[X_0903]]
-; CHECK-NEXT:    [[GEP:%.*]] = getelementptr float, ptr [[INVARIANT_GEP]], i32 [[MUL40]]
+; CHECK-NEXT:    [[GEP:%.*]] = getelementptr [4 x i8], ptr [[INVARIANT_GEP]], i32 [[MUL40]]
 ; CHECK-NEXT:    store float [[ACC_0_LCSSA]], ptr [[GEP]], align 4
 ; CHECK-NEXT:    [[INC48]] = add nuw nsw i32 [[X_0903]], 1
 ; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC48]], [[SHR]]
@@ -112,13 +112,13 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-NEXT:    [[F_DATA_0898:%.*]] = phi ptr [ [[TMP15]], [[FOR_BODY21_LR_PH]] ], [ [[ADD_PTR:%.*]], [[FOR_COND_CLEANUP26]] ]
 ; CHECK-NEXT:    [[ACC_0897:%.*]] = phi float [ 0.000000e+00, [[FOR_BODY21_LR_PH]] ], [ [[ACC_1_LCSSA]], [[FOR_COND_CLEANUP26]] ]
 ; CHECK-NEXT:    [[I_POS_X_0896:%.*]] = phi i32 [ [[I_POS_Y_0902]], [[FOR_BODY21_LR_PH]] ], [ [[ADD33:%.*]], [[FOR_COND_CLEANUP26]] ]
-; CHECK-NEXT:    [[TMP16:%.*]] = getelementptr float, ptr [[TMP2]], i32 [[I_POS_X_0896]]
+; CHECK-NEXT:    [[TMP16:%.*]] = getelementptr [4 x i8], ptr [[TMP2]], i32 [[I_POS_X_0896]]
 ; CHECK-NEXT:    br i1 [[CMP25892]], label [[FOR_BODY27_LR_PH:%.*]], label [[FOR_COND_CLEANUP26]]
 ; CHECK:       for.body27.lr.ph:
 ; CHECK-NEXT:    br label [[FOR_BODY27:%.*]]
 ; CHECK:       for.cond.cleanup26:
 ; CHECK-NEXT:    [[ACC_1_LCSSA]] = phi float [ [[ACC_0897]], [[FOR_BODY21]] ], [ [[TMP19:%.*]], [[FOR_BODY27]] ]
-; CHECK-NEXT:    [[ADD_PTR]] = getelementptr inbounds float, ptr [[F_DATA_0898]], i32 [[MUL10]]
+; CHECK-NEXT:    [[ADD_PTR]] = getelementptr inbounds [4 x i8], ptr [[F_DATA_0898]], i32 [[MUL10]]
 ; CHECK-NEXT:    [[ADD33]] = add nsw i32 [[I_POS_X_0896]], [[MUL]]
 ; CHECK-NEXT:    [[INC35]] = add nsw i32 [[M_0899]], 1
 ; CHECK-NEXT:    [[CMP19:%.*]] = icmp slt i32 [[INC35]], [[TMP5]]
@@ -127,10 +127,10 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-NEXT:    [[N_0894:%.*]] = phi i32 [ [[SUB22]], [[FOR_BODY27_LR_PH]] ], [ [[INC:%.*]], [[FOR_BODY27]] ]
 ; CHECK-NEXT:    [[ACC_1893:%.*]] = phi float [ [[ACC_0897]], [[FOR_BODY27_LR_PH]] ], [ [[TMP19]], [[FOR_BODY27]] ]
 ; CHECK-NEXT:    [[MUL28:%.*]] = mul nsw i32 [[TMP14]], [[N_0894]]
-; CHECK-NEXT:    [[ARRAYIDX:%.*]] = getelementptr float, ptr [[TMP16]], i32 [[MUL28]]
+; CHECK-NEXT:    [[ARRAYIDX:%.*]] = getelementptr [4 x i8], ptr [[TMP16]], i32 [[MUL28]]
 ; CHECK-NEXT:    [[TMP17:%.*]] = load float, ptr [[ARRAYIDX]], align 4
 ; CHECK-NEXT:    [[MUL30:%.*]] = mul nsw i32 [[TMP10]], [[N_0894]]
-; CHECK-NEXT:    [[ARRAYIDX31:%.*]] = getelementptr inbounds float, ptr [[F_DATA_0898]], i32 [[MUL30]]
+; CHECK-NEXT:    [[ARRAYIDX31:%.*]] = getelementptr inbounds [4 x i8], ptr [[F_DATA_0898]], i32 [[MUL30]]
 ; CHECK-NEXT:    [[TMP18:%.*]] = load float, ptr [[ARRAYIDX31]], align 4
 ; CHECK-NEXT:    [[TMP19]] = tail call float @llvm.fmuladd.f32(float [[TMP17]], float [[TMP18]], float [[ACC_1893]])
 ; CHECK-NEXT:    [[INC]] = add nsw i32 [[N_0894]], 1
@@ -150,7 +150,7 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-NEXT:    [[F_DATA60_0912:%.*]] = phi ptr [ [[ADD_PTR86:%.*]], [[FOR_COND_CLEANUP73]] ], [ [[TMP15]], [[FOR_BODY57]] ]
 ; CHECK-NEXT:    [[ACC59_0911:%.*]] = phi float [ [[ACC59_1_LCSSA:%.*]], [[FOR_COND_CLEANUP73]] ], [ 0.000000e+00, [[FOR_BODY57]] ]
 ; CHECK-NEXT:    [[I_POS_X58_0910:%.*]] = phi i32 [ [[ADD87:%.*]], [[FOR_COND_CLEANUP73]] ], [ [[I_POS_Y_1916]], [[FOR_BODY57]] ]
-; CHECK-NEXT:    [[TMP20:%.*]] = getelementptr float, ptr [[TMP2]], i32 [[I_POS_X58_0910]]
+; CHECK-NEXT:    [[TMP20:%.*]] = getelementptr [4 x i8], ptr [[TMP2]], i32 [[I_POS_X58_0910]]
 ; CHECK-NEXT:    br i1 [[CMP72905]], label [[FOR_BODY74_LR_PH:%.*]], label [[FOR_COND_CLEANUP73]]
 ; CHECK:       for.body74.lr.ph:
 ; CHECK-NEXT:    br label [[FOR_BODY74:%.*]]
@@ -158,14 +158,14 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-NEXT:    [[ACC59_0_LCSSA:%.*]] = phi float [ 0.000000e+00, [[FOR_BODY57]] ], [ [[ACC59_1_LCSSA]], [[FOR_COND_CLEANUP73]] ]
 ; CHECK-NEXT:    [[ADD92]] = add nsw i32 [[TMP14]], [[I_POS_Y_1916]]
 ; CHECK-NEXT:    [[MUL94:%.*]] = mul nsw i32 [[TMP13]], [[X50_0917]]
-; CHECK-NEXT:    [[GEP922:%.*]] = getelementptr float, ptr [[INVARIANT_GEP]], i32 [[MUL94]]
+; CHECK-NEXT:    [[GEP922:%.*]] = getelementptr [4 x i8], ptr [[INVARIANT_GEP]], i32 [[MUL94]]
 ; CHECK-NEXT:    store float [[ACC59_0_LCSSA]], ptr [[GEP922]], align 4
 ; CHECK-NEXT:    [[INC102]] = add nsw i32 [[X50_0917]], 1
 ; CHECK-NEXT:    [[EXITCOND1058_NOT:%.*]] = icmp eq i32 [[INC102]], [[SUB527]]
 ; CHECK-NEXT:    br i1 [[EXITCOND1058_NOT]], label [[FOR_COND_CLEANUP56]], label [[FOR_BODY57]]
 ; CHECK:       for.cond.cleanup73:
 ; CHECK-NEXT:    [[ACC59_1_LCSSA]] = phi float [ [[ACC59_0911]], [[FOR_COND70_PREHEADER]] ], [ [[TMP23:%.*]], [[FOR_BODY74]] ]
-; CHECK-NEXT:    [[ADD_PTR86]] = getelementptr inbounds float, ptr [[F_DATA60_0912]], i32 [[MUL10]]
+; CHECK-NEXT:    [[ADD_PTR86]] = getelementptr inbounds [4 x i8], ptr [[F_DATA60_0912]], i32 [[MUL10]]
 ; CHECK-NEXT:    [[ADD87]] = add nsw i32 [[I_POS_X58_0910]], [[MUL]]
 ; CHECK-NEXT:    [[INC89]] = add nsw i32 [[M62_0913]], 1
 ; CHECK-NEXT:    [[CMP66:%.*]] = icmp slt i32 [[INC89]], [[TMP5]]
@@ -174,10 +174,10 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-NEXT:    [[N69_0907:%.*]] = phi i32 [ 0, [[FOR_BODY74_LR_PH]] ], [ [[INC84:%.*]], [[FOR_BODY74]] ]
 ; CHECK-NEXT:    [[ACC59_1906:%.*]] = phi float [ [[ACC59_0911]], [[FOR_BODY74_LR_PH]] ], [ [[TMP23]], [[FOR_BODY74]] ]
 ; CHECK-NEXT:    [[MUL76:%.*]] = mul nsw i32 [[TMP14]], [[N69_0907]]
-; CHECK-NEXT:    [[ARRAYIDX78:%.*]] = getelementptr float, ptr [[TMP20]], i32 [[MUL76]]
+; CHECK-NEXT:    [[ARRAYIDX78:%.*]] = getelementptr [4 x i8], ptr [[TMP20]], i32 [[MUL76]]
 ; CHECK-NEXT:    [[TMP21:%.*]] = load float, ptr [[ARRAYIDX78]], align 4
 ; CHECK-NEXT:    [[MUL80:%.*]] = mul nsw i32 [[TMP10]], [[N69_0907]]
-; CHECK-NEXT:    [[ARRAYIDX81:%.*]] = getelementptr inbounds float, ptr [[F_DATA60_0912]], i32 [[MUL80]]
+; CHECK-NEXT:    [[ARRAYIDX81:%.*]] = getelementptr inbounds [4 x i8], ptr [[F_DATA60_0912]], i32 [[MUL80]]
 ; CHECK-NEXT:    [[TMP22:%.*]] = load float, ptr [[ARRAYIDX81]], align 4
 ; CHECK-NEXT:    [[TMP23]] = tail call float @llvm.fmuladd.f32(float [[TMP21]], float [[TMP22]], float [[ACC59_1906]])
 ; CHECK-NEXT:    [[INC84]] = add nuw nsw i32 [[N69_0907]], 1
@@ -203,7 +203,7 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-NEXT:    [[F_DATA117_0930:%.*]] = phi ptr [ [[TMP15]], [[FOR_COND127_PREHEADER_LR_PH]] ], [ [[ADD_PTR150:%.*]], [[FOR_COND_CLEANUP137]] ]
 ; CHECK-NEXT:    [[ACC116_0929:%.*]] = phi float [ 0.000000e+00, [[FOR_COND127_PREHEADER_LR_PH]] ], [ [[ACC116_1_LCSSA:%.*]], [[FOR_COND_CLEANUP137]] ]
 ; CHECK-NEXT:    [[I_POS_X115_0928:%.*]] = phi i32 [ [[I_POS_Y_2934]], [[FOR_COND127_PREHEADER_LR_PH]] ], [ [[ADD151:%.*]], [[FOR_COND_CLEANUP137]] ]
-; CHECK-NEXT:    [[TMP24:%.*]] = getelementptr float, ptr [[TMP2]], i32 [[I_POS_X115_0928]]
+; CHECK-NEXT:    [[TMP24:%.*]] = getelementptr [4 x i8], ptr [[TMP2]], i32 [[I_POS_X115_0928]]
 ; CHECK-NEXT:    br i1 [[CMP136923]], label [[FOR_BODY138_LR_PH:%.*]], label [[FOR_COND_CLEANUP137]]
 ; CHECK:       for.body138.lr.ph:
 ; CHECK-NEXT:    br label [[FOR_BODY138:%.*]]
@@ -211,14 +211,14 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-NEXT:    [[ACC116_0_LCSSA:%.*]] = phi float [ 0.000000e+00, [[FOR_BODY114]] ], [ [[ACC116_1_LCSSA]], [[FOR_COND_CLEANUP137]] ]
 ; CHECK-NEXT:    [[ADD156]] = add nsw i32 [[TMP14]], [[I_POS_Y_2934]]
 ; CHECK-NEXT:    [[MUL158:%.*]] = mul nsw i32 [[TMP13]], [[X104_0935]]
-; CHECK-NEXT:    [[GEP937:%.*]] = getelementptr float, ptr [[INVARIANT_GEP]], i32 [[MUL158]]
+; CHECK-NEXT:    [[GEP937:%.*]] = getelementptr [4 x i8], ptr [[INVARIANT_GEP]], i32 [[MUL158]]
 ; CHECK-NEXT:    store float [[ACC116_0_LCSSA]], ptr [[GEP937]], align 4
 ; CHECK-NEXT:    [[INC166]] = add nsw i32 [[X104_0935]], 1
 ; CHECK-NEXT:    [[EXITCOND1059_NOT:%.*]] = icmp eq i32 [[INC166]], [[TMP0]]
 ; CHECK-NEXT:    br i1 [[EXITCOND1059_NOT]], label [[FOR_COND_CLEANUP113]], label [[FOR_BODY114]]
 ; CHECK:       for.cond.cleanup137:
 ; CHECK-NEXT:    [[ACC116_1_LCSSA]] = phi float [ [[ACC116_0929]], [[FOR_COND127_PREHEADER]] ], [ [[TMP27:%.*]], [[FOR_BODY138]] ]
-; CHECK-NEXT:    [[ADD_PTR150]] = getelementptr inbounds float, ptr [[F_DATA117_0930]], i32 [[MUL10]]
+; CHECK-NEXT:    [[ADD_PTR150]] = getelementptr inbounds [4 x i8], ptr [[F_DATA117_0930]], i32 [[MUL10]]
 ; CHECK-NEXT:    [[ADD151]] = add nsw i32 [[I_POS_X115_0928]], [[MUL]]
 ; CHECK-NEXT:    [[INC153]] = add nsw i32 [[M119_0931]], 1
 ; CHECK-NEXT:    [[CMP123:%.*]] = icmp slt i32 [[INC153]], [[TMP5]]
@@ -227,10 +227,10 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-NEXT:    [[N126_0925:%.*]] = phi i32 [ 0, [[FOR_BODY138_LR_PH]] ], [ [[INC148:%.*]], [[FOR_BODY138]] ]
 ; CHECK-NEXT:    [[ACC116_1924:%.*]] = phi float [ [[ACC116_0929]], [[FOR_BODY138_LR_PH]] ], [ [[TMP27]], [[FOR_BODY138]] ]
 ; CHECK-NEXT:    [[MUL140:%.*]] = mul nsw i32 [[TMP14]], [[N126_0925]]
-; CHECK-NEXT:    [[ARRAYIDX142:%.*]] = getelementptr float, ptr [[TMP24]], i32 [[MUL140]]
+; CHECK-NEXT:    [[ARRAYIDX142:%.*]] = getelementptr [4 x i8], ptr [[TMP24]], i32 [[MUL140]]
 ; CHECK-NEXT:    [[TMP25:%.*]] = load float, ptr [[ARRAYIDX142]], align 4
 ; CHECK-NEXT:    [[MUL144:%.*]] = mul nsw i32 [[TMP10]], [[N126_0925]]
-; CHECK-NEXT:    [[ARRAYIDX145:%.*]] = getelementptr inbounds float, ptr [[F_DATA117_0930]], i32 [[MUL144]]
+; CHECK-NEXT:    [[ARRAYIDX145:%.*]] = getelementptr inbounds [4 x i8], ptr [[F_DATA117_0930]], i32 [[MUL144]]
 ; CHECK-NEXT:    [[TMP26:%.*]] = load float, ptr [[ARRAYIDX145]], align 4
 ; CHECK-NEXT:    [[TMP27]] = tail call float @llvm.fmuladd.f32(float [[TMP25]], float [[TMP26]], float [[ACC116_1924]])
 ; CHECK-NEXT:    [[INC148]] = add nuw nsw i32 [[N126_0925]], 1
@@ -241,7 +241,7 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-NEXT:    [[I_POS_1974:%.*]] = phi i32 [ 0, [[FOR_COND186_PREHEADER_LR_PH]] ], [ [[ADD302:%.*]], [[FOR_COND_CLEANUP245]] ]
 ; CHECK-NEXT:    [[MUL228:%.*]] = mul nsw i32 [[TMP12]], [[Y175_0975]]
 ; CHECK-NEXT:    [[MUL230:%.*]] = mul nsw i32 [[MUL228]], [[TMP11]]
-; CHECK-NEXT:    [[INVARIANT_GEP955:%.*]] = getelementptr float, ptr [[TMP3]], i32 [[MUL230]]
+; CHECK-NEXT:    [[INVARIANT_GEP955:%.*]] = getelementptr [4 x i8], ptr [[TMP3]], i32 [[MUL230]]
 ; CHECK-NEXT:    br i1 [[CMP187951]], label [[FOR_BODY189_LR_PH:%.*]], label [[FOR_COND_CLEANUP188:%.*]]
 ; CHECK:       for.body189.lr.ph:
 ; CHECK-NEXT:    br label [[FOR_BODY189:%.*]]
@@ -271,7 +271,7 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-NEXT:    [[ACC191_0_LCSSA:%.*]] = phi float [ 0.000000e+00, [[FOR_BODY189]] ], [ [[ACC191_1_LCSSA:%.*]], [[FOR_COND_CLEANUP205:%.*]] ]
 ; CHECK-NEXT:    [[ADD224]] = add nsw i32 [[TMP14]], [[I_POS_Y184_0952]]
 ; CHECK-NEXT:    [[MUL226:%.*]] = mul nsw i32 [[TMP13]], [[X185_0953]]
-; CHECK-NEXT:    [[GEP956:%.*]] = getelementptr float, ptr [[INVARIANT_GEP955]], i32 [[MUL226]]
+; CHECK-NEXT:    [[GEP956:%.*]] = getelementptr [4 x i8], ptr [[INVARIANT_GEP955]], i32 [[MUL226]]
 ; CHECK-NEXT:    store float [[ACC191_0_LCSSA]], ptr [[GEP956]], align 4
 ; CHECK-NEXT:    [[INC234]] = add nuw nsw i32 [[X185_0953]], 1
 ; CHECK-NEXT:    [[EXITCOND1062_NOT:%.*]] = icmp eq i32 [[INC234]], [[SHR]]
@@ -281,13 +281,13 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-NEXT:    [[F_DATA192_0948:%.*]] = phi ptr [ [[TMP15]], [[FOR_BODY199_LR_PH]] ], [ [[ADD_PTR218:%.*]], [[FOR_COND_CLEANUP205]] ]
 ; CHECK-NEXT:    [[ACC191_0947:%.*]] = phi float [ 0.000000e+00, [[FOR_BODY199_LR_PH]] ], [ [[ACC191_1_LCSSA]], [[FOR_COND_CLEANUP205]] ]
 ; CHECK-NEXT:    [[I_POS_X190_0946:%.*]] = phi i32 [ [[I_POS_Y184_0952]], [[FOR_BODY199_LR_PH]] ], [ [[ADD219:%.*]], [[FOR_COND_CLEANUP205]] ]
-; CHECK-NEXT:    [[TMP28:%.*]] = getelementptr float, ptr [[TMP2]], i32 [[I_POS_X190_0946]]
+; CHECK-NEXT:    [[TMP28:%.*]] = getelementptr [4 x i8], ptr [[TMP2]], i32 [[I_POS_X190_0946]]
 ; CHECK-NEXT:    br i1 [[CMP204941]], label [[FOR_BODY206_LR_PH:%.*]], label [[FOR_COND_CLEANUP205]]
 ; CHECK:       for.body206.lr.ph:
 ; CHECK-NEXT:    br label [[FOR_BODY206:%.*]]
 ; CHECK:       for.cond.cleanup205:
 ; CHECK-NEXT:    [[ACC191_1_LCSSA]] = phi float [ [[ACC191_0947]], [[FOR_BODY199]] ], [ [[TMP31:%.*]], [[FOR_BODY206]] ]
-; CHECK-NEXT:    [[ADD_PTR218]] = getelementptr inbounds float, ptr [[F_DATA192_0948]], i32 [[MUL10]]
+; CHECK-NEXT:    [[ADD_PTR218]] = getelementptr inbounds [4 x i8], ptr [[F_DATA192_0948]], i32 [[MUL10]]
 ; CHECK-NEXT:    [[ADD219]] = add nsw i32 [[I_POS_X190_0946]], [[MUL]]
 ; CHECK-NEXT:    [[INC221]] = add nuw nsw i32 [[M194_0949]], 1
 ; CHECK-NEXT:    [[EXITCOND1061_NOT:%.*]] = icmp eq i32 [[INC221]], [[TMP5]]
@@ -296,10 +296,10 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-NEXT:    [[N200_0943:%.*]] = phi i32 [ [[SUB201]], [[FOR_BODY206_LR_PH]] ], [ [[INC216:%.*]], [[FOR_BODY206]] ]
 ; CHECK-NEXT:    [[ACC191_1942:%.*]] = phi float [ [[ACC191_0947]], [[FOR_BODY206_LR_PH]] ], [ [[TMP31]], [[FOR_BODY206]] ]
 ; CHECK-NEXT:    [[MUL208:%.*]] = mul nsw i32 [[TMP14]], [[N200_0943]]
-; CHECK-NEXT:    [[ARRAYIDX210:%.*]] = getelementptr float, ptr [[TMP28]], i32 [[MUL208]]
+; CHECK-NEXT:    [[ARRAYIDX210:%.*]] = getelementptr [4 x i8], ptr [[TMP28]], i32 [[MUL208]]
 ; CHECK-NEXT:    [[TMP29:%.*]] = load float, ptr [[ARRAYIDX210]], align 4
 ; CHECK-NEXT:    [[MUL212:%.*]] = mul nsw i32 [[TMP10]], [[N200_0943]]
-; CHECK-NEXT:    [[ARRAYIDX213:%.*]] = getelementptr inbounds float, ptr [[F_DATA192_0948]], i32 [[MUL212]]
+; CHECK-NEXT:    [[ARRAYIDX213:%.*]] = getelementptr inbounds [4 x i8], ptr [[F_DATA192_0948]], i32 [[MUL212]]
 ; CHECK-NEXT:    [[TMP30:%.*]] = load float, ptr [[ARRAYIDX213]], align 4
 ; CHECK-NEXT:    [[TMP31]] = tail call float @llvm.fmuladd.f32(float [[TMP29]], float [[TMP30]], float [[ACC191_1942]])
 ; CHECK-NEXT:    [[INC216]] = add nsw i32 [[N200_0943]], 1
@@ -325,7 +325,7 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-NEXT:    [[F_DATA249_0964:%.*]] = phi ptr [ [[TMP15]], [[FOR_COND258_PREHEADER_LR_PH]] ], [ [[ADD_PTR281:%.*]], [[FOR_COND_CLEANUP268]] ]
 ; CHECK-NEXT:    [[ACC248_0963:%.*]] = phi float [ 0.000000e+00, [[FOR_COND258_PREHEADER_LR_PH]] ], [ [[ACC248_1_LCSSA:%.*]], [[FOR_COND_CLEANUP268]] ]
 ; CHECK-NEXT:    [[I_POS_X247_0962:%.*]] = phi i32 [ [[I_POS_Y184_1968]], [[FOR_COND258_PREHEADER_LR_PH]] ], [ [[ADD282:%.*]], [[FOR_COND_CLEANUP268]] ]
-; CHECK-NEXT:    [[TMP32:%.*]] = getelementptr float, ptr [[TMP2]], i32 [[I_POS_X247_0962]]
+; CHECK-NEXT:    [[TMP32:%.*]] = getelementptr [4 x i8], ptr [[TMP2]], i32 [[I_POS_X247_0962]]
 ; CHECK-NEXT:    br i1 [[CMP267957]], label [[FOR_BODY269_LR_PH:%.*]], label [[FOR_COND_CLEANUP268]]
 ; CHECK:       for.body269.lr.ph:
 ; CHECK-NEXT:    br label [[FOR_BODY269:%.*]]
@@ -333,14 +333,14 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-NEXT:    [[ACC248_0_LCSSA:%.*]] = phi float [ 0.000000e+00, [[FOR_BODY246]] ], [ [[ACC248_1_LCSSA]], [[FOR_COND_CLEANUP268]] ]
 ; CHECK-NEXT:    [[ADD287]] = add nsw i32 [[TMP14]], [[I_POS_Y184_1968]]
 ; CHECK-NEXT:    [[MUL289:%.*]] = mul nsw i32 [[TMP13]], [[X236_0969]]
-; CHECK-NEXT:    [[GEP971:%.*]] = getelementptr float, ptr [[INVARIANT_GEP955]], i32 [[MUL289]]
+; CHECK-NEXT:    [[GEP971:%.*]] = getelementptr [4 x i8], ptr [[INVARIANT_GEP955]], i32 [[MUL289]]
 ; CHECK-NEXT:    store float [[ACC248_0_LCSSA]], ptr [[GEP971]], align 4
 ; CHECK-NEXT:    [[INC297]] = add nsw i32 [[X236_0969]], 1
 ; CHECK-NEXT:    [[EXITCOND1064_NOT:%.*]] = icmp eq i32 [[INC297]], [[TMP0]]
 ; CHECK-NEXT:    br i1 [[EXITCOND1064_NOT]], label [[FOR_COND_CLEANUP245]], label [[FOR_BODY246]]
 ; CHECK:       for.cond.cleanup268:
 ; CHECK-NEXT:    [[ACC248_1_LCSSA]] = phi float [ [[ACC248_0963]], [[FOR_COND258_PREHEADER]] ], [ [[TMP35:%.*]], [[FOR_BODY269]] ]
-; CHECK-NEXT:    [[ADD_PTR281]] = getelementptr inbounds float, ptr [[F_DATA249_0964]], i32 [[MUL10]]
+; CHECK-NEXT:    [[ADD_PTR281]] = getelementptr inbounds [4 x i8], ptr [[F_DATA249_0964]], i32 [[MUL10]]
 ; CHECK-NEXT:    [[ADD282]] = add nsw i32 [[I_POS_X247_0962]], [[MUL]]
 ; CHECK-NEXT:    [[INC284]] = add nuw nsw i32 [[M251_0965]], 1
 ; CHECK-NEXT:    [[EXITCOND1063_NOT:%.*]] = icmp eq i32 [[INC284]], [[TMP5]]
@@ -349,10 +349,10 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-NEXT:    [[N257_0959:%.*]] = phi i32 [ 0, [[FOR_BODY269_LR_PH]] ], [ [[INC279:%.*]], [[FOR_BODY269]] ]
 ; CHECK-NEXT:    [[ACC248_1958:%.*]] = phi float [ [[ACC248_0963]], [[FOR_BODY269_LR_PH]] ], [ [[TMP35]], [[FOR_BODY269]] ]
 ; CHECK-NEXT:    [[MUL271:%.*]] = mul nsw i32 [[TMP14]], [[N257_0959]]
-; CHECK-NEXT:    [[ARRAYIDX273:%.*]] = getelementptr float, ptr [[TMP32]], i32 [[MUL271]]
+; CHECK-NEXT:    [[ARRAYIDX273:%.*]] = getelementptr [4 x i8], ptr [[TMP32]], i32 [[MUL271]]
 ; CHECK-NEXT:    [[TMP33:%.*]] = load float, ptr [[ARRAYIDX273]], align 4
 ; CHECK-NEXT:    [[MUL275:%.*]] = mul nsw i32 [[TMP10]], [[N257_0959]]
-; CHECK-NEXT:    [[ARRAYIDX276:%.*]] = getelementptr inbounds float, ptr [[F_DATA249_0964]], i32 [[MUL275]]
+; CHECK-NEXT:    [[ARRAYIDX276:%.*]] = getelementptr inbounds [4 x i8], ptr [[F_DATA249_0964]], i32 [[MUL275]]
 ; CHECK-NEXT:    [[TMP34:%.*]] = load float, ptr [[ARRAYIDX276]], align 4
 ; CHECK-NEXT:    [[TMP35]] = tail call float @llvm.fmuladd.f32(float [[TMP33]], float [[TMP34]], float [[ACC248_1958]])
 ; CHECK-NEXT:    [[INC279]] = add nuw nsw i32 [[N257_0959]], 1
@@ -366,7 +366,7 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-NEXT:    [[ADD334_NEG:%.*]] = xor i32 [[ADD333]], -1
 ; CHECK-NEXT:    [[MUL369:%.*]] = mul nsw i32 [[MUL367]], [[TMP11]]
 ; CHECK-NEXT:    [[SUB335:%.*]] = add i32 [[TMP5]], [[ADD334_NEG]]
-; CHECK-NEXT:    [[INVARIANT_GEP993:%.*]] = getelementptr float, ptr [[TMP3]], i32 [[MUL369]]
+; CHECK-NEXT:    [[INVARIANT_GEP993:%.*]] = getelementptr [4 x i8], ptr [[TMP3]], i32 [[MUL369]]
 ; CHECK-NEXT:    [[CMP336983:%.*]] = icmp sgt i32 [[SUB335]], 0
 ; CHECK-NEXT:    br i1 [[CMP319989]], label [[FOR_BODY321_LR_PH:%.*]], label [[FOR_COND376_PREHEADER:%.*]]
 ; CHECK:       for.body321.lr.ph:
@@ -395,7 +395,7 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-NEXT:    [[ACC323_0_LCSSA:%.*]] = phi float [ 0.000000e+00, [[FOR_BODY321]] ], [ [[ACC323_1_LCSSA:%.*]], [[FOR_COND_CLEANUP344:%.*]] ]
 ; CHECK-NEXT:    [[ADD363]] = add nsw i32 [[TMP14]], [[I_POS_Y316_0990]]
 ; CHECK-NEXT:    [[MUL365:%.*]] = mul nsw i32 [[TMP13]], [[X317_0991]]
-; CHECK-NEXT:    [[GEP994:%.*]] = getelementptr float, ptr [[INVARIANT_GEP993]], i32 [[MUL365]]
+; CHECK-NEXT:    [[GEP994:%.*]] = getelementptr [4 x i8], ptr [[INVARIANT_GEP993]], i32 [[MUL365]]
 ; CHECK-NEXT:    store float [[ACC323_0_LCSSA]], ptr [[GEP994]], align 4
 ; CHECK-NEXT:    [[INC373]] = add nuw nsw i32 [[X317_0991]], 1
 ; CHECK-NEXT:    [[EXITCOND1066_NOT:%.*]] = icmp eq i32 [[INC373]], [[SHR]]
@@ -405,13 +405,13 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-NEXT:    [[F_DATA324_0986:%.*]] = phi ptr [ [[TMP15]], [[FOR_BODY338_LR_PH]] ], [ [[ADD_PTR357:%.*]], [[FOR_COND_CLEANUP344]] ]
 ; CHECK-NEXT:    [[ACC323_0985:%.*]] = phi float [ 0.000000e+00, [[FOR_BODY338_LR_PH]] ], [ [[ACC323_1_LCSSA]], [[FOR_COND_CLEANUP344]] ]
 ; CHECK-NEXT:    [[I_POS_X322_0984:%.*]] = phi i32 [ [[I_POS_Y316_0990]], [[FOR_BODY338_LR_PH]] ], [ [[ADD358:%.*]], [[FOR_COND_CLEANUP344]] ]
-; CHECK-NEXT:    [[TMP36:%.*]] = getelementptr float, ptr [[TMP2]], i32 [[I_POS_X322_0984]]
+; CHECK-NEXT:    [[TMP36:%.*]] = getelementptr [4 x i8], ptr [[TMP2]], i32 [[I_POS_X322_0984]]
 ; CHECK-NEXT:    br i1 [[CMP343979]], label [[FOR_BODY345_LR_PH:%.*]], label [[FOR_COND_CLEANUP344]]
 ; CHECK:       for.body345.lr.ph:
 ; CHECK-NEXT:    br label [[FOR_BODY345:%.*]]
 ; CHECK:       for.cond.cleanup344:
 ; CHECK-NEXT:    [[ACC323_1_LCSSA]] = phi float [ [[ACC323_0985]], [[FOR_BODY338]] ], [ [[TMP39:%.*]], [[FOR_BODY345]] ]
-; CHECK-NEXT:    [[ADD_PTR357]] = getelementptr inbounds float, ptr [[F_DATA324_0986]], i32 [[MUL10]]
+; CHECK-NEXT:    [[ADD_PTR357]] = getelementptr inbounds [4 x i8], ptr [[F_DATA324_0986]], i32 [[MUL10]]
 ; CHECK-NEXT:    [[ADD358]] = add nsw i32 [[I_POS_X322_0984]], [[MUL]]
 ; CHECK-NEXT:    [[INC360]] = add nuw nsw i32 [[M326_0987]], 1
 ; CHECK-NEXT:    [[CMP336:%.*]] = icmp slt i32 [[INC360]], [[SUB335]]
@@ -420,10 +420,10 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-NEXT:    [[N339_0981:%.*]] = phi i32 [ [[SUB340]], [[FOR_BODY345_LR_PH]] ], [ [[INC355:%.*]], [[FOR_BODY345]] ]
 ; CHECK-NEXT:    [[ACC323_1980:%.*]] = phi float [ [[ACC323_0985]], [[FOR_BODY345_LR_PH]] ], [ [[TMP39]], [[FOR_BODY345]] ]
 ; CHECK-NEXT:    [[MUL347:%.*]] = mul nsw i32 [[TMP14]], [[N339_0981]]
-; CHECK-NEXT:    [[ARRAYIDX349:%.*]] = getelementptr float, ptr [[TMP36]], i32 [[MUL347]]
+; CHECK-NEXT:    [[ARRAYIDX349:%.*]] = getelementptr [4 x i8], ptr [[TMP36]], i32 [[MUL347]]
 ; CHECK-NEXT:    [[TMP37:%.*]] = load float, ptr [[ARRAYIDX349]], align 4
 ; CHECK-NEXT:    [[MUL351:%.*]] = mul nsw i32 [[TMP10]], [[N339_0981]]
-; CHECK-NEXT:    [[ARRAYIDX352:%.*]] = getelementptr inbounds float, ptr [[F_DATA324_0986]], i32 [[MUL351]]
+; CHECK-NEXT:    [[ARRAYIDX352:%.*]] = getelementptr inbounds [4 x i8], ptr [[F_DATA324_0986]], i32 [[MUL351]]
 ; CHECK-NEXT:    [[TMP38:%.*]] = load float, ptr [[ARRAYIDX352]], align 4
 ; CHECK-NEXT:    [[TMP39]] = tail call float @llvm.fmuladd.f32(float [[TMP37]], float [[TMP38]], float [[ACC323_1980]])
 ; CHECK-NEXT:    [[INC355]] = add nsw i32 [[N339_0981]], 1
@@ -443,7 +443,7 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-NEXT:    [[F_DATA386_01002:%.*]] = phi ptr [ [[ADD_PTR418:%.*]], [[FOR_COND_CLEANUP405]] ], [ [[TMP15]], [[FOR_BODY383]] ]
 ; CHECK-NEXT:    [[ACC385_01001:%.*]] = phi float [ [[ACC385_1_LCSSA:%.*]], [[FOR_COND_CLEANUP405]] ], [ 0.000000e+00, [[FOR_BODY383]] ]
 ; CHECK-NEXT:    [[I_POS_X384_01000:%.*]] = phi i32 [ [[ADD419:%.*]], [[FOR_COND_CLEANUP405]] ], [ [[I_POS_Y316_11006]], [[FOR_BODY383]] ]
-; CHECK-NEXT:    [[TMP40:%.*]] = getelementptr float, ptr [[TMP2]], i32 [[I_POS_X384_01000]]
+; CHECK-NEXT:    [[TMP40:%.*]] = getelementptr [4 x i8], ptr [[TMP2]], i32 [[I_POS_X384_01000]]
 ; CHECK-NEXT:    br i1 [[CMP404995]], label [[FOR_BODY406_LR_PH:%.*]], label [[FOR_COND_CLEANUP405]]
 ; CHECK:       for.body406.lr.ph:
 ; CHECK-NEXT:    br label [[FOR_BODY406:%.*]]
@@ -451,14 +451,14 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-NEXT:    [[ACC385_0_LCSSA:%.*]] = phi float [ 0.000000e+00, [[FOR_BODY383]] ], [ [[ACC385_1_LCSSA]], [[FOR_COND_CLEANUP405]] ]
 ; CHECK-NEXT:    [[ADD424]] = add nsw i32 [[TMP14]], [[I_POS_Y316_11006]]
 ; CHECK-NEXT:    [[MUL426:%.*]] = mul nsw i32 [[TMP13]], [[X375_01007]]
-; CHECK-NEXT:    [[GEP1012:%.*]] = getelementptr float, ptr [[INVARIANT_GEP993]], i32 [[MUL426]]
+; CHECK-NEXT:    [[GEP1012:%.*]] = getelementptr [4 x i8], ptr [[INVARIANT_GEP993]], i32 [[MUL426]]
 ; CHECK-NEXT:    store float [[ACC385_0_LCSSA]], ptr [[GEP1012]], align 4
 ; CHECK-NEXT:    [[INC434]] = add nsw i32 [[X375_01007]], 1
 ; CHECK-NEXT:    [[EXITCOND1068_NOT:%.*]] = icmp eq i32 [[INC434]], [[SUB527]]
 ; CHECK-NEXT:    br i1 [[EXITCOND1068_NOT]], label [[FOR_COND441_PREHEADER]], label [[FOR_BODY383]]
 ; CHECK:       for.cond.cleanup405:
 ; CHECK-NEXT:    [[ACC385_1_LCSSA]] = phi float [ [[ACC385_01001]], [[FOR_COND402_PREHEADER]] ], [ [[TMP43:%.*]], [[FOR_BODY406]] ]
-; CHECK-NEXT:    [[ADD_PTR418]] = getelementptr inbounds float, ptr [[F_DATA386_01002]], i32 [[MUL10]]
+; CHECK-NEXT:    [[ADD_PTR418]] = getelementptr inbounds [4 x i8], ptr [[F_DATA386_01002]], i32 [[MUL10]]
 ; CHECK-NEXT:    [[ADD419]] = add nsw i32 [[I_POS_X384_01000]], [[MUL]]
 ; CHECK-NEXT:    [[INC421]] = add nuw nsw i32 [[M388_01003]], 1
 ; CHECK-NEXT:    [[CMP398:%.*]] = icmp slt i32 [[INC421]], [[SUB335]]
@@ -467,10 +467,10 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-NEXT:    [[N401_0997:%.*]] = phi i32 [ 0, [[FOR_BODY406_LR_PH]] ], [ [[INC416:%.*]], [[FOR_BODY406]] ]
 ; CHECK-NEXT:    [[ACC385_1996:%.*]] = phi float [ [[ACC385_01001]], [[FOR_BODY406_LR_PH]] ], [ [[TMP43]], [[FOR_BODY406]] ]
 ; CHECK-NEXT:    [[MUL408:%.*]] = mul nsw i32 [[TMP14]], [[N401_0997]]
-; CHECK-NEXT:    [[ARRAYIDX410:%.*]] = getelementptr float, ptr [[TMP40]], i32 [[MUL408]]
+; CHECK-NEXT:    [[ARRAYIDX410:%.*]] = getelementptr [4 x i8], ptr [[TMP40]], i32 [[MUL408]]
 ; CHECK-NEXT:    [[TMP41:%.*]] = load float, ptr [[ARRAYIDX410]], align 4
 ; CHECK-NEXT:    [[MUL412:%.*]] = mul nsw i32 [[TMP10]], [[N401_0997]]
-; CHECK-NEXT:    [[ARRAYIDX413:%.*]] = getelementptr inbounds float, ptr [[F_DATA386_01002]], i32 [[MUL412]]
+; CHECK-NEXT:    [[ARRAYIDX413:%.*]] = getelementptr inbounds [4 x i8], ptr [[F_DATA386_01002]], i32 [[MUL412]]
 ; CHECK-NEXT:    [[TMP42:%.*]] = load float, ptr [[ARRAYIDX413]], align 4
 ; CHECK-NEXT:    [[TMP43]] = tail call float @llvm.fmuladd.f32(float [[TMP41]], float [[TMP42]], float [[ACC385_1996]])
 ; CHECK-NEXT:    [[INC416]] = add nuw nsw i32 [[N401_0997]], 1
@@ -496,7 +496,7 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-NEXT:    [[F_DATA448_01020:%.*]] = phi ptr [ [[TMP15]], [[FOR_COND464_PREHEADER_LR_PH]] ], [ [[ADD_PTR487:%.*]], [[FOR_COND_CLEANUP474]] ]
 ; CHECK-NEXT:    [[ACC447_01019:%.*]] = phi float [ 0.000000e+00, [[FOR_COND464_PREHEADER_LR_PH]] ], [ [[ACC447_1_LCSSA:%.*]], [[FOR_COND_CLEANUP474]] ]
 ; CHECK-NEXT:    [[I_POS_X446_01018:%.*]] = phi i32 [ [[I_POS_Y316_21024]], [[FOR_COND464_PREHEADER_LR_PH]] ], [ [[ADD488:%.*]], [[FOR_COND_CLEANUP474]] ]
-; CHECK-NEXT:    [[TMP44:%.*]] = getelementptr float, ptr [[TMP2]], i32 [[I_POS_X446_01018]]
+; CHECK-NEXT:    [[TMP44:%.*]] = getelementptr [4 x i8], ptr [[TMP2]], i32 [[I_POS_X446_01018]]
 ; CHECK-NEXT:    br i1 [[CMP4731013]], label [[FOR_BODY475_LR_PH:%.*]], label [[FOR_COND_CLEANUP474]]
 ; CHECK:       for.body475.lr.ph:
 ; CHECK-NEXT:    br label [[FOR_BODY475:%.*]]
@@ -504,14 +504,14 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-NEXT:    [[ACC447_0_LCSSA:%.*]] = phi float [ 0.000000e+00, [[FOR_BODY445]] ], [ [[ACC447_1_LCSSA]], [[FOR_COND_CLEANUP474]] ]
 ; CHECK-NEXT:    [[ADD493]] = add nsw i32 [[TMP14]], [[I_POS_Y316_21024]]
 ; CHECK-NEXT:    [[MUL495:%.*]] = mul nsw i32 [[TMP13]], [[X436_01025]]
-; CHECK-NEXT:    [[GEP1027:%.*]] = getelementptr float, ptr [[INVARIANT_GEP993]], i32 [[MUL495]]
+; CHECK-NEXT:    [[GEP1027:%.*]] = getelementptr [4 x i8], ptr [[INVARIANT_GEP993]], i32 [[MUL495]]
 ; CHECK-NEXT:    store float [[ACC447_0_LCSSA]], ptr [[GEP1027]], align 4
 ; CHECK-NEXT:    [[INC503]] = add nsw i32 [[X436_01025]], 1
 ; CHECK-NEXT:    [[EXITCOND1069_NOT:%.*]] = icmp eq i32 [[INC503]], [[TMP0]]
 ; CHECK-NEXT:    br i1 [[EXITCOND1069_NOT]], label [[FOR_COND_CLEANUP444]], label [[FOR_BODY445]]
 ; CHECK:       for.cond.cleanup474:
 ; CHECK-NEXT:    [[ACC447_1_LCSSA]] = phi float [ [[ACC447_01019]], [[FOR_COND464_PREHEADER]] ], [ [[TMP47:%.*]], [[FOR_BODY475]] ]
-; CHECK-NEXT:    [[ADD_PTR487]] = getelementptr inbounds float, ptr [[F_DATA448_01020]], i32 [[MUL10]]
+; CHECK-NEXT:    [[ADD_PTR487]] = getelementptr inbounds [4 x i8], ptr [[F_DATA448_01020]], i32 [[MUL10]]
 ; CHECK-NEXT:    [[ADD488]] = add nsw i32 [[I_POS_X446_01018]], [[MUL]]
 ; CHECK-NEXT:    [[INC490]] = add nuw nsw i32 [[M450_01021]], 1
 ; CHECK-NEXT:    [[CMP460:%.*]] = icmp slt i32 [[INC490]], [[SUB335]]
@@ -520,10 +520,10 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-NEXT:    [[N463_01015:%.*]] = phi i32 [ 0, [[FOR_BODY475_LR_PH]] ], [ [[INC485:%.*]], [[FOR_BODY475]] ]
 ; CHECK-NEXT:    [[ACC447_11014:%.*]] = phi float [ [[ACC447_01019]], [[FOR_BODY475_LR_PH]] ], [ [[TMP47]], [[FOR_BODY475]] ]
 ; CHECK-NEXT:    [[MUL477:%.*]] = mul nsw i32 [[TMP14]], [[N463_01015]]
-; CHECK-NEXT:    [[ARRAYIDX479:%.*]] = getelementptr float, ptr [[TMP44]], i32 [[MUL477]]
+; CHECK-NEXT:    [[ARRAYIDX479:%.*]] = getelementptr [4 x i8], ptr [[TMP44]], i32 [[MUL477]]
 ; CHECK-NEXT:    [[TMP45:%.*]] = load float, ptr [[ARRAYIDX479]], align 4
 ; CHECK-NEXT:    [[MUL481:%.*]] = mul nsw i32 [[TMP10]], [[N463_01015]]
-; CHECK-NEXT:    [[ARRAYIDX482:%.*]] = getelementptr inbounds float, ptr [[F_DATA448_01020]], i32 [[MUL481]]
+; CHECK-NEXT:    [[ARRAYIDX482:%.*]] = getelementptr inbounds [4 x i8], ptr [[F_DATA448_01020]], i32 [[MUL481]]
 ; CHECK-NEXT:    [[TMP46:%.*]] = load float, ptr [[ARRAYIDX482]], align 4
 ; CHECK-NEXT:    [[TMP47]] = tail call float @llvm.fmuladd.f32(float [[TMP45]], float [[TMP46]], float [[ACC447_11014]])
 ; CHECK-NEXT:    [[INC485]] = add nuw nsw i32 [[N463_01015]], 1
@@ -534,7 +534,7 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-NEXT:    [[I_POS_31047:%.*]] = phi i32 [ 0, [[FOR_COND523_PREHEADER_LR_PH]] ], [ [[ADD579:%.*]], [[FOR_COND_CLEANUP529]] ]
 ; CHECK-NEXT:    [[MUL568:%.*]] = mul nsw i32 [[TMP12]], [[Y512_01048]]
 ; CHECK-NEXT:    [[MUL570:%.*]] = mul nsw i32 [[MUL568]], [[TMP11]]
-; CHECK-NEXT:    [[INVARIANT_GEP1044:%.*]] = getelementptr float, ptr [[TMP3]], i32 [[MUL570]]
+; CHECK-NEXT:    [[INVARIANT_GEP1044:%.*]] = getelementptr [4 x i8], ptr [[TMP3]], i32 [[MUL570]]
 ; CHECK-NEXT:    br i1 [[CMP5281041]], label [[FOR_BODY530_LR_PH:%.*]], label [[FOR_COND_CLEANUP529]]
 ; CHECK:       for.body530.lr.ph:
 ; CHECK-NEXT:    br label [[FOR_BODY530:%.*]]
@@ -554,7 +554,7 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-NEXT:    [[F_DATA533_01038:%.*]] = phi ptr [ [[ADD_PTR558:%.*]], [[FOR_COND_CLEANUP545]] ], [ [[TMP15]], [[FOR_BODY530]] ]
 ; CHECK-NEXT:    [[ACC532_01037:%.*]] = phi float [ [[ACC532_1_LCSSA:%.*]], [[FOR_COND_CLEANUP545]] ], [ 0.000000e+00, [[FOR_BODY530]] ]
 ; CHECK-NEXT:    [[I_POS_X531_01036:%.*]] = phi i32 [ [[ADD559:%.*]], [[FOR_COND_CLEANUP545]] ], [ [[I_POS_Y521_01042]], [[FOR_BODY530]] ]
-; CHECK-NEXT:    [[TMP48:%.*]] = getelementptr float, ptr [[TMP2]], i32 [[I_POS_X531_01036]]
+; CHECK-NEXT:    [[TMP48:%.*]] = getelementptr [4 x i8], ptr [[TMP2]], i32 [[I_POS_X531_01036]]
 ; CHECK-NEXT:    br i1 [[CMP5441031]], label [[FOR_BODY546_LR_PH:%.*]], label [[FOR_COND_CLEANUP545]]
 ; CHECK:       for.body546.lr.ph:
 ; CHECK-NEXT:    br label [[FOR_BODY546:%.*]]
@@ -562,14 +562,14 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-NEXT:    [[ACC532_0_LCSSA:%.*]] = phi float [ 0.000000e+00, [[FOR_BODY530]] ], [ [[ACC532_1_LCSSA]], [[FOR_COND_CLEANUP545]] ]
 ; CHECK-NEXT:    [[ADD564]] = add nsw i32 [[TMP14]], [[I_POS_Y521_01042]]
 ; CHECK-NEXT:    [[MUL566:%.*]] = mul nsw i32 [[TMP13]], [[X522_01043]]
-; CHECK-NEXT:    [[GEP1045:%.*]] = getelementptr float, ptr [[INVARIANT_GEP1044]], i32 [[MUL566]]
+; CHECK-NEXT:    [[GEP1045:%.*]] = getelementptr [4 x i8], ptr [[INVARIANT_GEP1044]], i32 [[MUL566]]
 ; CHECK-NEXT:    store float [[ACC532_0_LCSSA]], ptr [[GEP1045]], align 4
 ; CHECK-NEXT:    [[INC574]] = add nsw i32 [[X522_01043]], 1
 ; CHECK-NEXT:    [[EXITCOND1073_NOT:%.*]] = icmp eq i32 [[INC574]], [[SUB527]]
 ; CHECK-NEXT:    br i1 [[EXITCOND1073_NOT]], label [[FOR_COND_CLEANUP529]], label [[FOR_BODY530]]
 ; CHECK:       for.cond.cleanup545:
 ; CHECK-NEXT:    [[ACC532_1_LCSSA]] = phi float [ [[ACC532_01037]], [[FOR_COND542_PREHEADER]] ], [ [[TMP51:%.*]], [[FOR_BODY546]] ]
-; CHECK-NEXT:    [[ADD_PTR558]] = getelementptr inbounds float, ptr [[F_DATA533_01038]], i32 [[MUL10]]
+; CHECK-NEXT:    [[ADD_PTR558]] = getelementptr inbounds [4 x i8], ptr [[F_DATA533_01038]], i32 [[MUL10]]
 ; CHECK-NEXT:    [[ADD559]] = add nsw i32 [[I_POS_X531_01036]], [[MUL]]
 ; CHECK-NEXT:    [[INC561]] = add nuw nsw i32 [[M535_01039]], 1
 ; CHECK-NEXT:    [[EXITCOND1072_NOT:%.*]] = icmp eq i32 [[INC561]], [[TMP5]]
@@ -578,10 +578,10 @@ define dso_local noundef i32 @dspi_conv_f32_ansi(ptr nocapture noundef readonly 
 ; CHECK-NEXT:    [[N541_01033:%.*]] = phi i32 [ 0, [[FOR_BODY546_LR_PH]] ], [ [[INC556:%.*]], [[FOR_BODY546]] ]
 ; CHECK-NEXT:    [[ACC532_11032:%.*]] = phi float [ [[ACC532_01037]], [[FOR_BODY546_LR_PH]] ], [ [[TMP51]], [[FOR_BODY546]] ]
 ; CHECK-NEXT:    [[MUL548:%.*]] = mul nsw i32 [[TMP14]], [[N541_01033]]
-; CHECK-NEXT:    [[ARRAYIDX550:%.*]] = getelementptr float, ptr [[TMP48]], i32 [[MUL548]]
+; CHECK-NEXT:    [[ARRAYIDX550:%.*]] = getelementptr [4 x i8], ptr [[TMP48]], i32 [[MUL548]]
 ; CHECK-NEXT:    [[TMP49:%.*]] = load float, ptr [[ARRAYIDX550]], align 4
 ; CHECK-NEXT:    [[MUL552:%.*]] = mul nsw i32 [[TMP10]], [[N541_01033]]
-; CHECK-NEXT:    [[ARRAYIDX553:%.*]] = getelementptr inbounds float, ptr [[F_DATA533_01038]], i32 [[MUL552]]
+; CHECK-NEXT:    [[ARRAYIDX553:%.*]] = getelementptr inbounds [4 x i8], ptr [[F_DATA533_01038]], i32 [[MUL552]]
 ; CHECK-NEXT:    [[TMP50:%.*]] = load float, ptr [[ARRAYIDX553]], align 4
 ; CHECK-NEXT:    [[TMP51]] = tail call float @llvm.fmuladd.f32(float [[TMP49]], float [[TMP50]], float [[ACC532_11032]])
 ; CHECK-NEXT:    [[INC556]] = add nuw nsw i32 [[N541_01033]], 1
