@@ -39,9 +39,9 @@ define dso_local noundef i32 @dspm_add_f32_ansi(ptr noundef readonly %input1, pt
 ; CHECK:       for.cond34.preheader.for.body37.7_crit_edge:
 ; CHECK-NEXT:    [[TMP17:%.*]] = load float, ptr [[PTR_INPUT1_083]], align 4
 ; CHECK-NEXT:    [[TMP18:%.*]] = load float, ptr [[PTR_INPUT2_084]], align 4
-; CHECK-NEXT:    [[ARRAYIDX_1_PHI_TRANS_INSERT:%.*]] = getelementptr inbounds nuw float, ptr [[PTR_INPUT1_083]], i32 [[STEP1]]
+; CHECK-NEXT:    [[ARRAYIDX_1_PHI_TRANS_INSERT:%.*]] = getelementptr inbounds nuw [4 x i8], ptr [[PTR_INPUT1_083]], i32 [[STEP1]]
 ; CHECK-NEXT:    [[DOTPRE2:%.*]] = load float, ptr [[ARRAYIDX_1_PHI_TRANS_INSERT]], align 4
-; CHECK-NEXT:    [[ARRAYIDX39_1_PHI_TRANS_INSERT:%.*]] = getelementptr inbounds nuw float, ptr [[PTR_INPUT2_084]], i32 [[STEP2]]
+; CHECK-NEXT:    [[ARRAYIDX39_1_PHI_TRANS_INSERT:%.*]] = getelementptr inbounds nuw [4 x i8], ptr [[PTR_INPUT2_084]], i32 [[STEP2]]
 ; CHECK-NEXT:    [[DOTPRE3:%.*]] = load float, ptr [[ARRAYIDX39_1_PHI_TRANS_INSERT]], align 4
 ; CHECK-NEXT:    br label [[FOR_BODY37_8:%.*]]
 ; CHECK:       forCond113Preheader:
@@ -52,7 +52,7 @@ define dso_local noundef i32 @dspm_add_f32_ansi(ptr noundef readonly %input1, pt
 ; CHECK-NEXT:    [[ADD40_7:%.*]] = fadd float [[TMP17]], [[TMP18]]
 ; CHECK-NEXT:    store float [[ADD40_7]], ptr [[OUTPUT_ADDR_082]], align 4
 ; CHECK-NEXT:    [[ADD40_1:%.*]] = fadd float [[DOTPRE2]], [[DOTPRE3]]
-; CHECK-NEXT:    [[ARRAYIDX42_1:%.*]] = getelementptr inbounds nuw float, ptr [[OUTPUT_ADDR_082]], i32 [[STEP_OUT]]
+; CHECK-NEXT:    [[ARRAYIDX42_1:%.*]] = getelementptr inbounds nuw [4 x i8], ptr [[OUTPUT_ADDR_082]], i32 [[STEP_OUT]]
 ; CHECK-NEXT:    store float [[ADD40_1]], ptr [[ARRAYIDX42_1]], align 4
 ; CHECK-NEXT:    [[ARRAYIDX_2_IDX:%.*]] = shl nuw nsw i32 [[STEP1]], 3
 ; CHECK-NEXT:    [[ARRAYIDX_2:%.*]] = getelementptr inbounds nuw i8, ptr [[PTR_INPUT1_083]], i32 [[ARRAYIDX_2_IDX]]
@@ -120,25 +120,25 @@ define dso_local noundef i32 @dspm_add_f32_ansi(ptr noundef readonly %input1, pt
 ; CHECK:       for.body37.clone:
 ; CHECK-NEXT:    [[COL_080_CLONE:%.*]] = phi i32 [ [[INC_CLONE:%.*]], [[FOR_BODY37_CLONE]] ], [ [[COL_0_LCSSA]], [[FORCOND113PREHEADER]] ]
 ; CHECK-NEXT:    [[MUL_CLONE:%.*]] = mul nuw nsw i32 [[COL_080_CLONE]], [[STEP1]]
-; CHECK-NEXT:    [[ARRAYIDX_CLONE:%.*]] = getelementptr inbounds nuw float, ptr [[PTR_INPUT1_083]], i32 [[MUL_CLONE]]
+; CHECK-NEXT:    [[ARRAYIDX_CLONE:%.*]] = getelementptr inbounds nuw [4 x i8], ptr [[PTR_INPUT1_083]], i32 [[MUL_CLONE]]
 ; CHECK-NEXT:    [[TMP19:%.*]] = load float, ptr [[ARRAYIDX_CLONE]], align 4
 ; CHECK-NEXT:    [[MUL38_CLONE:%.*]] = mul nuw nsw i32 [[COL_080_CLONE]], [[STEP2]]
-; CHECK-NEXT:    [[ARRAYIDX39_CLONE:%.*]] = getelementptr inbounds nuw float, ptr [[PTR_INPUT2_084]], i32 [[MUL38_CLONE]]
+; CHECK-NEXT:    [[ARRAYIDX39_CLONE:%.*]] = getelementptr inbounds nuw [4 x i8], ptr [[PTR_INPUT2_084]], i32 [[MUL38_CLONE]]
 ; CHECK-NEXT:    [[TMP20:%.*]] = load float, ptr [[ARRAYIDX39_CLONE]], align 4
 ; CHECK-NEXT:    [[ADD40_CLONE:%.*]] = fadd float [[TMP19]], [[TMP20]]
 ; CHECK-NEXT:    [[MUL41_CLONE:%.*]] = mul nuw nsw i32 [[COL_080_CLONE]], [[STEP_OUT]]
-; CHECK-NEXT:    [[ARRAYIDX42_CLONE:%.*]] = getelementptr inbounds nuw float, ptr [[OUTPUT_ADDR_082]], i32 [[MUL41_CLONE]]
+; CHECK-NEXT:    [[ARRAYIDX42_CLONE:%.*]] = getelementptr inbounds nuw [4 x i8], ptr [[OUTPUT_ADDR_082]], i32 [[MUL41_CLONE]]
 ; CHECK-NEXT:    store float [[ADD40_CLONE]], ptr [[ARRAYIDX42_CLONE]], align 4
 ; CHECK-NEXT:    [[INC_CLONE]] = add nuw nsw i32 [[COL_080_CLONE]], 1
 ; CHECK-NEXT:    [[EXITCOND_NOT_CLONE:%.*]] = icmp eq i32 [[INC_CLONE]], [[COLS]]
 ; CHECK-NEXT:    br i1 [[EXITCOND_NOT_CLONE]], label [[FOR_COND_CLEANUP36]], label [[FOR_BODY37_CLONE]]
 ; CHECK:       for.cond.cleanup36:
-; CHECK-NEXT:    [[TMP21:%.*]] = getelementptr float, ptr [[PTR_INPUT1_083]], i32 [[PADD1]]
-; CHECK-NEXT:    [[ADD_PTR]] = getelementptr float, ptr [[TMP21]], i32 [[COLS]]
-; CHECK-NEXT:    [[TMP22:%.*]] = getelementptr float, ptr [[PTR_INPUT2_084]], i32 [[PADD2]]
-; CHECK-NEXT:    [[ADD_PTR43]] = getelementptr float, ptr [[TMP22]], i32 [[COLS]]
-; CHECK-NEXT:    [[TMP23:%.*]] = getelementptr float, ptr [[OUTPUT_ADDR_082]], i32 [[PADD_OUT]]
-; CHECK-NEXT:    [[ADD_PTR44]] = getelementptr float, ptr [[TMP23]], i32 [[COLS]]
+; CHECK-NEXT:    [[TMP21:%.*]] = getelementptr [4 x i8], ptr [[PTR_INPUT1_083]], i32 [[PADD1]]
+; CHECK-NEXT:    [[ADD_PTR]] = getelementptr [4 x i8], ptr [[TMP21]], i32 [[COLS]]
+; CHECK-NEXT:    [[TMP22:%.*]] = getelementptr [4 x i8], ptr [[PTR_INPUT2_084]], i32 [[PADD2]]
+; CHECK-NEXT:    [[ADD_PTR43]] = getelementptr [4 x i8], ptr [[TMP22]], i32 [[COLS]]
+; CHECK-NEXT:    [[TMP23:%.*]] = getelementptr [4 x i8], ptr [[OUTPUT_ADDR_082]], i32 [[PADD_OUT]]
+; CHECK-NEXT:    [[ADD_PTR44]] = getelementptr [4 x i8], ptr [[TMP23]], i32 [[COLS]]
 ; CHECK-NEXT:    [[INC46]] = add nuw nsw i32 [[ROW_085]], 1
 ; CHECK-NEXT:    [[EXITCOND86_NOT:%.*]] = icmp eq i32 [[INC46]], [[ROWS]]
 ; CHECK-NEXT:    br i1 [[EXITCOND86_NOT]], label [[RETURN]], label [[FOR_COND34_PREHEADER]]

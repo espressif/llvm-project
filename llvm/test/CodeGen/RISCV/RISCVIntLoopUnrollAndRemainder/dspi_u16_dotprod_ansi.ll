@@ -76,11 +76,11 @@ define dso_local noundef i32 @dspi_dotprod_u16_ansi(ptr nocapture noundef readon
 ; CHECK-NEXT:    [[X_075:%.*]] = phi i32 [ [[INC_7:%.*]], [[FOR_BODY28_7]] ], [ 0, [[FOR_COND25_PREHEADER]] ]
 ; CHECK-NEXT:    [[ACC_174:%.*]] = phi i64 [ [[ADD_7]], [[FOR_BODY28_7]] ], [ [[ACC_079]], [[FOR_COND25_PREHEADER]] ]
 ; CHECK-NEXT:    [[MUL30:%.*]] = mul nsw i32 [[X_075]], [[TMP0]]
-; CHECK-NEXT:    [[ARRAYIDX:%.*]] = getelementptr inbounds i16, ptr [[I_DATA_078]], i32 [[MUL30]]
+; CHECK-NEXT:    [[ARRAYIDX:%.*]] = getelementptr inbounds [2 x i8], ptr [[I_DATA_078]], i32 [[MUL30]]
 ; CHECK-NEXT:    [[TMP12:%.*]] = load i16, ptr [[ARRAYIDX]], align 2
 ; CHECK-NEXT:    [[CONV:%.*]] = zext i16 [[TMP12]] to i32
 ; CHECK-NEXT:    [[MUL32:%.*]] = mul nsw i32 [[X_075]], [[TMP4]]
-; CHECK-NEXT:    [[ARRAYIDX33:%.*]] = getelementptr inbounds i16, ptr [[F_DATA_077]], i32 [[MUL32]]
+; CHECK-NEXT:    [[ARRAYIDX33:%.*]] = getelementptr inbounds [2 x i8], ptr [[F_DATA_077]], i32 [[MUL32]]
 ; CHECK-NEXT:    [[TMP13:%.*]] = load i16, ptr [[ARRAYIDX33]], align 2
 ; CHECK-NEXT:    [[CONV34:%.*]] = zext i16 [[TMP13]] to i32
 ; CHECK-NEXT:    [[MUL35:%.*]] = mul nuw nsw i32 [[CONV34]], [[CONV]]
@@ -88,11 +88,11 @@ define dso_local noundef i32 @dspi_dotprod_u16_ansi(ptr nocapture noundef readon
 ; CHECK-NEXT:    [[ADD:%.*]] = add nsw i64 [[ACC_174]], [[CONV36]]
 ; CHECK-NEXT:    [[INC:%.*]] = or disjoint i32 [[X_075]], 1
 ; CHECK-NEXT:    [[MUL30_1:%.*]] = mul nsw i32 [[INC]], [[TMP0]]
-; CHECK-NEXT:    [[ARRAYIDX_1:%.*]] = getelementptr inbounds i16, ptr [[I_DATA_078]], i32 [[MUL30_1]]
+; CHECK-NEXT:    [[ARRAYIDX_1:%.*]] = getelementptr inbounds [2 x i8], ptr [[I_DATA_078]], i32 [[MUL30_1]]
 ; CHECK-NEXT:    [[TMP14:%.*]] = load i16, ptr [[ARRAYIDX_1]], align 2
 ; CHECK-NEXT:    [[CONV_1:%.*]] = zext i16 [[TMP14]] to i32
 ; CHECK-NEXT:    [[MUL32_1:%.*]] = mul nsw i32 [[INC]], [[TMP4]]
-; CHECK-NEXT:    [[ARRAYIDX33_1:%.*]] = getelementptr inbounds i16, ptr [[F_DATA_077]], i32 [[MUL32_1]]
+; CHECK-NEXT:    [[ARRAYIDX33_1:%.*]] = getelementptr inbounds [2 x i8], ptr [[F_DATA_077]], i32 [[MUL32_1]]
 ; CHECK-NEXT:    [[TMP15:%.*]] = load i16, ptr [[ARRAYIDX33_1]], align 2
 ; CHECK-NEXT:    [[CONV34_1:%.*]] = zext i16 [[TMP15]] to i32
 ; CHECK-NEXT:    [[MUL35_1:%.*]] = mul nuw nsw i32 [[CONV34_1]], [[CONV_1]]
@@ -100,11 +100,11 @@ define dso_local noundef i32 @dspi_dotprod_u16_ansi(ptr nocapture noundef readon
 ; CHECK-NEXT:    [[ADD_1:%.*]] = add nsw i64 [[ADD]], [[CONV36_1]]
 ; CHECK-NEXT:    [[INC_1:%.*]] = or disjoint i32 [[X_075]], 2
 ; CHECK-NEXT:    [[MUL30_2:%.*]] = mul nsw i32 [[INC_1]], [[TMP0]]
-; CHECK-NEXT:    [[ARRAYIDX_2:%.*]] = getelementptr inbounds i16, ptr [[I_DATA_078]], i32 [[MUL30_2]]
+; CHECK-NEXT:    [[ARRAYIDX_2:%.*]] = getelementptr inbounds [2 x i8], ptr [[I_DATA_078]], i32 [[MUL30_2]]
 ; CHECK-NEXT:    [[TMP16:%.*]] = load i16, ptr [[ARRAYIDX_2]], align 2
 ; CHECK-NEXT:    [[CONV_2:%.*]] = zext i16 [[TMP16]] to i32
 ; CHECK-NEXT:    [[MUL32_2:%.*]] = mul nsw i32 [[INC_1]], [[TMP4]]
-; CHECK-NEXT:    [[ARRAYIDX33_2:%.*]] = getelementptr inbounds i16, ptr [[F_DATA_077]], i32 [[MUL32_2]]
+; CHECK-NEXT:    [[ARRAYIDX33_2:%.*]] = getelementptr inbounds [2 x i8], ptr [[F_DATA_077]], i32 [[MUL32_2]]
 ; CHECK-NEXT:    [[TMP17:%.*]] = load i16, ptr [[ARRAYIDX33_2]], align 2
 ; CHECK-NEXT:    [[CONV34_2:%.*]] = zext i16 [[TMP17]] to i32
 ; CHECK-NEXT:    [[MUL35_2:%.*]] = mul nuw nsw i32 [[CONV34_2]], [[CONV_2]]
@@ -112,11 +112,11 @@ define dso_local noundef i32 @dspi_dotprod_u16_ansi(ptr nocapture noundef readon
 ; CHECK-NEXT:    [[ADD_2:%.*]] = add nsw i64 [[ADD_1]], [[CONV36_2]]
 ; CHECK-NEXT:    [[INC_2:%.*]] = or disjoint i32 [[X_075]], 3
 ; CHECK-NEXT:    [[MUL30_3:%.*]] = mul nsw i32 [[INC_2]], [[TMP0]]
-; CHECK-NEXT:    [[ARRAYIDX_3:%.*]] = getelementptr inbounds i16, ptr [[I_DATA_078]], i32 [[MUL30_3]]
+; CHECK-NEXT:    [[ARRAYIDX_3:%.*]] = getelementptr inbounds [2 x i8], ptr [[I_DATA_078]], i32 [[MUL30_3]]
 ; CHECK-NEXT:    [[TMP18:%.*]] = load i16, ptr [[ARRAYIDX_3]], align 2
 ; CHECK-NEXT:    [[CONV_3:%.*]] = zext i16 [[TMP18]] to i32
 ; CHECK-NEXT:    [[MUL32_3:%.*]] = mul nsw i32 [[INC_2]], [[TMP4]]
-; CHECK-NEXT:    [[ARRAYIDX33_3:%.*]] = getelementptr inbounds i16, ptr [[F_DATA_077]], i32 [[MUL32_3]]
+; CHECK-NEXT:    [[ARRAYIDX33_3:%.*]] = getelementptr inbounds [2 x i8], ptr [[F_DATA_077]], i32 [[MUL32_3]]
 ; CHECK-NEXT:    [[TMP19:%.*]] = load i16, ptr [[ARRAYIDX33_3]], align 2
 ; CHECK-NEXT:    [[CONV34_3:%.*]] = zext i16 [[TMP19]] to i32
 ; CHECK-NEXT:    [[MUL35_3:%.*]] = mul nuw nsw i32 [[CONV34_3]], [[CONV_3]]
@@ -124,11 +124,11 @@ define dso_local noundef i32 @dspi_dotprod_u16_ansi(ptr nocapture noundef readon
 ; CHECK-NEXT:    [[ADD_3:%.*]] = add nsw i64 [[ADD_2]], [[CONV36_3]]
 ; CHECK-NEXT:    [[INC_3:%.*]] = or disjoint i32 [[X_075]], 4
 ; CHECK-NEXT:    [[MUL30_4:%.*]] = mul nsw i32 [[INC_3]], [[TMP0]]
-; CHECK-NEXT:    [[ARRAYIDX_4:%.*]] = getelementptr inbounds i16, ptr [[I_DATA_078]], i32 [[MUL30_4]]
+; CHECK-NEXT:    [[ARRAYIDX_4:%.*]] = getelementptr inbounds [2 x i8], ptr [[I_DATA_078]], i32 [[MUL30_4]]
 ; CHECK-NEXT:    [[TMP20:%.*]] = load i16, ptr [[ARRAYIDX_4]], align 2
 ; CHECK-NEXT:    [[CONV_4:%.*]] = zext i16 [[TMP20]] to i32
 ; CHECK-NEXT:    [[MUL32_4:%.*]] = mul nsw i32 [[INC_3]], [[TMP4]]
-; CHECK-NEXT:    [[ARRAYIDX33_4:%.*]] = getelementptr inbounds i16, ptr [[F_DATA_077]], i32 [[MUL32_4]]
+; CHECK-NEXT:    [[ARRAYIDX33_4:%.*]] = getelementptr inbounds [2 x i8], ptr [[F_DATA_077]], i32 [[MUL32_4]]
 ; CHECK-NEXT:    [[TMP21:%.*]] = load i16, ptr [[ARRAYIDX33_4]], align 2
 ; CHECK-NEXT:    [[CONV34_4:%.*]] = zext i16 [[TMP21]] to i32
 ; CHECK-NEXT:    [[MUL35_4:%.*]] = mul nuw nsw i32 [[CONV34_4]], [[CONV_4]]
@@ -136,11 +136,11 @@ define dso_local noundef i32 @dspi_dotprod_u16_ansi(ptr nocapture noundef readon
 ; CHECK-NEXT:    [[ADD_4:%.*]] = add nsw i64 [[ADD_3]], [[CONV36_4]]
 ; CHECK-NEXT:    [[INC_4:%.*]] = or disjoint i32 [[X_075]], 5
 ; CHECK-NEXT:    [[MUL30_5:%.*]] = mul nsw i32 [[INC_4]], [[TMP0]]
-; CHECK-NEXT:    [[ARRAYIDX_5:%.*]] = getelementptr inbounds i16, ptr [[I_DATA_078]], i32 [[MUL30_5]]
+; CHECK-NEXT:    [[ARRAYIDX_5:%.*]] = getelementptr inbounds [2 x i8], ptr [[I_DATA_078]], i32 [[MUL30_5]]
 ; CHECK-NEXT:    [[TMP22:%.*]] = load i16, ptr [[ARRAYIDX_5]], align 2
 ; CHECK-NEXT:    [[CONV_5:%.*]] = zext i16 [[TMP22]] to i32
 ; CHECK-NEXT:    [[MUL32_5:%.*]] = mul nsw i32 [[INC_4]], [[TMP4]]
-; CHECK-NEXT:    [[ARRAYIDX33_5:%.*]] = getelementptr inbounds i16, ptr [[F_DATA_077]], i32 [[MUL32_5]]
+; CHECK-NEXT:    [[ARRAYIDX33_5:%.*]] = getelementptr inbounds [2 x i8], ptr [[F_DATA_077]], i32 [[MUL32_5]]
 ; CHECK-NEXT:    [[TMP23:%.*]] = load i16, ptr [[ARRAYIDX33_5]], align 2
 ; CHECK-NEXT:    [[CONV34_5:%.*]] = zext i16 [[TMP23]] to i32
 ; CHECK-NEXT:    [[MUL35_5:%.*]] = mul nuw nsw i32 [[CONV34_5]], [[CONV_5]]
@@ -148,11 +148,11 @@ define dso_local noundef i32 @dspi_dotprod_u16_ansi(ptr nocapture noundef readon
 ; CHECK-NEXT:    [[ADD_5:%.*]] = add nsw i64 [[ADD_4]], [[CONV36_5]]
 ; CHECK-NEXT:    [[INC_5:%.*]] = or disjoint i32 [[X_075]], 6
 ; CHECK-NEXT:    [[MUL30_6:%.*]] = mul nsw i32 [[INC_5]], [[TMP0]]
-; CHECK-NEXT:    [[ARRAYIDX_6:%.*]] = getelementptr inbounds i16, ptr [[I_DATA_078]], i32 [[MUL30_6]]
+; CHECK-NEXT:    [[ARRAYIDX_6:%.*]] = getelementptr inbounds [2 x i8], ptr [[I_DATA_078]], i32 [[MUL30_6]]
 ; CHECK-NEXT:    [[TMP24:%.*]] = load i16, ptr [[ARRAYIDX_6]], align 2
 ; CHECK-NEXT:    [[CONV_6:%.*]] = zext i16 [[TMP24]] to i32
 ; CHECK-NEXT:    [[MUL32_6:%.*]] = mul nsw i32 [[INC_5]], [[TMP4]]
-; CHECK-NEXT:    [[ARRAYIDX33_6:%.*]] = getelementptr inbounds i16, ptr [[F_DATA_077]], i32 [[MUL32_6]]
+; CHECK-NEXT:    [[ARRAYIDX33_6:%.*]] = getelementptr inbounds [2 x i8], ptr [[F_DATA_077]], i32 [[MUL32_6]]
 ; CHECK-NEXT:    [[TMP25:%.*]] = load i16, ptr [[ARRAYIDX33_6]], align 2
 ; CHECK-NEXT:    [[CONV34_6:%.*]] = zext i16 [[TMP25]] to i32
 ; CHECK-NEXT:    [[MUL35_6:%.*]] = mul nuw nsw i32 [[CONV34_6]], [[CONV_6]]
@@ -160,11 +160,11 @@ define dso_local noundef i32 @dspi_dotprod_u16_ansi(ptr nocapture noundef readon
 ; CHECK-NEXT:    [[ADD_6:%.*]] = add nsw i64 [[ADD_5]], [[CONV36_6]]
 ; CHECK-NEXT:    [[INC_6:%.*]] = or disjoint i32 [[X_075]], 7
 ; CHECK-NEXT:    [[MUL30_7:%.*]] = mul nsw i32 [[INC_6]], [[TMP0]]
-; CHECK-NEXT:    [[ARRAYIDX_7:%.*]] = getelementptr inbounds i16, ptr [[I_DATA_078]], i32 [[MUL30_7]]
+; CHECK-NEXT:    [[ARRAYIDX_7:%.*]] = getelementptr inbounds [2 x i8], ptr [[I_DATA_078]], i32 [[MUL30_7]]
 ; CHECK-NEXT:    [[TMP26:%.*]] = load i16, ptr [[ARRAYIDX_7]], align 2
 ; CHECK-NEXT:    [[CONV_7:%.*]] = zext i16 [[TMP26]] to i32
 ; CHECK-NEXT:    [[MUL32_7:%.*]] = mul nsw i32 [[INC_6]], [[TMP4]]
-; CHECK-NEXT:    [[ARRAYIDX33_7:%.*]] = getelementptr inbounds i16, ptr [[F_DATA_077]], i32 [[MUL32_7]]
+; CHECK-NEXT:    [[ARRAYIDX33_7:%.*]] = getelementptr inbounds [2 x i8], ptr [[F_DATA_077]], i32 [[MUL32_7]]
 ; CHECK-NEXT:    [[TMP27:%.*]] = load i16, ptr [[ARRAYIDX33_7]], align 2
 ; CHECK-NEXT:    [[CONV34_7:%.*]] = zext i16 [[TMP27]] to i32
 ; CHECK-NEXT:    [[MUL35_7:%.*]] = mul nuw nsw i32 [[CONV34_7]], [[CONV_7]]
@@ -177,11 +177,11 @@ define dso_local noundef i32 @dspi_dotprod_u16_ansi(ptr nocapture noundef readon
 ; CHECK-NEXT:    [[X_075_CLONE:%.*]] = phi i32 [ [[INC_CLONE:%.*]], [[FOR_BODY28_CLONE]] ], [ [[X_0_LCSSA]], [[FOR_COND128_PREHEADER]] ]
 ; CHECK-NEXT:    [[ACC_174_CLONE:%.*]] = phi i64 [ [[ADD_CLONE:%.*]], [[FOR_BODY28_CLONE]] ], [ [[TMP11]], [[FOR_COND128_PREHEADER]] ]
 ; CHECK-NEXT:    [[MUL30_CLONE:%.*]] = mul nsw i32 [[X_075_CLONE]], [[TMP0]]
-; CHECK-NEXT:    [[ARRAYIDX_CLONE:%.*]] = getelementptr inbounds i16, ptr [[I_DATA_078]], i32 [[MUL30_CLONE]]
+; CHECK-NEXT:    [[ARRAYIDX_CLONE:%.*]] = getelementptr inbounds [2 x i8], ptr [[I_DATA_078]], i32 [[MUL30_CLONE]]
 ; CHECK-NEXT:    [[TMP28:%.*]] = load i16, ptr [[ARRAYIDX_CLONE]], align 2
 ; CHECK-NEXT:    [[CONV_CLONE:%.*]] = zext i16 [[TMP28]] to i32
 ; CHECK-NEXT:    [[MUL32_CLONE:%.*]] = mul nsw i32 [[X_075_CLONE]], [[TMP4]]
-; CHECK-NEXT:    [[ARRAYIDX33_CLONE:%.*]] = getelementptr inbounds i16, ptr [[F_DATA_077]], i32 [[MUL32_CLONE]]
+; CHECK-NEXT:    [[ARRAYIDX33_CLONE:%.*]] = getelementptr inbounds [2 x i8], ptr [[F_DATA_077]], i32 [[MUL32_CLONE]]
 ; CHECK-NEXT:    [[TMP29:%.*]] = load i16, ptr [[ARRAYIDX33_CLONE]], align 2
 ; CHECK-NEXT:    [[CONV34_CLONE:%.*]] = zext i16 [[TMP29]] to i32
 ; CHECK-NEXT:    [[MUL35_CLONE:%.*]] = mul nuw nsw i32 [[CONV34_CLONE]], [[CONV_CLONE]]
@@ -192,8 +192,8 @@ define dso_local noundef i32 @dspi_dotprod_u16_ansi(ptr nocapture noundef readon
 ; CHECK-NEXT:    br i1 [[EXITCOND_NOT_CLONE]], label [[FOR_COND_CLEANUP27]], label [[FOR_BODY28_CLONE]]
 ; CHECK:       for.cond.cleanup27:
 ; CHECK-NEXT:    [[TMP30]] = phi i64 [ [[TMP11]], [[FOR_COND128_PREHEADER]] ], [ [[ADD_CLONE]], [[FOR_BODY28_CLONE]] ]
-; CHECK-NEXT:    [[ADD_PTR]] = getelementptr inbounds i16, ptr [[I_DATA_078]], i32 [[MUL20]]
-; CHECK-NEXT:    [[ADD_PTR37]] = getelementptr inbounds i16, ptr [[F_DATA_077]], i32 [[MUL23]]
+; CHECK-NEXT:    [[ADD_PTR]] = getelementptr inbounds [2 x i8], ptr [[I_DATA_078]], i32 [[MUL20]]
+; CHECK-NEXT:    [[ADD_PTR37]] = getelementptr inbounds [2 x i8], ptr [[F_DATA_077]], i32 [[MUL23]]
 ; CHECK-NEXT:    [[INC39]] = add nuw nsw i32 [[Y_080]], 1
 ; CHECK-NEXT:    [[EXITCOND82_NOT:%.*]] = icmp eq i32 [[INC39]], [[COUNT_Y]]
 ; CHECK-NEXT:    br i1 [[EXITCOND82_NOT]], label [[FOR_COND_CLEANUP]], label [[FOR_COND25_PREHEADER]]

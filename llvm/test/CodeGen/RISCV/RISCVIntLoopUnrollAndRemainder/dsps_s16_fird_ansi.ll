@@ -79,12 +79,12 @@ define dso_local noundef i32 @dsps_fird_s16_ansi(ptr nocapture noundef %fir, ptr
 ; CHECK:       if.end28:
 ; CHECK-NEXT:    [[TMP7:%.*]] = phi i16 [ 0, [[IF_THEN26]] ], [ [[TMP6]], [[FOR_BODY21]] ]
 ; CHECK-NEXT:    [[INC]] = add nsw i32 [[INPUT_POS_1139]], 1
-; CHECK-NEXT:    [[ARRAYIDX:%.*]] = getelementptr inbounds i16, ptr [[INPUT]], i32 [[INPUT_POS_1139]]
+; CHECK-NEXT:    [[ARRAYIDX:%.*]] = getelementptr inbounds [2 x i8], ptr [[INPUT]], i32 [[INPUT_POS_1139]]
 ; CHECK-NEXT:    [[TMP8:%.*]] = load i16, ptr [[ARRAYIDX]], align 2
 ; CHECK-NEXT:    [[INC30]] = add nsw i16 [[TMP7]], 1
 ; CHECK-NEXT:    store i16 [[INC30]], ptr [[POS]], align 2
 ; CHECK-NEXT:    [[IDXPROM:%.*]] = sext i16 [[TMP7]] to i32
-; CHECK-NEXT:    [[ARRAYIDX31:%.*]] = getelementptr inbounds i16, ptr [[DELAY_PTR_HOISTED]], i32 [[IDXPROM]]
+; CHECK-NEXT:    [[ARRAYIDX31:%.*]] = getelementptr inbounds [2 x i8], ptr [[DELAY_PTR_HOISTED]], i32 [[IDXPROM]]
 ; CHECK-NEXT:    store i16 [[TMP8]], ptr [[ARRAYIDX31]], align 2
 ; CHECK-NEXT:    [[INC32]] = add nuw nsw i32 [[J_0140]], 1
 ; CHECK-NEXT:    [[CONV15:%.*]] = sext i16 [[TMP3]] to i32
@@ -104,8 +104,8 @@ define dso_local noundef i32 @dsps_fird_s16_ansi(ptr nocapture noundef %fir, ptr
 ; CHECK-NEXT:    [[N_0144:%.*]] = phi i32 [ [[INC55_15]], [[FOR_BODY46_15]] ], [ [[CONV39]], [[FOR_COND_CLEANUP20]] ]
 ; CHECK-NEXT:    [[ACC_0143:%.*]] = phi i64 [ [[ADD_15]], [[FOR_BODY46_15]] ], [ [[ROUNDING_0]], [[FOR_COND_CLEANUP20]] ]
 ; CHECK-NEXT:    [[IDXPROM47:%.*]] = sext i16 [[COEFF_POS_0145]] to i32
-; CHECK-NEXT:    [[ARRAYIDX48:%.*]] = getelementptr inbounds i16, ptr [[TMP0]], i32 [[IDXPROM47]]
-; CHECK-NEXT:    [[ARRAYIDX51:%.*]] = getelementptr inbounds i16, ptr [[DELAY_PTR_HOISTED]], i32 [[N_0144]]
+; CHECK-NEXT:    [[ARRAYIDX48:%.*]] = getelementptr inbounds [2 x i8], ptr [[TMP0]], i32 [[IDXPROM47]]
+; CHECK-NEXT:    [[ARRAYIDX51:%.*]] = getelementptr inbounds [2 x i8], ptr [[DELAY_PTR_HOISTED]], i32 [[N_0144]]
 ; CHECK-NEXT:    [[ARRAYIDX48_1:%.*]] = getelementptr inbounds i8, ptr [[ARRAYIDX48]], i32 -2
 ; CHECK-NEXT:    [[ARRAYIDX51_1:%.*]] = getelementptr inbounds nuw i8, ptr [[ARRAYIDX51]], i32 2
 ; CHECK-NEXT:    [[ARRAYIDX48_2:%.*]] = getelementptr inbounds i8, ptr [[ARRAYIDX48]], i32 -4
@@ -266,7 +266,7 @@ define dso_local noundef i32 @dsps_fird_s16_ansi(ptr nocapture noundef %fir, ptr
 ; CHECK-NEXT:    [[ARRAYIDX71_7_PHI_TRANS_INSERT:%.*]] = getelementptr inbounds nuw i8, ptr [[DELAY_PTR_HOISTED]], i32 14
 ; CHECK-NEXT:    [[DOTPRE:%.*]] = load i16, ptr [[ARRAYIDX71_7_PHI_TRANS_INSERT]], align 2
 ; CHECK-NEXT:    [[IDXPROM67_PHI_TRANS_INSERT:%.*]] = sext i16 [[COEFF_POS_1_LCSSA]] to i32
-; CHECK-NEXT:    [[ARRAYIDX68_PHI_TRANS_INSERT:%.*]] = getelementptr inbounds i16, ptr [[TMP0]], i32 [[IDXPROM67_PHI_TRANS_INSERT]]
+; CHECK-NEXT:    [[ARRAYIDX68_PHI_TRANS_INSERT:%.*]] = getelementptr inbounds [2 x i8], ptr [[TMP0]], i32 [[IDXPROM67_PHI_TRANS_INSERT]]
 ; CHECK-NEXT:    [[ARRAYIDX68_8_PHI_TRANS_INSERT:%.*]] = getelementptr inbounds i8, ptr [[ARRAYIDX68_PHI_TRANS_INSERT]], i32 -16
 ; CHECK-NEXT:    [[DOTPRE5:%.*]] = load i16, ptr [[ARRAYIDX68_8_PHI_TRANS_INSERT]], align 2
 ; CHECK-NEXT:    [[ARRAYIDX71_8_PHI_TRANS_INSERT:%.*]] = getelementptr inbounds nuw i8, ptr [[DELAY_PTR_HOISTED]], i32 16
@@ -306,10 +306,10 @@ define dso_local noundef i32 @dsps_fird_s16_ansi(ptr nocapture noundef %fir, ptr
 ; CHECK-NEXT:    [[N_0144_CLONE:%.*]] = phi i32 [ [[INC55_CLONE:%.*]], [[FOR_BODY46_CLONE]] ], [ [[N_0_LCSSA]], [[FOR_COND58_PREHEADER]] ]
 ; CHECK-NEXT:    [[ACC_0143_CLONE:%.*]] = phi i64 [ [[ADD_CLONE]], [[FOR_BODY46_CLONE]] ], [ [[ACC_0_LCSSA]], [[FOR_COND58_PREHEADER]] ]
 ; CHECK-NEXT:    [[IDXPROM47_CLONE:%.*]] = sext i16 [[COEFF_POS_0145_CLONE]] to i32
-; CHECK-NEXT:    [[ARRAYIDX48_CLONE:%.*]] = getelementptr inbounds i16, ptr [[TMP0]], i32 [[IDXPROM47_CLONE]]
+; CHECK-NEXT:    [[ARRAYIDX48_CLONE:%.*]] = getelementptr inbounds [2 x i8], ptr [[TMP0]], i32 [[IDXPROM47_CLONE]]
 ; CHECK-NEXT:    [[TMP44:%.*]] = load i16, ptr [[ARRAYIDX48_CLONE]], align 2
 ; CHECK-NEXT:    [[CONV49_CLONE:%.*]] = sext i16 [[TMP44]] to i32
-; CHECK-NEXT:    [[ARRAYIDX51_CLONE:%.*]] = getelementptr inbounds i16, ptr [[DELAY_PTR_HOISTED]], i32 [[N_0144_CLONE]]
+; CHECK-NEXT:    [[ARRAYIDX51_CLONE:%.*]] = getelementptr inbounds [2 x i8], ptr [[DELAY_PTR_HOISTED]], i32 [[N_0144_CLONE]]
 ; CHECK-NEXT:    [[TMP45:%.*]] = load i16, ptr [[ARRAYIDX51_CLONE]], align 2
 ; CHECK-NEXT:    [[CONV52_CLONE:%.*]] = sext i16 [[TMP45]] to i32
 ; CHECK-NEXT:    [[MUL_CLONE:%.*]] = mul nsw i32 [[CONV52_CLONE]], [[CONV49_CLONE]]
@@ -443,10 +443,10 @@ define dso_local noundef i32 @dsps_fird_s16_ansi(ptr nocapture noundef %fir, ptr
 ; CHECK-NEXT:    [[ACC_1149_CLONE:%.*]] = phi i64 [ [[ADD75_CLONE:%.*]], [[FOR_BODY64_CLONE]] ], [ [[TMP46]], [[FOR_COND398_PREHEADER]] ]
 ; CHECK-NEXT:    [[DEC66_CLONE]] = add i16 [[COEFF_POS_1150_CLONE]], -1
 ; CHECK-NEXT:    [[IDXPROM67_CLONE:%.*]] = sext i16 [[COEFF_POS_1150_CLONE]] to i32
-; CHECK-NEXT:    [[ARRAYIDX68_CLONE:%.*]] = getelementptr inbounds i16, ptr [[TMP0]], i32 [[IDXPROM67_CLONE]]
+; CHECK-NEXT:    [[ARRAYIDX68_CLONE:%.*]] = getelementptr inbounds [2 x i8], ptr [[TMP0]], i32 [[IDXPROM67_CLONE]]
 ; CHECK-NEXT:    [[TMP63:%.*]] = load i16, ptr [[ARRAYIDX68_CLONE]], align 2
 ; CHECK-NEXT:    [[CONV69_CLONE:%.*]] = sext i16 [[TMP63]] to i32
-; CHECK-NEXT:    [[ARRAYIDX71_CLONE:%.*]] = getelementptr inbounds nuw i16, ptr [[DELAY_PTR_HOISTED]], i32 [[N57_0151_CLONE]]
+; CHECK-NEXT:    [[ARRAYIDX71_CLONE:%.*]] = getelementptr inbounds nuw [2 x i8], ptr [[DELAY_PTR_HOISTED]], i32 [[N57_0151_CLONE]]
 ; CHECK-NEXT:    [[TMP64:%.*]] = load i16, ptr [[ARRAYIDX71_CLONE]], align 2
 ; CHECK-NEXT:    [[CONV72_CLONE:%.*]] = sext i16 [[TMP64]] to i32
 ; CHECK-NEXT:    [[MUL73_CLONE:%.*]] = mul nsw i32 [[CONV72_CLONE]], [[CONV69_CLONE]]
@@ -461,7 +461,7 @@ define dso_local noundef i32 @dsps_fird_s16_ansi(ptr nocapture noundef %fir, ptr
 ; CHECK-NEXT:    [[SHL83:%.*]] = shl i64 [[ACC_3_LCSSA]], [[SH_PROM82]]
 ; CHECK-NEXT:    [[SHR90_SINK:%.*]] = select i1 [[CMP79]], i64 [[SHL83]], i64 [[SHR90]]
 ; CHECK-NEXT:    [[CONV91:%.*]] = trunc i64 [[SHR90_SINK]] to i16
-; CHECK-NEXT:    [[TMP65:%.*]] = getelementptr inbounds nuw i16, ptr [[OUTPUT]], i32 [[I_0156]]
+; CHECK-NEXT:    [[TMP65:%.*]] = getelementptr inbounds nuw [2 x i8], ptr [[OUTPUT]], i32 [[I_0156]]
 ; CHECK-NEXT:    store i16 [[CONV91]], ptr [[TMP65]], align 2
 ; CHECK-NEXT:    [[INC96]] = add nuw nsw i32 [[I_0156]], 1
 ; CHECK-NEXT:    [[EXITCOND160_NOT:%.*]] = icmp eq i32 [[INC96]], [[LEN]]
