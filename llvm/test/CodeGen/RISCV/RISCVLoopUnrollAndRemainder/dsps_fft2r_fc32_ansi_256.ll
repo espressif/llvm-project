@@ -36,7 +36,7 @@ define dso_local noundef i32 @dsps_fft2r_fc32_ansi(ptr nocapture noundef %data, 
 ; CHECK-NEXT:    [[J_0102:%.*]] = phi i32 [ 0, [[FOR_BODY6_LR_PH]] ], [ [[INC54:%.*]], [[FOR_COND_CLEANUP11:%.*]] ]
 ; CHECK-NEXT:    [[IA_0101:%.*]] = phi i32 [ 0, [[FOR_BODY6_LR_PH]] ], [ [[ADD52:%.*]], [[FOR_COND_CLEANUP11]] ]
 ; CHECK-NEXT:    [[MUL:%.*]] = shl nuw nsw i32 [[J_0102]], 1
-; CHECK-NEXT:    [[ARRAYIDX:%.*]] = getelementptr inbounds nuw float, ptr [[W]], i32 [[MUL]]
+; CHECK-NEXT:    [[ARRAYIDX:%.*]] = getelementptr inbounds nuw [4 x i8], ptr [[W]], i32 [[MUL]]
 ; CHECK-NEXT:    [[TMP1:%.*]] = load float, ptr [[ARRAYIDX]], align 4
 ; CHECK-NEXT:    [[ARRAYIDX8:%.*]] = getelementptr inbounds nuw i8, ptr [[ARRAYIDX]], i32 4
 ; CHECK-NEXT:    [[TMP2:%.*]] = load float, ptr [[ARRAYIDX8]], align 4
@@ -67,21 +67,21 @@ define dso_local noundef i32 @dsps_fft2r_fc32_ansi(ptr nocapture noundef %data, 
 ; CHECK-NEXT:    [[MUL28_2:%.*]] = shl nsw i32 [[INC_1]], 1
 ; CHECK-NEXT:    [[MUL14_3:%.*]] = shl nsw i32 [[ADD13_3]], 1
 ; CHECK-NEXT:    [[MUL28_3:%.*]] = shl nsw i32 [[INC_2]], 1
-; CHECK-NEXT:    [[ARRAYIDX15:%.*]] = getelementptr float, ptr [[DATA]], i32 [[MUL14]]
+; CHECK-NEXT:    [[ARRAYIDX15:%.*]] = getelementptr [4 x i8], ptr [[DATA]], i32 [[MUL14]]
 ; CHECK-NEXT:    [[ARRAYIDX19:%.*]] = getelementptr i8, ptr [[ARRAYIDX15]], i32 4
-; CHECK-NEXT:    [[ARRAYIDX29:%.*]] = getelementptr float, ptr [[DATA]], i32 [[MUL28]]
+; CHECK-NEXT:    [[ARRAYIDX29:%.*]] = getelementptr [4 x i8], ptr [[DATA]], i32 [[MUL28]]
 ; CHECK-NEXT:    [[ARRAYIDX34:%.*]] = getelementptr i8, ptr [[ARRAYIDX29]], i32 4
-; CHECK-NEXT:    [[ARRAYIDX15_1:%.*]] = getelementptr float, ptr [[DATA]], i32 [[MUL14_1]]
+; CHECK-NEXT:    [[ARRAYIDX15_1:%.*]] = getelementptr [4 x i8], ptr [[DATA]], i32 [[MUL14_1]]
 ; CHECK-NEXT:    [[ARRAYIDX19_1:%.*]] = getelementptr i8, ptr [[ARRAYIDX15_1]], i32 4
-; CHECK-NEXT:    [[ARRAYIDX29_1:%.*]] = getelementptr float, ptr [[DATA]], i32 [[MUL28_1]]
+; CHECK-NEXT:    [[ARRAYIDX29_1:%.*]] = getelementptr [4 x i8], ptr [[DATA]], i32 [[MUL28_1]]
 ; CHECK-NEXT:    [[ARRAYIDX34_1:%.*]] = getelementptr i8, ptr [[ARRAYIDX29_1]], i32 4
-; CHECK-NEXT:    [[ARRAYIDX15_2:%.*]] = getelementptr float, ptr [[DATA]], i32 [[MUL14_2]]
+; CHECK-NEXT:    [[ARRAYIDX15_2:%.*]] = getelementptr [4 x i8], ptr [[DATA]], i32 [[MUL14_2]]
 ; CHECK-NEXT:    [[ARRAYIDX19_2:%.*]] = getelementptr i8, ptr [[ARRAYIDX15_2]], i32 4
-; CHECK-NEXT:    [[ARRAYIDX29_2:%.*]] = getelementptr float, ptr [[DATA]], i32 [[MUL28_2]]
+; CHECK-NEXT:    [[ARRAYIDX29_2:%.*]] = getelementptr [4 x i8], ptr [[DATA]], i32 [[MUL28_2]]
 ; CHECK-NEXT:    [[ARRAYIDX34_2:%.*]] = getelementptr i8, ptr [[ARRAYIDX29_2]], i32 4
-; CHECK-NEXT:    [[ARRAYIDX15_3:%.*]] = getelementptr float, ptr [[DATA]], i32 [[MUL14_3]]
+; CHECK-NEXT:    [[ARRAYIDX15_3:%.*]] = getelementptr [4 x i8], ptr [[DATA]], i32 [[MUL14_3]]
 ; CHECK-NEXT:    [[ARRAYIDX19_3:%.*]] = getelementptr i8, ptr [[ARRAYIDX15_3]], i32 4
-; CHECK-NEXT:    [[ARRAYIDX29_3:%.*]] = getelementptr float, ptr [[DATA]], i32 [[MUL28_3]]
+; CHECK-NEXT:    [[ARRAYIDX29_3:%.*]] = getelementptr [4 x i8], ptr [[DATA]], i32 [[MUL28_3]]
 ; CHECK-NEXT:    [[ARRAYIDX34_3:%.*]] = getelementptr i8, ptr [[ARRAYIDX29_3]], i32 4
 ; CHECK-NEXT:    [[TMP5:%.*]] = load float, ptr [[ARRAYIDX15]], align 4
 ; CHECK-NEXT:    [[TMP6:%.*]] = load float, ptr [[ARRAYIDX19]], align 4
@@ -123,7 +123,7 @@ define dso_local noundef i32 @dsps_fft2r_fc32_ansi(ptr nocapture noundef %data, 
 ; CHECK-NEXT:    [[ADD47_2:%.*]] = fadd float [[TMP26]], [[TMP16]]
 ; CHECK-NEXT:    [[ADD41_3:%.*]] = fadd float [[TMP19]], [[TMP27]]
 ; CHECK-NEXT:    [[ADD47_3:%.*]] = fadd float [[TMP28]], [[TMP20]]
-; CHECK-NEXT:    [[SUB:%.*]] = fsub float [[TMP7]], [[TMP21]]
+; CHECK-NEXT:    [[SUB1:%.*]] = fsub float [[TMP7]], [[TMP21]]
 ; CHECK-NEXT:    [[SUB35:%.*]] = fsub float [[TMP8]], [[TMP22]]
 ; CHECK-NEXT:    [[SUB_1:%.*]] = fsub float [[TMP11]], [[TMP23]]
 ; CHECK-NEXT:    [[SUB35_1:%.*]] = fsub float [[TMP12]], [[TMP24]]
@@ -131,7 +131,7 @@ define dso_local noundef i32 @dsps_fft2r_fc32_ansi(ptr nocapture noundef %data, 
 ; CHECK-NEXT:    [[SUB35_2:%.*]] = fsub float [[TMP16]], [[TMP26]]
 ; CHECK-NEXT:    [[SUB_3:%.*]] = fsub float [[TMP19]], [[TMP27]]
 ; CHECK-NEXT:    [[SUB35_3:%.*]] = fsub float [[TMP20]], [[TMP28]]
-; CHECK-NEXT:    store float [[SUB]], ptr [[ARRAYIDX15]], align 4
+; CHECK-NEXT:    store float [[SUB1]], ptr [[ARRAYIDX15]], align 4
 ; CHECK-NEXT:    store float [[SUB35]], ptr [[ARRAYIDX19]], align 4
 ; CHECK-NEXT:    store float [[ADD41]], ptr [[ARRAYIDX29]], align 4
 ; CHECK-NEXT:    store float [[ADD47]], ptr [[ARRAYIDX34]], align 4
@@ -157,9 +157,9 @@ define dso_local noundef i32 @dsps_fft2r_fc32_ansi(ptr nocapture noundef %data, 
 ; CHECK-NEXT:    [[INC51_CLONE]] = add nuw nsw i32 [[I_099_CLONE]], 1
 ; CHECK-NEXT:    [[MUL14_CLONE:%.*]] = shl nsw i32 [[ADD13_CLONE]], 1
 ; CHECK-NEXT:    [[MUL28_CLONE:%.*]] = shl nsw i32 [[IA_198_CLONE]], 1
-; CHECK-NEXT:    [[ARRAYIDX15_CLONE:%.*]] = getelementptr float, ptr [[DATA]], i32 [[MUL14_CLONE]]
+; CHECK-NEXT:    [[ARRAYIDX15_CLONE:%.*]] = getelementptr [4 x i8], ptr [[DATA]], i32 [[MUL14_CLONE]]
 ; CHECK-NEXT:    [[ARRAYIDX19_CLONE:%.*]] = getelementptr i8, ptr [[ARRAYIDX15_CLONE]], i32 4
-; CHECK-NEXT:    [[ARRAYIDX29_CLONE:%.*]] = getelementptr float, ptr [[DATA]], i32 [[MUL28_CLONE]]
+; CHECK-NEXT:    [[ARRAYIDX29_CLONE:%.*]] = getelementptr [4 x i8], ptr [[DATA]], i32 [[MUL28_CLONE]]
 ; CHECK-NEXT:    [[ARRAYIDX34_CLONE:%.*]] = getelementptr i8, ptr [[ARRAYIDX29_CLONE]], i32 4
 ; CHECK-NEXT:    [[TMP29:%.*]] = load float, ptr [[ARRAYIDX15_CLONE]], align 4
 ; CHECK-NEXT:    [[TMP30:%.*]] = load float, ptr [[ARRAYIDX19_CLONE]], align 4

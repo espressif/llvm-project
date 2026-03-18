@@ -31,7 +31,7 @@ define dso_local noundef i32 @dspm_addc_f32_ansi(ptr noundef readonly %input, pt
 ; CHECK-NEXT:    br i1 [[CMP35236]], label [[FOR_BODY27_7:%.*]], label [[FORCOND113PREHEADER:%.*]]
 ; CHECK:       for.body27.preheader.for.body27.7_crit_edge:
 ; CHECK-NEXT:    [[TMP9:%.*]] = load float, ptr [[PTR_INPUT_060]], align 4
-; CHECK-NEXT:    [[ARRAYIDX_1_PHI_TRANS_INSERT:%.*]] = getelementptr inbounds nuw float, ptr [[PTR_INPUT_060]], i32 [[STEP_IN]]
+; CHECK-NEXT:    [[ARRAYIDX_1_PHI_TRANS_INSERT:%.*]] = getelementptr inbounds nuw [4 x i8], ptr [[PTR_INPUT_060]], i32 [[STEP_IN]]
 ; CHECK-NEXT:    [[DOTPRE1:%.*]] = load float, ptr [[ARRAYIDX_1_PHI_TRANS_INSERT]], align 4
 ; CHECK-NEXT:    br label [[FOR_BODY27_8:%.*]]
 ; CHECK:       forCond113Preheader:
@@ -42,7 +42,7 @@ define dso_local noundef i32 @dspm_addc_f32_ansi(ptr noundef readonly %input, pt
 ; CHECK-NEXT:    [[ADD28_7:%.*]] = fadd float [[C]], [[TMP9]]
 ; CHECK-NEXT:    store float [[ADD28_7]], ptr [[OUTPUT_ADDR_059]], align 4
 ; CHECK-NEXT:    [[ADD28_1:%.*]] = fadd float [[C]], [[DOTPRE1]]
-; CHECK-NEXT:    [[ARRAYIDX30_1:%.*]] = getelementptr inbounds nuw float, ptr [[OUTPUT_ADDR_059]], i32 [[STEP_OUT]]
+; CHECK-NEXT:    [[ARRAYIDX30_1:%.*]] = getelementptr inbounds nuw [4 x i8], ptr [[OUTPUT_ADDR_059]], i32 [[STEP_OUT]]
 ; CHECK-NEXT:    store float [[ADD28_1]], ptr [[ARRAYIDX30_1]], align 4
 ; CHECK-NEXT:    [[ARRAYIDX_2_IDX:%.*]] = shl nuw nsw i32 [[STEP_IN]], 3
 ; CHECK-NEXT:    [[ARRAYIDX_2:%.*]] = getelementptr inbounds nuw i8, ptr [[PTR_INPUT_060]], i32 [[ARRAYIDX_2_IDX]]
@@ -92,20 +92,20 @@ define dso_local noundef i32 @dspm_addc_f32_ansi(ptr noundef readonly %input, pt
 ; CHECK:       for.body27.clone:
 ; CHECK-NEXT:    [[COL_058_CLONE:%.*]] = phi i32 [ [[INC_CLONE:%.*]], [[FOR_BODY27_CLONE]] ], [ [[COL_0_LCSSA]], [[FORCOND113PREHEADER]] ]
 ; CHECK-NEXT:    [[MUL_CLONE:%.*]] = mul nuw nsw i32 [[COL_058_CLONE]], [[STEP_IN]]
-; CHECK-NEXT:    [[ARRAYIDX_CLONE:%.*]] = getelementptr inbounds nuw float, ptr [[PTR_INPUT_060]], i32 [[MUL_CLONE]]
+; CHECK-NEXT:    [[ARRAYIDX_CLONE:%.*]] = getelementptr inbounds nuw [4 x i8], ptr [[PTR_INPUT_060]], i32 [[MUL_CLONE]]
 ; CHECK-NEXT:    [[TMP10:%.*]] = load float, ptr [[ARRAYIDX_CLONE]], align 4
 ; CHECK-NEXT:    [[ADD28_CLONE:%.*]] = fadd float [[C]], [[TMP10]]
 ; CHECK-NEXT:    [[MUL29_CLONE:%.*]] = mul nuw nsw i32 [[COL_058_CLONE]], [[STEP_OUT]]
-; CHECK-NEXT:    [[ARRAYIDX30_CLONE:%.*]] = getelementptr inbounds nuw float, ptr [[OUTPUT_ADDR_059]], i32 [[MUL29_CLONE]]
+; CHECK-NEXT:    [[ARRAYIDX30_CLONE:%.*]] = getelementptr inbounds nuw [4 x i8], ptr [[OUTPUT_ADDR_059]], i32 [[MUL29_CLONE]]
 ; CHECK-NEXT:    store float [[ADD28_CLONE]], ptr [[ARRAYIDX30_CLONE]], align 4
 ; CHECK-NEXT:    [[INC_CLONE]] = add nuw nsw i32 [[COL_058_CLONE]], 1
 ; CHECK-NEXT:    [[EXITCOND_NOT_CLONE:%.*]] = icmp eq i32 [[INC_CLONE]], [[COLS]]
 ; CHECK-NEXT:    br i1 [[EXITCOND_NOT_CLONE]], label [[FOR_COND_CLEANUP26]], label [[FOR_BODY27_CLONE]]
 ; CHECK:       for.cond.cleanup26:
-; CHECK-NEXT:    [[TMP11:%.*]] = getelementptr float, ptr [[OUTPUT_ADDR_059]], i32 [[PADD_OUT]]
-; CHECK-NEXT:    [[ADD_PTR]] = getelementptr float, ptr [[TMP11]], i32 [[COLS]]
-; CHECK-NEXT:    [[TMP12:%.*]] = getelementptr float, ptr [[PTR_INPUT_060]], i32 [[PADD_IN]]
-; CHECK-NEXT:    [[ADD_PTR31]] = getelementptr float, ptr [[TMP12]], i32 [[COLS]]
+; CHECK-NEXT:    [[TMP11:%.*]] = getelementptr [4 x i8], ptr [[OUTPUT_ADDR_059]], i32 [[PADD_OUT]]
+; CHECK-NEXT:    [[ADD_PTR]] = getelementptr [4 x i8], ptr [[TMP11]], i32 [[COLS]]
+; CHECK-NEXT:    [[TMP12:%.*]] = getelementptr [4 x i8], ptr [[PTR_INPUT_060]], i32 [[PADD_IN]]
+; CHECK-NEXT:    [[ADD_PTR31]] = getelementptr [4 x i8], ptr [[TMP12]], i32 [[COLS]]
 ; CHECK-NEXT:    [[INC33]] = add nuw nsw i32 [[ROW_061]], 1
 ; CHECK-NEXT:    [[EXITCOND62_NOT:%.*]] = icmp eq i32 [[INC33]], [[ROWS]]
 ; CHECK-NEXT:    br i1 [[EXITCOND62_NOT]], label [[RETURN]], label [[FOR_BODY27_PREHEADER]]
