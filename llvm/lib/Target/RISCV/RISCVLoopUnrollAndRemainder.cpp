@@ -3386,9 +3386,15 @@ static void expandForCondPreheaderaddc(Function &F,
     return;
   }
 
-  // Replace the first operand of the Terminator instruction with
-  // NewForCondPreheader
-  Terminator->setOperand(2, NewForCondPreheader);
+  // if.end: route the edge that targets the scalar loop header (ForBody) into
+  // NewForCondPreheader; keep the other successor (small-len path).
+  auto *EndBr = cast<BranchInst>(Terminator);
+  for (unsigned i = 0; i < EndBr->getNumSuccessors(); ++i) {
+    if (EndBr->getSuccessor(i) == ForBody) {
+      EndBr->setSuccessor(i, NewForCondPreheader);
+      break;
+    }
+  }
 
   // Find the unique PHINode in clonedForBody
   PHINode *UniquePHI = nullptr;
@@ -3427,8 +3433,15 @@ static void expandForCondPreheaderaddc(Function &F,
     return;
   }
 
-  // Set the first operand of ClonedForBody's Terminator to NewForCondPreheader2
-  clonedTerminator->setOperand(2, NewForCondPreheader2);
+  // Tail icmp is SGT after unroll; the exit-from-chunk edge still targets
+  // return from the pre-unroll icmp_eq layout — retarget that to the
+  // remainder header (do not replace the back-edge to ClonedForBody).
+  for (unsigned i = 0; i < clonedTerminator->getNumSuccessors(); ++i) {
+    if (clonedTerminator->getSuccessor(i) == returnBB) {
+      clonedTerminator->setSuccessor(i, NewForCondPreheader2);
+      break;
+    }
+  }
 
   // Find the unique PHI node in ForBody
   PHINode *uniquePHI2 = nullptr;
