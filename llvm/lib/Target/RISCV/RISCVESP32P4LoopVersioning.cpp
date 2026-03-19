@@ -1070,14 +1070,13 @@ static void transformDelayUpdateInLoop(Loop *L, ValueToValueMapTy &VMap,
   CBr->eraseFromParent();
   StoreZero->eraseFromParent();
 
-  // The WrapBB is now empty, remove it.
-  WrapBB->getTerminator()->eraseFromParent();
+  // Redirect HeaderBB to EndifBB so WrapBB becomes unreachable. Do not erase
+  // WrapBB's terminator here: DeleteDeadBlock expects a valid terminator when
+  // it calls successors(BB) inside detachDeadBlocks.
   Builder.SetInsertPoint(HeaderBB);
   Builder.CreateBr(EndifBB);
-  DeleteDeadBlock(WrapBB);
-  // Critical fix: remove deleted blocks from Loop object to maintain
-  // consistency
   L->removeBlockFromLoop(WrapBB);
+  DeleteDeadBlock(WrapBB);
 
   if (NewStore->getNextNode()->getOpcode() == Instruction::SExt) {
     NewStore->getNextNode()->setOperand(0, NewPos);
