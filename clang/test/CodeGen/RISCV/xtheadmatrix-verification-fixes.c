@@ -20,7 +20,7 @@
 
 // O0-LABEL: @test_mreinterpret_i32_to_f32
 // O0-NOT: poison
-// O0: call target("riscv.matrix") asm "", "=^tr,0"(target("riscv.matrix") %
+// O0: call target("riscv.matrix") asm "", "=^tr,^tr"(target("riscv.matrix") %
 // O0: ret target("riscv.matrix")
 mfloat32_t test_mreinterpret_i32_to_f32(mint32_t src) {
     return __riscv_th_mreinterpret_f32(src);
@@ -28,64 +28,64 @@ mfloat32_t test_mreinterpret_i32_to_f32(mint32_t src) {
 
 // O0-LABEL: @test_mreinterpret_f16_to_i8
 // O0-NOT: poison
-// O0: call target("riscv.matrix") asm "", "=^tr,0"(target("riscv.matrix") %
+// O0: call target("riscv.matrix") asm "", "=^tr,^tr"(target("riscv.matrix") %
 mint8_t test_mreinterpret_f16_to_i8(mfloat16_t src) {
     return __riscv_th_mreinterpret_i8(src);
 }
 
 // O0-LABEL: @test_mreinterpret_u32_to_i64
 // O0-NOT: poison
-// O0: call target("riscv.matrix") asm "", "=^tr,0"(target("riscv.matrix") %
+// O0: call target("riscv.matrix") asm "", "=^tr,^tr"(target("riscv.matrix") %
 mint64_t test_mreinterpret_u32_to_i64(muint32_t src) {
     return __riscv_th_mreinterpret_i64(src);
 }
 
 // O0-LABEL: @test_mreinterpret_f64_to_u16
 // O0-NOT: poison
-// O0: call target("riscv.matrix") asm "", "=^tr,0"(target("riscv.matrix") %
+// O0: call target("riscv.matrix") asm "", "=^tr,^tr"(target("riscv.matrix") %
 muint16_t test_mreinterpret_f64_to_u16(mfloat64_t src) {
     return __riscv_th_mreinterpret_u16(src);
 }
 
 // Test all unsigned single variants
 // O0-LABEL: @test_mreinterpret_to_u8
-// O0: asm "", "=^tr,0"
+// O0: asm "", "=^tr,^tr"
 muint8_t test_mreinterpret_to_u8(mint32_t src) {
     return __riscv_th_mreinterpret_u8(src);
 }
 
 // O0-LABEL: @test_mreinterpret_to_u32
-// O0: asm "", "=^tr,0"
+// O0: asm "", "=^tr,^tr"
 muint32_t test_mreinterpret_to_u32(mint8_t src) {
     return __riscv_th_mreinterpret_u32(src);
 }
 
 // O0-LABEL: @test_mreinterpret_to_u64
-// O0: asm "", "=^tr,0"
+// O0: asm "", "=^tr,^tr"
 muint64_t test_mreinterpret_to_u64(mfloat32_t src) {
     return __riscv_th_mreinterpret_u64(src);
 }
 
 // O0-LABEL: @test_mreinterpret_to_f16
-// O0: asm "", "=^tr,0"
+// O0: asm "", "=^tr,^tr"
 mfloat16_t test_mreinterpret_to_f16(muint32_t src) {
     return __riscv_th_mreinterpret_f16(src);
 }
 
 // O0-LABEL: @test_mreinterpret_to_f64
-// O0: asm "", "=^tr,0"
+// O0: asm "", "=^tr,^tr"
 mfloat64_t test_mreinterpret_to_f64(mint16_t src) {
     return __riscv_th_mreinterpret_f64(src);
 }
 
 // O0-LABEL: @test_mreinterpret_to_i16
-// O0: asm "", "=^tr,0"
+// O0: asm "", "=^tr,^tr"
 mint16_t test_mreinterpret_to_i16(mfloat64_t src) {
     return __riscv_th_mreinterpret_i16(src);
 }
 
 // O0-LABEL: @test_mreinterpret_to_i32
-// O0: asm "", "=^tr,0"
+// O0: asm "", "=^tr,^tr"
 mint32_t test_mreinterpret_to_i32(mfloat16_t src) {
     return __riscv_th_mreinterpret_i32(src);
 }
@@ -98,7 +98,7 @@ mint32_t test_mreinterpret_to_i32(mfloat16_t src) {
 // Verify round-trip: reinterpret preserves value through load -> reinterpret -> store
 // O2-LABEL: @test_mreinterpret_roundtrip
 // O2: call target("riscv.matrix") @llvm.riscv.th.mlae.internal8
-// O2: call target("riscv.matrix") asm "", "=^tr,0"
+// O2: call target("riscv.matrix") asm "", "=^tr,^tr"
 // O2: call void @llvm.riscv.th.msce.internal32
 void test_mreinterpret_roundtrip(int8_t *in, int32_t *out, long stride,
                                   mrow_t m, mcol_t k, mcol_t n) {

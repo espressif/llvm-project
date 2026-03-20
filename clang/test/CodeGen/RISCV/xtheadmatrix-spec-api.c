@@ -366,16 +366,20 @@ void test_mget_mset_f16(uint16_t *ptr, long stride, mrow_t m, mcol_t k) {
 
 // CHECK-LABEL: @test_native_fp16_matmul
 // CHECK: call target("riscv.matrix") @llvm.riscv.th.mfmacc.h.internal
+// CHECK: call target("riscv.matrix") @llvm.riscv.th.mfmacc.h.internal
 void test_native_fp16_matmul(uint16_t *a_ptr, uint16_t *b_ptr,
-                              uint16_t *c_ptr, long stride,
+                              uint16_t *c0_ptr, uint16_t *c1_ptr, long stride,
                               mrow_t m, mcol_t k, mcol_t n) {
     mfloat16_t ta = __riscv_th_mld_a_f16(a_ptr, stride, m, k);
     mfloat16_t tb = __riscv_th_mld_b_f16(b_ptr, stride, k, n);
-    mfloat16_t acc = __riscv_th_mld_acc_f16(c_ptr, stride, m, n);
-    mfloat16x2_t b_pair = __riscv_th_mset_f16(
-        __builtin_riscv_th_mundef_f16x2(), 0, tb);
-    mfloat16_t res = __riscv_th_mfmacc_h_x2(acc, ta, b_pair, m, k, n);
-    __riscv_th_mst_f16(c_ptr, stride, res, m, n);
+    mfloat16_t c0 = __riscv_th_mld_acc_f16(c0_ptr, stride, m, n);
+    mfloat16_t c1 = __riscv_th_mld_acc_f16(c1_ptr, stride, m, n);
+    mfloat16x2_t c_pair = __riscv_th_mset_f16(
+        __riscv_th_mset_f16(__builtin_riscv_th_mundef_f16x2(), 0, c0),
+        1, c1);
+    mfloat16x2_t res_pair = __riscv_th_mfmacc_h_x2(c_pair, ta, tb, m, k, n);
+    mfloat16_t res = __riscv_th_mget_f16(res_pair, 0);
+    __riscv_th_mst_f16(c0_ptr, stride, res, m, n);
 }
 
 // CHECK-LABEL: @test_native_fp64_matmul

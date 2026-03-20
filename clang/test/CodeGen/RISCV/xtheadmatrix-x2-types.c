@@ -106,14 +106,15 @@ mfloat16_t test_fp16_matmul_single(mfloat16_t acc, mfloat16_t a,
 }
 
 // ========================================================================
-// 6. FP16 matmul: new x2 B operand variant
+// 6. FP16 matmul: x2 accumulator variant (consistent with other x2 ops)
 // ========================================================================
 
-// O0-LABEL: @test_fp16_matmul_x2_b
+// O0-LABEL: @test_fp16_matmul_x2_acc
 // O0: call target("riscv.matrix") @llvm.riscv.th.mfmacc.h.internal
-mfloat16_t test_fp16_matmul_x2_b(mfloat16_t acc, mfloat16_t a,
-                                   mfloat16x2_t b,
-                                   mrow_t m, mcol_t k, mcol_t n) {
+// O0: call target("riscv.matrix") @llvm.riscv.th.mfmacc.h.internal
+mfloat16x2_t test_fp16_matmul_x2_acc(mfloat16x2_t acc, mfloat16_t a,
+                                       mfloat16_t b,
+                                       mrow_t m, mcol_t k, mcol_t n) {
     return __riscv_th_mfmacc_h_x2(acc, a, b, m, k, n);
 }
 
@@ -273,18 +274,23 @@ mfloat32_t test_fp_widen_s_h(mfloat32_t c, mfloat16_t a, mfloat16_t b,
 // O2: call target("riscv.matrix") @llvm.riscv.th.mlae.internal16
 // O2: call target("riscv.matrix") @llvm.riscv.th.mlbe.internal16
 // O2: call target("riscv.matrix") @llvm.riscv.th.mlce.internal16
+// O2: call target("riscv.matrix") @llvm.riscv.th.mlce.internal16
+// O2: call target("riscv.matrix") @llvm.riscv.th.mfmacc.h.internal
 // O2: call target("riscv.matrix") @llvm.riscv.th.mfmacc.h.internal
 // O2: call void @llvm.riscv.th.msce.internal16
 void test_e2e_fp16_x2(uint16_t *a_ptr, uint16_t *b_ptr,
-                       uint16_t *c_ptr, long stride,
+                       uint16_t *c0_ptr, uint16_t *c1_ptr, long stride,
                        mrow_t m, mcol_t k, mcol_t n) {
     mfloat16_t ta = __riscv_th_mld_a_f16(a_ptr, stride, m, k);
     mfloat16_t tb = __riscv_th_mld_b_f16(b_ptr, stride, k, n);
-    mfloat16_t acc = __riscv_th_mld_acc_f16(c_ptr, stride, m, n);
-    mfloat16x2_t b_pair = __riscv_th_mset_f16(
-        __builtin_riscv_th_mundef_f16x2(), 0, tb);
-    mfloat16_t res = __riscv_th_mfmacc_h_x2(acc, ta, b_pair, m, k, n);
-    __riscv_th_mst_f16(c_ptr, stride, res, m, n);
+    mfloat16_t c0 = __riscv_th_mld_acc_f16(c0_ptr, stride, m, n);
+    mfloat16_t c1 = __riscv_th_mld_acc_f16(c1_ptr, stride, m, n);
+    mfloat16x2_t c_pair = __riscv_th_mset_f16(
+        __riscv_th_mset_f16(__builtin_riscv_th_mundef_f16x2(), 0, c0),
+        1, c1);
+    mfloat16x2_t res_pair = __riscv_th_mfmacc_h_x2(c_pair, ta, tb, m, k, n);
+    mfloat16_t res = __riscv_th_mget_f16(res_pair, 0);
+    __riscv_th_mst_f16(c0_ptr, stride, res, m, n);
 }
 
 // O2-LABEL: @test_e2e_fp64_x2

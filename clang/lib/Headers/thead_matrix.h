@@ -361,7 +361,7 @@ __THEAD_MUNDEFINED_PAIR(f64x2, mfloat64x2_t, mundef_f64x2)
 #define __THEAD_MREINTERPRET(DST_TYPE, src)                                    \
   __extension__({                                                              \
     DST_TYPE __result;                                                         \
-    __asm__("" : "=tr"(__result) : "0"(src));                                  \
+    __asm__("" : "=tr"(__result) : "tr"(src));                                 \
     __result;                                                                  \
   })
 
@@ -858,13 +858,19 @@ __THEAD_SPEC_FMMACC(s_h, mfloat16_t, mfloat16_t, mfloat32_t, mfmaqa_spec_s_h)
 __THEAD_SPEC_FMMACC(d_s, mfloat32_t, mfloat32_t, mfloat64_t, mfmaqa_spec_d_s)
 
 /* Spec-aligned x2 overloads (software-level pair abstraction per intrinsic API).
-   These wrap the single-register builtins, extracting/inserting component 0. */
+   These wrap the single-register builtins, operating on both pair elements. */
 static __inline__ __attribute__((__always_inline__, __nodebug__))
-mfloat16_t __riscv_th_mfmacc_h_x2(mfloat16_t __c, mfloat16_t __a,
-                                    mfloat16x2_t __b,
-                                    mrow_t __m, mcol_t __k, mcol_t __n) {
-  mfloat16_t __b0 = __riscv_th_mget_f16(__b, 0);
-  return __builtin_riscv_th_mfmaqa_spec_h(__c, __a, __b0, __m, __k, __n);
+mfloat16x2_t __riscv_th_mfmacc_h_x2(mfloat16x2_t __c, mfloat16_t __a,
+                                      mfloat16_t __b,
+                                      mrow_t __m, mcol_t __k, mcol_t __n) {
+  mfloat16_t __c0 = __riscv_th_mget_f16(__c, 0);
+  mfloat16_t __c1 = __riscv_th_mget_f16(__c, 1);
+  mfloat16_t __r0 = __builtin_riscv_th_mfmaqa_spec_h(__c0, __a, __b,
+                                                       __m, __k, __n);
+  mfloat16_t __r1 = __builtin_riscv_th_mfmaqa_spec_h(__c1, __a, __b,
+                                                       __m, __k, __n);
+  mfloat16x2_t __result = __riscv_th_mset_f16(__c, 0, __r0);
+  return __riscv_th_mset_f16(__result, 1, __r1);
 }
 static __inline__ __attribute__((__always_inline__, __nodebug__))
 mfloat64x2_t __riscv_th_mfmacc_d_x2(mfloat64x2_t __c, mfloat64_t __a,
