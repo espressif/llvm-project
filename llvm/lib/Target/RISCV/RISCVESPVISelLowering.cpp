@@ -35,6 +35,8 @@ static SDValue LowerLDXACCIP(SDValue Op, SelectionDAG &DAG, unsigned ISDOpcode);
 static SDValue LowerSTXACCIP(SDValue Op, SelectionDAG &DAG, unsigned ISDOpcode);
 static SDValue LowerLDQAIP(SDValue Op, SelectionDAG &DAG, unsigned ISDOpcode);
 static SDValue LowerLDQAXP(SDValue Op, SelectionDAG &DAG, unsigned ISDOpcode);
+static SDValue LowerESPLdIncpM(SDValue Op, SelectionDAG &DAG,
+                               unsigned ISDOpcode, MVT ResVT);
 static SDValue LowerLDUASTATEIP(SDValue Op, SelectionDAG &DAG,
                                 unsigned ISDOpcode);
 static SDValue LowerSTUASTATEIP(SDValue Op, SelectionDAG &DAG,
@@ -72,6 +74,16 @@ bool getESPVTgtMemIntrinsic(TargetLowering::IntrinsicInfo &Info,
     Info.opc = ISD::INTRINSIC_W_CHAIN;
     Info.ptrVal = I.getArgOperand(0);
     Info.memVT = MVT::v16i8;
+    Info.align = Align(16);
+    Info.size = 16;
+    Info.flags |= MachineMemOperand::MOLoad;
+    return true;
+  }
+  case Intrinsic::riscv_esp_ldxq_32_m: {
+    // (ptr, qw, sel4, sel8) -> v4i32
+    Info.opc = ISD::INTRINSIC_W_CHAIN;
+    Info.ptrVal = I.getArgOperand(0);
+    Info.memVT = MVT::v4i32;
     Info.align = Align(16);
     Info.size = 16;
     Info.flags |= MachineMemOperand::MOLoad;
@@ -123,9 +135,28 @@ bool getESPVTgtMemIntrinsic(TargetLowering::IntrinsicInfo &Info,
   case Intrinsic::riscv_esp_vadd_s8_ld_incp_m:
   case Intrinsic::riscv_esp_vadd_u8_ld_incp_m:
   case Intrinsic::riscv_esp_vadd_s16_ld_incp_m:
-  case Intrinsic::riscv_esp_vadd_u16_ld_incp_m: {
-    // VADD LD.INCP intrinsics: (qx, qy, ptr) -> { qv, qu, ptr }
-    // Pointer is the third argument (operand 2)
+  case Intrinsic::riscv_esp_vadd_u16_ld_incp_m:
+  case Intrinsic::riscv_esp_vadd_s32_ld_incp_m:
+  case Intrinsic::riscv_esp_vadd_u32_ld_incp_m:
+  case Intrinsic::riscv_esp_vmax_s8_ld_incp_m:
+  case Intrinsic::riscv_esp_vmax_s16_ld_incp_m:
+  case Intrinsic::riscv_esp_vmax_s32_ld_incp_m:
+  case Intrinsic::riscv_esp_vmax_u8_ld_incp_m:
+  case Intrinsic::riscv_esp_vmax_u16_ld_incp_m:
+  case Intrinsic::riscv_esp_vmax_u32_ld_incp_m:
+  case Intrinsic::riscv_esp_vmin_s8_ld_incp_m:
+  case Intrinsic::riscv_esp_vmin_s16_ld_incp_m:
+  case Intrinsic::riscv_esp_vmin_s32_ld_incp_m:
+  case Intrinsic::riscv_esp_vmin_u8_ld_incp_m:
+  case Intrinsic::riscv_esp_vmin_u16_ld_incp_m:
+  case Intrinsic::riscv_esp_vmin_u32_ld_incp_m:
+  case Intrinsic::riscv_esp_vsub_s8_ld_incp_m:
+  case Intrinsic::riscv_esp_vsub_s16_ld_incp_m:
+  case Intrinsic::riscv_esp_vsub_s32_ld_incp_m:
+  case Intrinsic::riscv_esp_vsub_u8_ld_incp_m:
+  case Intrinsic::riscv_esp_vsub_u16_ld_incp_m:
+  case Intrinsic::riscv_esp_vsub_u32_ld_incp_m: {
+    // LD.INCP (_m): (qx, qy, ptr) -> { ..., ptr }; memory at ptr
     Info.opc = ISD::INTRINSIC_W_CHAIN;
     Info.ptrVal = I.getArgOperand(2);
     Info.memVT = MVT::v16i8;
@@ -137,9 +168,28 @@ bool getESPVTgtMemIntrinsic(TargetLowering::IntrinsicInfo &Info,
   case Intrinsic::riscv_esp_vadd_s8_st_incp_m:
   case Intrinsic::riscv_esp_vadd_u8_st_incp_m:
   case Intrinsic::riscv_esp_vadd_s16_st_incp_m:
-  case Intrinsic::riscv_esp_vadd_u16_st_incp_m: {
-    // VADD ST.INCP intrinsics: (qx, qy, qu, ptr, qv) -> { qv, ptr }
-    // Pointer is the fourth argument (operand 3)
+  case Intrinsic::riscv_esp_vadd_u16_st_incp_m:
+  case Intrinsic::riscv_esp_vadd_s32_st_incp_m:
+  case Intrinsic::riscv_esp_vadd_u32_st_incp_m:
+  case Intrinsic::riscv_esp_vmax_s8_st_incp_m:
+  case Intrinsic::riscv_esp_vmax_s16_st_incp_m:
+  case Intrinsic::riscv_esp_vmax_s32_st_incp_m:
+  case Intrinsic::riscv_esp_vmax_u8_st_incp_m:
+  case Intrinsic::riscv_esp_vmax_u16_st_incp_m:
+  case Intrinsic::riscv_esp_vmax_u32_st_incp_m:
+  case Intrinsic::riscv_esp_vmin_s8_st_incp_m:
+  case Intrinsic::riscv_esp_vmin_s16_st_incp_m:
+  case Intrinsic::riscv_esp_vmin_s32_st_incp_m:
+  case Intrinsic::riscv_esp_vmin_u8_st_incp_m:
+  case Intrinsic::riscv_esp_vmin_u16_st_incp_m:
+  case Intrinsic::riscv_esp_vmin_u32_st_incp_m:
+  case Intrinsic::riscv_esp_vsub_s8_st_incp_m:
+  case Intrinsic::riscv_esp_vsub_s16_st_incp_m:
+  case Intrinsic::riscv_esp_vsub_s32_st_incp_m:
+  case Intrinsic::riscv_esp_vsub_u8_st_incp_m:
+  case Intrinsic::riscv_esp_vsub_u16_st_incp_m:
+  case Intrinsic::riscv_esp_vsub_u32_st_incp_m: {
+    // ST.INCP (_m): (qx, qy, qu, ptr, qv) -> { qv, ptr }
     Info.opc = ISD::INTRINSIC_W_CHAIN;
     Info.ptrVal = I.getArgOperand(3);
     Info.memVT = MVT::v16i8;
@@ -169,7 +219,11 @@ bool getESPVTgtMemIntrinsic(TargetLowering::IntrinsicInfo &Info,
   case Intrinsic::riscv_esp_vmulas_s8_qacc_ld_ip_m:
   case Intrinsic::riscv_esp_vmulas_s16_qacc_ld_ip_m:
   case Intrinsic::riscv_esp_vmulas_u8_qacc_ld_ip_m:
-  case Intrinsic::riscv_esp_vmulas_u16_qacc_ld_ip_m: {
+  case Intrinsic::riscv_esp_vmulas_u16_qacc_ld_ip_m:
+  case Intrinsic::riscv_esp_vsmulas_s8_qacc_ld_incp_m:
+  case Intrinsic::riscv_esp_vsmulas_s16_qacc_ld_incp_m:
+  case Intrinsic::riscv_esp_vsmulas_u8_qacc_ld_incp_m:
+  case Intrinsic::riscv_esp_vsmulas_u16_qacc_ld_incp_m: {
     // Pointer is the seventh argument (operand 6)
     Info.opc = ISD::INTRINSIC_W_CHAIN;
     Info.ptrVal = I.getArgOperand(6);
@@ -638,6 +692,22 @@ SDValue lowerESPVIntrinsicWChain(SDValue Op, SelectionDAG &DAG,
     MachineMemOperand *MMO = MemIntr->getMemOperand();
     SDValue Node = DAG.getMemIntrinsicNode(RISCVISD::ESP_VST_128_IP_M, DL, VTs,
                                            Ops, VecVT, MMO);
+    return DAG.getMergeValues({Node.getValue(0), Node.getValue(1)}, DL);
+  }
+  case Intrinsic::riscv_esp_ldxq_32_m: {
+    // (chain, int_id, ptr, qw, sel4, sel8) -> (v4i32 qu, chain)
+    SDValue Chain = Op.getOperand(0);
+    SDValue Ptr = Op.getOperand(2);
+    SDValue Qw = Op.getOperand(3);
+    SDValue Sel4 = Op.getOperand(4);
+    SDValue Sel8 = Op.getOperand(5);
+    EVT MemVT = MVT::v4i32;
+    SDVTList VTs = DAG.getVTList(MemVT, MVT::Other);
+    SDValue Ops[] = {Chain, Ptr, Qw, Sel4, Sel8};
+    auto *MemIntr = cast<MemIntrinsicSDNode>(Op.getNode());
+    MachineMemOperand *MMO = MemIntr->getMemOperand();
+    SDValue Node = DAG.getMemIntrinsicNode(RISCVISD::ESP_LDXQ_32_M, DL, VTs,
+                                           Ops, MemVT, MMO);
     return DAG.getMergeValues({Node.getValue(0), Node.getValue(1)}, DL);
   }
   // LD/ST XACC IP
@@ -1715,6 +1785,67 @@ SDValue lowerESPVIntrinsicWChain(SDValue Op, SelectionDAG &DAG,
                                Node.getValue(2), Node.getValue(3)},
                               DL);
   }
+  case Intrinsic::riscv_esp_vadd_s32_ld_incp_m:
+  case Intrinsic::riscv_esp_vadd_u32_ld_incp_m: {
+    unsigned Opc = IntNo == Intrinsic::riscv_esp_vadd_s32_ld_incp_m
+                       ? RISCVISD::ESP_VADD_S32_LD_INCP_M
+                       : RISCVISD::ESP_VADD_U32_LD_INCP_M;
+    return LowerESPLdIncpM(Op, DAG, Opc, MVT::v4i32);
+  }
+  case Intrinsic::riscv_esp_vmax_s8_ld_incp_m:
+    return LowerESPLdIncpM(Op, DAG, RISCVISD::ESP_VMAX_S8_LD_INCP_M,
+                           MVT::v16i8);
+  case Intrinsic::riscv_esp_vmax_s16_ld_incp_m:
+    return LowerESPLdIncpM(Op, DAG, RISCVISD::ESP_VMAX_S16_LD_INCP_M,
+                           MVT::v8i16);
+  case Intrinsic::riscv_esp_vmax_s32_ld_incp_m:
+    return LowerESPLdIncpM(Op, DAG, RISCVISD::ESP_VMAX_S32_LD_INCP_M,
+                           MVT::v4i32);
+  case Intrinsic::riscv_esp_vmax_u8_ld_incp_m:
+    return LowerESPLdIncpM(Op, DAG, RISCVISD::ESP_VMAX_U8_LD_INCP_M,
+                           MVT::v16i8);
+  case Intrinsic::riscv_esp_vmax_u16_ld_incp_m:
+    return LowerESPLdIncpM(Op, DAG, RISCVISD::ESP_VMAX_U16_LD_INCP_M,
+                           MVT::v8i16);
+  case Intrinsic::riscv_esp_vmax_u32_ld_incp_m:
+    return LowerESPLdIncpM(Op, DAG, RISCVISD::ESP_VMAX_U32_LD_INCP_M,
+                           MVT::v4i32);
+  case Intrinsic::riscv_esp_vmin_s8_ld_incp_m:
+    return LowerESPLdIncpM(Op, DAG, RISCVISD::ESP_VMIN_S8_LD_INCP_M,
+                           MVT::v16i8);
+  case Intrinsic::riscv_esp_vmin_s16_ld_incp_m:
+    return LowerESPLdIncpM(Op, DAG, RISCVISD::ESP_VMIN_S16_LD_INCP_M,
+                           MVT::v8i16);
+  case Intrinsic::riscv_esp_vmin_s32_ld_incp_m:
+    return LowerESPLdIncpM(Op, DAG, RISCVISD::ESP_VMIN_S32_LD_INCP_M,
+                           MVT::v4i32);
+  case Intrinsic::riscv_esp_vmin_u8_ld_incp_m:
+    return LowerESPLdIncpM(Op, DAG, RISCVISD::ESP_VMIN_U8_LD_INCP_M,
+                           MVT::v16i8);
+  case Intrinsic::riscv_esp_vmin_u16_ld_incp_m:
+    return LowerESPLdIncpM(Op, DAG, RISCVISD::ESP_VMIN_U16_LD_INCP_M,
+                           MVT::v8i16);
+  case Intrinsic::riscv_esp_vmin_u32_ld_incp_m:
+    return LowerESPLdIncpM(Op, DAG, RISCVISD::ESP_VMIN_U32_LD_INCP_M,
+                           MVT::v4i32);
+  case Intrinsic::riscv_esp_vsub_s8_ld_incp_m:
+    return LowerESPLdIncpM(Op, DAG, RISCVISD::ESP_VSUB_S8_LD_INCP_M,
+                           MVT::v16i8);
+  case Intrinsic::riscv_esp_vsub_s16_ld_incp_m:
+    return LowerESPLdIncpM(Op, DAG, RISCVISD::ESP_VSUB_S16_LD_INCP_M,
+                           MVT::v8i16);
+  case Intrinsic::riscv_esp_vsub_s32_ld_incp_m:
+    return LowerESPLdIncpM(Op, DAG, RISCVISD::ESP_VSUB_S32_LD_INCP_M,
+                           MVT::v4i32);
+  case Intrinsic::riscv_esp_vsub_u8_ld_incp_m:
+    return LowerESPLdIncpM(Op, DAG, RISCVISD::ESP_VSUB_U8_LD_INCP_M,
+                           MVT::v16i8);
+  case Intrinsic::riscv_esp_vsub_u16_ld_incp_m:
+    return LowerESPLdIncpM(Op, DAG, RISCVISD::ESP_VSUB_U16_LD_INCP_M,
+                           MVT::v8i16);
+  case Intrinsic::riscv_esp_vsub_u32_ld_incp_m:
+    return LowerESPLdIncpM(Op, DAG, RISCVISD::ESP_VSUB_U32_LD_INCP_M,
+                           MVT::v4i32);
   // VADD ST.INCP lowering
   case Intrinsic::riscv_esp_vadd_s8_st_incp_m: {
     // Lower VADD S8 ST INCP intrinsic to custom SDNode
@@ -1828,6 +1959,117 @@ SDValue lowerESPVIntrinsicWChain(SDValue Op, SelectionDAG &DAG,
     return DAG.getMergeValues(
         {Node.getValue(0), Node.getValue(1), Node.getValue(2)}, DL);
   }
+  case Intrinsic::riscv_esp_vadd_s32_st_incp_m:
+  case Intrinsic::riscv_esp_vadd_u32_st_incp_m: {
+    SDLoc DL(Op);
+    SDValue Chain = Op.getOperand(0);
+    SDValue QX = Op.getOperand(2);
+    SDValue QY = Op.getOperand(3);
+    SDValue QU = Op.getOperand(4);
+    SDValue RS1 = Op.getOperand(5);
+    EVT PtrVT = RS1.getValueType();
+    SDVTList VTs = DAG.getVTList(MVT::v4i32, PtrVT, MVT::Other);
+    SDValue Ops[] = {Chain, QX, QY, QU, RS1};
+    EVT MemVT = MVT::v16i8;
+    auto *MemIntr = cast<MemIntrinsicSDNode>(Op.getNode());
+    MachineMemOperand *MMO = MemIntr->getMemOperand();
+    RISCVISD::GenNodeType Opc = IntNo == Intrinsic::riscv_esp_vadd_s32_st_incp_m
+                                    ? RISCVISD::ESP_VADD_S32_ST_INCP_M
+                                    : RISCVISD::ESP_VADD_U32_ST_INCP_M;
+    SDValue Node = DAG.getMemIntrinsicNode(Opc, DL, VTs, Ops, MemVT, MMO);
+    return DAG.getMergeValues(
+        {Node.getValue(0), Node.getValue(1), Node.getValue(2)}, DL);
+  }
+#define LOWER_ESPV_ST_INCP_M_V16(OPC, INTR)                                    \
+  case Intrinsic::INTR: {                                                      \
+    SDLoc DL(Op);                                                              \
+    SDValue Chain = Op.getOperand(0);                                          \
+    SDValue QX = Op.getOperand(2);                                             \
+    SDValue QY = Op.getOperand(3);                                             \
+    SDValue QU = Op.getOperand(4);                                             \
+    SDValue RS1 = Op.getOperand(5);                                            \
+    EVT PtrVT = RS1.getValueType();                                            \
+    SDVTList VTs = DAG.getVTList(MVT::v16i8, PtrVT, MVT::Other);               \
+    SDValue Ops[] = {Chain, QX, QY, QU, RS1};                                  \
+    EVT MemVT = MVT::v16i8;                                                    \
+    auto *MemIntr = cast<MemIntrinsicSDNode>(Op.getNode());                    \
+    MachineMemOperand *MMO = MemIntr->getMemOperand();                         \
+    SDValue Node =                                                             \
+        DAG.getMemIntrinsicNode(RISCVISD::OPC, DL, VTs, Ops, MemVT, MMO);      \
+    return DAG.getMergeValues(                                                 \
+        {Node.getValue(0), Node.getValue(1), Node.getValue(2)}, DL);           \
+  }
+#define LOWER_ESPV_ST_INCP_M_V8I16(OPC, INTR)                                  \
+  case Intrinsic::INTR: {                                                      \
+    SDLoc DL(Op);                                                              \
+    SDValue Chain = Op.getOperand(0);                                          \
+    SDValue QX = Op.getOperand(2);                                             \
+    SDValue QY = Op.getOperand(3);                                             \
+    SDValue QU = Op.getOperand(4);                                             \
+    SDValue RS1 = Op.getOperand(5);                                            \
+    EVT PtrVT = RS1.getValueType();                                            \
+    SDVTList VTs = DAG.getVTList(MVT::v8i16, PtrVT, MVT::Other);               \
+    SDValue Ops[] = {Chain, QX, QY, QU, RS1};                                  \
+    EVT MemVT = MVT::v16i8;                                                    \
+    auto *MemIntr = cast<MemIntrinsicSDNode>(Op.getNode());                    \
+    MachineMemOperand *MMO = MemIntr->getMemOperand();                         \
+    SDValue Node =                                                             \
+        DAG.getMemIntrinsicNode(RISCVISD::OPC, DL, VTs, Ops, MemVT, MMO);      \
+    return DAG.getMergeValues(                                                 \
+        {Node.getValue(0), Node.getValue(1), Node.getValue(2)}, DL);           \
+  }
+#define LOWER_ESPV_ST_INCP_M_V4I32(OPC, INTR)                                  \
+  case Intrinsic::INTR: {                                                      \
+    SDLoc DL(Op);                                                              \
+    SDValue Chain = Op.getOperand(0);                                          \
+    SDValue QX = Op.getOperand(2);                                             \
+    SDValue QY = Op.getOperand(3);                                             \
+    SDValue QU = Op.getOperand(4);                                             \
+    SDValue RS1 = Op.getOperand(5);                                            \
+    EVT PtrVT = RS1.getValueType();                                            \
+    SDVTList VTs = DAG.getVTList(MVT::v4i32, PtrVT, MVT::Other);               \
+    SDValue Ops[] = {Chain, QX, QY, QU, RS1};                                  \
+    EVT MemVT = MVT::v16i8;                                                    \
+    auto *MemIntr = cast<MemIntrinsicSDNode>(Op.getNode());                    \
+    MachineMemOperand *MMO = MemIntr->getMemOperand();                         \
+    SDValue Node =                                                             \
+        DAG.getMemIntrinsicNode(RISCVISD::OPC, DL, VTs, Ops, MemVT, MMO);      \
+    return DAG.getMergeValues(                                                 \
+        {Node.getValue(0), Node.getValue(1), Node.getValue(2)}, DL);           \
+  }
+    LOWER_ESPV_ST_INCP_M_V16(ESP_VMAX_S8_ST_INCP_M, riscv_esp_vmax_s8_st_incp_m)
+    LOWER_ESPV_ST_INCP_M_V8I16(ESP_VMAX_S16_ST_INCP_M,
+                               riscv_esp_vmax_s16_st_incp_m)
+    LOWER_ESPV_ST_INCP_M_V4I32(ESP_VMAX_S32_ST_INCP_M,
+                               riscv_esp_vmax_s32_st_incp_m)
+    LOWER_ESPV_ST_INCP_M_V16(ESP_VMAX_U8_ST_INCP_M, riscv_esp_vmax_u8_st_incp_m)
+    LOWER_ESPV_ST_INCP_M_V8I16(ESP_VMAX_U16_ST_INCP_M,
+                               riscv_esp_vmax_u16_st_incp_m)
+    LOWER_ESPV_ST_INCP_M_V4I32(ESP_VMAX_U32_ST_INCP_M,
+                               riscv_esp_vmax_u32_st_incp_m)
+    LOWER_ESPV_ST_INCP_M_V16(ESP_VMIN_S8_ST_INCP_M, riscv_esp_vmin_s8_st_incp_m)
+    LOWER_ESPV_ST_INCP_M_V8I16(ESP_VMIN_S16_ST_INCP_M,
+                               riscv_esp_vmin_s16_st_incp_m)
+    LOWER_ESPV_ST_INCP_M_V4I32(ESP_VMIN_S32_ST_INCP_M,
+                               riscv_esp_vmin_s32_st_incp_m)
+    LOWER_ESPV_ST_INCP_M_V16(ESP_VMIN_U8_ST_INCP_M, riscv_esp_vmin_u8_st_incp_m)
+    LOWER_ESPV_ST_INCP_M_V8I16(ESP_VMIN_U16_ST_INCP_M,
+                               riscv_esp_vmin_u16_st_incp_m)
+    LOWER_ESPV_ST_INCP_M_V4I32(ESP_VMIN_U32_ST_INCP_M,
+                               riscv_esp_vmin_u32_st_incp_m)
+    LOWER_ESPV_ST_INCP_M_V16(ESP_VSUB_S8_ST_INCP_M, riscv_esp_vsub_s8_st_incp_m)
+    LOWER_ESPV_ST_INCP_M_V8I16(ESP_VSUB_S16_ST_INCP_M,
+                               riscv_esp_vsub_s16_st_incp_m)
+    LOWER_ESPV_ST_INCP_M_V4I32(ESP_VSUB_S32_ST_INCP_M,
+                               riscv_esp_vsub_s32_st_incp_m)
+    LOWER_ESPV_ST_INCP_M_V16(ESP_VSUB_U8_ST_INCP_M, riscv_esp_vsub_u8_st_incp_m)
+    LOWER_ESPV_ST_INCP_M_V8I16(ESP_VSUB_U16_ST_INCP_M,
+                               riscv_esp_vsub_u16_st_incp_m)
+    LOWER_ESPV_ST_INCP_M_V4I32(ESP_VSUB_U32_ST_INCP_M,
+                               riscv_esp_vsub_u32_st_incp_m)
+#undef LOWER_ESPV_ST_INCP_M_V4I32
+#undef LOWER_ESPV_ST_INCP_M_V8I16
+#undef LOWER_ESPV_ST_INCP_M_V16
   // VMUL LD.INCP lowering with explicit SAR state passing
   case Intrinsic::riscv_esp_vmul_s16_ld_incp_m: {
     SDLoc DL(Op);
@@ -1860,6 +2102,74 @@ SDValue lowerESPVIntrinsicWChain(SDValue Op, SelectionDAG &DAG,
     SDVTList VTs = DAG.getVTList(MVT::v8i16, PtrVT, MVT::Other);
     SDValue Ops[] = {Chain, QX, QY, QU, RS1, Sar};
     SDValue Node = DAG.getNode(RISCVISD::ESP_VMUL_S16_ST_INCP_M, DL, VTs, Ops);
+    return DAG.getMergeValues(
+        {Node.getValue(0), Node.getValue(1), Node.getValue(2)}, DL);
+  }
+  case Intrinsic::riscv_esp_vmul_s8_ld_incp_m:
+  case Intrinsic::riscv_esp_vmul_u8_ld_incp_m: {
+    SDLoc DL(Op);
+    SDValue Chain = Op.getOperand(0);
+    SDValue QX = Op.getOperand(2);
+    SDValue QY = Op.getOperand(3);
+    SDValue RS1 = Op.getOperand(4);
+    SDValue Sar = Op.getOperand(5);
+    EVT PtrVT = RS1.getValueType();
+    SDVTList VTs = DAG.getVTList(MVT::v16i8, MVT::v16i8, PtrVT, MVT::Other);
+    SDValue Ops[] = {Chain, QX, QY, RS1, Sar};
+    RISCVISD::GenNodeType Opc = IntNo == Intrinsic::riscv_esp_vmul_s8_ld_incp_m
+                                    ? RISCVISD::ESP_VMUL_S8_LD_INCP_M
+                                    : RISCVISD::ESP_VMUL_U8_LD_INCP_M;
+    SDValue Node = DAG.getNode(Opc, DL, VTs, Ops);
+    return DAG.getMergeValues({Node.getValue(0), Node.getValue(1),
+                               Node.getValue(2), Node.getValue(3)},
+                              DL);
+  }
+  case Intrinsic::riscv_esp_vmul_u16_ld_incp_m: {
+    SDLoc DL(Op);
+    SDValue Chain = Op.getOperand(0);
+    SDValue QX = Op.getOperand(2);
+    SDValue QY = Op.getOperand(3);
+    SDValue RS1 = Op.getOperand(4);
+    SDValue Sar = Op.getOperand(5);
+    EVT PtrVT = RS1.getValueType();
+    SDVTList VTs = DAG.getVTList(MVT::v8i16, MVT::v16i8, PtrVT, MVT::Other);
+    SDValue Ops[] = {Chain, QX, QY, RS1, Sar};
+    SDValue Node = DAG.getNode(RISCVISD::ESP_VMUL_U16_LD_INCP_M, DL, VTs, Ops);
+    return DAG.getMergeValues({Node.getValue(0), Node.getValue(1),
+                               Node.getValue(2), Node.getValue(3)},
+                              DL);
+  }
+  case Intrinsic::riscv_esp_vmul_s8_st_incp_m:
+  case Intrinsic::riscv_esp_vmul_u8_st_incp_m: {
+    SDLoc DL(Op);
+    SDValue Chain = Op.getOperand(0);
+    SDValue QX = Op.getOperand(2);
+    SDValue QY = Op.getOperand(3);
+    SDValue QU = Op.getOperand(4);
+    SDValue RS1 = Op.getOperand(5);
+    SDValue Sar = Op.getOperand(7);
+    EVT PtrVT = RS1.getValueType();
+    SDVTList VTs = DAG.getVTList(MVT::v16i8, PtrVT, MVT::Other);
+    SDValue Ops[] = {Chain, QX, QY, QU, RS1, Sar};
+    RISCVISD::GenNodeType Opc = IntNo == Intrinsic::riscv_esp_vmul_s8_st_incp_m
+                                    ? RISCVISD::ESP_VMUL_S8_ST_INCP_M
+                                    : RISCVISD::ESP_VMUL_U8_ST_INCP_M;
+    SDValue Node = DAG.getNode(Opc, DL, VTs, Ops);
+    return DAG.getMergeValues(
+        {Node.getValue(0), Node.getValue(1), Node.getValue(2)}, DL);
+  }
+  case Intrinsic::riscv_esp_vmul_u16_st_incp_m: {
+    SDLoc DL(Op);
+    SDValue Chain = Op.getOperand(0);
+    SDValue QX = Op.getOperand(2);
+    SDValue QY = Op.getOperand(3);
+    SDValue QU = Op.getOperand(4);
+    SDValue RS1 = Op.getOperand(5);
+    SDValue Sar = Op.getOperand(7);
+    EVT PtrVT = RS1.getValueType();
+    SDVTList VTs = DAG.getVTList(MVT::v8i16, PtrVT, MVT::Other);
+    SDValue Ops[] = {Chain, QX, QY, QU, RS1, Sar};
+    SDValue Node = DAG.getNode(RISCVISD::ESP_VMUL_U16_ST_INCP_M, DL, VTs, Ops);
     return DAG.getMergeValues(
         {Node.getValue(0), Node.getValue(1), Node.getValue(2)}, DL);
   }
@@ -2120,6 +2430,18 @@ SDValue lowerESPVIntrinsicWChain(SDValue Op, SelectionDAG &DAG,
     return LowerVMULASQACCLDIP(Op, DAG, RISCVISD::ESP_VMULAS_U16_QACC_LD_IP_M);
   case Intrinsic::riscv_esp_vmulas_u8_qacc_ld_ip_m:
     return LowerVMULASQACCLDIP(Op, DAG, RISCVISD::ESP_VMULAS_U8_QACC_LD_IP_M);
+  case Intrinsic::riscv_esp_vsmulas_s16_qacc_ld_incp_m:
+    return LowerVMULASQACCLDIP(Op, DAG,
+                               RISCVISD::ESP_VSMULAS_S16_QACC_LD_INCP_M);
+  case Intrinsic::riscv_esp_vsmulas_s8_qacc_ld_incp_m:
+    return LowerVMULASQACCLDIP(Op, DAG,
+                               RISCVISD::ESP_VSMULAS_S8_QACC_LD_INCP_M);
+  case Intrinsic::riscv_esp_vsmulas_u16_qacc_ld_incp_m:
+    return LowerVMULASQACCLDIP(Op, DAG,
+                               RISCVISD::ESP_VSMULAS_U16_QACC_LD_INCP_M);
+  case Intrinsic::riscv_esp_vsmulas_u8_qacc_ld_incp_m:
+    return LowerVMULASQACCLDIP(Op, DAG,
+                               RISCVISD::ESP_VSMULAS_U8_QACC_LD_INCP_M);
   // VMULAS QACC LD XP
   case Intrinsic::riscv_esp_vmulas_s16_qacc_ld_xp_m:
     return LowerVMULASQACCLDXP(Op, DAG, RISCVISD::ESP_VMULAS_S16_QACC_LD_XP_M);
@@ -2646,6 +2968,27 @@ SDValue lowerESPVIntrinsicWChain(SDValue Op, SelectionDAG &DAG,
   default:
     return SDValue(); // Not an ESPV intrinsic handled here
   }
+}
+
+// LD.INCP.M: (chain, int_id, qx, qy, rs1) -> {vec_result, loaded v16i8, ptr,
+// chain}
+static SDValue LowerESPLdIncpM(SDValue Op, SelectionDAG &DAG,
+                               unsigned ISDOpcode, MVT ResVT) {
+  SDLoc DL(Op);
+  SDValue Chain = Op.getOperand(0);
+  SDValue QX = Op.getOperand(2);
+  SDValue QY = Op.getOperand(3);
+  SDValue RS1 = Op.getOperand(4);
+  EVT PtrVT = RS1.getValueType();
+  SDVTList VTs = DAG.getVTList(ResVT, MVT::v16i8, PtrVT, MVT::Other);
+  SDValue Ops[] = {Chain, QX, QY, RS1};
+  EVT MemVT = MVT::v16i8;
+  auto *MemIntr = cast<MemIntrinsicSDNode>(Op.getNode());
+  MachineMemOperand *MMO = MemIntr->getMemOperand();
+  SDValue Node = DAG.getMemIntrinsicNode(ISDOpcode, DL, VTs, Ops, MemVT, MMO);
+  return DAG.getMergeValues(
+      {Node.getValue(0), Node.getValue(1), Node.getValue(2), Node.getValue(3)},
+      DL);
 }
 
 static SDValue LowerLDXACCIP(SDValue Op, SelectionDAG &DAG,
@@ -3514,6 +3857,46 @@ SDValue lowerESPVIntrinsicWOChain(SDValue Op, SelectionDAG &DAG,
     SDValue Node = DAG.getNode(RISCVISD::ESP_VSMULAS_S8_QACC_M, DL, VTs, Ops);
 
     // Return structure with 4x128-bit QACC directly
+    return DAG.getMergeValues({Node.getValue(0), Node.getValue(1),
+                               Node.getValue(2), Node.getValue(3)},
+                              DL);
+  }
+  case Intrinsic::riscv_esp_vsmulas_u16_qacc_m: {
+    SDLoc DL(Op);
+    SDValue V0In = Op.getOperand(1);
+    SDValue V1In = Op.getOperand(2);
+    SDValue V2In = Op.getOperand(3);
+    SDValue V3In = Op.getOperand(4);
+    SDValue QX = Op.getOperand(5);
+    SDValue QY = Op.getOperand(6);
+    SDValue SEL16 = Op.getOperand(7);
+
+    SmallVector<EVT, 4> VTList = {MVT::v16i8, MVT::v16i8, MVT::v16i8,
+                                  MVT::v16i8};
+    SDVTList VTs = DAG.getVTList(VTList);
+    SDValue Ops[] = {V0In, V1In, V2In, V3In, QX, QY, SEL16};
+    SDValue Node = DAG.getNode(RISCVISD::ESP_VSMULAS_U16_QACC_M, DL, VTs, Ops);
+
+    return DAG.getMergeValues({Node.getValue(0), Node.getValue(1),
+                               Node.getValue(2), Node.getValue(3)},
+                              DL);
+  }
+  case Intrinsic::riscv_esp_vsmulas_u8_qacc_m: {
+    SDLoc DL(Op);
+    SDValue V0In = Op.getOperand(1);
+    SDValue V1In = Op.getOperand(2);
+    SDValue V2In = Op.getOperand(3);
+    SDValue V3In = Op.getOperand(4);
+    SDValue QX = Op.getOperand(5);
+    SDValue QY = Op.getOperand(6);
+    SDValue SEL16 = Op.getOperand(7);
+
+    SmallVector<EVT, 4> VTList = {MVT::v16i8, MVT::v16i8, MVT::v16i8,
+                                  MVT::v16i8};
+    SDVTList VTs = DAG.getVTList(VTList);
+    SDValue Ops[] = {V0In, V1In, V2In, V3In, QX, QY, SEL16};
+    SDValue Node = DAG.getNode(RISCVISD::ESP_VSMULAS_U8_QACC_M, DL, VTs, Ops);
+
     return DAG.getMergeValues({Node.getValue(0), Node.getValue(1),
                                Node.getValue(2), Node.getValue(3)},
                               DL);

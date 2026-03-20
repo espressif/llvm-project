@@ -1416,6 +1416,14 @@ let Features = "xespv", Attributes = [NoThrow, RequiredVectorWidth<128>] in
   // defined in BuiltinsRISCVESP32P4.td, so we don't redefine them here.
 }
 
+// GPR ALU (.m): SSA result = op(rs1, rs2); lowers to esp.{addx2,addx4,subx2,subx4}.
+let Features = "xespv", Attributes = [NoThrow] in {
+  def esp_addx2_m : RISCVBuiltin<"unsigned int(unsigned int, unsigned int)">;
+  def esp_addx4_m : RISCVBuiltin<"unsigned int(unsigned int, unsigned int)">;
+  def esp_subx2_m : RISCVBuiltin<"unsigned int(unsigned int, unsigned int)">;
+  def esp_subx4_m : RISCVBuiltin<"unsigned int(unsigned int, unsigned int)">;
+}
+
 // MOVX - Read/Write implicit registers (_m version)
 // These are scalar instructions, so they don't need RequiredVectorWidth<128>
 let Features = "xespv", Attributes = [NoThrow] in {

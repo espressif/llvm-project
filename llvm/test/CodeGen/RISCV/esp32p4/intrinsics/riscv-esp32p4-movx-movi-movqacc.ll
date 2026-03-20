@@ -11,8 +11,8 @@ define dso_local void @test_movx_cfg() local_unnamed_addr #0 {
 ; ASM-NEXT:    esp.movx.w.cfg a0
 ; ASM-NEXT:    ret
 entry:
-  %0 = tail call i32 @llvm.riscv.esp.movx.r.cfg.m()
-  %or = or i32 %0, 2
+  %v1 = tail call i32 @llvm.riscv.esp.movx.r.cfg.m()
+  %or = or i32 %v1, 2
   tail call void @llvm.riscv.esp.movx.w.cfg.m(i32 %or)
   ret void
 }
@@ -21,33 +21,33 @@ declare i32 @llvm.riscv.esp.movx.r.cfg.m() #1
 
 declare void @llvm.riscv.esp.movx.w.cfg.m(i32) #1
 
-define dso_local i32 @test_movx_xacc_h(i8 noundef zeroext %data) local_unnamed_addr #2 {
+define dso_local i32 @test_movx_xacc_h(i8 noundef zeroext %Data) local_unnamed_addr #2 {
 ; ASM-LABEL: test_movx_xacc_h:
 ; ASM:       # %bb.0: # %entry
 ; ASM-NEXT:    esp.movx.w.xacc.h a0
 ; ASM-NEXT:    esp.movx.r.xacc.h a0
 ; ASM-NEXT:    ret
 entry:
-  %conv1 = zext i8 %data to i32
-  %0 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 %conv1)
-  %1 = tail call i32 @llvm.riscv.esp.movx.r.xacc.h.m(i32 %0)
-  ret i32 %1
+  %conv1 = zext i8 %Data to i32
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 %conv1)
+  %v2 = tail call i32 @llvm.riscv.esp.movx.r.xacc.h.m(i32 %v1)
+  ret i32 %v2
 }
 
 declare i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32) #3
 
 declare i32 @llvm.riscv.esp.movx.r.xacc.h.m(i32) #3
 
-define dso_local i32 @test_movx_xacc_l(i32 noundef %data) local_unnamed_addr #2 {
+define dso_local i32 @test_movx_xacc_l(i32 noundef %Data) local_unnamed_addr #2 {
 ; ASM-LABEL: test_movx_xacc_l:
 ; ASM:       # %bb.0: # %entry
 ; ASM-NEXT:    esp.movx.w.xacc.l a0
 ; ASM-NEXT:    esp.movx.r.xacc.l a0
 ; ASM-NEXT:    ret
 entry:
-  %0 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 %data)
-  %1 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 %0)
-  ret i32 %1
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 %Data)
+  %v2 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 %v1)
+  ret i32 %v2
 }
 
 declare i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32) #3
@@ -61,10 +61,10 @@ define dso_local i32 @test_movi_8_a(ptr noundef %src) local_unnamed_addr #4 {
 ; ASM-NEXT:    esp.movi.8.a q0, a0, 13
 ; ASM-NEXT:    ret
 entry:
-  %0 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
-  %1 = extractvalue { <16 x i8>, ptr } %0, 0
-  %2 = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> %1, i32 13)
-  ret i32 %2
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
+  %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
+  %v1 = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> %ev1, i32 13)
+  ret i32 %v1
 }
 
 declare i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8>, i32) #3
@@ -76,11 +76,11 @@ define dso_local i32 @test_movi_16_a(ptr noundef %src) local_unnamed_addr #4 {
 ; ASM-NEXT:    esp.movi.16.a q0, a0, 13
 ; ASM-NEXT:    ret
 entry:
-  %0 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
-  %1 = extractvalue { <16 x i8>, ptr } %0, 0
-  %2 = bitcast <16 x i8> %1 to <8 x i16>
-  %3 = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> %2, i32 13)
-  ret i32 %3
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
+  %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
+  %bc1 = bitcast <16 x i8> %ev1 to <8 x i16>
+  %v1 = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> %bc1, i32 13)
+  ret i32 %v1
 }
 
 declare i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16>, i32) #3
@@ -92,11 +92,11 @@ define dso_local i32 @test_movi_32_a(ptr noundef %src) local_unnamed_addr #4 {
 ; ASM-NEXT:    esp.movi.32.a q0, a0, 3
 ; ASM-NEXT:    ret
 entry:
-  %0 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
-  %1 = extractvalue { <16 x i8>, ptr } %0, 0
-  %2 = bitcast <16 x i8> %1 to <4 x i32>
-  %3 = tail call i32 @llvm.riscv.esp.movi.32.a.m(<4 x i32> %2, i32 3)
-  ret i32 %3
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
+  %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
+  %bc1 = bitcast <16 x i8> %ev1 to <4 x i32>
+  %v1 = tail call i32 @llvm.riscv.esp.movi.32.a.m(<4 x i32> %bc1, i32 3)
+  ret i32 %v1
 }
 
 declare i32 @llvm.riscv.esp.movi.32.a.m(<4 x i32>, i32) #3
@@ -109,10 +109,10 @@ define dso_local void @test_movi_8_q(ptr noundef %src, ptr noundef %dst, i32 nou
 ; ASM-NEXT:    esp.vst.128.ip q0, a1, 16
 ; ASM-NEXT:    ret
 entry:
-  %0 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
-  %1 = extractvalue { <16 x i8>, ptr } %0, 0
-  %2 = tail call <16 x i8> @llvm.riscv.esp.movi.8.q.m(<16 x i8> %1, i32 13, i32 %value)
-  %3 = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> %2, ptr %dst, i32 16)
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
+  %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
+  %v1 = tail call <16 x i8> @llvm.riscv.esp.movi.8.q.m(<16 x i8> %ev1, i32 13, i32 %value)
+  %vst_ptr = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> %v1, ptr %dst, i32 16)
   ret void
 }
 
@@ -126,12 +126,12 @@ define dso_local void @test_movi_16_q(ptr noundef %src, ptr noundef %dst, i32 no
 ; ASM-NEXT:    esp.vst.128.ip q0, a1, 16
 ; ASM-NEXT:    ret
 entry:
-  %0 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
-  %1 = extractvalue { <16 x i8>, ptr } %0, 0
-  %2 = bitcast <16 x i8> %1 to <8 x i16>
-  %3 = tail call <8 x i16> @llvm.riscv.esp.movi.16.q.m(<8 x i16> %2, i32 7, i32 %value)
-  %4 = bitcast <8 x i16> %3 to <16 x i8>
-  %5 = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> %4, ptr %dst, i32 16)
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
+  %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
+  %bc1 = bitcast <16 x i8> %ev1 to <8 x i16>
+  %v1 = tail call <8 x i16> @llvm.riscv.esp.movi.16.q.m(<8 x i16> %bc1, i32 7, i32 %value)
+  %bc2 = bitcast <8 x i16> %v1 to <16 x i8>
+  %vst_ptr = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> %bc2, ptr %dst, i32 16)
   ret void
 }
 
@@ -145,12 +145,12 @@ define dso_local void @test_movi_32_q(ptr noundef %src, ptr noundef %dst, i32 no
 ; ASM-NEXT:    esp.vst.128.ip q0, a1, 16
 ; ASM-NEXT:    ret
 entry:
-  %0 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
-  %1 = extractvalue { <16 x i8>, ptr } %0, 0
-  %2 = bitcast <16 x i8> %1 to <4 x i32>
-  %3 = tail call <4 x i32> @llvm.riscv.esp.movi.32.q.m(<4 x i32> %2, i32 3, i32 %value)
-  %4 = bitcast <4 x i32> %3 to <16 x i8>
-  %5 = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> %4, ptr %dst, i32 16)
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
+  %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
+  %bc1 = bitcast <16 x i8> %ev1 to <4 x i32>
+  %v1 = tail call <4 x i32> @llvm.riscv.esp.movi.32.q.m(<4 x i32> %bc1, i32 3, i32 %value)
+  %bc2 = bitcast <4 x i32> %v1 to <16 x i8>
+  %vst_ptr = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> %bc2, ptr %dst, i32 16)
   ret void
 }
 
@@ -164,11 +164,11 @@ define dso_local void @test_mov_s8_qacc(ptr noundef %src, ptr noundef %dst_l, pt
 ; ASM-NEXT:    esp.st.qacc.l.l.128.ip a1, 16
 ; ASM-NEXT:    ret
 entry:
-  %0 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
-  %1 = extractvalue { <16 x i8>, ptr } %0, 0
-  %2 = tail call { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } @llvm.riscv.esp.mov.s8.qacc.m(<16 x i8> %1)
-  %3 = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } %2, 0
-  %4 = tail call ptr @llvm.riscv.esp.st.qacc.l.l.128.ip.m(<16 x i8> %3, ptr %dst_l, i32 16)
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
+  %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
+  %v1 = tail call { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } @llvm.riscv.esp.mov.s8.qacc.m(<16 x i8> %ev1)
+  %ev2 = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } %v1, 0
+  %v2 = tail call ptr @llvm.riscv.esp.st.qacc.l.l.128.ip.m(<16 x i8> %ev2, ptr %dst_l, i32 16)
   ret void
 }
 
@@ -185,14 +185,14 @@ define dso_local void @test_mov_s16_qacc(ptr noundef %src, ptr noundef %dst_l, p
 ; ASM-NEXT:    esp.st.qacc.h.l.128.ip a2, 16
 ; ASM-NEXT:    ret
 entry:
-  %0 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
-  %1 = extractvalue { <16 x i8>, ptr } %0, 0
-  %2 = bitcast <16 x i8> %1 to <8 x i16>
-  %3 = tail call { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } @llvm.riscv.esp.mov.s16.qacc.m(<8 x i16> %2)
-  %4 = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } %3, 0
-  %5 = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } %3, 2
-  %6 = tail call ptr @llvm.riscv.esp.st.qacc.l.l.128.ip.m(<16 x i8> %4, ptr %dst_l, i32 16)
-  %7 = tail call ptr @llvm.riscv.esp.st.qacc.h.l.128.ip.m(<16 x i8> %5, ptr %dst_h, i32 16)
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
+  %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
+  %bc1 = bitcast <16 x i8> %ev1 to <8 x i16>
+  %v1 = tail call { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } @llvm.riscv.esp.mov.s16.qacc.m(<8 x i16> %bc1)
+  %ev2 = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } %v1, 0
+  %ev3 = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } %v1, 2
+  %v2 = tail call ptr @llvm.riscv.esp.st.qacc.l.l.128.ip.m(<16 x i8> %ev2, ptr %dst_l, i32 16)
+  %v3 = tail call ptr @llvm.riscv.esp.st.qacc.h.l.128.ip.m(<16 x i8> %ev3, ptr %dst_h, i32 16)
   ret void
 }
 
@@ -211,17 +211,17 @@ define dso_local void @test_mov_u8_qacc(ptr noundef %src, ptr noundef %dst_l_low
 ; ASM-NEXT:    esp.st.qacc.h.h.128.ip a4, 16
 ; ASM-NEXT:    ret
 entry:
-  %0 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
-  %1 = extractvalue { <16 x i8>, ptr } %0, 0
-  %2 = tail call { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } @llvm.riscv.esp.mov.u8.qacc.m(<16 x i8> %1)
-  %3 = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } %2, 0
-  %4 = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } %2, 1
-  %5 = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } %2, 2
-  %6 = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } %2, 3
-  %7 = tail call ptr @llvm.riscv.esp.st.qacc.l.l.128.ip.m(<16 x i8> %3, ptr %dst_l_low, i32 16)
-  %8 = tail call ptr @llvm.riscv.esp.st.qacc.l.h.128.ip.m(<16 x i8> %4, ptr %dst_l_high, i32 16)
-  %9 = tail call ptr @llvm.riscv.esp.st.qacc.h.l.128.ip.m(<16 x i8> %5, ptr %dst_h_low, i32 16)
-  %10 = tail call ptr @llvm.riscv.esp.st.qacc.h.h.128.ip.m(<16 x i8> %6, ptr %dst_h_high, i32 16)
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
+  %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
+  %v1 = tail call { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } @llvm.riscv.esp.mov.u8.qacc.m(<16 x i8> %ev1)
+  %ev2 = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } %v1, 0
+  %ev3 = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } %v1, 1
+  %ev4 = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } %v1, 2
+  %ev5 = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } %v1, 3
+  %v2 = tail call ptr @llvm.riscv.esp.st.qacc.l.l.128.ip.m(<16 x i8> %ev2, ptr %dst_l_low, i32 16)
+  %v3 = tail call ptr @llvm.riscv.esp.st.qacc.l.h.128.ip.m(<16 x i8> %ev3, ptr %dst_l_high, i32 16)
+  %v4 = tail call ptr @llvm.riscv.esp.st.qacc.h.l.128.ip.m(<16 x i8> %ev4, ptr %dst_h_low, i32 16)
+  %v5 = tail call ptr @llvm.riscv.esp.st.qacc.h.h.128.ip.m(<16 x i8> %ev5, ptr %dst_h_high, i32 16)
   ret void
 }
 
@@ -242,18 +242,18 @@ define dso_local void @test_mov_u16_qacc(ptr noundef %src, ptr noundef %dst_l_lo
 ; ASM-NEXT:    esp.st.qacc.h.h.128.ip a4, 16
 ; ASM-NEXT:    ret
 entry:
-  %0 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
-  %1 = extractvalue { <16 x i8>, ptr } %0, 0
-  %2 = bitcast <16 x i8> %1 to <8 x i16>
-  %3 = tail call { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } @llvm.riscv.esp.mov.u16.qacc.m(<8 x i16> %2)
-  %4 = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } %3, 0
-  %5 = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } %3, 1
-  %6 = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } %3, 2
-  %7 = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } %3, 3
-  %8 = tail call ptr @llvm.riscv.esp.st.qacc.l.l.128.ip.m(<16 x i8> %4, ptr %dst_l_low, i32 16)
-  %9 = tail call ptr @llvm.riscv.esp.st.qacc.l.h.128.ip.m(<16 x i8> %5, ptr %dst_l_high, i32 16)
-  %10 = tail call ptr @llvm.riscv.esp.st.qacc.h.l.128.ip.m(<16 x i8> %6, ptr %dst_h_low, i32 16)
-  %11 = tail call ptr @llvm.riscv.esp.st.qacc.h.h.128.ip.m(<16 x i8> %7, ptr %dst_h_high, i32 16)
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
+  %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
+  %bc1 = bitcast <16 x i8> %ev1 to <8 x i16>
+  %v1 = tail call { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } @llvm.riscv.esp.mov.u16.qacc.m(<8 x i16> %bc1)
+  %ev2 = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } %v1, 0
+  %ev3 = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } %v1, 1
+  %ev4 = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } %v1, 2
+  %ev5 = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } %v1, 3
+  %v2 = tail call ptr @llvm.riscv.esp.st.qacc.l.l.128.ip.m(<16 x i8> %ev2, ptr %dst_l_low, i32 16)
+  %v3 = tail call ptr @llvm.riscv.esp.st.qacc.l.h.128.ip.m(<16 x i8> %ev3, ptr %dst_l_high, i32 16)
+  %v4 = tail call ptr @llvm.riscv.esp.st.qacc.h.l.128.ip.m(<16 x i8> %ev4, ptr %dst_h_low, i32 16)
+  %v5 = tail call ptr @llvm.riscv.esp.st.qacc.h.h.128.ip.m(<16 x i8> %ev5, ptr %dst_h_high, i32 16)
   ret void
 }
 

@@ -695,4 +695,16 @@ let Predicates = [HasVendorXespv1v] in {
   def : EspVectorReduceUminDirectPat<v8i16, i32, ESP_MIN_U16_A>;
   def : EspVectorReduceUminDirectPat<v4i32, i32, ESP_MIN_U32_A>;
 
+  // GPR ALU *_m only (PIE/AR = GPRPIE). Non-_m intrinsics keep pseudo + custom inserter (unchanged in InstrInfo).
+  def : Pat<(i32 (int_riscv_esp_addx2_m GPRPIE:$rs1, GPRPIE:$rs2)),
+            (ESP_ADDX2 GPRPIE:$rs1, GPRPIE:$rs2)>;
+  def : Pat<(i32 (int_riscv_esp_addx4_m GPRPIE:$rs1, GPRPIE:$rs2)),
+            (ESP_ADDX4 GPRPIE:$rs1, GPRPIE:$rs2)>;
+  def : Pat<(i32 (int_riscv_esp_subx2_m GPRPIE:$rs1, GPRPIE:$rs2)),
+            (ESP_SUBX2 GPRPIE:$rs1, GPRPIE:$rs2)>;
+  def : Pat<(i32 (int_riscv_esp_subx4_m GPRPIE:$rs1, GPRPIE:$rs2)),
+            (ESP_SUBX4 GPRPIE:$rs1, GPRPIE:$rs2)>;
+  // No (set ...) on rhs: GlobalISel Pat rejects (set dst, (inst...)); single-def inst like ADDX2.
+  def : Pat<(i32 (int_riscv_esp_sat_m GPRPIE:$rs0, GPRPIE:$rs1, GPRPIE:$rsd)),
+            (ESP_SAT GPRPIE:$rs0, GPRPIE:$rs1, GPRPIE:$rsd)>;
 }

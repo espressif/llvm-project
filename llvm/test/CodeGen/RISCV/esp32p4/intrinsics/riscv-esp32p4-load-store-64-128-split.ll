@@ -11,13 +11,13 @@ define dso_local void @test_64_to_128(ptr noundef %src, ptr noundef %dst) local_
 ; ASM-NEXT:    esp.vst.128.ip q0, a1, 16
 ; ASM-NEXT:    ret
 entry:
-  %0 = tail call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr %src, i32 8)
-  %1 = extractvalue { <8 x i8>, ptr } %0, 0
-  %2 = extractvalue { <8 x i8>, ptr } %0, 1
-  %3 = tail call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr %2, i32 8)
-  %4 = extractvalue { <8 x i8>, ptr } %3, 0
-  %shuffle = shufflevector <8 x i8> %4, <8 x i8> %1, <16 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7, i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-  %5 = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> %shuffle, ptr %dst, i32 16)
+  %v1 = tail call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr %src, i32 8)
+  %ev1 = extractvalue { <8 x i8>, ptr } %v1, 0
+  %ev2 = extractvalue { <8 x i8>, ptr } %v1, 1
+  %v2 = tail call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr %ev2, i32 8)
+  %ev3 = extractvalue { <8 x i8>, ptr } %v2, 0
+  %shuffle = shufflevector <8 x i8> %ev3, <8 x i8> %ev1, <16 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7, i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
+  %vst_ptr = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> %shuffle, ptr %dst, i32 16)
   ret void
 }
 
@@ -30,13 +30,13 @@ define dso_local ptr @test_128_to_64(ptr noundef %src, ptr noundef %dst) local_u
 ; ASM-NEXT:    esp.vst.l.64.ip q0, a0, 8
 ; ASM-NEXT:    ret
 entry:
-  %0 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
-  %1 = extractvalue { <16 x i8>, ptr } %0, 0
-  %u.sroa.0.8.vec.extract3.i = shufflevector <16 x i8> %1, <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-  %2 = tail call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> %u.sroa.0.8.vec.extract3.i, ptr %dst, i32 8)
-  %u.sroa.0.0.vec.extract3.i = shufflevector <16 x i8> %1, <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
-  %3 = tail call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> %u.sroa.0.0.vec.extract3.i, ptr %2, i32 8)
-  ret ptr %3
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
+  %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
+  %U.sroa.0.8.vec.extract3.i = shufflevector <16 x i8> %ev1, <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
+  %v1 = tail call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> %U.sroa.0.8.vec.extract3.i, ptr %dst, i32 8)
+  %U.sroa.0.0.vec.extract3.i = shufflevector <16 x i8> %ev1, <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
+  %v2 = tail call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> %U.sroa.0.0.vec.extract3.i, ptr %v1, i32 8)
+  ret ptr %v2
 }
 
 define dso_local void @test_64_to_128_xp(ptr noundef %src, ptr noundef %dst, i32 noundef %stride_reg) local_unnamed_addr #0 {
@@ -47,13 +47,13 @@ define dso_local void @test_64_to_128_xp(ptr noundef %src, ptr noundef %dst, i32
 ; ASM-NEXT:    esp.vst.128.xp q0, a1, a2
 ; ASM-NEXT:    ret
 entry:
-  %0 = tail call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.xp.m(ptr %src, i32 %stride_reg)
-  %1 = extractvalue { <8 x i8>, ptr } %0, 0
-  %2 = extractvalue { <8 x i8>, ptr } %0, 1
-  %3 = tail call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.xp.m(ptr %2, i32 %stride_reg)
-  %4 = extractvalue { <8 x i8>, ptr } %3, 0
-  %shuffle = shufflevector <8 x i8> %4, <8 x i8> %1, <16 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7, i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-  %5 = tail call ptr @llvm.riscv.esp.vst.128.xp.m(<16 x i8> %shuffle, ptr %dst, i32 %stride_reg)
+  %v1 = tail call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.xp.m(ptr %src, i32 %stride_reg)
+  %ev1 = extractvalue { <8 x i8>, ptr } %v1, 0
+  %ev2 = extractvalue { <8 x i8>, ptr } %v1, 1
+  %v2 = tail call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.xp.m(ptr %ev2, i32 %stride_reg)
+  %ev3 = extractvalue { <8 x i8>, ptr } %v2, 0
+  %shuffle = shufflevector <8 x i8> %ev3, <8 x i8> %ev1, <16 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7, i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
+  %v3 = tail call ptr @llvm.riscv.esp.vst.128.xp.m(<16 x i8> %shuffle, ptr %dst, i32 %stride_reg)
   ret void
 }
 
@@ -66,13 +66,13 @@ define dso_local ptr @test_128_to_64_xp(ptr noundef %src, ptr noundef %dst, i32 
 ; ASM-NEXT:    esp.vst.l.64.xp q0, a0, a2
 ; ASM-NEXT:    ret
 entry:
-  %0 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.xp.m(ptr %src, i32 %stride_reg)
-  %1 = extractvalue { <16 x i8>, ptr } %0, 0
-  %u.sroa.0.8.vec.extract3.i = shufflevector <16 x i8> %1, <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-  %2 = tail call ptr @llvm.riscv.esp.vst.h.64.xp.m(<8 x i8> %u.sroa.0.8.vec.extract3.i, ptr %dst, i32 %stride_reg)
-  %u.sroa.0.0.vec.extract3.i = shufflevector <16 x i8> %1, <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
-  %3 = tail call ptr @llvm.riscv.esp.vst.l.64.xp.m(<8 x i8> %u.sroa.0.0.vec.extract3.i, ptr %2, i32 %stride_reg)
-  ret ptr %3
+  %v1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.xp.m(ptr %src, i32 %stride_reg)
+  %ev1 = extractvalue { <16 x i8>, ptr } %v1, 0
+  %U.sroa.0.8.vec.extract3.i = shufflevector <16 x i8> %ev1, <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
+  %v2 = tail call ptr @llvm.riscv.esp.vst.h.64.xp.m(<8 x i8> %U.sroa.0.8.vec.extract3.i, ptr %dst, i32 %stride_reg)
+  %U.sroa.0.0.vec.extract3.i = shufflevector <16 x i8> %ev1, <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
+  %v3 = tail call ptr @llvm.riscv.esp.vst.l.64.xp.m(<8 x i8> %U.sroa.0.0.vec.extract3.i, ptr %v2, i32 %stride_reg)
+  ret ptr %v3
 }
 
 define dso_local void @test_movi_8_a_subregister(ptr noundef %src, ptr noundef writeonly captures(none) initializes((0, 24)) %dst) local_unnamed_addr #2 {
@@ -93,25 +93,25 @@ define dso_local void @test_movi_8_a_subregister(ptr noundef %src, ptr noundef w
 ; ASM-NEXT:    sw a0, 20(a1)
 ; ASM-NEXT:    ret
 entry:
-  %0 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
-  %1 = extractvalue { <16 x i8>, ptr } %0, 0
-  %2 = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> %1, i32 0)
-  store i32 %2, ptr %dst, align 4, !tbaa !27
-  %3 = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> %1, i32 3)
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
+  %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
+  %v1 = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> %ev1, i32 0)
+  store i32 %v1, ptr %dst, align 4, !tbaa !27
+  %v2 = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> %ev1, i32 3)
   %arrayidx3 = getelementptr inbounds nuw i8, ptr %dst, i32 4
-  store i32 %3, ptr %arrayidx3, align 4, !tbaa !27
-  %4 = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> %1, i32 7)
+  store i32 %v2, ptr %arrayidx3, align 4, !tbaa !27
+  %v3 = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> %ev1, i32 7)
   %arrayidx6 = getelementptr inbounds nuw i8, ptr %dst, i32 8
-  store i32 %4, ptr %arrayidx6, align 4, !tbaa !27
-  %5 = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> %1, i32 8)
+  store i32 %v3, ptr %arrayidx6, align 4, !tbaa !27
+  %v4 = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> %ev1, i32 8)
   %arrayidx9 = getelementptr inbounds nuw i8, ptr %dst, i32 12
-  store i32 %5, ptr %arrayidx9, align 4, !tbaa !27
-  %6 = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> %1, i32 11)
+  store i32 %v4, ptr %arrayidx9, align 4, !tbaa !27
+  %v5 = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> %ev1, i32 11)
   %arrayidx12 = getelementptr inbounds nuw i8, ptr %dst, i32 16
-  store i32 %6, ptr %arrayidx12, align 4, !tbaa !27
-  %7 = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> %1, i32 15)
+  store i32 %v5, ptr %arrayidx12, align 4, !tbaa !27
+  %v6 = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> %ev1, i32 15)
   %arrayidx15 = getelementptr inbounds nuw i8, ptr %dst, i32 20
-  store i32 %7, ptr %arrayidx15, align 4, !tbaa !27
+  store i32 %v6, ptr %arrayidx15, align 4, !tbaa !27
   ret void
 }
 
@@ -133,26 +133,26 @@ define dso_local void @test_movi_16_a_subregister(ptr noundef %src, ptr noundef 
 ; ASM-NEXT:    sw a0, 20(a1)
 ; ASM-NEXT:    ret
 entry:
-  %0 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
-  %1 = extractvalue { <16 x i8>, ptr } %0, 0
-  %2 = bitcast <16 x i8> %1 to <8 x i16>
-  %3 = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> %2, i32 0)
-  store i32 %3, ptr %dst, align 4, !tbaa !27
-  %4 = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> %2, i32 2)
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
+  %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
+  %bc1 = bitcast <16 x i8> %ev1 to <8 x i16>
+  %v1 = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> %bc1, i32 0)
+  store i32 %v1, ptr %dst, align 4, !tbaa !27
+  %v2 = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> %bc1, i32 2)
   %arrayidx3 = getelementptr inbounds nuw i8, ptr %dst, i32 4
-  store i32 %4, ptr %arrayidx3, align 4, !tbaa !27
-  %5 = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> %2, i32 3)
+  store i32 %v2, ptr %arrayidx3, align 4, !tbaa !27
+  %v3 = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> %bc1, i32 3)
   %arrayidx6 = getelementptr inbounds nuw i8, ptr %dst, i32 8
-  store i32 %5, ptr %arrayidx6, align 4, !tbaa !27
-  %6 = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> %2, i32 4)
+  store i32 %v3, ptr %arrayidx6, align 4, !tbaa !27
+  %v4 = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> %bc1, i32 4)
   %arrayidx9 = getelementptr inbounds nuw i8, ptr %dst, i32 12
-  store i32 %6, ptr %arrayidx9, align 4, !tbaa !27
-  %7 = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> %2, i32 6)
+  store i32 %v4, ptr %arrayidx9, align 4, !tbaa !27
+  %v5 = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> %bc1, i32 6)
   %arrayidx12 = getelementptr inbounds nuw i8, ptr %dst, i32 16
-  store i32 %7, ptr %arrayidx12, align 4, !tbaa !27
-  %8 = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> %2, i32 7)
+  store i32 %v5, ptr %arrayidx12, align 4, !tbaa !27
+  %v6 = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> %bc1, i32 7)
   %arrayidx15 = getelementptr inbounds nuw i8, ptr %dst, i32 20
-  store i32 %8, ptr %arrayidx15, align 4, !tbaa !27
+  store i32 %v6, ptr %arrayidx15, align 4, !tbaa !27
   ret void
 }
 
@@ -170,20 +170,20 @@ define dso_local void @test_movi_32_a_subregister(ptr noundef %src, ptr noundef 
 ; ASM-NEXT:    sw a4, 12(a1)
 ; ASM-NEXT:    ret
 entry:
-  %0 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
-  %1 = extractvalue { <16 x i8>, ptr } %0, 0
-  %2 = bitcast <16 x i8> %1 to <4 x i32>
-  %3 = tail call i32 @llvm.riscv.esp.movi.32.a.m(<4 x i32> %2, i32 0)
-  store i32 %3, ptr %dst, align 4, !tbaa !27
-  %4 = tail call i32 @llvm.riscv.esp.movi.32.a.m(<4 x i32> %2, i32 1)
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
+  %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
+  %bc1 = bitcast <16 x i8> %ev1 to <4 x i32>
+  %v1 = tail call i32 @llvm.riscv.esp.movi.32.a.m(<4 x i32> %bc1, i32 0)
+  store i32 %v1, ptr %dst, align 4, !tbaa !27
+  %v2 = tail call i32 @llvm.riscv.esp.movi.32.a.m(<4 x i32> %bc1, i32 1)
   %arrayidx3 = getelementptr inbounds nuw i8, ptr %dst, i32 4
-  store i32 %4, ptr %arrayidx3, align 4, !tbaa !27
-  %5 = tail call i32 @llvm.riscv.esp.movi.32.a.m(<4 x i32> %2, i32 2)
+  store i32 %v2, ptr %arrayidx3, align 4, !tbaa !27
+  %v3 = tail call i32 @llvm.riscv.esp.movi.32.a.m(<4 x i32> %bc1, i32 2)
   %arrayidx6 = getelementptr inbounds nuw i8, ptr %dst, i32 8
-  store i32 %5, ptr %arrayidx6, align 4, !tbaa !27
-  %6 = tail call i32 @llvm.riscv.esp.movi.32.a.m(<4 x i32> %2, i32 3)
+  store i32 %v3, ptr %arrayidx6, align 4, !tbaa !27
+  %v4 = tail call i32 @llvm.riscv.esp.movi.32.a.m(<4 x i32> %bc1, i32 3)
   %arrayidx9 = getelementptr inbounds nuw i8, ptr %dst, i32 12
-  store i32 %6, ptr %arrayidx9, align 4, !tbaa !27
+  store i32 %v4, ptr %arrayidx9, align 4, !tbaa !27
   ret void
 }
 
@@ -226,49 +226,49 @@ define dso_local void @test_movi_from_64bit_subregister(ptr noundef %src, ptr no
 ; ASM-NEXT:    .cfi_def_cfa_offset 0
 ; ASM-NEXT:    ret
 entry:
-  %0 = tail call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr %src, i32 8)
-  %1 = extractvalue { <8 x i8>, ptr } %0, 0
-  %2 = extractvalue { <8 x i8>, ptr } %0, 1
-  %3 = tail call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr %2, i32 8)
-  %4 = extractvalue { <8 x i8>, ptr } %3, 0
-  %shuffle = shufflevector <8 x i8> %1, <8 x i8> %4, <16 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7, i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-  %5 = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> %shuffle, i32 0)
-  store i32 %5, ptr %dst, align 4, !tbaa !27
-  %6 = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> %shuffle, i32 7)
+  %v1 = tail call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr %src, i32 8)
+  %ev1 = extractvalue { <8 x i8>, ptr } %v1, 0
+  %ev2 = extractvalue { <8 x i8>, ptr } %v1, 1
+  %v2 = tail call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr %ev2, i32 8)
+  %ev3 = extractvalue { <8 x i8>, ptr } %v2, 0
+  %shuffle = shufflevector <8 x i8> %ev1, <8 x i8> %ev3, <16 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7, i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
+  %v3 = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> %shuffle, i32 0)
+  store i32 %v3, ptr %dst, align 4, !tbaa !27
+  %v4 = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> %shuffle, i32 7)
   %arrayidx4 = getelementptr inbounds nuw i8, ptr %dst, i32 4
-  store i32 %6, ptr %arrayidx4, align 4, !tbaa !27
-  %7 = bitcast <16 x i8> %shuffle to <8 x i16>
-  %8 = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> %7, i32 0)
+  store i32 %v4, ptr %arrayidx4, align 4, !tbaa !27
+  %bc1 = bitcast <16 x i8> %shuffle to <8 x i16>
+  %v5 = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> %bc1, i32 0)
   %arrayidx7 = getelementptr inbounds nuw i8, ptr %dst, i32 8
-  store i32 %8, ptr %arrayidx7, align 4, !tbaa !27
-  %9 = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> %7, i32 3)
+  store i32 %v5, ptr %arrayidx7, align 4, !tbaa !27
+  %v6 = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> %bc1, i32 3)
   %arrayidx10 = getelementptr inbounds nuw i8, ptr %dst, i32 12
-  store i32 %9, ptr %arrayidx10, align 4, !tbaa !27
-  %10 = bitcast <16 x i8> %shuffle to <4 x i32>
-  %11 = tail call i32 @llvm.riscv.esp.movi.32.a.m(<4 x i32> %10, i32 0)
+  store i32 %v6, ptr %arrayidx10, align 4, !tbaa !27
+  %bc2 = bitcast <16 x i8> %shuffle to <4 x i32>
+  %v7 = tail call i32 @llvm.riscv.esp.movi.32.a.m(<4 x i32> %bc2, i32 0)
   %arrayidx13 = getelementptr inbounds nuw i8, ptr %dst, i32 16
-  store i32 %11, ptr %arrayidx13, align 4, !tbaa !27
-  %12 = tail call i32 @llvm.riscv.esp.movi.32.a.m(<4 x i32> %10, i32 1)
+  store i32 %v7, ptr %arrayidx13, align 4, !tbaa !27
+  %v8 = tail call i32 @llvm.riscv.esp.movi.32.a.m(<4 x i32> %bc2, i32 1)
   %arrayidx16 = getelementptr inbounds nuw i8, ptr %dst, i32 20
-  store i32 %12, ptr %arrayidx16, align 4, !tbaa !27
-  %13 = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> %shuffle, i32 8)
+  store i32 %v8, ptr %arrayidx16, align 4, !tbaa !27
+  %v9 = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> %shuffle, i32 8)
   %arrayidx19 = getelementptr inbounds nuw i8, ptr %dst, i32 24
-  store i32 %13, ptr %arrayidx19, align 4, !tbaa !27
-  %14 = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> %shuffle, i32 15)
+  store i32 %v9, ptr %arrayidx19, align 4, !tbaa !27
+  %v10 = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> %shuffle, i32 15)
   %arrayidx22 = getelementptr inbounds nuw i8, ptr %dst, i32 28
-  store i32 %14, ptr %arrayidx22, align 4, !tbaa !27
-  %15 = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> %7, i32 4)
+  store i32 %v10, ptr %arrayidx22, align 4, !tbaa !27
+  %v11 = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> %bc1, i32 4)
   %arrayidx25 = getelementptr inbounds nuw i8, ptr %dst, i32 32
-  store i32 %15, ptr %arrayidx25, align 4, !tbaa !27
-  %16 = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> %7, i32 7)
+  store i32 %v11, ptr %arrayidx25, align 4, !tbaa !27
+  %v12 = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> %bc1, i32 7)
   %arrayidx28 = getelementptr inbounds nuw i8, ptr %dst, i32 36
-  store i32 %16, ptr %arrayidx28, align 4, !tbaa !27
-  %17 = tail call i32 @llvm.riscv.esp.movi.32.a.m(<4 x i32> %10, i32 2)
+  store i32 %v12, ptr %arrayidx28, align 4, !tbaa !27
+  %v13 = tail call i32 @llvm.riscv.esp.movi.32.a.m(<4 x i32> %bc2, i32 2)
   %arrayidx31 = getelementptr inbounds nuw i8, ptr %dst, i32 40
-  store i32 %17, ptr %arrayidx31, align 4, !tbaa !27
-  %18 = tail call i32 @llvm.riscv.esp.movi.32.a.m(<4 x i32> %10, i32 3)
+  store i32 %v13, ptr %arrayidx31, align 4, !tbaa !27
+  %v14 = tail call i32 @llvm.riscv.esp.movi.32.a.m(<4 x i32> %bc2, i32 3)
   %arrayidx34 = getelementptr inbounds nuw i8, ptr %dst, i32 44
-  store i32 %18, ptr %arrayidx34, align 4, !tbaa !27
+  store i32 %v14, ptr %arrayidx34, align 4, !tbaa !27
   ret void
 }
 

@@ -3,7 +3,6 @@
 ; Test ASM generation (Intrinsic -> ASM)
 ; RUN: llc -O2 -mattr=+xespv1v,+espv-lowering -mtriple=riscv32 %s -o - | FileCheck %s --check-prefix=ASM
 
-
 define dso_local void @test_fft_ams_s16_ld_incp_uaup(ptr noundef %src, ptr noundef %dst) local_unnamed_addr #0 {
 ; ASM-LABEL: test_fft_ams_s16_ld_incp_uaup:
 ; ASM:       # %bb.0: # %entry

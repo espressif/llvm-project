@@ -5534,6 +5534,20 @@ void SelectionDAGBuilder::visitTargetIntrinsic(const CallInst &I,
 
   // Create the node.
   SDValue Result;
+  // Void intrinsics with IntrNoMem make F->doesNotAccessMemory() true, so
+  // HasChain is false. INTRINSIC_WO_CHAIN requires a non-empty VT list (at
+  // least one result); use INTRINSIC_VOID with an explicit chain operand.
+  bool ChainForRoot = HasChain;
+
+  if (auto Bundle = I.getOperandBundle(LLVMContext::OB_convergencectrl)) {
+    auto *Token = Bundle->Inputs[0].get();
+    SDValue ConvControlToken = getValue(Token);
+    assert(Ops.back().getValueType() != MVT::Glue &&
+           "Did not expected another glue node here.");
+    ConvControlToken =
+        DAG.getNode(ISD::CONVERGENCECTRL_GLUE, {}, MVT::Glue, ConvControlToken);
+    Ops.push_back(ConvControlToken);
+  }
 
   // In some cases, custom collection of operands from CallInst I may be needed.
   TLI.CollectTargetIntrinsicOperands(I, Ops, DAG);
@@ -5563,8 +5577,27 @@ void SelectionDAGBuilder::visitTargetIntrinsic(const CallInst &I,
 
     Result = DAG.getMemIntrinsicNode(Info->opc, getCurSDLoc(), VTs, Ops,
                                      Info->memVT, MMOs);
+  } else if (!HasChain && I.getType()->isVoidTy()) {
+    SmallVector<SDValue, 8> VoidOps;
+    VoidOps.push_back(getRoot());
+    VoidOps.append(Ops.begin(), Ops.end());
+    SDVTList VoidVTs = DAG.getVTList(MVT::Other);
+    Result = DAG.getNode(ISD::INTRINSIC_VOID, getCurSDLoc(), VoidVTs, VoidOps);
+    ChainForRoot = true;
+  } else if (!HasChain) {
+    Result = DAG.getNode(ISD::INTRINSIC_WO_CHAIN, getCurSDLoc(), VTs, Ops);
+  } else if (!I.getType()->isVoidTy()) {
+    Result = DAG.getNode(ISD::INTRINSIC_W_CHAIN, getCurSDLoc(), VTs, Ops);
   } else {
-    Result = getTargetNonMemIntrinsicNode(*I.getType(), HasChain, Ops, VTs);
+    Result = DAG.getNode(ISD::INTRINSIC_VOID, getCurSDLoc(), VTs, Ops);
+  }
+
+  if (ChainForRoot) {
+    SDValue Chain = Result.getValue(Result.getNode()->getNumValues() - 1);
+    if (OnlyLoad)
+      PendingLoads.push_back(Chain);
+    else
+      DAG.setRoot(Chain);
   }
 
   Result = handleTargetIntrinsicRet(I, HasChain, OnlyLoad, Result);

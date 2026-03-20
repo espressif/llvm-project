@@ -155,7 +155,7 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
     else
       addRegisterClass(MVT::f64, &RISCV::GPRPairRegClass);
   }
-
+  // ESPV register classes: +xespv (2.2), or +xespv1v with +espv-lowering.
   if (Subtarget.hasESPVTargetLowering()) {
     initializeESPVTargetLowering(Subtarget);
     // ESPV: Support for v64i8 (512-bit QACC pair)
@@ -12050,7 +12050,7 @@ lowerFixedVectorSegLoadIntrinsics(unsigned IntNo, SDValue Op,
     break;
   default:
     llvm_unreachable("unexpected intrinsic ID");
-  };
+  }
 
   static const Intrinsic::ID VlsegInts[7] = {
       Intrinsic::riscv_vlseg2_mask, Intrinsic::riscv_vlseg3_mask,
@@ -12104,7 +12104,7 @@ lowerFixedVectorSegLoadIntrinsics(unsigned IntNo, SDValue Op,
       DAG.getMemIntrinsicNode(ISD::INTRINSIC_W_CHAIN, DL, VTs, Ops,
                               Load->getMemoryVT(), Load->getMemOperand());
   SmallVector<SDValue, 9> Results;
-  for (unsigned int RetIdx = 0; RetIdx < NF; RetIdx++) {
+  for (unsigned RetIdx = 0; RetIdx < NF; RetIdx++) {
     SDValue SubVec = DAG.getNode(RISCVISD::TUPLE_EXTRACT, DL, ContainerVT,
                                  Result.getValue(0),
                                  DAG.getTargetConstant(RetIdx, DL, MVT::i32));
@@ -12117,11 +12117,11 @@ lowerFixedVectorSegLoadIntrinsics(unsigned IntNo, SDValue Op,
 SDValue RISCVTargetLowering::LowerINTRINSIC_W_CHAIN(SDValue Op,
                                                     SelectionDAG &DAG) const {
   unsigned IntNo = Op.getConstantOperandVal(1);
-  
+
   // Try ESPV intrinsic lowering first
   if (SDValue V = RISCV::lowerESPVIntrinsicWChain(Op, DAG, Subtarget))
     return V;
- 
+
   switch (IntNo) {
   default:
     break;
@@ -15844,7 +15844,7 @@ void RISCVTargetLowering::ReplaceNodeResults(SDNode *N,
         }
       }
     }
-  
+
     switch (IntNo) {
     default:
       llvm_unreachable(
