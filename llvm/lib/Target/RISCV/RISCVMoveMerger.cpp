@@ -459,7 +459,10 @@ bool RISCVMoveMerge::mergeMovePairs(MachineBasicBlock &MBB) {
           continue;
         }
       }
-      if (IsEven != IsOdd) {
+      // GPR-pair merge uses Zdinx or P-only opcodes; skip when neither is present
+      // (e.g. Zcmp-only targets like esp32p4).
+      if (IsEven != IsOdd && !ST->is64Bit() &&
+          (ST->hasStdExtZdinx() || ST->hasStdExtP())) {
         Paired = findMatchingGPRPairCopy(MBBI, IsEven, *RegPair);
         if (Paired != E) {
           MBBI = mergeGPRPairInsns(MBBI, Paired, IsEven);
