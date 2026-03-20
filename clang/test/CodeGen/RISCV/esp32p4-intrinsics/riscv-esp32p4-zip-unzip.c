@@ -124,15 +124,94 @@ void test_vzip_32(void *src1, void *src2, void *dst1, void *dst2) {
     esp_vst_128_ip_m(conv2.V8, dst2, 16);
 }
 
+// VUNZIP 16-bit / 32-bit
+// CHECK-LABEL: define dso_local void @test_vunzip_16(
+// CHECK-SAME: ptr noundef [[SRC1:%.*]], ptr noundef [[SRC2:%.*]], ptr noundef [[DST1:%.*]], ptr noundef [[DST2:%.*]]) local_unnamed_addr #[[ATTR0]] {
+// CHECK-NEXT:  [[ENTRY:.*:]]
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC1]], i32 16), !noalias [[META30:![0-9]+]]
+// CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP0]], 0
+// CHECK-NEXT:    [[TMP2:%.*]] = bitcast <16 x i8> [[TMP1]] to <8 x i16>
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16), !noalias [[META33:![0-9]+]]
+// CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP3]], 0
+// CHECK-NEXT:    [[TMP5:%.*]] = bitcast <16 x i8> [[TMP4]] to <8 x i16>
+// CHECK-NEXT:    [[TMP6:%.*]] = tail call { <8 x i16>, <8 x i16> } @llvm.riscv.esp.vunzip.16.m(<8 x i16> [[TMP2]], <8 x i16> [[TMP5]])
+// CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <8 x i16>, <8 x i16> } [[TMP6]], 0
+// CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <8 x i16>, <8 x i16> } [[TMP6]], 1
+// CHECK-NEXT:    [[TMP9:%.*]] = bitcast <8 x i16> [[TMP7]] to <16 x i8>
+// CHECK-NEXT:    [[TMP10:%.*]] = bitcast <8 x i16> [[TMP8]] to <16 x i8>
+// CHECK-NEXT:    [[TMP11:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP9]], ptr [[DST1]], i32 16)
+// CHECK-NEXT:    [[TMP12:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP10]], ptr [[DST2]], i32 16)
+// CHECK-NEXT:    ret void
+//
+void test_vunzip_16(void *src1, void *src2, void *dst1, void *dst2) {
+    esp_vld_res_t Res1 = esp_vld_128_ip_m(src1, 16);
+    esp_vld_res_t Res2 = esp_vld_128_ip_m(src2, 16);
+    union {
+        esp_vec128_t V8;
+        esp_vec128_16_t V16;
+    } u1, u2;
+    u1.V8 = Res1.Val.V8;
+    u2.V8 = Res2.Val.V8;
+    esp_vec128_16_t out1, out2;
+    esp_vunzip_16_m(u1.V16, u2.V16, &out1, &out2);
+    union {
+        esp_vec128_t V8;
+        esp_vec128_16_t V16;
+    } c1, c2;
+    c1.V16 = out1;
+    c2.V16 = out2;
+    esp_vst_128_ip_m(c1.V8, dst1, 16);
+    esp_vst_128_ip_m(c2.V8, dst2, 16);
+}
+
+// CHECK-LABEL: define dso_local void @test_vunzip_32(
+// CHECK-SAME: ptr noundef [[SRC1:%.*]], ptr noundef [[SRC2:%.*]], ptr noundef [[DST1:%.*]], ptr noundef [[DST2:%.*]]) local_unnamed_addr #[[ATTR0]] {
+// CHECK-NEXT:  [[ENTRY:.*:]]
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC1]], i32 16), !noalias [[META36:![0-9]+]]
+// CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP0]], 0
+// CHECK-NEXT:    [[TMP2:%.*]] = bitcast <16 x i8> [[TMP1]] to <4 x i32>
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16), !noalias [[META39:![0-9]+]]
+// CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP3]], 0
+// CHECK-NEXT:    [[TMP5:%.*]] = bitcast <16 x i8> [[TMP4]] to <4 x i32>
+// CHECK-NEXT:    [[TMP6:%.*]] = tail call { <4 x i32>, <4 x i32> } @llvm.riscv.esp.vunzip.32.m(<4 x i32> [[TMP2]], <4 x i32> [[TMP5]])
+// CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <4 x i32>, <4 x i32> } [[TMP6]], 0
+// CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <4 x i32>, <4 x i32> } [[TMP6]], 1
+// CHECK-NEXT:    [[TMP9:%.*]] = bitcast <4 x i32> [[TMP7]] to <16 x i8>
+// CHECK-NEXT:    [[TMP10:%.*]] = bitcast <4 x i32> [[TMP8]] to <16 x i8>
+// CHECK-NEXT:    [[TMP11:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP9]], ptr [[DST1]], i32 16)
+// CHECK-NEXT:    [[TMP12:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP10]], ptr [[DST2]], i32 16)
+// CHECK-NEXT:    ret void
+//
+void test_vunzip_32(void *src1, void *src2, void *dst1, void *dst2) {
+    esp_vld_res_t Res1 = esp_vld_128_ip_m(src1, 16);
+    esp_vld_res_t Res2 = esp_vld_128_ip_m(src2, 16);
+    union {
+        esp_vec128_t V8;
+        esp_vec128_32_t V32;
+    } u1, u2;
+    u1.V8 = Res1.Val.V8;
+    u2.V8 = Res2.Val.V8;
+    esp_vec128_32_t out1, out2;
+    esp_vunzip_32_m(u1.V32, u2.V32, &out1, &out2);
+    union {
+        esp_vec128_t V8;
+        esp_vec128_32_t V32;
+    } c1, c2;
+    c1.V32 = out1;
+    c2.V32 = out2;
+    esp_vst_128_ip_m(c1.V8, dst1, 16);
+    esp_vst_128_ip_m(c2.V8, dst2, 16);
+}
+
 // VZIPT/VUNZIPT 8-bit (3 vectors)
 // CHECK-LABEL: define dso_local void @test_vzipt_8(
 // CHECK-SAME: ptr noundef [[SRC1:%.*]], ptr noundef [[SRC2:%.*]], ptr noundef [[SRC3:%.*]], ptr noundef [[DST1:%.*]], ptr noundef [[DST2:%.*]], ptr noundef [[DST3:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC1]], i32 16), !noalias [[META30:![0-9]+]]
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC1]], i32 16), !noalias [[META42:![0-9]+]]
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP0]], 0
-// CHECK-NEXT:    [[TMP2:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16), !noalias [[META33:![0-9]+]]
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16), !noalias [[META45:![0-9]+]]
 // CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP2]], 0
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC3]], i32 16), !noalias [[META36:![0-9]+]]
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC3]], i32 16), !noalias [[META48:![0-9]+]]
 // CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP4]], 0
 // CHECK-NEXT:    [[TMP6:%.*]] = tail call { <16 x i8>, <16 x i8>, <16 x i8> } @llvm.riscv.esp.vzipt.8.m(<16 x i8> [[TMP1]], <16 x i8> [[TMP3]], <16 x i8> [[TMP5]])
 // CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8> } [[TMP6]], 0
@@ -152,6 +231,137 @@ void test_vzipt_8(void *src1, void *src2, void *src3, void *dst1, void *dst2, vo
     esp_vst_128_ip_m(out1, dst1, 16);
     esp_vst_128_ip_m(out2, dst2, 16);
     esp_vst_128_ip_m(out3, dst3, 16);
+}
+
+// VZIPT/VUNZIPT 16-bit (3 vectors)
+// CHECK-LABEL: define dso_local void @test_vzipt_16(
+// CHECK-SAME: ptr noundef [[SRC1:%.*]], ptr noundef [[SRC2:%.*]], ptr noundef [[SRC3:%.*]], ptr noundef [[DST1:%.*]], ptr noundef [[DST2:%.*]], ptr noundef [[DST3:%.*]]) local_unnamed_addr #[[ATTR0]] {
+// CHECK-NEXT:  [[ENTRY:.*:]]
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC1]], i32 16), !noalias [[META51:![0-9]+]]
+// CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP0]], 0
+// CHECK-NEXT:    [[TMP2:%.*]] = bitcast <16 x i8> [[TMP1]] to <8 x i16>
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16), !noalias [[META54:![0-9]+]]
+// CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP3]], 0
+// CHECK-NEXT:    [[TMP5:%.*]] = bitcast <16 x i8> [[TMP4]] to <8 x i16>
+// CHECK-NEXT:    [[TMP6:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC3]], i32 16), !noalias [[META57:![0-9]+]]
+// CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP6]], 0
+// CHECK-NEXT:    [[TMP8:%.*]] = bitcast <16 x i8> [[TMP7]] to <8 x i16>
+// CHECK-NEXT:    [[TMP9:%.*]] = tail call { <8 x i16>, <8 x i16>, <8 x i16> } @llvm.riscv.esp.vzipt.16.m(<8 x i16> [[TMP2]], <8 x i16> [[TMP5]], <8 x i16> [[TMP8]])
+// CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <8 x i16>, <8 x i16>, <8 x i16> } [[TMP9]], 0
+// CHECK-NEXT:    [[TMP11:%.*]] = extractvalue { <8 x i16>, <8 x i16>, <8 x i16> } [[TMP9]], 1
+// CHECK-NEXT:    [[TMP12:%.*]] = extractvalue { <8 x i16>, <8 x i16>, <8 x i16> } [[TMP9]], 2
+// CHECK-NEXT:    [[TMP13:%.*]] = bitcast <8 x i16> [[TMP10]] to <16 x i8>
+// CHECK-NEXT:    [[TMP14:%.*]] = bitcast <8 x i16> [[TMP11]] to <16 x i8>
+// CHECK-NEXT:    [[TMP15:%.*]] = bitcast <8 x i16> [[TMP12]] to <16 x i8>
+// CHECK-NEXT:    [[TMP16:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP13]], ptr [[DST1]], i32 16)
+// CHECK-NEXT:    [[TMP17:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP14]], ptr [[DST2]], i32 16)
+// CHECK-NEXT:    [[TMP18:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP15]], ptr [[DST3]], i32 16)
+// CHECK-NEXT:    ret void
+//
+void test_vzipt_16(void *src1, void *src2, void *src3, void *dst1, void *dst2,
+                   void *dst3) {
+    esp_vld_res_t Res1 = esp_vld_128_ip_m(src1, 16);
+    esp_vld_res_t Res2 = esp_vld_128_ip_m(src2, 16);
+    esp_vld_res_t Res3 = esp_vld_128_ip_m(src3, 16);
+    union {
+        esp_vec128_t V8;
+        esp_vec128_16_t V16;
+    } u1, u2, u3;
+    u1.V8 = Res1.Val.V8;
+    u2.V8 = Res2.Val.V8;
+    u3.V8 = Res3.Val.V8;
+    esp_vec128_16_t o1, o2, o3;
+    esp_vzipt_16_m(u1.V16, u2.V16, u3.V16, &o1, &o2, &o3);
+    union {
+        esp_vec128_t V8;
+        esp_vec128_16_t V16;
+    } c1, c2, c3;
+    c1.V16 = o1;
+    c2.V16 = o2;
+    c3.V16 = o3;
+    esp_vst_128_ip_m(c1.V8, dst1, 16);
+    esp_vst_128_ip_m(c2.V8, dst2, 16);
+    esp_vst_128_ip_m(c3.V8, dst3, 16);
+}
+
+// CHECK-LABEL: define dso_local void @test_vunzipt_8(
+// CHECK-SAME: ptr noundef [[SRC1:%.*]], ptr noundef [[SRC2:%.*]], ptr noundef [[SRC3:%.*]], ptr noundef [[DST1:%.*]], ptr noundef [[DST2:%.*]], ptr noundef [[DST3:%.*]]) local_unnamed_addr #[[ATTR0]] {
+// CHECK-NEXT:  [[ENTRY:.*:]]
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC1]], i32 16), !noalias [[META60:![0-9]+]]
+// CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP0]], 0
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16), !noalias [[META63:![0-9]+]]
+// CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP2]], 0
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC3]], i32 16), !noalias [[META66:![0-9]+]]
+// CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP4]], 0
+// CHECK-NEXT:    [[TMP6:%.*]] = tail call { <16 x i8>, <16 x i8>, <16 x i8> } @llvm.riscv.esp.vunzipt.8.m(<16 x i8> [[TMP1]], <16 x i8> [[TMP3]], <16 x i8> [[TMP5]])
+// CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8> } [[TMP6]], 0
+// CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8> } [[TMP6]], 1
+// CHECK-NEXT:    [[TMP9:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8> } [[TMP6]], 2
+// CHECK-NEXT:    [[TMP10:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP7]], ptr [[DST1]], i32 16)
+// CHECK-NEXT:    [[TMP11:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP8]], ptr [[DST2]], i32 16)
+// CHECK-NEXT:    [[TMP12:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP9]], ptr [[DST3]], i32 16)
+// CHECK-NEXT:    ret void
+//
+void test_vunzipt_8(void *src1, void *src2, void *src3, void *dst1, void *dst2,
+                    void *dst3) {
+    esp_vld_res_t Res1 = esp_vld_128_ip_m(src1, 16);
+    esp_vld_res_t Res2 = esp_vld_128_ip_m(src2, 16);
+    esp_vld_res_t Res3 = esp_vld_128_ip_m(src3, 16);
+    esp_vec128_t o1, o2, o3;
+    esp_vunzipt_8_m(Res1.Val.V8, Res2.Val.V8, Res3.Val.V8, &o1, &o2, &o3);
+    esp_vst_128_ip_m(o1, dst1, 16);
+    esp_vst_128_ip_m(o2, dst2, 16);
+    esp_vst_128_ip_m(o3, dst3, 16);
+}
+
+// CHECK-LABEL: define dso_local void @test_vunzipt_16(
+// CHECK-SAME: ptr noundef [[SRC1:%.*]], ptr noundef [[SRC2:%.*]], ptr noundef [[SRC3:%.*]], ptr noundef [[DST1:%.*]], ptr noundef [[DST2:%.*]], ptr noundef [[DST3:%.*]]) local_unnamed_addr #[[ATTR0]] {
+// CHECK-NEXT:  [[ENTRY:.*:]]
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC1]], i32 16), !noalias [[META69:![0-9]+]]
+// CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP0]], 0
+// CHECK-NEXT:    [[TMP2:%.*]] = bitcast <16 x i8> [[TMP1]] to <8 x i16>
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16), !noalias [[META72:![0-9]+]]
+// CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP3]], 0
+// CHECK-NEXT:    [[TMP5:%.*]] = bitcast <16 x i8> [[TMP4]] to <8 x i16>
+// CHECK-NEXT:    [[TMP6:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC3]], i32 16), !noalias [[META75:![0-9]+]]
+// CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP6]], 0
+// CHECK-NEXT:    [[TMP8:%.*]] = bitcast <16 x i8> [[TMP7]] to <8 x i16>
+// CHECK-NEXT:    [[TMP9:%.*]] = tail call { <8 x i16>, <8 x i16>, <8 x i16> } @llvm.riscv.esp.vunzipt.16.m(<8 x i16> [[TMP2]], <8 x i16> [[TMP5]], <8 x i16> [[TMP8]])
+// CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <8 x i16>, <8 x i16>, <8 x i16> } [[TMP9]], 0
+// CHECK-NEXT:    [[TMP11:%.*]] = extractvalue { <8 x i16>, <8 x i16>, <8 x i16> } [[TMP9]], 1
+// CHECK-NEXT:    [[TMP12:%.*]] = extractvalue { <8 x i16>, <8 x i16>, <8 x i16> } [[TMP9]], 2
+// CHECK-NEXT:    [[TMP13:%.*]] = bitcast <8 x i16> [[TMP10]] to <16 x i8>
+// CHECK-NEXT:    [[TMP14:%.*]] = bitcast <8 x i16> [[TMP11]] to <16 x i8>
+// CHECK-NEXT:    [[TMP15:%.*]] = bitcast <8 x i16> [[TMP12]] to <16 x i8>
+// CHECK-NEXT:    [[TMP16:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP13]], ptr [[DST1]], i32 16)
+// CHECK-NEXT:    [[TMP17:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP14]], ptr [[DST2]], i32 16)
+// CHECK-NEXT:    [[TMP18:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP15]], ptr [[DST3]], i32 16)
+// CHECK-NEXT:    ret void
+//
+void test_vunzipt_16(void *src1, void *src2, void *src3, void *dst1,
+                     void *dst2, void *dst3) {
+    esp_vld_res_t Res1 = esp_vld_128_ip_m(src1, 16);
+    esp_vld_res_t Res2 = esp_vld_128_ip_m(src2, 16);
+    esp_vld_res_t Res3 = esp_vld_128_ip_m(src3, 16);
+    union {
+        esp_vec128_t V8;
+        esp_vec128_16_t V16;
+    } u1, u2, u3;
+    u1.V8 = Res1.Val.V8;
+    u2.V8 = Res2.Val.V8;
+    u3.V8 = Res3.Val.V8;
+    esp_vec128_16_t o1, o2, o3;
+    esp_vunzipt_16_m(u1.V16, u2.V16, u3.V16, &o1, &o2, &o3);
+    union {
+        esp_vec128_t V8;
+        esp_vec128_16_t V16;
+    } c1, c2, c3;
+    c1.V16 = o1;
+    c2.V16 = o2;
+    c3.V16 = o3;
+    esp_vst_128_ip_m(c1.V8, dst1, 16);
+    esp_vst_128_ip_m(c2.V8, dst2, 16);
+    esp_vst_128_ip_m(c3.V8, dst3, 16);
 }
 
 //.
@@ -188,4 +398,43 @@ void test_vzipt_8(void *src1, void *src2, void *src3, void *dst1, void *dst2, vo
 // CHECK: [[META36]] = !{[[META37:![0-9]+]]}
 // CHECK: [[META37]] = distinct !{[[META37]], [[META38:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
 // CHECK: [[META38]] = distinct !{[[META38]], !"esp_vld_128_ip_m"}
+// CHECK: [[META39]] = !{[[META40:![0-9]+]]}
+// CHECK: [[META40]] = distinct !{[[META40]], [[META41:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
+// CHECK: [[META41]] = distinct !{[[META41]], !"esp_vld_128_ip_m"}
+// CHECK: [[META42]] = !{[[META43:![0-9]+]]}
+// CHECK: [[META43]] = distinct !{[[META43]], [[META44:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
+// CHECK: [[META44]] = distinct !{[[META44]], !"esp_vld_128_ip_m"}
+// CHECK: [[META45]] = !{[[META46:![0-9]+]]}
+// CHECK: [[META46]] = distinct !{[[META46]], [[META47:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
+// CHECK: [[META47]] = distinct !{[[META47]], !"esp_vld_128_ip_m"}
+// CHECK: [[META48]] = !{[[META49:![0-9]+]]}
+// CHECK: [[META49]] = distinct !{[[META49]], [[META50:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
+// CHECK: [[META50]] = distinct !{[[META50]], !"esp_vld_128_ip_m"}
+// CHECK: [[META51]] = !{[[META52:![0-9]+]]}
+// CHECK: [[META52]] = distinct !{[[META52]], [[META53:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
+// CHECK: [[META53]] = distinct !{[[META53]], !"esp_vld_128_ip_m"}
+// CHECK: [[META54]] = !{[[META55:![0-9]+]]}
+// CHECK: [[META55]] = distinct !{[[META55]], [[META56:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
+// CHECK: [[META56]] = distinct !{[[META56]], !"esp_vld_128_ip_m"}
+// CHECK: [[META57]] = !{[[META58:![0-9]+]]}
+// CHECK: [[META58]] = distinct !{[[META58]], [[META59:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
+// CHECK: [[META59]] = distinct !{[[META59]], !"esp_vld_128_ip_m"}
+// CHECK: [[META60]] = !{[[META61:![0-9]+]]}
+// CHECK: [[META61]] = distinct !{[[META61]], [[META62:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
+// CHECK: [[META62]] = distinct !{[[META62]], !"esp_vld_128_ip_m"}
+// CHECK: [[META63]] = !{[[META64:![0-9]+]]}
+// CHECK: [[META64]] = distinct !{[[META64]], [[META65:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
+// CHECK: [[META65]] = distinct !{[[META65]], !"esp_vld_128_ip_m"}
+// CHECK: [[META66]] = !{[[META67:![0-9]+]]}
+// CHECK: [[META67]] = distinct !{[[META67]], [[META68:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
+// CHECK: [[META68]] = distinct !{[[META68]], !"esp_vld_128_ip_m"}
+// CHECK: [[META69]] = !{[[META70:![0-9]+]]}
+// CHECK: [[META70]] = distinct !{[[META70]], [[META71:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
+// CHECK: [[META71]] = distinct !{[[META71]], !"esp_vld_128_ip_m"}
+// CHECK: [[META72]] = !{[[META73:![0-9]+]]}
+// CHECK: [[META73]] = distinct !{[[META73]], [[META74:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
+// CHECK: [[META74]] = distinct !{[[META74]], !"esp_vld_128_ip_m"}
+// CHECK: [[META75]] = !{[[META76:![0-9]+]]}
+// CHECK: [[META76]] = distinct !{[[META76]], [[META77:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
+// CHECK: [[META77]] = distinct !{[[META77]], !"esp_vld_128_ip_m"}
 //.
