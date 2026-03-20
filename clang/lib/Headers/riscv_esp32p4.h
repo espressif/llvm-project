@@ -465,6 +465,13 @@ esp_vldext_u16_ip_m(void const *Ptr, int Imm) {
 }
 
 static inline __attribute__((always_inline)) esp_vldext_res_t
+esp_vldext_u8_ip_m(void const *Ptr, int Imm) {
+  esp_vldext_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_vldext_u8_ip_m(Ptr, Imm, &Res.Val1, &Res.Val2);
+  return Res;
+}
+
+static inline __attribute__((always_inline)) esp_vldext_res_t
 esp_vldext_s8_xp_m(void const *Ptr, int Reg) {
   esp_vldext_res_t Res;
   Res.Ptr = __builtin_riscv_esp_vldext_s8_xp_m(Ptr, Reg, &Res.Val1, &Res.Val2);

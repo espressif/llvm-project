@@ -529,7 +529,7 @@ let Features = "xespv", Attributes = [NoThrow, RequiredVectorWidth<128>] in
 
   // ESP.STXQ.32 (_m version) - Store 32-bit data from qu vector using sel4 to memory address calculated using qw vector and sel8
   // Returns void
-  def esp_stxq_32_m : RISCVBuiltin<"void(_Vector<4, int>, _Vector<8, short>, void *, int, int)">;
+  def esp_stxq_32_m : RISCVBuiltin<"void(void *, _Vector<4, int>, _Vector<8, short>, int, int)">;
 
   // ESP.VLDHBC.16.INCP (_m version) - Load 128-bit data and broadcast 16-bit halves to two 128-bit vectors
   // Returns updated pointer, outputs passed via pointers
@@ -1486,4 +1486,9 @@ let Features = "xespv", Attributes = [NoThrow] in {
   // ESP.MOVX.W.XACC_L writes XACC[31:0] (subregister model)
   // Writes XACC[31:0] = value, returns new XACC[31:0] as unsigned int
   def esp_movx_w_xacc_l_m : RISCVBuiltin<"unsigned int(unsigned int)">;  // Subregister model: value (unsigned int), returns new XACC[31:0] (unsigned int)
+}
+
+// GPR ALU (.m) — no vector width requirement
+let Features = "xespv", Attributes = [NoThrow] in {
+  def esp_sat_m : RISCVBuiltin<"unsigned int(unsigned int, unsigned int, unsigned int)">;
 }
