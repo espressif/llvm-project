@@ -10,9 +10,9 @@ define dso_local void @test_ld_st_ua_state_ip(ptr noundef %src, ptr noundef %dst
 ; ASM-NEXT:    esp.st.ua.state.ip a1, 16
 ; ASM-NEXT:    ret
 entry:
-  %0 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.ld.ua.state.ip.m(<16 x i8> undef, ptr %src, i32 16)
-  %1 = extractvalue { <16 x i8>, ptr } %0, 0
-  %2 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.st.ua.state.ip.m(<16 x i8> %1, ptr %dst, i32 16)
+  %v1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.ld.ua.state.ip.m(<16 x i8> undef, ptr %src, i32 16)
+  %ev1 = extractvalue { <16 x i8>, ptr } %v1, 0
+  %v2 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.st.ua.state.ip.m(<16 x i8> %ev1, ptr %dst, i32 16)
   ret void
 }
 

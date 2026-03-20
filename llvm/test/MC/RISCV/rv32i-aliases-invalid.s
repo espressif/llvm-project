@@ -5,9 +5,9 @@
 # TODO ld
 # TODO sd
 
-li x0, 4294967296   # CHECK: :[[@LINE]]:8: error: immediate must be an integer in the range [-2147483648, 4294967295]
-li x0, -2147483649  # CHECK: :[[@LINE]]:8: error: immediate must be an integer in the range [-2147483648, 4294967295]
-li t4, foo          # CHECK: :[[@LINE]]:8: error: immediate must be an integer in the range [-2147483648, 4294967295]
+li x0, 4294967296   # CHECK: :[[@LINE]]:8: error: operand must be a symbol with %lo/%pcrel_lo/%tprel_lo specifier or an integer in the range [-2048, 2047]
+li x0, -2147483649  # CHECK: :[[@LINE]]:8: error: operand must be a symbol with %lo/%pcrel_lo/%tprel_lo specifier or an integer in the range [-2048, 2047]
+li t4, foo          # CHECK: :[[@LINE]]:8: error: operand must be a symbol with %lo/%pcrel_lo/%tprel_lo specifier or an integer in the range [-2048, 2047]
 
 la x0, 4294967296   # CHECK: :[[@LINE]]:8: error: operand either must be a bare symbol name or an immediate integer in the range [-2147483648, 4294967295]
 la x0, -2147483649  # CHECK: :[[@LINE]]:8: error: operand either must be a bare symbol name or an immediate integer in the range [-2147483648, 4294967295]

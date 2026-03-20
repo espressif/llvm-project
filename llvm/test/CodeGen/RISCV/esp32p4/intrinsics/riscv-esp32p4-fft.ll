@@ -3,7 +3,6 @@
 ; Test ASM generation (Intrinsic -> ASM)
 ; RUN: llc -O2 -mattr=+xespv1v,+espv-lowering -mtriple=riscv32 %s -o - | FileCheck %s --check-prefix=ASM
 
-
 define dso_local void @test_fft_r2bf_s16_m(ptr noundef %src1, ptr noundef %src2, ptr noundef %dst1, ptr noundef %dst2) local_unnamed_addr #0 {
 ; ASM-LABEL: test_fft_r2bf_s16_m:
 ; ASM:       # %bb.0: # %entry
@@ -136,18 +135,18 @@ define dso_local void @test_fft_ams_s16_st_incp_m(ptr noundef readonly captures(
 ; ASM-NEXT:    esp.fft.ams.s16.st.incp q3, q0, a5, a4, q0, q2, q1, 0
 ; ASM-NEXT:    ret
 entry:
-  %qx = load <8 x i16>, ptr %0, align 16, !tbaa !36
-  %qy = load <8 x i16>, ptr %1, align 16, !tbaa !36
-  %qw = load <8 x i16>, ptr %2, align 16, !tbaa !36
-  %qu = load <16 x i8>, ptr %3, align 16, !tbaa !36
+  %Qx = load <8 x i16>, ptr %0, align 16, !tbaa !36
+  %Qy = load <8 x i16>, ptr %1, align 16, !tbaa !36
+  %Qw = load <8 x i16>, ptr %2, align 16, !tbaa !36
+  %Qu = load <16 x i8>, ptr %3, align 16, !tbaa !36
   %sar = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 0)
-  %v1 = tail call { <8 x i16>, ptr } @llvm.riscv.esp.fft.ams.s16.st.incp.m(<8 x i16> %qx, <8 x i16> %qy, <8 x i16> %qw, <16 x i8> %qu, ptr %dst, ptr %rs2, i32 0, i32 %sar)
+  %v1 = tail call { <8 x i16>, ptr } @llvm.riscv.esp.fft.ams.s16.st.incp.m(<8 x i16> %Qx, <8 x i16> %Qy, <8 x i16> %Qw, <16 x i8> %Qu, ptr %dst, ptr %rs2, i32 0, i32 %sar)
   ret void
 }
 
 declare { <8 x i16>, ptr } @llvm.riscv.esp.fft.ams.s16.st.incp.m(<8 x i16>, <8 x i16>, <8 x i16>, <16 x i8>, ptr, ptr, i32, i32) #2
 
-define dso_local void @test_fft_bitrev_m(ptr noundef %rs1, ptr noundef %dst) local_unnamed_addr #4 {
+define dso_local void @test_fft_bitrev_m(ptr noundef %Rs1, ptr noundef %dst) local_unnamed_addr #4 {
 ; ASM-LABEL: test_fft_bitrev_m:
 ; ASM:       # %bb.0: # %entry
 ; ASM-NEXT:    li a2, 4
@@ -156,7 +155,7 @@ define dso_local void @test_fft_bitrev_m(ptr noundef %rs1, ptr noundef %dst) loc
 ; ASM-NEXT:    esp.vst.128.ip q0, a1, 16
 ; ASM-NEXT:    ret
 entry:
-  %v1 = tail call { ptr, <8 x i16> } @llvm.riscv.esp.fft.bitrev.m(ptr %rs1, i32 4)
+  %v1 = tail call { ptr, <8 x i16> } @llvm.riscv.esp.fft.bitrev.m(ptr %Rs1, i32 4)
   %ev1 = extractvalue { ptr, <8 x i16> } %v1, 1
   %bc1 = bitcast <8 x i16> %ev1 to <16 x i8>
   %vst_ptr = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> %bc1, ptr %dst, i32 16)
@@ -205,11 +204,11 @@ define dso_local void @test_fft_cmul_s16_st_xp_m(ptr noundef readonly captures(n
 ; ASM-NEXT:    esp.fft.cmul.s16.st.xp q1, q0, q2, a3, a4, 0, 0, 0
 ; ASM-NEXT:    ret
 entry:
-  %qx = load <8 x i16>, ptr %0, align 16, !tbaa !36
-  %qy = load <8 x i16>, ptr %1, align 16, !tbaa !36
-  %qu = load <16 x i8>, ptr %2, align 16, !tbaa !36
+  %Qx = load <8 x i16>, ptr %0, align 16, !tbaa !36
+  %Qy = load <8 x i16>, ptr %1, align 16, !tbaa !36
+  %Qu = load <16 x i8>, ptr %2, align 16, !tbaa !36
   %sar = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 0)
-  %v1 = tail call ptr @llvm.riscv.esp.fft.cmul.s16.st.xp.m(<8 x i16> %qx, <8 x i16> %qy, <16 x i8> %qu, ptr %dst, ptr %rs2, i32 0, i32 0, i32 0, i32 %sar)
+  %v1 = tail call ptr @llvm.riscv.esp.fft.cmul.s16.st.xp.m(<8 x i16> %Qx, <8 x i16> %Qy, <16 x i8> %Qu, ptr %dst, ptr %rs2, i32 0, i32 0, i32 0, i32 %sar)
   ret void
 }
 
@@ -222,8 +221,8 @@ define dso_local void @test_fft_vst_r32_decp_m(ptr noundef readonly captures(non
 ; ASM-NEXT:    esp.fft.vst.r32.decp q0, a1, 0
 ; ASM-NEXT:    ret
 entry:
-  %qu = load <16 x i8>, ptr %0, align 16, !tbaa !36
-  %v1 = tail call ptr @llvm.riscv.esp.fft.vst.r32.decp.m(<16 x i8> %qu, ptr %dst, i32 0)
+  %Qu = load <16 x i8>, ptr %0, align 16, !tbaa !36
+  %v1 = tail call ptr @llvm.riscv.esp.fft.vst.r32.decp.m(<16 x i8> %Qu, ptr %dst, i32 0)
   ret void
 }
 

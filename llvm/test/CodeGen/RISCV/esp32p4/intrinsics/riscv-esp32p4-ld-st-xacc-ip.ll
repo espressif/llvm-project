@@ -18,16 +18,16 @@ define dso_local ptr @test_ld_st_s_xacc_ip_m(ptr noundef %src, ptr noundef %dst)
 ; ASM-NEXT:    mv a0, a1
 ; ASM-NEXT:    ret
 entry:
-  %0 = tail call { i32, i32 } @llvm.riscv.esp.zero.xacc.m()
-  %1 = extractvalue { i32, i32 } %0, 0
-  %2 = extractvalue { i32, i32 } %0, 1
-  %3 = tail call { ptr, i32, i32 } @llvm.riscv.esp.ld.xacc.ip.m(i32 %1, i32 %2, ptr %src, i32 8)
-  %4 = extractvalue { ptr, i32, i32 } %3, 1
-  %5 = extractvalue { ptr, i32, i32 } %3, 2
-  %6 = tail call { ptr, i32, i32 } @llvm.riscv.esp.st.s.xacc.ip.m(i32 %4, i32 %5, ptr %dst, i32 8)
-  %7 = extractvalue { ptr, i32, i32 } %6, 0
-  store ptr %7, ptr @test_ld_st_s_xacc_ip_m.ptr_out, align 4
-  ret ptr %7
+  %v1 = tail call { i32, i32 } @llvm.riscv.esp.zero.xacc.m()
+  %ev1 = extractvalue { i32, i32 } %v1, 0
+  %ev2 = extractvalue { i32, i32 } %v1, 1
+  %v2 = tail call { ptr, i32, i32 } @llvm.riscv.esp.ld.xacc.ip.m(i32 %ev1, i32 %ev2, ptr %src, i32 8)
+  %ev3 = extractvalue { ptr, i32, i32 } %v2, 1
+  %ev4 = extractvalue { ptr, i32, i32 } %v2, 2
+  %v3 = tail call { ptr, i32, i32 } @llvm.riscv.esp.st.s.xacc.ip.m(i32 %ev3, i32 %ev4, ptr %dst, i32 8)
+  %ev5 = extractvalue { ptr, i32, i32 } %v3, 0
+  store ptr %ev5, ptr @test_ld_st_s_xacc_ip_m.ptr_out, align 4
+  ret ptr %ev5
 }
 
 declare { ptr, i32, i32 } @llvm.riscv.esp.st.s.xacc.ip.m(i32, i32, ptr, i32) #1
@@ -44,16 +44,16 @@ define dso_local ptr @test_ld_st_u_xacc_ip_m(ptr noundef %src, ptr noundef %dst)
 ; ASM-NEXT:    mv a0, a1
 ; ASM-NEXT:    ret
 entry:
-  %0 = tail call { i32, i32 } @llvm.riscv.esp.zero.xacc.m()
-  %1 = extractvalue { i32, i32 } %0, 0
-  %2 = extractvalue { i32, i32 } %0, 1
-  %3 = tail call { ptr, i32, i32 } @llvm.riscv.esp.ld.xacc.ip.m(i32 %1, i32 %2, ptr %src, i32 8)
-  %4 = extractvalue { ptr, i32, i32 } %3, 1
-  %5 = extractvalue { ptr, i32, i32 } %3, 2
-  %6 = tail call { ptr, i32, i32 } @llvm.riscv.esp.st.u.xacc.ip.m(i32 %4, i32 %5, ptr %dst, i32 8)
-  %7 = extractvalue { ptr, i32, i32 } %6, 0
-  store ptr %7, ptr @test_ld_st_u_xacc_ip_m.ptr_out, align 4
-  ret ptr %7
+  %v1 = tail call { i32, i32 } @llvm.riscv.esp.zero.xacc.m()
+  %ev1 = extractvalue { i32, i32 } %v1, 0
+  %ev2 = extractvalue { i32, i32 } %v1, 1
+  %v2 = tail call { ptr, i32, i32 } @llvm.riscv.esp.ld.xacc.ip.m(i32 %ev1, i32 %ev2, ptr %src, i32 8)
+  %ev3 = extractvalue { ptr, i32, i32 } %v2, 1
+  %ev4 = extractvalue { ptr, i32, i32 } %v2, 2
+  %v3 = tail call { ptr, i32, i32 } @llvm.riscv.esp.st.u.xacc.ip.m(i32 %ev3, i32 %ev4, ptr %dst, i32 8)
+  %ev5 = extractvalue { ptr, i32, i32 } %v3, 0
+  store ptr %ev5, ptr @test_ld_st_u_xacc_ip_m.ptr_out, align 4
+  ret ptr %ev5
 }
 
 declare { ptr, i32, i32 } @llvm.riscv.esp.st.u.xacc.ip.m(i32, i32, ptr, i32) #1

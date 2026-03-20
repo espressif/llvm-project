@@ -5376,6 +5376,10 @@ void SelectionDAGBuilder::visitTargetIntrinsic(const CallInst &I,
 
   // Create the node.
   SDValue Result;
+  // Void intrinsics with IntrNoMem make F->doesNotAccessMemory() true, so
+  // HasChain is false. INTRINSIC_WO_CHAIN requires a non-empty VT list (at
+  // least one result); use INTRINSIC_VOID with an explicit chain operand.
+  bool ChainForRoot = HasChain;
 
   if (auto Bundle = I.getOperandBundle(LLVMContext::OB_convergencectrl)) {
     auto *Token = Bundle->Inputs[0].get();
@@ -5409,6 +5413,13 @@ void SelectionDAGBuilder::visitTargetIntrinsic(const CallInst &I,
         Info.ssid, Info.order, Info.failureOrder);
     Result =
         DAG.getMemIntrinsicNode(Info.opc, getCurSDLoc(), VTs, Ops, MemVT, MMO);
+  } else if (!HasChain && I.getType()->isVoidTy()) {
+    SmallVector<SDValue, 8> VoidOps;
+    VoidOps.push_back(getRoot());
+    VoidOps.append(Ops.begin(), Ops.end());
+    SDVTList VoidVTs = DAG.getVTList(MVT::Other);
+    Result = DAG.getNode(ISD::INTRINSIC_VOID, getCurSDLoc(), VoidVTs, VoidOps);
+    ChainForRoot = true;
   } else if (!HasChain) {
     Result = DAG.getNode(ISD::INTRINSIC_WO_CHAIN, getCurSDLoc(), VTs, Ops);
   } else if (!I.getType()->isVoidTy()) {
@@ -5417,7 +5428,7 @@ void SelectionDAGBuilder::visitTargetIntrinsic(const CallInst &I,
     Result = DAG.getNode(ISD::INTRINSIC_VOID, getCurSDLoc(), VTs, Ops);
   }
 
-  if (HasChain) {
+  if (ChainForRoot) {
     SDValue Chain = Result.getValue(Result.getNode()->getNumValues()-1);
     if (OnlyLoad)
       PendingLoads.push_back(Chain);

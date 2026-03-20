@@ -3,7 +3,7 @@
 # RUN: not llvm-mc -triple=riscv64 < %s 2>&1 -o /dev/null | FileCheck %s
 
 li t5, 0x10000000000000000 # CHECK: :[[@LINE]]:8: error: unknown operand
-li t4, foo                 # CHECK: :[[@LINE]]:8: error: operand must be a constant 64-bit integer
+li t4, foo                 # CHECK: :[[@LINE]]:8: error: operand must be a symbol with %lo/%pcrel_lo/%tprel_lo specifier or an integer in the range [-2048, 2047]
 
 la t5, 0x10000000000000000 # CHECK: :[[@LINE]]:8: error: unknown operand
 la x1, %pcrel_hi(1234) # CHECK: :[[@LINE]]:8: error: operand either must be a constant 64-bit integer or a bare symbol name

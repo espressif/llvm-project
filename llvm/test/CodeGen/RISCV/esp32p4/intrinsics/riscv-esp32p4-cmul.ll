@@ -3,7 +3,6 @@
 ; Test ASM generation (Intrinsic -> ASM)
 ; RUN: llc -O2 -mattr=+xespv1v,+espv-lowering -mtriple=riscv32 %s -o - | FileCheck %s --check-prefix=ASM
 
-
 define dso_local void @test_cmul_u16_ld_incp_with_wrapper(ptr noundef %src1, ptr noundef %src2, ptr noundef readnone captures(none) %src3, ptr noundef readnone captures(none) %src4, ptr noundef %dst) local_unnamed_addr #0 {
 ; ASM-LABEL: test_cmul_u16_ld_incp_with_wrapper:
 ; ASM:       # %bb.0: # %entry
@@ -289,11 +288,14 @@ define dso_local i32 @test_movx_r_sar(i32 noundef %rs1_val) local_unnamed_addr #
 ; ASM:       # %bb.0: # %entry
 ; ASM-NEXT:    esp.movx.w.sar a0
 ; ASM-NEXT:    esp.movx.r.sar a0
+; ASM-NEXT:    esp.movx.w.sar a0
+; ASM-NEXT:    esp.movx.r.sar a0
 ; ASM-NEXT:    ret
 entry:
   %sar = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 %rs1_val)
   %v1 = tail call i32 @llvm.riscv.esp.movx.r.sar.m(i32 %sar)
-  ret i32 %v1
+  %v2 = tail call i32 @llvm.riscv.esp.movx.r.sar.m(i32 %v1)
+  ret i32 %v2
 }
 
 declare i32 @llvm.riscv.esp.movx.r.sar.m(i32) #1

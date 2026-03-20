@@ -3135,6 +3135,45 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       ReplaceNode(Node, NewNode);
       return true;
     }
+    case RISCVISD::ESP_LDXQ_32_M: {
+      // Node: (chain, ptr, qw, sel4, sel8) -> (qu, chain)
+      // Instruction: ESP_LDXQ_32 (ins GPRPIE:$rs1, QR:$qw, select_4:$sel4,
+      // select_8:$sel8)
+      SDValue Chain = Node->getOperand(0);
+      SDValue Ptr = Node->getOperand(1);
+      SDValue Qw = Node->getOperand(2);
+      SDValue Sel4 = Node->getOperand(3);
+      SDValue Sel8 = Node->getOperand(4);
+
+      SDValue Sel4Op = Sel4;
+      if (auto *C = dyn_cast<ConstantSDNode>(Sel4.getNode()))
+        Sel4Op = CurDAG->getTargetConstant(C->getSExtValue(), DL, XLenVT);
+      else if (!Sel4.getNode()->isMachineOpcode()) {
+        Select(Sel4.getNode());
+        Sel4Op = Sel4;
+      }
+
+      SDValue Sel8Op = Sel8;
+      if (auto *C = dyn_cast<ConstantSDNode>(Sel8.getNode()))
+        Sel8Op = CurDAG->getTargetConstant(C->getSExtValue(), DL, XLenVT);
+      else if (!Sel8.getNode()->isMachineOpcode()) {
+        Select(Sel8.getNode());
+        Sel8Op = Sel8;
+      }
+
+      SDVTList VTs = CurDAG->getVTList(MVT::v4i32, MVT::Other);
+      SDValue Ops[] = {Ptr, Qw, Sel4Op, Sel8Op, Chain};
+      SDNode *NewNode =
+          CurDAG->getMachineNode(RISCV::ESP_LDXQ_32, DL, VTs, Ops);
+
+      if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
+        MachineMemOperand *MMO = MemNode->getMemOperand();
+        CurDAG->setNodeMemRefs(cast<MachineSDNode>(NewNode), {MMO});
+      }
+
+      ReplaceNode(Node, NewNode);
+      return true;
+    }
     case RISCVISD::ESP_VLD_128_XP_M: {
       // Handle ESP_VLD_128_XP_M node with MMO
       // Node: (chain, ptr, reg) -> (vec, ptr_out, chain)
@@ -4856,7 +4895,9 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
     return true;
   }
   case RISCVISD::ESP_VSMULAS_S16_QACC_M:
-  case RISCVISD::ESP_VSMULAS_S8_QACC_M: {
+  case RISCVISD::ESP_VSMULAS_S8_QACC_M:
+  case RISCVISD::ESP_VSMULAS_U16_QACC_M:
+  case RISCVISD::ESP_VSMULAS_U8_QACC_M: {
     // Handle VSMULAS QACC nodes
     // SDNode returns: (v16i8, v16i8, v16i8, v16i8) - 4x128-bit QACC directly
     // SDNode operands: (v0, v1, v2, v3, qx, qy, sel16) - 4x128-bit passthru as explicit phantom operands
@@ -4869,12 +4910,23 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
     SDValue SEL16 = Node->getOperand(6);
     
     unsigned Opc;
-    if (Opcode == RISCVISD::ESP_VSMULAS_S16_QACC_M) {
+    switch (Opcode) {
+    default:
+      llvm_unreachable("Unexpected VSMULAS QACC opcode");
+    case RISCVISD::ESP_VSMULAS_S16_QACC_M:
       Opc = RISCV::ESP_VSMULAS_S16_QACC;
-    } else {
+      break;
+    case RISCVISD::ESP_VSMULAS_U16_QACC_M:
+      Opc = RISCV::ESP_VSMULAS_U16_QACC;
+      break;
+    case RISCVISD::ESP_VSMULAS_S8_QACC_M:
       Opc = RISCV::ESP_VSMULAS_S8_QACC;
+      break;
+    case RISCVISD::ESP_VSMULAS_U8_QACC_M:
+      Opc = RISCV::ESP_VSMULAS_U8_QACC;
+      break;
     }
-    
+
     // Instruction outputs: (QACC_L_LOW, QACC_L_HIGH, QACC_H_LOW, QACC_H_HIGH)
     // Instruction inputs: (QACC_L_LOW_in, QACC_L_HIGH_in, QACC_H_LOW_in, QACC_H_HIGH_in, QR:$qx, QR:$qy, select_16:$sel16)
     SmallVector<EVT, 4> VTList = {MVT::v16i8, MVT::v16i8, MVT::v16i8, MVT::v16i8};
@@ -5541,7 +5593,11 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
   case RISCVISD::ESP_VMULAS_S16_QACC_LD_IP_M:
   case RISCVISD::ESP_VMULAS_S8_QACC_LD_IP_M:
   case RISCVISD::ESP_VMULAS_U16_QACC_LD_IP_M:
-  case RISCVISD::ESP_VMULAS_U8_QACC_LD_IP_M: {
+  case RISCVISD::ESP_VMULAS_U8_QACC_LD_IP_M:
+  case RISCVISD::ESP_VSMULAS_S16_QACC_LD_INCP_M:
+  case RISCVISD::ESP_VSMULAS_S8_QACC_LD_INCP_M:
+  case RISCVISD::ESP_VSMULAS_U16_QACC_LD_INCP_M:
+  case RISCVISD::ESP_VSMULAS_U8_QACC_LD_INCP_M: {
     LLVM_DEBUG(dbgs() << "Selecting ESP_VMULAS_*_QACC_LD_IP_M node\n");
     LLVM_DEBUG(Node->dump(CurDAG));
     
@@ -5574,8 +5630,26 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
     case RISCVISD::ESP_VMULAS_U8_QACC_LD_IP_M:
       Opc = RISCV::ESP_VMULAS_U8_QACC_LD_IP;
       break;
+    case RISCVISD::ESP_VSMULAS_S16_QACC_LD_INCP_M:
+      Opc = RISCV::ESP_VSMULAS_S16_QACC_LD_INCP;
+      break;
+    case RISCVISD::ESP_VSMULAS_S8_QACC_LD_INCP_M:
+      Opc = RISCV::ESP_VSMULAS_S8_QACC_LD_INCP;
+      break;
+    case RISCVISD::ESP_VSMULAS_U16_QACC_LD_INCP_M:
+      Opc = RISCV::ESP_VSMULAS_U16_QACC_LD_INCP;
+      break;
+    case RISCVISD::ESP_VSMULAS_U8_QACC_LD_INCP_M:
+      Opc = RISCV::ESP_VSMULAS_U8_QACC_LD_INCP;
+      break;
     }
-    
+
+    const bool IsVsmulasQaccLdIncp =
+        Opcode == RISCVISD::ESP_VSMULAS_S16_QACC_LD_INCP_M ||
+        Opcode == RISCVISD::ESP_VSMULAS_S8_QACC_LD_INCP_M ||
+        Opcode == RISCVISD::ESP_VSMULAS_U16_QACC_LD_INCP_M ||
+        Opcode == RISCVISD::ESP_VSMULAS_U8_QACC_LD_INCP_M;
+
     // Immediate value check and conversion
     int64_t ImmVal = 0;
     if (auto *C = dyn_cast<ConstantSDNode>(Offset)) {
@@ -5584,13 +5658,22 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       SelectCode(Node);
       return true;
     }
-    
-    // Validate range (step 16, [-128, 112])
-    if (ImmVal < -128 || ImmVal > 112 || (ImmVal % 16) != 0) {
-      SelectCode(Node);
-      return true;
+
+    if (IsVsmulasQaccLdIncp) {
+      // VSMULAS.QACC.LD.INCP: last operand is select_16 (4-bit), not a 16-byte
+      // offset.
+      if (!isUInt<4>(ImmVal)) {
+        SelectCode(Node);
+        return true;
+      }
+    } else {
+      // VMULAS.QACC.LD.IP: offset_16_16, step 16, [-128, 112]
+      if (ImmVal < -128 || ImmVal > 112 || (ImmVal % 16) != 0) {
+        SelectCode(Node);
+        return true;
+      }
     }
-    
+
     // Convert regular Constant to TargetConstant
     SDValue TargetOffset = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
     
@@ -6698,6 +6781,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
   default:
     return false;
   }
+  llvm_unreachable("covered switch");
 }
 
 bool RISCVDAGToDAGISel::SelectInlineAsmMemoryOperand(

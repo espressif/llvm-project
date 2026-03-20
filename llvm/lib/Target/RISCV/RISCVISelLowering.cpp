@@ -145,6 +145,7 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
     else
       addRegisterClass(MVT::f64, &RISCV::GPRPairRegClass);
   }
+  // ESPV register classes: +xespv (2.2), or +xespv1v with +espv-lowering.
   if (Subtarget.hasESPVTargetLowering()) {
     initializeESPVTargetLowering(Subtarget);
     // ESPV: Support for v64i8 (512-bit QACC pair)
@@ -10931,6 +10932,7 @@ SDValue RISCVTargetLowering::LowerINTRINSIC_W_CHAIN(SDValue Op,
   // Try ESPV intrinsic lowering first
   if (SDValue V = RISCV::lowerESPVIntrinsicWChain(Op, DAG, Subtarget))
     return V;
+
   switch (IntNo) {
   default:
     break;
@@ -14734,7 +14736,7 @@ void RISCVTargetLowering::ReplaceNodeResults(SDNode *N,
         }
       }
     }
-    
+
     switch (IntNo) {
     default:
       llvm_unreachable(
