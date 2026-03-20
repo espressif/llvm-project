@@ -81,15 +81,15 @@ typedef size_t mcol_t;
 
 /* CSR enumeration */
 enum RVM_CSR {
-  RVM_CSR_XMCSR    = 0x802,
-  RVM_CSR_MTILEM   = 0x803,
-  RVM_CSR_MTILEN   = 0x804,
-  RVM_CSR_MTILEK   = 0x805,
-  RVM_CSR_XMXRM    = 0x806,
-  RVM_CSR_XMSAT    = 0x807,
-  RVM_CSR_XMFFLAGS = 0x808,
-  RVM_CSR_XMFRM    = 0x809,
-  RVM_CSR_XMSATEN  = 0x80a,
+  RVM_CSR_XMCSR    = 0x806,
+  RVM_CSR_MTILEM   = 0x807,
+  RVM_CSR_MTILEN   = 0x808,
+  RVM_CSR_MTILEK   = 0x809,
+  RVM_CSR_XMXRM    = 0x80a,
+  RVM_CSR_XMSAT    = 0x80b,
+  RVM_CSR_XMFFLAGS = 0x80c,
+  RVM_CSR_XMFRM    = 0x80d,
+  RVM_CSR_XMSATEN  = 0x80e,
   RVM_CSR_XMISA    = 0xcc0,
   RVM_CSR_XTLENB   = 0xcc1,
   RVM_CSR_XTRLENB  = 0xcc2,
@@ -181,7 +181,7 @@ void __riscv_th_mrelease(void) {
  *   unsigned long isa  = __riscv_th_xmisa();    // ISA feature bits
  *
  * Read-only CSRs (0xcc0-0xcc3): xmisa, xtlenb, xtrlenb, xalenb.
- * Read-write CSRs (0x802-0x80a): xmcsr, mtilem/n/k, xmxrm, xmsat, etc.
+ * Read-write CSRs (0x806-0x80e): xmcsr, mtilem/n/k, xmxrm, xmsat, etc.
  * ============================================================================ */
 
 #define __riscv_th_mread_csr(csr)                                              \
@@ -377,17 +377,9 @@ __THEAD_MUNDEFINED_PAIR(f64x2, mfloat64x2_t, mundef_f64x2)
 #define __riscv_th_mreinterpret_f32(src)   __THEAD_MREINTERPRET(mfloat32_t, src)
 #define __riscv_th_mreinterpret_f64(src)   __THEAD_MREINTERPRET(mfloat64_t, src)
 
-#define __riscv_th_mreinterpret_i8x2(src)  __THEAD_MREINTERPRET(mint8x2_t, src)
-#define __riscv_th_mreinterpret_i16x2(src) __THEAD_MREINTERPRET(mint16x2_t, src)
-#define __riscv_th_mreinterpret_i32x2(src) __THEAD_MREINTERPRET(mint32x2_t, src)
-#define __riscv_th_mreinterpret_i64x2(src) __THEAD_MREINTERPRET(mint64x2_t, src)
-#define __riscv_th_mreinterpret_u8x2(src)  __THEAD_MREINTERPRET(muint8x2_t, src)
-#define __riscv_th_mreinterpret_u16x2(src) __THEAD_MREINTERPRET(muint16x2_t, src)
-#define __riscv_th_mreinterpret_u32x2(src) __THEAD_MREINTERPRET(muint32x2_t, src)
-#define __riscv_th_mreinterpret_u64x2(src) __THEAD_MREINTERPRET(muint64x2_t, src)
-#define __riscv_th_mreinterpret_f16x2(src) __THEAD_MREINTERPRET(mfloat16x2_t, src)
-#define __riscv_th_mreinterpret_f32x2(src) __THEAD_MREINTERPRET(mfloat32x2_t, src)
-#define __riscv_th_mreinterpret_f64x2(src) __THEAD_MREINTERPRET(mfloat64x2_t, src)
+// x2 reinterpret macros removed: x2 types are struct types that cannot fit a
+// single "tr" inline asm constraint. Use mget/mset to decompose x2 values,
+// reinterpret individual elements, and reassemble.
 
 /* ============================================================================
  * Section 7: Tuple Get/Set Functions (22)

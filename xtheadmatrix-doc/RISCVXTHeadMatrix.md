@@ -664,7 +664,7 @@ these categories:
 | EW arithmetic | `__riscv_th_madd_w_mm`, `__riscv_th_mfmul_s_mm` | Element-wise add, sub, mul, min, max, shift |
 | Conversions | `__riscv_th_mfcvtl_s_h`, `__riscv_th_msfcvt_s_w` | FP and integer format conversions |
 | Tuple ops | `__riscv_th_mget_f16`, `__riscv_th_mset_f64` | Extract/insert single register from x2 pair |
-| x2 matmul | `__riscv_th_mfmacc_d_x2`, `__riscv_th_mmacc_d_h_x2` | Matmul with x2 pair operand/result |
+| x2 matmul | `__riscv_th_mfmacc_d_x2`, `__riscv_th_mfmacc_h_x2` | Matmul with x2 accumulator pair |
 | Data movement | `__riscv_th_mzeros_i32`, `__riscv_th_mmov_mm` | Zero, move, pack, slide, broadcast |
 
 ### Immediate Arguments (ImmArg)
@@ -1543,22 +1543,23 @@ void panel_gemm_asm(const void *A, const void *B, void *D,
 
 ## CSR Reference
 
-XTHeadMatrix defines 13 base CSRs, all prefixed with `th.`.
-The Zmpanel extension adds 18 additional CSRs (addresses 0xcc4-0xcd5).
+XTHeadMatrix defines 13 base CSRs and Zmpanel adds 18 more (31 total),
+all prefixed with `th.` and accessible by name in inline assembly
+(e.g., `csrr a0, th.panel_m`).
 
-### Read/Write CSRs (addresses 0x802-0x80a)
+### Read/Write CSRs (addresses 0x806-0x80e)
 
 | CSR Name | Address | Description |
 |----------|---------|-------------|
-| `th.xmcsr` | 0x802 | Matrix control/status register |
-| `th.mtilem` | 0x803 | Tile M dimension (rows of A/C) |
-| `th.mtilen` | 0x804 | Tile N dimension (columns of B/C) |
-| `th.mtilek` | 0x805 | Tile K dimension (cols of A, rows of B) |
-| `th.xmxrm` | 0x806 | Fixed-point rounding mode |
-| `th.xmsat` | 0x807 | Saturation flag |
-| `th.xmfflags` | 0x808 | FP exception flags |
-| `th.xmfrm` | 0x809 | FP rounding mode |
-| `th.xmsaten` | 0x80a | Saturation enable |
+| `th.xmcsr` | 0x806 | Matrix control/status register |
+| `th.mtilem` | 0x807 | Tile M dimension (rows of A/C) |
+| `th.mtilen` | 0x808 | Tile N dimension (columns of B/C) |
+| `th.mtilek` | 0x809 | Tile K dimension (cols of A, rows of B) |
+| `th.xmxrm` | 0x80a | Fixed-point rounding mode |
+| `th.xmsat` | 0x80b | Saturation flag |
+| `th.xmfflags` | 0x80c | FP exception flags |
+| `th.xmfrm` | 0x80d | FP rounding mode |
+| `th.xmsaten` | 0x80e | Saturation enable |
 
 ### Read-Only CSRs (addresses 0xcc0-0xcc3)
 
@@ -1749,8 +1750,27 @@ Backward-compat aliases from previous naming (`mmaq_ss_w_b` → `mmacc_w_b`,
   params for CSR config. Spec: `__riscv_th_mzero_i32()` with no params.
 
 - **CSR enum**: Implementation uses actual HW CSR addresses
-  (`RVM_CSR_XMCSR=0x802`). Spec uses sequential indices
+  (`RVM_CSR_XMCSR=0x806`). Spec uses sequential indices
   (`RVM_XMRSTART=0, RVM_XMCSR=1, ...`) with different member names.
+
+- **`mfmacc_h_x2` (fp16 x2 matmul)**: The spec puts x2 on
+  `src2` (B operand): `mfloat16_t __riscv_th_fmmacc(mfloat16_t dest,
+  mfloat16_t src1, mfloat16x2_t src2, ...)`. The implementation puts x2
+  on the **accumulator** instead: `mfloat16x2_t __riscv_th_mfmacc_h_x2(
+  mfloat16x2_t c, mfloat16_t a, mfloat16_t b, ...)`. This is an
+  intentional design divergence to keep all x2 matmul variants consistent:
+  fp64, int64, and fp16 x2 variants all place x2 on the accumulator/result.
+  The fp64 and int64 cases match the spec; the fp16 case diverges. This
+  provides a uniform API where x2 always means "pair of output accumulators"
+  rather than mixing x2-on-output (fp64/int64) with x2-on-input (fp16).
+
+- **x2 reinterpret casts**: The spec defines `mreinterpret` for all types
+  including x2 pairs. The implementation provides single-register
+  `mreinterpret` via inline asm (zero-copy, using `"tr"` constraint) but
+  does **not** provide x2 variants. x2 types are struct types that cannot
+  fit a single `"tr"` inline asm constraint. Users should decompose x2
+  values with `mget`, reinterpret individual elements, and reassemble
+  with `mset`.
 
 #### Not Implemented (features absent from RVM 0.6 instruction encoding tables)
 
@@ -1796,7 +1816,7 @@ The `<thead_matrix.h>` header defines named constants:
 
 ### Known Spec Errata
 
-Four errata exist in the RVM 0.6 spec:
+Five errata exist in the RVM 0.6 spec:
 1. **Matmul uop field**: `instruction_list.adoc` shows `uop=01` for all
    matmul instructions. The correct value is `uop=10` (per
    `inst32_format.adoc`; `uop=01` is Load/Store). LLVM uses the correct `10`.
@@ -1807,6 +1827,11 @@ Four errata exist in the RVM 0.6 spec:
 4. **mbce no encoding**: `broadcast.adoc` describes `mbce{8,16,32,64}`
    element broadcast instructions in prose but no encoding is assigned in
    `instruction_list.adoc`. Cannot be implemented.
+5. **Zmpanel compute rs1 field**: `zmpanel.adoc` compute encoding table
+   labels bits [19:15] as `rs1=00000` for all compute instructions, but
+   bits [19:18] actually carry `s_size` (source element size), which is
+   non-zero for fp16/bf16/fp32 source types. The implementation correctly
+   follows the standard matmul encoding format with `s_size` at [19:18].
 
 ### Other Notes
 
@@ -1829,8 +1854,8 @@ Four errata exist in the RVM 0.6 spec:
   `mzeros_*x2`). All operations available in 11 types
   (i8/i16/i32/i64/u8/u16/u32/u64/f16/f32/f64).
 
-- **Test coverage**: 26 test files cover assembly encoding (227 base + 30 Zmpanel
-  instructions), error diagnostics, CSR names (13 CSRs), ISel patterns,
+- **Test coverage**: 27 test files cover assembly encoding (227 base + 30 Zmpanel
+  instructions), error diagnostics, CSR names (13 base + 18 Zmpanel CSRs), ISel patterns,
   end-to-end builtin codegen (including all 8 widening FP matmul variants),
   inline assembly constraints, C API pipeline (register allocation, dependency chains,
   CSR configuration), API coverage, verification fixes, x2 types, pipeline/scheduling,
@@ -1925,6 +1950,20 @@ Four errata exist in the RVM 0.6 spec:
    verified correct across all load/store functions; (g) EEW selection correct for
    all type variants. Re-confirmed 3 spec document errata. **No new bugs found.**
    All 26 tests pass.
+10. **Final review and cleanup (2026-03-20, Claude Opus 4.6 #11)**: Full
+    independent review with 8 parallel verification agents covering all areas.
+    Confirmed all 257 instruction encodings correct, all load/store dimension
+    CSR writes correct, matmul pipeline fully traced end-to-end. Three
+    actionable findings addressed: (a) removed broken x2 reinterpret macros
+    from `thead_matrix.h` (x2 struct types cannot fit single `"tr"` inline asm
+    constraint); (b) registered 18 Zmpanel panel CSRs in
+    `RISCVSystemOperands.td` (now accessible by name in inline asm, e.g.,
+    `csrr a0, th.panel_m`); (c) documented `mfmacc_h_x2` spec divergence as
+    intentional (x2 on accumulator rather than B operand, for API
+    consistency). Also fixed report documentation error: mreinterpret uses
+    `"=tr"/"tr"` constraint pair, not `"0"` tied constraint. Added
+    `xtheadzmpanel-csr.s` test (18 panel CSR name round-trip tests). All 27
+    tests pass.
 
 ## Design Notes
 

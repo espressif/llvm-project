@@ -155,3 +155,14 @@
   x2 reinterpret inline asm tests (known limitation)
 - Added 2 missing test files to documentation tables (`c-api-pipeline.c`, `managed-ra-pipeline.ll`)
 - Updated verification round count from 10 to 11 across all report files
+
+### Final review and cleanup (2026-03-20, Round 12)
+- Removed 11 broken x2 reinterpret macros from `clang/lib/Headers/thead_matrix.h`
+  (x2 struct types cannot fit single `"tr"` inline asm constraint)
+- Added 18 Zmpanel panel CSR definitions to `llvm/lib/Target/RISCV/RISCVSystemOperands.td`
+  (0xcc4-0xcd5, under `FeatureVendorXTHeadZmpanel` guard)
+- Added `llvm/test/MC/RISCV/xtheadzmpanel-csr.s` (18 panel CSR name round-trip tests)
+- Documented `mfmacc_h_x2` spec divergence as intentional in main doc
+- Fixed Bug #12 report description (actual constraint is `"=tr"/"tr"`, not `"0"` tied)
+- Updated all report/doc files: verification round count (11→12), CSR count (13→31),
+  spec errata count consistency (all now say 4), test count (26→27), limitations list

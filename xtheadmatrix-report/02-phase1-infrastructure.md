@@ -46,15 +46,15 @@ Added 13 CSRs gated by `FeatureVendorXTHeadMatrix`:
 
 | CSR Name | Address | Description |
 |----------|---------|-------------|
-| th.xmcsr | 0x802 | Matrix control/status |
-| th.mtilem | 0x803 | Tile M dimension |
-| th.mtilen | 0x804 | Tile N dimension |
-| th.mtilek | 0x805 | Tile K dimension |
-| th.xmxrm | 0x806 | Matrix rounding mode |
-| th.xmsat | 0x807 | Matrix saturation |
-| th.xmfflags | 0x808 | Matrix FP flags |
-| th.xmfrm | 0x809 | Matrix FP rounding mode |
-| th.xmsaten | 0x80a | Matrix saturation enable |
+| th.xmcsr | 0x806 | Matrix control/status |
+| th.mtilem | 0x807 | Tile M dimension |
+| th.mtilen | 0x808 | Tile N dimension |
+| th.mtilek | 0x809 | Tile K dimension |
+| th.xmxrm | 0x80a | Matrix rounding mode |
+| th.xmsat | 0x80b | Matrix saturation |
+| th.xmfflags | 0x80c | Matrix FP flags |
+| th.xmfrm | 0x80d | Matrix FP rounding mode |
+| th.xmsaten | 0x80e | Matrix saturation enable |
 | th.xmisa | 0xcc0 | Matrix ISA info |
 | th.xtlenb | 0xcc1 | Tile length in bytes |
 | th.xtrlenb | 0xcc2 | Tile register length in bytes |

@@ -62,8 +62,12 @@ compiler-managed matrix register values.
 9. **No INT4 (Zmint4)** — optional `mmacc.w.q` variants not implemented
 10. **No `.mv.x` element-wise variants** — not in RVM 0.6 instruction list
     (only in the intrinsic API design doc)
+11. **No x2 reinterpret** — x2 struct types cannot fit single `"tr"` inline asm
+    constraint; use mget/mset decomposition instead
+12. **`mfmacc_h_x2` x2 on accumulator** — intentional divergence from spec (which
+    puts x2 on B operand); matches fp64/int64 x2 API shape for consistency
 
 ## Encoding Verification
 
-All 257 instruction encodings verified (227 base + 30 Zmpanel; 3 independent audits including a full field-by-field verification of all 257 instructions, 0 implementation discrepancies).
-Known spec errata: matmul uop=01 should be 10; mfmin.s/mfmin.h names swapped; pmmaccus.w.b typo.
+All 257 instruction encodings verified (227 base + 30 Zmpanel; 4 independent audits including a full field-by-field verification of all 257 instructions, 0 implementation discrepancies).
+Known spec errata (5): matmul uop=01 should be 10; mfmin.s/mfmin.h names swapped; pmmaccus.w.b typo; mbce no encoding; Zmpanel compute rs1/s_size field mislabeled in zmpanel.adoc.

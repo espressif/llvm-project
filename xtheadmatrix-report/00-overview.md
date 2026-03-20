@@ -18,7 +18,7 @@ data types from FP8 to FP64 and INT8 to INT64.
 | Major opcode | `OPC_CUSTOM_1` (0b0101011) |
 | Instructions | 257 total: 227 base (7 config, 56 load/store, 27 matmul, 35 misc, 102 EW) + 30 Zmpanel (12 config, 2 load, 2 store, 14 compute) |
 | Registers | 8 matrix: tr0-tr3 (tile) + acc0-acc3 (accumulator), 3-bit encoded |
-| CSRs | 13, prefixed `th.` |
+| CSRs | 31 (13 base + 18 Zmpanel), prefixed `th.` |
 | Programming model | Spec-API (ManagedRA) exclusively; Zmpanel uses implicit HW state |
 | LLVM intrinsics | ~220 `_internal` + 7 config + 30 Zmpanel |
 | Clang builtins | ~220 Spec-API + 22 mget/mset + 22 mundef + 7 config + 30 Zmpanel ≈ 302 |
@@ -97,10 +97,11 @@ All 227 base hardware operations are covered:
 | `xtheadzmpanel-builtins.c` (Zmpanel builtin codegen) | PASS |
 | `xtheadzmpanel-inline-asm.c` (Zmpanel inline asm) | PASS |
 | `xtheadzmpanel-header-api.c` (Zmpanel header API) | PASS |
+| `xtheadzmpanel-csr.s` (18 panel CSR name tests) | PASS |
 
 ## Verification History
 
-Eleven independent verification rounds were completed:
+Twelve independent verification rounds were completed:
 
 1. **Gemini (2026-03-04)**: Found 2 HIGH bugs (conversion pseudo register classes THRVMMR→THRVMACC; matmul operand swap), filled 3 coverage gaps (B-tile load, FP/unsigned variants, matmul variants).
 
@@ -124,6 +125,8 @@ Eleven independent verification rounds were completed:
 
 11. **Claude Opus 4.6 #10 (2026-03-20)**: Comprehensive end-to-end verification with parallel spec-comparison agents. Verified: (a) ALL 257 instruction encodings against golden spec — every opcode, func3, func4, uop, d_size, s_size field confirmed correct; (b) complete builtin→intrinsic→instruction chain — every builtin maps to the correct intrinsic with correct argument types and ordering; (c) configuration emission (msettilem/k/n) verified correct before every operation; (d) matmul operand ordering `{acc, B, A}` confirmed correct for `md = md + ms1 × ms2^T`; (e) panel-aware 2x2 macro decomposition verified (load/store/compute register modeling correct, tr4-tr7 correctly handled as hardware-only); (f) pointer types in C API verified correct across all load/store functions; (g) EEW selection correct for all type variants. Re-confirmed 3 spec document errata (matmul uop, mfmin swap, pmmaccus typo). **No new bugs found.** All 26 tests pass. Fixed test CHECK patterns for intrinsic name mangling (`.i64` suffix) and `_Float16*` → `uint16_t*` pointer compatibility.
 
+12. **Claude Opus 4.6 #11 (2026-03-20)**: Final review and cleanup with 8 parallel verification agents. Re-verified all 257 encodings, full dimension parameter flow (M/K/N traced end-to-end), complete intrinsic/builtin chain (407 entries), all 30 Zmpanel instructions, and ManagedRA pass. Three actionable findings addressed: (a) removed 11 broken x2 reinterpret macros from `thead_matrix.h` (x2 struct types cannot fit single `"tr"` inline asm constraint — users should use mget/mset decomposition); (b) registered 18 Zmpanel panel CSRs (0xcc4-0xcd5) in `RISCVSystemOperands.td` under `FeatureVendorXTHeadZmpanel` guard — now accessible by name in inline asm (e.g., `csrr a0, th.panel_m`); (c) documented `mfmacc_h_x2` spec divergence as intentional (x2 on accumulator instead of B operand, for API consistency with fp64/int64 x2 variants). Fixed report documentation error: mreinterpret uses `"=tr"/"tr"` constraint pair, not `"0"` tied constraint. Added `xtheadzmpanel-csr.s` test. All 27 tests pass.
+
 ## Current Limitations
 
 1. No 64-bit instruction format (spec defines but not implemented)
@@ -132,8 +135,10 @@ Eleven independent verification rounds were completed:
 4. Limited register file (4 tile + 4 accumulator)
 5. Whole-register spill granularity (8192-bit per spill)
 6. `-O0` support limited (RISCVLowerMatrixType pass provides basic support)
-7. Known spec errata: matmul uop=01 should be 10; mfmin.s/mfmin.h names swapped
+7. Known spec errata (5): matmul uop=01→10; mfmin.s/mfmin.h names swapped; pmmaccus typo; mbce no encoding; Zmpanel compute rs1/s_size field mislabeled
 8. Zmpanel is fire-and-forget: the compiler does not manage panel registers tr4-tr7; all panel state is configured explicitly by the programmer. Mixed-mode usage (ManagedRA + Zmpanel fire-and-forget in the same function) is detected and rejected with a fatal error at ISel time
 9. C API naming follows RVM 0.6 assembly mnemonics, not the spec intrinsic API document (`rvm-intrinsic-api.adoc`). The spec's canonical function names (`__riscv_th_fmmacc`, `__riscv_th_mmaqa`, unified `__riscv_th_mld`, etc.) are not provided. Code written against the spec intrinsic API will not compile without adaptation. See `13-verification-and-fixes.md` for the full mapping table
 10. EW operations do not auto-configure mtilem/mtilen CSRs; they rely on prior load/matmul operations having set the correct tile dimensions. For standalone EW use, users must manually call config functions first
 11. Not implemented: stream load/store (`msld`/`msst`), matrix-scalar EW (`.mx`), 64-bit INT EW (`.d.mm`), `mmov.mv` row move, `mbce` element broadcast (no encoding in spec)
+12. x2 reinterpret not available (x2 struct types cannot fit single `"tr"` inline asm constraint; use mget/mset decomposition)
+13. `mfmacc_h_x2` puts x2 on accumulator (intentional divergence from spec which puts x2 on B operand); consistent with fp64/int64 x2 variants

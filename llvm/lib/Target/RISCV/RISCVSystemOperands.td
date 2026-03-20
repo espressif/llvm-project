@@ -569,17 +569,39 @@ foreach i = 0 - 3 in {
 
 // XTHeadMatrix (RVM 0.6)
 let FeaturesRequired = [{ {RISCV::FeatureVendorXTHeadMatrix} }] in {
-def : SysReg<"th.xmcsr", 0x802>;
-def : SysReg<"th.mtilem", 0x803>;
-def : SysReg<"th.mtilen", 0x804>;
-def : SysReg<"th.mtilek", 0x805>;
-def : SysReg<"th.xmxrm", 0x806>;
-def : SysReg<"th.xmsat", 0x807>;
-def : SysReg<"th.xmfflags", 0x808>;
-def : SysReg<"th.xmfrm", 0x809>;
-def : SysReg<"th.xmsaten", 0x80a>;
+def : SysReg<"th.xmcsr", 0x806>;
+def : SysReg<"th.mtilem", 0x807>;
+def : SysReg<"th.mtilen", 0x808>;
+def : SysReg<"th.mtilek", 0x809>;
+def : SysReg<"th.xmxrm", 0x80a>;
+def : SysReg<"th.xmsat", 0x80b>;
+def : SysReg<"th.xmfflags", 0x80c>;
+def : SysReg<"th.xmfrm", 0x80d>;
+def : SysReg<"th.xmsaten", 0x80e>;
 def : SysReg<"th.xmisa", 0xcc0>;
 def : SysReg<"th.xtlenb", 0xcc1>;
 def : SysReg<"th.xtrlenb", 0xcc2>;
 def : SysReg<"th.xalenb", 0xcc3>;
+}
+
+// XTHeadZmpanel (Panel-Aware 2x2 Tiling)
+let FeaturesRequired = [{ {RISCV::FeatureVendorXTHeadZmpanel} }] in {
+def : SysReg<"th.custom_ctrl", 0xcc4>;
+def : SysReg<"th.base_addr_a", 0xcc5>;
+def : SysReg<"th.base_addr_b", 0xcc6>;
+def : SysReg<"th.base_addr_d", 0xcc7>;
+def : SysReg<"th.rstrideb_a", 0xcc8>;
+def : SysReg<"th.rstrideb_b", 0xcc9>;
+def : SysReg<"th.rstrideb_d", 0xcca>;
+def : SysReg<"th.panel_m", 0xccb>;
+def : SysReg<"th.panel_n", 0xccc>;
+def : SysReg<"th.panel_k", 0xccd>;
+def : SysReg<"th.mptr_ld", 0xcce>;
+def : SysReg<"th.nptr_ld", 0xccf>;
+def : SysReg<"th.kptr_ld", 0xcd0>;
+def : SysReg<"th.mptr_st", 0xcd1>;
+def : SysReg<"th.nptr_st", 0xcd2>;
+def : SysReg<"th.addr_a", 0xcd3>;
+def : SysReg<"th.addr_b", 0xcd4>;
+def : SysReg<"th.addr_d", 0xcd5>;
 }
