@@ -6,6 +6,14 @@ All notable changes to the AICS LLVM Toolchain (XTHeadMatrix / RVM 0.6) are docu
 
 ### Added
 
+- **Zmpanel panel CSR named access**: Registered 18 Zmpanel panel CSRs
+  (0xcc4–0xcd5) in `RISCVSystemOperands.td` under `FeatureVendorXTHeadZmpanel`
+  guard. Panel CSRs are now accessible by name in inline assembly (e.g.,
+  `csrr a0, th.panel_m`). Total named CSRs: 31 (13 base + 18 Zmpanel).
+
+- **Panel CSR test** (`xtheadzmpanel-csr.s`): 18 CSR name round-trip tests
+  verifying all `th.custom_ctrl` through `th.addr_d` panel CSR names.
+
 - **C API pipeline tests** (`xtheadmatrix-c-api-pipeline.c`, 21 tests): Comprehensive
   `<thead_matrix.h>` C-level API tests verifying CSR config emission, matmul operand
   ordering (A/B swap), dependency chains (matmul→EW→clip→store), register pressure
@@ -22,6 +30,18 @@ All notable changes to the AICS LLVM Toolchain (XTHeadMatrix / RVM 0.6) are docu
   with both results live.
 
 ### Fixed
+
+- **RVM matrix CSR addresses updated** (0x802–0x80a → 0x806–0x80e): Updated all 9
+  read/write matrix CSR addresses in `RISCVSystemOperands.td` and `thead_matrix.h`
+  to match the latest spike/hardware mapping. Read-only CSRs (0xcc0–0xcc3) and
+  Zmpanel CSRs (0xcc4–0xcd5) are unchanged. Address mapping:
+  xmcsr 0x806, mtilem 0x807, mtilen 0x808, mtilek 0x809, xmxrm 0x80a,
+  xmsat 0x80b, xmfflags 0x80c, xmfrm 0x80d, xmsaten 0x80e.
+
+- **Removed broken x2 reinterpret macros**: Removed 11 `__riscv_th_mreinterpret_*x2`
+  macros from `thead_matrix.h` that could not work (x2 struct types cannot fit a
+  single `"tr"` inline asm constraint). Users should decompose x2 values with
+  `mget`, reinterpret individual elements, and reassemble with `mset`.
 
 - **macOS toolchain build** (`riscv-toolchain-build.sh`):
   - Non-portable mode failed with "unbound variable" on macOS bash 3.2 due to empty
@@ -45,19 +65,25 @@ All notable changes to the AICS LLVM Toolchain (XTHeadMatrix / RVM 0.6) are docu
 
 ### Changed
 
-- **Documentation and reports updated** with verification round 10 findings:
-  - Updated `xtheadmatrix-doc/RISCVXTHeadMatrix.md`: fixed x2 example comment,
-    replaced Example 7 (deleted DirectReg builtins → ManagedRA API), added spec
-    errata #4 (mbce no encoding), updated test coverage count (17→24 files),
-    added verification history entry #8.
-  - Updated `xtheadmatrix-report/00-overview.md`: added round 10, updated test
-    status table with 5 previously unlisted test files.
-  - Updated `xtheadmatrix-report/08-files-changed.md`: added missing test files,
-    added round 10 change history entry.
-  - Updated `xtheadmatrix-report/12-intrinsic-api.md`: clarified that C API follows
-    RVM 0.6 assembly mnemonics, not the older intrinsic API spec (v0.2).
-  - Updated `xtheadmatrix-report/13-verification-and-fixes.md`: added verification
-    round 10 with methodology and findings, fixed Zmpanel CSR count (20→18).
+- **`mfmacc_h_x2` spec divergence documented as intentional**: The spec puts x2 on
+  src2 (B operand) for fp16 matmul; the implementation puts x2 on the accumulator.
+  This is intentional for API consistency — all x2 matmul variants (fp16, fp64,
+  int64) uniformly place x2 on the accumulator/result.
+
+- **Spec erratum #5 added**: Zmpanel compute encoding table in `zmpanel.adoc`
+  mislabels bits [19:15] as `rs1=00000`; bits [19:18] carry `s_size` (non-zero
+  for fp16/bf16/fp32 source types). Implementation correctly follows standard
+  matmul encoding format.
+
+- **Documentation and reports updated** with verification rounds 10–12 findings:
+  - Updated `xtheadmatrix-doc/RISCVXTHeadMatrix.md`: CSR address table, x2
+    divergence documentation, x2 reinterpret limitation, spec errata (4→5),
+    test count (26→27), verification history entries #8–#10.
+  - Updated all report files (`00-overview.md`, `02-phase1-infrastructure.md`,
+    `08-files-changed.md`, `09-instruction-encoding-reference.md`,
+    `10-future-work.md`, `13-verification-and-fixes.md`) with new CSR addresses,
+    round 12 findings, and corrected mreinterpret constraint documentation
+    (actual: `"=tr"/"tr"`, not `"0"` tied constraint).
 
 ## [aics_llvm_toolchain_v0.2] - 2026-03-13
 
