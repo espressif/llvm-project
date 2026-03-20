@@ -47,6 +47,7 @@
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/FileSystem.h"
+#include "llvm/Support/IOSandbox.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Transforms/IPO.h"
 #include "llvm/Transforms/InstCombine/InstCombine.h"
@@ -423,6 +424,9 @@ inline Instruction *getFirstFMulAddInst(BasicBlock *BB) {
 
 // Helper function to run dead code elimination
 inline void runSimplifyDcePasses(Function &F) {
+  // Clang cc1 may run the optimizer under IO sandbox; nested legacy passes can
+  // still trigger real filesystem operations (e.g. VFS / cwd queries).
+  auto BypassSandbox = sys::sandbox::scopedDisable();
   legacy::FunctionPassManager FPM(F.getParent());
   FPM.add(createDeadCodeEliminationPass());
   FPM.add(createLoopSimplifyPass());
@@ -495,6 +499,8 @@ inline void setPHINodesBlock(BasicBlock *BB, BasicBlock *Pred,
 }
 
 inline void runPostPass(Function &F) {
+  // See runSimplifyDcePasses: nested NewPM passes under cc1 IO sandbox.
+  auto BypassSandbox = sys::sandbox::scopedDisable();
   // Create necessary analysis managers
   LoopAnalysisManager LAM;
   FunctionAnalysisManager FAM;
