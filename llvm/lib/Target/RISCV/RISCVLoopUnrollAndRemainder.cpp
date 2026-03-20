@@ -112,6 +112,7 @@
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/FileSystem.h"
+#include "llvm/Support/IOSandbox.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Transforms/IPO.h"
 #include "llvm/Transforms/InstCombine/InstCombine.h"
@@ -3236,6 +3237,9 @@ static Instruction *modifyAddToOrInClonedForBody(BasicBlock *ClonedForBody) {
 }
 
 static void runInstCombinePass(Function &F) {
+  // Same as addCommonOptimizationPasses: cc1 may run under IO sandbox; nested
+  // passes can still touch the real filesystem (VFS / cwd).
+  auto BypassSandbox = sys::sandbox::scopedDisable();
   // Create necessary analysis managers
   LoopAnalysisManager LAM;
   FunctionAnalysisManager FAM;
@@ -6381,6 +6385,9 @@ void DspsF32FirdLoopUnroller::processFirdUnroll(
 }
 
 void LoopUnroller::addCommonOptimizationPasses(Function &F) {
+  // Same as runSimplifyDcePasses: cc1 may run under IO sandbox; nested passes
+  // can still touch the real filesystem (VFS / cwd).
+  auto BypassSandbox = sys::sandbox::scopedDisable();
   // Create necessary analysis managers
   LoopAnalysisManager LAM;
   FunctionAnalysisManager FAM;
@@ -6407,6 +6414,8 @@ void LoopUnroller::addCommonOptimizationPasses(Function &F) {
 }
 
 void DspsF32FirdLoopUnroller::addLegacyCommonOptimizationPasses(Function &F) {
+  // Nested legacy FPM under cc1 IO sandbox (see runSimplifyDcePasses).
+  auto BypassSandbox = sys::sandbox::scopedDisable();
   legacy::FunctionPassManager FPM(F.getParent());
   FPM.add(createLoopSimplifyPass());
   FPM.add(createLICMPass()); // Loop Invariant Code Motion
