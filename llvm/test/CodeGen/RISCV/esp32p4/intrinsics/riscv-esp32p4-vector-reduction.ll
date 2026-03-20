@@ -3,7 +3,6 @@
 ; Test ASM generation (Intrinsic -> ASM)
 ; RUN: llc -O2 -mattr=+xespv1v,+espv-lowering -mtriple=riscv32 %s -o - | FileCheck %s --check-prefix=ASM
 
-
 define dso_local i32 @test_max_s8(ptr noundef %src) local_unnamed_addr #0 {
 ; ASM-LABEL: test_max_s8:
 ; ASM:       # %bb.0: # %entry
@@ -11,10 +10,10 @@ define dso_local i32 @test_max_s8(ptr noundef %src) local_unnamed_addr #0 {
 ; ASM-NEXT:    esp.max.s8.a q0, a0
 ; ASM-NEXT:    ret
 entry:
-  %0 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
-  %1 = extractvalue { <16 x i8>, ptr } %0, 0
-  %2 = tail call i32 @llvm.riscv.esp.max.s8.a.m(<16 x i8> %1)
-  ret i32 %2
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
+  %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
+  %v1 = tail call i32 @llvm.riscv.esp.max.s8.a.m(<16 x i8> %ev1)
+  ret i32 %v1
 }
 
 declare i32 @llvm.riscv.esp.max.s8.a.m(<16 x i8>) #1
@@ -26,10 +25,10 @@ define dso_local i32 @test_min_s8(ptr noundef %src) local_unnamed_addr #0 {
 ; ASM-NEXT:    esp.min.s8.a q0, a0
 ; ASM-NEXT:    ret
 entry:
-  %0 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
-  %1 = extractvalue { <16 x i8>, ptr } %0, 0
-  %2 = tail call i32 @llvm.riscv.esp.min.s8.a.m(<16 x i8> %1)
-  ret i32 %2
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
+  %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
+  %v1 = tail call i32 @llvm.riscv.esp.min.s8.a.m(<16 x i8> %ev1)
+  ret i32 %v1
 }
 
 declare i32 @llvm.riscv.esp.min.s8.a.m(<16 x i8>) #1
@@ -41,10 +40,10 @@ define dso_local i32 @test_max_u8(ptr noundef %src) local_unnamed_addr #0 {
 ; ASM-NEXT:    esp.max.u8.a q0, a0
 ; ASM-NEXT:    ret
 entry:
-  %0 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
-  %1 = extractvalue { <16 x i8>, ptr } %0, 0
-  %2 = tail call i32 @llvm.riscv.esp.max.u8.a.m(<16 x i8> %1)
-  ret i32 %2
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
+  %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
+  %v1 = tail call i32 @llvm.riscv.esp.max.u8.a.m(<16 x i8> %ev1)
+  ret i32 %v1
 }
 
 declare i32 @llvm.riscv.esp.max.u8.a.m(<16 x i8>) #1
@@ -56,10 +55,10 @@ define dso_local i32 @test_min_u8(ptr noundef %src) local_unnamed_addr #0 {
 ; ASM-NEXT:    esp.min.u8.a q0, a0
 ; ASM-NEXT:    ret
 entry:
-  %0 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
-  %1 = extractvalue { <16 x i8>, ptr } %0, 0
-  %2 = tail call i32 @llvm.riscv.esp.min.u8.a.m(<16 x i8> %1)
-  ret i32 %2
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
+  %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
+  %v1 = tail call i32 @llvm.riscv.esp.min.u8.a.m(<16 x i8> %ev1)
+  ret i32 %v1
 }
 
 declare i32 @llvm.riscv.esp.min.u8.a.m(<16 x i8>) #1

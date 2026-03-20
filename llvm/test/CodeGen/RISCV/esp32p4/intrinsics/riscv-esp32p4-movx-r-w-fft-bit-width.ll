@@ -3,7 +3,6 @@
 ; Test ASM generation (Intrinsic -> ASM)
 ; RUN: llc -O2 -mattr=+xespv1v,+espv-lowering -mtriple=riscv32 %s -o - | FileCheck %s --check-prefix=ASM
 
-
 define dso_local i32 @test_movx_fft_bit_width_write_read(i32 noundef %rs1_val) local_unnamed_addr #0 {
 ; ASM-LABEL: test_movx_fft_bit_width_write_read:
 ; ASM:       # %bb.0: # %entry
@@ -11,16 +10,16 @@ define dso_local i32 @test_movx_fft_bit_width_write_read(i32 noundef %rs1_val) l
 ; ASM-NEXT:    esp.movx.r.fft.bit.width a0
 ; ASM-NEXT:    ret
 entry:
-  %0 = tail call i32 @llvm.riscv.esp.movx.w.fft.bit.width.m(i32 %rs1_val)
-  %1 = tail call i32 @llvm.riscv.esp.movx.r.fft.bit.width.m(i32 %0)
-  ret i32 %1
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.fft.bit.width.m(i32 %rs1_val)
+  %v2 = tail call i32 @llvm.riscv.esp.movx.r.fft.bit.width.m(i32 %v1)
+  ret i32 %v2
 }
 
 declare i32 @llvm.riscv.esp.movx.w.fft.bit.width.m(i32) #1
 
 declare i32 @llvm.riscv.esp.movx.r.fft.bit.width.m(i32) #1
 
-define dso_local ptr @test_bitrev_with_fft_bit_width(ptr noundef %rs1, ptr noundef %dst, i32 noundef %bit_width) local_unnamed_addr #2 {
+define dso_local ptr @test_bitrev_with_fft_bit_width(ptr noundef %Rs1, ptr noundef %dst, i32 noundef %bit_width) local_unnamed_addr #2 {
 ; ASM-LABEL: test_bitrev_with_fft_bit_width:
 ; ASM:       # %bb.0: # %entry
 ; ASM-NEXT:    esp.movx.w.fft.bit.width a2
@@ -29,13 +28,13 @@ define dso_local ptr @test_bitrev_with_fft_bit_width(ptr noundef %rs1, ptr nound
 ; ASM-NEXT:    esp.vst.128.ip q0, a0, 16
 ; ASM-NEXT:    ret
 entry:
-  %0 = tail call i32 @llvm.riscv.esp.movx.w.fft.bit.width.m(i32 %bit_width)
-  %1 = tail call { ptr, <8 x i16> } @llvm.riscv.esp.fft.bitrev.m(ptr %rs1, i32 %0)
-  %2 = extractvalue { ptr, <8 x i16> } %1, 1
-  %3 = bitcast <8 x i16> %2 to <16 x i8>
-  %4 = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> %3, ptr %dst, i32 16)
-  %5 = tail call i32 @llvm.riscv.esp.movx.r.fft.bit.width.m(i32 %0)
-  ret ptr %4
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.fft.bit.width.m(i32 %bit_width)
+  %v2 = tail call { ptr, <8 x i16> } @llvm.riscv.esp.fft.bitrev.m(ptr %Rs1, i32 %v1)
+  %ev1 = extractvalue { ptr, <8 x i16> } %v2, 1
+  %bc1 = bitcast <8 x i16> %ev1 to <16 x i8>
+  %vst_ptr = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> %bc1, ptr %dst, i32 16)
+  %v3 = tail call i32 @llvm.riscv.esp.movx.r.fft.bit.width.m(i32 %v1)
+  ret ptr %vst_ptr
 }
 
 declare { ptr, <8 x i16> } @llvm.riscv.esp.fft.bitrev.m(ptr, i32) #1
