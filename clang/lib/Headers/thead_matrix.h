@@ -108,20 +108,34 @@ enum RVM_CSR {
 
 /* ============================================================================
  * Section 2: Configuration Functions
+ *
+ * Set tile dimensions before matrix operations.  In managed-RA mode these
+ * are normally emitted automatically by load/store/matmul wrappers, so
+ * explicit calls are only needed for advanced manual control.
+ *
+ *   mrow_t m = __riscv_th_msetmrow_m(M);   // mtilem = M (row count)
+ *   mrow_t n = __riscv_th_msetmrow_n(N);   // mtilen = N (row count)
+ *   mcol_t k = __riscv_th_msetmcol_e8(K);  // mtilek = K (col count for 8-bit elems)
+ *   __riscv_th_mrelease();                  // release matrix unit context
  * ============================================================================ */
 
+/* Set mtilem CSR (M-dimension row count). Returns the value written. */
 static __inline__ __attribute__((__always_inline__, __nodebug__))
 mrow_t __riscv_th_msetmrow_m(mrow_t m) {
   __builtin_riscv_th_msettilem(m);
   return m;
 }
 
+/* Set mtilen CSR (N-dimension row count). Returns the value written. */
 static __inline__ __attribute__((__always_inline__, __nodebug__))
-mcol_t __riscv_th_msetmrow_n(mcol_t n) {
+mrow_t __riscv_th_msetmrow_n(mrow_t n) {
   __builtin_riscv_th_msettilen(n);
   return n;
 }
 
+/* Set mtilek CSR (K-dimension column count).  The e8/e16/e32/e64 suffix
+ * indicates the element width; the caller passes the column count in
+ * elements (not bytes).  All four variants write the same CSR. */
 static __inline__ __attribute__((__always_inline__, __nodebug__))
 mcol_t __riscv_th_msetmcol_e8(mcol_t c) {
   __builtin_riscv_th_msettilek(c);
@@ -146,13 +160,28 @@ mcol_t __riscv_th_msetmcol_e64(mcol_t c) {
   return c;
 }
 
+/* Release the matrix unit context (frees hardware resources). */
 static __inline__ __attribute__((__always_inline__, __nodebug__))
 void __riscv_th_mrelease(void) {
   __builtin_riscv_th_mrelease();
 }
 
+/* Immediate-operand config wrappers (imm must be a compile-time constant). */
+#define __riscv_th_msettilemi(imm) __builtin_riscv_th_msettilemi(imm)
+#define __riscv_th_msettileki(imm) __builtin_riscv_th_msettileki(imm)
+#define __riscv_th_msettileni(imm) __builtin_riscv_th_msettileni(imm)
+
 /* ============================================================================
  * Section 3: CSR Access Functions
+ *
+ *   unsigned long v = __riscv_th_mread_csr(RVM_CSR_XMCSR);  // read CSR
+ *   __riscv_th_mwrite_csr(RVM_CSR_XMFRM, 0);                // write CSR
+ *   unsigned long tlen = __riscv_th_xmlenb();   // tile register size in bytes
+ *   unsigned long rlen = __riscv_th_xrlenb();   // tile row width in bytes
+ *   unsigned long isa  = __riscv_th_xmisa();    // ISA feature bits
+ *
+ * Read-only CSRs (0xcc0-0xcc3): xmisa, xtlenb, xtrlenb, xalenb.
+ * Read-write CSRs (0x802-0x80a): xmcsr, mtilem/n/k, xmxrm, xmsat, etc.
  * ============================================================================ */
 
 #define __riscv_th_mread_csr(csr)                                              \
@@ -255,15 +284,30 @@ unsigned long __riscv_th_xrlenb(void) {
   return __val;
 }
 
+/* __riscv_th_xmisa: Read the matrix ISA feature bits (xmisa, CSR 0xcc0).
+ * This is the canonical function for reading the matrix ISA register. */
 static __inline__ __attribute__((__always_inline__, __nodebug__))
-unsigned long __riscv_th_xmsize(void) {
+unsigned long __riscv_th_xmisa(void) {
   unsigned long __val;
   __asm__ __volatile__("csrr %0, th.xmisa" : "=r"(__val));
   return __val;
 }
 
+/* __riscv_th_xmsize: Compatibility alias from the older intrinsic API spec.
+ * The "xmsize" CSR does not exist in RVM 0.6; this maps to xmisa. */
+static __inline__ __attribute__((__always_inline__, __nodebug__))
+unsigned long __riscv_th_xmsize(void) {
+  return __riscv_th_xmisa();
+}
+
 /* ============================================================================
  * Section 5: Undefined Functions (22)
+ *
+ * Return an undefined (poison) matrix value.  Used as a placeholder when
+ * a value will be fully overwritten before use (e.g., initializing an x2
+ * pair before inserting both elements).
+ *
+ *   mint32_t u = __riscv_th_mundefined_i32();
  * ============================================================================ */
 
 #define __THEAD_MUNDEFINED_SINGLE(SUFFIX, TYPE, MUNDEF)                        \
@@ -305,44 +349,55 @@ __THEAD_MUNDEFINED_PAIR(f64x2, mfloat64x2_t, mundef_f64x2)
 /* ============================================================================
  * Section 6: Reinterpret Functions (22)
  *
- * With opaque native types, reinterpret returns a mundef token of the target
- * type. The hardware doesn't need to move data -- types are just annotations.
+ * Bitwise reinterpretation between matrix types. All single-register matrix
+ * types share the same physical register, so reinterpretation is a no-op at
+ * the hardware level. We use inline asm with tied constraints ("0") to
+ * preserve the register value while changing the C-level type.
  *
- * The spec defines reinterpret(src) with a source parameter. Since C cannot
- * overload on different source types, we use macros that accept any expression
- * as src and simply discard it (the cast is a type-level operation only).
+ * Per spec: "The type of SRC can be any matrix type with the same number
+ * of registers."
  * ============================================================================ */
 
-#define __riscv_th_mreinterpret_i8(src)    ((void)(src), __builtin_riscv_th_mundef_i8())
-#define __riscv_th_mreinterpret_i16(src)   ((void)(src), __builtin_riscv_th_mundef_i16())
-#define __riscv_th_mreinterpret_i32(src)   ((void)(src), __builtin_riscv_th_mundef_i32())
-#define __riscv_th_mreinterpret_i64(src)   ((void)(src), __builtin_riscv_th_mundef_i64())
-#define __riscv_th_mreinterpret_u8(src)    ((void)(src), __builtin_riscv_th_mundef_u8())
-#define __riscv_th_mreinterpret_u16(src)   ((void)(src), __builtin_riscv_th_mundef_u16())
-#define __riscv_th_mreinterpret_u32(src)   ((void)(src), __builtin_riscv_th_mundef_u32())
-#define __riscv_th_mreinterpret_u64(src)   ((void)(src), __builtin_riscv_th_mundef_u64())
-#define __riscv_th_mreinterpret_f16(src)   ((void)(src), __builtin_riscv_th_mundef_f16())
-#define __riscv_th_mreinterpret_f32(src)   ((void)(src), __builtin_riscv_th_mundef_f32())
-#define __riscv_th_mreinterpret_f64(src)   ((void)(src), __builtin_riscv_th_mundef_f64())
+#define __THEAD_MREINTERPRET(DST_TYPE, src)                                    \
+  __extension__({                                                              \
+    DST_TYPE __result;                                                         \
+    __asm__("" : "=tr"(__result) : "0"(src));                                  \
+    __result;                                                                  \
+  })
 
-#define __riscv_th_mreinterpret_i8x2(src)  ((void)(src), __builtin_riscv_th_mundef_i8x2())
-#define __riscv_th_mreinterpret_i16x2(src) ((void)(src), __builtin_riscv_th_mundef_i16x2())
-#define __riscv_th_mreinterpret_i32x2(src) ((void)(src), __builtin_riscv_th_mundef_i32x2())
-#define __riscv_th_mreinterpret_i64x2(src) ((void)(src), __builtin_riscv_th_mundef_i64x2())
-#define __riscv_th_mreinterpret_u8x2(src)  ((void)(src), __builtin_riscv_th_mundef_u8x2())
-#define __riscv_th_mreinterpret_u16x2(src) ((void)(src), __builtin_riscv_th_mundef_u16x2())
-#define __riscv_th_mreinterpret_u32x2(src) ((void)(src), __builtin_riscv_th_mundef_u32x2())
-#define __riscv_th_mreinterpret_u64x2(src) ((void)(src), __builtin_riscv_th_mundef_u64x2())
-#define __riscv_th_mreinterpret_f16x2(src) ((void)(src), __builtin_riscv_th_mundef_f16x2())
-#define __riscv_th_mreinterpret_f32x2(src) ((void)(src), __builtin_riscv_th_mundef_f32x2())
-#define __riscv_th_mreinterpret_f64x2(src) ((void)(src), __builtin_riscv_th_mundef_f64x2())
+#define __riscv_th_mreinterpret_i8(src)    __THEAD_MREINTERPRET(mint8_t, src)
+#define __riscv_th_mreinterpret_i16(src)   __THEAD_MREINTERPRET(mint16_t, src)
+#define __riscv_th_mreinterpret_i32(src)   __THEAD_MREINTERPRET(mint32_t, src)
+#define __riscv_th_mreinterpret_i64(src)   __THEAD_MREINTERPRET(mint64_t, src)
+#define __riscv_th_mreinterpret_u8(src)    __THEAD_MREINTERPRET(muint8_t, src)
+#define __riscv_th_mreinterpret_u16(src)   __THEAD_MREINTERPRET(muint16_t, src)
+#define __riscv_th_mreinterpret_u32(src)   __THEAD_MREINTERPRET(muint32_t, src)
+#define __riscv_th_mreinterpret_u64(src)   __THEAD_MREINTERPRET(muint64_t, src)
+#define __riscv_th_mreinterpret_f16(src)   __THEAD_MREINTERPRET(mfloat16_t, src)
+#define __riscv_th_mreinterpret_f32(src)   __THEAD_MREINTERPRET(mfloat32_t, src)
+#define __riscv_th_mreinterpret_f64(src)   __THEAD_MREINTERPRET(mfloat64_t, src)
 
-/* Reinterpret macros defined above -- no instantiations needed */
+#define __riscv_th_mreinterpret_i8x2(src)  __THEAD_MREINTERPRET(mint8x2_t, src)
+#define __riscv_th_mreinterpret_i16x2(src) __THEAD_MREINTERPRET(mint16x2_t, src)
+#define __riscv_th_mreinterpret_i32x2(src) __THEAD_MREINTERPRET(mint32x2_t, src)
+#define __riscv_th_mreinterpret_i64x2(src) __THEAD_MREINTERPRET(mint64x2_t, src)
+#define __riscv_th_mreinterpret_u8x2(src)  __THEAD_MREINTERPRET(muint8x2_t, src)
+#define __riscv_th_mreinterpret_u16x2(src) __THEAD_MREINTERPRET(muint16x2_t, src)
+#define __riscv_th_mreinterpret_u32x2(src) __THEAD_MREINTERPRET(muint32x2_t, src)
+#define __riscv_th_mreinterpret_u64x2(src) __THEAD_MREINTERPRET(muint64x2_t, src)
+#define __riscv_th_mreinterpret_f16x2(src) __THEAD_MREINTERPRET(mfloat16x2_t, src)
+#define __riscv_th_mreinterpret_f32x2(src) __THEAD_MREINTERPRET(mfloat32x2_t, src)
+#define __riscv_th_mreinterpret_f64x2(src) __THEAD_MREINTERPRET(mfloat64x2_t, src)
 
 /* ============================================================================
  * Section 7: Tuple Get/Set Functions (22)
  *
- * With opaque native types, tuple operations return mundef tokens.
+ * Extract or insert a single register from/to a register-pair (x2) type.
+ *
+ *   mfloat16_t elem  = __riscv_th_mget_f16(pair, 0);      // extract slot 0
+ *   pair = __riscv_th_mset_f16(pair, 1, new_val);          // insert into slot 1
+ *
+ * At -O2 with constant index, these fold to direct struct access.
  * ============================================================================ */
 
 #define __THEAD_MGET(SUFFIX, STYPE, PTYPE)                                     \
@@ -388,10 +443,22 @@ __THEAD_MSET(f64, mfloat64_t,  mfloat64x2_t)
  * The compiler's register allocator manages matrix registers (TR0-TR3,
  * ACC0-ACC3). Matrix values are returned and passed as opaque types
  * (mint32_t etc.) with proper SSA dataflow. No manual register index
- * management is needed.
+ * management is needed.  Tile config CSRs (mtilem/n/k) are emitted
+ * automatically by each wrapper.
+ *
+ * Typical usage:
+ *   mint8_t  a = __riscv_th_mld_a_i8(A, stride_a, M, K);   // load A-tile
+ *   mint8_t  b = __riscv_th_mld_b_i8(B, stride_b, K, N);   // load B-tile
+ *   mint32_t c = __riscv_th_mzero_i32(M, N);                // zero accumulator
+ *   c = __riscv_th_mmacc_w_b(c, a, b, M, K, N);            // c += a * b^T
+ *   __riscv_th_mst_i32(C, stride_c, c, M, N);              // store result
+ *   __riscv_th_mrelease();
  * ============================================================================ */
 
-/* --- A-tile loads (mlae: M×K dimensions) --- */
+/* --- A-tile loads (mlae: M×K dimensions) ---
+ * Load matrix A from memory into a tile register (tr0-tr3).
+ *   mint8_t a = __riscv_th_mld_a_i8(base, stride, M, K);
+ * Parameters: base=pointer, stride=row stride in bytes, m=rows, k=cols. */
 #define __THEAD_SPEC_MLD(SUFFIX, CTYPE, MTYPE, BUILTIN)                        \
   static __inline__ __attribute__((__always_inline__, __nodebug__))             \
   MTYPE __riscv_th_mld_a_##SUFFIX(const CTYPE *__base, long __stride,          \
@@ -411,7 +478,9 @@ __THEAD_SPEC_MLD(f16, uint16_t,   mfloat16_t,  mld_spec_f16)
 __THEAD_SPEC_MLD(f32, float,      mfloat32_t,  mld_spec_f32)
 __THEAD_SPEC_MLD(f64, double,     mfloat64_t,  mld_spec_f64)
 
-/* --- B-tile loads (mlbe: K×N dimensions) --- */
+/* --- B-tile loads (mlbe: K×N dimensions) ---
+ * Load matrix B into a tile register (tr0-tr3).
+ *   mint8_t b = __riscv_th_mld_b_i8(base, stride, K, N);  */
 #define __THEAD_SPEC_MLD_B(SUFFIX, CTYPE, MTYPE, BUILTIN)                      \
   static __inline__ __attribute__((__always_inline__, __nodebug__))             \
   MTYPE __riscv_th_mld_b_##SUFFIX(const CTYPE *__base, long __stride,          \
@@ -431,7 +500,9 @@ __THEAD_SPEC_MLD_B(f16, uint16_t,   mfloat16_t,  mld_b_spec_f16)
 __THEAD_SPEC_MLD_B(f32, float,      mfloat32_t,  mld_b_spec_f32)
 __THEAD_SPEC_MLD_B(f64, double,     mfloat64_t,  mld_b_spec_f64)
 
-/* --- Accumulator loads (mlce: M×N dimensions) --- */
+/* --- Accumulator loads (mlce: M×N dimensions) ---
+ * Load matrix C into an accumulator register (acc0-acc3).
+ *   mint32_t c = __riscv_th_mld_acc_i32(base, stride, M, N);  */
 #define __THEAD_SPEC_MLD_ACC(SUFFIX, CTYPE, MTYPE, BUILTIN)                    \
   static __inline__ __attribute__((__always_inline__, __nodebug__))             \
   MTYPE __riscv_th_mld_acc_##SUFFIX(const CTYPE *__base, long __stride,        \
@@ -451,7 +522,9 @@ __THEAD_SPEC_MLD_ACC(f16, uint16_t,   mfloat16_t,  mld_acc_spec_f16)
 __THEAD_SPEC_MLD_ACC(f32, float,      mfloat32_t,  mld_acc_spec_f32)
 __THEAD_SPEC_MLD_ACC(f64, double,     mfloat64_t,  mld_acc_spec_f64)
 
-/* --- Stores (msce: M×N dimensions) --- */
+/* --- Stores (msce: M×N dimensions) ---
+ * Store accumulator to memory.
+ *   __riscv_th_mst_i32(base, stride, val, M, N);  */
 #define __THEAD_SPEC_MST(SUFFIX, CTYPE, MTYPE, BUILTIN)                        \
   static __inline__ __attribute__((__always_inline__, __nodebug__))             \
   void __riscv_th_mst_##SUFFIX(CTYPE *__base, long __stride, MTYPE __val,      \
@@ -471,121 +544,396 @@ __THEAD_SPEC_MST(f16, uint16_t,   mfloat16_t,  mst_spec_f16)
 __THEAD_SPEC_MST(f32, float,      mfloat32_t,  mst_spec_f32)
 __THEAD_SPEC_MST(f64, double,     mfloat64_t,  mst_spec_f64)
 
-/* --- INT matmul: acc = acc + A * B --- */
-/* Note: uses 'mmaq' to avoid collision with DirectReg mmaqa */
-#define __THEAD_SPEC_MMAQA(SUFFIX, ATYPE, BTYPE, CTYPE, BUILTIN)              \
+/* --- A-tile stores (msae: M×K dimensions) ---
+ * Store tile register as A-tile to memory. */
+#define __THEAD_SPEC_MST_A(SUFFIX, CTYPE, MTYPE, BUILTIN)                      \
   static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  CTYPE __riscv_th_mmaq_##SUFFIX(CTYPE __c, ATYPE __a, BTYPE __b,             \
-                                  mrow_t __m, mcol_t __k, mcol_t __n) {        \
+  void __riscv_th_mst_a_##SUFFIX(CTYPE *__base, long __stride, MTYPE __val,    \
+                                  mrow_t __m, mcol_t __k) {                     \
+    __builtin_riscv_th_##BUILTIN((void *)__base, __stride, __val, __m, __k);   \
+  }
+
+__THEAD_SPEC_MST_A(i8,  int8_t,     mint8_t,     mst_a_spec_i8)
+__THEAD_SPEC_MST_A(i16, int16_t,    mint16_t,    mst_a_spec_i16)
+__THEAD_SPEC_MST_A(i32, int32_t,    mint32_t,    mst_a_spec_i32)
+__THEAD_SPEC_MST_A(i64, int64_t,    mint64_t,    mst_a_spec_i64)
+__THEAD_SPEC_MST_A(u8,  uint8_t,    muint8_t,    mst_a_spec_u8)
+__THEAD_SPEC_MST_A(u16, uint16_t,   muint16_t,   mst_a_spec_u16)
+__THEAD_SPEC_MST_A(u32, uint32_t,   muint32_t,   mst_a_spec_u32)
+__THEAD_SPEC_MST_A(u64, uint64_t,   muint64_t,   mst_a_spec_u64)
+__THEAD_SPEC_MST_A(f16, uint16_t,   mfloat16_t,  mst_a_spec_f16)
+__THEAD_SPEC_MST_A(f32, float,      mfloat32_t,  mst_a_spec_f32)
+__THEAD_SPEC_MST_A(f64, double,     mfloat64_t,  mst_a_spec_f64)
+
+/* --- B-tile stores (msbe: K×N dimensions) ---
+ * Store tile register as B-tile to memory. */
+#define __THEAD_SPEC_MST_B(SUFFIX, CTYPE, MTYPE, BUILTIN)                      \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  void __riscv_th_mst_b_##SUFFIX(CTYPE *__base, long __stride, MTYPE __val,    \
+                                  mcol_t __k, mcol_t __n) {                     \
+    __builtin_riscv_th_##BUILTIN((void *)__base, __stride, __val, __k, __n);   \
+  }
+
+__THEAD_SPEC_MST_B(i8,  int8_t,     mint8_t,     mst_b_spec_i8)
+__THEAD_SPEC_MST_B(i16, int16_t,    mint16_t,    mst_b_spec_i16)
+__THEAD_SPEC_MST_B(i32, int32_t,    mint32_t,    mst_b_spec_i32)
+__THEAD_SPEC_MST_B(i64, int64_t,    mint64_t,    mst_b_spec_i64)
+__THEAD_SPEC_MST_B(u8,  uint8_t,    muint8_t,    mst_b_spec_u8)
+__THEAD_SPEC_MST_B(u16, uint16_t,   muint16_t,   mst_b_spec_u16)
+__THEAD_SPEC_MST_B(u32, uint32_t,   muint32_t,   mst_b_spec_u32)
+__THEAD_SPEC_MST_B(u64, uint64_t,   muint64_t,   mst_b_spec_u64)
+__THEAD_SPEC_MST_B(f16, uint16_t,   mfloat16_t,  mst_b_spec_f16)
+__THEAD_SPEC_MST_B(f32, float,      mfloat32_t,  mst_b_spec_f32)
+__THEAD_SPEC_MST_B(f64, double,     mfloat64_t,  mst_b_spec_f64)
+
+/* --- Transposed A-tile loads (mlate: M×K dimensions) ---
+ * Load matrix A with transposition into a tile register. */
+#define __THEAD_SPEC_MLD_AT(SUFFIX, CTYPE, MTYPE, BUILTIN)                     \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  MTYPE __riscv_th_mld_at_##SUFFIX(const CTYPE *__base, long __stride,         \
+                                    mrow_t __m, mcol_t __k) {                   \
+    return __builtin_riscv_th_##BUILTIN((void *)__base, __stride, __m, __k);   \
+  }
+
+__THEAD_SPEC_MLD_AT(i8,  int8_t,     mint8_t,     mld_at_spec_i8)
+__THEAD_SPEC_MLD_AT(i16, int16_t,    mint16_t,    mld_at_spec_i16)
+__THEAD_SPEC_MLD_AT(i32, int32_t,    mint32_t,    mld_at_spec_i32)
+__THEAD_SPEC_MLD_AT(i64, int64_t,    mint64_t,    mld_at_spec_i64)
+__THEAD_SPEC_MLD_AT(u8,  uint8_t,    muint8_t,    mld_at_spec_u8)
+__THEAD_SPEC_MLD_AT(u16, uint16_t,   muint16_t,   mld_at_spec_u16)
+__THEAD_SPEC_MLD_AT(u32, uint32_t,   muint32_t,   mld_at_spec_u32)
+__THEAD_SPEC_MLD_AT(u64, uint64_t,   muint64_t,   mld_at_spec_u64)
+__THEAD_SPEC_MLD_AT(f16, uint16_t,   mfloat16_t,  mld_at_spec_f16)
+__THEAD_SPEC_MLD_AT(f32, float,      mfloat32_t,  mld_at_spec_f32)
+__THEAD_SPEC_MLD_AT(f64, double,     mfloat64_t,  mld_at_spec_f64)
+
+/* --- Transposed B-tile loads (mlbte: K×N dimensions) ---
+ * Load matrix B with transposition into a tile register. */
+#define __THEAD_SPEC_MLD_BT(SUFFIX, CTYPE, MTYPE, BUILTIN)                     \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  MTYPE __riscv_th_mld_bt_##SUFFIX(const CTYPE *__base, long __stride,         \
+                                    mcol_t __k, mcol_t __n) {                   \
+    return __builtin_riscv_th_##BUILTIN((void *)__base, __stride, __k, __n);   \
+  }
+
+__THEAD_SPEC_MLD_BT(i8,  int8_t,     mint8_t,     mld_bt_spec_i8)
+__THEAD_SPEC_MLD_BT(i16, int16_t,    mint16_t,    mld_bt_spec_i16)
+__THEAD_SPEC_MLD_BT(i32, int32_t,    mint32_t,    mld_bt_spec_i32)
+__THEAD_SPEC_MLD_BT(i64, int64_t,    mint64_t,    mld_bt_spec_i64)
+__THEAD_SPEC_MLD_BT(u8,  uint8_t,    muint8_t,    mld_bt_spec_u8)
+__THEAD_SPEC_MLD_BT(u16, uint16_t,   muint16_t,   mld_bt_spec_u16)
+__THEAD_SPEC_MLD_BT(u32, uint32_t,   muint32_t,   mld_bt_spec_u32)
+__THEAD_SPEC_MLD_BT(u64, uint64_t,   muint64_t,   mld_bt_spec_u64)
+__THEAD_SPEC_MLD_BT(f16, uint16_t,   mfloat16_t,  mld_bt_spec_f16)
+__THEAD_SPEC_MLD_BT(f32, float,      mfloat32_t,  mld_bt_spec_f32)
+__THEAD_SPEC_MLD_BT(f64, double,     mfloat64_t,  mld_bt_spec_f64)
+
+/* --- Transposed C-tile loads (mlcte: M×N dimensions) ---
+ * Load matrix C with transposition into an accumulator register. */
+#define __THEAD_SPEC_MLD_CT(SUFFIX, CTYPE, MTYPE, BUILTIN)                     \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  MTYPE __riscv_th_mld_ct_##SUFFIX(const CTYPE *__base, long __stride,         \
+                                    mrow_t __m, mcol_t __n) {                   \
+    return __builtin_riscv_th_##BUILTIN((void *)__base, __stride, __m, __n);   \
+  }
+
+__THEAD_SPEC_MLD_CT(i8,  int8_t,     mint8_t,     mld_ct_spec_i8)
+__THEAD_SPEC_MLD_CT(i16, int16_t,    mint16_t,    mld_ct_spec_i16)
+__THEAD_SPEC_MLD_CT(i32, int32_t,    mint32_t,    mld_ct_spec_i32)
+__THEAD_SPEC_MLD_CT(i64, int64_t,    mint64_t,    mld_ct_spec_i64)
+__THEAD_SPEC_MLD_CT(u8,  uint8_t,    muint8_t,    mld_ct_spec_u8)
+__THEAD_SPEC_MLD_CT(u16, uint16_t,   muint16_t,   mld_ct_spec_u16)
+__THEAD_SPEC_MLD_CT(u32, uint32_t,   muint32_t,   mld_ct_spec_u32)
+__THEAD_SPEC_MLD_CT(u64, uint64_t,   muint64_t,   mld_ct_spec_u64)
+__THEAD_SPEC_MLD_CT(f16, uint16_t,   mfloat16_t,  mld_ct_spec_f16)
+__THEAD_SPEC_MLD_CT(f32, float,      mfloat32_t,  mld_ct_spec_f32)
+__THEAD_SPEC_MLD_CT(f64, double,     mfloat64_t,  mld_ct_spec_f64)
+
+/* --- Transposed A-tile stores (msate: M×K dimensions) ---
+ * Store tile register as transposed A-tile to memory. */
+#define __THEAD_SPEC_MST_AT(SUFFIX, CTYPE, MTYPE, BUILTIN)                     \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  void __riscv_th_mst_at_##SUFFIX(CTYPE *__base, long __stride, MTYPE __val,   \
+                                   mrow_t __m, mcol_t __k) {                    \
+    __builtin_riscv_th_##BUILTIN((void *)__base, __stride, __val, __m, __k);   \
+  }
+
+__THEAD_SPEC_MST_AT(i8,  int8_t,     mint8_t,     mst_at_spec_i8)
+__THEAD_SPEC_MST_AT(i16, int16_t,    mint16_t,    mst_at_spec_i16)
+__THEAD_SPEC_MST_AT(i32, int32_t,    mint32_t,    mst_at_spec_i32)
+__THEAD_SPEC_MST_AT(i64, int64_t,    mint64_t,    mst_at_spec_i64)
+__THEAD_SPEC_MST_AT(u8,  uint8_t,    muint8_t,    mst_at_spec_u8)
+__THEAD_SPEC_MST_AT(u16, uint16_t,   muint16_t,   mst_at_spec_u16)
+__THEAD_SPEC_MST_AT(u32, uint32_t,   muint32_t,   mst_at_spec_u32)
+__THEAD_SPEC_MST_AT(u64, uint64_t,   muint64_t,   mst_at_spec_u64)
+__THEAD_SPEC_MST_AT(f16, uint16_t,   mfloat16_t,  mst_at_spec_f16)
+__THEAD_SPEC_MST_AT(f32, float,      mfloat32_t,  mst_at_spec_f32)
+__THEAD_SPEC_MST_AT(f64, double,     mfloat64_t,  mst_at_spec_f64)
+
+/* --- Transposed B-tile stores (msbte: K×N dimensions) ---
+ * Store tile register as transposed B-tile to memory. */
+#define __THEAD_SPEC_MST_BT(SUFFIX, CTYPE, MTYPE, BUILTIN)                     \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  void __riscv_th_mst_bt_##SUFFIX(CTYPE *__base, long __stride, MTYPE __val,   \
+                                   mcol_t __k, mcol_t __n) {                    \
+    __builtin_riscv_th_##BUILTIN((void *)__base, __stride, __val, __k, __n);   \
+  }
+
+__THEAD_SPEC_MST_BT(i8,  int8_t,     mint8_t,     mst_bt_spec_i8)
+__THEAD_SPEC_MST_BT(i16, int16_t,    mint16_t,    mst_bt_spec_i16)
+__THEAD_SPEC_MST_BT(i32, int32_t,    mint32_t,    mst_bt_spec_i32)
+__THEAD_SPEC_MST_BT(i64, int64_t,    mint64_t,    mst_bt_spec_i64)
+__THEAD_SPEC_MST_BT(u8,  uint8_t,    muint8_t,    mst_bt_spec_u8)
+__THEAD_SPEC_MST_BT(u16, uint16_t,   muint16_t,   mst_bt_spec_u16)
+__THEAD_SPEC_MST_BT(u32, uint32_t,   muint32_t,   mst_bt_spec_u32)
+__THEAD_SPEC_MST_BT(u64, uint64_t,   muint64_t,   mst_bt_spec_u64)
+__THEAD_SPEC_MST_BT(f16, uint16_t,   mfloat16_t,  mst_bt_spec_f16)
+__THEAD_SPEC_MST_BT(f32, float,      mfloat32_t,  mst_bt_spec_f32)
+__THEAD_SPEC_MST_BT(f64, double,     mfloat64_t,  mst_bt_spec_f64)
+
+/* --- Transposed C-tile stores (mscte: M×N dimensions) ---
+ * Store accumulator as transposed C-tile to memory. */
+#define __THEAD_SPEC_MST_CT(SUFFIX, CTYPE, MTYPE, BUILTIN)                     \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  void __riscv_th_mst_ct_##SUFFIX(CTYPE *__base, long __stride, MTYPE __val,   \
+                                   mrow_t __m, mcol_t __n) {                    \
+    __builtin_riscv_th_##BUILTIN((void *)__base, __stride, __val, __m, __n);   \
+  }
+
+__THEAD_SPEC_MST_CT(i8,  int8_t,     mint8_t,     mst_ct_spec_i8)
+__THEAD_SPEC_MST_CT(i16, int16_t,    mint16_t,    mst_ct_spec_i16)
+__THEAD_SPEC_MST_CT(i32, int32_t,    mint32_t,    mst_ct_spec_i32)
+__THEAD_SPEC_MST_CT(i64, int64_t,    mint64_t,    mst_ct_spec_i64)
+__THEAD_SPEC_MST_CT(u8,  uint8_t,    muint8_t,    mst_ct_spec_u8)
+__THEAD_SPEC_MST_CT(u16, uint16_t,   muint16_t,   mst_ct_spec_u16)
+__THEAD_SPEC_MST_CT(u32, uint32_t,   muint32_t,   mst_ct_spec_u32)
+__THEAD_SPEC_MST_CT(u64, uint64_t,   muint64_t,   mst_ct_spec_u64)
+__THEAD_SPEC_MST_CT(f16, uint16_t,   mfloat16_t,  mst_ct_spec_f16)
+__THEAD_SPEC_MST_CT(f32, float,      mfloat32_t,  mst_ct_spec_f32)
+__THEAD_SPEC_MST_CT(f64, double,     mfloat64_t,  mst_ct_spec_f64)
+
+/* --- Whole-register loads (mlme) ---
+ * Load an entire matrix register (any tr/acc) without role distinction.
+ *   mint32_t r = __riscv_th_mld_m_i32(base, stride);  */
+#define __THEAD_SPEC_MLD_M(SUFFIX, CTYPE, MTYPE, BUILTIN)                      \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  MTYPE __riscv_th_mld_m_##SUFFIX(const CTYPE *__base, long __stride) {        \
+    return __builtin_riscv_th_##BUILTIN((void *)__base, __stride);             \
+  }
+
+__THEAD_SPEC_MLD_M(i8,  int8_t,     mint8_t,     mld_m_spec_i8)
+__THEAD_SPEC_MLD_M(i16, int16_t,    mint16_t,    mld_m_spec_i16)
+__THEAD_SPEC_MLD_M(i32, int32_t,    mint32_t,    mld_m_spec_i32)
+__THEAD_SPEC_MLD_M(i64, int64_t,    mint64_t,    mld_m_spec_i64)
+__THEAD_SPEC_MLD_M(u8,  uint8_t,    muint8_t,    mld_m_spec_u8)
+__THEAD_SPEC_MLD_M(u16, uint16_t,   muint16_t,   mld_m_spec_u16)
+__THEAD_SPEC_MLD_M(u32, uint32_t,   muint32_t,   mld_m_spec_u32)
+__THEAD_SPEC_MLD_M(u64, uint64_t,   muint64_t,   mld_m_spec_u64)
+__THEAD_SPEC_MLD_M(f16, uint16_t,   mfloat16_t,  mld_m_spec_f16)
+__THEAD_SPEC_MLD_M(f32, float,      mfloat32_t,  mld_m_spec_f32)
+__THEAD_SPEC_MLD_M(f64, double,     mfloat64_t,  mld_m_spec_f64)
+
+/* --- Whole-register stores (msme) ---
+ * Store an entire matrix register without role distinction. */
+#define __THEAD_SPEC_MST_M(SUFFIX, CTYPE, MTYPE, BUILTIN)                      \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  void __riscv_th_mst_m_##SUFFIX(CTYPE *__base, long __stride, MTYPE __val) {  \
+    __builtin_riscv_th_##BUILTIN((void *)__base, __stride, __val);             \
+  }
+
+__THEAD_SPEC_MST_M(i8,  int8_t,     mint8_t,     mst_m_spec_i8)
+__THEAD_SPEC_MST_M(i16, int16_t,    mint16_t,    mst_m_spec_i16)
+__THEAD_SPEC_MST_M(i32, int32_t,    mint32_t,    mst_m_spec_i32)
+__THEAD_SPEC_MST_M(i64, int64_t,    mint64_t,    mst_m_spec_i64)
+__THEAD_SPEC_MST_M(u8,  uint8_t,    muint8_t,    mst_m_spec_u8)
+__THEAD_SPEC_MST_M(u16, uint16_t,   muint16_t,   mst_m_spec_u16)
+__THEAD_SPEC_MST_M(u32, uint32_t,   muint32_t,   mst_m_spec_u32)
+__THEAD_SPEC_MST_M(u64, uint64_t,   muint64_t,   mst_m_spec_u64)
+__THEAD_SPEC_MST_M(f16, uint16_t,   mfloat16_t,  mst_m_spec_f16)
+__THEAD_SPEC_MST_M(f32, float,      mfloat32_t,  mst_m_spec_f32)
+__THEAD_SPEC_MST_M(f64, double,     mfloat64_t,  mst_m_spec_f64)
+
+/* --- INT matmul: acc += A * B^T ---
+ * Names follow RVM 0.6 assembly mnemonics.  Operand order: (acc, a, b, m, k, n).
+ *   mint32_t c = __riscv_th_mmacc_w_b(c, a, b, M, K, N);     // signed i8→i32
+ *   muint32_t c = __riscv_th_mmaccu_w_b(c, a, b, M, K, N);   // unsigned i8→i32
+ *   mint32_t c = __riscv_th_mmaccus_w_b(c, a, b, M, K, N);   // a=unsigned, b=signed
+ *   mint32_t c = __riscv_th_mmaccsu_w_b(c, a, b, M, K, N);   // a=signed, b=unsigned
+ * Hardware semantics: md = md + ms1 * ms2^T (A→ms1, B→ms2). */
+#define __THEAD_SPEC_MMACC(NAME, ATYPE, BTYPE, CTYPE, BUILTIN)                \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  CTYPE __riscv_th_##NAME(CTYPE __c, ATYPE __a, BTYPE __b,                    \
+                           mrow_t __m, mcol_t __k, mcol_t __n) {               \
     return __builtin_riscv_th_##BUILTIN(__c, __a, __b, __m, __k, __n);         \
   }
 
-/* INT8 -> INT32 */
-__THEAD_SPEC_MMAQA(ss_w_b, mint8_t,  mint8_t,  mint32_t,  mmaqa_spec_ss_w_b)
-__THEAD_SPEC_MMAQA(uu_w_b, muint8_t, muint8_t, muint32_t, mmaqa_spec_uu_w_b)
-__THEAD_SPEC_MMAQA(us_w_b, muint8_t, mint8_t,  mint32_t,  mmaqa_spec_us_w_b)
-__THEAD_SPEC_MMAQA(su_w_b, mint8_t,  muint8_t, mint32_t,  mmaqa_spec_su_w_b)
+/* INT8 -> INT32 (quad-widen) */
+__THEAD_SPEC_MMACC(mmacc_w_b,    mint8_t,  mint8_t,  mint32_t,  mmaqa_spec_ss_w_b)
+__THEAD_SPEC_MMACC(mmaccu_w_b,   muint8_t, muint8_t, muint32_t, mmaqa_spec_uu_w_b)
+__THEAD_SPEC_MMACC(mmaccus_w_b,  muint8_t, mint8_t,  mint32_t,  mmaqa_spec_us_w_b)
+__THEAD_SPEC_MMACC(mmaccsu_w_b,  mint8_t,  muint8_t, mint32_t,  mmaqa_spec_su_w_b)
 /* INT16 -> INT64 (single-register — maps directly to hardware) */
-__THEAD_SPEC_MMAQA(ss_d_h, mint16_t,  mint16_t,  mint64_t,  mmaqa_spec_ss_d_h)
-__THEAD_SPEC_MMAQA(uu_d_h, muint16_t, muint16_t, muint64_t, mmaqa_spec_uu_d_h)
-__THEAD_SPEC_MMAQA(us_d_h, muint16_t, mint16_t,  mint64_t,  mmaqa_spec_us_d_h)
-__THEAD_SPEC_MMAQA(su_d_h, mint16_t,  muint16_t, mint64_t,  mmaqa_spec_su_d_h)
-/* INT16 -> INT64 spec-aligned x2 overloads */
-#define __THEAD_SPEC_MMAQA_X2(SUFFIX, ATYPE, BTYPE, CTYPE, CTYPE_X2,          \
+__THEAD_SPEC_MMACC(mmacc_d_h,    mint16_t,  mint16_t,  mint64_t,  mmaqa_spec_ss_d_h)
+__THEAD_SPEC_MMACC(mmaccu_d_h,   muint16_t, muint16_t, muint64_t, mmaqa_spec_uu_d_h)
+__THEAD_SPEC_MMACC(mmaccus_d_h,  muint16_t, mint16_t,  mint64_t,  mmaqa_spec_us_d_h)
+__THEAD_SPEC_MMACC(mmaccsu_d_h,  mint16_t,  muint16_t, mint64_t,  mmaqa_spec_su_d_h)
+/* INT16 -> INT64 spec-aligned x2 overloads (operate on both elements) */
+#define __THEAD_SPEC_MMACC_X2(NAME, ATYPE, BTYPE, CTYPE, CTYPE_X2,            \
                               GET_SUFFIX, SET_SUFFIX, BUILTIN)                 \
   static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  CTYPE_X2 __riscv_th_mmaq_##SUFFIX##_x2(CTYPE_X2 __c, ATYPE __a,             \
-                                          BTYPE __b,                           \
-                                          mrow_t __m, mcol_t __k,              \
-                                          mcol_t __n) {                        \
+  CTYPE_X2 __riscv_th_##NAME##_x2(CTYPE_X2 __c, ATYPE __a,                    \
+                                   BTYPE __b,                                  \
+                                   mrow_t __m, mcol_t __k,                     \
+                                   mcol_t __n) {                               \
     CTYPE __c0 = __riscv_th_mget_##GET_SUFFIX(__c, 0);                         \
+    CTYPE __c1 = __riscv_th_mget_##GET_SUFFIX(__c, 1);                         \
     CTYPE __r0 = __builtin_riscv_th_##BUILTIN(__c0, __a, __b,                  \
                                                __m, __k, __n);                \
-    return __riscv_th_mset_##SET_SUFFIX(__c, 0, __r0);                         \
+    CTYPE __r1 = __builtin_riscv_th_##BUILTIN(__c1, __a, __b,                  \
+                                               __m, __k, __n);                \
+    CTYPE_X2 __result = __riscv_th_mset_##SET_SUFFIX(__c, 0, __r0);            \
+    return __riscv_th_mset_##SET_SUFFIX(__result, 1, __r1);                    \
   }
-__THEAD_SPEC_MMAQA_X2(ss_d_h, mint16_t,  mint16_t,  mint64_t,  mint64x2_t,
+__THEAD_SPEC_MMACC_X2(mmacc_d_h,    mint16_t,  mint16_t,  mint64_t,  mint64x2_t,
                        i64, i64, mmaqa_spec_ss_d_h)
-__THEAD_SPEC_MMAQA_X2(uu_d_h, muint16_t, muint16_t, muint64_t, muint64x2_t,
+__THEAD_SPEC_MMACC_X2(mmaccu_d_h,   muint16_t, muint16_t, muint64_t, muint64x2_t,
                        u64, u64, mmaqa_spec_uu_d_h)
-__THEAD_SPEC_MMAQA_X2(us_d_h, muint16_t, mint16_t,  mint64_t,  mint64x2_t,
+__THEAD_SPEC_MMACC_X2(mmaccus_d_h,  muint16_t, mint16_t,  mint64_t,  mint64x2_t,
                        i64, i64, mmaqa_spec_us_d_h)
-__THEAD_SPEC_MMAQA_X2(su_d_h, mint16_t,  muint16_t, mint64_t,  mint64x2_t,
+__THEAD_SPEC_MMACC_X2(mmaccsu_d_h,  mint16_t,  muint16_t, mint64_t,  mint64x2_t,
                        i64, i64, mmaqa_spec_su_d_h)
-/* Partial INT8 -> INT32 */
-__THEAD_SPEC_MMAQA(p_ss_w_b, mint8_t,  mint8_t,  mint32_t,  pmmaqa_spec_ss_w_b)
-__THEAD_SPEC_MMAQA(p_uu_w_b, muint8_t, muint8_t, muint32_t, pmmaqa_spec_uu_w_b)
-__THEAD_SPEC_MMAQA(p_us_w_b, muint8_t, mint8_t,  mint32_t,  pmmaqa_spec_us_w_b)
-__THEAD_SPEC_MMAQA(p_su_w_b, mint8_t,  muint8_t, mint32_t,  pmmaqa_spec_su_w_b)
+/* Partial INT8 -> INT32 (panelized) */
+__THEAD_SPEC_MMACC(pmmacc_w_b,    mint8_t,  mint8_t,  mint32_t,  pmmaqa_spec_ss_w_b)
+__THEAD_SPEC_MMACC(pmmaccu_w_b,   muint8_t, muint8_t, muint32_t, pmmaqa_spec_uu_w_b)
+__THEAD_SPEC_MMACC(pmmaccus_w_b,  muint8_t, mint8_t,  mint32_t,  pmmaqa_spec_us_w_b)
+__THEAD_SPEC_MMACC(pmmaccsu_w_b,  mint8_t,  muint8_t, mint32_t,  pmmaqa_spec_su_w_b)
 /* Bypass INT */
-__THEAD_SPEC_MMAQA(bp_ss, mint8_t,  mint8_t,  mint32_t,  mmaqa_spec_bp_ss)
-__THEAD_SPEC_MMAQA(bp_uu, muint8_t, muint8_t, muint32_t, mmaqa_spec_bp_uu)
+__THEAD_SPEC_MMACC(mmacc_w_bp,    mint8_t,  mint8_t,  mint32_t,  mmaqa_spec_bp_ss)
+__THEAD_SPEC_MMACC(mmaccu_w_bp,   muint8_t, muint8_t, muint32_t, mmaqa_spec_bp_uu)
 /* Shorthand aliases */
-#define __riscv_th_mmaq_ss __riscv_th_mmaq_ss_w_b
-#define __riscv_th_mmaq_uu __riscv_th_mmaq_uu_w_b
+#define __riscv_th_mmacc  __riscv_th_mmacc_w_b
+#define __riscv_th_mmaccu __riscv_th_mmaccu_w_b
 
-/* --- FP matmul --- */
-#define __THEAD_SPEC_FMMAQA(SUFFIX, ATYPE, BTYPE, CTYPE, BUILTIN)             \
+/* Backward compatibility: old names (pre-mnemonic-alignment) */
+#define __riscv_th_mmaq_ss_w_b      __riscv_th_mmacc_w_b
+#define __riscv_th_mmaq_uu_w_b      __riscv_th_mmaccu_w_b
+#define __riscv_th_mmaq_us_w_b      __riscv_th_mmaccus_w_b
+#define __riscv_th_mmaq_su_w_b      __riscv_th_mmaccsu_w_b
+#define __riscv_th_mmaq_ss_d_h      __riscv_th_mmacc_d_h
+#define __riscv_th_mmaq_uu_d_h      __riscv_th_mmaccu_d_h
+#define __riscv_th_mmaq_us_d_h      __riscv_th_mmaccus_d_h
+#define __riscv_th_mmaq_su_d_h      __riscv_th_mmaccsu_d_h
+#define __riscv_th_mmaq_ss_d_h_x2   __riscv_th_mmacc_d_h_x2
+#define __riscv_th_mmaq_uu_d_h_x2   __riscv_th_mmaccu_d_h_x2
+#define __riscv_th_mmaq_us_d_h_x2   __riscv_th_mmaccus_d_h_x2
+#define __riscv_th_mmaq_su_d_h_x2   __riscv_th_mmaccsu_d_h_x2
+#define __riscv_th_mmaq_p_ss_w_b    __riscv_th_pmmacc_w_b
+#define __riscv_th_mmaq_p_uu_w_b    __riscv_th_pmmaccu_w_b
+#define __riscv_th_mmaq_p_us_w_b    __riscv_th_pmmaccus_w_b
+#define __riscv_th_mmaq_p_su_w_b    __riscv_th_pmmaccsu_w_b
+#define __riscv_th_mmaq_bp_ss       __riscv_th_mmacc_w_bp
+#define __riscv_th_mmaq_bp_uu       __riscv_th_mmaccu_w_bp
+#define __riscv_th_mmaq_ss          __riscv_th_mmacc_w_b
+#define __riscv_th_mmaq_uu          __riscv_th_mmaccu_w_b
+
+/* --- FP matmul: acc += A * B^T (names follow RVM 0.6 assembly: mfmacc.*) ---
+ *   mfloat32_t c = __riscv_th_mfmacc_s(c, a, b, M, K, N);     // fp32
+ *   mfloat16_t c = __riscv_th_mfmacc_h(c, a, b, M, K, N);     // fp16
+ *   mfloat32_t c = __riscv_th_mfmacc_s_h(c, a, b, M, K, N);   // fp16→fp32 widen
+ *   mfloat16_t c = __riscv_th_mfmacc_h_e4(c, a, b, M, K, N);  // fp8(E4M3)→fp16
+ * Opaque source types (FP8/BF16/TF32) use mint32_t for A/B operands. */
+#define __THEAD_SPEC_FMMACC(SUFFIX, ATYPE, BTYPE, CTYPE, BUILTIN)             \
   static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  CTYPE __riscv_th_mfmaqa_##SUFFIX(CTYPE __c, ATYPE __a, BTYPE __b,           \
+  CTYPE __riscv_th_mfmacc_##SUFFIX(CTYPE __c, ATYPE __a, BTYPE __b,           \
                                     mrow_t __m, mcol_t __k, mcol_t __n) {      \
     return __builtin_riscv_th_##BUILTIN(__c, __a, __b, __m, __k, __n);         \
   }
 
 /* Native-precision (single-register — maps directly to hardware) */
-__THEAD_SPEC_FMMAQA(h, mfloat16_t, mfloat16_t, mfloat16_t, mfmaqa_spec_h)
-__THEAD_SPEC_FMMAQA(s, mfloat32_t, mfloat32_t, mfloat32_t, mfmaqa_spec_s)
-__THEAD_SPEC_FMMAQA(d, mfloat64_t, mfloat64_t, mfloat64_t, mfmaqa_spec_d)
+__THEAD_SPEC_FMMACC(h, mfloat16_t, mfloat16_t, mfloat16_t, mfmaqa_spec_h)
+__THEAD_SPEC_FMMACC(s, mfloat32_t, mfloat32_t, mfloat32_t, mfmaqa_spec_s)
+__THEAD_SPEC_FMMACC(d, mfloat64_t, mfloat64_t, mfloat64_t, mfmaqa_spec_d)
 /* Widening (typed sources, single-register) */
-__THEAD_SPEC_FMMAQA(s_h, mfloat16_t, mfloat16_t, mfloat32_t, mfmaqa_spec_s_h)
-__THEAD_SPEC_FMMAQA(d_s, mfloat32_t, mfloat32_t, mfloat64_t, mfmaqa_spec_d_s)
+__THEAD_SPEC_FMMACC(s_h, mfloat16_t, mfloat16_t, mfloat32_t, mfmaqa_spec_s_h)
+__THEAD_SPEC_FMMACC(d_s, mfloat32_t, mfloat32_t, mfloat64_t, mfmaqa_spec_d_s)
 
 /* Spec-aligned x2 overloads (software-level pair abstraction per intrinsic API).
    These wrap the single-register builtins, extracting/inserting component 0. */
 static __inline__ __attribute__((__always_inline__, __nodebug__))
-mfloat16_t __riscv_th_mfmaqa_h_x2(mfloat16_t __c, mfloat16_t __a,
+mfloat16_t __riscv_th_mfmacc_h_x2(mfloat16_t __c, mfloat16_t __a,
                                     mfloat16x2_t __b,
                                     mrow_t __m, mcol_t __k, mcol_t __n) {
   mfloat16_t __b0 = __riscv_th_mget_f16(__b, 0);
   return __builtin_riscv_th_mfmaqa_spec_h(__c, __a, __b0, __m, __k, __n);
 }
 static __inline__ __attribute__((__always_inline__, __nodebug__))
-mfloat64x2_t __riscv_th_mfmaqa_d_x2(mfloat64x2_t __c, mfloat64_t __a,
+mfloat64x2_t __riscv_th_mfmacc_d_x2(mfloat64x2_t __c, mfloat64_t __a,
                                       mfloat64_t __b,
                                       mrow_t __m, mcol_t __k, mcol_t __n) {
   mfloat64_t __c0 = __riscv_th_mget_f64(__c, 0);
+  mfloat64_t __c1 = __riscv_th_mget_f64(__c, 1);
   mfloat64_t __r0 = __builtin_riscv_th_mfmaqa_spec_d(__c0, __a, __b,
                                                        __m, __k, __n);
-  return __riscv_th_mset_f64(__c, 0, __r0);
+  mfloat64_t __r1 = __builtin_riscv_th_mfmaqa_spec_d(__c1, __a, __b,
+                                                       __m, __k, __n);
+  mfloat64x2_t __result = __riscv_th_mset_f64(__c, 0, __r0);
+  return __riscv_th_mset_f64(__result, 1, __r1);
 }
 static __inline__ __attribute__((__always_inline__, __nodebug__))
-mfloat64x2_t __riscv_th_mfmaqa_d_s_x2(mfloat64x2_t __c, mfloat32_t __a,
+mfloat64x2_t __riscv_th_mfmacc_d_s_x2(mfloat64x2_t __c, mfloat32_t __a,
                                         mfloat32_t __b,
                                         mrow_t __m, mcol_t __k, mcol_t __n) {
   mfloat64_t __c0 = __riscv_th_mget_f64(__c, 0);
+  mfloat64_t __c1 = __riscv_th_mget_f64(__c, 1);
   mfloat64_t __r0 = __builtin_riscv_th_mfmaqa_spec_d_s(__c0, __a, __b,
                                                          __m, __k, __n);
-  return __riscv_th_mset_f64(__c, 0, __r0);
+  mfloat64_t __r1 = __builtin_riscv_th_mfmaqa_spec_d_s(__c1, __a, __b,
+                                                         __m, __k, __n);
+  mfloat64x2_t __result = __riscv_th_mset_f64(__c, 0, __r0);
+  return __riscv_th_mset_f64(__result, 1, __r1);
 }
 
 /* Widening FP matmul with opaque source types (FP8/BF16/TF32) */
-#define __THEAD_SPEC_FMMAQA_WIDEN(SUFFIX, CTYPE, BUILTIN)                     \
+#define __THEAD_SPEC_FMMACC_WIDEN(SUFFIX, CTYPE, BUILTIN)                     \
   static __inline__ __attribute__((__always_inline__, __nodebug__))             \
-  CTYPE __riscv_th_mfmaqa_##SUFFIX(CTYPE __c, mint32_t __a, mint32_t __b,     \
+  CTYPE __riscv_th_mfmacc_##SUFFIX(CTYPE __c, mint32_t __a, mint32_t __b,     \
                                     mrow_t __m, mcol_t __k, mcol_t __n) {      \
     return __builtin_riscv_th_##BUILTIN(__c, __a, __b, __m, __k, __n);         \
   }
 
-__THEAD_SPEC_FMMAQA_WIDEN(h_e4,    mfloat16_t, mfmaqa_spec_h_e4)
-__THEAD_SPEC_FMMAQA_WIDEN(h_e5,    mfloat16_t, mfmaqa_spec_h_e5)
-__THEAD_SPEC_FMMAQA_WIDEN(bf16_e4, mfloat16_t, mfmaqa_spec_bf16_e4)
-__THEAD_SPEC_FMMAQA_WIDEN(bf16_e5, mfloat16_t, mfmaqa_spec_bf16_e5)
-__THEAD_SPEC_FMMAQA_WIDEN(s_bf16,  mfloat32_t, mfmaqa_spec_s_bf16)
-__THEAD_SPEC_FMMAQA_WIDEN(s_e4,    mfloat32_t, mfmaqa_spec_s_e4)
-__THEAD_SPEC_FMMAQA_WIDEN(s_e5,    mfloat32_t, mfmaqa_spec_s_e5)
-__THEAD_SPEC_FMMAQA_WIDEN(s_tf32,  mfloat32_t, mfmaqa_spec_s_tf32)
+__THEAD_SPEC_FMMACC_WIDEN(h_e4,    mfloat16_t, mfmaqa_spec_h_e4)
+__THEAD_SPEC_FMMACC_WIDEN(h_e5,    mfloat16_t, mfmaqa_spec_h_e5)
+__THEAD_SPEC_FMMACC_WIDEN(bf16_e4, mfloat16_t, mfmaqa_spec_bf16_e4)
+__THEAD_SPEC_FMMACC_WIDEN(bf16_e5, mfloat16_t, mfmaqa_spec_bf16_e5)
+__THEAD_SPEC_FMMACC_WIDEN(s_bf16,  mfloat32_t, mfmaqa_spec_s_bf16)
+__THEAD_SPEC_FMMACC_WIDEN(s_e4,    mfloat32_t, mfmaqa_spec_s_e4)
+__THEAD_SPEC_FMMACC_WIDEN(s_e5,    mfloat32_t, mfmaqa_spec_s_e5)
+__THEAD_SPEC_FMMACC_WIDEN(s_tf32,  mfloat32_t, mfmaqa_spec_s_tf32)
 
-/* --- Zero --- */
-/* Note: uses 'mzeros' to avoid collision with DirectReg mzero */
+/* Backward compatibility: old FP matmul names */
+#define __riscv_th_mfmaqa_h          __riscv_th_mfmacc_h
+#define __riscv_th_mfmaqa_s          __riscv_th_mfmacc_s
+#define __riscv_th_mfmaqa_d          __riscv_th_mfmacc_d
+#define __riscv_th_mfmaqa_s_h        __riscv_th_mfmacc_s_h
+#define __riscv_th_mfmaqa_d_s        __riscv_th_mfmacc_d_s
+#define __riscv_th_mfmaqa_h_x2       __riscv_th_mfmacc_h_x2
+#define __riscv_th_mfmaqa_d_x2       __riscv_th_mfmacc_d_x2
+#define __riscv_th_mfmaqa_d_s_x2     __riscv_th_mfmacc_d_s_x2
+#define __riscv_th_mfmaqa_h_e4       __riscv_th_mfmacc_h_e4
+#define __riscv_th_mfmaqa_h_e5       __riscv_th_mfmacc_h_e5
+#define __riscv_th_mfmaqa_bf16_e4    __riscv_th_mfmacc_bf16_e4
+#define __riscv_th_mfmaqa_bf16_e5    __riscv_th_mfmacc_bf16_e5
+#define __riscv_th_mfmaqa_s_bf16     __riscv_th_mfmacc_s_bf16
+#define __riscv_th_mfmaqa_s_e4       __riscv_th_mfmacc_s_e4
+#define __riscv_th_mfmaqa_s_e5       __riscv_th_mfmacc_s_e5
+#define __riscv_th_mfmaqa_s_tf32     __riscv_th_mfmacc_s_tf32
+
+/* --- Zero: produce a fully-zeroed matrix register ---
+ *   mint32_t c = __riscv_th_mzero_i32(M, N);     // single register
+ *   mint32x2_t p = __riscv_th_mzero_i32x2(M, N); // register pair
+ * Emits th.mzero which zeroes all TLEN bits of the register.
+ * The (m, n) params set tile config for the managed-RA model.
+ * Note: primary name is 'mzeros' to avoid collision with DirectReg mzero. */
 #define __THEAD_SPEC_MZERO(SUFFIX, MTYPE, BUILTIN)                             \
   static __inline__ __attribute__((__always_inline__, __nodebug__))             \
   MTYPE __riscv_th_mzeros_##SUFFIX(mrow_t __m, mcol_t __n) {                   \
@@ -604,13 +952,65 @@ __THEAD_SPEC_MZERO(f16, mfloat16_t,  mzero_spec_f16)
 __THEAD_SPEC_MZERO(f32, mfloat32_t,  mzero_spec_f32)
 __THEAD_SPEC_MZERO(f64, mfloat64_t,  mzero_spec_f64)
 
-/* --- Move / Copy --- */
+/* Spec-compatible aliases: __riscv_th_mzero_* (spec uses mzero, not mzeros) */
+#define __riscv_th_mzero_i8(m, n)  __riscv_th_mzeros_i8(m, n)
+#define __riscv_th_mzero_i16(m, n) __riscv_th_mzeros_i16(m, n)
+#define __riscv_th_mzero_i32(m, n) __riscv_th_mzeros_i32(m, n)
+#define __riscv_th_mzero_i64(m, n) __riscv_th_mzeros_i64(m, n)
+#define __riscv_th_mzero_u8(m, n)  __riscv_th_mzeros_u8(m, n)
+#define __riscv_th_mzero_u16(m, n) __riscv_th_mzeros_u16(m, n)
+#define __riscv_th_mzero_u32(m, n) __riscv_th_mzeros_u32(m, n)
+#define __riscv_th_mzero_u64(m, n) __riscv_th_mzeros_u64(m, n)
+#define __riscv_th_mzero_f16(m, n) __riscv_th_mzeros_f16(m, n)
+#define __riscv_th_mzero_f32(m, n) __riscv_th_mzeros_f32(m, n)
+#define __riscv_th_mzero_f64(m, n) __riscv_th_mzeros_f64(m, n)
+
+/* --- Zero x2 variants (register-pair) --- */
+#define __THEAD_SPEC_MZERO_X2(SUFFIX, STYPE, PTYPE, SINGLE_SUFFIX,            \
+                              SET_SUFFIX)                                      \
+  static __inline__ __attribute__((__always_inline__, __nodebug__))             \
+  PTYPE __riscv_th_mzeros_##SUFFIX(mrow_t __m, mcol_t __n) {                   \
+    STYPE __z0 = __riscv_th_mzeros_##SINGLE_SUFFIX(__m, __n);                  \
+    STYPE __z1 = __riscv_th_mzeros_##SINGLE_SUFFIX(__m, __n);                  \
+    PTYPE __result = __riscv_th_mundefined_##SUFFIX();                          \
+    __result = __riscv_th_mset_##SET_SUFFIX(__result, 0, __z0);                 \
+    return __riscv_th_mset_##SET_SUFFIX(__result, 1, __z1);                     \
+  }
+
+__THEAD_SPEC_MZERO_X2(i8x2,  mint8_t,     mint8x2_t,    i8,  i8)
+__THEAD_SPEC_MZERO_X2(i16x2, mint16_t,    mint16x2_t,   i16, i16)
+__THEAD_SPEC_MZERO_X2(i32x2, mint32_t,    mint32x2_t,   i32, i32)
+__THEAD_SPEC_MZERO_X2(i64x2, mint64_t,    mint64x2_t,   i64, i64)
+__THEAD_SPEC_MZERO_X2(u8x2,  muint8_t,    muint8x2_t,   u8,  u8)
+__THEAD_SPEC_MZERO_X2(u16x2, muint16_t,   muint16x2_t,  u16, u16)
+__THEAD_SPEC_MZERO_X2(u32x2, muint32_t,   muint32x2_t,  u32, u32)
+__THEAD_SPEC_MZERO_X2(u64x2, muint64_t,   muint64x2_t,  u64, u64)
+__THEAD_SPEC_MZERO_X2(f16x2, mfloat16_t,  mfloat16x2_t, f16, f16)
+__THEAD_SPEC_MZERO_X2(f32x2, mfloat32_t,  mfloat32x2_t, f32, f32)
+__THEAD_SPEC_MZERO_X2(f64x2, mfloat64_t,  mfloat64x2_t, f64, f64)
+
+/* Spec-compatible aliases for x2 mzero */
+#define __riscv_th_mzero_i8x2(m, n)  __riscv_th_mzeros_i8x2(m, n)
+#define __riscv_th_mzero_i16x2(m, n) __riscv_th_mzeros_i16x2(m, n)
+#define __riscv_th_mzero_i32x2(m, n) __riscv_th_mzeros_i32x2(m, n)
+#define __riscv_th_mzero_i64x2(m, n) __riscv_th_mzeros_i64x2(m, n)
+#define __riscv_th_mzero_u8x2(m, n)  __riscv_th_mzeros_u8x2(m, n)
+#define __riscv_th_mzero_u16x2(m, n) __riscv_th_mzeros_u16x2(m, n)
+#define __riscv_th_mzero_u32x2(m, n) __riscv_th_mzeros_u32x2(m, n)
+#define __riscv_th_mzero_u64x2(m, n) __riscv_th_mzeros_u64x2(m, n)
+#define __riscv_th_mzero_f16x2(m, n) __riscv_th_mzeros_f16x2(m, n)
+#define __riscv_th_mzero_f32x2(m, n) __riscv_th_mzeros_f32x2(m, n)
+#define __riscv_th_mzero_f64x2(m, n) __riscv_th_mzeros_f64x2(m, n)
+
+/* --- Move / Copy ---
+ *   mint32_t copy = __riscv_th_mmov_mm(src);  // copy matrix register */
 static __inline__ __attribute__((__always_inline__, __nodebug__))
 mint32_t __riscv_th_mmov_mm(mint32_t __src) {
   return __builtin_riscv_th_mmov_mm_spec(__src);
 }
 
-/* --- Matrix-to-GPR (element extract) --- */
+/* --- Matrix-to-GPR (element extract) ---
+ *   unsigned long val = __riscv_th_mmovw_x_m(src, idx);  // extract word at idx */
 #define __THEAD_SPEC_MMOV_X_M(SUFFIX)                                           \
   static __inline__ __attribute__((__always_inline__, __nodebug__))             \
   unsigned long __riscv_th_mmov##SUFFIX##_x_m(mint32_t __src,                  \
@@ -623,7 +1023,8 @@ __THEAD_SPEC_MMOV_X_M(h)
 __THEAD_SPEC_MMOV_X_M(w)
 __THEAD_SPEC_MMOV_X_M(d)
 
-/* --- GPR-to-matrix (element insert) --- */
+/* --- GPR-to-matrix (element insert) ---
+ *   mint32_t r = __riscv_th_mmovw_m_x(dst, data, idx);  // insert word at idx */
 #define __THEAD_SPEC_MMOV_M_X(SUFFIX)                                           \
   static __inline__ __attribute__((__always_inline__, __nodebug__))             \
   mint32_t __riscv_th_mmov##SUFFIX##_m_x(mint32_t __dst,                       \
@@ -637,7 +1038,8 @@ __THEAD_SPEC_MMOV_M_X(h)
 __THEAD_SPEC_MMOV_M_X(w)
 __THEAD_SPEC_MMOV_M_X(d)
 
-/* --- Duplicate GPR to matrix column --- */
+/* --- Duplicate GPR to matrix column ---
+ *   mint32_t r = __riscv_th_mdupw_m_x(dst, data);  // broadcast word to column */
 #define __THEAD_SPEC_MDUP_M_X(SUFFIX)                                           \
   static __inline__ __attribute__((__always_inline__, __nodebug__))             \
   mint32_t __riscv_th_mdup##SUFFIX##_m_x(mint32_t __dst,                       \
@@ -650,7 +1052,10 @@ __THEAD_SPEC_MDUP_M_X(h)
 __THEAD_SPEC_MDUP_M_X(w)
 __THEAD_SPEC_MDUP_M_X(d)
 
-/* --- Pack --- */
+/* --- Pack: combine halves of two registers ---
+ *   mint32_t r = __riscv_th_mpack(s2, s1);    // low(s2) | low(s1)
+ *   mint32_t r = __riscv_th_mpackhl(s2, s1);  // high(s2) | low(s1)
+ *   mint32_t r = __riscv_th_mpackhh(s2, s1);  // high(s2) | high(s1) */
 static __inline__ __attribute__((__always_inline__, __nodebug__))
 mint32_t __riscv_th_mpack(mint32_t __s2, mint32_t __s1) {
   return __builtin_riscv_th_mpack_spec(__s2, __s1);
@@ -664,7 +1069,9 @@ mint32_t __riscv_th_mpackhh(mint32_t __s2, mint32_t __s1) {
   return __builtin_riscv_th_mpackhh_spec(__s2, __s1);
 }
 
-/* --- Row slide --- */
+/* --- Row slide: shift rows up/down by imm positions ---
+ *   mint32_t r = __riscv_th_mrslidedown(src, imm);  // row[i] = row[i+imm]
+ *   mint32_t r = __riscv_th_mrslideup(src, imm);    // row[i] = row[i-imm] */
 static __inline__ __attribute__((__always_inline__, __nodebug__))
 mint32_t __riscv_th_mrslidedown(mint32_t __src, unsigned int __imm) {
   return __builtin_riscv_th_mrslidedown_spec(__src, __imm);
@@ -674,7 +1081,9 @@ mint32_t __riscv_th_mrslideup(mint32_t __src, unsigned int __imm) {
   return __builtin_riscv_th_mrslideup_spec(__src, __imm);
 }
 
-/* --- Column slide --- */
+/* --- Column slide: shift columns up/down by imm positions ---
+ *   mint32_t r = __riscv_th_mcslidedown_w(src, imm);  // col[i] = col[i+imm]
+ * Suffix b/h/w/d selects element width (8/16/32/64 bit). */
 #define __THEAD_SPEC_MCSLIDE(SUFFIX, DIR)                                      \
   static __inline__ __attribute__((__always_inline__, __nodebug__))             \
   mint32_t __riscv_th_mcslide##DIR##_##SUFFIX(mint32_t __src,                  \
@@ -691,13 +1100,16 @@ __THEAD_SPEC_MCSLIDE(h, up)
 __THEAD_SPEC_MCSLIDE(w, up)
 __THEAD_SPEC_MCSLIDE(d, up)
 
-/* --- Row broadcast --- */
+/* --- Row broadcast: replicate row[imm] to all rows ---
+ *   mint32_t r = __riscv_th_mrbca(src, imm);  */
 static __inline__ __attribute__((__always_inline__, __nodebug__))
 mint32_t __riscv_th_mrbca(mint32_t __src, unsigned int __imm) {
   return __builtin_riscv_th_mrbca_mv_i_spec(__src, __imm);
 }
 
-/* --- Column broadcast --- */
+/* --- Column broadcast: replicate col[imm] to all columns ---
+ *   mint32_t r = __riscv_th_mcbca_w(src, imm);
+ * Suffix b/h/w/d selects element width. */
 #define __THEAD_SPEC_MCBCA(SUFFIX)                                             \
   static __inline__ __attribute__((__always_inline__, __nodebug__))             \
   mint32_t __riscv_th_mcbca_##SUFFIX(mint32_t __src, unsigned int __imm) {     \
@@ -709,7 +1121,11 @@ __THEAD_SPEC_MCBCA(h)
 __THEAD_SPEC_MCBCA(w)
 __THEAD_SPEC_MCBCA(d)
 
-/* --- FP format conversions (unary: src -> dst) --- */
+/* --- FP format conversions (unary: src -> dst) ---
+ * Convert between FP formats.  'l'=lower half, 'h'=upper half for narrowing/widening.
+ *   mfloat32_t w = __riscv_th_mfcvtl_s_h(fp16_src);  // FP16→FP32 (lower half)
+ *   mfloat16_t n = __riscv_th_mfcvtl_h_s(fp32_src);  // FP32→FP16 (lower half)
+ * Opaque types (FP8/BF16/TF32) use mint32_t. */
 #define __THEAD_SPEC_FCVT(NAME, RET, ARG)                                      \
   static __inline__ __attribute__((__always_inline__, __nodebug__))             \
   RET __riscv_th_##NAME(ARG __src) {                                           \
@@ -749,7 +1165,10 @@ __THEAD_SPEC_FCVT(mfcvth_s_d, mfloat32_t, mfloat64_t)
 __THEAD_SPEC_FCVT(mfcvt_s_tf32, mint32_t, mint32_t)
 __THEAD_SPEC_FCVT(mfcvt_tf32_s, mint32_t, mint32_t)
 
-/* --- Float-int conversions --- */
+/* --- Float-int conversions ---
+ *   mfloat32_t f = __riscv_th_msfcvt_s_w(int32_src);  // signed INT32→FP32
+ *   muint32_t  u = __riscv_th_mfucvt_w_s(fp32_src);   // FP32→unsigned INT32
+ * Naming: ms=signed-to-float, mu=unsigned-to-float, mfs=float-to-signed, mfu=float-to-unsigned. */
 __THEAD_SPEC_FCVT(mufcvtl_h_b, mfloat16_t, muint8_t)
 __THEAD_SPEC_FCVT(mufcvth_h_b, mfloat16_t, muint8_t)
 __THEAD_SPEC_FCVT(mfucvtl_b_h, muint8_t, mfloat16_t)
@@ -763,13 +1182,17 @@ __THEAD_SPEC_FCVT(mufcvt_s_w, mfloat32_t, muint32_t)
 __THEAD_SPEC_FCVT(mfscvt_w_s, mint32_t, mfloat32_t)
 __THEAD_SPEC_FCVT(mfucvt_w_s, muint32_t, mfloat32_t)
 
-/* --- Packed conversions --- */
+/* --- Packed conversions (INT4↔INT8) --- */
 __THEAD_SPEC_FCVT(mucvtl_b_p, mint32_t, mint32_t)
 __THEAD_SPEC_FCVT(mscvtl_b_p, mint32_t, mint32_t)
 __THEAD_SPEC_FCVT(mucvth_b_p, mint32_t, mint32_t)
 __THEAD_SPEC_FCVT(mscvth_b_p, mint32_t, mint32_t)
 
-/* --- N4clip .mm: (acc, ms2, ms1) -> acc --- */
+/* --- N4clip: narrow-and-clip to 4-bit with rounding ---
+ * Clips wider integers to 4-bit range.  'l'=low quarter, 'h'=high quarter.
+ * 'u' suffix = unsigned clip.
+ *   mint32_t r = __riscv_th_mn4clipl_w_mm(acc, s2, s1);      // .mm variant
+ *   mint32_t r = __riscv_th_mn4clipl_w_mv_i(acc, s2, s1, imm); // .mv.i variant */
 #define __THEAD_SPEC_N4CLIP_MM(NAME, BUILTIN)                                  \
   static __inline__ __attribute__((__always_inline__, __nodebug__))             \
   mint32_t __riscv_th_##NAME(mint32_t __acc, mint32_t __s2, mint32_t __s1) {   \
@@ -794,7 +1217,13 @@ __THEAD_SPEC_N4CLIP_MVI(mn4cliph_w_mv_i,  mn4cliph_w_mv_i_spec)
 __THEAD_SPEC_N4CLIP_MVI(mn4cliplu_w_mv_i, mn4cliplu_w_mv_i_spec)
 __THEAD_SPEC_N4CLIP_MVI(mn4cliphu_w_mv_i, mn4cliphu_w_mv_i_spec)
 
-/* --- Integer element-wise .w.mm: (acc, ms2, ms1) -> acc --- */
+/* --- Integer element-wise .w.mm: (acc, ms2, ms1) -> acc ---
+ * Element-wise operations on 32-bit integer accumulator registers.
+ * .mm = matrix-matrix, .mv.i = matrix-vector with immediate row index.
+ * Operations: madd, msub, mmul, mmulh, mmax, mumax, mmin, mumin, msrl, msll, msra.
+ *   mint32_t r = __riscv_th_madd_w_mm(acc, s2, s1);           // md = ms1 + ms2
+ *   mint32_t r = __riscv_th_msub_w_mm(acc, s2, s1);           // md = ms1 - ms2
+ * NOTE: result is ms1 op ms2 (NOT acc op something); acc is tied to output register. */
 #define __THEAD_SPEC_EW_INT_MM(NAME, BUILTIN)                                  \
   static __inline__ __attribute__((__always_inline__, __nodebug__))             \
   mint32_t __riscv_th_##NAME(mint32_t __acc, mint32_t __s2, mint32_t __s1) {   \
@@ -833,7 +1262,10 @@ __THEAD_SPEC_EW_INT_MVI(msrl_w_mv_i,   msrl_w_mv_i_spec)
 __THEAD_SPEC_EW_INT_MVI(msll_w_mv_i,   msll_w_mv_i_spec)
 __THEAD_SPEC_EW_INT_MVI(msra_w_mv_i,   msra_w_mv_i_spec)
 
-/* --- FP element-wise .mm: (acc, ms2, ms1) -> acc --- */
+/* --- FP element-wise .mm: (acc, ms2, ms1) -> acc ---
+ * Element-wise FP operations on accumulator registers.  h/s/d = fp16/fp32/fp64.
+ * Operations: mfadd, mfsub, mfmul, mfmax, mfmin.
+ *   mfloat32_t r = __riscv_th_mfadd_s_mm(acc, s2, s1);  // md = ms1 + ms2 */
 #define __THEAD_SPEC_EW_FP_MM(NAME, MTYPE, BUILTIN)                            \
   static __inline__ __attribute__((__always_inline__, __nodebug__))             \
   MTYPE __riscv_th_##NAME(MTYPE __acc, MTYPE __s2, MTYPE __s1) {              \

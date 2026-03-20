@@ -2,9 +2,12 @@
 
 ## Overview
 
-The `<thead_matrix.h>` header provides 420+ C API functions/macros following
-the RVM Intrinsic API Reference Manual v0.2. All operations use the Spec-API
-(ManagedRA) programming model — no manual register index management needed.
+The `<thead_matrix.h>` header provides 450+ C API functions/macros. Function
+naming follows **RVM 0.6 assembly mnemonics** (e.g., `mmacc`, `mfmacc`,
+`mlae`/`mlbe`/`mlce`) rather than the older intrinsic API spec
+(`rvm-intrinsic-api.adoc` v0.2) naming (e.g., `mmaqa`, `fmmacc`, `mld`).
+All operations use the Spec-API (ManagedRA) programming model — no manual
+register index management needed.
 
 ## Types
 
@@ -57,22 +60,27 @@ void __riscv_th_mst_i32(int32_t *base, long stride, mint32_t val, mrow_t m, mcol
 
 ### Matrix Multiply (27 functions)
 
+Function names follow RVM 0.6 assembly mnemonics (`mmacc`, `mmaccu`, `mfmacc`, etc.):
+
 ```c
-// INT matmul (typed sources)
-mint32_t   __riscv_th_mmaq_ss_w_b(mint32_t acc, mint8_t a, mint8_t b, mrow_t m, mcol_t k, mcol_t n);
-// FP matmul (native precision, typed sources)
-mfloat32_t __riscv_th_mfmaqa_s(mfloat32_t acc, mfloat32_t a, mfloat32_t b, mrow_t m, mcol_t k, mcol_t n);
+// INT matmul (typed sources) — names match assembly: mmacc.w.b, mmaccu.w.b, mmaccus.w.b, mmaccsu.w.b
+mint32_t   __riscv_th_mmacc_w_b(mint32_t acc, mint8_t a, mint8_t b, mrow_t m, mcol_t k, mcol_t n);
+// FP matmul (native precision) — names match assembly: mfmacc.s, mfmacc.h, mfmacc.d
+mfloat32_t __riscv_th_mfmacc_s(mfloat32_t acc, mfloat32_t a, mfloat32_t b, mrow_t m, mcol_t k, mcol_t n);
 // FP matmul (widening, opaque FP8/BF16/TF32 sources use mint32_t for A/B)
-mfloat16_t __riscv_th_mfmaqa_h_e4(mfloat16_t acc, mint32_t a, mint32_t b, mrow_t m, mcol_t k, mcol_t n);
-mfloat32_t __riscv_th_mfmaqa_s_tf32(mfloat32_t acc, mint32_t a, mint32_t b, mrow_t m, mcol_t k, mcol_t n);
+mfloat16_t __riscv_th_mfmacc_h_e4(mfloat16_t acc, mint32_t a, mint32_t b, mrow_t m, mcol_t k, mcol_t n);
+mfloat32_t __riscv_th_mfmacc_s_tf32(mfloat32_t acc, mint32_t a, mint32_t b, mrow_t m, mcol_t k, mcol_t n);
 ```
-Shorthand aliases: `__riscv_th_mmaq_ss` → `__riscv_th_mmaq_ss_w_b`.
+Shorthand aliases: `__riscv_th_mmacc` → `__riscv_th_mmacc_w_b`.
+Backward-compat aliases from old naming (`mmaq_ss_w_b` → `mmacc_w_b`, `mfmaqa_s` → `mfmacc_s`, etc.) are provided.
 
-### Zero (11 functions)
+### Zero (22 functions: 11 single + 11 x2)
 
 ```c
-mint32_t __riscv_th_mzeros_i32(mrow_t m, mcol_t n);
+mint32_t     __riscv_th_mzeros_i32(mrow_t m, mcol_t n);      // single register
+mint32x2_t   __riscv_th_mzeros_i32x2(mrow_t m, mcol_t n);    // register pair (x2)
 ```
+x2 variants zero two registers and return a pair type. Aliases: `__riscv_th_mzero_*` / `__riscv_th_mzero_*x2`.
 
 ### Element-Wise Integer (22 functions)
 
@@ -146,17 +154,17 @@ single-register matmul builtin, then inserts the result back.
 
 ```c
 // FP16: x2 B operand
-mfloat16_t __riscv_th_mfmaqa_h_x2(mfloat16_t c, mfloat16_t a, mfloat16x2_t b,
+mfloat16_t __riscv_th_mfmacc_h_x2(mfloat16_t c, mfloat16_t a, mfloat16x2_t b,
                                     mrow_t m, mcol_t k, mcol_t n);
 // FP64: x2 dest
-mfloat64x2_t __riscv_th_mfmaqa_d_x2(mfloat64x2_t c, mfloat64_t a, mfloat64_t b,
+mfloat64x2_t __riscv_th_mfmacc_d_x2(mfloat64x2_t c, mfloat64_t a, mfloat64_t b,
                                       mrow_t m, mcol_t k, mcol_t n);
 // FP64 widening: x2 dest
-mfloat64x2_t __riscv_th_mfmaqa_d_s_x2(mfloat64x2_t c, mfloat32_t a, mfloat32_t b,
+mfloat64x2_t __riscv_th_mfmacc_d_s_x2(mfloat64x2_t c, mfloat32_t a, mfloat32_t b,
                                         mrow_t m, mcol_t k, mcol_t n);
-// INT16→INT64: x2 dest (4 sign variants: ss/uu/us/su)
-mint64x2_t __riscv_th_mmaq_ss_d_h_x2(mint64x2_t c, mint16_t a, mint16_t b,
-                                       mrow_t m, mcol_t k, mcol_t n);
+// INT16→INT64: x2 dest (4 sign variants: signed/unsigned/us/su)
+mint64x2_t __riscv_th_mmacc_d_h_x2(mint64x2_t c, mint16_t a, mint16_t b,
+                                     mrow_t m, mcol_t k, mcol_t n);
 ```
 
 ### Utility
@@ -165,11 +173,47 @@ mint64x2_t __riscv_th_mmaq_ss_d_h_x2(mint64x2_t c, mint16_t a, mint16_t b,
 mint32_t __riscv_th_mundef_i32(void);    // undefined value (PoisonValue)
 ```
 
+## Behavioral Notes
+
+### EW Operations and CSR State
+
+Element-wise operations (`__riscv_th_madd_w_mm`, `__riscv_th_mfadd_s_mm`, etc.) do
+NOT configure mtilem/mtilen CSRs — they rely on the CSRs being already set by prior
+load/matmul operations. In a typical pipeline (load→matmul→EW), this is correct.
+For standalone EW use, manually call `__riscv_th_msetmrow_m(M)` and
+`__riscv_th_msetmrow_n(N)` first.
+
+The `acc` parameter in EW functions (`mint32_t __riscv_th_madd_w_mm(mint32_t acc, ...)`)
+is for register allocation tying — the output physical register is constrained to be the
+same as `acc`. The `acc` value is NOT used in the computation; the hardware computes
+`md = ms2 op ms1` without reading old `md`.
+
+### Matmul Dimension Parameter Order
+
+Matmul functions use `(acc, a, b, M, K, N)` parameter order, where M=mtilem, K=mtilek,
+N=mtilen. The spec intrinsic API uses `(dest, src1, src2, M, N, K)` — K and N are
+swapped relative to the implementation. The codegen correctly maps each to its CSR
+regardless of C parameter position.
+
+## Differences from Spec Intrinsic API
+
+The implementation follows **RVM 0.6 assembly mnemonics** for function naming (e.g.,
+`mfmacc`, `mmacc`) rather than the spec intrinsic API document's older names (e.g.,
+`fmmacc`, `mmaqa`). See `13-verification-and-fixes.md` for the full mapping table
+and detailed analysis.
+
+Key differences:
+- Spec's `__riscv_th_fmmacc` → implementation's `__riscv_th_mfmacc_*`
+- Spec's `__riscv_th_mmaqa` → implementation's `__riscv_th_mmacc_w_b`
+- Spec's unified `__riscv_th_mld` → implementation's role-specific `__riscv_th_mld_a/b/acc_*`
+- Spec's `__riscv_th_mzero_*()` (no params) → implementation's `__riscv_th_mzero_*(m, n)`
+- Spec's `(M, N, K)` dimension order → implementation's `(M, K, N)`
+
 ## Limitations
 
 - Matrix types cannot cross function boundaries
 - No C++ overloading (separate functions per type)
-- No stream load/store (not in RVM 0.6 spec)
+- Not implemented: stream load/store, matrix-scalar EW (`.mx`), 64-bit INT EW (`.d.mm`), `mmov.mv` row move
 
 ## Zmpanel Panel-Aware API
 

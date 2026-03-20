@@ -102,7 +102,7 @@ mfloat32_t test_roundtrip_both_slots(mfloat32_t a, mfloat32_t b) {
 mfloat16_t test_fp16_matmul_single(mfloat16_t acc, mfloat16_t a,
                                     mfloat16_t b,
                                     mrow_t m, mcol_t k, mcol_t n) {
-    return __riscv_th_mfmaqa_h(acc, a, b, m, k, n);
+    return __riscv_th_mfmacc_h(acc, a, b, m, k, n);
 }
 
 // ========================================================================
@@ -114,7 +114,7 @@ mfloat16_t test_fp16_matmul_single(mfloat16_t acc, mfloat16_t a,
 mfloat16_t test_fp16_matmul_x2_b(mfloat16_t acc, mfloat16_t a,
                                    mfloat16x2_t b,
                                    mrow_t m, mcol_t k, mcol_t n) {
-    return __riscv_th_mfmaqa_h_x2(acc, a, b, m, k, n);
+    return __riscv_th_mfmacc_h_x2(acc, a, b, m, k, n);
 }
 
 // ========================================================================
@@ -126,7 +126,7 @@ mfloat16_t test_fp16_matmul_x2_b(mfloat16_t acc, mfloat16_t a,
 mfloat32_t test_fp32_matmul_single(mfloat32_t acc, mfloat32_t a,
                                     mfloat32_t b,
                                     mrow_t m, mcol_t k, mcol_t n) {
-    return __riscv_th_mfmaqa_s(acc, a, b, m, k, n);
+    return __riscv_th_mfmacc_s(acc, a, b, m, k, n);
 }
 
 // ========================================================================
@@ -138,19 +138,20 @@ mfloat32_t test_fp32_matmul_single(mfloat32_t acc, mfloat32_t a,
 mfloat64_t test_fp64_matmul_single(mfloat64_t c, mfloat64_t a,
                                     mfloat64_t b,
                                     mrow_t m, mcol_t k, mcol_t n) {
-    return __riscv_th_mfmaqa_d(c, a, b, m, k, n);
+    return __riscv_th_mfmacc_d(c, a, b, m, k, n);
 }
 
 // ========================================================================
-// 9. FP64 matmul: new x2 dest variant
+// 9. FP64 matmul: new x2 dest variant (operates on both elements)
 // ========================================================================
 
 // O0-LABEL: @test_fp64_matmul_x2_dest
 // O0: call target("riscv.matrix") @llvm.riscv.th.mfmacc.d.internal
+// O0: call target("riscv.matrix") @llvm.riscv.th.mfmacc.d.internal
 mfloat64x2_t test_fp64_matmul_x2_dest(mfloat64x2_t c, mfloat64_t a,
                                         mfloat64_t b,
                                         mrow_t m, mcol_t k, mcol_t n) {
-    return __riscv_th_mfmaqa_d_x2(c, a, b, m, k, n);
+    return __riscv_th_mfmacc_d_x2(c, a, b, m, k, n);
 }
 
 // ========================================================================
@@ -162,15 +163,16 @@ mfloat64x2_t test_fp64_matmul_x2_dest(mfloat64x2_t c, mfloat64_t a,
 mfloat64_t test_fp64_widen_single(mfloat64_t c, mfloat32_t a,
                                    mfloat32_t b,
                                    mrow_t m, mcol_t k, mcol_t n) {
-    return __riscv_th_mfmaqa_d_s(c, a, b, m, k, n);
+    return __riscv_th_mfmacc_d_s(c, a, b, m, k, n);
 }
 
 // O0-LABEL: @test_fp64_widen_x2
 // O0: call target("riscv.matrix") @llvm.riscv.th.mfmacc.d.s.internal
+// O0: call target("riscv.matrix") @llvm.riscv.th.mfmacc.d.s.internal
 mfloat64x2_t test_fp64_widen_x2(mfloat64x2_t c, mfloat32_t a,
                                   mfloat32_t b,
                                   mrow_t m, mcol_t k, mcol_t n) {
-    return __riscv_th_mfmaqa_d_s_x2(c, a, b, m, k, n);
+    return __riscv_th_mfmacc_d_s_x2(c, a, b, m, k, n);
 }
 
 // ========================================================================
@@ -181,28 +183,28 @@ mfloat64x2_t test_fp64_widen_x2(mfloat64x2_t c, mfloat32_t a,
 // O0: call target("riscv.matrix") @llvm.riscv.th.mmacc.d.h.internal
 mint64_t test_int16_ss_single(mint64_t c, mint16_t a, mint16_t b,
                                mrow_t m, mcol_t k, mcol_t n) {
-    return __riscv_th_mmaq_ss_d_h(c, a, b, m, k, n);
+    return __riscv_th_mmacc_d_h(c, a, b, m, k, n);
 }
 
 // O0-LABEL: @test_int16_uu_single
 // O0: call target("riscv.matrix") @llvm.riscv.th.mmaccu.d.h.internal
 muint64_t test_int16_uu_single(muint64_t c, muint16_t a, muint16_t b,
                                 mrow_t m, mcol_t k, mcol_t n) {
-    return __riscv_th_mmaq_uu_d_h(c, a, b, m, k, n);
+    return __riscv_th_mmaccu_d_h(c, a, b, m, k, n);
 }
 
 // O0-LABEL: @test_int16_us_single
 // O0: call target("riscv.matrix") @llvm.riscv.th.mmaccus.d.h.internal
 mint64_t test_int16_us_single(mint64_t c, muint16_t a, mint16_t b,
                                mrow_t m, mcol_t k, mcol_t n) {
-    return __riscv_th_mmaq_us_d_h(c, a, b, m, k, n);
+    return __riscv_th_mmaccus_d_h(c, a, b, m, k, n);
 }
 
 // O0-LABEL: @test_int16_su_single
 // O0: call target("riscv.matrix") @llvm.riscv.th.mmaccsu.d.h.internal
 mint64_t test_int16_su_single(mint64_t c, mint16_t a, muint16_t b,
                                mrow_t m, mcol_t k, mcol_t n) {
-    return __riscv_th_mmaq_su_d_h(c, a, b, m, k, n);
+    return __riscv_th_mmaccsu_d_h(c, a, b, m, k, n);
 }
 
 // ========================================================================
@@ -211,30 +213,34 @@ mint64_t test_int16_su_single(mint64_t c, mint16_t a, muint16_t b,
 
 // O0-LABEL: @test_int16_ss_x2
 // O0: call target("riscv.matrix") @llvm.riscv.th.mmacc.d.h.internal
+// O0: call target("riscv.matrix") @llvm.riscv.th.mmacc.d.h.internal
 mint64x2_t test_int16_ss_x2(mint64x2_t c, mint16_t a, mint16_t b,
                               mrow_t m, mcol_t k, mcol_t n) {
-    return __riscv_th_mmaq_ss_d_h_x2(c, a, b, m, k, n);
+    return __riscv_th_mmacc_d_h_x2(c, a, b, m, k, n);
 }
 
 // O0-LABEL: @test_int16_uu_x2
 // O0: call target("riscv.matrix") @llvm.riscv.th.mmaccu.d.h.internal
+// O0: call target("riscv.matrix") @llvm.riscv.th.mmaccu.d.h.internal
 muint64x2_t test_int16_uu_x2(muint64x2_t c, muint16_t a, muint16_t b,
                                mrow_t m, mcol_t k, mcol_t n) {
-    return __riscv_th_mmaq_uu_d_h_x2(c, a, b, m, k, n);
+    return __riscv_th_mmaccu_d_h_x2(c, a, b, m, k, n);
 }
 
 // O0-LABEL: @test_int16_us_x2
 // O0: call target("riscv.matrix") @llvm.riscv.th.mmaccus.d.h.internal
+// O0: call target("riscv.matrix") @llvm.riscv.th.mmaccus.d.h.internal
 mint64x2_t test_int16_us_x2(mint64x2_t c, muint16_t a, mint16_t b,
                               mrow_t m, mcol_t k, mcol_t n) {
-    return __riscv_th_mmaq_us_d_h_x2(c, a, b, m, k, n);
+    return __riscv_th_mmaccus_d_h_x2(c, a, b, m, k, n);
 }
 
 // O0-LABEL: @test_int16_su_x2
 // O0: call target("riscv.matrix") @llvm.riscv.th.mmaccsu.d.h.internal
+// O0: call target("riscv.matrix") @llvm.riscv.th.mmaccsu.d.h.internal
 mint64x2_t test_int16_su_x2(mint64x2_t c, mint16_t a, muint16_t b,
                               mrow_t m, mcol_t k, mcol_t n) {
-    return __riscv_th_mmaq_su_d_h_x2(c, a, b, m, k, n);
+    return __riscv_th_mmaccsu_d_h_x2(c, a, b, m, k, n);
 }
 
 // ========================================================================
@@ -245,7 +251,7 @@ mint64x2_t test_int16_su_x2(mint64x2_t c, mint16_t a, muint16_t b,
 // O0: call target("riscv.matrix") @llvm.riscv.th.mmacc.w.b.internal
 mint32_t test_int8_ss_single(mint32_t c, mint8_t a, mint8_t b,
                               mrow_t m, mcol_t k, mcol_t n) {
-    return __riscv_th_mmaq_ss_w_b(c, a, b, m, k, n);
+    return __riscv_th_mmacc_w_b(c, a, b, m, k, n);
 }
 
 // ========================================================================
@@ -256,7 +262,7 @@ mint32_t test_int8_ss_single(mint32_t c, mint8_t a, mint8_t b,
 // O0: call target("riscv.matrix") @llvm.riscv.th.mfmacc.s.h.internal
 mfloat32_t test_fp_widen_s_h(mfloat32_t c, mfloat16_t a, mfloat16_t b,
                               mrow_t m, mcol_t k, mcol_t n) {
-    return __riscv_th_mfmaqa_s_h(c, a, b, m, k, n);
+    return __riscv_th_mfmacc_s_h(c, a, b, m, k, n);
 }
 
 // ========================================================================
@@ -277,11 +283,12 @@ void test_e2e_fp16_x2(uint16_t *a_ptr, uint16_t *b_ptr,
     mfloat16_t acc = __riscv_th_mld_acc_f16(c_ptr, stride, m, n);
     mfloat16x2_t b_pair = __riscv_th_mset_f16(
         __builtin_riscv_th_mundef_f16x2(), 0, tb);
-    mfloat16_t res = __riscv_th_mfmaqa_h_x2(acc, ta, b_pair, m, k, n);
+    mfloat16_t res = __riscv_th_mfmacc_h_x2(acc, ta, b_pair, m, k, n);
     __riscv_th_mst_f16(c_ptr, stride, res, m, n);
 }
 
 // O2-LABEL: @test_e2e_fp64_x2
+// O2: call target("riscv.matrix") @llvm.riscv.th.mfmacc.d.internal
 // O2: call target("riscv.matrix") @llvm.riscv.th.mfmacc.d.internal
 void test_e2e_fp64_x2(double *a_ptr, double *b_ptr,
                        double *c_ptr, long stride,
@@ -291,12 +298,13 @@ void test_e2e_fp64_x2(double *a_ptr, double *b_ptr,
     mfloat64_t c0 = __riscv_th_mld_acc_f64(c_ptr, stride, m, n);
     mfloat64x2_t c_pair = __riscv_th_mset_f64(
         __builtin_riscv_th_mundef_f64x2(), 0, c0);
-    mfloat64x2_t res_pair = __riscv_th_mfmaqa_d_x2(c_pair, ta, tb, m, k, n);
+    mfloat64x2_t res_pair = __riscv_th_mfmacc_d_x2(c_pair, ta, tb, m, k, n);
     mfloat64_t res = __riscv_th_mget_f64(res_pair, 0);
     __riscv_th_mst_f64(c_ptr, stride, res, m, n);
 }
 
 // O2-LABEL: @test_e2e_int16_x2
+// O2: call target("riscv.matrix") @llvm.riscv.th.mmacc.d.h.internal
 // O2: call target("riscv.matrix") @llvm.riscv.th.mmacc.d.h.internal
 void test_e2e_int16_x2(int16_t *a_ptr, int16_t *b_ptr,
                         int64_t *c_ptr, long stride,
@@ -306,7 +314,7 @@ void test_e2e_int16_x2(int16_t *a_ptr, int16_t *b_ptr,
     mint64_t c0 = __riscv_th_mld_acc_i64(c_ptr, stride, m, n);
     mint64x2_t c_pair = __riscv_th_mset_i64(
         __builtin_riscv_th_mundef_i64x2(), 0, c0);
-    mint64x2_t res_pair = __riscv_th_mmaq_ss_d_h_x2(c_pair, ta, tb, m, k, n);
+    mint64x2_t res_pair = __riscv_th_mmacc_d_h_x2(c_pair, ta, tb, m, k, n);
     mint64_t res = __riscv_th_mget_i64(res_pair, 0);
     __riscv_th_mst_i64(c_ptr, stride, res, m, n);
 }

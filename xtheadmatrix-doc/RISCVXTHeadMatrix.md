@@ -550,8 +550,7 @@ or `-L` flags.
 
 The `<thead_matrix.h>` header provides a higher-level C API on top of
 the low-level `__builtin_riscv_th_*` builtins. It defines matrix type
-aliases (backed by native `__rvm_*_t` built-in types) and approximately
-over 400 wrapper functions and macros that carry dimension parameters, making matrix code
+aliases (backed by native `__rvm_*_t` built-in types) and over 450 wrapper functions and macros that carry dimension parameters, making matrix code
 more readable and less error-prone. Since Phase C, the header uses typed
 builtins internally, providing Sema-level type checking.
 
@@ -612,7 +611,7 @@ void int8_gemm(const int8_t *A, long a_stride,
     mint8_t  a = __riscv_th_mld_a_i8(A, a_stride, M, K);
     mint8_t  b = __riscv_th_mld_b_i8(B, b_stride, K, N);
     mint32_t c = __riscv_th_mzeros_i32(M, N);
-    c = __riscv_th_mmaq_ss_w_b(c, a, b, M, K, N);
+    c = __riscv_th_mmacc_w_b(c, a, b, M, K, N);
     __riscv_th_mst_i32(C, c_stride, c, M, N);
     __riscv_th_mrelease();
 }
@@ -643,8 +642,8 @@ void fp64_gemm_x2(const double *A, long a_stride,
     // Build an x2 pair with c0 in slot 0
     mfloat64x2_t c_pair = __riscv_th_mset_f64(
         __builtin_riscv_th_mundef_f64x2(), 0, c0);
-    // x2 matmul — operates on component 0 internally
-    mfloat64x2_t res_pair = __riscv_th_mfmaqa_d_x2(c_pair, ta, tb, M, K, N);
+    // x2 matmul — operates on both components; we only need slot 0 here
+    mfloat64x2_t res_pair = __riscv_th_mfmacc_d_x2(c_pair, ta, tb, M, K, N);
     mfloat64_t res = __riscv_th_mget_f64(res_pair, 0);
     __riscv_th_mst_f64(C, c_stride, res, M, N);
 }
@@ -652,7 +651,7 @@ void fp64_gemm_x2(const double *A, long a_stride,
 
 ### API Categories
 
-The 421 functions and macros in `<thead_matrix.h>` are organized into
+The 450+ functions and macros in `<thead_matrix.h>` are organized into
 these categories:
 
 | Category | Examples | Description |
@@ -661,11 +660,11 @@ these categories:
 | CSR access | `__riscv_th_mread_csr`, `__riscv_th_mwrite_csr` | Read/write matrix CSRs |
 | Load | `__riscv_th_mld_a_i8`, `__riscv_th_mld_b_f32` | Load tiles from memory with type and role |
 | Store | `__riscv_th_mst_i32`, `__riscv_th_mst_f16` | Store tiles to memory |
-| Matrix multiply | `__riscv_th_mmaq_ss_w_b`, `__riscv_th_mfmaqa_s` | Matmul-accumulate (integer and FP) |
+| Matrix multiply | `__riscv_th_mmacc_w_b`, `__riscv_th_mfmacc_s` | Matmul-accumulate (integer and FP) |
 | EW arithmetic | `__riscv_th_madd_w_mm`, `__riscv_th_mfmul_s_mm` | Element-wise add, sub, mul, min, max, shift |
 | Conversions | `__riscv_th_mfcvtl_s_h`, `__riscv_th_msfcvt_s_w` | FP and integer format conversions |
 | Tuple ops | `__riscv_th_mget_f16`, `__riscv_th_mset_f64` | Extract/insert single register from x2 pair |
-| x2 matmul | `__riscv_th_mfmaqa_d_x2`, `__riscv_th_mmaq_ss_d_h_x2` | Matmul with x2 pair operand/result |
+| x2 matmul | `__riscv_th_mfmacc_d_x2`, `__riscv_th_mmacc_d_h_x2` | Matmul with x2 pair operand/result |
 | Data movement | `__riscv_th_mzeros_i32`, `__riscv_th_mmov_mm` | Zero, move, pack, slide, broadcast |
 
 ### Immediate Arguments (ImmArg)
@@ -751,7 +750,7 @@ operation, so users do not need to call them manually.
 The `<thead_matrix.h>` header provides the complete programming
 interface with C matrix types (`mint8_t`, `mfloat16_t`, etc.) and
 dimension parameters (`mrow_t`, `mcol_t`). Functions like
-`__riscv_th_mld_a_i8`, `__riscv_th_mmaq_ss_w_b`, and
+`__riscv_th_mld_a_i8`, `__riscv_th_mmacc_w_b`, and
 `__riscv_th_mst_i32` carry dimension information, return typed values,
 and automatically configure tile dimensions, making matrix code
 readable and type-safe. See the
@@ -765,7 +764,7 @@ all [Code Examples](#code-examples).
 > in `BuiltinsRISCVXTHeadMatrix.td`) use `_spec` suffixed names (e.g.,
 > `__builtin_riscv_th_mfmaqa_spec_h` rather than
 > `__builtin_riscv_th_mfmacc_h`). Users should use the `<thead_matrix.h>`
-> C API (e.g., `__riscv_th_mfmaqa_h`) rather than calling builtins
+> C API (e.g., `__riscv_th_mfmacc_h`) rather than calling builtins
 > directly.
 
 All Spec-API builtins use the `__builtin_riscv_th_` prefix and are
@@ -1208,7 +1207,7 @@ void int8_gemm(const int8_t *A, long a_stride,
 
     // Zero accumulator and compute: c = a * b
     mint32_t c = __riscv_th_mzeros_i32(M, N);
-    c = __riscv_th_mmaq_ss_w_b(c, a, b, M, K, N);
+    c = __riscv_th_mmacc_w_b(c, a, b, M, K, N);
 
     // Store result and release
     __riscv_th_mst_i32(C, c_stride, c, M, N);
@@ -1234,7 +1233,7 @@ void fp32_gemm_acc(const float *A, long a_stride,
     mfloat32_t b = __riscv_th_mld_b_f32(B, b_stride, K, N);
 
     // Accumulate: c += a * b
-    c = __riscv_th_mfmaqa_s(c, a, b, M, K, N);
+    c = __riscv_th_mfmacc_s(c, a, b, M, K, N);
 
     // Store and release
     __riscv_th_mst_f32(C, c_stride, c, M, N);
@@ -1257,7 +1256,7 @@ void fp16_to_fp32_gemm(const void *A, long a_stride,
     mfloat32_t c = __riscv_th_mzeros_f32(M, N);
 
     // Widening matmul: FP16 * FP16 → FP32
-    c = __riscv_th_mfmaqa_s_h(c, a, b, M, K, N);
+    c = __riscv_th_mfmacc_s_h(c, a, b, M, K, N);
 
     __riscv_th_mst_f32(C, c_stride, c, M, N);
     __riscv_th_mrelease();
@@ -1355,7 +1354,7 @@ void quantize_and_matmul(const float *input, size_t n,
     mint8_t a = __riscv_th_mld_a_i8(quantized, K, M, K);
     mint8_t b = __riscv_th_mld_b_i8(weights, w_stride, K, N);
     mint32_t c = __riscv_th_mzeros_i32(M, N);
-    c = __riscv_th_mmaq_ss_w_b(c, a, b, M, K, N);
+    c = __riscv_th_mmacc_w_b(c, a, b, M, K, N);
     __riscv_th_mst_i32(output, o_stride, c, M, N);
     __riscv_th_mrelease();
 }
@@ -1367,10 +1366,10 @@ clang --target=riscv64 -march=rv64gcv_xtheadmatrix0p6 \
   -menable-experimental-extensions -O2 -c mixed_kernel.c -o mixed_kernel.o
 ```
 
-### Example 7: Multi-Accumulator GEMM
+### Example 7: Dual GEMM (Shared A Matrix)
 
-Using register index parameters, different matmul operations can target
-different accumulator registers simultaneously:
+The register allocator handles multiple independent matmul operations
+automatically, including reusing tile registers across operations:
 
 ```c
 #include <thead_matrix.h>
@@ -1384,37 +1383,30 @@ void dual_gemm(const int8_t *A, long a_stride,
                int32_t *C1, long c1_stride,
                int32_t *C2, long c2_stride,
                mrow_t M, mcol_t K, mcol_t N) {
-    // Configure dimensions
-    __builtin_riscv_th_msettilem(M);
-    __builtin_riscv_th_msettilek(K);
-    __builtin_riscv_th_msettilen(N);
+    // Load A (shared between both GEMMs)
+    mint8_t a = __riscv_th_mld_a_i8(A, a_stride, M, K);
 
-    // Load shared A matrix into tr0
-    __builtin_riscv_th_mlae8(__RVM_TR0, (void *)A, a_stride);
+    // First GEMM: C1 = A * B1
+    mint8_t b1 = __riscv_th_mld_b_i8(B1, b1_stride, K, N);
+    mint32_t c1 = __riscv_th_mzeros_i32(M, N);
+    c1 = __riscv_th_mmacc_w_b(c1, a, b1, M, K, N);
 
-    // Zero acc0, load B1 into tr1, INT8 matmul into acc0
-    __builtin_riscv_th_mzero(__RVM_ACC0);
-    __builtin_riscv_th_mlbe8(__RVM_TR1, (void *)B1, b1_stride);
-    __rvm_int32_t i32 = __builtin_riscv_th_mundef_i32();
-    __rvm_int8_t i8 = __builtin_riscv_th_mundef_i8();
-    (void)__builtin_riscv_th_mmacc_w_b(__RVM_ACC0, __RVM_TR1, __RVM_TR0,
-                                        i32, i8, i8);
-
-    // Zero acc1, load B2 into tr1, INT8 matmul into acc1
-    __builtin_riscv_th_mzero(__RVM_ACC1);
-    __builtin_riscv_th_mlbe8(__RVM_TR1, (void *)B2, b2_stride);
-    (void)__builtin_riscv_th_mmacc_w_b(__RVM_ACC1, __RVM_TR1, __RVM_TR0,
-                                        i32, i8, i8);
+    // Second GEMM: C2 = A * B2 (A is still live from above)
+    mint8_t b2 = __riscv_th_mld_b_i8(B2, b2_stride, K, N);
+    mint32_t c2 = __riscv_th_mzeros_i32(M, N);
+    c2 = __riscv_th_mmacc_w_b(c2, a, b2, M, K, N);
 
     // Store both results
-    __builtin_riscv_th_msce32(__RVM_ACC0, (void *)C1, c1_stride);
-    __builtin_riscv_th_msce32(__RVM_ACC1, (void *)C2, c2_stride);
-    __builtin_riscv_th_mrelease();
+    __riscv_th_mst_i32(C1, c1_stride, c1, M, N);
+    __riscv_th_mst_i32(C2, c2_stride, c2, M, N);
+    __riscv_th_mrelease();
 }
 ```
 
-This pattern was not possible with the previous fixed register assignment
-where all matmul operations were hardcoded to use acc0.
+The register allocator assigns tile and accumulator registers to `a`,
+`b1`, `b2`, `c1`, `c2` automatically and inserts spills/reloads if the
+4+4 register file is insufficient. No manual register index management
+is needed.
 
 ### Example 8: Zmpanel INT8 Panel GEMM (Fire-and-Forget)
 
@@ -1714,37 +1706,65 @@ comprehensive usage examples.
 ### Differences from Spec Intrinsic API (rvm-intrinsic-api.adoc v0.2)
 
 The implementation provides complete coverage of all RVM 0.6 hardware
-instructions. The following differences exist relative to the spec's
-C intrinsic API definition:
+instructions. The C API naming follows **RVM 0.6 assembly mnemonics**
+rather than the spec intrinsic API document's older instruction names.
+The spec intrinsic API document uses mnemonics from an earlier revision
+(e.g., `mmaqa` instead of `mmacc.w.b`, `fmmacc` instead of `mfmacc`).
 
-- **No C++ overloading**: The spec envisions C++ overloaded functions
-  (e.g., a single `__riscv_th_mld` overloaded by pointer type). The
-  implementation uses separate C functions per type (`__riscv_th_mld_a_i8`,
-  `__riscv_th_mld_a_i16`, etc.) since C does not support overloading.
+#### Naming Differences
 
-- **Role-specific loads**: The spec uses a unified
-  `__riscv_th_mld(base, stride, row, col)`. The implementation uses
-  role-specific functions because each maps to a different hardware
-  instruction: `__riscv_th_mld_a_*` (A-tile, mlae), `__riscv_th_mld_b_*`
-  (B-tile, mlbe), and `__riscv_th_mld_acc_*` (C-tile, mlce).
+| Spec Intrinsic API Name | Implementation Name | Notes |
+|---|---|---|
+| `__riscv_th_fmmacc` | `__riscv_th_mfmacc_h/s/d` | Spec: `fmmacc`; HW: `mfmacc` |
+| `__riscv_th_fwmmacc` | `__riscv_th_mfmacc_s_h` / `mfmacc_d_s` | Widening uses dst.src suffix |
+| `__riscv_th_mmaqa` / `mmaqau` / `mmaqaus` / `mmaqasu` | `__riscv_th_mmacc_w_b` / `mmaccu_w_b` / `mmaccus_w_b` / `mmaccsu_w_b` | Spec: `mmaqa`; HW: `mmacc` |
+| `__riscv_th_mld` (unified) | `__riscv_th_mld_a_*` / `mld_b_*` / `mld_acc_*` | Role-specific for register class |
+| `__riscv_th_mst` (unified) | `__riscv_th_mst_TYPE` (type-suffixed) | Type suffix for C compatibility |
+| `__riscv_th_madd_mm(s1,s2,row,col)` | `__riscv_th_madd_w_mm(acc,s2,s1)` | Different params (see below) |
+| `__riscv_th_mmov_m_x` (type-overloaded) | `__riscv_th_mmovb/h/w/d_m_x` | Element-size suffix |
+| `__riscv_th_mdup_m_x` (type-overloaded) | `__riscv_th_mdupb/h/w/d_m_x` | Element-size suffix |
 
-- **Matmul naming convention**: The spec uses `mmaqa`/`mmaqau`/`mmaqaus`/
-  `mmaqasu` naming for the high-level API. The hardware instructions use
-  `mmacc`/`mmaccu`/`mmaccus`/`mmaccsu`. The implementation uses `mmacc_*`
-  for low-level builtins (matching hardware mnemonics) and `mmaqa_*` for
-  the high-level `<thead_matrix.h>` API (matching the spec naming).
+Backward-compat aliases from previous naming (`mmaq_ss_w_b` → `mmacc_w_b`,
+`mfmaqa_s` → `mfmacc_s`, etc.) are provided via `#define` macros.
 
-- **Spec features with no hardware instructions** (not implementation gaps):
-  - **Stream load/store** (`msld`, `msst`): Mentioned in the spec but no
-    instructions exist in `instruction_list.adoc`.
-  - **Matrix-scalar EW operations** (`.mx` variants): Listed in the spec
-    API but no corresponding hardware instructions in RVM 0.6.
-  - **64-bit integer EW arithmetic** (`.d` variants): The spec lists
-    `mint64_t` variants for `madd`, `msub`, etc. but `instruction_list.adoc`
-    only defines `.w` (32-bit) integer element-wise operations.
-  - **`mmov.mv.x` / `mmov.mv.i`**: Mentioned in the spec but not present
-    as separate instructions. The functionality can be achieved via
-    `mrslidedown`/`mrbca` instructions.
+#### Signature Differences
+
+- **Matmul dimension order**: Implementation uses `(acc, a, b, M, K, N)`;
+  spec uses `(dest, src1, src2, M, N, K)`. The K and N positions are
+  swapped. This does not affect correctness — the codegen maps each
+  parameter to the correct CSR regardless of position.
+
+- **EW operations**: Implementation uses `(acc, s2, s1)` with NO dimension
+  parameters. They rely on mtilem/mtilen CSRs being already configured by
+  prior load/matmul operations. In a typical pipeline (load→matmul→EW),
+  the CSRs are already correct. For standalone EW use, manually call
+  `__riscv_th_msetmrow_m(M)` and `__riscv_th_msetmrow_n(N)` first. The
+  `acc` parameter is for register tying — the output register is constrained
+  to the same physical register. The `acc` value is NOT used in the
+  computation; the hardware computes `md = ms2 op ms1` without reading old
+  `md`. The spec's EW API takes `(src1, src2, row, col)` — no `acc` param,
+  but explicit dimensions.
+
+- **mzero**: Implementation: `__riscv_th_mzero_i32(m, n)` with dimension
+  params for CSR config. Spec: `__riscv_th_mzero_i32()` with no params.
+
+- **CSR enum**: Implementation uses actual HW CSR addresses
+  (`RVM_CSR_XMCSR=0x802`). Spec uses sequential indices
+  (`RVM_XMRSTART=0, RVM_XMCSR=1, ...`) with different member names.
+
+#### Not Implemented (features absent from RVM 0.6 instruction encoding tables)
+
+- **Stream load/store** (`msld`, `msst`): Mentioned in the intrinsic API
+  spec but no instructions exist in `instruction_list.adoc`.
+- **Matrix-scalar EW operations** (`.mx` variants): Listed in the spec
+  API but no corresponding hardware instructions in RVM 0.6.
+- **64-bit integer EW arithmetic** (`.d` variants): The spec lists
+  `mint64_t` variants for `madd`, `msub`, etc. but `instruction_list.adoc`
+  only defines `.w` (32-bit) integer element-wise operations.
+- **`mmov.mv.x` / `mmov.mv.i`** (row move): Mentioned in the spec but not
+  present in the instruction encoding tables.
+- **`mbce{8,16,32,64}`** (element broadcast): Described in spec prose but
+  no encoding assigned in `instruction_list.adoc`.
 
 ### Register Constraints and Sema Validation
 
@@ -1776,7 +1796,7 @@ The `<thead_matrix.h>` header defines named constants:
 
 ### Known Spec Errata
 
-Three errata exist in the RVM 0.6 spec:
+Four errata exist in the RVM 0.6 spec:
 1. **Matmul uop field**: `instruction_list.adoc` shows `uop=01` for all
    matmul instructions. The correct value is `uop=10` (per
    `inst32_format.adoc`; `uop=01` is Load/Store). LLVM uses the correct `10`.
@@ -1784,6 +1804,9 @@ Three errata exist in the RVM 0.6 spec:
    encoding table (encodings are correct, names are wrong). LLVM correctly
    maps `.h`→s_size=01, `.s`→s_size=10.
 3. **Typo**: `pmmaaccus.w.b` has an extra 'a' (should be `pmmaccus.w.b`).
+4. **mbce no encoding**: `broadcast.adoc` describes `mbce{8,16,32,64}`
+   element broadcast instructions in prose but no encoding is assigned in
+   `instruction_list.adoc`. Cannot be implemented.
 
 ### Other Notes
 
@@ -1801,14 +1824,16 @@ Three errata exist in the RVM 0.6 spec:
   with A-tile loads (`__riscv_th_mld_a_*`, sets M/K), B-tile loads
   (`__riscv_th_mld_b_*`, sets K/N), accumulator loads (`__riscv_th_mld_acc_*`,
   sets M/N), stores (`__riscv_th_mst_*`, sets M/N), INT matmul
-  (`__riscv_th_mmaq_*`), FP matmul (`__riscv_th_mfmaqa_*`), and zero
-  constructors (`__riscv_th_mzeros_*`). All operations available in 11 types
+  (`__riscv_th_mmacc_*` / `mmaccu_*` / `mmaccus_*` / `mmaccsu_*`), FP matmul
+  (`__riscv_th_mfmacc_*`), and zero constructors (`__riscv_th_mzeros_*` +
+  `mzeros_*x2`). All operations available in 11 types
   (i8/i16/i32/i64/u8/u16/u32/u64/f16/f32/f64).
 
-- **Test coverage**: 17 test files cover assembly encoding (227 instructions),
-  error diagnostics, CSR names (13 CSRs), ISel patterns, end-to-end builtin
-  codegen (including all 8 widening FP matmul variants), inline assembly
-  constraints, API usage patterns, corner cases, and built-in type support.
+- **Test coverage**: 24 test files cover assembly encoding (227 base + 30 Zmpanel
+  instructions), error diagnostics, CSR names (13 CSRs), ISel patterns,
+  end-to-end builtin codegen (including all 8 widening FP matmul variants),
+  inline assembly constraints, API coverage, verification fixes, x2 types,
+  Zmpanel C header API, and built-in type support.
 
 ### Verification History
 
@@ -1869,6 +1894,24 @@ Three errata exist in the RVM 0.6 spec:
    Spec-API functions, register class constraints, CSR setting logic, matmul
    operand swap, signedness mapping, inline asm constraints, and pseudo
    expansion. **No correctness bugs found.** Design notes documented below.
+7. **Golden spec cross-reference audit (2026-03-19, Claude Opus 4.6 #8)**: Read
+   ALL golden spec files (`spec/*.adoc` + `doc/intrinsic/rvm-intrinsic-api.adoc`)
+   and cross-referenced against the full implementation. **No new correctness
+   bugs found.** Documented comprehensive list of C API naming/signature
+   differences from the spec intrinsic API. Key finding: the spec intrinsic API
+   uses older instruction mnemonics (e.g., `mmaqa`, `fmmacc`) that differ from
+   the current RVM 0.6 instruction spec (`mmacc.w.b`, `mfmacc.h`). The
+   implementation follows the current instruction spec. See the "Differences from
+   Spec Intrinsic API" section above for the full mapping table.
+8. **Full independent re-verification (2026-03-20, Claude Opus 4.6 #9)**: Five
+   parallel verification agents checked: (a) 40+ instruction encodings bit-by-bit
+   — 0 bugs; (b) all register class constraints (tile vs accumulator per spec
+   sections `tilereg.adoc`, `integer_ew.adoc`, `float_ew.adoc`, `type_convert.adoc`,
+   `load-store.adoc`) — 0 bugs; (c) all 30 Zmpanel instructions, 18 CSRs, C API
+   against `zmpanel.adoc` — 0 bugs; (d) stream load/store correctly omitted;
+   (e) C API naming confirmed correct per RVM 0.6 mnemonics. **No new bugs found.**
+   All previously documented differences and limitations remain accurate. Noted
+   gap: no MC-level round-trip encoding tests for Zmpanel panel instructions.
 
 ## Design Notes
 

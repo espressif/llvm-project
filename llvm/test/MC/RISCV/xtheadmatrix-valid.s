@@ -161,24 +161,24 @@ th.mlcte64 acc2, (s1), t0
 # CHECK-ENCODING: [0x2b,0x8f,0x54,0x64]
 # CHECK-ERROR: instruction requires the following: 'XTHeadMatrix' (T-Head Matrix Extension){{$}}
 
-th.mlme8 acc3, (t0)
-# CHECK-INST: th.mlme8 acc3, (t0)
-# CHECK-ENCODING: [0xab,0x83,0x02,0x34]
+th.mlme8 acc3, (t0), t1
+# CHECK-INST: th.mlme8 acc3, (t0), t1
+# CHECK-ENCODING: [0xab,0x83,0x62,0x34]
 # CHECK-ERROR: instruction requires the following: 'XTHeadMatrix' (T-Head Matrix Extension){{$}}
 
-th.mlme16 tr0, (t1)
-# CHECK-INST: th.mlme16 tr0, (t1)
-# CHECK-ENCODING: [0x2b,0x04,0x03,0x34]
+th.mlme16 tr0, (t1), t2
+# CHECK-INST: th.mlme16 tr0, (t1), t2
+# CHECK-ENCODING: [0x2b,0x04,0x73,0x34]
 # CHECK-ERROR: instruction requires the following: 'XTHeadMatrix' (T-Head Matrix Extension){{$}}
 
-th.mlme32 tr1, (t2)
-# CHECK-INST: th.mlme32 tr1, (t2)
-# CHECK-ENCODING: [0xab,0x88,0x03,0x34]
+th.mlme32 tr1, (t2), t3
+# CHECK-INST: th.mlme32 tr1, (t2), t3
+# CHECK-ENCODING: [0xab,0x88,0xc3,0x35]
 # CHECK-ERROR: instruction requires the following: 'XTHeadMatrix' (T-Head Matrix Extension){{$}}
 
-th.mlme64 tr2, (t3)
-# CHECK-INST: th.mlme64 tr2, (t3)
-# CHECK-ENCODING: [0x2b,0x0d,0x0e,0x34]
+th.mlme64 tr2, (t3), t4
+# CHECK-INST: th.mlme64 tr2, (t3), t4
+# CHECK-ENCODING: [0x2b,0x0d,0xde,0x35]
 # CHECK-ERROR: instruction requires the following: 'XTHeadMatrix' (T-Head Matrix Extension){{$}}
 
 
@@ -303,24 +303,24 @@ th.mscte64 tr2, (t3), a0
 # CHECK-ENCODING: [0x2b,0x0d,0xae,0x66]
 # CHECK-ERROR: instruction requires the following: 'XTHeadMatrix' (T-Head Matrix Extension){{$}}
 
-th.msme8 tr3, (a0)
-# CHECK-INST: th.msme8 tr3, (a0)
-# CHECK-ENCODING: [0xab,0x01,0x05,0x36]
+th.msme8 tr3, (a0), a1
+# CHECK-INST: th.msme8 tr3, (a0), a1
+# CHECK-ENCODING: [0xab,0x01,0xb5,0x36]
 # CHECK-ERROR: instruction requires the following: 'XTHeadMatrix' (T-Head Matrix Extension){{$}}
 
-th.msme16 acc0, (a1)
-# CHECK-INST: th.msme16 acc0, (a1)
-# CHECK-ENCODING: [0x2b,0x86,0x05,0x36]
+th.msme16 acc0, (a1), a2
+# CHECK-INST: th.msme16 acc0, (a1), a2
+# CHECK-ENCODING: [0x2b,0x86,0xc5,0x36]
 # CHECK-ERROR: instruction requires the following: 'XTHeadMatrix' (T-Head Matrix Extension){{$}}
 
-th.msme32 acc1, (a2)
-# CHECK-INST: th.msme32 acc1, (a2)
-# CHECK-ENCODING: [0xab,0x0a,0x06,0x36]
+th.msme32 acc1, (a2), a3
+# CHECK-INST: th.msme32 acc1, (a2), a3
+# CHECK-ENCODING: [0xab,0x0a,0xd6,0x36]
 # CHECK-ERROR: instruction requires the following: 'XTHeadMatrix' (T-Head Matrix Extension){{$}}
 
-th.msme64 acc2, (a3)
-# CHECK-INST: th.msme64 acc2, (a3)
-# CHECK-ENCODING: [0x2b,0x8f,0x06,0x36]
+th.msme64 acc2, (a3), a4
+# CHECK-INST: th.msme64 acc2, (a3), a4
+# CHECK-ENCODING: [0x2b,0x8f,0xe6,0x36]
 # CHECK-ERROR: instruction requires the following: 'XTHeadMatrix' (T-Head Matrix Extension){{$}}
 
 

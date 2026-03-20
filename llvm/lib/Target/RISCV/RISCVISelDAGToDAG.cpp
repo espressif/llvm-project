@@ -900,9 +900,9 @@ static Register getTileReg(uint64_t TileNum) {
 namespace {
 enum THMatrixInternalCategory {
   THMI_Load,       // (ptr, stride) -> matrix
-  THMI_LoadWhole,  // (ptr) -> matrix
+  THMI_LoadWhole,  // (ptr, stride) -> matrix
   THMI_Store,      // (matrix, ptr, stride) -> void
-  THMI_StoreWhole, // (matrix, ptr) -> void
+  THMI_StoreWhole, // (matrix, ptr, stride) -> void
   THMI_Zero,       // () -> matrix
   THMI_MulAcc,     // (acc, ms2, ms1) -> acc_out [tied]
   THMI_Unary,      // (ms1) -> md
@@ -1309,8 +1309,9 @@ void RISCVDAGToDAGISel::selectTHMatrixInternal(SDNode *Node) {
     break;
   }
   case THMI_LoadWhole: {
-    // (ptr) -> matrix
+    // (ptr, stride) -> matrix
     Operands.push_back(Node->getOperand(ArgBase));     // ptr
+    Operands.push_back(Node->getOperand(ArgBase + 1)); // stride
     break;
   }
   case THMI_Store: {
@@ -1321,9 +1322,10 @@ void RISCVDAGToDAGISel::selectTHMatrixInternal(SDNode *Node) {
     break;
   }
   case THMI_StoreWhole: {
-    // (matrix, ptr) -> void
+    // (matrix, ptr, stride) -> void
     Operands.push_back(Node->getOperand(ArgBase));     // matrix src
     Operands.push_back(Node->getOperand(ArgBase + 1)); // ptr
+    Operands.push_back(Node->getOperand(ArgBase + 2)); // stride
     break;
   }
   case THMI_Zero: {

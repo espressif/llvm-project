@@ -9,14 +9,17 @@ usage() {
 Usage: riscv-toolchain-build.sh [OPTIONS] [INSTALL_PREFIX]
 
 Build a RISC-V LLVM bare-metal toolchain with multilib support.
+Works on Linux and macOS with either GCC or Clang as the host compiler.
 
 Arguments:
   INSTALL_PREFIX    Installation directory (default: ~/opt/llvm)
 
 Options:
-  --portable        Statically link libstdc++, libgcc, zlib, and zstd so the
-                    installed toolchain can be tarred and moved to another
-                    Linux system (only glibc is still dynamically linked)
+  --portable        Reduce dynamic library dependencies for portability.
+                    Linux: statically links libstdc++/libc++, libgcc (GCC
+                    only), zlib, and zstd. Only glibc remains dynamic.
+                    macOS: statically links zlib and zstd only (macOS does
+                    not support static C++ stdlib or libgcc).
   -h, --help        Show this help message
 USAGE
   exit 0
@@ -64,22 +67,65 @@ echo "Portable: ${PORTABLE}"
 echo ""
 
 # ---------------------------------------------------------------------------
+# Host platform detection
+# ---------------------------------------------------------------------------
+HOST_OS="$(uname -s)"
+
+# ---------------------------------------------------------------------------
 # Portable build flags
 #
-# When --portable is given, statically link libstdc++, libgcc, zlib, and zstd
-# so the resulting binaries have no dependencies beyond glibc (which is always
-# dynamically linked on Linux).  This makes it safe to tar the install prefix
-# and move it to another Linux system.
+# When --portable is given, statically link optional libraries to reduce
+# dynamic dependencies.  The exact behavior depends on the host OS and
+# compiler:
+#
+#   Linux + GCC:   static libstdc++, libgcc, zlib, zstd (only glibc dynamic)
+#   Linux + Clang: static libc++/libstdc++, zlib, zstd (skip -static-libgcc)
+#   macOS:         static zlib, zstd only (macOS has no static libc++/libgcc)
+#
+# All flags are always explicitly set (ON or OFF) so that switching between
+# --portable and non-portable builds works without stale CMake cache values.
 # ---------------------------------------------------------------------------
 PORTABLE_CMAKE_FLAGS=()
 if [ "${PORTABLE}" = "1" ]; then
+  # Static zlib/zstd — works on all platforms
   PORTABLE_CMAKE_FLAGS=(
-    -DLLVM_STATIC_LINK_CXX_STDLIB=ON
     -DLLVM_ENABLE_ZLIB=FORCE_ON
     -DLLVM_ENABLE_ZSTD=FORCE_ON
     -DLLVM_USE_STATIC_ZSTD=ON
     -DZLIB_USE_STATIC_LIBS=ON
-    -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc"
+  )
+
+  case "${HOST_OS}" in
+    Linux)
+      # LLVM_STATIC_LINK_CXX_STDLIB statically links the C++ stdlib
+      # (libstdc++ for GCC, libc++ for Clang).
+      PORTABLE_CMAKE_FLAGS+=(-DLLVM_STATIC_LINK_CXX_STDLIB=ON)
+
+      # -static-libgcc is a GCC-specific flag.  Only add it when the
+      # host C compiler is GCC; clang does not use libgcc by default.
+      # Use `cc -v` which reliably contains "gcc version" for GCC
+      # regardless of the binary name (cc, gcc, etc.).
+      HOST_CC="${CC:-cc}"
+      if "${HOST_CC}" -v 2>&1 | grep -qi "gcc version"; then
+        PORTABLE_CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-static-libgcc")
+      fi
+      ;;
+    Darwin)
+      # macOS does not ship static libc++ or libgcc, so
+      # LLVM_STATIC_LINK_CXX_STDLIB and -static-libgcc are not useful.
+      # Static zlib/zstd (from Homebrew or system) still apply above.
+      echo "Note: --portable on macOS statically links zlib/zstd only."
+      echo "      Static C++ stdlib is not available on macOS."
+      ;;
+  esac
+else
+  # Non-portable: explicitly disable static linking flags to override any
+  # stale values cached from a previous --portable build.
+  PORTABLE_CMAKE_FLAGS=(
+    -DLLVM_STATIC_LINK_CXX_STDLIB=OFF
+    -DLLVM_USE_STATIC_ZSTD=OFF
+    -DZLIB_USE_STATIC_LIBS=OFF
+    -DCMAKE_EXE_LINKER_FLAGS=
   )
 fi
 
@@ -109,18 +155,6 @@ MULTILIB_VARIANTS=(
 # ===========================================================================
 echo "=== Stage 1: LLVM Toolchain ==="
 
-# Remove stale CMake cache entries that would override our portable flags.
-# CMake caches found library paths; switching between shared and static
-# builds requires clearing these.
-if [ "${PORTABLE}" = "1" ] && [ -f "${BUILD_DIR}/CMakeCache.txt" ]; then
-  echo "-- Clearing cached library paths for portable build"
-  cmake -B "${BUILD_DIR}" \
-    -UZLIB_LIBRARY_RELEASE -UZLIB_LIBRARY_DEBUG \
-    -Uzstd_LIBRARY -Uzstd_STATIC_LIBRARY \
-    -ULLVM_USE_STATIC_ZSTD -UZLIB_USE_STATIC_LIBS \
-    2>/dev/null || true
-fi
-
 cmake -S "${SCRIPT_DIR}/llvm" -B "${BUILD_DIR}" -G Ninja \
   -DCMAKE_BUILD_TYPE=Release \
   -DLLVM_TARGETS_TO_BUILD=RISCV \
@@ -128,7 +162,7 @@ cmake -S "${SCRIPT_DIR}/llvm" -B "${BUILD_DIR}" -G Ninja \
   -DCMAKE_INSTALL_PREFIX="${INSTALL_PREFIX}" \
   -DLLVM_INSTALL_TOOLCHAIN_ONLY=OFF \
   -DLLVM_DEFAULT_TARGET_TRIPLE=riscv64-unknown-elf \
-  "${PORTABLE_CMAKE_FLAGS[@]}"
+  ${PORTABLE_CMAKE_FLAGS[@]+"${PORTABLE_CMAKE_FLAGS[@]}"}
 
 cmake --build "${BUILD_DIR}" -- -j${NPROC}
 cmake --install "${BUILD_DIR}"
@@ -167,6 +201,7 @@ build_compiler_rt() {
     -S "${SCRIPT_DIR}/compiler-rt" \
     -B "${RT_BUILD}" \
     -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_SYSTEM_NAME=Generic \
     -DCMAKE_C_COMPILER="${INSTALL_PREFIX}/bin/clang" \
     -DCMAKE_CXX_COMPILER="${INSTALL_PREFIX}/bin/clang++" \
     -DCMAKE_AR="${INSTALL_PREFIX}/bin/llvm-ar" \
@@ -283,18 +318,56 @@ build_cxx_runtimes() {
   echo "--- C++ runtimes: ${MULTILIB_DIR} ---"
   rm -rf "${RUNTIMES_BUILD}/cxx-${VARIANT_ID}"
 
+  # Generate a CMake toolchain file for bare-metal RISC-V cross-compilation.
+  # This is necessary because:
+  #   - On macOS, CMake uses the host's Apple libtool for static libraries,
+  #     which rejects RISC-V ELF objects.  CMAKE_AR alone doesn't override it.
+  #   - CMAKE_SYSTEM_NAME=Generic prevents macOS tool detection but also
+  #     disables shared library support, causing duplicate static library
+  #     rules (SHARED targets silently become STATIC, colliding with real
+  #     STATIC targets).
+  # A toolchain file sets CMAKE_SYSTEM_NAME before project() runs, which
+  # is the only reliable time to override platform-specific archiver
+  # selection.  We also override the static library creation commands to
+  # use llvm-ar instead of libtool.
+  # Generate a CMake toolchain file for cross-compilation.
+  #
+  # Why a toolchain file instead of -D flags on the cmake command line?
+  #   On macOS, LLVM's runtimes/CMakeLists.txt includes UseLibtool.cmake
+  #   (guarded by "if(CMAKE_HOST_APPLE AND APPLE)"), which finds Apple's
+  #   libtool and overrides CMAKE_*_CREATE_STATIC_LIBRARY.  Apple libtool
+  #   only handles Mach-O and rejects RISC-V ELF objects.  Setting
+  #   CMAKE_SYSTEM_NAME=Linux in the toolchain file makes APPLE=false,
+  #   preventing UseLibtool from loading.  CMake then uses CMAKE_AR
+  #   (llvm-ar) for archiving, which handles all ELF formats correctly.
+  #   On Linux, CMAKE_SYSTEM_NAME=Linux is a no-op (already the default).
+  local TOOLCHAIN_FILE="${RUNTIMES_BUILD}/cxx-${VARIANT_ID}-toolchain.cmake"
+  mkdir -p "$(dirname "${TOOLCHAIN_FILE}")"
+  cat > "${TOOLCHAIN_FILE}" <<TOOLCHAIN_EOF
+# CMAKE_SYSTEM_NAME=Linux makes APPLE=false, which prevents LLVM's
+# runtimes/CMakeLists.txt from including UseLibtool.cmake (guarded by
+# "if(CMAKE_HOST_APPLE AND APPLE)").  Apple libtool only handles Mach-O
+# and rejects RISC-V ELF objects.  Unlike Generic, Linux supports shared
+# libraries, so ENABLE_SHARED=OFF is respected normally (no duplicate
+# static library rules).  On Linux hosts this is a no-op since Linux
+# is already the detected system name.
+set(CMAKE_SYSTEM_NAME Linux)
+set(CMAKE_SYSTEM_PROCESSOR riscv)
+set(CMAKE_C_COMPILER "${INSTALL_PREFIX}/bin/clang")
+set(CMAKE_CXX_COMPILER "${INSTALL_PREFIX}/bin/clang++")
+set(CMAKE_AR "${INSTALL_PREFIX}/bin/llvm-ar")
+set(CMAKE_NM "${INSTALL_PREFIX}/bin/llvm-nm")
+set(CMAKE_RANLIB "${INSTALL_PREFIX}/bin/llvm-ranlib")
+set(CMAKE_C_COMPILER_TARGET "${TARGET}")
+set(CMAKE_CXX_COMPILER_TARGET "${TARGET}")
+set(CMAKE_ASM_COMPILER_TARGET "${TARGET}")
+TOOLCHAIN_EOF
+
   cmake -G Ninja \
     -S "${SCRIPT_DIR}/runtimes" \
     -B "${RUNTIMES_BUILD}/cxx-${VARIANT_ID}" \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_C_COMPILER="${INSTALL_PREFIX}/bin/clang" \
-    -DCMAKE_CXX_COMPILER="${INSTALL_PREFIX}/bin/clang++" \
-    -DCMAKE_AR="${INSTALL_PREFIX}/bin/llvm-ar" \
-    -DCMAKE_NM="${INSTALL_PREFIX}/bin/llvm-nm" \
-    -DCMAKE_RANLIB="${INSTALL_PREFIX}/bin/llvm-ranlib" \
-    -DCMAKE_C_COMPILER_TARGET="${TARGET}" \
-    -DCMAKE_CXX_COMPILER_TARGET="${TARGET}" \
-    -DCMAKE_ASM_COMPILER_TARGET="${TARGET}" \
+    -DCMAKE_TOOLCHAIN_FILE="${TOOLCHAIN_FILE}" \
     -DCMAKE_C_FLAGS="${CFLAGS} --sysroot=${CLANG_RUNTIMES}" \
     -DCMAKE_CXX_FLAGS="${CFLAGS} --sysroot=${CLANG_RUNTIMES}" \
     -DCMAKE_ASM_FLAGS="--sysroot=${CLANG_RUNTIMES}" \

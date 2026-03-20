@@ -52,7 +52,7 @@ void fp8_to_fp16_matmul(void *a_ptr, long a_stride,
     mfloat16_t acc = __riscv_th_mzeros_f16(m, n);
 
     // Widening matmul: FP8 * FP8 -> FP16 accumulate
-    mfloat16_t result = __riscv_th_mfmaqa_h_e4(acc, a, b, m, k, n);
+    mfloat16_t result = __riscv_th_mfmacc_h_e4(acc, a, b, m, k, n);
 
     // Store the FP16 result
     __riscv_th_mst_f16(c_ptr, c_stride, result, m, n);

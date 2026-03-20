@@ -58,9 +58,9 @@ All 227 base hardware operations are covered:
 
 - **Loads**: A-tile `__riscv_th_mld_a_*`, B-tile `__riscv_th_mld_b_*`, accumulator `__riscv_th_mld_acc_*` (11 types each)
 - **Stores**: `__riscv_th_mst_*` (11 types)
-- **Matmul**: INT `__riscv_th_mmaq_*` (14 + 4 x2), FP `__riscv_th_mfmaqa_*` (13 + 3 x2)
+- **Matmul**: INT `__riscv_th_mmacc_*` / `mmaccu_*` / `mmaccus_*` / `mmaccsu_*` (14 + 4 x2), FP `__riscv_th_mfmacc_*` (13 + 3 x2)
 - **Tuple**: `__riscv_th_mget_*` / `__riscv_th_mset_*` (11 types each, extract/insert from x2 pairs)
-- **Zero**: `__riscv_th_mzeros_*` (11 types)
+- **Zero**: `__riscv_th_mzeros_*` (11 single + 11 x2 types)
 - **EW integer**: `__riscv_th_madd_w_mm` etc. (11 ops × .mm/.mv.i)
 - **EW FP**: `__riscv_th_mfadd_s_mm` etc. (5 ops × 3 precisions × .mm/.mv.i)
 - **Conversions**: format (26), float-int (12), packed (4)
@@ -72,19 +72,24 @@ All 227 base hardware operations are covered:
 | Test suite | Result |
 |------------|--------|
 | `xtheadmatrix-spec-api.c` (23 test cases) | PASS |
+| `xtheadmatrix-spec-api-full.c` (extended API coverage) | PASS |
+| `xtheadmatrix-api-coverage.c` (full API function coverage) | PASS |
+| `xtheadmatrix-verification-fixes.c` (verification bug fix tests) | PASS |
 | `xtheadmatrix-x2-types.c` (15 test cases, O0+O2) | PASS |
 | `xtheadmatrix-spec-api-example.c` (e2e widening matmul) | PASS |
-| `xtheadmatrix-managed-ra*.ll` (4 tests) | PASS |
+| `xtheadmatrix-managed-ra.ll` (basic RA) | PASS |
+| `xtheadmatrix-managed-ra-full.ll` (comprehensive RA) | PASS |
+| `xtheadmatrix-managed-ra-misc.ll` (misc RA patterns) | PASS |
+| `xtheadmatrix-managed-ra-regclass.ll` (register class) | PASS |
+| `xtheadmatrix-managed-ra-spill.ll` (spill/reload) | PASS |
 | `xtheadmatrix-lower-O0.ll` | PASS |
 | `thead-matrix-builtin-types.c` | PASS |
 | `thead-matrix-types-extended.c` | PASS |
-| `xtheadmatrix-valid.s` (1154 lines) | PASS |
+| `xtheadmatrix-valid.s` (227 instruction encodings) | PASS |
 | `xtheadmatrix-invalid.s` | PASS |
 | `xtheadmatrix-csr.s` | PASS |
-| RISCV MC full suite | 555/555 PASS |
 | `xtheadmatrix-inline-asm.c` (inline asm constraints) | PASS |
-| End-to-end RA (EW, conversions, data movement, matmul pipeline) | PASS |
-| Spill-pressure test (5 ACC values, 4 regs) | PASS |
+| `xtheadmatrix-zmpanel-api.c` (Zmpanel C header API) | PASS |
 | `xtheadzmpanel-valid.s` (30 Zmpanel encoding tests) | PASS |
 | `xtheadzmpanel-intrinsics.ll` (Zmpanel intrinsic codegen) | PASS |
 | `xtheadzmpanel-builtins.c` (Zmpanel builtin codegen) | PASS |
@@ -93,7 +98,7 @@ All 227 base hardware operations are covered:
 
 ## Verification History
 
-Seven independent verification rounds were completed:
+Ten independent verification rounds were completed:
 
 1. **Gemini (2026-03-04)**: Found 2 HIGH bugs (conversion pseudo register classes THRVMMR→THRVMACC; matmul operand swap), filled 3 coverage gaps (B-tile load, FP/unsigned variants, matmul variants).
 
@@ -109,6 +114,12 @@ Seven independent verification rounds were completed:
 
 7. **Claude Opus 4.6 #6**: Implemented and verified Zmpanel panel-aware 2x2 matrix tiling extension. 30 new instructions (12 config, 2 load, 2 store, 14 compute). Added implicit Defs/Uses on panel load/store/compute instructions. Introduced `THMI_PanelFireForget` ISel dispatch category. Added mixed-mode conflict detection (fatal error when ManagedRA + fire-and-forget used in same function). Added `UsesZmpanelFireAndForget` flag to `RISCVMachineFunctionInfo`. Header API guarded with `#if defined(__riscv_xtheadzmpanel)`. Compute instructions confirmed to use uop=10 (matching standard matmul pattern). All 20 tests pass (5 new + 15 existing), zero regressions.
 
+8. **Claude Opus 4.6 #7**: Full-stack verification across all layers. Fixed 4 bugs (mreinterpret data loss, xmsize CSR, x2 matmul element 1 ignored, mzero naming). Verified encoding, intrinsic, builtin, ISel, pseudo, type-lowering, and Zmpanel layers.
+
+9. **Claude Opus 4.6 #8 (2026-03-19)**: Golden spec cross-reference audit. Read ALL spec files (`spec/*.adoc` + `doc/intrinsic/rvm-intrinsic-api.adoc`) and cross-referenced against the full implementation. **No new correctness bugs found.** Identified and documented comprehensive list of C API naming/signature differences from the spec intrinsic API (see `13-verification-and-fixes.md`). Key findings: (a) spec's canonical function names (`__riscv_th_fmmacc`, `__riscv_th_mmaqa`, etc.) not provided as aliases; (b) matmul dimension param order is (M,K,N) vs spec's (M,N,K); (c) EW operations rely on prior CSR state instead of taking dimension params; (d) mzero takes (m,n) params vs spec's no-param signature; (e) spec's intrinsic API doc uses older instruction mnemonics that differ from RVM 0.6. All issues are API naming/convention — no hardware behavior errors.
+
+10. **Claude Opus 4.6 #9 (2026-03-20)**: Full independent re-verification with five parallel verification agents. Verified: (a) 40+ instruction encodings bit-by-bit — 0 bugs; (b) all register class constraints (tile vs accumulator) — 0 bugs; (c) all 30 Zmpanel instructions, 18 CSRs, C API — 0 bugs; (d) stream load/store correctly omitted; (e) C API naming confirmed correct per RVM 0.6 mnemonics. **No new bugs found.** All previously documented differences and limitations remain accurate. Noted gap: no MC-level round-trip encoding tests for Zmpanel panel instructions.
+
 ## Current Limitations
 
 1. No 64-bit instruction format (spec defines but not implemented)
@@ -119,3 +130,6 @@ Seven independent verification rounds were completed:
 6. `-O0` support limited (RISCVLowerMatrixType pass provides basic support)
 7. Known spec errata: matmul uop=01 should be 10; mfmin.s/mfmin.h names swapped
 8. Zmpanel is fire-and-forget: the compiler does not manage panel registers tr4-tr7; all panel state is configured explicitly by the programmer. Mixed-mode usage (ManagedRA + Zmpanel fire-and-forget in the same function) is detected and rejected with a fatal error at ISel time
+9. C API naming follows RVM 0.6 assembly mnemonics, not the spec intrinsic API document (`rvm-intrinsic-api.adoc`). The spec's canonical function names (`__riscv_th_fmmacc`, `__riscv_th_mmaqa`, unified `__riscv_th_mld`, etc.) are not provided. Code written against the spec intrinsic API will not compile without adaptation. See `13-verification-and-fixes.md` for the full mapping table
+10. EW operations do not auto-configure mtilem/mtilen CSRs; they rely on prior load/matmul operations having set the correct tile dimensions. For standalone EW use, users must manually call config functions first
+11. Not implemented: stream load/store (`msld`/`msst`), matrix-scalar EW (`.mx`), 64-bit INT EW (`.d.mm`), `mmov.mv` row move, `mbce` element broadcast (no encoding in spec)

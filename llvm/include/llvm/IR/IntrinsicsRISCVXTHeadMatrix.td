@@ -68,25 +68,29 @@ def int_riscv_th_msettilen
 class THMatrix_Internal_Load
     : DefaultAttrsIntrinsic<[llvm_any_ty],
                             [llvm_ptr_ty, llvm_anyint_ty],
-                            [NoCapture<ArgIndex<0>>]>;
+                            [IntrReadMem, IntrArgMemOnly,
+                             NoCapture<ArgIndex<0>>]>;
 
-// Load whole-register (produces matrix value): (ptr) -> matrix
+// Load whole-register (produces matrix value): (ptr, stride) -> matrix
 class THMatrix_Internal_LoadWhole
     : DefaultAttrsIntrinsic<[llvm_any_ty],
-                            [llvm_ptr_ty],
-                            [NoCapture<ArgIndex<0>>]>;
+                            [llvm_ptr_ty, llvm_anyint_ty],
+                            [IntrReadMem, IntrArgMemOnly,
+                             NoCapture<ArgIndex<0>>]>;
 
 // Store (consumes matrix value): (matrix, ptr, stride) -> void
 class THMatrix_Internal_Store
     : DefaultAttrsIntrinsic<[],
                             [llvm_any_ty, llvm_ptr_ty, llvm_anyint_ty],
-                            [NoCapture<ArgIndex<1>>]>;
+                            [IntrWriteMem, IntrArgMemOnly,
+                             NoCapture<ArgIndex<1>>]>;
 
-// Store whole-register (consumes matrix value): (matrix, ptr) -> void
+// Store whole-register (consumes matrix value): (matrix, ptr, stride) -> void
 class THMatrix_Internal_StoreWhole
     : DefaultAttrsIntrinsic<[],
-                            [llvm_any_ty, llvm_ptr_ty],
-                            [NoCapture<ArgIndex<1>>]>;
+                            [llvm_any_ty, llvm_ptr_ty, llvm_anyint_ty],
+                            [IntrWriteMem, IntrArgMemOnly,
+                             NoCapture<ArgIndex<1>>]>;
 
 // Zero (produces matrix value): () -> matrix
 class THMatrix_Internal_Zero

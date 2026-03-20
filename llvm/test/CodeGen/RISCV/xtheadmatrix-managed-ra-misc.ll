@@ -16,10 +16,10 @@ define void @test_row_slide(ptr %src, ptr %dst) {
 ; CHECK:        th.mrslidedown
 ; CHECK:        th.msme32
 ; CHECK:        ret
-  %v = call target("riscv.matrix") @llvm.riscv.th.mlme.internal32.triscv.matrixt(ptr %src)
+  %v = call target("riscv.matrix") @llvm.riscv.th.mlme.internal32.triscv.matrixt.i64(ptr %src, i64 0)
   %slid = call target("riscv.matrix") @llvm.riscv.th.mrslidedown.internal.triscv.matrixt.triscv.matrixt.i64(
       target("riscv.matrix") %v, i64 2)
-  call void @llvm.riscv.th.msme.internal32.triscv.matrixt(target("riscv.matrix") %slid, ptr %dst)
+  call void @llvm.riscv.th.msme.internal32.triscv.matrixt.i64(target("riscv.matrix") %slid, ptr %dst, i64 0)
   ret void
 }
 
@@ -32,10 +32,10 @@ define void @test_row_broadcast(ptr %src, ptr %dst) {
 ; CHECK:        th.mrbca.mv.i
 ; CHECK:        th.msme32
 ; CHECK:        ret
-  %v = call target("riscv.matrix") @llvm.riscv.th.mlme.internal32.triscv.matrixt(ptr %src)
+  %v = call target("riscv.matrix") @llvm.riscv.th.mlme.internal32.triscv.matrixt.i64(ptr %src, i64 0)
   %bcast = call target("riscv.matrix") @llvm.riscv.th.mrbca.mv.i.internal.triscv.matrixt.triscv.matrixt.i64(
       target("riscv.matrix") %v, i64 1)
-  call void @llvm.riscv.th.msme.internal32.triscv.matrixt(target("riscv.matrix") %bcast, ptr %dst)
+  call void @llvm.riscv.th.msme.internal32.triscv.matrixt.i64(target("riscv.matrix") %bcast, ptr %dst, i64 0)
   ret void
 }
 
@@ -47,7 +47,7 @@ define i64 @test_mmov_to_gpr(ptr %src) {
 ; CHECK:        th.mlme32
 ; CHECK:        th.mmovw.x.m
 ; CHECK:        ret
-  %v = call target("riscv.matrix") @llvm.riscv.th.mlme.internal32.triscv.matrixt(ptr %src)
+  %v = call target("riscv.matrix") @llvm.riscv.th.mlme.internal32.triscv.matrixt.i64(ptr %src, i64 0)
   %elem = call i64 @llvm.riscv.th.mmovw.x.m.internal.i64.triscv.matrixt(
       target("riscv.matrix") %v, i64 0)
   ret i64 %elem
@@ -62,10 +62,10 @@ define void @test_mmov_from_gpr(ptr %src, ptr %dst, i64 %val) {
 ; CHECK:        th.mmovw.m.x
 ; CHECK:        th.msme32
 ; CHECK:        ret
-  %v = call target("riscv.matrix") @llvm.riscv.th.mlme.internal32.triscv.matrixt(ptr %src)
+  %v = call target("riscv.matrix") @llvm.riscv.th.mlme.internal32.triscv.matrixt.i64(ptr %src, i64 0)
   %modified = call target("riscv.matrix") @llvm.riscv.th.mmovw.m.x.internal.triscv.matrixt.i64(
       target("riscv.matrix") %v, i64 %val, i64 0)
-  call void @llvm.riscv.th.msme.internal32.triscv.matrixt(target("riscv.matrix") %modified, ptr %dst)
+  call void @llvm.riscv.th.msme.internal32.triscv.matrixt.i64(target("riscv.matrix") %modified, ptr %dst, i64 0)
   ret void
 }
 
@@ -78,10 +78,10 @@ define void @test_dup(ptr %src, ptr %dst, i64 %val) {
 ; CHECK:        th.mdupw.m.x
 ; CHECK:        th.msme32
 ; CHECK:        ret
-  %v = call target("riscv.matrix") @llvm.riscv.th.mlme.internal32.triscv.matrixt(ptr %src)
+  %v = call target("riscv.matrix") @llvm.riscv.th.mlme.internal32.triscv.matrixt.i64(ptr %src, i64 0)
   %duped = call target("riscv.matrix") @llvm.riscv.th.mdupw.m.x.internal.triscv.matrixt.i64(
       target("riscv.matrix") %v, i64 %val)
-  call void @llvm.riscv.th.msme.internal32.triscv.matrixt(target("riscv.matrix") %duped, ptr %dst)
+  call void @llvm.riscv.th.msme.internal32.triscv.matrixt.i64(target("riscv.matrix") %duped, ptr %dst, i64 0)
   ret void
 }
 
@@ -130,8 +130,8 @@ declare void @llvm.riscv.th.msettilek.i64(i64)
 declare void @llvm.riscv.th.msettilen.i64(i64)
 
 ; Whole-register load/store
-declare target("riscv.matrix") @llvm.riscv.th.mlme.internal32.triscv.matrixt(ptr)
-declare void @llvm.riscv.th.msme.internal32.triscv.matrixt(target("riscv.matrix"), ptr)
+declare target("riscv.matrix") @llvm.riscv.th.mlme.internal32.triscv.matrixt.i64(ptr, i64)
+declare void @llvm.riscv.th.msme.internal32.triscv.matrixt.i64(target("riscv.matrix"), ptr, i64)
 
 ; Strided load/store
 declare target("riscv.matrix") @llvm.riscv.th.mlce.internal32.triscv.matrixt.i64(ptr, i64)

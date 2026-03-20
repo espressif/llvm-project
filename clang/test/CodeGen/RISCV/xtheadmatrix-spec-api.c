@@ -50,7 +50,7 @@ void test_int8_matmul(int8_t *a, int8_t *b, int32_t *c, long stride,
     mint8_t  ta = __riscv_th_mld_a_i8(a, stride, m, k);
     mint8_t  tb = __riscv_th_mld_b_i8(b, stride, k, n);
     mint32_t tc = __riscv_th_mld_acc_i32(c, stride, m, n);
-    mint32_t result = __riscv_th_mmaq_ss_w_b(tc, ta, tb, m, k, n);
+    mint32_t result = __riscv_th_mmacc_w_b(tc, ta, tb, m, k, n);
     __riscv_th_mst_i32(c, stride, result, m, n);
 }
 
@@ -94,7 +94,7 @@ void test_fp32_matmul(float *a, float *b, float *c, long stride,
     mfloat32_t ta  = __riscv_th_mld_a_f32(a, stride, m, k);
     mfloat32_t tb  = __riscv_th_mld_b_f32(b, stride, k, n);
     mfloat32_t acc = __riscv_th_mzeros_f32(m, n);
-    mfloat32_t res = __riscv_th_mfmaqa_s(acc, ta, tb, m, k, n);
+    mfloat32_t res = __riscv_th_mfmacc_s(acc, ta, tb, m, k, n);
     __riscv_th_mst_f32(c, stride, res, m, n);
 }
 
@@ -112,7 +112,7 @@ void test_uint8_matmul(uint8_t *a, uint8_t *b, uint32_t *c, long stride,
     muint8_t  ta  = __riscv_th_mld_a_u8(a, stride, m, k);
     muint8_t  tb  = __riscv_th_mld_b_u8(b, stride, k, n);
     muint32_t acc = __riscv_th_mzeros_u32(m, n);
-    muint32_t res = __riscv_th_mmaq_uu_w_b(acc, ta, tb, m, k, n);
+    muint32_t res = __riscv_th_mmaccu_w_b(acc, ta, tb, m, k, n);
     __riscv_th_mst_u32(c, stride, res, m, n);
 }
 
@@ -130,7 +130,7 @@ void test_int16_matmul(int16_t *a, int16_t *b, int64_t *c, long stride,
     mint16_t ta  = __riscv_th_mld_a_i16(a, stride, m, k);
     mint16_t tb  = __riscv_th_mld_b_i16(b, stride, k, n);
     mint64_t acc = __riscv_th_mld_acc_i64(c, stride, m, n);
-    mint64_t res = __riscv_th_mmaq_ss_d_h(acc, ta, tb, m, k, n);
+    mint64_t res = __riscv_th_mmacc_d_h(acc, ta, tb, m, k, n);
     __riscv_th_mst_i64(c, stride, res, m, n);
 }
 
@@ -144,8 +144,8 @@ void test_shorthand(int8_t *a, int8_t *b, int32_t *c, long stride,
     mint8_t  ta  = __riscv_th_mld_a_i8(a, stride, m, k);
     mint8_t  tb  = __riscv_th_mld_b_i8(b, stride, k, n);
     mint32_t acc = __riscv_th_mzeros_i32(m, n);
-    // __riscv_th_mmaq_ss is a shorthand for __riscv_th_mmaq_ss_w_b
-    mint32_t res = __riscv_th_mmaq_ss(acc, ta, tb, m, k, n);
+    // __riscv_th_mmacc is a shorthand for __riscv_th_mmacc_w_b
+    mint32_t res = __riscv_th_mmacc(acc, ta, tb, m, k, n);
     __riscv_th_mst_i32(c, stride, res, m, n);
 }
 
@@ -246,7 +246,7 @@ void test_widen_h_e4(void *a, void *b, uint16_t *c, long stride,
     mint32_t ta  = __riscv_th_mld_a_i32(a, stride, m, k);
     mint32_t tb  = __riscv_th_mld_b_i32(b, stride, k, n);
     mfloat16_t acc = __riscv_th_mzeros_f16(m, n);
-    mfloat16_t res = __riscv_th_mfmaqa_h_e4(acc, ta, tb, m, k, n);
+    mfloat16_t res = __riscv_th_mfmacc_h_e4(acc, ta, tb, m, k, n);
     __riscv_th_mst_f16(c, stride, res, m, n);
 }
 
@@ -260,7 +260,7 @@ void test_widen_h_e5(void *a, void *b, uint16_t *c, long stride,
     mint32_t ta  = __riscv_th_mld_a_i32(a, stride, m, k);
     mint32_t tb  = __riscv_th_mld_b_i32(b, stride, k, n);
     mfloat16_t acc = __riscv_th_mzeros_f16(m, n);
-    mfloat16_t res = __riscv_th_mfmaqa_h_e5(acc, ta, tb, m, k, n);
+    mfloat16_t res = __riscv_th_mfmacc_h_e5(acc, ta, tb, m, k, n);
     __riscv_th_mst_f16(c, stride, res, m, n);
 }
 
@@ -274,7 +274,7 @@ void test_widen_bf16_e4(void *a, void *b, uint16_t *c, long stride,
     mint32_t ta  = __riscv_th_mld_a_i32(a, stride, m, k);
     mint32_t tb  = __riscv_th_mld_b_i32(b, stride, k, n);
     mfloat16_t acc = __riscv_th_mzeros_f16(m, n);
-    mfloat16_t res = __riscv_th_mfmaqa_bf16_e4(acc, ta, tb, m, k, n);
+    mfloat16_t res = __riscv_th_mfmacc_bf16_e4(acc, ta, tb, m, k, n);
     __riscv_th_mst_f16(c, stride, res, m, n);
 }
 
@@ -288,7 +288,7 @@ void test_widen_bf16_e5(void *a, void *b, uint16_t *c, long stride,
     mint32_t ta  = __riscv_th_mld_a_i32(a, stride, m, k);
     mint32_t tb  = __riscv_th_mld_b_i32(b, stride, k, n);
     mfloat16_t acc = __riscv_th_mzeros_f16(m, n);
-    mfloat16_t res = __riscv_th_mfmaqa_bf16_e5(acc, ta, tb, m, k, n);
+    mfloat16_t res = __riscv_th_mfmacc_bf16_e5(acc, ta, tb, m, k, n);
     __riscv_th_mst_f16(c, stride, res, m, n);
 }
 
@@ -302,7 +302,7 @@ void test_widen_s_bf16(void *a, void *b, float *c, long stride,
     mint32_t ta  = __riscv_th_mld_a_i32(a, stride, m, k);
     mint32_t tb  = __riscv_th_mld_b_i32(b, stride, k, n);
     mfloat32_t acc = __riscv_th_mzeros_f32(m, n);
-    mfloat32_t res = __riscv_th_mfmaqa_s_bf16(acc, ta, tb, m, k, n);
+    mfloat32_t res = __riscv_th_mfmacc_s_bf16(acc, ta, tb, m, k, n);
     __riscv_th_mst_f32(c, stride, res, m, n);
 }
 
@@ -316,7 +316,7 @@ void test_widen_s_e4(void *a, void *b, float *c, long stride,
     mint32_t ta  = __riscv_th_mld_a_i32(a, stride, m, k);
     mint32_t tb  = __riscv_th_mld_b_i32(b, stride, k, n);
     mfloat32_t acc = __riscv_th_mzeros_f32(m, n);
-    mfloat32_t res = __riscv_th_mfmaqa_s_e4(acc, ta, tb, m, k, n);
+    mfloat32_t res = __riscv_th_mfmacc_s_e4(acc, ta, tb, m, k, n);
     __riscv_th_mst_f32(c, stride, res, m, n);
 }
 
@@ -330,7 +330,7 @@ void test_widen_s_e5(void *a, void *b, float *c, long stride,
     mint32_t ta  = __riscv_th_mld_a_i32(a, stride, m, k);
     mint32_t tb  = __riscv_th_mld_b_i32(b, stride, k, n);
     mfloat32_t acc = __riscv_th_mzeros_f32(m, n);
-    mfloat32_t res = __riscv_th_mfmaqa_s_e5(acc, ta, tb, m, k, n);
+    mfloat32_t res = __riscv_th_mfmacc_s_e5(acc, ta, tb, m, k, n);
     __riscv_th_mst_f32(c, stride, res, m, n);
 }
 
@@ -344,7 +344,7 @@ void test_widen_s_tf32(void *a, void *b, float *c, long stride,
     mint32_t ta  = __riscv_th_mld_a_i32(a, stride, m, k);
     mint32_t tb  = __riscv_th_mld_b_i32(b, stride, k, n);
     mfloat32_t acc = __riscv_th_mzeros_f32(m, n);
-    mfloat32_t res = __riscv_th_mfmaqa_s_tf32(acc, ta, tb, m, k, n);
+    mfloat32_t res = __riscv_th_mfmacc_s_tf32(acc, ta, tb, m, k, n);
     __riscv_th_mst_f32(c, stride, res, m, n);
 }
 
@@ -374,7 +374,7 @@ void test_native_fp16_matmul(uint16_t *a_ptr, uint16_t *b_ptr,
     mfloat16_t acc = __riscv_th_mld_acc_f16(c_ptr, stride, m, n);
     mfloat16x2_t b_pair = __riscv_th_mset_f16(
         __builtin_riscv_th_mundef_f16x2(), 0, tb);
-    mfloat16_t res = __riscv_th_mfmaqa_h_x2(acc, ta, b_pair, m, k, n);
+    mfloat16_t res = __riscv_th_mfmacc_h_x2(acc, ta, b_pair, m, k, n);
     __riscv_th_mst_f16(c_ptr, stride, res, m, n);
 }
 
@@ -388,7 +388,7 @@ void test_native_fp64_matmul(double *a_ptr, double *b_ptr,
     mfloat64_t c0 = __riscv_th_mld_acc_f64(c_ptr, stride, m, n);
     mfloat64x2_t c_pair = __riscv_th_mset_f64(
         __builtin_riscv_th_mundef_f64x2(), 0, c0);
-    mfloat64x2_t res_pair = __riscv_th_mfmaqa_d_x2(c_pair, ta, tb, m, k, n);
+    mfloat64x2_t res_pair = __riscv_th_mfmacc_d_x2(c_pair, ta, tb, m, k, n);
     mfloat64_t res = __riscv_th_mget_f64(res_pair, 0);
     __riscv_th_mst_f64(c_ptr, stride, res, m, n);
 }

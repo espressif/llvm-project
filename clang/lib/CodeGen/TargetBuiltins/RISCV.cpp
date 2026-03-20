@@ -1255,6 +1255,96 @@ Value *CodeGenFunction::EmitRISCVBuiltinExpr(unsigned BuiltinID,
       default: llvm_unreachable("bad EEW");
       }
     };
+    auto GetMlateID = [](unsigned EEW) -> llvm::Intrinsic::ID {
+      switch (EEW) {
+      case 8:  return llvm::Intrinsic::riscv_th_mlate_internal8;
+      case 16: return llvm::Intrinsic::riscv_th_mlate_internal16;
+      case 32: return llvm::Intrinsic::riscv_th_mlate_internal32;
+      case 64: return llvm::Intrinsic::riscv_th_mlate_internal64;
+      default: llvm_unreachable("bad EEW");
+      }
+    };
+    auto GetMlbteID = [](unsigned EEW) -> llvm::Intrinsic::ID {
+      switch (EEW) {
+      case 8:  return llvm::Intrinsic::riscv_th_mlbte_internal8;
+      case 16: return llvm::Intrinsic::riscv_th_mlbte_internal16;
+      case 32: return llvm::Intrinsic::riscv_th_mlbte_internal32;
+      case 64: return llvm::Intrinsic::riscv_th_mlbte_internal64;
+      default: llvm_unreachable("bad EEW");
+      }
+    };
+    auto GetMlcteID = [](unsigned EEW) -> llvm::Intrinsic::ID {
+      switch (EEW) {
+      case 8:  return llvm::Intrinsic::riscv_th_mlcte_internal8;
+      case 16: return llvm::Intrinsic::riscv_th_mlcte_internal16;
+      case 32: return llvm::Intrinsic::riscv_th_mlcte_internal32;
+      case 64: return llvm::Intrinsic::riscv_th_mlcte_internal64;
+      default: llvm_unreachable("bad EEW");
+      }
+    };
+    auto GetMsaeID = [](unsigned EEW) -> llvm::Intrinsic::ID {
+      switch (EEW) {
+      case 8:  return llvm::Intrinsic::riscv_th_msae_internal8;
+      case 16: return llvm::Intrinsic::riscv_th_msae_internal16;
+      case 32: return llvm::Intrinsic::riscv_th_msae_internal32;
+      case 64: return llvm::Intrinsic::riscv_th_msae_internal64;
+      default: llvm_unreachable("bad EEW");
+      }
+    };
+    auto GetMsbeID = [](unsigned EEW) -> llvm::Intrinsic::ID {
+      switch (EEW) {
+      case 8:  return llvm::Intrinsic::riscv_th_msbe_internal8;
+      case 16: return llvm::Intrinsic::riscv_th_msbe_internal16;
+      case 32: return llvm::Intrinsic::riscv_th_msbe_internal32;
+      case 64: return llvm::Intrinsic::riscv_th_msbe_internal64;
+      default: llvm_unreachable("bad EEW");
+      }
+    };
+    auto GetMsateID = [](unsigned EEW) -> llvm::Intrinsic::ID {
+      switch (EEW) {
+      case 8:  return llvm::Intrinsic::riscv_th_msate_internal8;
+      case 16: return llvm::Intrinsic::riscv_th_msate_internal16;
+      case 32: return llvm::Intrinsic::riscv_th_msate_internal32;
+      case 64: return llvm::Intrinsic::riscv_th_msate_internal64;
+      default: llvm_unreachable("bad EEW");
+      }
+    };
+    auto GetMsbteID = [](unsigned EEW) -> llvm::Intrinsic::ID {
+      switch (EEW) {
+      case 8:  return llvm::Intrinsic::riscv_th_msbte_internal8;
+      case 16: return llvm::Intrinsic::riscv_th_msbte_internal16;
+      case 32: return llvm::Intrinsic::riscv_th_msbte_internal32;
+      case 64: return llvm::Intrinsic::riscv_th_msbte_internal64;
+      default: llvm_unreachable("bad EEW");
+      }
+    };
+    auto GetMscteID = [](unsigned EEW) -> llvm::Intrinsic::ID {
+      switch (EEW) {
+      case 8:  return llvm::Intrinsic::riscv_th_mscte_internal8;
+      case 16: return llvm::Intrinsic::riscv_th_mscte_internal16;
+      case 32: return llvm::Intrinsic::riscv_th_mscte_internal32;
+      case 64: return llvm::Intrinsic::riscv_th_mscte_internal64;
+      default: llvm_unreachable("bad EEW");
+      }
+    };
+    auto GetMlmeID = [](unsigned EEW) -> llvm::Intrinsic::ID {
+      switch (EEW) {
+      case 8:  return llvm::Intrinsic::riscv_th_mlme_internal8;
+      case 16: return llvm::Intrinsic::riscv_th_mlme_internal16;
+      case 32: return llvm::Intrinsic::riscv_th_mlme_internal32;
+      case 64: return llvm::Intrinsic::riscv_th_mlme_internal64;
+      default: llvm_unreachable("bad EEW");
+      }
+    };
+    auto GetMsmeID = [](unsigned EEW) -> llvm::Intrinsic::ID {
+      switch (EEW) {
+      case 8:  return llvm::Intrinsic::riscv_th_msme_internal8;
+      case 16: return llvm::Intrinsic::riscv_th_msme_internal16;
+      case 32: return llvm::Intrinsic::riscv_th_msme_internal32;
+      case 64: return llvm::Intrinsic::riscv_th_msme_internal64;
+      default: llvm_unreachable("bad EEW");
+      }
+    };
 
     // Helper: get EEW from builtin suffix pattern (i8/u8/f16 -> 8/8/16 etc.)
     // We use a lambda that takes the builtin ID and base IDs for each EEW.
@@ -1278,6 +1368,64 @@ Value *CodeGenFunction::EmitRISCVBuiltinExpr(unsigned BuiltinID,
     auto SpecAPIStore = [&](unsigned EEW) -> llvm::Value * {
       SetM(Ops[3]); SetN(Ops[4]);
       llvm::Function *F = CGM.getIntrinsic(GetMsceID(EEW), {MatTy, Ops[1]->getType()});
+      return Builder.CreateCall(F, {Ops[2], Ops[0], Ops[1]});
+    };
+    // Store A: (base, stride, val, m, k) -> void
+    auto SpecAPIStoreA = [&](unsigned EEW) -> llvm::Value * {
+      SetM(Ops[3]); SetK(Ops[4]);
+      llvm::Function *F = CGM.getIntrinsic(GetMsaeID(EEW), {MatTy, Ops[1]->getType()});
+      return Builder.CreateCall(F, {Ops[2], Ops[0], Ops[1]});
+    };
+    // Store B: (base, stride, val, k, n) -> void
+    auto SpecAPIStoreB = [&](unsigned EEW) -> llvm::Value * {
+      SetK(Ops[3]); SetN(Ops[4]);
+      llvm::Function *F = CGM.getIntrinsic(GetMsbeID(EEW), {MatTy, Ops[1]->getType()});
+      return Builder.CreateCall(F, {Ops[2], Ops[0], Ops[1]});
+    };
+    // Transposed load A: (base, stride, m, k) -> matrix
+    auto SpecAPILoadAT = [&](unsigned EEW) -> llvm::Value * {
+      SetM(Ops[2]); SetK(Ops[3]);
+      llvm::Function *F = CGM.getIntrinsic(GetMlateID(EEW), {MatTy, Ops[1]->getType()});
+      return Builder.CreateCall(F, {Ops[0], Ops[1]});
+    };
+    // Transposed load B: (base, stride, k, n) -> matrix
+    auto SpecAPILoadBT = [&](unsigned EEW) -> llvm::Value * {
+      SetK(Ops[2]); SetN(Ops[3]);
+      llvm::Function *F = CGM.getIntrinsic(GetMlbteID(EEW), {MatTy, Ops[1]->getType()});
+      return Builder.CreateCall(F, {Ops[0], Ops[1]});
+    };
+    // Transposed load C: (base, stride, m, n) -> matrix
+    auto SpecAPILoadAccT = [&](unsigned EEW) -> llvm::Value * {
+      SetM(Ops[2]); SetN(Ops[3]);
+      llvm::Function *F = CGM.getIntrinsic(GetMlcteID(EEW), {MatTy, Ops[1]->getType()});
+      return Builder.CreateCall(F, {Ops[0], Ops[1]});
+    };
+    // Transposed store A: (base, stride, val, m, k) -> void
+    auto SpecAPIStoreAT = [&](unsigned EEW) -> llvm::Value * {
+      SetM(Ops[3]); SetK(Ops[4]);
+      llvm::Function *F = CGM.getIntrinsic(GetMsateID(EEW), {MatTy, Ops[1]->getType()});
+      return Builder.CreateCall(F, {Ops[2], Ops[0], Ops[1]});
+    };
+    // Transposed store B: (base, stride, val, k, n) -> void
+    auto SpecAPIStoreBT = [&](unsigned EEW) -> llvm::Value * {
+      SetK(Ops[3]); SetN(Ops[4]);
+      llvm::Function *F = CGM.getIntrinsic(GetMsbteID(EEW), {MatTy, Ops[1]->getType()});
+      return Builder.CreateCall(F, {Ops[2], Ops[0], Ops[1]});
+    };
+    // Transposed store C: (base, stride, val, m, n) -> void
+    auto SpecAPIStoreCT = [&](unsigned EEW) -> llvm::Value * {
+      SetM(Ops[3]); SetN(Ops[4]);
+      llvm::Function *F = CGM.getIntrinsic(GetMscteID(EEW), {MatTy, Ops[1]->getType()});
+      return Builder.CreateCall(F, {Ops[2], Ops[0], Ops[1]});
+    };
+    // Whole-register load: (base, stride) -> matrix  -- no config calls
+    auto SpecAPILoadWhole = [&](unsigned EEW) -> llvm::Value * {
+      llvm::Function *F = CGM.getIntrinsic(GetMlmeID(EEW), {MatTy, Ops[1]->getType()});
+      return Builder.CreateCall(F, {Ops[0], Ops[1]});
+    };
+    // Whole-register store: (base, stride, val) -> void  -- no config calls
+    auto SpecAPIStoreWhole = [&](unsigned EEW) -> llvm::Value * {
+      llvm::Function *F = CGM.getIntrinsic(GetMsmeID(EEW), {MatTy, Ops[1]->getType()});
       return Builder.CreateCall(F, {Ops[2], Ops[0], Ops[1]});
     };
     // Matmul helper: (acc, a, b, m, k, n) -> acc
@@ -1388,6 +1536,126 @@ Value *CodeGenFunction::EmitRISCVBuiltinExpr(unsigned BuiltinID,
     case RISCV::BI__builtin_riscv_th_mst_spec_i64:
     case RISCV::BI__builtin_riscv_th_mst_spec_u64:
     case RISCV::BI__builtin_riscv_th_mst_spec_f64: return SpecAPIStore(64);
+    // Store A (msae): (base, stride, val, m, k) -> void
+    case RISCV::BI__builtin_riscv_th_mst_a_spec_i8:
+    case RISCV::BI__builtin_riscv_th_mst_a_spec_u8:  return SpecAPIStoreA(8);
+    case RISCV::BI__builtin_riscv_th_mst_a_spec_i16:
+    case RISCV::BI__builtin_riscv_th_mst_a_spec_u16:
+    case RISCV::BI__builtin_riscv_th_mst_a_spec_f16: return SpecAPIStoreA(16);
+    case RISCV::BI__builtin_riscv_th_mst_a_spec_i32:
+    case RISCV::BI__builtin_riscv_th_mst_a_spec_u32:
+    case RISCV::BI__builtin_riscv_th_mst_a_spec_f32: return SpecAPIStoreA(32);
+    case RISCV::BI__builtin_riscv_th_mst_a_spec_i64:
+    case RISCV::BI__builtin_riscv_th_mst_a_spec_u64:
+    case RISCV::BI__builtin_riscv_th_mst_a_spec_f64: return SpecAPIStoreA(64);
+    // Store B (msbe): (base, stride, val, k, n) -> void
+    case RISCV::BI__builtin_riscv_th_mst_b_spec_i8:
+    case RISCV::BI__builtin_riscv_th_mst_b_spec_u8:  return SpecAPIStoreB(8);
+    case RISCV::BI__builtin_riscv_th_mst_b_spec_i16:
+    case RISCV::BI__builtin_riscv_th_mst_b_spec_u16:
+    case RISCV::BI__builtin_riscv_th_mst_b_spec_f16: return SpecAPIStoreB(16);
+    case RISCV::BI__builtin_riscv_th_mst_b_spec_i32:
+    case RISCV::BI__builtin_riscv_th_mst_b_spec_u32:
+    case RISCV::BI__builtin_riscv_th_mst_b_spec_f32: return SpecAPIStoreB(32);
+    case RISCV::BI__builtin_riscv_th_mst_b_spec_i64:
+    case RISCV::BI__builtin_riscv_th_mst_b_spec_u64:
+    case RISCV::BI__builtin_riscv_th_mst_b_spec_f64: return SpecAPIStoreB(64);
+    // Transposed load A (mlate): (base, stride, m, k) -> matrix
+    case RISCV::BI__builtin_riscv_th_mld_at_spec_i8:
+    case RISCV::BI__builtin_riscv_th_mld_at_spec_u8:  return SpecAPILoadAT(8);
+    case RISCV::BI__builtin_riscv_th_mld_at_spec_i16:
+    case RISCV::BI__builtin_riscv_th_mld_at_spec_u16:
+    case RISCV::BI__builtin_riscv_th_mld_at_spec_f16: return SpecAPILoadAT(16);
+    case RISCV::BI__builtin_riscv_th_mld_at_spec_i32:
+    case RISCV::BI__builtin_riscv_th_mld_at_spec_u32:
+    case RISCV::BI__builtin_riscv_th_mld_at_spec_f32: return SpecAPILoadAT(32);
+    case RISCV::BI__builtin_riscv_th_mld_at_spec_i64:
+    case RISCV::BI__builtin_riscv_th_mld_at_spec_u64:
+    case RISCV::BI__builtin_riscv_th_mld_at_spec_f64: return SpecAPILoadAT(64);
+    // Transposed load B (mlbte): (base, stride, k, n) -> matrix
+    case RISCV::BI__builtin_riscv_th_mld_bt_spec_i8:
+    case RISCV::BI__builtin_riscv_th_mld_bt_spec_u8:  return SpecAPILoadBT(8);
+    case RISCV::BI__builtin_riscv_th_mld_bt_spec_i16:
+    case RISCV::BI__builtin_riscv_th_mld_bt_spec_u16:
+    case RISCV::BI__builtin_riscv_th_mld_bt_spec_f16: return SpecAPILoadBT(16);
+    case RISCV::BI__builtin_riscv_th_mld_bt_spec_i32:
+    case RISCV::BI__builtin_riscv_th_mld_bt_spec_u32:
+    case RISCV::BI__builtin_riscv_th_mld_bt_spec_f32: return SpecAPILoadBT(32);
+    case RISCV::BI__builtin_riscv_th_mld_bt_spec_i64:
+    case RISCV::BI__builtin_riscv_th_mld_bt_spec_u64:
+    case RISCV::BI__builtin_riscv_th_mld_bt_spec_f64: return SpecAPILoadBT(64);
+    // Transposed load C (mlcte): (base, stride, m, n) -> matrix
+    case RISCV::BI__builtin_riscv_th_mld_ct_spec_i8:
+    case RISCV::BI__builtin_riscv_th_mld_ct_spec_u8:  return SpecAPILoadAccT(8);
+    case RISCV::BI__builtin_riscv_th_mld_ct_spec_i16:
+    case RISCV::BI__builtin_riscv_th_mld_ct_spec_u16:
+    case RISCV::BI__builtin_riscv_th_mld_ct_spec_f16: return SpecAPILoadAccT(16);
+    case RISCV::BI__builtin_riscv_th_mld_ct_spec_i32:
+    case RISCV::BI__builtin_riscv_th_mld_ct_spec_u32:
+    case RISCV::BI__builtin_riscv_th_mld_ct_spec_f32: return SpecAPILoadAccT(32);
+    case RISCV::BI__builtin_riscv_th_mld_ct_spec_i64:
+    case RISCV::BI__builtin_riscv_th_mld_ct_spec_u64:
+    case RISCV::BI__builtin_riscv_th_mld_ct_spec_f64: return SpecAPILoadAccT(64);
+    // Transposed store A (msate): (base, stride, val, m, k) -> void
+    case RISCV::BI__builtin_riscv_th_mst_at_spec_i8:
+    case RISCV::BI__builtin_riscv_th_mst_at_spec_u8:  return SpecAPIStoreAT(8);
+    case RISCV::BI__builtin_riscv_th_mst_at_spec_i16:
+    case RISCV::BI__builtin_riscv_th_mst_at_spec_u16:
+    case RISCV::BI__builtin_riscv_th_mst_at_spec_f16: return SpecAPIStoreAT(16);
+    case RISCV::BI__builtin_riscv_th_mst_at_spec_i32:
+    case RISCV::BI__builtin_riscv_th_mst_at_spec_u32:
+    case RISCV::BI__builtin_riscv_th_mst_at_spec_f32: return SpecAPIStoreAT(32);
+    case RISCV::BI__builtin_riscv_th_mst_at_spec_i64:
+    case RISCV::BI__builtin_riscv_th_mst_at_spec_u64:
+    case RISCV::BI__builtin_riscv_th_mst_at_spec_f64: return SpecAPIStoreAT(64);
+    // Transposed store B (msbte): (base, stride, val, k, n) -> void
+    case RISCV::BI__builtin_riscv_th_mst_bt_spec_i8:
+    case RISCV::BI__builtin_riscv_th_mst_bt_spec_u8:  return SpecAPIStoreBT(8);
+    case RISCV::BI__builtin_riscv_th_mst_bt_spec_i16:
+    case RISCV::BI__builtin_riscv_th_mst_bt_spec_u16:
+    case RISCV::BI__builtin_riscv_th_mst_bt_spec_f16: return SpecAPIStoreBT(16);
+    case RISCV::BI__builtin_riscv_th_mst_bt_spec_i32:
+    case RISCV::BI__builtin_riscv_th_mst_bt_spec_u32:
+    case RISCV::BI__builtin_riscv_th_mst_bt_spec_f32: return SpecAPIStoreBT(32);
+    case RISCV::BI__builtin_riscv_th_mst_bt_spec_i64:
+    case RISCV::BI__builtin_riscv_th_mst_bt_spec_u64:
+    case RISCV::BI__builtin_riscv_th_mst_bt_spec_f64: return SpecAPIStoreBT(64);
+    // Transposed store C (mscte): (base, stride, val, m, n) -> void
+    case RISCV::BI__builtin_riscv_th_mst_ct_spec_i8:
+    case RISCV::BI__builtin_riscv_th_mst_ct_spec_u8:  return SpecAPIStoreCT(8);
+    case RISCV::BI__builtin_riscv_th_mst_ct_spec_i16:
+    case RISCV::BI__builtin_riscv_th_mst_ct_spec_u16:
+    case RISCV::BI__builtin_riscv_th_mst_ct_spec_f16: return SpecAPIStoreCT(16);
+    case RISCV::BI__builtin_riscv_th_mst_ct_spec_i32:
+    case RISCV::BI__builtin_riscv_th_mst_ct_spec_u32:
+    case RISCV::BI__builtin_riscv_th_mst_ct_spec_f32: return SpecAPIStoreCT(32);
+    case RISCV::BI__builtin_riscv_th_mst_ct_spec_i64:
+    case RISCV::BI__builtin_riscv_th_mst_ct_spec_u64:
+    case RISCV::BI__builtin_riscv_th_mst_ct_spec_f64: return SpecAPIStoreCT(64);
+    // Whole-register load (mlme): (base, stride) -> matrix
+    case RISCV::BI__builtin_riscv_th_mld_m_spec_i8:
+    case RISCV::BI__builtin_riscv_th_mld_m_spec_u8:  return SpecAPILoadWhole(8);
+    case RISCV::BI__builtin_riscv_th_mld_m_spec_i16:
+    case RISCV::BI__builtin_riscv_th_mld_m_spec_u16:
+    case RISCV::BI__builtin_riscv_th_mld_m_spec_f16: return SpecAPILoadWhole(16);
+    case RISCV::BI__builtin_riscv_th_mld_m_spec_i32:
+    case RISCV::BI__builtin_riscv_th_mld_m_spec_u32:
+    case RISCV::BI__builtin_riscv_th_mld_m_spec_f32: return SpecAPILoadWhole(32);
+    case RISCV::BI__builtin_riscv_th_mld_m_spec_i64:
+    case RISCV::BI__builtin_riscv_th_mld_m_spec_u64:
+    case RISCV::BI__builtin_riscv_th_mld_m_spec_f64: return SpecAPILoadWhole(64);
+    // Whole-register store (msme): (base, stride, val) -> void
+    case RISCV::BI__builtin_riscv_th_mst_m_spec_i8:
+    case RISCV::BI__builtin_riscv_th_mst_m_spec_u8:  return SpecAPIStoreWhole(8);
+    case RISCV::BI__builtin_riscv_th_mst_m_spec_i16:
+    case RISCV::BI__builtin_riscv_th_mst_m_spec_u16:
+    case RISCV::BI__builtin_riscv_th_mst_m_spec_f16: return SpecAPIStoreWhole(16);
+    case RISCV::BI__builtin_riscv_th_mst_m_spec_i32:
+    case RISCV::BI__builtin_riscv_th_mst_m_spec_u32:
+    case RISCV::BI__builtin_riscv_th_mst_m_spec_f32: return SpecAPIStoreWhole(32);
+    case RISCV::BI__builtin_riscv_th_mst_m_spec_i64:
+    case RISCV::BI__builtin_riscv_th_mst_m_spec_u64:
+    case RISCV::BI__builtin_riscv_th_mst_m_spec_f64: return SpecAPIStoreWhole(64);
     // INT matmul: (acc, a, b, m, k, n) -> acc
     case RISCV::BI__builtin_riscv_th_mmaqa_spec_ss_w_b:
       return SpecAPIMatmul(llvm::Intrinsic::riscv_th_mmacc_w_b_internal);

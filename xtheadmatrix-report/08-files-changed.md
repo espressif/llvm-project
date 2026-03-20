@@ -35,17 +35,22 @@
 | File | Purpose |
 |------|---------|
 | `clang/test/CodeGen/RISCV/xtheadmatrix-spec-api.c` | 23 Spec-API test cases |
+| `clang/test/CodeGen/RISCV/xtheadmatrix-spec-api-full.c` | Extended Spec-API coverage |
+| `clang/test/CodeGen/RISCV/xtheadmatrix-api-coverage.c` | Full API function coverage |
+| `clang/test/CodeGen/RISCV/xtheadmatrix-verification-fixes.c` | Verification and bug fix tests |
 | `clang/test/CodeGen/RISCV/xtheadmatrix-x2-types.c` | 15 x2 type test cases (O0+O2) |
 | `clang/test/CodeGen/RISCV/xtheadmatrix-spec-api-example.c` | End-to-end widening matmul example |
 | `clang/test/CodeGen/RISCV/xtheadmatrix-inline-asm.c` | Inline asm register constraint test |
+| `clang/test/CodeGen/RISCV/xtheadmatrix-zmpanel-api.c` | Zmpanel C header API test |
 | `clang/test/CodeGen/RISCV/thead-matrix-builtin-types.c` | Built-in type compilation test |
 | `clang/test/CodeGen/RISCV/thead-matrix-types-extended.c` | Extended type test |
 | `llvm/test/CodeGen/RISCV/xtheadmatrix-managed-ra.ll` | ManagedRA ISel test |
+| `llvm/test/CodeGen/RISCV/xtheadmatrix-managed-ra-full.ll` | Comprehensive ManagedRA test |
 | `llvm/test/CodeGen/RISCV/xtheadmatrix-managed-ra-spill.ll` | Spill/reload test |
 | `llvm/test/CodeGen/RISCV/xtheadmatrix-managed-ra-regclass.ll` | Register class constraint test |
 | `llvm/test/CodeGen/RISCV/xtheadmatrix-managed-ra-misc.ll` | Misc ManagedRA operations |
 | `llvm/test/CodeGen/RISCV/xtheadmatrix-lower-O0.ll` | -O0 lowering test |
-| `llvm/test/MC/RISCV/xtheadmatrix-valid.s` | 227 instruction encoding tests (1154 lines) |
+| `llvm/test/MC/RISCV/xtheadmatrix-valid.s` | 227 instruction encoding tests |
 | `llvm/test/MC/RISCV/xtheadmatrix-invalid.s` | Invalid operand tests |
 | `llvm/test/MC/RISCV/xtheadmatrix-csr.s` | 13 CSR resolution tests |
 | `llvm/test/MC/RISCV/xtheadzmpanel-valid.s` | 30 Zmpanel instruction encoding tests |
@@ -96,10 +101,10 @@
 - `mget` codegen: extractvalue+select; `mset` codegen: insertvalue+select
 - Replaced mundef stubs in `thead_matrix.h` with real builtin calls
 - Added 7 x2 matmul wrapper functions:
-  - `__THEAD_SPEC_MMAQA_X2` macro: 4 INT16→INT64 x2 dest variants (ss/uu/us/su)
-  - `__riscv_th_mfmaqa_h_x2`: FP16 x2 B operand
-  - `__riscv_th_mfmaqa_d_x2`: FP64 x2 dest
-  - `__riscv_th_mfmaqa_d_s_x2`: FP64 widening x2 dest
+  - `__THEAD_SPEC_MMACC_X2` macro: 4 INT16→INT64 x2 dest variants (signed/uu/us/su)
+  - `__riscv_th_mfmacc_h_x2`: FP16 x2 B operand
+  - `__riscv_th_mfmacc_d_x2`: FP64 x2 dest
+  - `__riscv_th_mfmacc_d_s_x2`: FP64 widening x2 dest
 - New `xtheadmatrix-x2-types.c` test (15 test cases at O0+O2)
 - 3 new tests in `xtheadmatrix-spec-api.c` (mget/mset, FP16 x2, FP64 x2)
 
@@ -110,3 +115,30 @@
 - No pseudos needed — fire-and-forget instructions map directly to real opcodes
 - 30 intrinsics, 30 builtins, 30+ C API wrapper functions
 - 5 new test files (assembly, intrinsics, builtins, inline asm, header API)
+
+### Golden spec cross-reference audit (2026-03-19)
+- Updated `xtheadmatrix-doc/RISCVXTHeadMatrix.md`: expanded "Differences from Spec
+  Intrinsic API" section with full naming mapping table, signature differences
+  (matmul dim order, EW CSR behavior, mzero params, CSR enum), and not-implemented
+  features list. Added verification history entry #7
+- Updated `xtheadmatrix-report/13-verification-and-fixes.md`: added Verification
+  Round 9 findings, expanded "Differences from Spec Intrinsic API" with complete
+  missing-names table, structural differences, behavioral notes, and spec internal
+  inconsistencies
+- Updated `xtheadmatrix-report/00-overview.md`: added verification round 8+9 to
+  history, added limitations 9-11 (API naming gaps, EW CSR dependency, missing features)
+- Updated `xtheadmatrix-report/12-intrinsic-api.md`: added behavioral notes (EW CSR
+  state, matmul dim order), differences from spec section, updated limitations
+- No code changes — documentation only
+
+### Full independent re-verification (2026-03-20)
+- Five parallel verification agents checked: instruction encodings (40+), register
+  allocation constraints, Zmpanel (30 instr + 18 CSRs), stream load/store omission,
+  and C API naming against spec
+- **No new bugs found** across all verification areas
+- Updated all report files and doc with round 10 findings
+- Fixed: test file listings (added 5 previously unlisted test files), Zmpanel CSR
+  count (20→18), `12-intrinsic-api.md` overview (clarified RVM 0.6 mnemonic basis),
+  doc x2 example comment, doc Example 7 (replaced DirectReg builtins with ManagedRA),
+  doc spec errata count (3→4)
+- No code changes — documentation only

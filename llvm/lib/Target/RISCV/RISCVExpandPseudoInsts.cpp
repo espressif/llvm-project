@@ -202,7 +202,7 @@ bool RISCVExpandPseudo::expandMI(MachineBasicBlock &MBB,
     return expandPseudoReadVLENBViaVSETVLIX0(MBB, MBBI);
   case RISCV::PTH_MATRIX_SPILL: {
     // Expand spill: PTH_MATRIX_SPILL $src, $base
-    // → TH_MSME_E8 $src, $base
+    // → TH_MSME_E8 $src, $base, x0  (stride=0)
     // eliminateFrameIndex has already materialized the full address into $base.
     MachineInstr &MI = *MBBI;
     DebugLoc DL = MI.getDebugLoc();
@@ -210,20 +210,22 @@ bool RISCVExpandPseudo::expandMI(MachineBasicBlock &MBB,
     Register BaseReg = MI.getOperand(1).getReg();
     BuildMI(MBB, MBBI, DL, TII->get(RISCV::TH_MSME_E8))
         .addReg(SrcReg, getKillRegState(MI.getOperand(0).isKill()))
-        .addReg(BaseReg);
+        .addReg(BaseReg)
+        .addReg(RISCV::X0);
     MI.eraseFromParent();
     return true;
   }
   case RISCV::PTH_MATRIX_RELOAD: {
     // Expand reload: PTH_MATRIX_RELOAD $dst, $base
-    // → TH_MLME_E8 $dst, $base
+    // → TH_MLME_E8 $dst, $base, x0  (stride=0)
     MachineInstr &MI = *MBBI;
     DebugLoc DL = MI.getDebugLoc();
     Register DstReg = MI.getOperand(0).getReg();
     Register BaseReg = MI.getOperand(1).getReg();
     auto NewMI = BuildMI(MBB, MBBI, DL, TII->get(RISCV::TH_MLME_E8))
         .addReg(DstReg)
-        .addReg(BaseReg);
+        .addReg(BaseReg)
+        .addReg(RISCV::X0);
     // TH_MLME_E8 has $md in (ins) not (outs), but it semantically defines
     // the register. Add an implicit def for correct liveness tracking.
     NewMI.addReg(DstReg, RegState::Implicit | RegState::Define);

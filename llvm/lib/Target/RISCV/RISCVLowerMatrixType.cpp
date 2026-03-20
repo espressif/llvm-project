@@ -87,11 +87,16 @@ static bool volatileMatrixData(Function &F) {
   if (MatrixDefs.empty())
     return false;
 
+  // Get XLen type for stride parameter.
+  const DataLayout &DL = F.getDataLayout();
+  Type *XLenTy = IntegerType::get(Ctx, DL.getPointerSizeInBits());
+  Value *ZeroStride = ConstantInt::get(XLenTy, 0);
+
   // Get or declare the whole-register store/load intrinsics for spilling.
   Function *StoreIntrin = Intrinsic::getOrInsertDeclaration(
-      F.getParent(), Intrinsic::riscv_th_msme_internal8, {MatTy});
+      F.getParent(), Intrinsic::riscv_th_msme_internal8, {MatTy, XLenTy});
   Function *LoadIntrin = Intrinsic::getOrInsertDeclaration(
-      F.getParent(), Intrinsic::riscv_th_mlme_internal8, {MatTy});
+      F.getParent(), Intrinsic::riscv_th_mlme_internal8, {MatTy, XLenTy});
 
   // For each matrix def, insert spill after def, and reload before each use.
   IRBuilder<> AllocaBuilder(&F.getEntryBlock().front());
@@ -103,8 +108,9 @@ static bool volatileMatrixData(Function &F) {
     SpillSlot->setAlignment(Align(8));
 
     // Store (spill) right after the def via whole-register store intrinsic.
+    // Stride=0 for contiguous spill.
     IRBuilder<> StoreBuilder(Def->getNextNode());
-    StoreBuilder.CreateCall(StoreIntrin, {Def, SpillSlot});
+    StoreBuilder.CreateCall(StoreIntrin, {Def, SpillSlot, ZeroStride});
 
     // Replace each use (except the store we just inserted) with a reload.
     SmallVector<Use *, 8> Uses;
@@ -123,7 +129,7 @@ static bool volatileMatrixData(Function &F) {
 
       IRBuilder<> LoadBuilder(UserInst);
       Value *Reloaded = LoadBuilder.CreateCall(
-          LoadIntrin, {SpillSlot}, Def->getName() + ".reload");
+          LoadIntrin, {SpillSlot, ZeroStride}, Def->getName() + ".reload");
       U->set(Reloaded);
     }
     Changed = true;

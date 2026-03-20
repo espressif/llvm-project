@@ -111,11 +111,11 @@ define void @test_mmov(ptr %src_ptr, ptr %dst_ptr, i64 %stride) {
 ; CHECK:        th.mmov.mm
 ; CHECK:        th.msme32
 ; CHECK:        ret
-  %src = call target("riscv.matrix") @llvm.riscv.th.mlme.internal32.triscv.matrixt(ptr %src_ptr)
+  %src = call target("riscv.matrix") @llvm.riscv.th.mlme.internal32.triscv.matrixt.i64(ptr %src_ptr, i64 0)
   %copy = call target("riscv.matrix") @llvm.riscv.th.mmov.mm.internal.triscv.matrixt.triscv.matrixt(
       target("riscv.matrix") %src)
-  call void @llvm.riscv.th.msme.internal32.triscv.matrixt(
-      target("riscv.matrix") %copy, ptr %dst_ptr)
+  call void @llvm.riscv.th.msme.internal32.triscv.matrixt.i64(
+      target("riscv.matrix") %copy, ptr %dst_ptr, i64 0)
   ret void
 }
 
@@ -152,12 +152,12 @@ define void @test_pack(ptr %s1_ptr, ptr %s2_ptr, ptr %dst_ptr, i64 %stride) {
 ; CHECK:        th.mpack
 ; CHECK:        th.msme32
 ; CHECK:        ret
-  %s1 = call target("riscv.matrix") @llvm.riscv.th.mlme.internal32.triscv.matrixt(ptr %s1_ptr)
-  %s2 = call target("riscv.matrix") @llvm.riscv.th.mlme.internal32.triscv.matrixt(ptr %s2_ptr)
+  %s1 = call target("riscv.matrix") @llvm.riscv.th.mlme.internal32.triscv.matrixt.i64(ptr %s1_ptr, i64 0)
+  %s2 = call target("riscv.matrix") @llvm.riscv.th.mlme.internal32.triscv.matrixt.i64(ptr %s2_ptr, i64 0)
   %packed = call target("riscv.matrix") @llvm.riscv.th.mpack.internal.triscv.matrixt.triscv.matrixt.triscv.matrixt(
       target("riscv.matrix") %s1, target("riscv.matrix") %s2)
-  call void @llvm.riscv.th.msme.internal32.triscv.matrixt(
-      target("riscv.matrix") %packed, ptr %dst_ptr)
+  call void @llvm.riscv.th.msme.internal32.triscv.matrixt.i64(
+      target("riscv.matrix") %packed, ptr %dst_ptr, i64 0)
   ret void
 }
 
@@ -250,12 +250,12 @@ declare target("riscv.matrix") @llvm.riscv.th.mlae.internal32.triscv.matrixt.i64
 declare target("riscv.matrix") @llvm.riscv.th.mlbe.internal8.triscv.matrixt.i64(ptr, i64)
 declare target("riscv.matrix") @llvm.riscv.th.mlbe.internal32.triscv.matrixt.i64(ptr, i64)
 declare target("riscv.matrix") @llvm.riscv.th.mlce.internal32.triscv.matrixt.i64(ptr, i64)
-declare target("riscv.matrix") @llvm.riscv.th.mlme.internal32.triscv.matrixt(ptr)
+declare target("riscv.matrix") @llvm.riscv.th.mlme.internal32.triscv.matrixt.i64(ptr, i64)
 
 ; Stores (_internal)
 declare void @llvm.riscv.th.msce.internal16.triscv.matrixt.i64(target("riscv.matrix"), ptr, i64)
 declare void @llvm.riscv.th.msce.internal32.triscv.matrixt.i64(target("riscv.matrix"), ptr, i64)
-declare void @llvm.riscv.th.msme.internal32.triscv.matrixt(target("riscv.matrix"), ptr)
+declare void @llvm.riscv.th.msme.internal32.triscv.matrixt.i64(target("riscv.matrix"), ptr, i64)
 
 ; Matmul (_internal)
 declare target("riscv.matrix") @llvm.riscv.th.mfmacc.s.internal.triscv.matrixt.triscv.matrixt.triscv.matrixt(target("riscv.matrix"), target("riscv.matrix"), target("riscv.matrix"))

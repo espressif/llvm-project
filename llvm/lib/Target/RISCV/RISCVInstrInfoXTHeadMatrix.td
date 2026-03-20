@@ -97,17 +97,18 @@ class THRVMInstLoad<bits<4> func4, bits<2> dsize,
   let mayStore = 0;
 }
 
-// Load whole-register: md, (rs1) — no rs2 (bits[24:20]=00000)
+// Load whole-register: md, (rs1), rs2
 class THRVMInstLoadWhole<bits<4> func4, bits<2> dsize,
                           dag outs, dag ins, string opcodestr, string argstr>
     : THRVMInst<outs, ins, opcodestr, argstr> {
   bits<3> md;
   bits<5> rs1;
+  bits<5> rs2;
 
   let Inst{31-28} = func4;
   let Inst{27-26} = 0b01;
   let Inst{25} = 0;        // ls=0: load
-  let Inst{24-20} = 0b00000; // no rs2
+  let Inst{24-20} = rs2;
   let Inst{19-15} = rs1;
   let Inst{14-12} = 0b000;
   let Inst{11-10} = dsize;
@@ -138,17 +139,18 @@ class THRVMInstStore<bits<4> func4, bits<2> dsize,
   let mayStore = 1;
 }
 
-// Store whole-register: ms3, (rs1) — no rs2 (bits[24:20]=00000)
+// Store whole-register: ms3, (rs1), rs2
 class THRVMInstStoreWhole<bits<4> func4, bits<2> dsize,
                            dag outs, dag ins, string opcodestr, string argstr>
     : THRVMInst<outs, ins, opcodestr, argstr> {
   bits<3> ms3;
   bits<5> rs1;
+  bits<5> rs2;
 
   let Inst{31-28} = func4;
   let Inst{27-26} = 0b01;
   let Inst{25} = 1;        // ls=1: store
-  let Inst{24-20} = 0b00000; // no rs2
+  let Inst{24-20} = rs2;
   let Inst{19-15} = rs1;
   let Inst{14-12} = 0b000;
   let Inst{11-10} = dsize;
@@ -480,17 +482,17 @@ multiclass THRVMLoadInst<string mnemonic, bits<4> func4> {
 
 multiclass THRVMLoadWholeInst<string mnemonic, bits<4> func4> {
   def _E8  : THRVMInstLoadWhole<func4, 0b00,
-      (outs), (ins THRVMMR:$md, GPR:$rs1),
-      "th."#mnemonic#"e8", "$md, (${rs1})">;
+      (outs), (ins THRVMMR:$md, GPR:$rs1, GPR:$rs2),
+      "th."#mnemonic#"e8", "$md, (${rs1}), $rs2">;
   def _E16 : THRVMInstLoadWhole<func4, 0b01,
-      (outs), (ins THRVMMR:$md, GPR:$rs1),
-      "th."#mnemonic#"e16", "$md, (${rs1})">;
+      (outs), (ins THRVMMR:$md, GPR:$rs1, GPR:$rs2),
+      "th."#mnemonic#"e16", "$md, (${rs1}), $rs2">;
   def _E32 : THRVMInstLoadWhole<func4, 0b10,
-      (outs), (ins THRVMMR:$md, GPR:$rs1),
-      "th."#mnemonic#"e32", "$md, (${rs1})">;
+      (outs), (ins THRVMMR:$md, GPR:$rs1, GPR:$rs2),
+      "th."#mnemonic#"e32", "$md, (${rs1}), $rs2">;
   def _E64 : THRVMInstLoadWhole<func4, 0b11,
-      (outs), (ins THRVMMR:$md, GPR:$rs1),
-      "th."#mnemonic#"e64", "$md, (${rs1})">;
+      (outs), (ins THRVMMR:$md, GPR:$rs1, GPR:$rs2),
+      "th."#mnemonic#"e64", "$md, (${rs1}), $rs2">;
 }
 
 defm TH_MLAE  : THRVMLoadInst<"mla",  0b0000>;
@@ -522,17 +524,17 @@ multiclass THRVMStoreInst<string mnemonic, bits<4> func4> {
 
 multiclass THRVMStoreWholeInst<string mnemonic, bits<4> func4> {
   def _E8  : THRVMInstStoreWhole<func4, 0b00,
-      (outs), (ins THRVMMR:$ms3, GPR:$rs1),
-      "th."#mnemonic#"e8", "$ms3, (${rs1})">;
+      (outs), (ins THRVMMR:$ms3, GPR:$rs1, GPR:$rs2),
+      "th."#mnemonic#"e8", "$ms3, (${rs1}), $rs2">;
   def _E16 : THRVMInstStoreWhole<func4, 0b01,
-      (outs), (ins THRVMMR:$ms3, GPR:$rs1),
-      "th."#mnemonic#"e16", "$ms3, (${rs1})">;
+      (outs), (ins THRVMMR:$ms3, GPR:$rs1, GPR:$rs2),
+      "th."#mnemonic#"e16", "$ms3, (${rs1}), $rs2">;
   def _E32 : THRVMInstStoreWhole<func4, 0b10,
-      (outs), (ins THRVMMR:$ms3, GPR:$rs1),
-      "th."#mnemonic#"e32", "$ms3, (${rs1})">;
+      (outs), (ins THRVMMR:$ms3, GPR:$rs1, GPR:$rs2),
+      "th."#mnemonic#"e32", "$ms3, (${rs1}), $rs2">;
   def _E64 : THRVMInstStoreWhole<func4, 0b11,
-      (outs), (ins THRVMMR:$ms3, GPR:$rs1),
-      "th."#mnemonic#"e64", "$ms3, (${rs1})">;
+      (outs), (ins THRVMMR:$ms3, GPR:$rs1, GPR:$rs2),
+      "th."#mnemonic#"e64", "$ms3, (${rs1}), $rs2">;
 }
 
 defm TH_MSAE  : THRVMStoreInst<"msa",  0b0000>;
@@ -1036,7 +1038,7 @@ foreach eew = [8, 16, 32, 64] in {
 // --- Load M (whole-register, any matrix register) ---
 foreach eew = [8, 16, 32, 64] in {
   def PTH_MLME_E # eew # V
-      : Pseudo<(outs THRVMMR:$dst), (ins GPR:$base), []>;
+      : Pseudo<(outs THRVMMR:$dst), (ins GPR:$base, GPR:$stride), []>;
 }
 
 } // hasSideEffects = 1, mayLoad = 1
@@ -1070,7 +1072,7 @@ foreach eew = [8, 16, 32, 64] in {
 // --- Store M (whole-register) ---
 foreach eew = [8, 16, 32, 64] in {
   def PTH_MSME_E # eew # V
-      : Pseudo<(outs), (ins THRVMMR:$src, GPR:$base), []>;
+      : Pseudo<(outs), (ins THRVMMR:$src, GPR:$base, GPR:$stride), []>;
 }
 
 } // hasSideEffects = 1, mayStore = 1

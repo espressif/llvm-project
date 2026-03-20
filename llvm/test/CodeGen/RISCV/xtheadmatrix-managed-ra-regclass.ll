@@ -41,12 +41,12 @@ define void @test_regclass_matmul(ptr %a_ptr, ptr %c_ptr, i64 %stride) {
 ;; ============================================================================
 define void @test_whole_reg(ptr %src, ptr %dst) {
 ; CHECK-LABEL: test_whole_reg:
-; CHECK:        th.mlme32 {{(tr|acc)[0-3]}}, ({{.*}})
-; CHECK:        th.msme32 {{(tr|acc)[0-3]}}, ({{.*}})
+; CHECK:        th.mlme32 {{(tr|acc)[0-3]}}, ({{.*}}), {{.*}}
+; CHECK:        th.msme32 {{(tr|acc)[0-3]}}, ({{.*}}), {{.*}}
 ; CHECK:        ret
-  %v = call target("riscv.matrix") @llvm.riscv.th.mlme.internal32.triscv.matrixt(ptr %src)
-  call void @llvm.riscv.th.msme.internal32.triscv.matrixt(
-      target("riscv.matrix") %v, ptr %dst)
+  %v = call target("riscv.matrix") @llvm.riscv.th.mlme.internal32.triscv.matrixt.i64(ptr %src, i64 0)
+  call void @llvm.riscv.th.msme.internal32.triscv.matrixt.i64(
+      target("riscv.matrix") %v, ptr %dst, i64 0)
   ret void
 }
 
@@ -86,7 +86,7 @@ declare void @llvm.riscv.th.msettilen.i64(i64)
 declare target("riscv.matrix") @llvm.riscv.th.mlae.internal32.triscv.matrixt.i64(ptr, i64)
 declare target("riscv.matrix") @llvm.riscv.th.mlbe.internal32.triscv.matrixt.i64(ptr, i64)
 declare target("riscv.matrix") @llvm.riscv.th.mlce.internal32.triscv.matrixt.i64(ptr, i64)
-declare target("riscv.matrix") @llvm.riscv.th.mlme.internal32.triscv.matrixt(ptr)
+declare target("riscv.matrix") @llvm.riscv.th.mlme.internal32.triscv.matrixt.i64(ptr, i64)
 declare void @llvm.riscv.th.msce.internal32.triscv.matrixt.i64(target("riscv.matrix"), ptr, i64)
-declare void @llvm.riscv.th.msme.internal32.triscv.matrixt(target("riscv.matrix"), ptr)
+declare void @llvm.riscv.th.msme.internal32.triscv.matrixt.i64(target("riscv.matrix"), ptr, i64)
 declare target("riscv.matrix") @llvm.riscv.th.mfmacc.s.internal.triscv.matrixt.triscv.matrixt.triscv.matrixt(target("riscv.matrix"), target("riscv.matrix"), target("riscv.matrix"))

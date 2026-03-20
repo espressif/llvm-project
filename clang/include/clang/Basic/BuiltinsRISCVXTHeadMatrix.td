@@ -146,6 +146,116 @@ def mst_spec_f16 : RISCVXTHeadMatrixBuiltin<"void(void *, size_t, __rvm_float16_
 def mst_spec_f32 : RISCVXTHeadMatrixBuiltin<"void(void *, size_t, __rvm_float32_t, size_t, size_t)", "experimental-xtheadmatrix">;
 def mst_spec_f64 : RISCVXTHeadMatrixBuiltin<"void(void *, size_t, __rvm_float64_t, size_t, size_t)", "experimental-xtheadmatrix">;
 
+// --- Store A-tile (msae): (base, stride, val, m, k) -> void ---
+foreach info = [["i8",  "__rvm_int8_t"],     ["i16", "__rvm_int16_t"],
+                ["i32", "__rvm_int32_t"],     ["i64", "__rvm_int64_t"],
+                ["u8",  "__rvm_uint8_t"],     ["u16", "__rvm_uint16_t"],
+                ["u32", "__rvm_uint32_t"],     ["u64", "__rvm_uint64_t"],
+                ["f16", "__rvm_float16_t"],   ["f32", "__rvm_float32_t"],
+                ["f64", "__rvm_float64_t"]] in {
+  def mst_a_spec_ # info[0] : RISCVXTHeadMatrixBuiltin<
+      "void(void *, size_t, " # info[1] # ", size_t, size_t)", "experimental-xtheadmatrix">;
+}
+
+// --- Store B-tile (msbe): (base, stride, val, k, n) -> void ---
+foreach info = [["i8",  "__rvm_int8_t"],     ["i16", "__rvm_int16_t"],
+                ["i32", "__rvm_int32_t"],     ["i64", "__rvm_int64_t"],
+                ["u8",  "__rvm_uint8_t"],     ["u16", "__rvm_uint16_t"],
+                ["u32", "__rvm_uint32_t"],     ["u64", "__rvm_uint64_t"],
+                ["f16", "__rvm_float16_t"],   ["f32", "__rvm_float32_t"],
+                ["f64", "__rvm_float64_t"]] in {
+  def mst_b_spec_ # info[0] : RISCVXTHeadMatrixBuiltin<
+      "void(void *, size_t, " # info[1] # ", size_t, size_t)", "experimental-xtheadmatrix">;
+}
+
+// --- Transposed load A (mlate): (base, stride, m, k) -> matrix ---
+foreach info = [["i8",  "__rvm_int8_t"],     ["i16", "__rvm_int16_t"],
+                ["i32", "__rvm_int32_t"],     ["i64", "__rvm_int64_t"],
+                ["u8",  "__rvm_uint8_t"],     ["u16", "__rvm_uint16_t"],
+                ["u32", "__rvm_uint32_t"],     ["u64", "__rvm_uint64_t"],
+                ["f16", "__rvm_float16_t"],   ["f32", "__rvm_float32_t"],
+                ["f64", "__rvm_float64_t"]] in {
+  def mld_at_spec_ # info[0] : RISCVXTHeadMatrixBuiltin<
+      info[1] # "(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+}
+
+// --- Transposed load B (mlbte): (base, stride, k, n) -> matrix ---
+foreach info = [["i8",  "__rvm_int8_t"],     ["i16", "__rvm_int16_t"],
+                ["i32", "__rvm_int32_t"],     ["i64", "__rvm_int64_t"],
+                ["u8",  "__rvm_uint8_t"],     ["u16", "__rvm_uint16_t"],
+                ["u32", "__rvm_uint32_t"],     ["u64", "__rvm_uint64_t"],
+                ["f16", "__rvm_float16_t"],   ["f32", "__rvm_float32_t"],
+                ["f64", "__rvm_float64_t"]] in {
+  def mld_bt_spec_ # info[0] : RISCVXTHeadMatrixBuiltin<
+      info[1] # "(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+}
+
+// --- Transposed load C (mlcte): (base, stride, m, n) -> matrix ---
+foreach info = [["i8",  "__rvm_int8_t"],     ["i16", "__rvm_int16_t"],
+                ["i32", "__rvm_int32_t"],     ["i64", "__rvm_int64_t"],
+                ["u8",  "__rvm_uint8_t"],     ["u16", "__rvm_uint16_t"],
+                ["u32", "__rvm_uint32_t"],     ["u64", "__rvm_uint64_t"],
+                ["f16", "__rvm_float16_t"],   ["f32", "__rvm_float32_t"],
+                ["f64", "__rvm_float64_t"]] in {
+  def mld_ct_spec_ # info[0] : RISCVXTHeadMatrixBuiltin<
+      info[1] # "(void *, size_t, size_t, size_t)", "experimental-xtheadmatrix">;
+}
+
+// --- Transposed store A (msate): (base, stride, val, m, k) -> void ---
+foreach info = [["i8",  "__rvm_int8_t"],     ["i16", "__rvm_int16_t"],
+                ["i32", "__rvm_int32_t"],     ["i64", "__rvm_int64_t"],
+                ["u8",  "__rvm_uint8_t"],     ["u16", "__rvm_uint16_t"],
+                ["u32", "__rvm_uint32_t"],     ["u64", "__rvm_uint64_t"],
+                ["f16", "__rvm_float16_t"],   ["f32", "__rvm_float32_t"],
+                ["f64", "__rvm_float64_t"]] in {
+  def mst_at_spec_ # info[0] : RISCVXTHeadMatrixBuiltin<
+      "void(void *, size_t, " # info[1] # ", size_t, size_t)", "experimental-xtheadmatrix">;
+}
+
+// --- Transposed store B (msbte): (base, stride, val, k, n) -> void ---
+foreach info = [["i8",  "__rvm_int8_t"],     ["i16", "__rvm_int16_t"],
+                ["i32", "__rvm_int32_t"],     ["i64", "__rvm_int64_t"],
+                ["u8",  "__rvm_uint8_t"],     ["u16", "__rvm_uint16_t"],
+                ["u32", "__rvm_uint32_t"],     ["u64", "__rvm_uint64_t"],
+                ["f16", "__rvm_float16_t"],   ["f32", "__rvm_float32_t"],
+                ["f64", "__rvm_float64_t"]] in {
+  def mst_bt_spec_ # info[0] : RISCVXTHeadMatrixBuiltin<
+      "void(void *, size_t, " # info[1] # ", size_t, size_t)", "experimental-xtheadmatrix">;
+}
+
+// --- Transposed store C (mscte): (base, stride, val, m, n) -> void ---
+foreach info = [["i8",  "__rvm_int8_t"],     ["i16", "__rvm_int16_t"],
+                ["i32", "__rvm_int32_t"],     ["i64", "__rvm_int64_t"],
+                ["u8",  "__rvm_uint8_t"],     ["u16", "__rvm_uint16_t"],
+                ["u32", "__rvm_uint32_t"],     ["u64", "__rvm_uint64_t"],
+                ["f16", "__rvm_float16_t"],   ["f32", "__rvm_float32_t"],
+                ["f64", "__rvm_float64_t"]] in {
+  def mst_ct_spec_ # info[0] : RISCVXTHeadMatrixBuiltin<
+      "void(void *, size_t, " # info[1] # ", size_t, size_t)", "experimental-xtheadmatrix">;
+}
+
+// --- Whole-register load (mlme): (base, stride) -> matrix ---
+foreach info = [["i8",  "__rvm_int8_t"],     ["i16", "__rvm_int16_t"],
+                ["i32", "__rvm_int32_t"],     ["i64", "__rvm_int64_t"],
+                ["u8",  "__rvm_uint8_t"],     ["u16", "__rvm_uint16_t"],
+                ["u32", "__rvm_uint32_t"],     ["u64", "__rvm_uint64_t"],
+                ["f16", "__rvm_float16_t"],   ["f32", "__rvm_float32_t"],
+                ["f64", "__rvm_float64_t"]] in {
+  def mld_m_spec_ # info[0] : RISCVXTHeadMatrixBuiltin<
+      info[1] # "(void *, size_t)", "experimental-xtheadmatrix">;
+}
+
+// --- Whole-register store (msme): (base, stride, val) -> void ---
+foreach info = [["i8",  "__rvm_int8_t"],     ["i16", "__rvm_int16_t"],
+                ["i32", "__rvm_int32_t"],     ["i64", "__rvm_int64_t"],
+                ["u8",  "__rvm_uint8_t"],     ["u16", "__rvm_uint16_t"],
+                ["u32", "__rvm_uint32_t"],     ["u64", "__rvm_uint64_t"],
+                ["f16", "__rvm_float16_t"],   ["f32", "__rvm_float32_t"],
+                ["f64", "__rvm_float64_t"]] in {
+  def mst_m_spec_ # info[0] : RISCVXTHeadMatrixBuiltin<
+      "void(void *, size_t, " # info[1] # ")", "experimental-xtheadmatrix">;
+}
+
 // --- INT matmul spec-API: (acc, a, b, m, k, n) -> acc ---
 // INT8 -> INT32
 def mmaqa_spec_ss_w_b : RISCVXTHeadMatrixBuiltin<
