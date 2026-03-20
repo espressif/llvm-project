@@ -945,37 +945,37 @@ void test_mst_m_f64(double *base, long stride, mfloat64_t val) {
 // ========================================================================
 
 // CHECK-LABEL: @test_msetmcol_e8
-// CHECK: call void @llvm.riscv.th.msettilek(i64 %c)
+// CHECK: call void @llvm.riscv.th.msettilek.i64(i64 %c)
 mcol_t test_msetmcol_e8(mcol_t c) {
     return __riscv_th_msetmcol_e8(c);
 }
 
 // CHECK-LABEL: @test_msetmcol_e16
-// CHECK: call void @llvm.riscv.th.msettilek(i64 %c)
+// CHECK: call void @llvm.riscv.th.msettilek.i64(i64 %c)
 mcol_t test_msetmcol_e16(mcol_t c) {
     return __riscv_th_msetmcol_e16(c);
 }
 
 // CHECK-LABEL: @test_msetmcol_e64
-// CHECK: call void @llvm.riscv.th.msettilek(i64 %c)
+// CHECK: call void @llvm.riscv.th.msettilek.i64(i64 %c)
 mcol_t test_msetmcol_e64(mcol_t c) {
     return __riscv_th_msetmcol_e64(c);
 }
 
 // CHECK-LABEL: @test_msettilemi
-// CHECK: call void @llvm.riscv.th.msettilemi(i64 4)
+// CHECK: call void @llvm.riscv.th.msettilemi.i64(i64 4)
 void test_msettilemi(void) {
     __riscv_th_msettilemi(4);
 }
 
 // CHECK-LABEL: @test_msettileki
-// CHECK: call void @llvm.riscv.th.msettileki(i64 8)
+// CHECK: call void @llvm.riscv.th.msettileki.i64(i64 8)
 void test_msettileki(void) {
     __riscv_th_msettileki(8);
 }
 
 // CHECK-LABEL: @test_msettileni
-// CHECK: call void @llvm.riscv.th.msettileni(i64 16)
+// CHECK: call void @llvm.riscv.th.msettileni.i64(i64 16)
 void test_msettileni(void) {
     __riscv_th_msettileni(16);
 }

@@ -20,19 +20,19 @@
 // ========================================================================
 
 // CHECK-LABEL: @test_mset22adra
-// CHECK: call void @llvm.riscv.th.mset22adra(i64 %
+// CHECK: call void @llvm.riscv.th.mset22adra.i64(i64 %
 void test_mset22adra(size_t addr) {
     __riscv_th_mset22adra(addr);
 }
 
 // CHECK-LABEL: @test_mset22adrb
-// CHECK: call void @llvm.riscv.th.mset22adrb(i64 %
+// CHECK: call void @llvm.riscv.th.mset22adrb.i64(i64 %
 void test_mset22adrb(size_t addr) {
     __riscv_th_mset22adrb(addr);
 }
 
 // CHECK-LABEL: @test_mset22adrd
-// CHECK: call void @llvm.riscv.th.mset22adrd(i64 %
+// CHECK: call void @llvm.riscv.th.mset22adrd.i64(i64 %
 void test_mset22adrd(size_t addr) {
     __riscv_th_mset22adrd(addr);
 }
@@ -42,19 +42,19 @@ void test_mset22adrd(size_t addr) {
 // ========================================================================
 
 // CHECK-LABEL: @test_mset22rsba
-// CHECK: call void @llvm.riscv.th.mset22rsba(i64 %
+// CHECK: call void @llvm.riscv.th.mset22rsba.i64(i64 %
 void test_mset22rsba(size_t stride) {
     __riscv_th_mset22rsba(stride);
 }
 
 // CHECK-LABEL: @test_mset22rsbb
-// CHECK: call void @llvm.riscv.th.mset22rsbb(i64 %
+// CHECK: call void @llvm.riscv.th.mset22rsbb.i64(i64 %
 void test_mset22rsbb(size_t stride) {
     __riscv_th_mset22rsbb(stride);
 }
 
 // CHECK-LABEL: @test_mset22rsbd
-// CHECK: call void @llvm.riscv.th.mset22rsbd(i64 %
+// CHECK: call void @llvm.riscv.th.mset22rsbd.i64(i64 %
 void test_mset22rsbd(size_t stride) {
     __riscv_th_mset22rsbd(stride);
 }
@@ -64,19 +64,19 @@ void test_mset22rsbd(size_t stride) {
 // ========================================================================
 
 // CHECK-LABEL: @test_mset22m
-// CHECK: call void @llvm.riscv.th.mset22m(i64 %
+// CHECK: call void @llvm.riscv.th.mset22m.i64(i64 %
 void test_mset22m(size_t m) {
     __riscv_th_mset22m(m);
 }
 
 // CHECK-LABEL: @test_mset22n
-// CHECK: call void @llvm.riscv.th.mset22n(i64 %
+// CHECK: call void @llvm.riscv.th.mset22n.i64(i64 %
 void test_mset22n(size_t n) {
     __riscv_th_mset22n(n);
 }
 
 // CHECK-LABEL: @test_mset22k
-// CHECK: call void @llvm.riscv.th.mset22k(i64 %
+// CHECK: call void @llvm.riscv.th.mset22k.i64(i64 %
 void test_mset22k(size_t k) {
     __riscv_th_mset22k(k);
 }
@@ -86,19 +86,19 @@ void test_mset22k(size_t k) {
 // ========================================================================
 
 // CHECK-LABEL: @test_msetrstptr
-// CHECK: call void @llvm.riscv.th.msetrstptr(i64 %
+// CHECK: call void @llvm.riscv.th.msetrstptr.i64(i64 %
 void test_msetrstptr(size_t val) {
     __riscv_th_msetrstptr(val);
 }
 
 // CHECK-LABEL: @test_msetaccum
-// CHECK: call void @llvm.riscv.th.msetaccum(i64 %
+// CHECK: call void @llvm.riscv.th.msetaccum.i64(i64 %
 void test_msetaccum(size_t val) {
     __riscv_th_msetaccum(val);
 }
 
 // CHECK-LABEL: @test_msetoob
-// CHECK: call void @llvm.riscv.th.msetoob(i64 %
+// CHECK: call void @llvm.riscv.th.msetoob.i64(i64 %
 void test_msetoob(size_t val) {
     __riscv_th_msetoob(val);
 }
@@ -236,18 +236,18 @@ void test_mmaccsu22_w_b(void) {
 // ========================================================================
 
 // CHECK-LABEL: @test_panel_int8_gemm
-// CHECK: call void @llvm.riscv.th.mset22adra(i64 %
-// CHECK: call void @llvm.riscv.th.mset22adrb(i64 %
-// CHECK: call void @llvm.riscv.th.mset22adrd(i64 %
-// CHECK: call void @llvm.riscv.th.mset22rsba(i64 %
-// CHECK: call void @llvm.riscv.th.mset22rsbb(i64 %
-// CHECK: call void @llvm.riscv.th.mset22rsbd(i64 %
-// CHECK: call void @llvm.riscv.th.mset22m(i64 %
-// CHECK: call void @llvm.riscv.th.mset22n(i64 %
-// CHECK: call void @llvm.riscv.th.mset22k(i64 %
-// CHECK: call void @llvm.riscv.th.msetaccum(i64 0)
-// CHECK: call void @llvm.riscv.th.msetoob(i64 2)
-// CHECK: call void @llvm.riscv.th.msetrstptr(i64 1)
+// CHECK: call void @llvm.riscv.th.mset22adra.i64(i64 %
+// CHECK: call void @llvm.riscv.th.mset22adrb.i64(i64 %
+// CHECK: call void @llvm.riscv.th.mset22adrd.i64(i64 %
+// CHECK: call void @llvm.riscv.th.mset22rsba.i64(i64 %
+// CHECK: call void @llvm.riscv.th.mset22rsbb.i64(i64 %
+// CHECK: call void @llvm.riscv.th.mset22rsbd.i64(i64 %
+// CHECK: call void @llvm.riscv.th.mset22m.i64(i64 %
+// CHECK: call void @llvm.riscv.th.mset22n.i64(i64 %
+// CHECK: call void @llvm.riscv.th.mset22k.i64(i64 %
+// CHECK: call void @llvm.riscv.th.msetaccum.i64(i64 0)
+// CHECK: call void @llvm.riscv.th.msetoob.i64(i64 2)
+// CHECK: call void @llvm.riscv.th.msetrstptr.i64(i64 1)
 // CHECK: call void @llvm.riscv.th.ml22e8()
 // CHECK: call void @llvm.riscv.th.mmacc22.w.b()
 // CHECK: call void @llvm.riscv.th.msc22e32()
@@ -281,18 +281,18 @@ void test_panel_int8_gemm(size_t a_addr, size_t b_addr, size_t d_addr,
 // ========================================================================
 
 // CHECK-LABEL: @test_panel_fp16_gemm
-// CHECK: call void @llvm.riscv.th.mset22adra
-// CHECK: call void @llvm.riscv.th.mset22adrb
-// CHECK: call void @llvm.riscv.th.mset22adrd
-// CHECK: call void @llvm.riscv.th.mset22rsba
-// CHECK: call void @llvm.riscv.th.mset22rsbb
-// CHECK: call void @llvm.riscv.th.mset22rsbd
-// CHECK: call void @llvm.riscv.th.mset22m
-// CHECK: call void @llvm.riscv.th.mset22n
-// CHECK: call void @llvm.riscv.th.mset22k
-// CHECK: call void @llvm.riscv.th.msetaccum
-// CHECK: call void @llvm.riscv.th.msetoob
-// CHECK: call void @llvm.riscv.th.msetrstptr
+// CHECK: call void @llvm.riscv.th.mset22adra.i64
+// CHECK: call void @llvm.riscv.th.mset22adrb.i64
+// CHECK: call void @llvm.riscv.th.mset22adrd.i64
+// CHECK: call void @llvm.riscv.th.mset22rsba.i64
+// CHECK: call void @llvm.riscv.th.mset22rsbb.i64
+// CHECK: call void @llvm.riscv.th.mset22rsbd.i64
+// CHECK: call void @llvm.riscv.th.mset22m.i64
+// CHECK: call void @llvm.riscv.th.mset22n.i64
+// CHECK: call void @llvm.riscv.th.mset22k.i64
+// CHECK: call void @llvm.riscv.th.msetaccum.i64
+// CHECK: call void @llvm.riscv.th.msetoob.i64
+// CHECK: call void @llvm.riscv.th.msetrstptr.i64
 // CHECK: call void @llvm.riscv.th.ml22e16()
 // CHECK: call void @llvm.riscv.th.mfmacc22.h()
 // CHECK: call void @llvm.riscv.th.msc22e16()

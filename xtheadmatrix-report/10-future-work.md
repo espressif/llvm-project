@@ -65,5 +65,5 @@ compiler-managed matrix register values.
 
 ## Encoding Verification
 
-All 257 instruction encodings verified (227 base + 30 Zmpanel; 2 independent audits on base, 0 discrepancies).
-Known spec errata: matmul uop=01 should be 10; mfmin.s/mfmin.h names swapped.
+All 257 instruction encodings verified (227 base + 30 Zmpanel; 3 independent audits including a full field-by-field verification of all 257 instructions, 0 implementation discrepancies).
+Known spec errata: matmul uop=01 should be 10; mfmin.s/mfmin.h names swapped; pmmaccus.w.b typo.

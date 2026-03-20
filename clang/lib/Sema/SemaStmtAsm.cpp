@@ -656,6 +656,13 @@ StmtResult Sema::ActOnGCCAsmStmt(SourceLocation AsmLoc, bool IsSimple,
     if (Context.hasSameType(InTy, OutTy))
       continue;  // All types can be tied to themselves.
 
+    // All RISC-V Matrix (RVM) single-register types lower to the same LLVM IR
+    // type target("riscv.matrix"), and all x2 types lower to an identical
+    // struct. Allow tied constraints between any two RVM matrix types so that
+    // bitwise reinterpret-casts can use tied inline asm.
+    if (InTy->isRISCVMatrixBuiltinType() && OutTy->isRISCVMatrixBuiltinType())
+      continue;
+
     // Decide if the input and output are in the same domain (integer/ptr or
     // floating point.
     enum AsmDomain {

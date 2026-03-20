@@ -1829,10 +1829,11 @@ Four errata exist in the RVM 0.6 spec:
   `mzeros_*x2`). All operations available in 11 types
   (i8/i16/i32/i64/u8/u16/u32/u64/f16/f32/f64).
 
-- **Test coverage**: 24 test files cover assembly encoding (227 base + 30 Zmpanel
+- **Test coverage**: 26 test files cover assembly encoding (227 base + 30 Zmpanel
   instructions), error diagnostics, CSR names (13 CSRs), ISel patterns,
   end-to-end builtin codegen (including all 8 widening FP matmul variants),
-  inline assembly constraints, API coverage, verification fixes, x2 types,
+  inline assembly constraints, C API pipeline (register allocation, dependency chains,
+  CSR configuration), API coverage, verification fixes, x2 types, pipeline/scheduling,
   Zmpanel C header API, and built-in type support.
 
 ### Verification History
@@ -1912,6 +1913,18 @@ Four errata exist in the RVM 0.6 spec:
    (e) C API naming confirmed correct per RVM 0.6 mnemonics. **No new bugs found.**
    All previously documented differences and limitations remain accurate. Noted
    gap: no MC-level round-trip encoding tests for Zmpanel panel instructions.
+9. **Comprehensive end-to-end verification (2026-03-20, Claude Opus 4.6 #10)**:
+   Parallel spec-comparison agents verified: (a) ALL 257 instruction encodings
+   field-by-field against golden spec — every opcode, func3, func4, uop, d_size,
+   s_size field confirmed correct; (b) complete builtin→intrinsic→instruction chain
+   — every builtin maps to the correct intrinsic with correct argument types and
+   ordering; (c) configuration emission (msettilem/k/n) correct before every
+   operation; (d) matmul operand ordering `{acc, B, A}` confirmed for
+   `md = md + ms1 × ms2^T`; (e) panel-aware 2x2 macro decomposition verified
+   (register modeling correct, tr4-tr7 hardware-only); (f) C API pointer types
+   verified correct across all load/store functions; (g) EEW selection correct for
+   all type variants. Re-confirmed 3 spec document errata. **No new bugs found.**
+   All 26 tests pass.
 
 ## Design Notes
 

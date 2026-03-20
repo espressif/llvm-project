@@ -73,6 +73,7 @@ All 227 base hardware operations are covered:
 |------------|--------|
 | `xtheadmatrix-spec-api.c` (23 test cases) | PASS |
 | `xtheadmatrix-spec-api-full.c` (extended API coverage) | PASS |
+| `xtheadmatrix-c-api-pipeline.c` (register alloc, dependency, CSR config) | PASS |
 | `xtheadmatrix-api-coverage.c` (full API function coverage) | PASS |
 | `xtheadmatrix-verification-fixes.c` (verification bug fix tests) | PASS |
 | `xtheadmatrix-x2-types.c` (15 test cases, O0+O2) | PASS |
@@ -81,6 +82,7 @@ All 227 base hardware operations are covered:
 | `xtheadmatrix-managed-ra-full.ll` (comprehensive RA) | PASS |
 | `xtheadmatrix-managed-ra-misc.ll` (misc RA patterns) | PASS |
 | `xtheadmatrix-managed-ra-regclass.ll` (register class) | PASS |
+| `xtheadmatrix-managed-ra-pipeline.ll` (pipeline/scheduling) | PASS |
 | `xtheadmatrix-managed-ra-spill.ll` (spill/reload) | PASS |
 | `xtheadmatrix-lower-O0.ll` | PASS |
 | `thead-matrix-builtin-types.c` | PASS |
@@ -98,7 +100,7 @@ All 227 base hardware operations are covered:
 
 ## Verification History
 
-Ten independent verification rounds were completed:
+Eleven independent verification rounds were completed:
 
 1. **Gemini (2026-03-04)**: Found 2 HIGH bugs (conversion pseudo register classes THRVMMR→THRVMACC; matmul operand swap), filled 3 coverage gaps (B-tile load, FP/unsigned variants, matmul variants).
 
@@ -119,6 +121,8 @@ Ten independent verification rounds were completed:
 9. **Claude Opus 4.6 #8 (2026-03-19)**: Golden spec cross-reference audit. Read ALL spec files (`spec/*.adoc` + `doc/intrinsic/rvm-intrinsic-api.adoc`) and cross-referenced against the full implementation. **No new correctness bugs found.** Identified and documented comprehensive list of C API naming/signature differences from the spec intrinsic API (see `13-verification-and-fixes.md`). Key findings: (a) spec's canonical function names (`__riscv_th_fmmacc`, `__riscv_th_mmaqa`, etc.) not provided as aliases; (b) matmul dimension param order is (M,K,N) vs spec's (M,N,K); (c) EW operations rely on prior CSR state instead of taking dimension params; (d) mzero takes (m,n) params vs spec's no-param signature; (e) spec's intrinsic API doc uses older instruction mnemonics that differ from RVM 0.6. All issues are API naming/convention — no hardware behavior errors.
 
 10. **Claude Opus 4.6 #9 (2026-03-20)**: Full independent re-verification with five parallel verification agents. Verified: (a) 40+ instruction encodings bit-by-bit — 0 bugs; (b) all register class constraints (tile vs accumulator) — 0 bugs; (c) all 30 Zmpanel instructions, 18 CSRs, C API — 0 bugs; (d) stream load/store correctly omitted; (e) C API naming confirmed correct per RVM 0.6 mnemonics. **No new bugs found.** All previously documented differences and limitations remain accurate. Noted gap: no MC-level round-trip encoding tests for Zmpanel panel instructions.
+
+11. **Claude Opus 4.6 #10 (2026-03-20)**: Comprehensive end-to-end verification with parallel spec-comparison agents. Verified: (a) ALL 257 instruction encodings against golden spec — every opcode, func3, func4, uop, d_size, s_size field confirmed correct; (b) complete builtin→intrinsic→instruction chain — every builtin maps to the correct intrinsic with correct argument types and ordering; (c) configuration emission (msettilem/k/n) verified correct before every operation; (d) matmul operand ordering `{acc, B, A}` confirmed correct for `md = md + ms1 × ms2^T`; (e) panel-aware 2x2 macro decomposition verified (load/store/compute register modeling correct, tr4-tr7 correctly handled as hardware-only); (f) pointer types in C API verified correct across all load/store functions; (g) EEW selection correct for all type variants. Re-confirmed 3 spec document errata (matmul uop, mfmin swap, pmmaccus typo). **No new bugs found.** All 26 tests pass. Fixed test CHECK patterns for intrinsic name mangling (`.i64` suffix) and `_Float16*` → `uint16_t*` pointer compatibility.
 
 ## Current Limitations
 

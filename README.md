@@ -184,7 +184,7 @@ void panel_gemm_fp16(void *a, void *b, void *d,
 
 ## Verification History
 
-Ten independent verification rounds were completed:
+Eleven independent verification rounds were completed:
 
 1. **Gemini (2026-03-04)**: Found 2 HIGH bugs (conversion pseudo register classes THRVMMR→THRVMACC; matmul operand swap), filled 3 coverage gaps (B-tile load, FP/unsigned variants, matmul variants).
 
@@ -205,6 +205,8 @@ Ten independent verification rounds were completed:
 9. **Claude Opus 4.6 #8 (2026-03-19)**: Golden spec cross-reference audit. Read ALL spec files and cross-referenced against the full implementation. No new correctness bugs found. Documented C API naming/signature differences from the spec intrinsic API.
 
 10. **Claude Opus 4.6 #9 (2026-03-20)**: Full independent re-verification with five parallel agents. Verified: (a) 40+ instruction encodings bit-by-bit — 0 bugs; (b) all register class constraints — 0 bugs; (c) all 30 Zmpanel instructions, 18 CSRs, C API — 0 bugs; (d) stream load/store correctly omitted; (e) C API naming confirmed correct per RVM 0.6 mnemonics. No new bugs found.
+
+11. **Claude Opus 4.6 #10 (2026-03-20)**: Comprehensive end-to-end verification with parallel spec-comparison agents. Verified ALL 257 instruction encodings field-by-field, complete builtin→intrinsic→instruction chain, panel-aware 2x2 macro decomposition (register modeling, tr4-tr7 handling), C API pointer types, configuration emission correctness, and EEW selection. Re-confirmed 3 spec document errata. **No new bugs found.** All 26 tests pass.
 
 ## Current Limitations
 

@@ -36,6 +36,7 @@
 |------|---------|
 | `clang/test/CodeGen/RISCV/xtheadmatrix-spec-api.c` | 23 Spec-API test cases |
 | `clang/test/CodeGen/RISCV/xtheadmatrix-spec-api-full.c` | Extended Spec-API coverage |
+| `clang/test/CodeGen/RISCV/xtheadmatrix-c-api-pipeline.c` | C API pipeline (RA, dependency, CSR config) |
 | `clang/test/CodeGen/RISCV/xtheadmatrix-api-coverage.c` | Full API function coverage |
 | `clang/test/CodeGen/RISCV/xtheadmatrix-verification-fixes.c` | Verification and bug fix tests |
 | `clang/test/CodeGen/RISCV/xtheadmatrix-x2-types.c` | 15 x2 type test cases (O0+O2) |
@@ -48,6 +49,7 @@
 | `llvm/test/CodeGen/RISCV/xtheadmatrix-managed-ra-full.ll` | Comprehensive ManagedRA test |
 | `llvm/test/CodeGen/RISCV/xtheadmatrix-managed-ra-spill.ll` | Spill/reload test |
 | `llvm/test/CodeGen/RISCV/xtheadmatrix-managed-ra-regclass.ll` | Register class constraint test |
+| `llvm/test/CodeGen/RISCV/xtheadmatrix-managed-ra-pipeline.ll` | Pipeline and scheduling test |
 | `llvm/test/CodeGen/RISCV/xtheadmatrix-managed-ra-misc.ll` | Misc ManagedRA operations |
 | `llvm/test/CodeGen/RISCV/xtheadmatrix-lower-O0.ll` | -O0 lowering test |
 | `llvm/test/MC/RISCV/xtheadmatrix-valid.s` | 227 instruction encoding tests |
@@ -142,3 +144,14 @@
   doc x2 example comment, doc Example 7 (replaced DirectReg builtins with ManagedRA),
   doc spec errata count (3→4)
 - No code changes — documentation only
+
+### Comprehensive end-to-end verification (2026-03-20, Round 11)
+- Parallel spec-comparison agents verified ALL 257 instruction encodings field-by-field,
+  complete builtin→intrinsic→instruction chain, panel-aware 2x2 macro decomposition,
+  C API pointer types, and configuration emission correctness
+- **No new bugs found** across all verification areas — all 26 tests pass
+- Fixed test CHECK patterns: intrinsic name mangling (`.i64` suffix for `llvm_anyint_ty`
+  instantiation), `_Float16*` → `uint16_t*` pointer compatibility, removed non-functional
+  x2 reinterpret inline asm tests (known limitation)
+- Added 2 missing test files to documentation tables (`c-api-pipeline.c`, `managed-ra-pipeline.ll`)
+- Updated verification round count from 10 to 11 across all report files
