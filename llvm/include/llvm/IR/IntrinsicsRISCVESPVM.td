@@ -80,6 +80,12 @@ def int_riscv_esp_vst_128_xp_m : Intrinsic<[llvm_ptr_ty],
                                          [llvm_v16i8_ty, llvm_ptr_ty, llvm_i32_ty], 
                                          [IntrWriteMem, IntrArgMemOnly]>;
 
+// STXQ.32 - (ptr rs1, qw v4i32, qu v8i16, sel4, sel8)
+def int_riscv_esp_stxq_32_m : Intrinsic<[],
+                                        [llvm_ptr_ty, llvm_v4i32_ty, llvm_v8i16_ty, llvm_i32_ty, llvm_i32_ty],
+                                        [IntrWriteMem, IntrArgMemOnly,
+                                         ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
+
 // Load H.64 with Post-Increment (Immediate offset)
 // Returns: { 64-bit data, updated pointer }
 // Parameters: [ original pointer, offset (immediate) ]
@@ -164,6 +170,11 @@ def int_riscv_esp_vldbc_32_ip_m : Intrinsic<[llvm_v4i32_ty, llvm_ptr_ty],
 def int_riscv_esp_vldbc_32_xp_m : Intrinsic<[llvm_v4i32_ty, llvm_ptr_ty], 
                                              [llvm_ptr_ty, llvm_i32_ty], 
                                              [IntrReadMem, IntrArgMemOnly]>;
+
+// VLDHBC.16.INCP - Load and broadcast 16-bit halves; updated pointer in result
+def int_riscv_esp_vldhbc_16_incp_m : Intrinsic<[llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty],
+                                                [llvm_ptr_ty],
+                                                [IntrReadMem, IntrArgMemOnly]>;
 
 // VLDEXT - Vector Load and Extend
 // Loads data and extends it (sign or zero extend)
@@ -287,6 +298,10 @@ def int_riscv_esp_vcmp_eq_s16_m : Intrinsic<[llvm_v8i16_ty],
 def int_riscv_esp_vcmp_eq_u16_m : Intrinsic<[llvm_v8i16_ty], 
                                                [llvm_v8i16_ty, llvm_v8i16_ty], 
                                                [IntrNoMem]>;
+// VCMP.EQ.S32
+def int_riscv_esp_vcmp_eq_s32_m : Intrinsic<[llvm_v4i32_ty], 
+                                               [llvm_v4i32_ty, llvm_v4i32_ty], 
+                                               [IntrNoMem]>;
 // VCMP.EQ.U32
 def int_riscv_esp_vcmp_eq_u32_m : Intrinsic<[llvm_v4i32_ty], 
                                                [llvm_v4i32_ty, llvm_v4i32_ty], 
@@ -303,6 +318,10 @@ def int_riscv_esp_vcmp_gt_s16_m : Intrinsic<[llvm_v8i16_ty],
 def int_riscv_esp_vcmp_gt_u16_m : Intrinsic<[llvm_v8i16_ty], 
                                                [llvm_v8i16_ty, llvm_v8i16_ty], 
                                                [IntrNoMem]>;
+// VCMP.GT.S32
+def int_riscv_esp_vcmp_gt_s32_m : Intrinsic<[llvm_v4i32_ty], 
+                                               [llvm_v4i32_ty, llvm_v4i32_ty], 
+                                               [IntrNoMem]>;
 // VCMP.GT.U32
 def int_riscv_esp_vcmp_gt_u32_m : Intrinsic<[llvm_v4i32_ty], 
                                                [llvm_v4i32_ty, llvm_v4i32_ty], 
@@ -318,6 +337,10 @@ def int_riscv_esp_vcmp_lt_s16_m : Intrinsic<[llvm_v8i16_ty],
 // VCMP.LT.U16
 def int_riscv_esp_vcmp_lt_u16_m : Intrinsic<[llvm_v8i16_ty], 
                                                [llvm_v8i16_ty, llvm_v8i16_ty], 
+                                               [IntrNoMem]>;
+// VCMP.LT.S32
+def int_riscv_esp_vcmp_lt_s32_m : Intrinsic<[llvm_v4i32_ty], 
+                                               [llvm_v4i32_ty, llvm_v4i32_ty], 
                                                [IntrNoMem]>;
 // VCMP.LT.U32
 def int_riscv_esp_vcmp_lt_u32_m : Intrinsic<[llvm_v4i32_ty], 
@@ -346,6 +369,14 @@ def int_riscv_esp_vprelu_s8_m : Intrinsic<[llvm_v16i8_ty],
                                           [llvm_v16i8_ty, llvm_v16i8_ty, llvm_i32_ty], 
                                           [IntrNoMem]>;
 
+// VRELU - Signed 16-bit (in-place on qy)
+def int_riscv_esp_vrelu_s16_m : Intrinsic<[llvm_v8i16_ty],
+                                          [llvm_v8i16_ty, llvm_i32_ty, llvm_i32_ty],
+                                          [IntrNoMem]>;
+// VRELU - Signed 8-bit
+def int_riscv_esp_vrelu_s8_m : Intrinsic<[llvm_v16i8_ty],
+                                         [llvm_v16i8_ty, llvm_i32_ty, llvm_i32_ty],
+                                         [IntrNoMem]>;
 
 // VUNZIP - Vector unzip (deinterleave)
 // Returns modified vectors (Read-Modify-Write operation)
@@ -595,6 +626,14 @@ def int_riscv_esp_movx_w_fft_bit_width_m : Intrinsic<[llvm_i32_ty],
 def int_riscv_esp_movx_r_fft_bit_width_m : Intrinsic<[llvm_i32_ty], 
                                                      [llvm_i32_ty], 
                                                      [IntrNoMem]>;
+
+// MOVX.W.PERF / MOVX.R.PERF - PERF explicit state (i32 token) and GPR rs1
+def int_riscv_esp_movx_w_perf_m : Intrinsic<[llvm_i32_ty],
+                                          [llvm_i32_ty, llvm_i32_ty],
+                                          [IntrNoMem]>;
+def int_riscv_esp_movx_r_perf_m : Intrinsic<[llvm_i32_ty],
+                                           [llvm_i32_ty, llvm_i32_ty],
+                                           [IntrNoMem]>;
 
 // FFT.R2BF.S16 - FFT Radix-2 Butterfly operation
 // Has 2 outputs (qz, qv) and 3 inputs (qx, qy, sel2)
@@ -1716,6 +1755,211 @@ def int_riscv_esp_vadd_u8_st_incp_m : Intrinsic<
 	[IntrWriteMem, IntrArgMemOnly]
 >;
 
+// ESP.VADD.S32 / U32.LD.INCP, .ST.INCP (_m)
+def int_riscv_esp_vadd_s32_ld_incp_m : Intrinsic<
+	[llvm_v4i32_ty, llvm_v16i8_ty, llvm_ptr_ty],
+	[llvm_v4i32_ty, llvm_v4i32_ty, llvm_ptr_ty],
+	[IntrReadMem, IntrArgMemOnly]>;
+def int_riscv_esp_vadd_s32_st_incp_m : Intrinsic<
+	[llvm_v4i32_ty, llvm_ptr_ty],
+	[llvm_v4i32_ty, llvm_v4i32_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_v4i32_ty],
+	[IntrWriteMem, IntrArgMemOnly]>;
+def int_riscv_esp_vadd_u32_ld_incp_m : Intrinsic<
+	[llvm_v4i32_ty, llvm_v16i8_ty, llvm_ptr_ty],
+	[llvm_v4i32_ty, llvm_v4i32_ty, llvm_ptr_ty],
+	[IntrReadMem, IntrArgMemOnly]>;
+def int_riscv_esp_vadd_u32_st_incp_m : Intrinsic<
+	[llvm_v4i32_ty, llvm_ptr_ty],
+	[llvm_v4i32_ty, llvm_v4i32_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_v4i32_ty],
+	[IntrWriteMem, IntrArgMemOnly]>;
+
+// ESP.VMAX.*.LD/ST.INCP (_m)
+def int_riscv_esp_vmax_s8_ld_incp_m : Intrinsic<
+	[llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty],
+	[llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty],
+	[IntrReadMem, IntrArgMemOnly]>;
+def int_riscv_esp_vmax_s8_st_incp_m : Intrinsic<
+	[llvm_v16i8_ty, llvm_ptr_ty],
+	[llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_v16i8_ty],
+	[IntrWriteMem, IntrArgMemOnly]>;
+def int_riscv_esp_vmax_s16_ld_incp_m : Intrinsic<
+	[llvm_v8i16_ty, llvm_v16i8_ty, llvm_ptr_ty],
+	[llvm_v8i16_ty, llvm_v8i16_ty, llvm_ptr_ty],
+	[IntrReadMem, IntrArgMemOnly]>;
+def int_riscv_esp_vmax_s16_st_incp_m : Intrinsic<
+	[llvm_v8i16_ty, llvm_ptr_ty],
+	[llvm_v8i16_ty, llvm_v8i16_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_v8i16_ty],
+	[IntrWriteMem, IntrArgMemOnly]>;
+def int_riscv_esp_vmax_s32_ld_incp_m : Intrinsic<
+	[llvm_v4i32_ty, llvm_v16i8_ty, llvm_ptr_ty],
+	[llvm_v4i32_ty, llvm_v4i32_ty, llvm_ptr_ty],
+	[IntrReadMem, IntrArgMemOnly]>;
+def int_riscv_esp_vmax_s32_st_incp_m : Intrinsic<
+	[llvm_v4i32_ty, llvm_ptr_ty],
+	[llvm_v4i32_ty, llvm_v4i32_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_v4i32_ty],
+	[IntrWriteMem, IntrArgMemOnly]>;
+def int_riscv_esp_vmax_u8_ld_incp_m : Intrinsic<
+	[llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty],
+	[llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty],
+	[IntrReadMem, IntrArgMemOnly]>;
+def int_riscv_esp_vmax_u8_st_incp_m : Intrinsic<
+	[llvm_v16i8_ty, llvm_ptr_ty],
+	[llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_v16i8_ty],
+	[IntrWriteMem, IntrArgMemOnly]>;
+def int_riscv_esp_vmax_u16_ld_incp_m : Intrinsic<
+	[llvm_v8i16_ty, llvm_v16i8_ty, llvm_ptr_ty],
+	[llvm_v8i16_ty, llvm_v8i16_ty, llvm_ptr_ty],
+	[IntrReadMem, IntrArgMemOnly]>;
+def int_riscv_esp_vmax_u16_st_incp_m : Intrinsic<
+	[llvm_v8i16_ty, llvm_ptr_ty],
+	[llvm_v8i16_ty, llvm_v8i16_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_v8i16_ty],
+	[IntrWriteMem, IntrArgMemOnly]>;
+def int_riscv_esp_vmax_u32_ld_incp_m : Intrinsic<
+	[llvm_v4i32_ty, llvm_v16i8_ty, llvm_ptr_ty],
+	[llvm_v4i32_ty, llvm_v4i32_ty, llvm_ptr_ty],
+	[IntrReadMem, IntrArgMemOnly]>;
+def int_riscv_esp_vmax_u32_st_incp_m : Intrinsic<
+	[llvm_v4i32_ty, llvm_ptr_ty],
+	[llvm_v4i32_ty, llvm_v4i32_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_v4i32_ty],
+	[IntrWriteMem, IntrArgMemOnly]>;
+
+// ESP.VMIN.*.LD/ST.INCP (_m)
+def int_riscv_esp_vmin_s8_ld_incp_m : Intrinsic<
+	[llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty],
+	[llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty],
+	[IntrReadMem, IntrArgMemOnly]>;
+def int_riscv_esp_vmin_s8_st_incp_m : Intrinsic<
+	[llvm_v16i8_ty, llvm_ptr_ty],
+	[llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_v16i8_ty],
+	[IntrWriteMem, IntrArgMemOnly]>;
+def int_riscv_esp_vmin_s16_ld_incp_m : Intrinsic<
+	[llvm_v8i16_ty, llvm_v16i8_ty, llvm_ptr_ty],
+	[llvm_v8i16_ty, llvm_v8i16_ty, llvm_ptr_ty],
+	[IntrReadMem, IntrArgMemOnly]>;
+def int_riscv_esp_vmin_s16_st_incp_m : Intrinsic<
+	[llvm_v8i16_ty, llvm_ptr_ty],
+	[llvm_v8i16_ty, llvm_v8i16_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_v8i16_ty],
+	[IntrWriteMem, IntrArgMemOnly]>;
+def int_riscv_esp_vmin_s32_ld_incp_m : Intrinsic<
+	[llvm_v4i32_ty, llvm_v16i8_ty, llvm_ptr_ty],
+	[llvm_v4i32_ty, llvm_v4i32_ty, llvm_ptr_ty],
+	[IntrReadMem, IntrArgMemOnly]>;
+def int_riscv_esp_vmin_s32_st_incp_m : Intrinsic<
+	[llvm_v4i32_ty, llvm_ptr_ty],
+	[llvm_v4i32_ty, llvm_v4i32_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_v4i32_ty],
+	[IntrWriteMem, IntrArgMemOnly]>;
+def int_riscv_esp_vmin_u8_ld_incp_m : Intrinsic<
+	[llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty],
+	[llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty],
+	[IntrReadMem, IntrArgMemOnly]>;
+def int_riscv_esp_vmin_u8_st_incp_m : Intrinsic<
+	[llvm_v16i8_ty, llvm_ptr_ty],
+	[llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_v16i8_ty],
+	[IntrWriteMem, IntrArgMemOnly]>;
+def int_riscv_esp_vmin_u16_ld_incp_m : Intrinsic<
+	[llvm_v8i16_ty, llvm_v16i8_ty, llvm_ptr_ty],
+	[llvm_v8i16_ty, llvm_v8i16_ty, llvm_ptr_ty],
+	[IntrReadMem, IntrArgMemOnly]>;
+def int_riscv_esp_vmin_u16_st_incp_m : Intrinsic<
+	[llvm_v8i16_ty, llvm_ptr_ty],
+	[llvm_v8i16_ty, llvm_v8i16_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_v8i16_ty],
+	[IntrWriteMem, IntrArgMemOnly]>;
+def int_riscv_esp_vmin_u32_ld_incp_m : Intrinsic<
+	[llvm_v4i32_ty, llvm_v16i8_ty, llvm_ptr_ty],
+	[llvm_v4i32_ty, llvm_v4i32_ty, llvm_ptr_ty],
+	[IntrReadMem, IntrArgMemOnly]>;
+def int_riscv_esp_vmin_u32_st_incp_m : Intrinsic<
+	[llvm_v4i32_ty, llvm_ptr_ty],
+	[llvm_v4i32_ty, llvm_v4i32_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_v4i32_ty],
+	[IntrWriteMem, IntrArgMemOnly]>;
+
+// ESP.VSUB.*.LD/ST.INCP (_m)
+def int_riscv_esp_vsub_s8_ld_incp_m : Intrinsic<
+	[llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty],
+	[llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty],
+	[IntrReadMem, IntrArgMemOnly]>;
+def int_riscv_esp_vsub_s8_st_incp_m : Intrinsic<
+	[llvm_v16i8_ty, llvm_ptr_ty],
+	[llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_v16i8_ty],
+	[IntrWriteMem, IntrArgMemOnly]>;
+def int_riscv_esp_vsub_s16_ld_incp_m : Intrinsic<
+	[llvm_v8i16_ty, llvm_v16i8_ty, llvm_ptr_ty],
+	[llvm_v8i16_ty, llvm_v8i16_ty, llvm_ptr_ty],
+	[IntrReadMem, IntrArgMemOnly]>;
+def int_riscv_esp_vsub_s16_st_incp_m : Intrinsic<
+	[llvm_v8i16_ty, llvm_ptr_ty],
+	[llvm_v8i16_ty, llvm_v8i16_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_v8i16_ty],
+	[IntrWriteMem, IntrArgMemOnly]>;
+def int_riscv_esp_vsub_s32_ld_incp_m : Intrinsic<
+	[llvm_v4i32_ty, llvm_v16i8_ty, llvm_ptr_ty],
+	[llvm_v4i32_ty, llvm_v4i32_ty, llvm_ptr_ty],
+	[IntrReadMem, IntrArgMemOnly]>;
+def int_riscv_esp_vsub_s32_st_incp_m : Intrinsic<
+	[llvm_v4i32_ty, llvm_ptr_ty],
+	[llvm_v4i32_ty, llvm_v4i32_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_v4i32_ty],
+	[IntrWriteMem, IntrArgMemOnly]>;
+def int_riscv_esp_vsub_u8_ld_incp_m : Intrinsic<
+	[llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty],
+	[llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty],
+	[IntrReadMem, IntrArgMemOnly]>;
+def int_riscv_esp_vsub_u8_st_incp_m : Intrinsic<
+	[llvm_v16i8_ty, llvm_ptr_ty],
+	[llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_v16i8_ty],
+	[IntrWriteMem, IntrArgMemOnly]>;
+def int_riscv_esp_vsub_u16_ld_incp_m : Intrinsic<
+	[llvm_v8i16_ty, llvm_v16i8_ty, llvm_ptr_ty],
+	[llvm_v8i16_ty, llvm_v8i16_ty, llvm_ptr_ty],
+	[IntrReadMem, IntrArgMemOnly]>;
+def int_riscv_esp_vsub_u16_st_incp_m : Intrinsic<
+	[llvm_v8i16_ty, llvm_ptr_ty],
+	[llvm_v8i16_ty, llvm_v8i16_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_v8i16_ty],
+	[IntrWriteMem, IntrArgMemOnly]>;
+def int_riscv_esp_vsub_u32_ld_incp_m : Intrinsic<
+	[llvm_v4i32_ty, llvm_v16i8_ty, llvm_ptr_ty],
+	[llvm_v4i32_ty, llvm_v4i32_ty, llvm_ptr_ty],
+	[IntrReadMem, IntrArgMemOnly]>;
+def int_riscv_esp_vsub_u32_st_incp_m : Intrinsic<
+	[llvm_v4i32_ty, llvm_ptr_ty],
+	[llvm_v4i32_ty, llvm_v4i32_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_v4i32_ty],
+	[IntrWriteMem, IntrArgMemOnly]>;
+
+// ESP.VMUL.S8 / U8 / U16.LD.INCP, .ST.INCP (_m, explicit SAR)
+def int_riscv_esp_vmul_s8_ld_incp_m : Intrinsic<
+	[llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty],
+	[llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_i32_ty],
+	[IntrReadMem, IntrArgMemOnly]>;
+def int_riscv_esp_vmul_s8_st_incp_m : Intrinsic<
+	[llvm_v16i8_ty, llvm_ptr_ty],
+	[llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_v16i8_ty, llvm_i32_ty],
+	[IntrWriteMem, IntrArgMemOnly]>;
+def int_riscv_esp_vmul_u8_ld_incp_m : Intrinsic<
+	[llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty],
+	[llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_i32_ty],
+	[IntrReadMem, IntrArgMemOnly]>;
+def int_riscv_esp_vmul_u8_st_incp_m : Intrinsic<
+	[llvm_v16i8_ty, llvm_ptr_ty],
+	[llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_v16i8_ty, llvm_i32_ty],
+	[IntrWriteMem, IntrArgMemOnly]>;
+def int_riscv_esp_vmul_u16_ld_incp_m : Intrinsic<
+	[llvm_v8i16_ty, llvm_v16i8_ty, llvm_ptr_ty],
+	[llvm_v8i16_ty, llvm_v8i16_ty, llvm_ptr_ty, llvm_i32_ty],
+	[IntrReadMem, IntrArgMemOnly]>;
+def int_riscv_esp_vmul_u16_st_incp_m : Intrinsic<
+	[llvm_v8i16_ty, llvm_ptr_ty],
+	[llvm_v8i16_ty, llvm_v8i16_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_v8i16_ty, llvm_i32_ty],
+	[IntrWriteMem, IntrArgMemOnly]>;
+
+// GPR ALU (.m) — SSA model: rd = op(rs1, rs2); maps to esp.{addx2,addx4,subx2,subx4} rd, rs1, rs2.
+def int_riscv_esp_addx2_m : ClangBuiltin<"__builtin_riscv_esp_addx2_m">,
+	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [IntrNoMem]>;
+def int_riscv_esp_addx4_m : ClangBuiltin<"__builtin_riscv_esp_addx4_m">,
+	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [IntrNoMem]>;
+def int_riscv_esp_subx2_m : ClangBuiltin<"__builtin_riscv_esp_subx2_m">,
+	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [IntrNoMem]>;
+def int_riscv_esp_subx4_m : ClangBuiltin<"__builtin_riscv_esp_subx4_m">,
+	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [IntrNoMem]>;
+def int_riscv_esp_sat_m : Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [IntrNoMem]>;
+
 // SRC.Q - Shift Right Concatenated Quad registers (_m version)
 // Performs arithmetic right shift on concatenated qy and qw using SAR_BYTES register
 // Returns: shifted result in qz
@@ -2459,14 +2703,14 @@ def int_riscv_esp_vmulas_u8_qacc_ldbc_incp_m :
 // Returns modified values, input and output registers are the same due to constraints
 def int_riscv_esp_slci_2q_m : Intrinsic<[llvm_v16i8_ty, llvm_v16i8_ty], 
                                            [llvm_v16i8_ty, llvm_v16i8_ty, llvm_i32_ty], 
-                                           [IntrNoMem]>;
+                                           [IntrNoMem, ImmArg<ArgIndex<2>>]>;
 
 // SRCI.2Q - Shift Right with Immediate, 2 Quad registers
 // Shifts concatenated qy and qw right, updates both registers in-place
 // Returns modified values, input and output registers are the same due to constraints
 def int_riscv_esp_srci_2q_m : Intrinsic<[llvm_v16i8_ty, llvm_v16i8_ty], 
                                            [llvm_v16i8_ty, llvm_v16i8_ty, llvm_i32_ty], 
-                                           [IntrNoMem]>;
+                                           [IntrNoMem, ImmArg<ArgIndex<2>>]>;
 
 // VSLD.32 - 32-bit vector shift
 def int_riscv_esp_vsld_32_m : Intrinsic<[llvm_v4i32_ty], 

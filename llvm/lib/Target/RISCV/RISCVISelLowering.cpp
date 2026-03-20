@@ -155,7 +155,7 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
     else
       addRegisterClass(MVT::f64, &RISCV::GPRPairRegClass);
   }
-
+  // ESPV register classes: +xespv (2.2), or +xespv1v with +espv-lowering.
   if (Subtarget.hasESPVTargetLowering()) {
     initializeESPVTargetLowering(Subtarget);
     // ESPV: Support for v64i8 (512-bit QACC pair)
@@ -11605,11 +11605,14 @@ static inline SDValue getVCIXISDNodeVOID(SDValue Op, SelectionDAG &DAG,
   return DAG.getNode(Type, SDLoc(Op), Op.getValueType(), Operands);
 }
 
-static SDValue
-lowerFixedVectorSegLoadIntrinsics(unsigned IntNo, SDValue Op,
-                                  const RISCVSubtarget &Subtarget,
-                                  SelectionDAG &DAG) {
-  bool IsStrided;
+SDValue RISCVTargetLowering::LowerINTRINSIC_W_CHAIN(SDValue Op,
+                                                    SelectionDAG &DAG) const {
+  unsigned IntNo = Op.getConstantOperandVal(1);
+  
+  // Try ESPV intrinsic lowering first
+  if (SDValue V = RISCV::lowerESPVIntrinsicWChain(Op, DAG, Subtarget))
+    return V;
+
   switch (IntNo) {
   case Intrinsic::riscv_seg2_load_mask:
   case Intrinsic::riscv_seg3_load_mask:
@@ -15555,7 +15558,7 @@ void RISCVTargetLowering::ReplaceNodeResults(SDNode *N,
         }
       }
     }
-  
+
     switch (IntNo) {
     default:
       llvm_unreachable(

@@ -93,6 +93,52 @@ void test_vmin_u8(void *src1, void *src2, void *dst) {
     esp_vst_128_ip_m(min_val, dst, 16);
 }
 
+// GPR ALU (.m): Builtin -> Intrinsic (@llvm.riscv.esp.*.m)
+unsigned int __builtin_riscv_esp_addx2_m(unsigned int, unsigned int);
+unsigned int __builtin_riscv_esp_addx4_m(unsigned int, unsigned int);
+unsigned int __builtin_riscv_esp_subx2_m(unsigned int, unsigned int);
+unsigned int __builtin_riscv_esp_subx4_m(unsigned int, unsigned int);
+
+// CHECK-LABEL: define dso_local i32 @test_gpr_addx2_m(
+// CHECK-SAME: i32 noundef [[A:%.*]], i32 noundef [[B:%.*]]) local_unnamed_addr #[[ATTR2:[0-9]+]] {
+// CHECK-NEXT:  [[ENTRY:.*:]]
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.addx2.m(i32 [[A]], i32 [[B]])
+// CHECK-NEXT:    ret i32 [[TMP0]]
+//
+unsigned test_gpr_addx2_m(unsigned a, unsigned b) {
+  return __builtin_riscv_esp_addx2_m(a, b);
+}
+
+// CHECK-LABEL: define dso_local i32 @test_gpr_addx4_m(
+// CHECK-SAME: i32 noundef [[A:%.*]], i32 noundef [[B:%.*]]) local_unnamed_addr #[[ATTR2]] {
+// CHECK-NEXT:  [[ENTRY:.*:]]
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.addx4.m(i32 [[A]], i32 [[B]])
+// CHECK-NEXT:    ret i32 [[TMP0]]
+//
+unsigned test_gpr_addx4_m(unsigned a, unsigned b) {
+  return __builtin_riscv_esp_addx4_m(a, b);
+}
+
+// CHECK-LABEL: define dso_local i32 @test_gpr_subx2_m(
+// CHECK-SAME: i32 noundef [[A:%.*]], i32 noundef [[B:%.*]]) local_unnamed_addr #[[ATTR2]] {
+// CHECK-NEXT:  [[ENTRY:.*:]]
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.subx2.m(i32 [[A]], i32 [[B]])
+// CHECK-NEXT:    ret i32 [[TMP0]]
+//
+unsigned test_gpr_subx2_m(unsigned a, unsigned b) {
+  return __builtin_riscv_esp_subx2_m(a, b);
+}
+
+// CHECK-LABEL: define dso_local i32 @test_gpr_subx4_m(
+// CHECK-SAME: i32 noundef [[A:%.*]], i32 noundef [[B:%.*]]) local_unnamed_addr #[[ATTR2]] {
+// CHECK-NEXT:  [[ENTRY:.*:]]
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.subx4.m(i32 [[A]], i32 [[B]])
+// CHECK-NEXT:    ret i32 [[TMP0]]
+//
+unsigned test_gpr_subx4_m(unsigned a, unsigned b) {
+  return __builtin_riscv_esp_subx4_m(a, b);
+}
+
 // Vector absolute value (8-bit)
 //
 

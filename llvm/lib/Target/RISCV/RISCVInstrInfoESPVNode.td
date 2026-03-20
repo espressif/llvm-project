@@ -56,6 +56,17 @@ def riscv_esp_ld_128_usar_xp_m : RVSDNode<"ESP_LD_128_USAR_XP_M", SDT_ESPLD128US
 def riscv_esp_vst_128_xp_m : RVSDNode<"ESP_VST_128_XP_M", SDT_ESPVST128XPM,
                                       [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
 
+// ESP.LDXQ.32 (_m): load into qu using ptr (rs1), qw vector, sel4/sel8 immediates.
+def SDT_ESPLDXQ32M : SDTypeProfile<1, 4, [
+  SDTCisVT<0, v4i32>,      // Result 0: qu (QR)
+  SDTCisPtrTy<1>,          // Operand 0: ptr (rs1)
+  SDTCisVT<2, v8i16>,      // Operand 1: qw
+  SDTCisVT<3, i32>,        // Operand 2: sel4
+  SDTCisVT<4, i32>         // Operand 3: sel8
+]>;
+def riscv_esp_ldxq_32_m : RVSDNode<"ESP_LDXQ_32_M", SDT_ESPLDXQ32M,
+                                   [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+
 // SRCQ.128.ST.INCP SDNode
 // Result: rs1r (updated pointer)
 // Operands: qy (v16i8 vector), qw (v16i8 vector), rs1 (pointer)
@@ -776,6 +787,55 @@ def riscv_esp_vadd_u16_ld_incp_m : RVSDNode<"ESP_VADD_U16_LD_INCP_M", SDT_ESPVAD
                                            [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
 def riscv_esp_vadd_u8_ld_incp_m : RVSDNode<"ESP_VADD_U8_LD_INCP_M", SDT_ESPVADDU8LDINCPM,
                                            [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+// VADD S32/U32 LD.INCP (v4i32 QR + v16i8 loaded half)
+def SDT_ESPVADDS32LDINCPM : SDTypeProfile<3, 3, [
+  SDTCisVT<0, v4i32>,
+  SDTCisVT<1, v16i8>,
+  SDTCisPtrTy<2>,
+  SDTCisVT<3, v4i32>,
+  SDTCisVT<4, v4i32>,
+  SDTCisPtrTy<5>
+]>;
+def riscv_esp_vadd_s32_ld_incp_m : RVSDNode<"ESP_VADD_S32_LD_INCP_M", SDT_ESPVADDS32LDINCPM,
+                                           [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_vadd_u32_ld_incp_m : RVSDNode<"ESP_VADD_U32_LD_INCP_M", SDT_ESPVADDS32LDINCPM,
+                                           [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_vmax_s8_ld_incp_m : RVSDNode<"ESP_VMAX_S8_LD_INCP_M", SDT_ESPVADDS8LDINCPM,
+                                           [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_vmax_s16_ld_incp_m : RVSDNode<"ESP_VMAX_S16_LD_INCP_M", SDT_ESPVADDS16LDINCPM,
+                                           [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_vmax_s32_ld_incp_m : RVSDNode<"ESP_VMAX_S32_LD_INCP_M", SDT_ESPVADDS32LDINCPM,
+                                           [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_vmax_u8_ld_incp_m : RVSDNode<"ESP_VMAX_U8_LD_INCP_M", SDT_ESPVADDU8LDINCPM,
+                                           [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_vmax_u16_ld_incp_m : RVSDNode<"ESP_VMAX_U16_LD_INCP_M", SDT_ESPVADDU16LDINCPM,
+                                           [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_vmax_u32_ld_incp_m : RVSDNode<"ESP_VMAX_U32_LD_INCP_M", SDT_ESPVADDS32LDINCPM,
+                                           [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_vmin_s8_ld_incp_m : RVSDNode<"ESP_VMIN_S8_LD_INCP_M", SDT_ESPVADDS8LDINCPM,
+                                           [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_vmin_s16_ld_incp_m : RVSDNode<"ESP_VMIN_S16_LD_INCP_M", SDT_ESPVADDS16LDINCPM,
+                                           [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_vmin_s32_ld_incp_m : RVSDNode<"ESP_VMIN_S32_LD_INCP_M", SDT_ESPVADDS32LDINCPM,
+                                           [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_vmin_u8_ld_incp_m : RVSDNode<"ESP_VMIN_U8_LD_INCP_M", SDT_ESPVADDU8LDINCPM,
+                                           [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_vmin_u16_ld_incp_m : RVSDNode<"ESP_VMIN_U16_LD_INCP_M", SDT_ESPVADDU16LDINCPM,
+                                           [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_vmin_u32_ld_incp_m : RVSDNode<"ESP_VMIN_U32_LD_INCP_M", SDT_ESPVADDS32LDINCPM,
+                                           [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_vsub_s8_ld_incp_m : RVSDNode<"ESP_VSUB_S8_LD_INCP_M", SDT_ESPVADDS8LDINCPM,
+                                           [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_vsub_s16_ld_incp_m : RVSDNode<"ESP_VSUB_S16_LD_INCP_M", SDT_ESPVADDS16LDINCPM,
+                                           [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_vsub_s32_ld_incp_m : RVSDNode<"ESP_VSUB_S32_LD_INCP_M", SDT_ESPVADDS32LDINCPM,
+                                           [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_vsub_u8_ld_incp_m : RVSDNode<"ESP_VSUB_U8_LD_INCP_M", SDT_ESPVADDU8LDINCPM,
+                                           [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_vsub_u16_ld_incp_m : RVSDNode<"ESP_VSUB_U16_LD_INCP_M", SDT_ESPVADDU16LDINCPM,
+                                           [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_vsub_u32_ld_incp_m : RVSDNode<"ESP_VSUB_U32_LD_INCP_M", SDT_ESPVADDS32LDINCPM,
+                                           [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
 // VADD ST INCP SDNodes
 // Results: qv (vector), rs1r (pointer)
 // Operands: qx (vector), qy (vector), qu (vector), rs1 (pointer)
@@ -819,6 +879,54 @@ def riscv_esp_vadd_u16_st_incp_m : RVSDNode<"ESP_VADD_U16_ST_INCP_M", SDT_ESPVAD
                                            [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
 def riscv_esp_vadd_u8_st_incp_m : RVSDNode<"ESP_VADD_U8_ST_INCP_M", SDT_ESPVADDU8STINCPM,
                                            [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def SDT_ESPVADDS32STINCPM : SDTypeProfile<2, 4, [
+  SDTCisVT<0, v4i32>,
+  SDTCisPtrTy<1>,
+  SDTCisVT<2, v4i32>,
+  SDTCisVT<3, v4i32>,
+  SDTCisVT<4, v16i8>,
+  SDTCisPtrTy<5>
+]>;
+def riscv_esp_vadd_s32_st_incp_m : RVSDNode<"ESP_VADD_S32_ST_INCP_M", SDT_ESPVADDS32STINCPM,
+                                           [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def riscv_esp_vadd_u32_st_incp_m : RVSDNode<"ESP_VADD_U32_ST_INCP_M", SDT_ESPVADDS32STINCPM,
+                                           [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def riscv_esp_vmax_s8_st_incp_m : RVSDNode<"ESP_VMAX_S8_ST_INCP_M", SDT_ESPVADDS8STINCPM,
+                                           [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def riscv_esp_vmax_s16_st_incp_m : RVSDNode<"ESP_VMAX_S16_ST_INCP_M", SDT_ESPVADDS16STINCPM,
+                                           [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def riscv_esp_vmax_s32_st_incp_m : RVSDNode<"ESP_VMAX_S32_ST_INCP_M", SDT_ESPVADDS32STINCPM,
+                                           [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def riscv_esp_vmax_u8_st_incp_m : RVSDNode<"ESP_VMAX_U8_ST_INCP_M", SDT_ESPVADDU8STINCPM,
+                                           [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def riscv_esp_vmax_u16_st_incp_m : RVSDNode<"ESP_VMAX_U16_ST_INCP_M", SDT_ESPVADDU16STINCPM,
+                                           [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def riscv_esp_vmax_u32_st_incp_m : RVSDNode<"ESP_VMAX_U32_ST_INCP_M", SDT_ESPVADDS32STINCPM,
+                                           [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def riscv_esp_vmin_s8_st_incp_m : RVSDNode<"ESP_VMIN_S8_ST_INCP_M", SDT_ESPVADDS8STINCPM,
+                                           [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def riscv_esp_vmin_s16_st_incp_m : RVSDNode<"ESP_VMIN_S16_ST_INCP_M", SDT_ESPVADDS16STINCPM,
+                                           [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def riscv_esp_vmin_s32_st_incp_m : RVSDNode<"ESP_VMIN_S32_ST_INCP_M", SDT_ESPVADDS32STINCPM,
+                                           [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def riscv_esp_vmin_u8_st_incp_m : RVSDNode<"ESP_VMIN_U8_ST_INCP_M", SDT_ESPVADDU8STINCPM,
+                                           [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def riscv_esp_vmin_u16_st_incp_m : RVSDNode<"ESP_VMIN_U16_ST_INCP_M", SDT_ESPVADDU16STINCPM,
+                                           [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def riscv_esp_vmin_u32_st_incp_m : RVSDNode<"ESP_VMIN_U32_ST_INCP_M", SDT_ESPVADDS32STINCPM,
+                                           [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def riscv_esp_vsub_s8_st_incp_m : RVSDNode<"ESP_VSUB_S8_ST_INCP_M", SDT_ESPVADDS8STINCPM,
+                                           [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def riscv_esp_vsub_s16_st_incp_m : RVSDNode<"ESP_VSUB_S16_ST_INCP_M", SDT_ESPVADDS16STINCPM,
+                                           [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def riscv_esp_vsub_s32_st_incp_m : RVSDNode<"ESP_VSUB_S32_ST_INCP_M", SDT_ESPVADDS32STINCPM,
+                                           [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def riscv_esp_vsub_u8_st_incp_m : RVSDNode<"ESP_VSUB_U8_ST_INCP_M", SDT_ESPVADDU8STINCPM,
+                                           [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def riscv_esp_vsub_u16_st_incp_m : RVSDNode<"ESP_VSUB_U16_ST_INCP_M", SDT_ESPVADDU16STINCPM,
+                                           [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def riscv_esp_vsub_u32_st_incp_m : RVSDNode<"ESP_VSUB_U32_ST_INCP_M", SDT_ESPVADDS32STINCPM,
+                                           [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
 
 // VMUL LD.INCP SDNodes
 // Results: qv (vector), qu (vector), rs1r (pointer)
@@ -848,6 +956,37 @@ def SDT_ESPVMULS16STINCPM : SDTypeProfile<2, 5, [
   SDTCisVT<6, i32>         // Operand 4: sar (SAR register value, explicit state passing, i32, only low 6 bits used)
 ]>;
 def riscv_esp_vmul_s16_st_incp_m : RVSDNode<"ESP_VMUL_S16_ST_INCP_M", SDT_ESPVMULS16STINCPM,
+                                           [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+
+def SDT_ESPVMULS8LDINCPM : SDTypeProfile<3, 4, [
+  SDTCisVT<0, v16i8>,
+  SDTCisVT<1, v16i8>,
+  SDTCisPtrTy<2>,
+  SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>,
+  SDTCisPtrTy<5>,
+  SDTCisVT<6, i32>
+]>;
+def SDT_ESPVMULS8STINCPM : SDTypeProfile<2, 5, [
+  SDTCisVT<0, v16i8>,
+  SDTCisPtrTy<1>,
+  SDTCisVT<2, v16i8>,
+  SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>,
+  SDTCisPtrTy<5>,
+  SDTCisVT<6, i32>
+]>;
+def riscv_esp_vmul_s8_ld_incp_m : RVSDNode<"ESP_VMUL_S8_LD_INCP_M", SDT_ESPVMULS8LDINCPM,
+                                           [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_vmul_u8_ld_incp_m : RVSDNode<"ESP_VMUL_U8_LD_INCP_M", SDT_ESPVMULS8LDINCPM,
+                                           [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_vmul_u16_ld_incp_m : RVSDNode<"ESP_VMUL_U16_LD_INCP_M", SDT_ESPVMULS16LDINCPM,
+                                           [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_vmul_s8_st_incp_m : RVSDNode<"ESP_VMUL_S8_ST_INCP_M", SDT_ESPVMULS8STINCPM,
+                                           [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def riscv_esp_vmul_u8_st_incp_m : RVSDNode<"ESP_VMUL_U8_ST_INCP_M", SDT_ESPVMULS8STINCPM,
+                                           [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def riscv_esp_vmul_u16_st_incp_m : RVSDNode<"ESP_VMUL_U16_ST_INCP_M", SDT_ESPVMULS16STINCPM,
                                            [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
 
 // VCMULAS pure compute SDNodes (no memory access, explicit passthru)
@@ -1350,6 +1489,8 @@ def SDT_ESPVSMULASS8QACCM : SDTypeProfile<4, 7, [
 ]>;
 def riscv_esp_vsmulas_s16_qacc_m : RVSDNode<"ESP_VSMULAS_S16_QACC_M", SDT_ESPVSMULASS16QACCM>;
 def riscv_esp_vsmulas_s8_qacc_m : RVSDNode<"ESP_VSMULAS_S8_QACC_M", SDT_ESPVSMULASS8QACCM>;
+def riscv_esp_vsmulas_u16_qacc_m : RVSDNode<"ESP_VSMULAS_U16_QACC_M", SDT_ESPVSMULASS16QACCM>;
+def riscv_esp_vsmulas_u8_qacc_m : RVSDNode<"ESP_VSMULAS_U8_QACC_M", SDT_ESPVSMULASS8QACCM>;
 
 // VMULAS XACC SDNodes - Vector Multiply-Accumulate to XACC with explicit state passing
 // Results: new XACC (i64, only low 40 bits used) as {i32 low, i32 high}
@@ -1489,6 +1630,15 @@ def riscv_esp_vmulas_u16_qacc_ld_ip_m : RVSDNode<"ESP_VMULAS_U16_QACC_LD_IP_M", 
                                                   [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
 def riscv_esp_vmulas_u8_qacc_ld_ip_m : RVSDNode<"ESP_VMULAS_U8_QACC_LD_IP_M", SDT_ESPVMULASU8QACCLDIPM,
                                                  [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+
+def riscv_esp_vsmulas_s16_qacc_ld_incp_m : RVSDNode<"ESP_VSMULAS_S16_QACC_LD_INCP_M", SDT_ESPVMULASS16QACCLDIPM,
+                                                    [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_vsmulas_s8_qacc_ld_incp_m : RVSDNode<"ESP_VSMULAS_S8_QACC_LD_INCP_M", SDT_ESPVMULASS8QACCLDIPM,
+                                                     [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_vsmulas_u16_qacc_ld_incp_m : RVSDNode<"ESP_VSMULAS_U16_QACC_LD_INCP_M", SDT_ESPVMULASU16QACCLDIPM,
+                                                     [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_vsmulas_u8_qacc_ld_incp_m : RVSDNode<"ESP_VSMULAS_U8_QACC_LD_INCP_M", SDT_ESPVMULASU8QACCLDIPM,
+                                                     [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
 
 // VMULAS QACC LD XP SDNodes (register offset)
 def SDT_ESPVMULASS16QACCLDXPM : SDTypeProfile<6, 8, [
