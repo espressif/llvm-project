@@ -69,5 +69,5 @@ compiler-managed matrix register values.
 
 ## Encoding Verification
 
-All 257 instruction encodings verified (227 base + 30 Zmpanel; 4 independent audits including a full field-by-field verification of all 257 instructions, 0 implementation discrepancies).
+All 257 instruction encodings verified (227 base + 30 Zmpanel; 13 independent verification rounds including multiple full field-by-field verifications of all 257 instructions, 0 implementation discrepancies ever found).
 Known spec errata (5): matmul uop=01 should be 10; mfmin.s/mfmin.h names swapped; pmmaccus.w.b typo; mbce no encoding; Zmpanel compute rs1/s_size field mislabeled in zmpanel.adoc.

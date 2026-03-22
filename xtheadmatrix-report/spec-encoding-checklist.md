@@ -8,9 +8,14 @@ Standard bit layout:
 [19:18] s_size [17:15] ms1  [14:12] func3           [11:10] d_size  [9:7] md
 ```
 
-**Known spec errata in instruction_list.adoc**:
+**Verification status**: All 257 encodings verified correct across 13 independent verification rounds (0 implementation errors ever found).
+
+**Known spec errata in instruction_list.adoc** (5 total):
 1. Matmul shows uop=01 — should be **uop=10** (per inst32_format.adoc; uop=01 collides with load/store)
 2. mfmin.s/mfmin.h names are swapped — use the encoding values, not the names
+3. `pmmaaccus.w.b` has doubled 'a' — should be `pmmaccus.w.b`
+4. `mbce{8,16,32,64}` element broadcast described in prose (broadcast.adoc) but has NO encoding assigned
+5. Zmpanel compute encoding table in zmpanel.adoc mislabels bits[19:15] as `rs1=00000`; bits[19:18] carry `s_size`
 
 ---
 

@@ -1,11 +1,17 @@
 # ISel / CodeGen Implementation
 
+**Verification status**: All 267 ISel table entries verified correct. Complete
+lowering chain (builtin -> intrinsic -> DAG -> MachineInstr) confirmed across
+13 verification rounds. Operand ordering, type handling, register class constraints,
+tied operand patterns, and CSR configuration emission all verified correct.
+
 ## Overview
 
-ISel uses a table-driven approach via `selectTHMatrixInternal()` with ~227
-entries mapping `_internal` intrinsics (plus config intrinsics) to PTH_*_V
-pseudo-instructions. Post-RA, `RISCVExpandPseudoInsts` expands each pseudo
-to the corresponding hardware `TH_*` instruction.
+ISel uses a table-driven approach via `selectTHMatrixInternal()` with ~267
+entries mapping `_internal` intrinsics (plus config + panel intrinsics) to PTH_*_V
+pseudo-instructions (or direct hardware instructions for Zmpanel). Post-RA,
+`RISCVExpandPseudoInsts` expands each pseudo to the corresponding hardware
+`TH_*` instruction.
 
 ## ISel Dispatch Categories
 

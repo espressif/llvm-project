@@ -16,7 +16,7 @@
 | `llvm/lib/Target/RISCV/RISCVRegisterInfo.cpp` | Conditional matrix register reservation |
 | `llvm/lib/Target/RISCV/RISCVRegisterInfo.td` | THRVMMR, THRVMTR, THRVMACC register classes |
 | `llvm/lib/Target/RISCV/RISCVFeatures.td` | `FeatureVendorXTHeadMatrix` (experimental, v0.6) + `FeatureVendorXTHeadZmpanel` (implies XTHeadMatrix) |
-| `llvm/lib/Target/RISCV/RISCVSystemOperands.td` | 13 CSRs with `th.` prefix |
+| `llvm/lib/Target/RISCV/RISCVSystemOperands.td` | 31 CSRs with `th.` prefix (13 base + 18 Zmpanel) |
 | `llvm/lib/Target/RISCV/Disassembler/RISCVDisassembler.cpp` | Matrix register decode functions + `XTHeadZmpanel` decoder table entry |
 | `llvm/include/llvm/CodeGen/ValueTypes.td` | `MVT::riscvmatrix` (8192-bit) |
 | `llvm/lib/CodeGen/ValueTypes.cpp` | `riscv.matrix` ↔ `MVT` mapping |

@@ -1,5 +1,9 @@
 # Phase 1: Infrastructure
 
+**Verification status**: Register model (encodings, classes, spill/reload, calling
+convention, inline asm constraints), CSR definitions (all 31 addresses), and feature
+definitions all verified correct across 13 verification rounds.
+
 ## 1.1 Feature Definition (`RISCVFeatures.td`)
 
 Added after the existing `XTHeadVdot` extension:

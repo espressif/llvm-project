@@ -1,5 +1,9 @@
 # Phase 3-4: Intrinsics and Clang Builtins
 
+**Verification status**: Complete lowering chain verified across 13 rounds:
+Clang builtin -> LLVM intrinsic -> SelectionDAG -> MachineInstr.
+All 267 ISel table entries, operand ordering, type handling, and memory attributes confirmed correct.
+
 ## LLVM IR Intrinsics (`IntrinsicsRISCVXTHeadMatrix.td`)
 
 Defined with `TargetPrefix = "riscv"` and `int_riscv_th_` naming convention.

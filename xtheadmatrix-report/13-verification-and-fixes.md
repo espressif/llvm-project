@@ -570,3 +570,177 @@ areas against the golden RVM 0.6 spec.
 
 All 27 tests pass (26 existing + 1 new `xtheadzmpanel-csr.s`). Total named CSRs: 31
 (13 base + 18 Zmpanel). All 257 instruction encodings re-confirmed correct.
+
+## Verification Round 13 (2026-03-22, Claude Opus 4.6 #12) — Comprehensive Full-Stack Audit
+
+The most thorough verification to date, using 11 parallel verification agents to
+independently audit every layer of the implementation against the golden spec at
+`/Volumes/infT7Shield/Code/riscv-matrix-extension-spec`.
+
+### Methodology
+
+11 independent verification agents, each reading spec files and implementation files
+from scratch (no reliance on prior reports), covering:
+
+1. **Instruction encodings** — ALL 257 instructions verified field-by-field against
+   `instruction_list.adoc`, `inst32_format.adoc`, `inst64_format.adoc`, and per-category
+   `.adoc` files. Every opcode, func4, uop, func3, size_sup, s_size, d_size, ctrl/ls bit
+   manually checked.
+2. **CSR definitions** — All 31 CSRs verified against `csr.adoc`, `program_model.adoc`,
+   and `zmpanel.adoc`. Addresses, names, permissions checked.
+3. **Register model** — Register encodings (tr0-tr3=000-011, acc0-acc3=100-111), register
+   classes (THRVMTR/THRVMACC/THRVMMR), spill/reload, calling convention, inline asm
+   constraints, panel tr4-tr7 handling all verified.
+4. **C-level API header** — Every function in `thead_matrix.h` cross-referenced against
+   `doc/intrinsic/rvm-intrinsic-api.adoc` and the ISA spec. Function names, parameter
+   types, return types, inline asm mnemonics, and register constraints checked.
+5. **Intrinsics and builtins** — Complete lowering chain verified:
+   Clang builtin -> LLVM intrinsic -> SelectionDAG -> MachineInstr. All 267 ISel table
+   entries, operand ordering, type handling, memory attributes verified.
+6. **Panel extension (Zmpanel)** — All 30 instructions, 18 CSRs, full stack verified
+   (encoding -> intrinsic -> builtin -> C API -> tests).
+7. **MC/assembler tests** — All 5 MC test files verified. 80+ encodings manually computed
+   and checked against CHECK patterns. 100% instruction coverage confirmed.
+8. **Inline asm in header** — All 26 inline asm blocks verified (25 CSR read/write + 1
+   reinterpret cast). Mnemonics, constraints, operand ordering all correct.
+9. **Managed register allocation** — Register class constraints, accumulator-tied pattern,
+   tile size management, dependency tracking, spill/reload, CSR ordering guarantees verified.
+10. **Load/store API** — All 14 load/store function families verified. Dimension parameters,
+    CSR settings, instruction selection, register constraints all checked.
+11. **Element-wise and conversion ops** — All EW and conversion operations verified.
+    Mnemonics, operand ordering, low/high conversion behavior, n4clip types, accumulator-tied
+    pattern all checked.
+
+### Findings
+
+**Instruction Encodings — PASS (ALL 257 instructions, 0 bugs)**
+- Every instruction's opcode (0b0101011), func4, uop, func3, ctrl/size_sup, s_size, d_size verified
+- 7 config + 56 load/store + 27 matmul + 35 MISC + 102 EW + 30 Zmpanel = 257 total
+- Re-confirmed all 5 spec document errata (not implementation bugs)
+- No extra instructions in LLVM beyond spec
+- Only missing: 8 Zmint4 extension instructions (optional, no final encoding in spec)
+
+**CSR Definitions — PASS (ALL 31 CSRs correct)**
+- 9 URW CSRs at addresses 0x806-0x80e: CORRECT (hardware-specific offset from spec's
+  0x802-0x80a, confirmed correct by hardware team)
+- 4 URO CSRs at 0xcc0-0xcc3: CORRECT (match spec exactly)
+- 18 Zmpanel CSRs at 0xcc4-0xcd5: CORRECT (match spec exactly)
+- All names correct with `th.` vendor prefix
+- Permissions correct (bits[11:10] of address encode RW/RO)
+
+**Register Model — PASS (0 bugs)**
+- Encoding: tr0-tr3=000-011, acc0-acc3=100-111 — matches spec exactly
+- Register classes correctly partition: THRVMTR (tiles), THRVMACC (accumulators), THRVMMR (union)
+- Spill via PTH_MATRIX_SPILL -> TH_MSME_E8 (whole-register store), stride=0
+- Reload via PTH_MATRIX_RELOAD -> TH_MLME_E8 (whole-register load)
+- All matrix registers caller-saved (NOT in any CalleeSavedRegs)
+- Panel tr4-tr7 correctly NOT in compiler register file; panel instructions use
+  hasSideEffects=1 with explicit Defs/Uses on tr0-tr3 and acc0-acc3
+- Inline asm: `{tr0}`-`{tr3}`, `{acc0}`-`{acc3}` constraints correctly mapped
+- CopyCost=-1 prevents unnecessary matrix register copies
+
+**Managed Register Allocation — PASS (0 bugs)**
+- Matmul pseudos: `$acc = $dst` tied constraint correctly enforces accumulator reuse
+- Register class separation prevents tile<->accumulator conflicts
+- CSR config (msettilem/k/n) always emitted before operations by Spec-API builtins
+- hasSideEffects=1 on all matrix pseudos guarantees ordering
+- Spill tested under pressure (5 tiles forces spill, 3 acc fits without spill)
+- No clobber vulnerabilities found
+- SSA dataflow provides RAW/WAR/WAW dependency tracking
+
+**Intrinsics/Builtins Chain — PASS (267 ISel table entries verified)**
+- Every Clang builtin has corresponding LLVM intrinsic
+- Every intrinsic has DAG selection entry mapping to machine opcode
+- Operand ordering consistent throughout chain
+- Memory properties correct (IntrReadMem/IntrWriteMem for load/store)
+- Matmul operand swap `{acc, B, A}` correctly matches `md = md + ms1 x ms2`
+- Config codegen correct: Load A->SetM+SetK, Load B->SetK+SetN, Load C->SetM+SetN,
+  Matmul->SetM+SetK+SetN, Store->SetM+SetN
+- x2 tuple get/set: extractvalue/insertvalue with select (correct)
+
+**Panel Extension (Zmpanel) — PASS (ALL 30 instructions, 0 bugs)**
+- All encodings byte-by-byte verified against spec
+- Config (func3=010, uop=00): 12 instructions, func4 0000-1011
+- Load (func3=010, uop=01, ls=0): 2 instructions
+- Store (func3=010, uop=01, ls=1): 2 instructions
+- Compute (func3=010, uop=10): 14 instructions
+- All 18 panel CSRs at correct addresses
+- Register clobber annotations correct
+- Full stack implementation verified
+
+**MC/Assembler Tests — PASS (100% coverage)**
+- 80+ encodings manually computed and verified against CHECK patterns
+- Assembly syntax correct (`th.` prefix, operand ordering)
+- All 257 spec instructions covered in valid tests
+- Invalid tests cover register class errors, immediate range errors, operand count errors
+
+**Inline ASM in Header — PASS (ALL 26 blocks correct)**
+- All 25 CSR asm blocks use correct `th.` prefix and correct CSR names
+- All constraints correct (`"=r"` for CSR reads, `"r"` for CSR writes, `"tr"` for reinterpret)
+- Reinterpret cast: empty asm with `"=tr"/"tr"` for zero-copy type punning
+
+**Load/Store API — PASS (ALL 14 families functionally correct)**
+- All dimension parameters map correctly to CSR settings
+- Load A: SetM+SetK -> mlae (correct: A-tile is M x K)
+- Load B: SetK+SetN -> mlbe (correct: B-tile is K x N in parameter convention)
+- Load/Store C: SetM+SetN -> mlce/msce (correct: C is M x N)
+- Whole-register: no config calls (correct)
+- Transposed variants: same dimension mapping (correct)
+- Minor documentation note: B-tile comments say "K x N" while spec says "N x K" (rows x cols
+  convention); functionally correct — both CSRs set to correct values
+
+**Element-Wise and Conversion Ops — PASS (ALL operations correct)**
+- All assembly mnemonics match RVM 0.6
+- Operand order in asm: `$md, $ms2, $ms1` for .mm; `$md, $ms2, $ms1, $imm3` for .mv.i
+- Conversion low/high behavior correct (mfcvtl writes/reads low half, mfcvth writes/reads high half)
+- N4clip signed/unsigned types correct
+- Accumulator-tied pattern: `acc = acc op ms2 op ms1` (acc tied to output, NOT used in computation)
+- All encoding values verified against instruction_list.adoc
+
+**C-Level API vs Intrinsic API Spec — CONFIRMED design differences are intentional**
+
+The header uses RVM 0.6 ISA-aligned naming (mmacc, mfmacc) rather than the older intrinsic
+API spec naming (mmaqa, fmmacc). This is correct per project requirements. All structural
+differences from the intrinsic API spec document are intentional C-compatible redesigns:
+
+| Area | Intrinsic API Spec | Header | Assessment |
+|---|---|---|---|
+| Load/Store | Generic `__riscv_th_mld` | Role-specific `mld_a/b/acc` | Design choice (enables correct CSR config) |
+| Naming | `mmaqa`, `fmmacc` | `mmacc_w_b`, `mfmacc_s` | Header correct (RVM 0.6 mnemonics) |
+| EW ops | `madd_mm(s1, s2, row, col)` | `madd_w_mm(acc, s2, s1)` | Tied-output design for managed RA |
+| Overloading | C++ overloads | Type-suffixed (`_i8`, `_w`) | C compatibility |
+| 64-bit EW | `mint64_t` overloads | Only 32-bit `_w` variants | Gap — no `_d` EW ops |
+| `.mx` variants | Scalar variants | Missing | Gap — not in RVM 0.6 instruction encoding |
+| `.mv.x` variants | Register-index variants | Only `.mv.i` (immediate) | Gap — not in RVM 0.6 instruction encoding |
+
+### Spec Document Errata (5 confirmed, unchanged from prior rounds)
+
+1. `instruction_list.adoc` matmul section: uop column shows `01`, should be `10`
+   (per `inst32_format.adoc`; uop=01 is load/store)
+2. `instruction_list.adoc` lines 269-272: `mfmin.s.mm` and `mfmin.h.mm` names are
+   swapped relative to their encoding values
+3. `instruction_list.adoc` line 88: typo `pmmaaccus.w.b` (double 'a'), should be `pmmaccus.w.b`
+4. `broadcast.adoc`: `mbce{8,16,32,64}` element broadcast described in prose but has
+   NO encoding in `instruction_list.adoc` — cannot be implemented
+5. `zmpanel.adoc` compute encoding table: mislabels bits[19:15] as `rs1=00000`;
+   bits[19:18] carry `s_size`
+
+### Gaps Confirmed (known, not regressions)
+
+1. No 64-bit element-wise integer ops (`_d` variants) — not in RVM 0.6 instruction encoding
+2. No `.mx` scalar element-wise variants — not in RVM 0.6 instruction encoding
+3. No `.mv.x` register-index EW variants — only `.mv.i` (immediate) in instruction encoding
+4. No Zmint4 extension — 8 optional INT4 instructions not implemented
+5. No stream load/store — not in RVM 0.6
+6. No `mbce` element broadcast — no encoding in spec
+7. No `mmov.mv` row move — no encoding in instruction list
+8. B-tile API parameter order is (K, N) vs spec convention of (N, K) — functionally correct
+
+### Result
+
+**No new bugs found. No new regressions. The implementation is verified correct.**
+
+All 257 instruction encodings, 31 CSRs, 267 ISel table entries, 26 inline asm blocks,
+14 load/store families, and the complete managed RA model are confirmed correct against
+the golden RVM 0.6 spec. This is the 13th independent verification round with 0 encoding
+errors across all rounds.

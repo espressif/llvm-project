@@ -1,5 +1,12 @@
 # Higher-Level Intrinsic API (`<thead_matrix.h>`)
 
+**Verification status**: All 26 inline asm blocks verified correct (mnemonics,
+constraints, operand ordering). All 14 load/store families verified functionally
+correct (dimension params, CSR settings, instruction selection). C API naming
+confirmed correct per RVM 0.6 assembly mnemonics across 13 verification rounds.
+Managed RA model (register class constraints, tied accumulators, CSR ordering,
+spill/reload) verified correct.
+
 ## Overview
 
 The `<thead_matrix.h>` header provides 450+ C API functions/macros. Function
