@@ -13,10 +13,10 @@ define void @test(i32 %arg0, i32 %arg1) nounwind {
 ; ZCMP-LABEL: test:
 ; ZCMP:       # %bb.0: # %entry
 ; ZCMP-NEXT:    #APP
-; ZCMP-NEXT:    csrr a4, 66
+; ZCMP-NEXT:    csrr a4, ucause
 ; ZCMP-NEXT:    #NO_APP
 ; ZCMP-NEXT:    #APP
-; ZCMP-NEXT:    csrr a5, 67
+; ZCMP-NEXT:    csrr a5, utval
 ; ZCMP-NEXT:    #NO_APP
 ; ZCMP-NEXT:    #APP
 ; ZCMP-NEXT:    #NO_APP
@@ -27,10 +27,10 @@ define void @test(i32 %arg0, i32 %arg1) nounwind {
 ; XQCCMP-LABEL: test:
 ; XQCCMP:       # %bb.0: # %entry
 ; XQCCMP-NEXT:    #APP
-; XQCCMP-NEXT:    csrr a4, 66
+; XQCCMP-NEXT:    csrr a4, ucause
 ; XQCCMP-NEXT:    #NO_APP
 ; XQCCMP-NEXT:    #APP
-; XQCCMP-NEXT:    csrr a5, 67
+; XQCCMP-NEXT:    csrr a5, utval
 ; XQCCMP-NEXT:    #NO_APP
 ; XQCCMP-NEXT:    #APP
 ; XQCCMP-NEXT:    #NO_APP
@@ -41,10 +41,10 @@ define void @test(i32 %arg0, i32 %arg1) nounwind {
 ; ZCMP-P-LABEL: test:
 ; ZCMP-P:       # %bb.0: # %entry
 ; ZCMP-P-NEXT:    #APP
-; ZCMP-P-NEXT:    csrr a4, 66
+; ZCMP-P-NEXT:    csrr a4, ucause
 ; ZCMP-P-NEXT:    #NO_APP
 ; ZCMP-P-NEXT:    #APP
-; ZCMP-P-NEXT:    csrr a5, 67
+; ZCMP-P-NEXT:    csrr a5, utval
 ; ZCMP-P-NEXT:    #NO_APP
 ; ZCMP-P-NEXT:    #APP
 ; ZCMP-P-NEXT:    #NO_APP
@@ -54,10 +54,10 @@ define void @test(i32 %arg0, i32 %arg1) nounwind {
 ; ZCMP-P64-LABEL: test:
 ; ZCMP-P64:       # %bb.0: # %entry
 ; ZCMP-P64-NEXT:    #APP
-; ZCMP-P64-NEXT:    csrr a4, 66
+; ZCMP-P64-NEXT:    csrr a4, ucause
 ; ZCMP-P64-NEXT:    #NO_APP
 ; ZCMP-P64-NEXT:    #APP
-; ZCMP-P64-NEXT:    csrr a5, 67
+; ZCMP-P64-NEXT:    csrr a5, utval
 ; ZCMP-P64-NEXT:    #NO_APP
 ; ZCMP-P64-NEXT:    #APP
 ; ZCMP-P64-NEXT:    #NO_APP
