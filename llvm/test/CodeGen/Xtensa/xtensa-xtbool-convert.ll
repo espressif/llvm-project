@@ -1,4 +1,4 @@
-; RUN: llc -mtriple=xtensa -mcpu=esp32 %s -o - | FileCheck %s
+; RUN: llc -mtriple=xtensa -mcpu=generic -mattr=+hifi3,+density,+windowed,+bool %s -o - | FileCheck %s
 
 define <1 x i1> @test_xtbool_trunc(i32 %a)  {
   ; CHECK-LABEL: test_xtbool_trunc
