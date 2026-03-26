@@ -68,6 +68,14 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
     addRegisterClass(MVT::v1i1, &Xtensa::BRRegClass);
   }
 
+  if (Subtarget.hasBoolean()) {
+    addRegisterClass(MVT::v1i1, &Xtensa::BRRegClass);
+    setOperationAction(ISD::Constant, MVT::v2i1, Expand);
+    setOperationAction(ISD::Constant, MVT::v1i1, Expand);
+    setOperationAction(ISD::STORE, MVT::v1i1, Legal);
+    setOperationAction(ISD::LOAD, MVT::v1i1, Legal);
+  }
+
   // Set up special registers.
   setStackPointerRegisterToSaveRestore(Xtensa::SP);
 
@@ -299,6 +307,33 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
     setMaxAtomicSizeInBitsSupported(32);
   } else {
     setMaxAtomicSizeInBitsSupported(0);
+  }
+
+  for (MVT VT : MVT::fixedlen_vector_valuetypes()) {
+    if (isTypeLegal(VT)) {
+      setOperationAction(ISD::CTPOP, VT, Expand);
+      setOperationAction(ISD::SRL, VT, Expand);
+      setOperationAction(ISD::SRA, VT, Expand);
+      setOperationAction(ISD::SHL, VT, Expand);
+
+      // Expand all divisions and remainders for vectors
+      setOperationAction(ISD::SDIV, VT, Expand);
+      setOperationAction(ISD::UDIV, VT, Expand);
+      setOperationAction(ISD::SREM, VT, Expand);
+      setOperationAction(ISD::UREM, VT, Expand);
+    }
+    setOperationAction(ISD::SDIVREM, VT, Expand);
+    setOperationAction(ISD::UDIVREM, VT, Expand);
+
+    setOperationAction(ISD::SELECT_CC, VT, Custom);
+
+    // Disable all narrowing stores and extending loads for vectors
+    for (MVT InnerVT : MVT::fixedlen_vector_valuetypes()) {
+      setTruncStoreAction(VT, InnerVT, Expand);
+      setLoadExtAction(ISD::SEXTLOAD, VT, InnerVT, Expand);
+      setLoadExtAction(ISD::ZEXTLOAD, VT, InnerVT, Expand);
+      setLoadExtAction(ISD::EXTLOAD, VT, InnerVT, Expand);
+    }
   }
 
   // Compute derived properties from the register classes
