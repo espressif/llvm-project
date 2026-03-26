@@ -88,8 +88,10 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
 
   if (Subtarget.hasBoolean()) {
     addRegisterClass(MVT::v1i1, &Xtensa::BRRegClass);
-    addRegisterClass(MVT::v2i1, &Xtensa::BR2RegClass);
-    addRegisterClass(MVT::v4i1, &Xtensa::BR4RegClass);
+    if (Subtarget.hasHIFI3()) {
+      addRegisterClass(MVT::v2i1, &Xtensa::BR2RegClass);
+      addRegisterClass(MVT::v4i1, &Xtensa::BR4RegClass);
+    }
     setOperationAction(ISD::Constant, MVT::v2i1, Expand);
     setOperationAction(ISD::Constant, MVT::v1i1, Expand);
     setTargetDAGCombine(ISD::STORE);
@@ -97,11 +99,15 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
     setTargetDAGCombine(ISD::EXTRACT_SUBVECTOR);
  
     setOperationAction(ISD::STORE, MVT::v1i1, Legal);
-    setOperationAction(ISD::STORE, MVT::v2i1, Legal);
-    setOperationAction(ISD::STORE, MVT::v4i1, Legal);
+    if (Subtarget.hasHIFI3()) {
+      setOperationAction(ISD::STORE, MVT::v2i1, Legal);
+      setOperationAction(ISD::STORE, MVT::v4i1, Legal);
+    }
     setOperationAction(ISD::LOAD, MVT::v1i1, Legal);
-    setOperationAction(ISD::LOAD, MVT::v2i1, Legal);
-    setOperationAction(ISD::LOAD, MVT::v4i1, Legal);
+    if (Subtarget.hasHIFI3()) {
+      setOperationAction(ISD::LOAD, MVT::v2i1, Legal);
+      setOperationAction(ISD::LOAD, MVT::v4i1, Legal);
+    }
   }
 
   if (Subtarget.hasHIFI3()) {
@@ -380,7 +386,6 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
     setOperationAction(ISD::UDIVREM, VT, Expand);
 
     setOperationAction(ISD::SELECT_CC, VT, Custom);
-    setOperationAction(ISD::SETCC, VT, Custom);
 
     // Disable all narrowing stores and extending loads for vectors
     for (MVT InnerVT : MVT::fixedlen_vector_valuetypes()) {
