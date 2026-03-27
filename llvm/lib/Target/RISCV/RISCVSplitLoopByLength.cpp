@@ -623,11 +623,12 @@ static Loop *cloneLoopStructure(Loop *OriginalLoop, Function *F, LoopInfo &LI,
     NewBlocks.push_back(ClonedBB);
   }
 
-  // Add new blocks to the new loop and update LoopInfo
-  for (BasicBlock *BB : NewBlocks) {
-    if (LI.getLoopFor(BB->getUniquePredecessor()) == OriginalLoop) {
-      NewLoop->addBasicBlockToLoop(BB, LI);
-    }
+  // Add cloned loop body blocks to the new loop. Do not use
+  // getUniquePredecessor(): loop headers typically have multiple predecessors
+  // (preheader and latch), so it returns null and getLoopFor(nullptr) crashes.
+  for (BasicBlock *BB : OriginalLoop->blocks()) {
+    BasicBlock *ClonedBB = cast<BasicBlock>(ValueMap[BB]);
+    NewLoop->addBasicBlockToLoop(ClonedBB, LI);
   }
 
   // Remap instructions and PHI nodes in the new loop
