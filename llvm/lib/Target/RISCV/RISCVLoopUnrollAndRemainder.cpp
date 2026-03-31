@@ -1766,23 +1766,30 @@ static void modifyFirdAddToOr(BasicBlock *ClonedForBody) {
 // Helper Function to update predecessors to point to a new preheader
 static void updatePredecessorsToPreheader(BasicBlock *ForBody,
                                           BasicBlock *ForBodyPreheader) {
+  // Snapshot predecessors of the loop header before adding Preheader->ForBody.
+  // After that edge exists, ForBodyPreheader is a predecessor of ForBody and
+  // must not be retargeted onto itself. (Same pattern as LLVM loop preheader
+  // insertion.)
   SmallVector<BasicBlock *, 4> PredecessorsBb;
   for (auto *Pred : predecessors(ForBody)) {
-    if (Pred != ForBody)
+    if (Pred != ForBody && Pred != ForBodyPreheader)
       PredecessorsBb.push_back(Pred);
   }
 
+  // Do not call getTerminator() on an empty block: it asserts instead of
+  // returning null. Use hasTerminator() / getTerminatorOrNull() instead.
+  if (!ForBodyPreheader->hasTerminator())
+    BranchInst::Create(ForBody, ForBodyPreheader);
+
   for (BasicBlock *Pred : PredecessorsBb) {
+    assert(Pred->hasTerminator() &&
+           "predecessor of loop header must have a terminator");
     Instruction *TI = Pred->getTerminator();
     for (unsigned I = 0; I < TI->getNumSuccessors(); ++I) {
       if (TI->getSuccessor(I) == ForBody) {
         TI->setSuccessor(I, ForBodyPreheader);
       }
     }
-  }
-
-  if (!ForBodyPreheader->getTerminator()) {
-    BranchInst::Create(ForBody, ForBodyPreheader);
   }
 }
 
