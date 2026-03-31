@@ -35,7 +35,7 @@ define dso_local void @dsps_wind_hann_f32(ptr nocapture noundef writeonly %windo
 ; CHECK-NEXT:    store float [[CONV10]], ptr [[ARRAYIDX]], align 4
 ; CHECK-NEXT:    [[INC:%.*]] = or disjoint i32 [[I_016]], 1
 ; CHECK-NEXT:    [[CONV5_1:%.*]] = uitofp nneg i32 [[INC]] to float
-; CHECK-NEXT:    [[MUL6_1:%.*]] = fmul float [[CONV22]], [[CONV5_1]]
+; CHECK-NEXT:    [[MUL6_1:%.*]] = fmul nnan float [[CONV22]], [[CONV5_1]]
 ; CHECK-NEXT:    [[CALL_1:%.*]] = tail call float @cosf(float noundef [[MUL6_1]])
 ; CHECK-NEXT:    [[SUB7_1:%.*]] = fsub float 1.000000e+00, [[CALL_1]]
 ; CHECK-NEXT:    [[CONV10_1:%.*]] = fmul float [[SUB7_1]], 5.000000e-01
@@ -43,7 +43,7 @@ define dso_local void @dsps_wind_hann_f32(ptr nocapture noundef writeonly %windo
 ; CHECK-NEXT:    store float [[CONV10_1]], ptr [[ARRAYIDX_1]], align 4
 ; CHECK-NEXT:    [[INC_1:%.*]] = or disjoint i32 [[I_016]], 2
 ; CHECK-NEXT:    [[CONV5_2:%.*]] = uitofp nneg i32 [[INC_1]] to float
-; CHECK-NEXT:    [[MUL6_2:%.*]] = fmul float [[CONV22]], [[CONV5_2]]
+; CHECK-NEXT:    [[MUL6_2:%.*]] = fmul nnan float [[CONV22]], [[CONV5_2]]
 ; CHECK-NEXT:    [[CALL_2:%.*]] = tail call float @cosf(float noundef [[MUL6_2]])
 ; CHECK-NEXT:    [[SUB7_2:%.*]] = fsub float 1.000000e+00, [[CALL_2]]
 ; CHECK-NEXT:    [[CONV10_2:%.*]] = fmul float [[SUB7_2]], 5.000000e-01
@@ -51,7 +51,7 @@ define dso_local void @dsps_wind_hann_f32(ptr nocapture noundef writeonly %windo
 ; CHECK-NEXT:    store float [[CONV10_2]], ptr [[ARRAYIDX_2]], align 4
 ; CHECK-NEXT:    [[INC_2:%.*]] = or disjoint i32 [[I_016]], 3
 ; CHECK-NEXT:    [[CONV5_3:%.*]] = uitofp nneg i32 [[INC_2]] to float
-; CHECK-NEXT:    [[MUL6_3:%.*]] = fmul float [[CONV22]], [[CONV5_3]]
+; CHECK-NEXT:    [[MUL6_3:%.*]] = fmul nnan float [[CONV22]], [[CONV5_3]]
 ; CHECK-NEXT:    [[CALL_3:%.*]] = tail call float @cosf(float noundef [[MUL6_3]])
 ; CHECK-NEXT:    [[SUB7_3:%.*]] = fsub float 1.000000e+00, [[CALL_3]]
 ; CHECK-NEXT:    [[CONV10_3:%.*]] = fmul float [[SUB7_3]], 5.000000e-01
@@ -59,7 +59,7 @@ define dso_local void @dsps_wind_hann_f32(ptr nocapture noundef writeonly %windo
 ; CHECK-NEXT:    store float [[CONV10_3]], ptr [[ARRAYIDX_3]], align 4
 ; CHECK-NEXT:    [[INC_3:%.*]] = or disjoint i32 [[I_016]], 4
 ; CHECK-NEXT:    [[CONV5_4:%.*]] = uitofp nneg i32 [[INC_3]] to float
-; CHECK-NEXT:    [[MUL6_4:%.*]] = fmul float [[CONV22]], [[CONV5_4]]
+; CHECK-NEXT:    [[MUL6_4:%.*]] = fmul nnan float [[CONV22]], [[CONV5_4]]
 ; CHECK-NEXT:    [[CALL_4:%.*]] = tail call float @cosf(float noundef [[MUL6_4]])
 ; CHECK-NEXT:    [[SUB7_4:%.*]] = fsub float 1.000000e+00, [[CALL_4]]
 ; CHECK-NEXT:    [[CONV10_4:%.*]] = fmul float [[SUB7_4]], 5.000000e-01
@@ -67,7 +67,7 @@ define dso_local void @dsps_wind_hann_f32(ptr nocapture noundef writeonly %windo
 ; CHECK-NEXT:    store float [[CONV10_4]], ptr [[ARRAYIDX_4]], align 4
 ; CHECK-NEXT:    [[INC_4:%.*]] = or disjoint i32 [[I_016]], 5
 ; CHECK-NEXT:    [[CONV5_5:%.*]] = uitofp nneg i32 [[INC_4]] to float
-; CHECK-NEXT:    [[MUL6_5:%.*]] = fmul float [[CONV22]], [[CONV5_5]]
+; CHECK-NEXT:    [[MUL6_5:%.*]] = fmul nnan float [[CONV22]], [[CONV5_5]]
 ; CHECK-NEXT:    [[CALL_5:%.*]] = tail call float @cosf(float noundef [[MUL6_5]])
 ; CHECK-NEXT:    [[SUB7_5:%.*]] = fsub float 1.000000e+00, [[CALL_5]]
 ; CHECK-NEXT:    [[CONV10_5:%.*]] = fmul float [[SUB7_5]], 5.000000e-01
@@ -75,7 +75,7 @@ define dso_local void @dsps_wind_hann_f32(ptr nocapture noundef writeonly %windo
 ; CHECK-NEXT:    store float [[CONV10_5]], ptr [[ARRAYIDX_5]], align 4
 ; CHECK-NEXT:    [[INC_5:%.*]] = or disjoint i32 [[I_016]], 6
 ; CHECK-NEXT:    [[CONV5_6:%.*]] = uitofp nneg i32 [[INC_5]] to float
-; CHECK-NEXT:    [[MUL6_6:%.*]] = fmul float [[CONV22]], [[CONV5_6]]
+; CHECK-NEXT:    [[MUL6_6:%.*]] = fmul nnan float [[CONV22]], [[CONV5_6]]
 ; CHECK-NEXT:    [[CALL_6:%.*]] = tail call float @cosf(float noundef [[MUL6_6]])
 ; CHECK-NEXT:    [[SUB7_6:%.*]] = fsub float 1.000000e+00, [[CALL_6]]
 ; CHECK-NEXT:    [[CONV10_6:%.*]] = fmul float [[SUB7_6]], 5.000000e-01
@@ -83,7 +83,7 @@ define dso_local void @dsps_wind_hann_f32(ptr nocapture noundef writeonly %windo
 ; CHECK-NEXT:    store float [[CONV10_6]], ptr [[ARRAYIDX_6]], align 4
 ; CHECK-NEXT:    [[INC_6:%.*]] = or disjoint i32 [[I_016]], 7
 ; CHECK-NEXT:    [[CONV5_7:%.*]] = uitofp nneg i32 [[INC_6]] to float
-; CHECK-NEXT:    [[MUL6_7:%.*]] = fmul float [[CONV22]], [[CONV5_7]]
+; CHECK-NEXT:    [[MUL6_7:%.*]] = fmul nnan float [[CONV22]], [[CONV5_7]]
 ; CHECK-NEXT:    [[CALL_7:%.*]] = tail call float @cosf(float noundef [[MUL6_7]])
 ; CHECK-NEXT:    [[SUB7_7:%.*]] = fsub float 1.000000e+00, [[CALL_7]]
 ; CHECK-NEXT:    [[CONV10_7:%.*]] = fmul float [[SUB7_7]], 5.000000e-01
