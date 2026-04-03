@@ -17,7 +17,8 @@
 // CHECK-NEXT:    ret ptr [[TMP2]]
 //
 void *test_zero_qacc(void *dst) {
-    esp_qacc_4x128_t qacc = esp_zero_qacc_m();
+esp_qacc_4x128_t qacc;
+  __builtin_riscv_esp_zero_qacc_m(&qacc.v0, &qacc.v1, &qacc.v2, &qacc.v3);
     // Store QACC_L[127:0] to memory to ensure complete Data flow
     return __builtin_riscv_esp_st_qacc_l_l_128_ip_m(qacc.v0, dst, 16);
 }
@@ -25,9 +26,9 @@ void *test_zero_qacc(void *dst) {
 // Test MOV.S8.QACC - Move vector to QACC (S8)
 // QACC is used internally, stored to memory to ensure complete Data flow
 // CHECK-LABEL: define dso_local ptr @test_mov_s8_qacc(
-// CHECK-SAME: ptr noundef [[SRC:%.*]], ptr noundef [[DST:%.*]]) local_unnamed_addr #[[ATTR2:[0-9]+]] {
+// CHECK-SAME: ptr noundef [[SRC:%.*]], ptr noundef [[DST:%.*]]) local_unnamed_addr #[[ATTR3:[0-9]+]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC]], i32 16), !noalias [[META6:![0-9]+]]
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC]], i32 16)
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP0]], 0
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } @llvm.riscv.esp.mov.s8.qacc.m(<16 x i8> [[TMP1]])
 // CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP2]], 0
@@ -35,8 +36,10 @@ void *test_zero_qacc(void *dst) {
 // CHECK-NEXT:    ret ptr [[TMP4]]
 //
 void *test_mov_s8_qacc(void const *src, void *dst) {
-    esp_vld_res_t Res = esp_vld_128_ip_m(src, 16);
-    esp_mov_qacc_res_t qacc = esp_mov_s8_qacc_m(Res.Val.V8);
+esp_vld_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_vld_128_ip_m(src, 16, &Res.Val.V8);
+esp_mov_qacc_res_t qacc;
+  __builtin_riscv_esp_mov_s8_qacc_m(Res.Val.V8, &qacc.v0, &qacc.v1, &qacc.v2, &qacc.v3);
     // Store QACC_L[127:0] to memory to ensure complete Data flow
     return __builtin_riscv_esp_st_qacc_l_l_128_ip_m(qacc.v0, dst, 16);
 }
@@ -44,9 +47,9 @@ void *test_mov_s8_qacc(void const *src, void *dst) {
 // Test MOV.S16.QACC - Move vector to QACC (S16)
 // QACC is used internally, stored to memory to ensure complete Data flow
 // CHECK-LABEL: define dso_local ptr @test_mov_s16_qacc(
-// CHECK-SAME: ptr noundef [[SRC:%.*]], ptr noundef [[DST:%.*]]) local_unnamed_addr #[[ATTR2]] {
+// CHECK-SAME: ptr noundef [[SRC:%.*]], ptr noundef [[DST:%.*]]) local_unnamed_addr #[[ATTR3]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC]], i32 16), !noalias [[META9:![0-9]+]]
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC]], i32 16)
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP0]], 0
 // CHECK-NEXT:    [[TMP2:%.*]] = bitcast <16 x i8> [[TMP1]] to <8 x i16>
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } @llvm.riscv.esp.mov.s16.qacc.m(<8 x i16> [[TMP2]])
@@ -55,16 +58,10 @@ void *test_mov_s8_qacc(void const *src, void *dst) {
 // CHECK-NEXT:    ret ptr [[TMP5]]
 //
 void *test_mov_s16_qacc(void const *src, void *dst) {
-    esp_vld_res_t Res = esp_vld_128_ip_m(src, 16);
-    esp_mov_qacc_res_t qacc = esp_mov_s16_qacc_m(Res.Val.V16);
+esp_vld_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_vld_128_ip_m(src, 16, &Res.Val.V8);
+esp_mov_qacc_res_t qacc;
+  __builtin_riscv_esp_mov_s16_qacc_m(Res.Val.V16, &qacc.v0, &qacc.v1, &qacc.v2, &qacc.v3);
     // Store QACC_L[127:0] to memory to ensure complete Data flow
     return __builtin_riscv_esp_st_qacc_l_l_128_ip_m(qacc.v0, dst, 16);
 }
-//.
-// CHECK: [[META6]] = !{[[META7:![0-9]+]]}
-// CHECK: [[META7]] = distinct !{[[META7]], [[META8:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
-// CHECK: [[META8]] = distinct !{[[META8]], !"esp_vld_128_ip_m"}
-// CHECK: [[META9]] = !{[[META10:![0-9]+]]}
-// CHECK: [[META10]] = distinct !{[[META10]], [[META11:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
-// CHECK: [[META11]] = distinct !{[[META11]], !"esp_vld_128_ip_m"}
-//.

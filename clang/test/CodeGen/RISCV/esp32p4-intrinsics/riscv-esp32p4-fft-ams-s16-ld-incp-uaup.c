@@ -15,20 +15,20 @@
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 0)
 // CHECK-NEXT:    [[TMP1:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar.bytes.m(i32 0)
-// CHECK-NEXT:    [[TMP2:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.ld.ua.state.ip.m(<16 x i8> undef, ptr [[SRC]], i32 16), !noalias [[META6:![0-9]+]]
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.ld.ua.state.ip.m(<16 x i8> undef, ptr [[SRC]], i32 16)
 // CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP2]], 0
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC]], i32 16), !noalias [[META9:![0-9]+]]
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC]], i32 16)
 // CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP4]], 0
 // CHECK-NEXT:    [[TMP6:%.*]] = bitcast <16 x i8> [[TMP5]] to <8 x i16>
-// CHECK-NEXT:    [[TMP7:%.*]] = tail call { <16 x i8>, <8 x i16>, <8 x i16>, ptr, <16 x i8> } @llvm.riscv.esp.fft.ams.s16.ld.incp.uaup.m(<8 x i16> [[TMP6]], <8 x i16> [[TMP6]], <8 x i16> [[TMP6]], ptr [[SRC]], i32 0, <16 x i8> [[TMP3]], i32 [[TMP1]], i32 [[TMP0]]), !noalias [[META12:![0-9]+]]
+// CHECK-NEXT:    [[TMP7:%.*]] = tail call { <16 x i8>, <8 x i16>, <8 x i16>, ptr, <16 x i8> } @llvm.riscv.esp.fft.ams.s16.ld.incp.uaup.m(<8 x i16> [[TMP6]], <8 x i16> [[TMP6]], <8 x i16> [[TMP6]], ptr [[SRC]], i32 0, <16 x i8> [[TMP3]], i32 [[TMP1]], i32 [[TMP0]])
 // CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, <8 x i16>, <8 x i16>, ptr, <16 x i8> } [[TMP7]], 0
 // CHECK-NEXT:    [[TMP9:%.*]] = extractvalue { <16 x i8>, <8 x i16>, <8 x i16>, ptr, <16 x i8> } [[TMP7]], 1
 // CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <16 x i8>, <8 x i16>, <8 x i16>, ptr, <16 x i8> } [[TMP7]], 2
-// CHECK-NEXT:    [[TMP11:%.*]] = bitcast <8 x i16> [[TMP9]] to <16 x i8>
-// CHECK-NEXT:    [[TMP12:%.*]] = bitcast <8 x i16> [[TMP10]] to <16 x i8>
-// CHECK-NEXT:    [[TMP13:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP8]], ptr [[DST]], i32 16)
-// CHECK-NEXT:    [[TMP14:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP11]], ptr [[DST]], i32 16)
-// CHECK-NEXT:    [[TMP15:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP12]], ptr [[DST]], i32 16)
+// CHECK-NEXT:    [[TMP11:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP8]], ptr [[DST]], i32 16)
+// CHECK-NEXT:    [[TMP12:%.*]] = bitcast <8 x i16> [[TMP9]] to <16 x i8>
+// CHECK-NEXT:    [[TMP13:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP12]], ptr [[DST]], i32 16)
+// CHECK-NEXT:    [[TMP14:%.*]] = bitcast <8 x i16> [[TMP10]] to <16 x i8>
+// CHECK-NEXT:    [[TMP15:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP14]], ptr [[DST]], i32 16)
 // CHECK-NEXT:    ret void
 //
 void test_fft_ams_s16_ld_incp_uaup(void const *src, void *dst) {
@@ -40,18 +40,28 @@ void test_fft_ams_s16_ld_incp_uaup(void const *src, void *dst) {
     unsigned int sar_bytes_in = __builtin_riscv_esp_movx_w_sar_bytes_m(0);
 
     // Initialize UA_STATE register by loading from memory
-    esp_ua_state_res_t ua_state_init = esp_ld_ua_state_ip_m(src, 16);
+esp_ua_state_res_t ua_state_init;
+  // Builtin signature: void*(void const *, int, void *)
+  // Parameters: (src, offset, ua_state_out)
+  // Returns: void* (updated pointer)
+  // UA_STATE value is returned through output parameter
+  ua_state_init.Ptr = __builtin_riscv_esp_ld_ua_state_ip_m(src, 16, &ua_state_init.UaState);
 
     // Load input vectors
-    esp_vld_res_t res_qx = esp_vld_128_ip_m(src , 16);
-    esp_vld_res_t res_qy = esp_vld_128_ip_m(src, 16);
-    esp_vld_res_t res_qw = esp_vld_128_ip_m(src, 16);
+esp_vld_res_t res_qx;
+  res_qx.Ptr = __builtin_riscv_esp_vld_128_ip_m(src, 16, &res_qx.Val.V8);
+esp_vld_res_t res_qy;
+  res_qy.Ptr = __builtin_riscv_esp_vld_128_ip_m(src, 16, &res_qy.Val.V8);
+esp_vld_res_t res_qw;
+  res_qw.Ptr = __builtin_riscv_esp_vld_128_ip_m(src, 16, &res_qw.Val.V8);
 
     // Call FFT AMS LD.INCP.UAUP using wrapper function (Sel2 = 0)
     // Note: Rs1 should point to the Data to be loaded (after UA_STATE initialization)
-    esp_fft_ams_s16_ld_incp_uaup_res_t Res = esp_fft_ams_s16_ld_incp_uaup_m(
-        res_qx.Val.V16, res_qy.Val.V16, res_qw.Val.V16, src, 0,
-        ua_state_init.UaState, sar_bytes_in, sar_in);
+esp_fft_ams_s16_ld_incp_uaup_res_t Res;
+  // Call builtin with explicit phantom operands
+  Res.Ptr = __builtin_riscv_esp_fft_ams_s16_ld_incp_uaup_m(
+      res_qx.Val.V16, res_qy.Val.V16, res_qw.Val.V16, src, 0, &Res.Qu, &Res.Qz, &Res.Qv, ua_state_init.UaState,
+      &Res.UaState, sar_bytes_in, sar_in);
 
     // Store results back to memory using esp.vst.128.ip
     // Note: v8i16 and v16i8 have the same memory layout (128 bits), so we can use union for conversion
@@ -63,19 +73,8 @@ void test_fft_ams_s16_ld_incp_uaup(void const *src, void *dst) {
     qz_conv.V16 = Res.Qz;
     QvConv.V16 = Res.Qv;
 
-    esp_vst_128_ip_m(Res.Qu, dst, 16);           // Store Qu (v16i8)
-    esp_vst_128_ip_m(qz_conv.V8, dst, 16);  // Store Qz (v8i16 converted to v16i8)
-    esp_vst_128_ip_m(QvConv.V8, dst, 16);  // Store Qv (v8i16 converted to v16i8)
+    (void)__builtin_riscv_esp_vst_128_ip_m(Res.Qu, dst, 16);           // Store Qu (v16i8)
+    (void)__builtin_riscv_esp_vst_128_ip_m(qz_conv.V8, dst, 16);  // Store Qz (v8i16 converted to v16i8)
+    (void)__builtin_riscv_esp_vst_128_ip_m(QvConv.V8, dst, 16);  // Store Qv (v8i16 converted to v16i8)
 }
 
-//.
-// CHECK: [[META6]] = !{[[META7:![0-9]+]]}
-// CHECK: [[META7]] = distinct !{[[META7]], [[META8:![0-9]+]], !"esp_ld_ua_state_ip_m: %agg.result"}
-// CHECK: [[META8]] = distinct !{[[META8]], !"esp_ld_ua_state_ip_m"}
-// CHECK: [[META9]] = !{[[META10:![0-9]+]]}
-// CHECK: [[META10]] = distinct !{[[META10]], [[META11:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
-// CHECK: [[META11]] = distinct !{[[META11]], !"esp_vld_128_ip_m"}
-// CHECK: [[META12]] = !{[[META13:![0-9]+]]}
-// CHECK: [[META13]] = distinct !{[[META13]], [[META14:![0-9]+]], !"esp_fft_ams_s16_ld_incp_uaup_m: %agg.result"}
-// CHECK: [[META14]] = distinct !{[[META14]], !"esp_fft_ams_s16_ld_incp_uaup_m"}
-//.

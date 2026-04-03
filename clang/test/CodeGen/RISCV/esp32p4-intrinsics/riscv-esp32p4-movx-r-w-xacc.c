@@ -261,7 +261,7 @@ unsigned int test_srs_u_xacc(unsigned int init_val, int32_t shift_amount) {
 // CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.ld.ip.m(i32 [[TMP2]], i32 [[TMP3]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 16), !noalias [[META9:![0-9]+]]
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.ld.ip.m(i32 [[TMP2]], i32 [[TMP3]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 16)
 // CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP5]]
 //
@@ -273,7 +273,13 @@ unsigned int test_vmulas_s16_xacc_ld_ip(unsigned int init_val, esp_vec128_16_t Q
     // Loads Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with Qu (128-bit Data), updated pointer, and new XACC
     // Mixed model: XACC as {unsigned int low, unsigned int high}
-    esp_vmulas_xacc_ld_res_t Res = esp_vmulas_s16_xacc_ld_ip_m(xacc_low, xacc_high, Qx, Qy, Ptr, 16);
+esp_vmulas_xacc_ld_res_t Res;
+  // xacc_low, xacc_high: current XACC state (input)
+  // &Res.xacc_low, &Res.xacc_high: pointers to store new XACC state (output)
+  // This enables explicit state passing: xacc_old -> instruction -> xacc_new
+  Res.Ptr = __builtin_riscv_esp_vmulas_s16_xacc_ld_ip_m(
+      xacc_low, xacc_high, Qx, Qy, Ptr, 16, &Res.Qu.v8, &Res.xacc_low,
+      &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
     return __builtin_riscv_esp_movx_r_xacc_l_m(0);
@@ -287,7 +293,7 @@ unsigned int test_vmulas_s16_xacc_ld_ip(unsigned int init_val, esp_vec128_16_t Q
 // CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.ld.xp.m(i32 [[TMP2]], i32 [[TMP3]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 [[REG]]), !noalias [[META12:![0-9]+]]
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.ld.xp.m(i32 [[TMP2]], i32 [[TMP3]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 [[REG]])
 // CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP5]]
 //
@@ -299,7 +305,10 @@ unsigned int test_vmulas_s16_xacc_ld_xp(unsigned int init_val, esp_vec128_16_t Q
     // Loads Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with Qu (128-bit Data), updated pointer, and new XACC
     // Mixed model: XACC as {unsigned int low, unsigned int high}
-    esp_vmulas_xacc_ld_res_t Res = esp_vmulas_s16_xacc_ld_xp_m(xacc_low, xacc_high, Qx, Qy, Ptr, Reg);
+esp_vmulas_xacc_ld_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_vmulas_s16_xacc_ld_xp_m(
+      xacc_low, xacc_high, Qx, Qy, Ptr, Reg, &Res.Qu.v8, &Res.xacc_low,
+      &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
     return __builtin_riscv_esp_movx_r_xacc_l_m(0);
@@ -307,14 +316,14 @@ unsigned int test_vmulas_s16_xacc_ld_xp(unsigned int init_val, esp_vec128_16_t Q
 
 // Test ESP.VMULAS.S16.XACC.ST.IP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_s16_xacc_st_ip(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]]) local_unnamed_addr #[[ATTR4:[0-9]+]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]]) local_unnamed_addr #[[ATTR5:[0-9]+]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP2]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.st.ip.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 16), !noalias [[META15:![0-9]+]]
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.st.ip.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 16)
 // CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP6]]
 //
@@ -326,7 +335,14 @@ unsigned int test_vmulas_s16_xacc_st_ip(unsigned int init_val, esp_vec128_t Qu, 
     // Stores Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with updated pointer and new XACC
     // Mixed model: XACC as {unsigned int low, unsigned int high}
-    esp_vmulas_xacc_st_res_t Res = esp_vmulas_s16_xacc_st_ip_m(xacc_low, xacc_high, Qu, Qx, Qy, Ptr, 16);
+esp_vmulas_xacc_st_res_t Res;
+  // xacc_low, xacc_high: current XACC state (input)
+  // &Res.xacc_low, &Res.xacc_high: pointers to store new XACC state (output,
+  // after multiply-accumulate) This pattern enables explicit state passing for
+  // instruction chaining
+  Res.Ptr = __builtin_riscv_esp_vmulas_s16_xacc_st_ip_m(
+      xacc_low, xacc_high, Qu, Qx, Qy, Ptr, 16, &Res.xacc_low,
+      &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
     return __builtin_riscv_esp_movx_r_xacc_l_m(0);
@@ -334,14 +350,14 @@ unsigned int test_vmulas_s16_xacc_st_ip(unsigned int init_val, esp_vec128_t Qu, 
 
 // Test ESP.VMULAS.S16.XACC.ST.XP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_s16_xacc_st_xp(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR4]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR5]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP2]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.st.xp.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 [[REG]]), !noalias [[META18:![0-9]+]]
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.st.xp.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 [[REG]])
 // CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP6]]
 //
@@ -353,7 +369,10 @@ unsigned int test_vmulas_s16_xacc_st_xp(unsigned int init_val, esp_vec128_t Qu, 
     // Stores Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with updated pointer and new XACC
     // Mixed model: XACC as {unsigned int low, unsigned int high}
-    esp_vmulas_xacc_st_res_t Res = esp_vmulas_s16_xacc_st_xp_m(xacc_low, xacc_high, Qu, Qx, Qy, Ptr, Reg);
+esp_vmulas_xacc_st_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_vmulas_s16_xacc_st_xp_m(
+      xacc_low, xacc_high, Qu, Qx, Qy, Ptr, Reg, &Res.xacc_low,
+      &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
     return __builtin_riscv_esp_movx_r_xacc_l_m(0);
@@ -367,7 +386,7 @@ unsigned int test_vmulas_s16_xacc_st_xp(unsigned int init_val, esp_vec128_t Qu, 
 // CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.ld.ip.m(i32 [[TMP2]], i32 [[TMP3]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 16), !noalias [[META21:![0-9]+]]
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.ld.ip.m(i32 [[TMP2]], i32 [[TMP3]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 16)
 // CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP5]]
 //
@@ -379,7 +398,10 @@ unsigned int test_vmulas_s8_xacc_ld_ip(unsigned int init_val, esp_vec128_t Qx, e
     // Loads Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with Qu (128-bit Data), updated pointer, and new XACC
     // Mixed model: XACC as {unsigned int low, unsigned int high}
-    esp_vmulas_xacc_ld_res_t Res = esp_vmulas_s8_xacc_ld_ip_m(xacc_low, xacc_high, Qx, Qy, Ptr, 16);
+esp_vmulas_xacc_ld_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_vmulas_s8_xacc_ld_ip_m(
+      xacc_low, xacc_high, Qx, Qy, Ptr, 16, &Res.Qu.v8, &Res.xacc_low,
+      &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
     return __builtin_riscv_esp_movx_r_xacc_l_m(0);
@@ -393,7 +415,7 @@ unsigned int test_vmulas_s8_xacc_ld_ip(unsigned int init_val, esp_vec128_t Qx, e
 // CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.ld.xp.m(i32 [[TMP2]], i32 [[TMP3]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 [[REG]]), !noalias [[META24:![0-9]+]]
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.ld.xp.m(i32 [[TMP2]], i32 [[TMP3]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 [[REG]])
 // CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP5]]
 //
@@ -405,7 +427,10 @@ unsigned int test_vmulas_s8_xacc_ld_xp(unsigned int init_val, esp_vec128_t Qx, e
     // Loads Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with Qu (128-bit Data), updated pointer, and new XACC
     // Mixed model: XACC as {unsigned int low, unsigned int high}
-    esp_vmulas_xacc_ld_res_t Res = esp_vmulas_s8_xacc_ld_xp_m(xacc_low, xacc_high, Qx, Qy, Ptr, Reg);
+esp_vmulas_xacc_ld_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_vmulas_s8_xacc_ld_xp_m(
+      xacc_low, xacc_high, Qx, Qy, Ptr, Reg, &Res.Qu.v8, &Res.xacc_low,
+      &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
     return __builtin_riscv_esp_movx_r_xacc_l_m(0);
@@ -413,14 +438,14 @@ unsigned int test_vmulas_s8_xacc_ld_xp(unsigned int init_val, esp_vec128_t Qx, e
 
 // Test ESP.VMULAS.S8.XACC.ST.IP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_s8_xacc_st_ip(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]]) local_unnamed_addr #[[ATTR4]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]]) local_unnamed_addr #[[ATTR5]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP2]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.st.ip.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 16), !noalias [[META27:![0-9]+]]
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.st.ip.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 16)
 // CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP6]]
 //
@@ -432,7 +457,10 @@ unsigned int test_vmulas_s8_xacc_st_ip(unsigned int init_val, esp_vec128_t Qu, e
     // Stores Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with updated pointer and new XACC
     // Mixed model: XACC as {unsigned int low, unsigned int high}
-    esp_vmulas_xacc_st_res_t Res = esp_vmulas_s8_xacc_st_ip_m(xacc_low, xacc_high, Qu, Qx, Qy, Ptr, 16);
+esp_vmulas_xacc_st_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_vmulas_s8_xacc_st_ip_m(
+      xacc_low, xacc_high, Qu, Qx, Qy, Ptr, 16, &Res.xacc_low,
+      &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
     return __builtin_riscv_esp_movx_r_xacc_l_m(0);
@@ -440,14 +468,14 @@ unsigned int test_vmulas_s8_xacc_st_ip(unsigned int init_val, esp_vec128_t Qu, e
 
 // Test ESP.VMULAS.S8.XACC.ST.XP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_s8_xacc_st_xp(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR4]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR5]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP2]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.st.xp.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 [[REG]]), !noalias [[META30:![0-9]+]]
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.st.xp.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 [[REG]])
 // CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP6]]
 //
@@ -459,7 +487,10 @@ unsigned int test_vmulas_s8_xacc_st_xp(unsigned int init_val, esp_vec128_t Qu, e
     // Stores Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with updated pointer and new XACC
     // Mixed model: XACC as {unsigned int low, unsigned int high}
-    esp_vmulas_xacc_st_res_t Res = esp_vmulas_s8_xacc_st_xp_m(xacc_low, xacc_high, Qu, Qx, Qy, Ptr, Reg);
+esp_vmulas_xacc_st_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_vmulas_s8_xacc_st_xp_m(
+      xacc_low, xacc_high, Qu, Qx, Qy, Ptr, Reg, &Res.xacc_low,
+      &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
     return __builtin_riscv_esp_movx_r_xacc_l_m(0);
@@ -473,7 +504,7 @@ unsigned int test_vmulas_s8_xacc_st_xp(unsigned int init_val, esp_vec128_t Qu, e
 // CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.ld.ip.m(i32 [[TMP2]], i32 [[TMP3]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 16), !noalias [[META33:![0-9]+]]
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.ld.ip.m(i32 [[TMP2]], i32 [[TMP3]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 16)
 // CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP5]]
 //
@@ -485,7 +516,10 @@ unsigned int test_vmulas_u16_xacc_ld_ip(unsigned int init_val, esp_vec128_16_t Q
     // Loads Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with Qu (128-bit Data), updated pointer, and new XACC
     // Mixed model: XACC as {unsigned int low, unsigned int high}
-    esp_vmulas_xacc_ld_res_t Res = esp_vmulas_u16_xacc_ld_ip_m(xacc_low, xacc_high, Qx, Qy, Ptr, 16);
+esp_vmulas_xacc_ld_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_vmulas_u16_xacc_ld_ip_m(
+      xacc_low, xacc_high, Qx, Qy, Ptr, 16, &Res.Qu.v8, &Res.xacc_low,
+      &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
     return __builtin_riscv_esp_movx_r_xacc_l_m(0);
@@ -499,7 +533,7 @@ unsigned int test_vmulas_u16_xacc_ld_ip(unsigned int init_val, esp_vec128_16_t Q
 // CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.ld.xp.m(i32 [[TMP2]], i32 [[TMP3]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 [[REG]]), !noalias [[META36:![0-9]+]]
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.ld.xp.m(i32 [[TMP2]], i32 [[TMP3]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 [[REG]])
 // CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP5]]
 //
@@ -511,7 +545,10 @@ unsigned int test_vmulas_u16_xacc_ld_xp(unsigned int init_val, esp_vec128_16_t Q
     // Loads Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with Qu (128-bit Data), updated pointer, and new XACC
     // Mixed model: XACC as {unsigned int low, unsigned int high}
-    esp_vmulas_xacc_ld_res_t Res = esp_vmulas_u16_xacc_ld_xp_m(xacc_low, xacc_high, Qx, Qy, Ptr, Reg);
+esp_vmulas_xacc_ld_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_vmulas_u16_xacc_ld_xp_m(
+      xacc_low, xacc_high, Qx, Qy, Ptr, Reg, &Res.Qu.v8, &Res.xacc_low,
+      &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
     return __builtin_riscv_esp_movx_r_xacc_l_m(0);
@@ -519,14 +556,14 @@ unsigned int test_vmulas_u16_xacc_ld_xp(unsigned int init_val, esp_vec128_16_t Q
 
 // Test ESP.VMULAS.U16.XACC.ST.IP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_u16_xacc_st_ip(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]]) local_unnamed_addr #[[ATTR4]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]]) local_unnamed_addr #[[ATTR5]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP2]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.st.ip.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 16), !noalias [[META39:![0-9]+]]
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.st.ip.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 16)
 // CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP6]]
 //
@@ -538,7 +575,10 @@ unsigned int test_vmulas_u16_xacc_st_ip(unsigned int init_val, esp_vec128_t Qu, 
     // Stores Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with updated pointer and new XACC
     // Mixed model: XACC as {unsigned int low, unsigned int high}
-    esp_vmulas_xacc_st_res_t Res = esp_vmulas_u16_xacc_st_ip_m(xacc_low, xacc_high, Qu, Qx, Qy, Ptr, 16);
+esp_vmulas_xacc_st_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_vmulas_u16_xacc_st_ip_m(
+      xacc_low, xacc_high, Qu, Qx, Qy, Ptr, 16, &Res.xacc_low,
+      &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
     return __builtin_riscv_esp_movx_r_xacc_l_m(0);
@@ -546,14 +586,14 @@ unsigned int test_vmulas_u16_xacc_st_ip(unsigned int init_val, esp_vec128_t Qu, 
 
 // Test ESP.VMULAS.U16.XACC.ST.XP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_u16_xacc_st_xp(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR4]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR5]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP2]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.st.xp.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 [[REG]]), !noalias [[META42:![0-9]+]]
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.st.xp.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 [[REG]])
 // CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP6]]
 //
@@ -565,7 +605,10 @@ unsigned int test_vmulas_u16_xacc_st_xp(unsigned int init_val, esp_vec128_t Qu, 
     // Stores Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with updated pointer and new XACC
     // Mixed model: XACC as {unsigned int low, unsigned int high}
-    esp_vmulas_xacc_st_res_t Res = esp_vmulas_u16_xacc_st_xp_m(xacc_low, xacc_high, Qu, Qx, Qy, Ptr, Reg);
+esp_vmulas_xacc_st_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_vmulas_u16_xacc_st_xp_m(
+      xacc_low, xacc_high, Qu, Qx, Qy, Ptr, Reg, &Res.xacc_low,
+      &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
     return __builtin_riscv_esp_movx_r_xacc_l_m(0);
@@ -579,7 +622,7 @@ unsigned int test_vmulas_u16_xacc_st_xp(unsigned int init_val, esp_vec128_t Qu, 
 // CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.ld.ip.m(i32 [[TMP2]], i32 [[TMP3]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 16), !noalias [[META45:![0-9]+]]
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.ld.ip.m(i32 [[TMP2]], i32 [[TMP3]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 16)
 // CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP5]]
 //
@@ -591,7 +634,10 @@ unsigned int test_vmulas_u8_xacc_ld_ip(unsigned int init_val, esp_vec128_t Qx, e
     // Loads Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with Qu (128-bit Data), updated pointer, and new XACC
     // Mixed model: XACC as {unsigned int low, unsigned int high}
-    esp_vmulas_xacc_ld_res_t Res = esp_vmulas_u8_xacc_ld_ip_m(xacc_low, xacc_high, Qx, Qy, Ptr, 16);
+esp_vmulas_xacc_ld_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_vmulas_u8_xacc_ld_ip_m(
+      xacc_low, xacc_high, Qx, Qy, Ptr, 16, &Res.Qu.v8, &Res.xacc_low,
+      &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
     return __builtin_riscv_esp_movx_r_xacc_l_m(0);
@@ -605,7 +651,7 @@ unsigned int test_vmulas_u8_xacc_ld_ip(unsigned int init_val, esp_vec128_t Qx, e
 // CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.ld.xp.m(i32 [[TMP2]], i32 [[TMP3]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 [[REG]]), !noalias [[META48:![0-9]+]]
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.ld.xp.m(i32 [[TMP2]], i32 [[TMP3]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 [[REG]])
 // CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP5]]
 //
@@ -617,7 +663,10 @@ unsigned int test_vmulas_u8_xacc_ld_xp(unsigned int init_val, esp_vec128_t Qx, e
     // Loads Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with Qu (128-bit Data), updated pointer, and new XACC
     // Mixed model: XACC as {unsigned int low, unsigned int high}
-    esp_vmulas_xacc_ld_res_t Res = esp_vmulas_u8_xacc_ld_xp_m(xacc_low, xacc_high, Qx, Qy, Ptr, Reg);
+esp_vmulas_xacc_ld_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_vmulas_u8_xacc_ld_xp_m(
+      xacc_low, xacc_high, Qx, Qy, Ptr, Reg, &Res.Qu.v8, &Res.xacc_low,
+      &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
     return __builtin_riscv_esp_movx_r_xacc_l_m(0);
@@ -625,14 +674,14 @@ unsigned int test_vmulas_u8_xacc_ld_xp(unsigned int init_val, esp_vec128_t Qx, e
 
 // Test ESP.VMULAS.U8.XACC.ST.IP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_u8_xacc_st_ip(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]]) local_unnamed_addr #[[ATTR4]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]]) local_unnamed_addr #[[ATTR5]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP2]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.st.ip.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 16), !noalias [[META51:![0-9]+]]
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.st.ip.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 16)
 // CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP6]]
 //
@@ -644,7 +693,10 @@ unsigned int test_vmulas_u8_xacc_st_ip(unsigned int init_val, esp_vec128_t Qu, e
     // Stores Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with updated pointer and new XACC
     // Mixed model: XACC as {unsigned int low, unsigned int high}
-    esp_vmulas_xacc_st_res_t Res = esp_vmulas_u8_xacc_st_ip_m(xacc_low, xacc_high, Qu, Qx, Qy, Ptr, 16);
+esp_vmulas_xacc_st_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_vmulas_u8_xacc_st_ip_m(
+      xacc_low, xacc_high, Qu, Qx, Qy, Ptr, 16, &Res.xacc_low,
+      &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
     return __builtin_riscv_esp_movx_r_xacc_l_m(0);
@@ -652,14 +704,14 @@ unsigned int test_vmulas_u8_xacc_st_ip(unsigned int init_val, esp_vec128_t Qu, e
 
 // Test ESP.VMULAS.U8.XACC.ST.XP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_u8_xacc_st_xp(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR4]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR5]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP2]], align 16, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.st.xp.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 [[REG]]), !noalias [[META54:![0-9]+]]
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.st.xp.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 [[REG]])
 // CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP6]]
 //
@@ -671,7 +723,10 @@ unsigned int test_vmulas_u8_xacc_st_xp(unsigned int init_val, esp_vec128_t Qu, e
     // Stores Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with updated pointer and new XACC
     // Mixed model: XACC as {unsigned int low, unsigned int high}
-    esp_vmulas_xacc_st_res_t Res = esp_vmulas_u8_xacc_st_xp_m(xacc_low, xacc_high, Qu, Qx, Qy, Ptr, Reg);
+esp_vmulas_xacc_st_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_vmulas_u8_xacc_st_xp_m(
+      xacc_low, xacc_high, Qu, Qx, Qy, Ptr, Reg, &Res.xacc_low,
+      &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
     return __builtin_riscv_esp_movx_r_xacc_l_m(0);
@@ -697,52 +752,4 @@ unsigned int test_vmulas_u8_xacc_st_xp(unsigned int init_val, esp_vec128_t Qu, e
 // CHECK: [[TBAA6]] = !{[[META7:![0-9]+]], [[META7]], i64 0}
 // CHECK: [[META7]] = !{!"omnipotent char", [[META8:![0-9]+]], i64 0}
 // CHECK: [[META8]] = !{!"Simple C/C++ TBAA"}
-// CHECK: [[META9]] = !{[[META10:![0-9]+]]}
-// CHECK: [[META10]] = distinct !{[[META10]], [[META11:![0-9]+]], !"esp_vmulas_s16_xacc_ld_ip_m: %agg.result"}
-// CHECK: [[META11]] = distinct !{[[META11]], !"esp_vmulas_s16_xacc_ld_ip_m"}
-// CHECK: [[META12]] = !{[[META13:![0-9]+]]}
-// CHECK: [[META13]] = distinct !{[[META13]], [[META14:![0-9]+]], !"esp_vmulas_s16_xacc_ld_xp_m: %agg.result"}
-// CHECK: [[META14]] = distinct !{[[META14]], !"esp_vmulas_s16_xacc_ld_xp_m"}
-// CHECK: [[META15]] = !{[[META16:![0-9]+]]}
-// CHECK: [[META16]] = distinct !{[[META16]], [[META17:![0-9]+]], !"esp_vmulas_s16_xacc_st_ip_m: %agg.result"}
-// CHECK: [[META17]] = distinct !{[[META17]], !"esp_vmulas_s16_xacc_st_ip_m"}
-// CHECK: [[META18]] = !{[[META19:![0-9]+]]}
-// CHECK: [[META19]] = distinct !{[[META19]], [[META20:![0-9]+]], !"esp_vmulas_s16_xacc_st_xp_m: %agg.result"}
-// CHECK: [[META20]] = distinct !{[[META20]], !"esp_vmulas_s16_xacc_st_xp_m"}
-// CHECK: [[META21]] = !{[[META22:![0-9]+]]}
-// CHECK: [[META22]] = distinct !{[[META22]], [[META23:![0-9]+]], !"esp_vmulas_s8_xacc_ld_ip_m: %agg.result"}
-// CHECK: [[META23]] = distinct !{[[META23]], !"esp_vmulas_s8_xacc_ld_ip_m"}
-// CHECK: [[META24]] = !{[[META25:![0-9]+]]}
-// CHECK: [[META25]] = distinct !{[[META25]], [[META26:![0-9]+]], !"esp_vmulas_s8_xacc_ld_xp_m: %agg.result"}
-// CHECK: [[META26]] = distinct !{[[META26]], !"esp_vmulas_s8_xacc_ld_xp_m"}
-// CHECK: [[META27]] = !{[[META28:![0-9]+]]}
-// CHECK: [[META28]] = distinct !{[[META28]], [[META29:![0-9]+]], !"esp_vmulas_s8_xacc_st_ip_m: %agg.result"}
-// CHECK: [[META29]] = distinct !{[[META29]], !"esp_vmulas_s8_xacc_st_ip_m"}
-// CHECK: [[META30]] = !{[[META31:![0-9]+]]}
-// CHECK: [[META31]] = distinct !{[[META31]], [[META32:![0-9]+]], !"esp_vmulas_s8_xacc_st_xp_m: %agg.result"}
-// CHECK: [[META32]] = distinct !{[[META32]], !"esp_vmulas_s8_xacc_st_xp_m"}
-// CHECK: [[META33]] = !{[[META34:![0-9]+]]}
-// CHECK: [[META34]] = distinct !{[[META34]], [[META35:![0-9]+]], !"esp_vmulas_u16_xacc_ld_ip_m: %agg.result"}
-// CHECK: [[META35]] = distinct !{[[META35]], !"esp_vmulas_u16_xacc_ld_ip_m"}
-// CHECK: [[META36]] = !{[[META37:![0-9]+]]}
-// CHECK: [[META37]] = distinct !{[[META37]], [[META38:![0-9]+]], !"esp_vmulas_u16_xacc_ld_xp_m: %agg.result"}
-// CHECK: [[META38]] = distinct !{[[META38]], !"esp_vmulas_u16_xacc_ld_xp_m"}
-// CHECK: [[META39]] = !{[[META40:![0-9]+]]}
-// CHECK: [[META40]] = distinct !{[[META40]], [[META41:![0-9]+]], !"esp_vmulas_u16_xacc_st_ip_m: %agg.result"}
-// CHECK: [[META41]] = distinct !{[[META41]], !"esp_vmulas_u16_xacc_st_ip_m"}
-// CHECK: [[META42]] = !{[[META43:![0-9]+]]}
-// CHECK: [[META43]] = distinct !{[[META43]], [[META44:![0-9]+]], !"esp_vmulas_u16_xacc_st_xp_m: %agg.result"}
-// CHECK: [[META44]] = distinct !{[[META44]], !"esp_vmulas_u16_xacc_st_xp_m"}
-// CHECK: [[META45]] = !{[[META46:![0-9]+]]}
-// CHECK: [[META46]] = distinct !{[[META46]], [[META47:![0-9]+]], !"esp_vmulas_u8_xacc_ld_ip_m: %agg.result"}
-// CHECK: [[META47]] = distinct !{[[META47]], !"esp_vmulas_u8_xacc_ld_ip_m"}
-// CHECK: [[META48]] = !{[[META49:![0-9]+]]}
-// CHECK: [[META49]] = distinct !{[[META49]], [[META50:![0-9]+]], !"esp_vmulas_u8_xacc_ld_xp_m: %agg.result"}
-// CHECK: [[META50]] = distinct !{[[META50]], !"esp_vmulas_u8_xacc_ld_xp_m"}
-// CHECK: [[META51]] = !{[[META52:![0-9]+]]}
-// CHECK: [[META52]] = distinct !{[[META52]], [[META53:![0-9]+]], !"esp_vmulas_u8_xacc_st_ip_m: %agg.result"}
-// CHECK: [[META53]] = distinct !{[[META53]], !"esp_vmulas_u8_xacc_st_ip_m"}
-// CHECK: [[META54]] = !{[[META55:![0-9]+]]}
-// CHECK: [[META55]] = distinct !{[[META55]], [[META56:![0-9]+]], !"esp_vmulas_u8_xacc_st_xp_m: %agg.result"}
-// CHECK: [[META56]] = distinct !{[[META56]], !"esp_vmulas_u8_xacc_st_xp_m"}
 //.
