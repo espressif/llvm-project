@@ -50,9 +50,9 @@ void* __builtin_riscv_esp_st_qacc_l_h_128_ip_m(esp_vec128_t, void *, int);
 // CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } @llvm.riscv.esp.zero.qacc.m()
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP0]], 2
 // CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP0]], 3
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC1]], i32 16), !noalias [[META6:![0-9]+]]
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC1]], i32 16)
 // CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP3]], 0
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16), !noalias [[META9:![0-9]+]]
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16)
 // CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP5]], 0
 // CHECK-NEXT:    [[TMP7:%.*]] = tail call { <16 x i8>, <16 x i8> } @llvm.riscv.esp.vcmulas.s8.qacc.h.m(<16 x i8> [[TMP1]], <16 x i8> [[TMP2]], <16 x i8> [[TMP4]], <16 x i8> [[TMP6]])
 // CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, <16 x i8> } [[TMP7]], 0
@@ -63,9 +63,12 @@ void* __builtin_riscv_esp_st_qacc_l_h_128_ip_m(esp_vec128_t, void *, int);
 //
 void test_vcmulas_s8_qacc_h(void *src1, void *src2, void *dst) {
     // Explicit state passing: initialize QACC_H via esp_zero_qacc_m
-    esp_qacc_4x128_t QaccIn = esp_zero_qacc_m();
-    esp_vld_res_t Res1 = esp_vld_128_ip_m(src1, 16);
-    esp_vld_res_t Res2 = esp_vld_128_ip_m(src2, 16);
+esp_qacc_4x128_t QaccIn;
+  __builtin_riscv_esp_zero_qacc_m(&QaccIn.v0, &QaccIn.v1, &QaccIn.v2, &QaccIn.v3);
+esp_vld_res_t Res1;
+  Res1.Ptr = __builtin_riscv_esp_vld_128_ip_m(src1, 16, &Res1.Val.V8);
+esp_vld_res_t Res2;
+  Res2.Ptr = __builtin_riscv_esp_vld_128_ip_m(src2, 16, &Res2.Val.V8);
     // Explicit state passing: v2, v3 are both input and output
     // Compiler builds dependency: QaccIn.v2/v3 → VCMULAS → qacc_out.v2/v3
     esp_qacc_4x128_t qacc_out;
@@ -85,10 +88,10 @@ void test_vcmulas_s8_qacc_h(void *src1, void *src2, void *dst) {
 // CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } @llvm.riscv.esp.zero.qacc.m()
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP0]], 2
 // CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP0]], 3
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC1]], i32 16), !noalias [[META12:![0-9]+]]
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC1]], i32 16)
 // CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP3]], 0
 // CHECK-NEXT:    [[TMP5:%.*]] = bitcast <16 x i8> [[TMP4]] to <8 x i16>
-// CHECK-NEXT:    [[TMP6:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16), !noalias [[META15:![0-9]+]]
+// CHECK-NEXT:    [[TMP6:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16)
 // CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP6]], 0
 // CHECK-NEXT:    [[TMP8:%.*]] = bitcast <16 x i8> [[TMP7]] to <8 x i16>
 // CHECK-NEXT:    [[TMP9:%.*]] = tail call { <16 x i8>, <16 x i8> } @llvm.riscv.esp.vcmulas.s16.qacc.h.m(<16 x i8> [[TMP1]], <16 x i8> [[TMP2]], <8 x i16> [[TMP5]], <8 x i16> [[TMP8]])
@@ -100,9 +103,12 @@ void test_vcmulas_s8_qacc_h(void *src1, void *src2, void *dst) {
 //
 void test_vcmulas_s16_qacc_h(void *src1, void *src2, void *dst) {
     // Explicit state passing: initialize QACC_H via esp_zero_qacc_m
-    esp_qacc_4x128_t QaccIn = esp_zero_qacc_m();
-    esp_vld_res_t Res1 = esp_vld_128_ip_m(src1, 16);
-    esp_vld_res_t Res2 = esp_vld_128_ip_m(src2, 16);
+esp_qacc_4x128_t QaccIn;
+  __builtin_riscv_esp_zero_qacc_m(&QaccIn.v0, &QaccIn.v1, &QaccIn.v2, &QaccIn.v3);
+esp_vld_res_t Res1;
+  Res1.Ptr = __builtin_riscv_esp_vld_128_ip_m(src1, 16, &Res1.Val.V8);
+esp_vld_res_t Res2;
+  Res2.Ptr = __builtin_riscv_esp_vld_128_ip_m(src2, 16, &Res2.Val.V8);
     // Explicit state passing: v2, v3 are both input and output
     // Compiler builds dependency: QaccIn.v2/v3 → VCMULAS → qacc_out.v2/v3
     esp_qacc_4x128_t qacc_out;
@@ -122,9 +128,9 @@ void test_vcmulas_s16_qacc_h(void *src1, void *src2, void *dst) {
 // CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } @llvm.riscv.esp.zero.qacc.m()
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP0]], 0
 // CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP0]], 1
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC1]], i32 16), !noalias [[META18:![0-9]+]]
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC1]], i32 16)
 // CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP3]], 0
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16), !noalias [[META21:![0-9]+]]
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16)
 // CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP5]], 0
 // CHECK-NEXT:    [[TMP7:%.*]] = tail call { <16 x i8>, <16 x i8> } @llvm.riscv.esp.vcmulas.s8.qacc.l.m(<16 x i8> [[TMP1]], <16 x i8> [[TMP2]], <16 x i8> [[TMP4]], <16 x i8> [[TMP6]])
 // CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, <16 x i8> } [[TMP7]], 0
@@ -135,9 +141,12 @@ void test_vcmulas_s16_qacc_h(void *src1, void *src2, void *dst) {
 //
 void test_vcmulas_s8_qacc_l(void *src1, void *src2, void *dst) {
     // Explicit state passing: initialize QACC_L via esp_zero_qacc_m
-    esp_qacc_4x128_t QaccIn = esp_zero_qacc_m();
-    esp_vld_res_t Res1 = esp_vld_128_ip_m(src1, 16);
-    esp_vld_res_t Res2 = esp_vld_128_ip_m(src2, 16);
+esp_qacc_4x128_t QaccIn;
+  __builtin_riscv_esp_zero_qacc_m(&QaccIn.v0, &QaccIn.v1, &QaccIn.v2, &QaccIn.v3);
+esp_vld_res_t Res1;
+  Res1.Ptr = __builtin_riscv_esp_vld_128_ip_m(src1, 16, &Res1.Val.V8);
+esp_vld_res_t Res2;
+  Res2.Ptr = __builtin_riscv_esp_vld_128_ip_m(src2, 16, &Res2.Val.V8);
     // Explicit state passing: v0, v1 are both input and output
     // Compiler builds dependency: QaccIn.v0/v1 → VCMULAS → qacc_out.v0/v1
     esp_qacc_4x128_t qacc_out;
@@ -157,10 +166,10 @@ void test_vcmulas_s8_qacc_l(void *src1, void *src2, void *dst) {
 // CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } @llvm.riscv.esp.zero.qacc.m()
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP0]], 0
 // CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP0]], 1
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC1]], i32 16), !noalias [[META24:![0-9]+]]
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC1]], i32 16)
 // CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP3]], 0
 // CHECK-NEXT:    [[TMP5:%.*]] = bitcast <16 x i8> [[TMP4]] to <8 x i16>
-// CHECK-NEXT:    [[TMP6:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16), !noalias [[META27:![0-9]+]]
+// CHECK-NEXT:    [[TMP6:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16)
 // CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP6]], 0
 // CHECK-NEXT:    [[TMP8:%.*]] = bitcast <16 x i8> [[TMP7]] to <8 x i16>
 // CHECK-NEXT:    [[TMP9:%.*]] = tail call { <16 x i8>, <16 x i8> } @llvm.riscv.esp.vcmulas.s16.qacc.l.m(<16 x i8> [[TMP1]], <16 x i8> [[TMP2]], <8 x i16> [[TMP5]], <8 x i16> [[TMP8]])
@@ -172,9 +181,12 @@ void test_vcmulas_s8_qacc_l(void *src1, void *src2, void *dst) {
 //
 void test_vcmulas_s16_qacc_l(void *src1, void *src2, void *dst) {
     // Explicit state passing: initialize QACC_L via esp_zero_qacc_m
-    esp_qacc_4x128_t QaccIn = esp_zero_qacc_m();
-    esp_vld_res_t Res1 = esp_vld_128_ip_m(src1, 16);
-    esp_vld_res_t Res2 = esp_vld_128_ip_m(src2, 16);
+esp_qacc_4x128_t QaccIn;
+  __builtin_riscv_esp_zero_qacc_m(&QaccIn.v0, &QaccIn.v1, &QaccIn.v2, &QaccIn.v3);
+esp_vld_res_t Res1;
+  Res1.Ptr = __builtin_riscv_esp_vld_128_ip_m(src1, 16, &Res1.Val.V8);
+esp_vld_res_t Res2;
+  Res2.Ptr = __builtin_riscv_esp_vld_128_ip_m(src2, 16, &Res2.Val.V8);
     // Explicit state passing: v0, v1 are both input and output
     // Compiler builds dependency: QaccIn.v0/v1 → VCMULAS → qacc_out.v0/v1
     esp_qacc_4x128_t qacc_out;
@@ -194,19 +206,19 @@ void test_vcmulas_s16_qacc_l(void *src1, void *src2, void *dst) {
 // CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } @llvm.riscv.esp.zero.qacc.m()
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP0]], 2
 // CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP0]], 3
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC1]], i32 16), !noalias [[META30:![0-9]+]]
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC1]], i32 16)
 // CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP3]], 0
 // CHECK-NEXT:    [[TMP5:%.*]] = bitcast <16 x i8> [[TMP4]] to <8 x i16>
-// CHECK-NEXT:    [[TMP6:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16), !noalias [[META33:![0-9]+]]
+// CHECK-NEXT:    [[TMP6:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16)
 // CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP6]], 0
 // CHECK-NEXT:    [[TMP8:%.*]] = bitcast <16 x i8> [[TMP7]] to <8 x i16>
 // CHECK-NEXT:    [[TMP9:%.*]] = tail call { <16 x i8>, <16 x i8> } @llvm.riscv.esp.vcmulas.s16.qacc.h.m(<16 x i8> [[TMP1]], <16 x i8> [[TMP2]], <8 x i16> [[TMP5]], <8 x i16> [[TMP8]])
 // CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <16 x i8>, <16 x i8> } [[TMP9]], 0
 // CHECK-NEXT:    [[TMP11:%.*]] = extractvalue { <16 x i8>, <16 x i8> } [[TMP9]], 1
-// CHECK-NEXT:    [[TMP12:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC3]], i32 16), !noalias [[META36:![0-9]+]]
+// CHECK-NEXT:    [[TMP12:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC3]], i32 16)
 // CHECK-NEXT:    [[TMP13:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP12]], 0
 // CHECK-NEXT:    [[TMP14:%.*]] = bitcast <16 x i8> [[TMP13]] to <8 x i16>
-// CHECK-NEXT:    [[TMP15:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC4]], i32 16), !noalias [[META39:![0-9]+]]
+// CHECK-NEXT:    [[TMP15:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC4]], i32 16)
 // CHECK-NEXT:    [[TMP16:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP15]], 0
 // CHECK-NEXT:    [[TMP17:%.*]] = bitcast <16 x i8> [[TMP16]] to <8 x i16>
 // CHECK-NEXT:    [[TMP18:%.*]] = tail call { <16 x i8>, <16 x i8> } @llvm.riscv.esp.vcmulas.s16.qacc.h.m(<16 x i8> [[TMP10]], <16 x i8> [[TMP11]], <8 x i16> [[TMP14]], <8 x i16> [[TMP17]])
@@ -218,16 +230,21 @@ void test_vcmulas_s16_qacc_l(void *src1, void *src2, void *dst) {
 //
 void test_vcmulas_s16_qacc_h_accumulate(void *src1, void *src2, void *src3, void *src4, void *dst) {
     // Explicit state passing: initialize QACC_H via esp_zero_qacc_m
-    esp_qacc_4x128_t QaccIn = esp_zero_qacc_m();
-    esp_vld_res_t Res1 = esp_vld_128_ip_m(src1, 16);
-    esp_vld_res_t Res2 = esp_vld_128_ip_m(src2, 16);
+esp_qacc_4x128_t QaccIn;
+  __builtin_riscv_esp_zero_qacc_m(&QaccIn.v0, &QaccIn.v1, &QaccIn.v2, &QaccIn.v3);
+esp_vld_res_t Res1;
+  Res1.Ptr = __builtin_riscv_esp_vld_128_ip_m(src1, 16, &Res1.Val.V8);
+esp_vld_res_t Res2;
+  Res2.Ptr = __builtin_riscv_esp_vld_128_ip_m(src2, 16, &Res2.Val.V8);
     // First call: qacc_h_1 = vcmulas(qacc_h_0, qx1, qy1)
     // Compiler builds dependency: qacc_h_0 → VCMULAS1 → qacc_h_1
     esp_qacc_4x128_t qacc_tmp;
     __builtin_riscv_esp_vcmulas_s16_qacc_h_m(QaccIn.v2, QaccIn.v3, Res1.Val.V16, Res2.Val.V16,
                                               &qacc_tmp.v2, &qacc_tmp.v3);
-    esp_vld_res_t res3 = esp_vld_128_ip_m(src3, 16);
-    esp_vld_res_t res4 = esp_vld_128_ip_m(src4, 16);
+esp_vld_res_t res3;
+  res3.Ptr = __builtin_riscv_esp_vld_128_ip_m(src3, 16, &res3.Val.V8);
+esp_vld_res_t res4;
+  res4.Ptr = __builtin_riscv_esp_vld_128_ip_m(src4, 16, &res4.Val.V8);
     // Second call: qacc_h_2 = vcmulas(qacc_h_1, qx2, qy2)
     // Compiler builds dependency: qacc_h_1 → VCMULAS2 → qacc_h_2
     // This ensures VCMULAS2 must execute after VCMULAS1 (proper instruction scheduling)
@@ -247,17 +264,22 @@ void test_vcmulas_s16_qacc_h_accumulate(void *src1, void *src2, void *src3, void
 //     // Explicit state passing: zero_qacc_m returns v64i8 (QACC_H + QACC_L)
 //     // Note: Although QACC_H and QACC_L are independent registers in hardware,
 //     // we model them as a 512-bit aggregate to avoid memory operations
-//     esp_qacc_pair_t qacc_pair = esp_zero_qacc_m();  // Hardware initialization (use wrapper)
+//esp_qacc_pair_t qacc_pair;
+//   __builtin_riscv_esp_zero_qacc_m(&qacc_pair.v0, &qacc_pair.v1, &qacc_pair.v2, &qacc_pair.v3);
 //     esp_qacc_h_t acc = qacc_pair.h;  // Extract QACC_H from the structure
 
 //     // Chain multiple VCMULAS operations with explicit state passing
 //     // Each operation creates a dependency: acc_0 → op1 → acc_1 → op2 → acc_2
-//     esp_vld_res_t Res1 = esp_vld_128_ip_m(src1, 16);
-//     esp_vld_res_t Res2 = esp_vld_128_ip_m(src2, 16);
+//esp_vld_res_t Res1;
+//   Res1.Ptr = __builtin_riscv_esp_vld_128_ip_m(src1, 16, &Res1.Val.V8);
+//esp_vld_res_t Res2;
+//   Res2.Ptr = __builtin_riscv_esp_vld_128_ip_m(src2, 16, &Res2.Val.V8);
 //     acc = __builtin_riscv_esp_vcmulas_s16_qacc_h_m(acc, Res1.Val.V16, Res2.Val.V16);
 
-//     esp_vld_res_t res3 = esp_vld_128_ip_m(src3, 16);
-//     esp_vld_res_t res4 = esp_vld_128_ip_m(src4, 16);
+//esp_vld_res_t res3;
+//   res3.Ptr = __builtin_riscv_esp_vld_128_ip_m(src3, 16, &res3.Val.V8);
+//esp_vld_res_t res4;
+//   res4.Ptr = __builtin_riscv_esp_vld_128_ip_m(src4, 16, &res4.Val.V8);
 //     acc = __builtin_riscv_esp_vcmulas_s16_qacc_h_m(acc, res3.Val.V16, res4.Val.V16);
 
 //     // If acc is not used after this point, compiler can eliminate the entire chain (DCE)
@@ -269,19 +291,19 @@ void test_vcmulas_s16_qacc_h_accumulate(void *src1, void *src2, void *src3, void
 // CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } @llvm.riscv.esp.zero.qacc.m()
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP0]], 2
 // CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP0]], 3
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC1]], i32 16), !noalias [[META42:![0-9]+]]
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC1]], i32 16)
 // CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP3]], 0
 // CHECK-NEXT:    [[TMP5:%.*]] = bitcast <16 x i8> [[TMP4]] to <8 x i16>
-// CHECK-NEXT:    [[TMP6:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16), !noalias [[META45:![0-9]+]]
+// CHECK-NEXT:    [[TMP6:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16)
 // CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP6]], 0
 // CHECK-NEXT:    [[TMP8:%.*]] = bitcast <16 x i8> [[TMP7]] to <8 x i16>
 // CHECK-NEXT:    [[TMP9:%.*]] = tail call { <16 x i8>, <16 x i8> } @llvm.riscv.esp.vcmulas.s16.qacc.h.m(<16 x i8> [[TMP1]], <16 x i8> [[TMP2]], <8 x i16> [[TMP5]], <8 x i16> [[TMP8]])
 // CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <16 x i8>, <16 x i8> } [[TMP9]], 0
 // CHECK-NEXT:    [[TMP11:%.*]] = extractvalue { <16 x i8>, <16 x i8> } [[TMP9]], 1
-// CHECK-NEXT:    [[TMP12:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC3]], i32 16), !noalias [[META48:![0-9]+]]
+// CHECK-NEXT:    [[TMP12:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC3]], i32 16)
 // CHECK-NEXT:    [[TMP13:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP12]], 0
 // CHECK-NEXT:    [[TMP14:%.*]] = bitcast <16 x i8> [[TMP13]] to <8 x i16>
-// CHECK-NEXT:    [[TMP15:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC4]], i32 16), !noalias [[META51:![0-9]+]]
+// CHECK-NEXT:    [[TMP15:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC4]], i32 16)
 // CHECK-NEXT:    [[TMP16:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP15]], 0
 // CHECK-NEXT:    [[TMP17:%.*]] = bitcast <16 x i8> [[TMP16]] to <8 x i16>
 // CHECK-NEXT:    [[TMP18:%.*]] = tail call { <16 x i8>, <16 x i8> } @llvm.riscv.esp.vcmulas.s16.qacc.h.m(<16 x i8> [[TMP10]], <16 x i8> [[TMP11]], <8 x i16> [[TMP14]], <8 x i16> [[TMP17]])
@@ -293,18 +315,23 @@ void test_vcmulas_s16_qacc_h_accumulate(void *src1, void *src2, void *src3, void
 //
 void test_vcmulas_s16_qacc_h_explicit_chain(void *src1, void *src2, void *src3, void *src4, void *dst) {
     // Explicit state passing: initialize QACC_H via esp_zero_qacc_m
-    esp_qacc_4x128_t QaccIn = esp_zero_qacc_m();
+esp_qacc_4x128_t QaccIn;
+  __builtin_riscv_esp_zero_qacc_m(&QaccIn.v0, &QaccIn.v1, &QaccIn.v2, &QaccIn.v3);
 
     // Chain multiple VCMULAS operations with explicit state passing
     // Each operation creates a dependency: acc_0 → op1 → acc_1 → op2 → acc_2
-    esp_vld_res_t Res1 = esp_vld_128_ip_m(src1, 16);
-    esp_vld_res_t Res2 = esp_vld_128_ip_m(src2, 16);
+esp_vld_res_t Res1;
+  Res1.Ptr = __builtin_riscv_esp_vld_128_ip_m(src1, 16, &Res1.Val.V8);
+esp_vld_res_t Res2;
+  Res2.Ptr = __builtin_riscv_esp_vld_128_ip_m(src2, 16, &Res2.Val.V8);
     esp_qacc_4x128_t qacc_tmp;
     __builtin_riscv_esp_vcmulas_s16_qacc_h_m(QaccIn.v2, QaccIn.v3, Res1.Val.V16, Res2.Val.V16,
                                               &qacc_tmp.v2, &qacc_tmp.v3);
 
-    esp_vld_res_t res3 = esp_vld_128_ip_m(src3, 16);
-    esp_vld_res_t res4 = esp_vld_128_ip_m(src4, 16);
+esp_vld_res_t res3;
+  res3.Ptr = __builtin_riscv_esp_vld_128_ip_m(src3, 16, &res3.Val.V8);
+esp_vld_res_t res4;
+  res4.Ptr = __builtin_riscv_esp_vld_128_ip_m(src4, 16, &res4.Val.V8);
     esp_qacc_4x128_t qacc_out;
     __builtin_riscv_esp_vcmulas_s16_qacc_h_m(qacc_tmp.v2, qacc_tmp.v3, res3.Val.V16, res4.Val.V16,
                                               &qacc_out.v2, &qacc_out.v3);
@@ -334,7 +361,8 @@ void test_vcmulas_s16_qacc_h_explicit_chain(void *src1, void *src2, void *src3, 
 // ASM: # Extract QACC_H from v64i8 (should use EXTRACT_SUBVECTOR or similar)
 // ASM: ret
 // esp_qacc_h_t test_zero_qacc_extract_h_asm(void) {
-//     esp_qacc_pair_t qacc_pair = esp_zero_qacc_m();  // Use wrapper function
+//esp_qacc_pair_t qacc_pair;
+//   __builtin_riscv_esp_zero_qacc_m(&qacc_pair.v0, &qacc_pair.v1, &qacc_pair.v2, &qacc_pair.v3);
 //     return qacc_pair.h;
 // }
 
@@ -343,7 +371,8 @@ void test_vcmulas_s16_qacc_h_explicit_chain(void *src1, void *src2, void *src3, 
 // ASM: # Extract QACC_L from v64i8 (should use EXTRACT_SUBVECTOR or similar)
 // ASM: ret
 // esp_qacc_l_t test_zero_qacc_extract_l_asm(void) {
-//     esp_qacc_pair_t qacc_pair = esp_zero_qacc_m();  // Use wrapper function
+//esp_qacc_pair_t qacc_pair;
+//   __builtin_riscv_esp_zero_qacc_m(&qacc_pair.v0, &qacc_pair.v1, &qacc_pair.v2, &qacc_pair.v3);
 //     return qacc_pair.l;
 // }
 
@@ -353,61 +382,14 @@ void test_vcmulas_s16_qacc_h_explicit_chain(void *src1, void *src2, void *src3, 
 // ASM: esp.vcmulas.s16.qacc.h.m
 // ASM: ret
 // esp_qacc_h_t test_zero_qacc_chain_asm(void *src1, void *src2) {
-//     esp_qacc_pair_t qacc_pair = esp_zero_qacc_m();  // Use wrapper function
+//esp_qacc_pair_t qacc_pair;
+//   __builtin_riscv_esp_zero_qacc_m(&qacc_pair.v0, &qacc_pair.v1, &qacc_pair.v2, &qacc_pair.v3);
 //     esp_qacc_h_t qacc_h = qacc_pair.h;
-//     esp_vld_res_t Res1 = esp_vld_128_ip_m(src1, 16);
-//     esp_vld_res_t Res2 = esp_vld_128_ip_m(src2, 16);
+//esp_vld_res_t Res1;
+//   Res1.Ptr = __builtin_riscv_esp_vld_128_ip_m(src1, 16, &Res1.Val.V8);
+//esp_vld_res_t Res2;
+//   Res2.Ptr = __builtin_riscv_esp_vld_128_ip_m(src2, 16, &Res2.Val.V8);
 //     qacc_h = __builtin_riscv_esp_vcmulas_s16_qacc_h_m(qacc_h, Res1.Val.V16, Res2.Val.V16);
 //     return qacc_h;
 // }
 
-//.
-// CHECK: [[META6]] = !{[[META7:![0-9]+]]}
-// CHECK: [[META7]] = distinct !{[[META7]], [[META8:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
-// CHECK: [[META8]] = distinct !{[[META8]], !"esp_vld_128_ip_m"}
-// CHECK: [[META9]] = !{[[META10:![0-9]+]]}
-// CHECK: [[META10]] = distinct !{[[META10]], [[META11:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
-// CHECK: [[META11]] = distinct !{[[META11]], !"esp_vld_128_ip_m"}
-// CHECK: [[META12]] = !{[[META13:![0-9]+]]}
-// CHECK: [[META13]] = distinct !{[[META13]], [[META14:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
-// CHECK: [[META14]] = distinct !{[[META14]], !"esp_vld_128_ip_m"}
-// CHECK: [[META15]] = !{[[META16:![0-9]+]]}
-// CHECK: [[META16]] = distinct !{[[META16]], [[META17:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
-// CHECK: [[META17]] = distinct !{[[META17]], !"esp_vld_128_ip_m"}
-// CHECK: [[META18]] = !{[[META19:![0-9]+]]}
-// CHECK: [[META19]] = distinct !{[[META19]], [[META20:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
-// CHECK: [[META20]] = distinct !{[[META20]], !"esp_vld_128_ip_m"}
-// CHECK: [[META21]] = !{[[META22:![0-9]+]]}
-// CHECK: [[META22]] = distinct !{[[META22]], [[META23:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
-// CHECK: [[META23]] = distinct !{[[META23]], !"esp_vld_128_ip_m"}
-// CHECK: [[META24]] = !{[[META25:![0-9]+]]}
-// CHECK: [[META25]] = distinct !{[[META25]], [[META26:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
-// CHECK: [[META26]] = distinct !{[[META26]], !"esp_vld_128_ip_m"}
-// CHECK: [[META27]] = !{[[META28:![0-9]+]]}
-// CHECK: [[META28]] = distinct !{[[META28]], [[META29:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
-// CHECK: [[META29]] = distinct !{[[META29]], !"esp_vld_128_ip_m"}
-// CHECK: [[META30]] = !{[[META31:![0-9]+]]}
-// CHECK: [[META31]] = distinct !{[[META31]], [[META32:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
-// CHECK: [[META32]] = distinct !{[[META32]], !"esp_vld_128_ip_m"}
-// CHECK: [[META33]] = !{[[META34:![0-9]+]]}
-// CHECK: [[META34]] = distinct !{[[META34]], [[META35:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
-// CHECK: [[META35]] = distinct !{[[META35]], !"esp_vld_128_ip_m"}
-// CHECK: [[META36]] = !{[[META37:![0-9]+]]}
-// CHECK: [[META37]] = distinct !{[[META37]], [[META38:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
-// CHECK: [[META38]] = distinct !{[[META38]], !"esp_vld_128_ip_m"}
-// CHECK: [[META39]] = !{[[META40:![0-9]+]]}
-// CHECK: [[META40]] = distinct !{[[META40]], [[META41:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
-// CHECK: [[META41]] = distinct !{[[META41]], !"esp_vld_128_ip_m"}
-// CHECK: [[META42]] = !{[[META43:![0-9]+]]}
-// CHECK: [[META43]] = distinct !{[[META43]], [[META44:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
-// CHECK: [[META44]] = distinct !{[[META44]], !"esp_vld_128_ip_m"}
-// CHECK: [[META45]] = !{[[META46:![0-9]+]]}
-// CHECK: [[META46]] = distinct !{[[META46]], [[META47:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
-// CHECK: [[META47]] = distinct !{[[META47]], !"esp_vld_128_ip_m"}
-// CHECK: [[META48]] = !{[[META49:![0-9]+]]}
-// CHECK: [[META49]] = distinct !{[[META49]], [[META50:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
-// CHECK: [[META50]] = distinct !{[[META50]], !"esp_vld_128_ip_m"}
-// CHECK: [[META51]] = !{[[META52:![0-9]+]]}
-// CHECK: [[META52]] = distinct !{[[META52]], [[META53:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
-// CHECK: [[META53]] = distinct !{[[META53]], !"esp_vld_128_ip_m"}
-//.

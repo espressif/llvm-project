@@ -8,8 +8,6 @@
 
 // Additional type definitions
 
-// Helper function
-esp_vec128_t esp_vec128_16_to_8(esp_vec128_16_t v16);
 void __builtin_riscv_esp_vext_s8_m(esp_vec128_t Qx, void *qx_out, void *qy_out);
 void __builtin_riscv_esp_vext_s16_m(esp_vec128_16_t Qx, void *qx_out, void *qy_out);
 void __builtin_riscv_esp_vext_u8_m(esp_vec128_t Qx, void *qx_out, void *qy_out);
@@ -19,7 +17,7 @@ void __builtin_riscv_esp_vext_u16_m(esp_vec128_16_t Qx, void *qx_out, void *qy_o
 // CHECK-LABEL: define dso_local void @test_vext_s8_a(
 // CHECK-SAME: ptr noundef [[SRC:%.*]], ptr noundef [[DST1:%.*]], ptr noundef [[DST2:%.*]]) local_unnamed_addr #[[ATTR0:[0-9]+]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC]], i32 16), !noalias [[META6:![0-9]+]]
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC]], i32 16)
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP0]], 0
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call { <8 x i16>, <8 x i16> } @llvm.riscv.esp.vext.s8.m(<16 x i8> [[TMP1]])
 // CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <8 x i16>, <8 x i16> } [[TMP2]], 0
@@ -31,21 +29,22 @@ void __builtin_riscv_esp_vext_u16_m(esp_vec128_16_t Qx, void *qx_out, void *qy_o
 // CHECK-NEXT:    ret void
 //
 void test_vext_s8_a(void *src, void *dst1, void *dst2) {
-    esp_vld_res_t Res = esp_vld_128_ip_m(src, 16);
+esp_vld_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_vld_128_ip_m(src, 16, &Res.Val.V8);
     esp_vec128_16_t out1, out2;
     __builtin_riscv_esp_vext_s8_m(Res.Val.V8, &out1, &out2);
     union { esp_vec128_t V8; esp_vec128_16_t V16; } u1, u2;
     u1.V16 = out1;
     u2.V16 = out2;
-    esp_vst_128_ip_m(u1.V8, dst1, 16);
-    esp_vst_128_ip_m(u2.V8, dst2, 16);
+    (void)__builtin_riscv_esp_vst_128_ip_m(u1.V8, dst1, 16);
+    (void)__builtin_riscv_esp_vst_128_ip_m(u2.V8, dst2, 16);
 }
 
 // VEXT S16 - Sign extend 16-bit to 32-bit
 // CHECK-LABEL: define dso_local void @test_vext_s16_a(
 // CHECK-SAME: ptr noundef [[SRC:%.*]], ptr noundef [[DST1:%.*]], ptr noundef [[DST2:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC]], i32 16), !noalias [[META9:![0-9]+]]
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC]], i32 16)
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP0]], 0
 // CHECK-NEXT:    [[TMP2:%.*]] = bitcast <16 x i8> [[TMP1]] to <8 x i16>
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call { <4 x i32>, <4 x i32> } @llvm.riscv.esp.vext.s16.m(<8 x i16> [[TMP2]])
@@ -58,18 +57,19 @@ void test_vext_s8_a(void *src, void *dst1, void *dst2) {
 // CHECK-NEXT:    ret void
 //
 void test_vext_s16_a(void *src, void *dst1, void *dst2) {
-    esp_vld_res_t Res = esp_vld_128_ip_m(src, 16);
+esp_vld_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_vld_128_ip_m(src, 16, &Res.Val.V8);
     esp_vec128_t out1, out2;
     __builtin_riscv_esp_vext_s16_m(Res.Val.V16, &out1, &out2);
-    esp_vst_128_ip_m(out1, dst1, 16);
-    esp_vst_128_ip_m(out2, dst2, 16);
+    (void)__builtin_riscv_esp_vst_128_ip_m(out1, dst1, 16);
+    (void)__builtin_riscv_esp_vst_128_ip_m(out2, dst2, 16);
 }
 
 // VEXT U8 - Zero extend 8-bit to 16-bit
 // CHECK-LABEL: define dso_local void @test_vext_u8_a(
 // CHECK-SAME: ptr noundef [[SRC:%.*]], ptr noundef [[DST1:%.*]], ptr noundef [[DST2:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC]], i32 16), !noalias [[META12:![0-9]+]]
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC]], i32 16)
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP0]], 0
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call { <8 x i16>, <8 x i16> } @llvm.riscv.esp.vext.u8.m(<16 x i8> [[TMP1]])
 // CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <8 x i16>, <8 x i16> } [[TMP2]], 0
@@ -81,21 +81,22 @@ void test_vext_s16_a(void *src, void *dst1, void *dst2) {
 // CHECK-NEXT:    ret void
 //
 void test_vext_u8_a(void *src, void *dst1, void *dst2) {
-    esp_vld_res_t Res = esp_vld_128_ip_m(src, 16);
+esp_vld_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_vld_128_ip_m(src, 16, &Res.Val.V8);
     esp_vec128_16_t out1, out2;
     __builtin_riscv_esp_vext_u8_m(Res.Val.V8, &out1, &out2);
     union { esp_vec128_t V8; esp_vec128_16_t V16; } u1, u2;
     u1.V16 = out1;
     u2.V16 = out2;
-    esp_vst_128_ip_m(u1.V8, dst1, 16);
-    esp_vst_128_ip_m(u2.V8, dst2, 16);
+    (void)__builtin_riscv_esp_vst_128_ip_m(u1.V8, dst1, 16);
+    (void)__builtin_riscv_esp_vst_128_ip_m(u2.V8, dst2, 16);
 }
 
 // VEXT U16 - Zero extend 16-bit to 32-bit
 // CHECK-LABEL: define dso_local void @test_vext_u16_a(
 // CHECK-SAME: ptr noundef [[SRC:%.*]], ptr noundef [[DST1:%.*]], ptr noundef [[DST2:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC]], i32 16), !noalias [[META15:![0-9]+]]
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC]], i32 16)
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP0]], 0
 // CHECK-NEXT:    [[TMP2:%.*]] = bitcast <16 x i8> [[TMP1]] to <8 x i16>
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call { <4 x i32>, <4 x i32> } @llvm.riscv.esp.vext.u16.m(<8 x i16> [[TMP2]])
@@ -108,24 +109,11 @@ void test_vext_u8_a(void *src, void *dst1, void *dst2) {
 // CHECK-NEXT:    ret void
 //
 void test_vext_u16_a(void *src, void *dst1, void *dst2) {
-    esp_vld_res_t Res = esp_vld_128_ip_m(src, 16);
+esp_vld_res_t Res;
+  Res.Ptr = __builtin_riscv_esp_vld_128_ip_m(src, 16, &Res.Val.V8);
     esp_vec128_t out1, out2;
     __builtin_riscv_esp_vext_u16_m(Res.Val.V16, &out1, &out2);
-    esp_vst_128_ip_m(out1, dst1, 16);
-    esp_vst_128_ip_m(out2, dst2, 16);
+    (void)__builtin_riscv_esp_vst_128_ip_m(out1, dst1, 16);
+    (void)__builtin_riscv_esp_vst_128_ip_m(out2, dst2, 16);
 }
 
-//.
-// CHECK: [[META6]] = !{[[META7:![0-9]+]]}
-// CHECK: [[META7]] = distinct !{[[META7]], [[META8:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
-// CHECK: [[META8]] = distinct !{[[META8]], !"esp_vld_128_ip_m"}
-// CHECK: [[META9]] = !{[[META10:![0-9]+]]}
-// CHECK: [[META10]] = distinct !{[[META10]], [[META11:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
-// CHECK: [[META11]] = distinct !{[[META11]], !"esp_vld_128_ip_m"}
-// CHECK: [[META12]] = !{[[META13:![0-9]+]]}
-// CHECK: [[META13]] = distinct !{[[META13]], [[META14:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
-// CHECK: [[META14]] = distinct !{[[META14]], !"esp_vld_128_ip_m"}
-// CHECK: [[META15]] = !{[[META16:![0-9]+]]}
-// CHECK: [[META16]] = distinct !{[[META16]], [[META17:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
-// CHECK: [[META17]] = distinct !{[[META17]], !"esp_vld_128_ip_m"}
-//.

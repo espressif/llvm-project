@@ -1422,6 +1422,7 @@ let Features = "xespv", Attributes = [NoThrow] in {
   def esp_addx4_m : RISCVBuiltin<"unsigned int(unsigned int, unsigned int)">;
   def esp_subx2_m : RISCVBuiltin<"unsigned int(unsigned int, unsigned int)">;
   def esp_subx4_m : RISCVBuiltin<"unsigned int(unsigned int, unsigned int)">;
+  def esp_sat_m : RISCVBuiltin<"unsigned int(unsigned int, unsigned int, unsigned int)">;
 }
 
 // MOVX - Read/Write implicit registers (_m version)
@@ -1486,9 +1487,4 @@ let Features = "xespv", Attributes = [NoThrow] in {
   // ESP.MOVX.W.XACC_L writes XACC[31:0] (subregister model)
   // Writes XACC[31:0] = value, returns new XACC[31:0] as unsigned int
   def esp_movx_w_xacc_l_m : RISCVBuiltin<"unsigned int(unsigned int)">;  // Subregister model: value (unsigned int), returns new XACC[31:0] (unsigned int)
-}
-
-// GPR ALU (.m) — no vector width requirement
-let Features = "xespv", Attributes = [NoThrow] in {
-  def esp_sat_m : RISCVBuiltin<"unsigned int(unsigned int, unsigned int, unsigned int)">;
 }
