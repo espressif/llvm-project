@@ -174,34 +174,8 @@ esp_vec128_16_to_8(esp_vec128_16_t v) {
 }
 
 // ESP.VLD.128.IP.M / ESP.VST.128.IP.M - using immediate increment
-static inline __attribute__((always_inline)) esp_vld_res_t
-esp_vld_128_ip_m(void const *Ptr, int Imm) {
-  esp_vld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vld_128_ip_m(Ptr, Imm, &Res.Val.V8);
-  return Res;
-}
-
-static inline __attribute__((always_inline)) void *
-esp_vst_128_ip_m(esp_vec128_t Data, void *Ptr, int Imm) {
-  return __builtin_riscv_esp_vst_128_ip_m(Data, Ptr, Imm);
-}
 
 // ESP.LD.UA.STATE.IP.M / ESP.ST.UA.STATE.IP.M - Load/Store UA_STATE register
-static inline __attribute__((always_inline)) esp_ua_state_res_t
-esp_ld_ua_state_ip_m(void const *Ptr, int Imm) {
-  esp_ua_state_res_t Res;
-  // Builtin signature: void*(void const *, int, void *)
-  // Parameters: (Ptr, offset, ua_state_out)
-  // Returns: void* (updated pointer)
-  // UA_STATE value is returned through output parameter
-  Res.Ptr = __builtin_riscv_esp_ld_ua_state_ip_m(Ptr, Imm, &Res.UaState);
-  return Res;
-}
-
-static inline __attribute__((always_inline)) void *
-esp_st_ua_state_ip_m(esp_vec128_t UaState, void *Ptr, int Imm) {
-  return __builtin_riscv_esp_st_ua_state_ip_m(UaState, Ptr, Imm);
-}
 
 // ESP.FFT.AMS.S16.LD.INCP.UAUP result structure with explicit phantom operands
 typedef struct {
@@ -218,323 +192,27 @@ typedef struct {
 // sar_in - current state values (SAR_BYTES and SAR are read-only) Output:
 // Res.UaState - new UA_STATE value after operation Returns structure with Qu,
 // Qz, Qv, updated pointer, and new UA_STATE value
-static inline __attribute__((always_inline)) esp_fft_ams_s16_ld_incp_uaup_res_t
-esp_fft_ams_s16_ld_incp_uaup_m(esp_vec128_16_t Qx, esp_vec128_16_t Qy,
-                               esp_vec128_16_t Qw, void const *Ptr, int Sel2,
-                               esp_vec128_t ua_state_in,
-                               unsigned int sar_bytes_in, unsigned int sar_in) {
-  esp_fft_ams_s16_ld_incp_uaup_res_t Res;
-  // Call builtin with explicit phantom operands
-  Res.Ptr = __builtin_riscv_esp_fft_ams_s16_ld_incp_uaup_m(
-      Qx, Qy, Qw, Ptr, Sel2, &Res.Qu, &Res.Qz, &Res.Qv, ua_state_in,
-      &Res.UaState, sar_bytes_in, sar_in);
-  return Res;
-}
 
 // ESP.VLD.128.XP.M / ESP.VST.128.XP.M - using register increment
-static inline __attribute__((always_inline)) esp_vld_res_t
-esp_vld_128_xp_m(void const *Ptr, int Reg) {
-  esp_vld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vld_128_xp_m(Ptr, Reg, &Res.Val.V8);
-  return Res;
-}
-
-static inline __attribute__((always_inline)) void *
-esp_vst_128_xp_m(esp_vec128_t Data, void *Ptr, int Reg) {
-  return __builtin_riscv_esp_vst_128_xp_m(Data, Ptr, Reg);
-}
 
 // ESP.LD.128.USAR.IP.M / ESP.LD.128.USAR.XP.M - Load 128-bit with SAR_BYTES
 // update SAR_BYTE = Rs1[3:0] (hardware extracts low 4 bits from Ptr) Builtin
 // returns SAR_BYTES as output parameter
-static inline __attribute__((always_inline)) esp_vld_usar_res_t
-esp_ld_128_usar_ip_m(void const *Ptr, int Imm) {
-  esp_vld_usar_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_ld_128_usar_ip_m(Ptr, Imm, &Res.Val.V8,
-                                                 &Res.SarBytes);
-  // SAR_BYTES is filled by builtin as output parameter
-  return Res;
-}
-
-static inline __attribute__((always_inline)) esp_vld_usar_res_t
-esp_ld_128_usar_xp_m(void const *Ptr, int Reg) {
-  esp_vld_usar_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_ld_128_usar_xp_m(Ptr, Reg, &Res.Val.V8,
-                                                 &Res.SarBytes);
-  // SAR_BYTES is filled by builtin as output parameter
-  return Res;
-}
 
 // ESP.VLD.H.64.IP.M / ESP.VLD.L.64.IP.M - Load 64-bit (high/low)
 // Return 64-bit structure to match actual Data size (similar to
 // esp_vst_h_64_ip_m pattern) Users can combine two 64-bit results into 128-bit
 // using union (see test_64_to_128)
-static inline __attribute__((always_inline)) esp_vld_64_res_t
-esp_vld_h_64_ip_m(void const *Ptr, int Imm) {
-  esp_vld_64_res_t Res;
-  // Create temporary 128-bit vector for builtin storage
-  // Builtin stores 64-bit Data to offset 8 (high 64 bits)
-  esp_vec128_t TempVec;
-  Res.Ptr = __builtin_riscv_esp_vld_h_64_ip_m(Ptr, Imm, &TempVec);
-  // Extract high 64 bits from offset 8 using union (similar to
-  // esp_vst_h_64_ip_m)
-  union {
-    esp_vec128_t V128;
-    struct {
-      esp_vec64_t Low;
-      esp_vec64_t High;
-    } Parts;
-  } U;
-  U.V128 = TempVec;
-  Res.Val = U.Parts.High;
-  return Res;
-}
-
-static inline __attribute__((always_inline)) esp_vld_64_res_t
-esp_vld_l_64_ip_m(void const *Ptr, int Imm) {
-  esp_vld_64_res_t Res;
-  // Create temporary 128-bit vector for builtin storage
-  // Builtin stores 64-bit Data to offset 0 (low 64 bits)
-  esp_vec128_t TempVec;
-  Res.Ptr = __builtin_riscv_esp_vld_l_64_ip_m(Ptr, Imm, &TempVec);
-  // Extract low 64 bits from offset 0 using union (similar to
-  // esp_vst_l_64_ip_m)
-  union {
-    esp_vec128_t V128;
-    struct {
-      esp_vec64_t Low;
-      esp_vec64_t High;
-    } Parts;
-  } U;
-  U.V128 = TempVec;
-  Res.Val = U.Parts.Low;
-  return Res;
-}
-
-static inline __attribute__((always_inline)) void *
-esp_vst_h_64_ip_m(esp_vec128_t Data, void *Ptr, int Imm) {
-  union {
-    esp_vec128_t V128;
-    struct {
-      esp_vec64_t Low;
-      esp_vec64_t High;
-    } Parts;
-  } U;
-  U.V128 = Data;
-  return __builtin_riscv_esp_vst_h_64_ip_m(U.Parts.High, Ptr, Imm);
-}
-
-static inline __attribute__((always_inline)) void *
-esp_vst_l_64_ip_m(esp_vec128_t Data, void *Ptr, int Imm) {
-  union {
-    esp_vec128_t V128;
-    struct {
-      esp_vec64_t Low;
-      esp_vec64_t High;
-    } Parts;
-  } U;
-  U.V128 = Data;
-  return __builtin_riscv_esp_vst_l_64_ip_m(U.Parts.Low, Ptr, Imm);
-}
 
 // ESP.VLD.H.64.XP.M / ESP.VLD.L.64.XP.M - Load 64-bit with register offset
 // Return 64-bit structure (consistent with esp_vld_h_64_ip_m)
-static inline __attribute__((always_inline)) esp_vld_64_res_t
-esp_vld_h_64_xp_m(void const *Ptr, int Reg) {
-  esp_vld_64_res_t Res;
-  esp_vec128_t TempVec;
-  Res.Ptr = __builtin_riscv_esp_vld_h_64_xp_m(Ptr, Reg, &TempVec);
-  union {
-    esp_vec128_t V128;
-    struct {
-      esp_vec64_t Low;
-      esp_vec64_t High;
-    } Parts;
-  } U;
-  U.V128 = TempVec;
-  Res.Val = U.Parts.High;
-  return Res;
-}
-
-static inline __attribute__((always_inline)) esp_vld_64_res_t
-esp_vld_l_64_xp_m(void const *Ptr, int Reg) {
-  esp_vld_64_res_t Res;
-  esp_vec128_t TempVec;
-  Res.Ptr = __builtin_riscv_esp_vld_l_64_xp_m(Ptr, Reg, &TempVec);
-  union {
-    esp_vec128_t V128;
-    struct {
-      esp_vec64_t Low;
-      esp_vec64_t High;
-    } Parts;
-  } U;
-  U.V128 = TempVec;
-  Res.Val = U.Parts.Low;
-  return Res;
-}
-
-static inline __attribute__((always_inline)) void *
-esp_vst_h_64_xp_m(esp_vec128_t Data, void *Ptr, int Reg) {
-  union {
-    esp_vec128_t V128;
-    struct {
-      esp_vec64_t Low;
-      esp_vec64_t High;
-    } Parts;
-  } U;
-  U.V128 = Data;
-  return __builtin_riscv_esp_vst_h_64_xp_m(U.Parts.High, Ptr, Reg);
-}
-
-static inline __attribute__((always_inline)) void *
-esp_vst_l_64_xp_m(esp_vec128_t Data, void *Ptr, int Reg) {
-  union {
-    esp_vec128_t V128;
-    struct {
-      esp_vec64_t Low;
-      esp_vec64_t High;
-    } Parts;
-  } U;
-  U.V128 = Data;
-  return __builtin_riscv_esp_vst_l_64_xp_m(U.Parts.Low, Ptr, Reg);
-}
 
 // ESP.VLDBC - Vector Load Broadcast
-static inline __attribute__((always_inline)) esp_vld_res_t
-esp_vldbc_8_ip_m(void const *Ptr, int Imm) {
-  esp_vld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vldbc_8_ip_m(Ptr, Imm, &Res.Val.V8);
-  return Res;
-}
-
-static inline __attribute__((always_inline)) esp_vld_res_t
-esp_vldbc_16_ip_m(void const *Ptr, int Imm) {
-  esp_vld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vldbc_16_ip_m(Ptr, Imm, &Res.Val.V8);
-  return Res;
-}
-
-static inline __attribute__((always_inline)) esp_vld_res_t
-esp_vldbc_32_ip_m(void const *Ptr, int Imm) {
-  esp_vld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vldbc_32_ip_m(Ptr, Imm, &Res.Val.V8);
-  return Res;
-}
-
-static inline __attribute__((always_inline)) esp_vld_res_t
-esp_vldbc_8_xp_m(void const *Ptr, int Reg) {
-  esp_vld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vldbc_8_xp_m(Ptr, Reg, &Res.Val.V8);
-  return Res;
-}
-
-static inline __attribute__((always_inline)) esp_vld_res_t
-esp_vldbc_16_xp_m(void const *Ptr, int Reg) {
-  esp_vld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vldbc_16_xp_m(Ptr, Reg, &Res.Val.V8);
-  return Res;
-}
-
-static inline __attribute__((always_inline)) esp_vld_res_t
-esp_vldbc_32_xp_m(void const *Ptr, int Reg) {
-  esp_vld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vldbc_32_xp_m(Ptr, Reg, &Res.Val.V8);
-  return Res;
-}
 
 // ESP.VLDEXT - Vector Load and Extend
-static inline __attribute__((always_inline)) esp_vldext_res_t
-esp_vldext_s8_ip_m(void const *Ptr, int Imm) {
-  esp_vldext_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vldext_s8_ip_m(Ptr, Imm, &Res.Val1, &Res.Val2);
-  return Res;
-}
-
-static inline __attribute__((always_inline)) esp_vldext_res_t
-esp_vldext_s16_ip_m(void const *Ptr, int Imm) {
-  esp_vldext_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vldext_s16_ip_m(Ptr, Imm, &Res.Val1, &Res.Val2);
-  return Res;
-}
-
-static inline __attribute__((always_inline)) esp_vldext_res_t
-esp_vldext_u16_ip_m(void const *Ptr, int Imm) {
-  esp_vldext_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vldext_u16_ip_m(Ptr, Imm, &Res.Val1, &Res.Val2);
-  return Res;
-}
-
-static inline __attribute__((always_inline)) esp_vldext_res_t
-esp_vldext_u8_ip_m(void const *Ptr, int Imm) {
-  esp_vldext_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vldext_u8_ip_m(Ptr, Imm, &Res.Val1, &Res.Val2);
-  return Res;
-}
-
-static inline __attribute__((always_inline)) esp_vldext_res_t
-esp_vldext_s8_xp_m(void const *Ptr, int Reg) {
-  esp_vldext_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vldext_s8_xp_m(Ptr, Reg, &Res.Val1, &Res.Val2);
-  return Res;
-}
-
-static inline __attribute__((always_inline)) esp_vldext_res_t
-esp_vldext_s16_xp_m(void const *Ptr, int Reg) {
-  esp_vldext_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vldext_s16_xp_m(Ptr, Reg, &Res.Val1, &Res.Val2);
-  return Res;
-}
-
-static inline __attribute__((always_inline)) esp_vldext_res_t
-esp_vldext_u8_xp_m(void const *Ptr, int Reg) {
-  esp_vldext_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vldext_u8_xp_m(Ptr, Reg, &Res.Val1, &Res.Val2);
-  return Res;
-}
-
-static inline __attribute__((always_inline)) esp_vldext_res_t
-esp_vldext_u16_xp_m(void const *Ptr, int Reg) {
-  esp_vldext_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vldext_u16_xp_m(Ptr, Reg, &Res.Val1, &Res.Val2);
-  return Res;
-}
 
 // ESP.VADD.*.LD.INCP wrapper functions - Vector add with load and increment
 // pointer
-static inline __attribute__((always_inline)) esp_vop_ld_incp_res_t
-esp_vadd_s8_ld_incp_m(esp_vec128_t Qx, esp_vec128_t Qy, void const *Rs1) {
-  esp_vop_ld_incp_res_t Res;
-  Res.Ptr =
-      __builtin_riscv_esp_vadd_s8_ld_incp_m(Qx, Qy, Rs1, &Res.Qv.v8, &Res.Qu);
-  return Res;
-}
-
-static inline __attribute__((always_inline)) esp_vop_ld_incp_res_t
-esp_vadd_u8_ld_incp_m(esp_vec128_t Qx, esp_vec128_t Qy, void const *Rs1) {
-  esp_vop_ld_incp_res_t Res;
-  Res.Ptr =
-      __builtin_riscv_esp_vadd_u8_ld_incp_m(Qx, Qy, Rs1, &Res.Qv.v8, &Res.Qu);
-  return Res;
-}
-
-static inline __attribute__((always_inline)) esp_vop_ld_incp_res_t
-esp_vadd_s16_ld_incp_m(esp_vec128_16_t Qx, esp_vec128_16_t Qy,
-                       void const *Rs1) {
-  esp_vop_ld_incp_res_t Res;
-  // qv_out is esp_vec128_t*; Res.Qv.v8 and Res.Qv.v16 alias the same 128 bits.
-  Res.Ptr =
-      __builtin_riscv_esp_vadd_s16_ld_incp_m(Qx, Qy, Rs1, &Res.Qv.v8, &Res.Qu);
-  return Res;
-}
-
-static inline __attribute__((always_inline)) esp_vop_ld_incp_res_t
-esp_vadd_u16_ld_incp_m(esp_vec128_16_t Qx, esp_vec128_16_t Qy,
-                       void const *Rs1) {
-  esp_vop_ld_incp_res_t Res;
-  Res.Ptr =
-      __builtin_riscv_esp_vadd_u16_ld_incp_m(Qx, Qy, Rs1, &Res.Qv.v8, &Res.Qu);
-  return Res;
-}
 
 // ESP.ST.S.XACC.IP (_m version) - Store Signed XACC with Immediate
 // Post-increment Returns: updated pointer Mixed model: XACC as {unsigned int
@@ -542,25 +220,6 @@ esp_vadd_u16_ld_incp_m(esp_vec128_16_t Qx, esp_vec128_16_t Qy,
 // state passing for XACC Note: XACC is passthru (unchanged) for ST instructions
 // For simplified API, we use 0 as default XACC value (caller should initialize
 // XACC before calling)
-static inline __attribute__((always_inline)) void *esp_st_s_xacc_ip_m(void *Ptr,
-                                                                      int Imm) {
-  void *PtrOut;
-  unsigned int XaccLowOut;
-  unsigned int XaccHighOut;
-  // Use 0 as default XACC value (caller should have initialized XACC via
-  // __builtin_riscv_esp_zero_xacc() or similar) For explicit state passing, we
-  // pass current XACC state (passthru)
-  unsigned int XaccLowIn = 0U;  // Default: XACC[31:0] = 0
-  unsigned int XaccHighIn = 0U; // Default: XACC[39:32] = 0
-  // Call builtin to get updated pointer
-  // Builtin signature: void*(unsigned int, unsigned int, void *, int, void *,
-  // unsigned int *, unsigned int *) XaccLowIn, XaccHighIn: current XACC state
-  // (input, passthru) &PtrOut: pointer to store updated pointer (output)
-  // &XaccLowOut, &XaccHighOut: pointers to store XACC state (output, unchanged
-  // for ST)
-  return __builtin_riscv_esp_st_s_xacc_ip_m(XaccLowIn, XaccHighIn, Ptr, Imm,
-                                            &PtrOut, &XaccLowOut, &XaccHighOut);
-}
 
 // QACC register types for explicit state passing
 typedef __attribute__((
@@ -624,802 +283,126 @@ typedef struct {
 } esp_vcmulas_qacc_l_ld_res_t;
 
 // ESP.ZERO.QACC (_m version)
-static inline __attribute__((always_inline)) esp_qacc_4x128_t
-esp_zero_qacc_m(void) {
-  esp_qacc_4x128_t Res;
-  __builtin_riscv_esp_zero_qacc_m(&Res.v0, &Res.v1, &Res.v2, &Res.v3);
-  return Res;
-}
 
 // ESP.MOV.S8.QACC (_m version)
-static inline __attribute__((always_inline)) esp_mov_qacc_res_t
-esp_mov_s8_qacc_m(esp_vec128_t Qu) {
-  esp_mov_qacc_res_t Res;
-  __builtin_riscv_esp_mov_s8_qacc_m(Qu, &Res.v0, &Res.v1, &Res.v2, &Res.v3);
-  return Res;
-}
 
 // ESP.MOV.S16.QACC (_m version)
-static inline __attribute__((always_inline)) esp_mov_qacc_res_t
-esp_mov_s16_qacc_m(esp_vec128_16_t Qu) {
-  esp_mov_qacc_res_t Res;
-  __builtin_riscv_esp_mov_s16_qacc_m(Qu, &Res.v0, &Res.v1, &Res.v2, &Res.v3);
-  return Res;
-}
 
 // ESP.MOV.U8.QACC (_m version)
-static inline __attribute__((always_inline)) esp_mov_qacc_res_t
-esp_mov_u8_qacc_m(esp_vec128_t Qu) {
-  esp_mov_qacc_res_t Res;
-  __builtin_riscv_esp_mov_u8_qacc_m(Qu, &Res.v0, &Res.v1, &Res.v2, &Res.v3);
-  return Res;
-}
 
 // ESP.MOV.U16.QACC (_m version)
-static inline __attribute__((always_inline)) esp_mov_qacc_res_t
-esp_mov_u16_qacc_m(esp_vec128_16_t Qu) {
-  esp_mov_qacc_res_t Res;
-  __builtin_riscv_esp_mov_u16_qacc_m(Qu, &Res.v0, &Res.v1, &Res.v2, &Res.v3);
-  return Res;
-}
 
 // ESP.VMULAS.S8.QACC (_m version)
-static inline __attribute__((always_inline)) esp_vmulas_qacc_res_t
-esp_vmulas_s8_qacc_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qx,
-                     esp_vec128_t Qy) {
-  esp_vmulas_qacc_res_t Res;
-  __builtin_riscv_esp_vmulas_s8_qacc_m(QaccIn.v0, QaccIn.v1, QaccIn.v2,
-                                       QaccIn.v3, Qx, Qy, &Res.v0, &Res.v1,
-                                       &Res.v2, &Res.v3);
-  return Res;
-}
 
 // ESP.VMULAS.S8.QACC.ST.IP (_m version)
-static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
-esp_vmulas_s8_qacc_st_ip_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qu,
-                           esp_vec128_t Qx, esp_vec128_t Qy, void *Ptr,
-                           int Imm) {
-  esp_vmulas_qacc_ld_res_t Res;
-  esp_vec128_t v0, v1, v2, v3;
-  void *UpdatedPtr;
-  UpdatedPtr = __builtin_riscv_esp_vmulas_s8_qacc_st_ip_m(
-      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qu, Qx, Qy, Ptr, Imm, &v0,
-      &v1, &v2, &v3);
-  Res.v0 = v0;
-  Res.v1 = v1;
-  Res.v2 = v2;
-  Res.v3 = v3;
-  Res.Ptr = UpdatedPtr;
-  Res.Qu = Qu;
-  return Res;
-}
 
 // ESP.VCMULAS.S8.QACC.H (_m version)
-static inline __attribute__((always_inline)) esp_vcmulas_qacc_h_res_t
-esp_vcmulas_s8_qacc_h_m(esp_mov_qacc_h_res_t QaccHIn, esp_vec128_t Qx,
-                        esp_vec128_t Qy) {
-  esp_vcmulas_qacc_h_res_t Res;
-  __builtin_riscv_esp_vcmulas_s8_qacc_h_m(QaccHIn.v2, QaccHIn.v3, Qx, Qy,
-                                          &Res.v2, &Res.v3);
-  return Res;
-}
 
 // ESP.VCMULAS.S8.QACC.L (_m version)
-static inline __attribute__((always_inline)) esp_vcmulas_qacc_l_res_t
-esp_vcmulas_s8_qacc_l_m(esp_mov_qacc_l_res_t QaccLIn, esp_vec128_t Qx,
-                        esp_vec128_t Qy) {
-  esp_vcmulas_qacc_l_res_t Res;
-  __builtin_riscv_esp_vcmulas_s8_qacc_l_m(QaccLIn.v0, QaccLIn.v1, Qx, Qy,
-                                          &Res.v0, &Res.v1);
-  return Res;
-}
 
 // ESP.VCMULAS.S16.QACC.H (_m version)
-static inline __attribute__((always_inline)) esp_vcmulas_qacc_h_res_t
-esp_vcmulas_s16_qacc_h_m(esp_mov_qacc_h_res_t QaccHIn, esp_vec128_16_t Qx,
-                         esp_vec128_16_t Qy) {
-  esp_vcmulas_qacc_h_res_t Res;
-  __builtin_riscv_esp_vcmulas_s16_qacc_h_m(QaccHIn.v2, QaccHIn.v3, Qx, Qy,
-                                           &Res.v2, &Res.v3);
-  return Res;
-}
 
 // ESP.VCMULAS.S16.QACC.L (_m version)
-static inline __attribute__((always_inline)) esp_vcmulas_qacc_l_res_t
-esp_vcmulas_s16_qacc_l_m(esp_mov_qacc_l_res_t QaccLIn, esp_vec128_16_t Qx,
-                         esp_vec128_16_t Qy) {
-  esp_vcmulas_qacc_l_res_t Res;
-  __builtin_riscv_esp_vcmulas_s16_qacc_l_m(QaccLIn.v0, QaccLIn.v1, Qx, Qy,
-                                           &Res.v0, &Res.v1);
-  return Res;
-}
 
 // ESP.VCMULAS.S8.QACC.H.LD.IP (_m version)
-static inline __attribute__((always_inline)) esp_vcmulas_qacc_h_ld_res_t
-esp_vcmulas_s8_qacc_h_ld_ip_m(esp_mov_qacc_h_res_t QaccHIn, esp_vec128_t Qx,
-                              esp_vec128_t Qy, void const *Ptr, int Imm) {
-  esp_vcmulas_qacc_h_ld_res_t Res;
-  esp_vec128_t TempQu, TempV2, TempV3;
-  void *UpdatedPtr;
-  UpdatedPtr = __builtin_riscv_esp_vcmulas_s8_qacc_h_ld_ip_m(
-      QaccHIn.v2, QaccHIn.v3, Qx, Qy, Ptr, Imm, &TempQu, &TempV2, &TempV3);
-  Res.Qu = TempQu;
-  Res.v2 = TempV2;
-  Res.v3 = TempV3;
-  Res.Ptr = UpdatedPtr;
-  return Res;
-}
 
 // ESP.VCMULAS.S8.QACC.L.LD.IP (_m version)
-static inline __attribute__((always_inline)) esp_vcmulas_qacc_l_ld_res_t
-esp_vcmulas_s8_qacc_l_ld_ip_m(esp_mov_qacc_l_res_t QaccLIn, esp_vec128_t Qx,
-                              esp_vec128_t Qy, void const *Ptr, int Imm) {
-  esp_vcmulas_qacc_l_ld_res_t Res;
-  esp_vec128_t TempQu, TempV0, TempV1;
-  void *UpdatedPtr;
-  UpdatedPtr = __builtin_riscv_esp_vcmulas_s8_qacc_l_ld_ip_m(
-      QaccLIn.v0, QaccLIn.v1, Qx, Qy, Ptr, Imm, &TempQu, &TempV0, &TempV1);
-  Res.Qu = TempQu;
-  Res.v0 = TempV0;
-  Res.v1 = TempV1;
-  Res.Ptr = UpdatedPtr;
-  return Res;
-}
 
 // ESP.LD.QACC.H.H.128.IP (_m version)
-static inline __attribute__((always_inline)) esp_qacc_128_res_t
-esp_ld_qacc_h_h_128_ip_m(void const *Ptr, int Imm) {
-  esp_qacc_128_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_ld_qacc_h_h_128_ip_m(Ptr, Imm, &Res.qacc_128);
-  return Res;
-}
 
 // ESP.LD.QACC.H.L.128.IP (_m version)
-static inline __attribute__((always_inline)) esp_qacc_128_res_t
-esp_ld_qacc_h_l_128_ip_m(void const *Ptr, int Imm) {
-  esp_qacc_128_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_ld_qacc_h_l_128_ip_m(Ptr, Imm, &Res.qacc_128);
-  return Res;
-}
 
 // ESP.LD.QACC.L.H.128.IP (_m version)
-static inline __attribute__((always_inline)) esp_qacc_128_res_t
-esp_ld_qacc_l_h_128_ip_m(void const *Ptr, int Imm) {
-  esp_qacc_128_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_ld_qacc_l_h_128_ip_m(Ptr, Imm, &Res.qacc_128);
-  return Res;
-}
 
 // ESP.LD.QACC.L.L.128.IP (_m version)
-static inline __attribute__((always_inline)) esp_qacc_128_res_t
-esp_ld_qacc_l_l_128_ip_m(void const *Ptr, int Imm) {
-  esp_qacc_128_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_ld_qacc_l_l_128_ip_m(Ptr, Imm, &Res.qacc_128);
-  return Res;
-}
 
 // ESP.ST.QACC.H.H.128.IP (_m version)
-static inline __attribute__((always_inline)) void *
-esp_st_qacc_h_h_128_ip_m(esp_vec128_t qacc_128, void *Ptr, int Imm) {
-  return __builtin_riscv_esp_st_qacc_h_h_128_ip_m(qacc_128, Ptr, Imm);
-}
 
 // ESP.ST.QACC.H.L.128.IP (_m version)
-static inline __attribute__((always_inline)) void *
-esp_st_qacc_h_l_128_ip_m(esp_vec128_t qacc_128, void *Ptr, int Imm) {
-  return __builtin_riscv_esp_st_qacc_h_l_128_ip_m(qacc_128, Ptr, Imm);
-}
 
 // ESP.ST.QACC.L.H.128.IP (_m version)
-static inline __attribute__((always_inline)) void *
-esp_st_qacc_l_h_128_ip_m(esp_vec128_t qacc_128, void *Ptr, int Imm) {
-  return __builtin_riscv_esp_st_qacc_l_h_128_ip_m(qacc_128, Ptr, Imm);
-}
 
 // ESP.ST.QACC.L.L.128.IP (_m version)
-static inline __attribute__((always_inline)) void *
-esp_st_qacc_l_l_128_ip_m(esp_vec128_t qacc_128, void *Ptr, int Imm) {
-  return __builtin_riscv_esp_st_qacc_l_l_128_ip_m(qacc_128, Ptr, Imm);
-}
 
 // ESP.LDQA.S16.128.IP (_m version)
-static inline __attribute__((always_inline)) esp_ldqa_res_t
-esp_ldqa_s16_128_ip_m(void const *Ptr, int Imm) {
-  esp_ldqa_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_ldqa_s16_128_ip_m(Ptr, Imm, &Res.v0, &Res.v1,
-                                                  &Res.v2, &Res.v3);
-  return Res;
-}
 
 // ESP.LDQA.S16.128.XP (_m version)
-static inline __attribute__((always_inline)) esp_ldqa_res_t
-esp_ldqa_s16_128_xp_m(void const *Ptr, int Reg) {
-  esp_ldqa_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_ldqa_s16_128_xp_m(Ptr, Reg, &Res.v0, &Res.v1,
-                                                  &Res.v2, &Res.v3);
-  return Res;
-}
 
 // ESP.LDQA.S8.128.IP (_m version)
-static inline __attribute__((always_inline)) esp_ldqa_res_t
-esp_ldqa_s8_128_ip_m(void const *Ptr, int Imm) {
-  esp_ldqa_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_ldqa_s8_128_ip_m(Ptr, Imm, &Res.v0, &Res.v1,
-                                                 &Res.v2, &Res.v3);
-  return Res;
-}
 
 // ESP.LDQA.S8.128.XP (_m version)
-static inline __attribute__((always_inline)) esp_ldqa_res_t
-esp_ldqa_s8_128_xp_m(void const *Ptr, int Reg) {
-  esp_ldqa_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_ldqa_s8_128_xp_m(Ptr, Reg, &Res.v0, &Res.v1,
-                                                 &Res.v2, &Res.v3);
-  return Res;
-}
 
 // ESP.LDQA.U16.128.IP (_m version)
-static inline __attribute__((always_inline)) esp_ldqa_res_t
-esp_ldqa_u16_128_ip_m(void const *Ptr, int Imm) {
-  esp_ldqa_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_ldqa_u16_128_ip_m(Ptr, Imm, &Res.v0, &Res.v1,
-                                                  &Res.v2, &Res.v3);
-  return Res;
-}
 
 // ESP.LDQA.U16.128.XP (_m version)
-static inline __attribute__((always_inline)) esp_ldqa_res_t
-esp_ldqa_u16_128_xp_m(void const *Ptr, int Reg) {
-  esp_ldqa_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_ldqa_u16_128_xp_m(Ptr, Reg, &Res.v0, &Res.v1,
-                                                  &Res.v2, &Res.v3);
-  return Res;
-}
 
 // ESP.LDQA.U8.128.IP (_m version)
-static inline __attribute__((always_inline)) esp_ldqa_res_t
-esp_ldqa_u8_128_ip_m(void const *Ptr, int Imm) {
-  esp_ldqa_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_ldqa_u8_128_ip_m(Ptr, Imm, &Res.v0, &Res.v1,
-                                                 &Res.v2, &Res.v3);
-  return Res;
-}
 
 // ESP.LDQA.U8.128.XP (_m version)
-static inline __attribute__((always_inline)) esp_ldqa_res_t
-esp_ldqa_u8_128_xp_m(void const *Ptr, int Reg) {
-  esp_ldqa_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_ldqa_u8_128_xp_m(Ptr, Reg, &Res.v0, &Res.v1,
-                                                 &Res.v2, &Res.v3);
-  return Res;
-}
 
 // ESP.SRCMB.S16.QACC (_m version)
-static inline __attribute__((always_inline)) esp_vec128_16_t
-esp_srcmb_s16_qacc_m(int Rs1, int Sel2) {
-  esp_vec128_t zero = {0};
-  return __builtin_riscv_esp_srcmb_s16_qacc_m(zero, zero, zero, zero, Rs1,
-                                              Sel2);
-}
 
 // ESP.SRCMB.S8.QACC (_m version)
-static inline __attribute__((always_inline)) esp_vec128_t
-esp_srcmb_s8_qacc_m(int Rs1, int Sel2) {
-  esp_vec128_t zero = {0};
-  return __builtin_riscv_esp_srcmb_s8_qacc_m(zero, zero, zero, zero, Rs1, Sel2);
-}
 
 // ESP.SRCMB.U16.QACC (_m version)
-static inline __attribute__((always_inline)) esp_vec128_16_t
-esp_srcmb_u16_qacc_m(int Rs1, int Sel2) {
-  esp_vec128_t zero = {0};
-  return __builtin_riscv_esp_srcmb_u16_qacc_m(zero, zero, zero, zero, Rs1,
-                                              Sel2);
-}
 
 // ESP.SRCMB.U8.QACC (_m version)
-static inline __attribute__((always_inline)) esp_vec128_t
-esp_srcmb_u8_qacc_m(int Rs1, int Sel2) {
-  esp_vec128_t zero = {0};
-  return __builtin_riscv_esp_srcmb_u8_qacc_m(zero, zero, zero, zero, Rs1, Sel2);
-}
 
 // ESP.VMULAS.S16.QACC (_m version)
-static inline __attribute__((always_inline)) esp_vmulas_qacc_res_t
-esp_vmulas_s16_qacc_m(esp_mov_qacc_res_t QaccIn, esp_vec128_16_t Qx,
-                      esp_vec128_16_t Qy) {
-  esp_vmulas_qacc_res_t Res;
-  __builtin_riscv_esp_vmulas_s16_qacc_m(QaccIn.v0, QaccIn.v1, QaccIn.v2,
-                                        QaccIn.v3, Qx, Qy, &Res.v0, &Res.v1,
-                                        &Res.v2, &Res.v3);
-  return Res;
-}
 
 // ESP.VMULAS.U16.QACC (_m version)
-static inline __attribute__((always_inline)) esp_vmulas_qacc_res_t
-esp_vmulas_u16_qacc_m(esp_mov_qacc_res_t QaccIn, esp_vec128_16_t Qx,
-                      esp_vec128_16_t Qy) {
-  esp_vmulas_qacc_res_t Res;
-  __builtin_riscv_esp_vmulas_u16_qacc_m(QaccIn.v0, QaccIn.v1, QaccIn.v2,
-                                        QaccIn.v3, Qx, Qy, &Res.v0, &Res.v1,
-                                        &Res.v2, &Res.v3);
-  return Res;
-}
 
 // ESP.VMULAS.U8.QACC (_m version)
-static inline __attribute__((always_inline)) esp_vmulas_qacc_res_t
-esp_vmulas_u8_qacc_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qx,
-                     esp_vec128_t Qy) {
-  esp_vmulas_qacc_res_t Res;
-  __builtin_riscv_esp_vmulas_u8_qacc_m(QaccIn.v0, QaccIn.v1, QaccIn.v2,
-                                       QaccIn.v3, Qx, Qy, &Res.v0, &Res.v1,
-                                       &Res.v2, &Res.v3);
-  return Res;
-}
 
 // ESP.VMULAS.S16.QACC.LD.IP (_m version)
-static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
-esp_vmulas_s16_qacc_ld_ip_m(esp_mov_qacc_res_t QaccIn, esp_vec128_16_t Qx,
-                            esp_vec128_16_t Qy, void const *Ptr, int Imm) {
-  esp_vmulas_qacc_ld_res_t Res;
-  esp_vec128_t Qu, v0, v1, v2, v3;
-  void *UpdatedPtr;
-  UpdatedPtr = __builtin_riscv_esp_vmulas_s16_qacc_ld_ip_m(
-      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qx, Qy, Ptr, Imm, &Qu, &v0,
-      &v1, &v2, &v3);
-  Res.Qu = Qu;
-  Res.v0 = v0;
-  Res.v1 = v1;
-  Res.v2 = v2;
-  Res.v3 = v3;
-  Res.Ptr = UpdatedPtr;
-  return Res;
-}
 
 // ESP.VMULAS.S16.QACC.LD.XP (_m version)
-static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
-esp_vmulas_s16_qacc_ld_xp_m(esp_mov_qacc_res_t QaccIn, esp_vec128_16_t Qx,
-                            esp_vec128_16_t Qy, void const *Ptr, int Reg) {
-  esp_vmulas_qacc_ld_res_t Res;
-  esp_vec128_t Qu, v0, v1, v2, v3;
-  void *UpdatedPtr;
-  UpdatedPtr = __builtin_riscv_esp_vmulas_s16_qacc_ld_xp_m(
-      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qx, Qy, Ptr, Reg, &Qu, &v0,
-      &v1, &v2, &v3);
-  Res.Qu = Qu;
-  Res.v0 = v0;
-  Res.v1 = v1;
-  Res.v2 = v2;
-  Res.v3 = v3;
-  Res.Ptr = UpdatedPtr;
-  return Res;
-}
 
 // ESP.VMULAS.S8.QACC.LD.IP (_m version)
-static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
-esp_vmulas_s8_qacc_ld_ip_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qx,
-                           esp_vec128_t Qy, void const *Ptr, int Imm) {
-  esp_vmulas_qacc_ld_res_t Res;
-  esp_vec128_t Qu, v0, v1, v2, v3;
-  void *UpdatedPtr;
-  UpdatedPtr = __builtin_riscv_esp_vmulas_s8_qacc_ld_ip_m(
-      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qx, Qy, Ptr, Imm, &Qu, &v0,
-      &v1, &v2, &v3);
-  Res.Qu = Qu;
-  Res.v0 = v0;
-  Res.v1 = v1;
-  Res.v2 = v2;
-  Res.v3 = v3;
-  Res.Ptr = UpdatedPtr;
-  return Res;
-}
 
 // ESP.VMULAS.S8.QACC.LD.XP (_m version)
-static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
-esp_vmulas_s8_qacc_ld_xp_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qx,
-                           esp_vec128_t Qy, void const *Ptr, int Reg) {
-  esp_vmulas_qacc_ld_res_t Res;
-  esp_vec128_t Qu, v0, v1, v2, v3;
-  void *UpdatedPtr;
-  UpdatedPtr = __builtin_riscv_esp_vmulas_s8_qacc_ld_xp_m(
-      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qx, Qy, Ptr, Reg, &Qu, &v0,
-      &v1, &v2, &v3);
-  Res.Qu = Qu;
-  Res.v0 = v0;
-  Res.v1 = v1;
-  Res.v2 = v2;
-  Res.v3 = v3;
-  Res.Ptr = UpdatedPtr;
-  return Res;
-}
 
 // ESP.VMULAS.U16.QACC.LD.IP (_m version)
-static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
-esp_vmulas_u16_qacc_ld_ip_m(esp_mov_qacc_res_t QaccIn, esp_vec128_16_t Qx,
-                            esp_vec128_16_t Qy, void const *Ptr, int Imm) {
-  esp_vmulas_qacc_ld_res_t Res;
-  esp_vec128_t Qu, v0, v1, v2, v3;
-  void *UpdatedPtr;
-  UpdatedPtr = __builtin_riscv_esp_vmulas_u16_qacc_ld_ip_m(
-      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qx, Qy, Ptr, Imm, &Qu, &v0,
-      &v1, &v2, &v3);
-  Res.Qu = Qu;
-  Res.v0 = v0;
-  Res.v1 = v1;
-  Res.v2 = v2;
-  Res.v3 = v3;
-  Res.Ptr = UpdatedPtr;
-  return Res;
-}
 
 // ESP.VMULAS.U16.QACC.LD.XP (_m version)
-static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
-esp_vmulas_u16_qacc_ld_xp_m(esp_mov_qacc_res_t QaccIn, esp_vec128_16_t Qx,
-                            esp_vec128_16_t Qy, void const *Ptr, int Reg) {
-  esp_vmulas_qacc_ld_res_t Res;
-  esp_vec128_t Qu, v0, v1, v2, v3;
-  void *UpdatedPtr;
-  UpdatedPtr = __builtin_riscv_esp_vmulas_u16_qacc_ld_xp_m(
-      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qx, Qy, Ptr, Reg, &Qu, &v0,
-      &v1, &v2, &v3);
-  Res.Qu = Qu;
-  Res.v0 = v0;
-  Res.v1 = v1;
-  Res.v2 = v2;
-  Res.v3 = v3;
-  Res.Ptr = UpdatedPtr;
-  return Res;
-}
 
 // ESP.VMULAS.U8.QACC.LD.IP (_m version)
-static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
-esp_vmulas_u8_qacc_ld_ip_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qx,
-                           esp_vec128_t Qy, void const *Ptr, int Imm) {
-  esp_vmulas_qacc_ld_res_t Res;
-  esp_vec128_t Qu, v0, v1, v2, v3;
-  void *UpdatedPtr;
-  UpdatedPtr = __builtin_riscv_esp_vmulas_u8_qacc_ld_ip_m(
-      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qx, Qy, Ptr, Imm, &Qu, &v0,
-      &v1, &v2, &v3);
-  Res.Qu = Qu;
-  Res.v0 = v0;
-  Res.v1 = v1;
-  Res.v2 = v2;
-  Res.v3 = v3;
-  Res.Ptr = UpdatedPtr;
-  return Res;
-}
 
 // ESP.VMULAS.U8.QACC.LD.XP (_m version)
-static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
-esp_vmulas_u8_qacc_ld_xp_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qx,
-                           esp_vec128_t Qy, void const *Ptr, int Reg) {
-  esp_vmulas_qacc_ld_res_t Res;
-  esp_vec128_t Qu, v0, v1, v2, v3;
-  void *UpdatedPtr;
-  UpdatedPtr = __builtin_riscv_esp_vmulas_u8_qacc_ld_xp_m(
-      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qx, Qy, Ptr, Reg, &Qu, &v0,
-      &v1, &v2, &v3);
-  Res.Qu = Qu;
-  Res.v0 = v0;
-  Res.v1 = v1;
-  Res.v2 = v2;
-  Res.v3 = v3;
-  Res.Ptr = UpdatedPtr;
-  return Res;
-}
 
 // ESP.VMULAS.S16.QACC.ST.IP (_m version)
-static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
-esp_vmulas_s16_qacc_st_ip_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qu,
-                            esp_vec128_16_t Qx, esp_vec128_16_t Qy, void *Ptr,
-                            int Imm) {
-  esp_vmulas_qacc_ld_res_t Res;
-  esp_vec128_t v0, v1, v2, v3;
-  void *UpdatedPtr;
-  UpdatedPtr = __builtin_riscv_esp_vmulas_s16_qacc_st_ip_m(
-      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qu, Qx, Qy, Ptr, Imm, &v0,
-      &v1, &v2, &v3);
-  Res.v0 = v0;
-  Res.v1 = v1;
-  Res.v2 = v2;
-  Res.v3 = v3;
-  Res.Ptr = UpdatedPtr;
-  Res.Qu = Qu;
-  return Res;
-}
 
 // ESP.VMULAS.S16.QACC.ST.XP (_m version)
-static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
-esp_vmulas_s16_qacc_st_xp_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qu,
-                            esp_vec128_16_t Qx, esp_vec128_16_t Qy, void *Ptr,
-                            int Reg) {
-  esp_vmulas_qacc_ld_res_t Res;
-  esp_vec128_t v0, v1, v2, v3;
-  void *UpdatedPtr;
-  UpdatedPtr = __builtin_riscv_esp_vmulas_s16_qacc_st_xp_m(
-      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qu, Qx, Qy, Ptr, Reg, &v0,
-      &v1, &v2, &v3);
-  Res.v0 = v0;
-  Res.v1 = v1;
-  Res.v2 = v2;
-  Res.v3 = v3;
-  Res.Ptr = UpdatedPtr;
-  Res.Qu = Qu;
-  return Res;
-}
 
 // ESP.VMULAS.S8.QACC.ST.XP (_m version)
-static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
-esp_vmulas_s8_qacc_st_xp_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qu,
-                           esp_vec128_t Qx, esp_vec128_t Qy, void *Ptr,
-                           int Reg) {
-  esp_vmulas_qacc_ld_res_t Res;
-  esp_vec128_t v0, v1, v2, v3;
-  void *UpdatedPtr;
-  UpdatedPtr = __builtin_riscv_esp_vmulas_s8_qacc_st_xp_m(
-      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qu, Qx, Qy, Ptr, Reg, &v0,
-      &v1, &v2, &v3);
-  Res.v0 = v0;
-  Res.v1 = v1;
-  Res.v2 = v2;
-  Res.v3 = v3;
-  Res.Ptr = UpdatedPtr;
-  Res.Qu = Qu;
-  return Res;
-}
 
 // ESP.VMULAS.U16.QACC.ST.IP (_m version)
-static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
-esp_vmulas_u16_qacc_st_ip_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qu,
-                            esp_vec128_16_t Qx, esp_vec128_16_t Qy, void *Ptr,
-                            int Imm) {
-  esp_vmulas_qacc_ld_res_t Res;
-  esp_vec128_t v0, v1, v2, v3;
-  void *UpdatedPtr;
-  UpdatedPtr = __builtin_riscv_esp_vmulas_u16_qacc_st_ip_m(
-      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qu, Qx, Qy, Ptr, Imm, &v0,
-      &v1, &v2, &v3);
-  Res.v0 = v0;
-  Res.v1 = v1;
-  Res.v2 = v2;
-  Res.v3 = v3;
-  Res.Ptr = UpdatedPtr;
-  Res.Qu = Qu;
-  return Res;
-}
 
 // ESP.VMULAS.U16.QACC.ST.XP (_m version)
-static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
-esp_vmulas_u16_qacc_st_xp_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qu,
-                            esp_vec128_16_t Qx, esp_vec128_16_t Qy, void *Ptr,
-                            int Reg) {
-  esp_vmulas_qacc_ld_res_t Res;
-  esp_vec128_t v0, v1, v2, v3;
-  void *UpdatedPtr;
-  UpdatedPtr = __builtin_riscv_esp_vmulas_u16_qacc_st_xp_m(
-      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qu, Qx, Qy, Ptr, Reg, &v0,
-      &v1, &v2, &v3);
-  Res.v0 = v0;
-  Res.v1 = v1;
-  Res.v2 = v2;
-  Res.v3 = v3;
-  Res.Ptr = UpdatedPtr;
-  Res.Qu = Qu;
-  return Res;
-}
 
 // ESP.VMULAS.U8.QACC.ST.IP (_m version)
-static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
-esp_vmulas_u8_qacc_st_ip_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qu,
-                           esp_vec128_t Qx, esp_vec128_t Qy, void *Ptr,
-                           int Imm) {
-  esp_vmulas_qacc_ld_res_t Res;
-  esp_vec128_t v0, v1, v2, v3;
-  void *UpdatedPtr;
-  UpdatedPtr = __builtin_riscv_esp_vmulas_u8_qacc_st_ip_m(
-      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qu, Qx, Qy, Ptr, Imm, &v0,
-      &v1, &v2, &v3);
-  Res.v0 = v0;
-  Res.v1 = v1;
-  Res.v2 = v2;
-  Res.v3 = v3;
-  Res.Ptr = UpdatedPtr;
-  Res.Qu = Qu;
-  return Res;
-}
 
 // ESP.VMULAS.U8.QACC.ST.XP (_m version)
-static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
-esp_vmulas_u8_qacc_st_xp_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qu,
-                           esp_vec128_t Qx, esp_vec128_t Qy, void *Ptr,
-                           int Reg) {
-  esp_vmulas_qacc_ld_res_t Res;
-  esp_vec128_t v0, v1, v2, v3;
-  void *UpdatedPtr;
-  UpdatedPtr = __builtin_riscv_esp_vmulas_u8_qacc_st_xp_m(
-      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qu, Qx, Qy, Ptr, Reg, &v0,
-      &v1, &v2, &v3);
-  Res.v0 = v0;
-  Res.v1 = v1;
-  Res.v2 = v2;
-  Res.v3 = v3;
-  Res.Ptr = UpdatedPtr;
-  Res.Qu = Qu;
-  return Res;
-}
 
 // ESP.VMULAS.S16.QACC.LDBC.INCP (_m version)
-static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
-esp_vmulas_s16_qacc_ldbc_incp_m(esp_mov_qacc_res_t QaccIn, esp_vec128_16_t Qx,
-                                esp_vec128_16_t Qy, void const *Ptr) {
-  esp_vmulas_qacc_ld_res_t Res;
-  esp_vec128_t Qu, v0, v1, v2, v3;
-  void *UpdatedPtr;
-  UpdatedPtr = __builtin_riscv_esp_vmulas_s16_qacc_ldbc_incp_m(
-      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qx, Qy, Ptr, &Qu, &v0, &v1,
-      &v2, &v3);
-  Res.Qu = Qu;
-  Res.v0 = v0;
-  Res.v1 = v1;
-  Res.v2 = v2;
-  Res.v3 = v3;
-  Res.Ptr = UpdatedPtr;
-  return Res;
-}
 
 // ESP.VMULAS.S8.QACC.LDBC.INCP (_m version)
-static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
-esp_vmulas_s8_qacc_ldbc_incp_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qx,
-                               esp_vec128_t Qy, void const *Ptr) {
-  esp_vmulas_qacc_ld_res_t Res;
-  esp_vec128_t Qu, v0, v1, v2, v3;
-  void *UpdatedPtr;
-  UpdatedPtr = __builtin_riscv_esp_vmulas_s8_qacc_ldbc_incp_m(
-      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qx, Qy, Ptr, &Qu, &v0, &v1,
-      &v2, &v3);
-  Res.Qu = Qu;
-  Res.v0 = v0;
-  Res.v1 = v1;
-  Res.v2 = v2;
-  Res.v3 = v3;
-  Res.Ptr = UpdatedPtr;
-  return Res;
-}
 
 // ESP.VMULAS.U16.QACC.LDBC.INCP (_m version)
-static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
-esp_vmulas_u16_qacc_ldbc_incp_m(esp_mov_qacc_res_t QaccIn, esp_vec128_16_t Qx,
-                                esp_vec128_16_t Qy, void const *Ptr) {
-  esp_vmulas_qacc_ld_res_t Res;
-  esp_vec128_t Qu, v0, v1, v2, v3;
-  void *UpdatedPtr;
-  UpdatedPtr = __builtin_riscv_esp_vmulas_u16_qacc_ldbc_incp_m(
-      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qx, Qy, Ptr, &Qu, &v0, &v1,
-      &v2, &v3);
-  Res.Qu = Qu;
-  Res.v0 = v0;
-  Res.v1 = v1;
-  Res.v2 = v2;
-  Res.v3 = v3;
-  Res.Ptr = UpdatedPtr;
-  return Res;
-}
 
 // ESP.VMULAS.U8.QACC.LDBC.INCP (_m version)
-static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
-esp_vmulas_u8_qacc_ldbc_incp_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qx,
-                               esp_vec128_t Qy, void const *Ptr) {
-  esp_vmulas_qacc_ld_res_t Res;
-  esp_vec128_t Qu, v0, v1, v2, v3;
-  void *UpdatedPtr;
-  UpdatedPtr = __builtin_riscv_esp_vmulas_u8_qacc_ldbc_incp_m(
-      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qx, Qy, Ptr, &Qu, &v0, &v1,
-      &v2, &v3);
-  Res.Qu = Qu;
-  Res.v0 = v0;
-  Res.v1 = v1;
-  Res.v2 = v2;
-  Res.v3 = v3;
-  Res.Ptr = UpdatedPtr;
-  return Res;
-}
 
 // ESP.VCMULAS.S16.QACC.H.LD.IP (_m version)
-static inline __attribute__((always_inline)) esp_vcmulas_qacc_h_ld_res_t
-esp_vcmulas_s16_qacc_h_ld_ip_m(esp_mov_qacc_h_res_t QaccHIn, esp_vec128_16_t Qx,
-                               esp_vec128_16_t Qy, void const *Ptr, int Imm) {
-  esp_vcmulas_qacc_h_ld_res_t Res;
-  esp_vec128_t TempQu, TempV2, TempV3;
-  void *UpdatedPtr;
-  UpdatedPtr = __builtin_riscv_esp_vcmulas_s16_qacc_h_ld_ip_m(
-      QaccHIn.v2, QaccHIn.v3, Qx, Qy, Ptr, Imm, &TempQu, &TempV2, &TempV3);
-  Res.Qu = TempQu;
-  Res.v2 = TempV2;
-  Res.v3 = TempV3;
-  Res.Ptr = UpdatedPtr;
-  return Res;
-}
 
 // ESP.VCMULAS.S16.QACC.L.LD.IP (_m version)
-static inline __attribute__((always_inline)) esp_vcmulas_qacc_l_ld_res_t
-esp_vcmulas_s16_qacc_l_ld_ip_m(esp_mov_qacc_l_res_t QaccLIn, esp_vec128_16_t Qx,
-                               esp_vec128_16_t Qy, void const *Ptr, int Imm) {
-  esp_vcmulas_qacc_l_ld_res_t Res;
-  esp_vec128_t TempQu, TempV0, TempV1;
-  void *UpdatedPtr;
-  UpdatedPtr = __builtin_riscv_esp_vcmulas_s16_qacc_l_ld_ip_m(
-      QaccLIn.v0, QaccLIn.v1, Qx, Qy, Ptr, Imm, &TempQu, &TempV0, &TempV1);
-  Res.Qu = TempQu;
-  Res.v0 = TempV0;
-  Res.v1 = TempV1;
-  Res.Ptr = UpdatedPtr;
-  return Res;
-}
 
 // ESP.VCMULAS.S16.QACC.H.LD.XP (_m version)
-static inline __attribute__((always_inline)) esp_vcmulas_qacc_h_ld_res_t
-esp_vcmulas_s16_qacc_h_ld_xp_m(esp_mov_qacc_h_res_t QaccHIn, esp_vec128_16_t Qx,
-                               esp_vec128_16_t Qy, void const *Ptr, int Reg) {
-  esp_vcmulas_qacc_h_ld_res_t Res;
-  esp_vec128_t TempQu, TempV2, TempV3;
-  void *UpdatedPtr;
-  UpdatedPtr = __builtin_riscv_esp_vcmulas_s16_qacc_h_ld_xp_m(
-      QaccHIn.v2, QaccHIn.v3, Qx, Qy, Ptr, Reg, &TempQu, &TempV2, &TempV3);
-  Res.Qu = TempQu;
-  Res.v2 = TempV2;
-  Res.v3 = TempV3;
-  Res.Ptr = UpdatedPtr;
-  return Res;
-}
 
 // ESP.VCMULAS.S16.QACC.L.LD.XP (_m version)
-static inline __attribute__((always_inline)) esp_vcmulas_qacc_l_ld_res_t
-esp_vcmulas_s16_qacc_l_ld_xp_m(esp_mov_qacc_l_res_t QaccLIn, esp_vec128_16_t Qx,
-                               esp_vec128_16_t Qy, void const *Ptr, int Reg) {
-  esp_vcmulas_qacc_l_ld_res_t Res;
-  esp_vec128_t TempQu, TempV0, TempV1;
-  void *UpdatedPtr;
-  UpdatedPtr = __builtin_riscv_esp_vcmulas_s16_qacc_l_ld_xp_m(
-      QaccLIn.v0, QaccLIn.v1, Qx, Qy, Ptr, Reg, &TempQu, &TempV0, &TempV1);
-  Res.Qu = TempQu;
-  Res.v0 = TempV0;
-  Res.v1 = TempV1;
-  Res.Ptr = UpdatedPtr;
-  return Res;
-}
 
 // ESP.VCMULAS.S8.QACC.H.LD.XP (_m version)
-static inline __attribute__((always_inline)) esp_vcmulas_qacc_h_ld_res_t
-esp_vcmulas_s8_qacc_h_ld_xp_m(esp_mov_qacc_h_res_t QaccHIn, esp_vec128_t Qx,
-                              esp_vec128_t Qy, void const *Ptr, int Reg) {
-  esp_vcmulas_qacc_h_ld_res_t Res;
-  esp_vec128_t TempQu, TempV2, TempV3;
-  void *UpdatedPtr;
-  UpdatedPtr = __builtin_riscv_esp_vcmulas_s8_qacc_h_ld_xp_m(
-      QaccHIn.v2, QaccHIn.v3, Qx, Qy, Ptr, Reg, &TempQu, &TempV2, &TempV3);
-  Res.Qu = TempQu;
-  Res.v2 = TempV2;
-  Res.v3 = TempV3;
-  Res.Ptr = UpdatedPtr;
-  return Res;
-}
 
 // ESP.VCMULAS.S8.QACC.L.LD.XP (_m version)
-static inline __attribute__((always_inline)) esp_vcmulas_qacc_l_ld_res_t
-esp_vcmulas_s8_qacc_l_ld_xp_m(esp_mov_qacc_l_res_t QaccLIn, esp_vec128_t Qx,
-                              esp_vec128_t Qy, void const *Ptr, int Reg) {
-  esp_vcmulas_qacc_l_ld_res_t Res;
-  esp_vec128_t TempQu, TempV0, TempV1;
-  void *UpdatedPtr;
-  UpdatedPtr = __builtin_riscv_esp_vcmulas_s8_qacc_l_ld_xp_m(
-      QaccLIn.v0, QaccLIn.v1, Qx, Qy, Ptr, Reg, &TempQu, &TempV0, &TempV1);
-  Res.Qu = TempQu;
-  Res.v0 = TempV0;
-  Res.v1 = TempV1;
-  Res.Ptr = UpdatedPtr;
-  return Res;
-}
 
 // ESP.VMULAS.*.XACC.LD.IP/XP wrapper functions - Load Data and perform
 // multiply-accumulate XACC is both input and output (explicit state passing for
@@ -1427,96 +410,6 @@ esp_vcmulas_s8_qacc_l_ld_xp_m(esp_mov_qacc_l_res_t QaccLIn, esp_vec128_t Qx,
 // XaccLowIn, XaccHighIn - current XACC state (input) Output: Res.xacc_low,
 // Res.xacc_high - new XACC value after multiply-accumulate operation Returns
 // structure with Qu (128-bit loaded Data), updated pointer, and new XACC
-static inline __attribute__((always_inline)) esp_vmulas_xacc_ld_res_t
-esp_vmulas_s16_xacc_ld_ip_m(unsigned int XaccLowIn, unsigned int XaccHighIn,
-                            esp_vec128_16_t Qx, esp_vec128_16_t Qy,
-                            void const *Ptr, int Imm) {
-  esp_vmulas_xacc_ld_res_t Res;
-  // XaccLowIn, XaccHighIn: current XACC state (input)
-  // &Res.xacc_low, &Res.xacc_high: pointers to store new XACC state (output)
-  // This enables explicit state passing: xacc_old -> instruction -> xacc_new
-  Res.Ptr = __builtin_riscv_esp_vmulas_s16_xacc_ld_ip_m(
-      XaccLowIn, XaccHighIn, Qx, Qy, Ptr, Imm, &Res.Qu.v8, &Res.xacc_low,
-      &Res.xacc_high);
-  return Res;
-}
-
-static inline __attribute__((always_inline)) esp_vmulas_xacc_ld_res_t
-esp_vmulas_s16_xacc_ld_xp_m(unsigned int XaccLowIn, unsigned int XaccHighIn,
-                            esp_vec128_16_t Qx, esp_vec128_16_t Qy,
-                            void const *Ptr, int Reg) {
-  esp_vmulas_xacc_ld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vmulas_s16_xacc_ld_xp_m(
-      XaccLowIn, XaccHighIn, Qx, Qy, Ptr, Reg, &Res.Qu.v8, &Res.xacc_low,
-      &Res.xacc_high);
-  return Res;
-}
-
-static inline __attribute__((always_inline)) esp_vmulas_xacc_ld_res_t
-esp_vmulas_s8_xacc_ld_ip_m(unsigned int XaccLowIn, unsigned int XaccHighIn,
-                           esp_vec128_t Qx, esp_vec128_t Qy, void const *Ptr,
-                           int Imm) {
-  esp_vmulas_xacc_ld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vmulas_s8_xacc_ld_ip_m(
-      XaccLowIn, XaccHighIn, Qx, Qy, Ptr, Imm, &Res.Qu.v8, &Res.xacc_low,
-      &Res.xacc_high);
-  return Res;
-}
-
-static inline __attribute__((always_inline)) esp_vmulas_xacc_ld_res_t
-esp_vmulas_s8_xacc_ld_xp_m(unsigned int XaccLowIn, unsigned int XaccHighIn,
-                           esp_vec128_t Qx, esp_vec128_t Qy, void const *Ptr,
-                           int Reg) {
-  esp_vmulas_xacc_ld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vmulas_s8_xacc_ld_xp_m(
-      XaccLowIn, XaccHighIn, Qx, Qy, Ptr, Reg, &Res.Qu.v8, &Res.xacc_low,
-      &Res.xacc_high);
-  return Res;
-}
-
-static inline __attribute__((always_inline)) esp_vmulas_xacc_ld_res_t
-esp_vmulas_u16_xacc_ld_ip_m(unsigned int XaccLowIn, unsigned int XaccHighIn,
-                            esp_vec128_16_t Qx, esp_vec128_16_t Qy,
-                            void const *Ptr, int Imm) {
-  esp_vmulas_xacc_ld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vmulas_u16_xacc_ld_ip_m(
-      XaccLowIn, XaccHighIn, Qx, Qy, Ptr, Imm, &Res.Qu.v8, &Res.xacc_low,
-      &Res.xacc_high);
-  return Res;
-}
-
-static inline __attribute__((always_inline)) esp_vmulas_xacc_ld_res_t
-esp_vmulas_u16_xacc_ld_xp_m(unsigned int XaccLowIn, unsigned int XaccHighIn,
-                            esp_vec128_16_t Qx, esp_vec128_16_t Qy,
-                            void const *Ptr, int Reg) {
-  esp_vmulas_xacc_ld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vmulas_u16_xacc_ld_xp_m(
-      XaccLowIn, XaccHighIn, Qx, Qy, Ptr, Reg, &Res.Qu.v8, &Res.xacc_low,
-      &Res.xacc_high);
-  return Res;
-}
-
-static inline __attribute__((always_inline)) esp_vmulas_xacc_ld_res_t
-esp_vmulas_u8_xacc_ld_ip_m(unsigned int XaccLowIn, unsigned int XaccHighIn,
-                           esp_vec128_t Qx, esp_vec128_t Qy, void const *Ptr,
-                           int Imm) {
-  esp_vmulas_xacc_ld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vmulas_u8_xacc_ld_ip_m(
-      XaccLowIn, XaccHighIn, Qx, Qy, Ptr, Imm, &Res.Qu.v8, &Res.xacc_low,
-      &Res.xacc_high);
-  return Res;
-}
-
-static inline __attribute__((always_inline)) esp_vmulas_xacc_ld_res_t
-esp_vmulas_u8_xacc_ld_xp_m(unsigned int XaccLowIn, unsigned int XaccHighIn,
-                           esp_vec128_t Qx, esp_vec128_t Qy, void const *Ptr,
-                           int Reg) {
-  esp_vmulas_xacc_ld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vmulas_u8_xacc_ld_xp_m(
-      XaccLowIn, XaccHighIn, Qx, Qy, Ptr, Reg, &Res.Qu.v8, &Res.xacc_low,
-      &Res.xacc_high);
-  return Res;
-}
 
 // ESP.VMULAS.*.XACC.ST.IP/XP wrapper functions - Store Data and perform
 // multiply-accumulate Mixed model: XACC as {unsigned int low, unsigned int
@@ -1524,97 +417,8 @@ esp_vmulas_u8_xacc_ld_xp_m(unsigned int XaccLowIn, unsigned int XaccHighIn,
 // instruction -> Res.xacc_low, Res.xacc_high (output) This enables chaining:
 // xacc_old -> VMULAS -> xacc_new -> next instruction -> ... Returns structure
 // with updated pointer and new XACC
-static inline __attribute__((always_inline)) esp_vmulas_xacc_st_res_t
-esp_vmulas_s16_xacc_st_ip_m(unsigned int XaccLowIn, unsigned int XaccHighIn,
-                            esp_vec128_t Qu, esp_vec128_16_t Qx,
-                            esp_vec128_16_t Qy, void *Ptr, int Imm) {
-  esp_vmulas_xacc_st_res_t Res;
-  // XaccLowIn, XaccHighIn: current XACC state (input)
-  // &Res.xacc_low, &Res.xacc_high: pointers to store new XACC state (output,
-  // after multiply-accumulate) This pattern enables explicit state passing for
-  // instruction chaining
-  Res.Ptr = __builtin_riscv_esp_vmulas_s16_xacc_st_ip_m(
-      XaccLowIn, XaccHighIn, Qu, Qx, Qy, Ptr, Imm, &Res.xacc_low,
-      &Res.xacc_high);
-  return Res;
-}
 
-static inline __attribute__((always_inline)) esp_vmulas_xacc_st_res_t
-esp_vmulas_s16_xacc_st_xp_m(unsigned int XaccLowIn, unsigned int XaccHighIn,
-                            esp_vec128_t Qu, esp_vec128_16_t Qx,
-                            esp_vec128_16_t Qy, void *Ptr, int Reg) {
-  esp_vmulas_xacc_st_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vmulas_s16_xacc_st_xp_m(
-      XaccLowIn, XaccHighIn, Qu, Qx, Qy, Ptr, Reg, &Res.xacc_low,
-      &Res.xacc_high);
-  return Res;
-}
-
-static inline __attribute__((always_inline)) esp_vmulas_xacc_st_res_t
-esp_vmulas_s8_xacc_st_ip_m(unsigned int XaccLowIn, unsigned int XaccHighIn,
-                           esp_vec128_t Qu, esp_vec128_t Qx, esp_vec128_t Qy,
-                           void *Ptr, int Imm) {
-  esp_vmulas_xacc_st_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vmulas_s8_xacc_st_ip_m(
-      XaccLowIn, XaccHighIn, Qu, Qx, Qy, Ptr, Imm, &Res.xacc_low,
-      &Res.xacc_high);
-  return Res;
-}
-
-static inline __attribute__((always_inline)) esp_vmulas_xacc_st_res_t
-esp_vmulas_s8_xacc_st_xp_m(unsigned int XaccLowIn, unsigned int XaccHighIn,
-                           esp_vec128_t Qu, esp_vec128_t Qx, esp_vec128_t Qy,
-                           void *Ptr, int Reg) {
-  esp_vmulas_xacc_st_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vmulas_s8_xacc_st_xp_m(
-      XaccLowIn, XaccHighIn, Qu, Qx, Qy, Ptr, Reg, &Res.xacc_low,
-      &Res.xacc_high);
-  return Res;
-}
-
-static inline __attribute__((always_inline)) esp_vmulas_xacc_st_res_t
-esp_vmulas_u16_xacc_st_ip_m(unsigned int XaccLowIn, unsigned int XaccHighIn,
-                            esp_vec128_t Qu, esp_vec128_16_t Qx,
-                            esp_vec128_16_t Qy, void *Ptr, int Imm) {
-  esp_vmulas_xacc_st_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vmulas_u16_xacc_st_ip_m(
-      XaccLowIn, XaccHighIn, Qu, Qx, Qy, Ptr, Imm, &Res.xacc_low,
-      &Res.xacc_high);
-  return Res;
-}
-
-static inline __attribute__((always_inline)) esp_vmulas_xacc_st_res_t
-esp_vmulas_u16_xacc_st_xp_m(unsigned int XaccLowIn, unsigned int XaccHighIn,
-                            esp_vec128_t Qu, esp_vec128_16_t Qx,
-                            esp_vec128_16_t Qy, void *Ptr, int Reg) {
-  esp_vmulas_xacc_st_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vmulas_u16_xacc_st_xp_m(
-      XaccLowIn, XaccHighIn, Qu, Qx, Qy, Ptr, Reg, &Res.xacc_low,
-      &Res.xacc_high);
-  return Res;
-}
-
-static inline __attribute__((always_inline)) esp_vmulas_xacc_st_res_t
-esp_vmulas_u8_xacc_st_ip_m(unsigned int XaccLowIn, unsigned int XaccHighIn,
-                           esp_vec128_t Qu, esp_vec128_t Qx, esp_vec128_t Qy,
-                           void *Ptr, int Imm) {
-  esp_vmulas_xacc_st_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vmulas_u8_xacc_st_ip_m(
-      XaccLowIn, XaccHighIn, Qu, Qx, Qy, Ptr, Imm, &Res.xacc_low,
-      &Res.xacc_high);
-  return Res;
-}
-
-static inline __attribute__((always_inline)) esp_vmulas_xacc_st_res_t
-esp_vmulas_u8_xacc_st_xp_m(unsigned int XaccLowIn, unsigned int XaccHighIn,
-                           esp_vec128_t Qu, esp_vec128_t Qx, esp_vec128_t Qy,
-                           void *Ptr, int Reg) {
-  esp_vmulas_xacc_st_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vmulas_u8_xacc_st_xp_m(
-      XaccLowIn, XaccHighIn, Qu, Qx, Qy, Ptr, Reg, &Res.xacc_low,
-      &Res.xacc_high);
-  return Res;
-} // QACC_H: v32i8 (256-bit)  // QACC_L: v32i8 (256-bit)
+// QACC_H: v32i8 (256-bit)  // QACC_L: v32i8 (256-bit)
 
 // 128-bit types (16 bytes) - Subregisters
 typedef __attribute__((vector_size(
@@ -1695,73 +499,28 @@ typedef struct {
 // extraction
 
 // Extract QACC_L[127:0] (low 128 bits) from QACC_L (256 bits)
-static inline __attribute__((always_inline)) esp_vec128_t
-esp_qacc_extract_low_128(esp_qacc_l_t qacc_l) {
-  return __builtin_riscv_esp_qacc_l_get_low(qacc_l);
-}
 
 // Extract QACC_L[255:128] (high 128 bits) from QACC_L (256 bits)
-static inline __attribute__((always_inline)) esp_vec128_t
-esp_qacc_extract_high_128(esp_qacc_l_t qacc_l) {
-  return __builtin_riscv_esp_qacc_l_get_high(qacc_l);
-}
 
 // Extract QACC_H[127:0] (low 128 bits) from QACC_H (256 bits)
-static inline __attribute__((always_inline)) esp_vec128_t
-esp_qacc_h_extract_low_128(esp_qacc_h_t qacc_h) {
-  return __builtin_riscv_esp_qacc_h_get_low(qacc_h);
-}
 
 // Extract QACC_H[255:128] (high 128 bits) from QACC_H (256 bits)
-static inline __attribute__((always_inline)) esp_vec128_t
-esp_qacc_h_extract_high_128(esp_qacc_h_t qacc_h) {
-  return __builtin_riscv_esp_qacc_h_get_high(qacc_h);
-}
 
 // Convert esp_qacc_pair_t to 4x128-bit representation
 // This is useful for passing QACC as explicit phantom operand to instructions
-static inline __attribute__((always_inline)) esp_qacc_4x128_t
-esp_qacc_to_4x128(esp_qacc_pair_t qacc) {
-  esp_qacc_4x128_t Res;
-  Res.v0 = esp_qacc_extract_low_128(qacc.l);    // QACC_L[127:0]
-  Res.v1 = esp_qacc_extract_high_128(qacc.l);   // QACC_L[255:128]
-  Res.v2 = esp_qacc_h_extract_low_128(qacc.h);  // QACC_H[127:0]
-  Res.v3 = esp_qacc_h_extract_high_128(qacc.h); // QACC_H[255:128]
-  return Res;
-}
 
 // ESP.ZERO.XACC (_m version) - Zero XACC with explicit state passing
 // Returns: {i32 low=0, i32 high=0} for explicit state passing
 // Mixed model: XACC as {unsigned int low, unsigned int high}
 // This wrapper calls the intrinsic and returns XACC state as {i32, i32}
-static inline __attribute__((always_inline)) esp_xacc_zero_res_t
-esp_zero_xacc_m(void) {
-  esp_xacc_zero_res_t Res;
-  // Builtin signature: void(unsigned int *XaccLowOut, unsigned int
-  // *XaccHighOut) Intrinsic signature: [] -> [i32, i32] (both set to 0)
-  __builtin_riscv_esp_zero_xacc_m((void *)&Res.xacc_low,
-                                  (void *)&Res.xacc_high);
-  return Res;
-}
 
 // ESP.LD.XACC.IP (_m version) - Load 64-bit Data and store low 40 bits to XACC
 // Returns: structure with XACC value (mixed model: {i32 low, i32 high}) and
 // updated pointer Mixed model: XACC as {unsigned int low, unsigned int high}
 // This wrapper calls the builtin and uses explicit state passing for XACC
-static inline __attribute__((always_inline)) esp_xacc_res_t esp_ld_xacc_ip_m(
-    unsigned int XaccLowIn, unsigned int XaccHighIn, void const *Ptr, int Imm) {
-  esp_xacc_res_t Res;
-  // Call builtin to get updated pointer
-  // Builtin signature: void*(unsigned int, unsigned int, void const *, int,
-  // void *, unsigned int *, unsigned int *) XaccLowIn, XaccHighIn: current XACC
-  // state (input, passthru) &Res.Ptr: pointer to store updated pointer (output)
-  // &Res.xacc_low, &Res.xacc_high: pointers to store new XACC state (output)
-  Res.Ptr = __builtin_riscv_esp_ld_xacc_ip_m(
-      XaccLowIn, XaccHighIn, Ptr, Imm, &Res.Ptr, &Res.xacc_low, &Res.xacc_high);
-  return Res;
-} // QACC_H: v32i8 (256-bit)  // QACC_L: v32i8 (256-bit)  // QACC_H[255:128]:
-  // v16i8 (128-bit)   // QACC_H[127:0]: v16i8 (128-bit)  // QACC_L[255:128]:
-  // v16i8 (128-bit)   // QACC_L[127:0]: v16i8 (128-bit)
+// QACC_H: v32i8 (256-bit)  // QACC_L: v32i8 (256-bit)  // QACC_H[255:128]:
+// v16i8 (128-bit)   // QACC_H[127:0]: v16i8 (128-bit)  // QACC_L[255:128]:
+// v16i8 (128-bit)   // QACC_L[127:0]: v16i8 (128-bit)
 
 // ESP.ST.U.XACC.IP (_m version) - Store Unsigned XACC with Immediate
 // Post-increment Returns: updated pointer Mixed model: XACC as {unsigned int
@@ -1769,27 +528,9 @@ static inline __attribute__((always_inline)) esp_xacc_res_t esp_ld_xacc_ip_m(
 // state passing for XACC Note: XACC is passthru (unchanged) for ST instructions
 // For simplified API, we use 0 as default XACC value (caller should initialize
 // XACC before calling)
-static inline __attribute__((always_inline)) void *esp_st_u_xacc_ip_m(void *Ptr,
-                                                                      int Imm) {
-  void *PtrOut;
-  unsigned int XaccLowOut;
-  unsigned int XaccHighOut;
-  // Use 0 as default XACC value (caller should have initialized XACC via
-  // __builtin_riscv_esp_zero_xacc() or similar) For explicit state passing, we
-  // pass current XACC state (passthru)
-  unsigned int XaccLowIn = 0U;  // Default: XACC[31:0] = 0
-  unsigned int XaccHighIn = 0U; // Default: XACC[39:32] = 0
-  // Call builtin to get updated pointer
-  // Builtin signature: void*(unsigned int, unsigned int, void *, int, void *,
-  // unsigned int *, unsigned int *) XaccLowIn, XaccHighIn: current XACC state
-  // (input, passthru) &PtrOut: pointer to store updated pointer (output)
-  // &XaccLowOut, &XaccHighOut: pointers to store XACC state (output, unchanged
-  // for ST)
-  return __builtin_riscv_esp_st_u_xacc_ip_m(XaccLowIn, XaccHighIn, Ptr, Imm,
-                                            &PtrOut, &XaccLowOut, &XaccHighOut);
-} // QACC_H: v32i8 (256-bit)  // QACC_L: v32i8 (256-bit)  // QACC_H[255:128]:
-  // v16i8 (128-bit)   // QACC_H[127:0]: v16i8 (128-bit)  // QACC_L[255:128]:
-  // v16i8 (128-bit)   // QACC_L[127:0]: v16i8 (128-bit)
+// QACC_H: v32i8 (256-bit)  // QACC_L: v32i8 (256-bit)  // QACC_H[255:128]:
+// v16i8 (128-bit)   // QACC_H[127:0]: v16i8 (128-bit)  // QACC_L[255:128]:
+// v16i8 (128-bit)   // QACC_L[127:0]: v16i8 (128-bit)
 
 typedef struct {
   esp_qacc_l_t qacc_l; // QACC_L value (256-bit)
@@ -1829,21 +570,6 @@ typedef struct {
 // This wrapper calls the builtin and uses explicit state passing for XACC
 // For simplified API, we use 0 as default XACC value (caller should initialize
 // XACC before calling)
-static inline __attribute__((always_inline)) int32_t esp_srs_s_xacc_m(int Rs1) {
-  unsigned int XaccLowOut;
-  unsigned int XaccHighOut;
-  // Use 0 as default XACC value (caller should have initialized XACC via
-  // __builtin_riscv_esp_zero_xacc() or similar)
-  unsigned int XaccLowIn = 0U;  // Default: XACC[31:0] = 0
-  unsigned int XaccHighIn = 0U; // Default: XACC[39:32] = 0
-  // Call builtin to perform shift right and saturate
-  // Builtin signature: int(unsigned int, unsigned int, int, unsigned int *,
-  // unsigned int *) XaccHighIn, XaccLowIn: current XACC state (input) - note:
-  // order is high, low Rs1: shift amount &XaccHighOut, &XaccLowOut: pointers to
-  // store new XACC state (output) - note: order is high, low
-  return __builtin_riscv_esp_srs_s_xacc_m(XaccHighIn, XaccLowIn, Rs1,
-                                          &XaccHighOut, &XaccLowOut);
-}
 
 // ESP.SRS.U.XACC (_m version) - Shift Right and Saturate Unsigned from XACC
 // Returns: saturated 32-bit unsigned value
@@ -1851,49 +577,17 @@ static inline __attribute__((always_inline)) int32_t esp_srs_s_xacc_m(int Rs1) {
 // This wrapper calls the builtin and uses explicit state passing for XACC
 // For simplified API, we use 0 as default XACC value (caller should initialize
 // XACC before calling)
-static inline __attribute__((always_inline)) uint32_t
-esp_srs_u_xacc_m(int Rs1) {
-  unsigned int XaccLowOut;
-  unsigned int XaccHighOut;
-  // Use 0 as default XACC value (caller should have initialized XACC via
-  // __builtin_riscv_esp_zero_xacc() or similar)
-  unsigned int XaccLowIn = 0U;  // Default: XACC[31:0] = 0
-  unsigned int XaccHighIn = 0U; // Default: XACC[39:32] = 0
-  // Call builtin to perform shift right and saturate
-  // Builtin signature: unsigned int(unsigned int, unsigned int, int, unsigned
-  // int *, unsigned int *) XaccHighIn, XaccLowIn: current XACC state (input) -
-  // note: order is high, low Rs1: shift amount &XaccHighOut, &XaccLowOut:
-  // pointers to store new XACC state (output) - note: order is high, low
-  return __builtin_riscv_esp_srs_u_xacc_m(XaccHighIn, XaccLowIn, Rs1,
-                                          &XaccHighOut, &XaccLowOut);
-}
 
 // ESP.SRC.Q wrapper functions with explicit SAR_BYTES (SAR_BYTES is last
 // parameter)
-static inline __attribute__((always_inline)) esp_src_q_ld_res_t
-esp_src_q_ld_ip_m(esp_vec128_t Qy, esp_vec128_t Qw, void const *Ptr, int Imm,
-                  unsigned int sar_bytes) {
-  esp_src_q_ld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_src_q_ld_ip_m(Qy, Qw, Ptr, Imm, &Res.Qw,
-                                              &Res.Qu, sar_bytes);
-  return Res;
-}
 
-static inline __attribute__((always_inline)) esp_src_q_ld_res_t
-esp_src_q_ld_xp_m(esp_vec128_t Qy, esp_vec128_t Qw, void const *Ptr, int Reg,
-                  unsigned int sar_bytes) {
-  esp_src_q_ld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_src_q_ld_xp_m(Qy, Qw, Ptr, Reg, &Res.Qw,
-                                              &Res.Qu, sar_bytes);
-  return Res;
-}
+// Bit-cast v8i16 to v16i8 (same 128 bits). Avoids GNU statement-expressions so
+// nested uses in one expression do not trip Clang IR generation.
+#define esp_vec128_16_to_8(V16) ((esp_vec128_t)(V16))
 
-static inline __attribute__((always_inline)) esp_src_q_qup_res_t
-esp_src_q_qup_m(esp_vec128_t Qw, esp_vec128_t Qy, unsigned int sar_bytes) {
-  esp_src_q_qup_res_t Res;
-  __builtin_riscv_esp_src_q_qup_m(Qw, Qy, &Res.Qz, &Res.Qw, sar_bytes);
-  return Res;
-}
+// All former static inline wrappers have been removed. Call
+// __builtin_riscv_esp_* directly; use the esp_*_t / esp_*_res_t typedefs for
+// result layouts where applicable.
 
 // ESP.SRCMB builtin declarations - Shift Right and Saturate from QACC
 // All SRCMB variants use explicit QACC phantom operands (4x128-bit) for proper
@@ -1952,15 +646,6 @@ typedef esp_mov_qacc_res_t esp_vmulas_qacc_res_t;
 // Helper function to convert esp_mov_qacc_res_t (4x128-bit) to esp_vec512_t
 // (512-bit) Used for compatibility with old builtin signatures that expect
 // esp_vec512_t
-static inline __attribute__((always_inline)) esp_vec512_t
-esp_qacc_from_mov_res(esp_mov_qacc_res_t mov_res) {
-  esp_vec512_t qacc;
-  // Copy 4x128-bit to 512-bit vector using memcpy
-  // Layout: mov_res.v0 (128-bit) + mov_res.v1 (128-bit) + mov_res.v2 (128-bit)
-  // + mov_res.v3 (128-bit) = 512-bit
-  __builtin_memcpy(&qacc, &mov_res, sizeof(esp_vec512_t));
-  return qacc;
-}
 
 // ESP.VSMULAS result structure - Scalar Multiply-accumulate with QACC_H and
 // QACC_L Returns 4x128-bit QACC directly (same as esp_mov_qacc_res_t)
@@ -1968,144 +653,24 @@ typedef esp_mov_qacc_res_t esp_vsmulas_qacc_res_t;
 
 // ESP.VSMULAS.S16.QACC (_m version) - Scalar Multiply-accumulate to QACC_H and
 // QACC_L Returns: structure with QACC as 4x128-bit (v0, v1, v2, v3)
-static inline __attribute__((always_inline)) esp_vsmulas_qacc_res_t
-esp_vsmulas_s16_qacc_m(esp_mov_qacc_res_t QaccIn, esp_vec128_16_t Qx,
-                       esp_vec128_16_t Qy, int sel16) {
-  esp_vsmulas_qacc_res_t Res;
-  // Builtin accepts 4x128-bit QACC passthru and outputs 4x128-bit QACC
-  __builtin_riscv_esp_vsmulas_s16_qacc_m(QaccIn.v0, QaccIn.v1, QaccIn.v2,
-                                         QaccIn.v3, Qx, Qy, sel16, &Res.v0,
-                                         &Res.v1, &Res.v2, &Res.v3);
-  return Res;
-}
 
 // ESP.VSMULAS.S8.QACC (_m version) - Scalar Multiply-accumulate to QACC_H and
 // QACC_L Returns: structure with QACC as 4x128-bit (v0, v1, v2, v3)
-static inline __attribute__((always_inline)) esp_vsmulas_qacc_res_t
-esp_vsmulas_s8_qacc_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qx,
-                      esp_vec128_t Qy, int sel16) {
-  esp_vsmulas_qacc_res_t Res;
-  // Builtin accepts 4x128-bit QACC passthru and outputs 4x128-bit QACC
-  __builtin_riscv_esp_vsmulas_s8_qacc_m(QaccIn.v0, QaccIn.v1, QaccIn.v2,
-                                        QaccIn.v3, Qx, Qy, sel16, &Res.v0,
-                                        &Res.v1, &Res.v2, &Res.v3);
-  return Res;
-}
 
 // ESP.VSMULAS.U16.QACC (_m version) - Scalar Multiply-accumulate to QACC_H and
 // QACC_L Returns: structure with QACC as 4x128-bit (v0, v1, v2, v3)
-static inline __attribute__((always_inline)) esp_vsmulas_qacc_res_t
-esp_vsmulas_u16_qacc_m(esp_mov_qacc_res_t QaccIn, esp_vec128_16_t Qx,
-                       esp_vec128_16_t Qy, int sel16) {
-  esp_vsmulas_qacc_res_t Res;
-  // Builtin accepts 4x128-bit QACC passthru and outputs 4x128-bit QACC
-  __builtin_riscv_esp_vsmulas_u16_qacc_m(QaccIn.v0, QaccIn.v1, QaccIn.v2,
-                                         QaccIn.v3, Qx, Qy, sel16, &Res.v0,
-                                         &Res.v1, &Res.v2, &Res.v3);
-  return Res;
-}
 
 // ESP.VSMULAS.U8.QACC (_m version) - Scalar Multiply-accumulate to QACC_H and
 // QACC_L Returns: structure with QACC as 4x128-bit (v0, v1, v2, v3)
-static inline __attribute__((always_inline)) esp_vsmulas_qacc_res_t
-esp_vsmulas_u8_qacc_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qx,
-                      esp_vec128_t Qy, int sel16) {
-  esp_vsmulas_qacc_res_t Res;
-  // Builtin accepts 4x128-bit QACC passthru and outputs 4x128-bit QACC
-  __builtin_riscv_esp_vsmulas_u8_qacc_m(QaccIn.v0, QaccIn.v1, QaccIn.v2,
-                                        QaccIn.v3, Qx, Qy, sel16, &Res.v0,
-                                        &Res.v1, &Res.v2, &Res.v3);
-  return Res;
-}
 
 // ESP.VSMULAS.S16.QACC.LD.INCP (_m version) - Similar to VMULAS LD.INCP but
 // with sel16 parameter
-static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
-esp_vsmulas_s16_qacc_ld_incp_m(esp_mov_qacc_res_t QaccIn, esp_vec128_16_t Qx,
-                               esp_vec128_16_t Qy, void const *Ptr, int sel16) {
-  esp_vmulas_qacc_ld_res_t Res;
-  esp_vec128_t TempQu; // Temporary variable
-  esp_vec128_t TempV0, TempV1, TempV2,
-      TempV3; // Temporary variables for QACC outputs
-  void *UpdatedPtr;
-
-  UpdatedPtr = __builtin_riscv_esp_vsmulas_s16_qacc_ld_incp_m(
-      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qx, Qy, Ptr, sel16, &TempQu,
-      &TempV0, &TempV1, &TempV2, &TempV3);
-  Res.Qu = TempQu;
-  Res.v0 = TempV0;
-  Res.v1 = TempV1;
-  Res.v2 = TempV2;
-  Res.v3 = TempV3;
-  Res.Ptr = UpdatedPtr;
-  return Res;
-}
 
 // ESP.VSMULAS.S8.QACC.LD.INCP (_m version)
-static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
-esp_vsmulas_s8_qacc_ld_incp_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qx,
-                              esp_vec128_t Qy, void const *Ptr, int sel16) {
-  esp_vmulas_qacc_ld_res_t Res;
-  esp_vec128_t TempQu; // Temporary variable
-  esp_vec128_t TempV0, TempV1, TempV2,
-      TempV3; // Temporary variables for QACC outputs
-  void *UpdatedPtr;
-
-  UpdatedPtr = __builtin_riscv_esp_vsmulas_s8_qacc_ld_incp_m(
-      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qx, Qy, Ptr, sel16, &TempQu,
-      &TempV0, &TempV1, &TempV2, &TempV3);
-  Res.Qu = TempQu;
-  Res.v0 = TempV0;
-  Res.v1 = TempV1;
-  Res.v2 = TempV2;
-  Res.v3 = TempV3;
-  Res.Ptr = UpdatedPtr;
-  return Res;
-}
 
 // ESP.VSMULAS.U16.QACC.LD.INCP (_m version)
-static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
-esp_vsmulas_u16_qacc_ld_incp_m(esp_mov_qacc_res_t QaccIn, esp_vec128_16_t Qx,
-                               esp_vec128_16_t Qy, void const *Ptr, int sel16) {
-  esp_vmulas_qacc_ld_res_t Res;
-  esp_vec128_t TempQu; // Temporary variable
-  esp_vec128_t TempV0, TempV1, TempV2,
-      TempV3; // Temporary variables for QACC outputs
-  void *UpdatedPtr;
-
-  UpdatedPtr = __builtin_riscv_esp_vsmulas_u16_qacc_ld_incp_m(
-      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qx, Qy, Ptr, sel16, &TempQu,
-      &TempV0, &TempV1, &TempV2, &TempV3);
-  Res.Qu = TempQu;
-  Res.v0 = TempV0;
-  Res.v1 = TempV1;
-  Res.v2 = TempV2;
-  Res.v3 = TempV3;
-  Res.Ptr = UpdatedPtr;
-  return Res;
-}
 
 // ESP.VSMULAS.U8.QACC.LD.INCP (_m version)
-static inline __attribute__((always_inline)) esp_vmulas_qacc_ld_res_t
-esp_vsmulas_u8_qacc_ld_incp_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qx,
-                              esp_vec128_t Qy, void const *Ptr, int sel16) {
-  esp_vmulas_qacc_ld_res_t Res;
-  esp_vec128_t TempQu; // Temporary variable
-  esp_vec128_t TempV0, TempV1, TempV2,
-      TempV3; // Temporary variables for QACC outputs
-  void *UpdatedPtr;
-
-  UpdatedPtr = __builtin_riscv_esp_vsmulas_u8_qacc_ld_incp_m(
-      QaccIn.v0, QaccIn.v1, QaccIn.v2, QaccIn.v3, Qx, Qy, Ptr, sel16, &TempQu,
-      &TempV0, &TempV1, &TempV2, &TempV3);
-  Res.Qu = TempQu;
-  Res.v0 = TempV0;
-  Res.v1 = TempV1;
-  Res.v2 = TempV2;
-  Res.v3 = TempV3;
-  Res.Ptr = UpdatedPtr;
-  return Res;
-}
 
 // ESP.MOVI.8.A.M / ESP.MOVI.16.A.M / ESP.MOVI.32.A.M - Extract element from
 // vector to scalar MOVI.A instructions extract elements from QR register
@@ -2116,17 +681,10 @@ esp_vsmulas_u8_qacc_ld_incp_m(esp_mov_qacc_res_t QaccIn, esp_vec128_t Qx,
 // - index: element index (i32, sel16 for 8/16-bit, sel4 for 32-bit)
 // Returns: extracted element (i32, zero-extended for 8/16-bit, direct for
 // 32-bit)
-static inline __attribute__((always_inline)) int32_t
-esp_movi_8_a_m(esp_vec128_t Qy, int sel16) {
-  return __builtin_riscv_esp_movi_8_a_m(Qy, sel16);
-}
 
-static inline __attribute__((always_inline)) int32_t
-esp_movi_16_a_m(esp_vec128_16_t Qy, int sel16) {
-  return __builtin_riscv_esp_movi_16_a_m(Qy, sel16);
-} // QACC_H: v32i8 (256-bit)  // QACC_L: v32i8 (256-bit)  // QACC_H[255:128]:
-  // v16i8 (128-bit)   // QACC_H[127:0]: v16i8 (128-bit)  // QACC_L[255:128]:
-  // v16i8 (128-bit)   // QACC_L[127:0]: v16i8 (128-bit)
+// QACC_H: v32i8 (256-bit)  // QACC_L: v32i8 (256-bit)  // QACC_H[255:128]:
+// v16i8 (128-bit)   // QACC_H[127:0]: v16i8 (128-bit)  // QACC_L[255:128]:
+// v16i8 (128-bit)   // QACC_L[127:0]: v16i8 (128-bit)
 
 // ESP.SRCMB builtin declarations - Shift Right and Saturate from QACC
 // All SRCMB variants use explicit QACC phantom operands (4x128-bit) for proper
@@ -2186,12 +744,9 @@ typedef esp_mov_qacc_res_t esp_vmulas_qacc_res_t;
 // QACC_L Returns 4x128-bit QACC directly (same as esp_mov_qacc_res_t)
 typedef esp_mov_qacc_res_t esp_vsmulas_qacc_res_t;
 
-static inline __attribute__((always_inline)) int32_t
-esp_movi_32_a_m(esp_vec128_32_t Qy, int sel4) {
-  return __builtin_riscv_esp_movi_32_a_m(Qy, sel4);
-} // QACC_H: v32i8 (256-bit)  // QACC_L: v32i8 (256-bit)  // QACC_H[255:128]:
-  // v16i8 (128-bit)   // QACC_H[127:0]: v16i8 (128-bit)  // QACC_L[255:128]:
-  // v16i8 (128-bit)   // QACC_L[127:0]: v16i8 (128-bit)
+// QACC_H: v32i8 (256-bit)  // QACC_L: v32i8 (256-bit)  // QACC_H[255:128]:
+// v16i8 (128-bit)   // QACC_H[127:0]: v16i8 (128-bit)  // QACC_L[255:128]:
+// v16i8 (128-bit)   // QACC_L[127:0]: v16i8 (128-bit)
 
 // ESP.SRCMB builtin declarations - Shift Right and Saturate from QACC
 // All SRCMB variants use explicit QACC phantom operands (4x128-bit) for proper
@@ -3494,19 +2049,10 @@ typedef esp_mov_qacc_res_t esp_vmulas_qacc_res_t;
 typedef esp_mov_qacc_res_t esp_vsmulas_qacc_res_t;
 
 // Helper function definitions - always_inline wrappers
-static inline __attribute__((always_inline)) esp_vec128_t
-esp_src_q_m(esp_vec128_t Qy, esp_vec128_t Qw) {
-  return __builtin_riscv_esp_src_q_m(Qy, Qw, 0U);
-}
 
-static inline __attribute__((always_inline)) esp_vec128_16_t
-esp_srcmb_s16_q_qacc_m(esp_vec128_16_t Qw, int Sel2) {
-  esp_vec128_t zero = {0};
-  return __builtin_riscv_esp_srcmb_s16_q_qacc_m(zero, zero, zero, zero, Qw,
-                                                Sel2);
-} // QACC_H: v32i8 (256-bit)  // QACC_L: v32i8 (256-bit)  // QACC_H[255:128]:
-  // v16i8 (128-bit)   // QACC_H[127:0]: v16i8 (128-bit)  // QACC_L[255:128]:
-  // v16i8 (128-bit)   // QACC_L[127:0]: v16i8 (128-bit)
+// QACC_H: v32i8 (256-bit)  // QACC_L: v32i8 (256-bit)  // QACC_H[255:128]:
+// v16i8 (128-bit)   // QACC_H[127:0]: v16i8 (128-bit)  // QACC_L[255:128]:
+// v16i8 (128-bit)   // QACC_L[127:0]: v16i8 (128-bit)
 
 // ESP.SRCMB builtin declarations - Shift Right and Saturate from QACC
 // All SRCMB variants use explicit QACC phantom operands (4x128-bit) for proper
@@ -3565,28 +2111,6 @@ typedef esp_mov_qacc_res_t esp_vmulas_qacc_res_t;
 // ESP.VSMULAS result structure - Scalar Multiply-accumulate with QACC_H and
 // QACC_L Returns 4x128-bit QACC directly (same as esp_mov_qacc_res_t)
 typedef esp_mov_qacc_res_t esp_vsmulas_qacc_res_t;
-
-static inline __attribute__((always_inline)) esp_vec128_t
-esp_srcmb_s8_q_qacc_m(esp_vec128_t Qw, int Sel2) {
-  esp_vec128_t zero = {0};
-  return __builtin_riscv_esp_srcmb_s8_q_qacc_m(zero, zero, zero, zero, Qw,
-                                               Sel2);
-}
-
-static inline __attribute__((always_inline)) void *
-esp_srcq_128_st_incp_m(esp_vec128_t Qy, esp_vec128_t Qw, void *Ptr) {
-  return __builtin_riscv_esp_srcq_128_st_incp_m(Qy, Qw, Ptr, 0U);
-}
-
-static inline __attribute__((always_inline)) void *
-esp_srcxxp_2q_m(esp_vec128_t Qy, esp_vec128_t Qw, void *Ptr, int offset) {
-  return __builtin_riscv_esp_srcxxp_2q_m(Qy, Qw, Ptr, offset);
-}
-
-static inline __attribute__((always_inline)) void *
-esp_slcxxp_2q_m(esp_vec128_t Qy, esp_vec128_t Qw, void *Ptr, int offset) {
-  return __builtin_riscv_esp_slcxxp_2q_m(Qy, Qw, Ptr, offset);
-}
 
 // ESP.SRCMB builtin declarations - Shift Right and Saturate from QACC
 // All SRCMB variants use explicit QACC phantom operands (4x128-bit) for proper
@@ -3847,70 +2371,8 @@ typedef esp_mov_qacc_res_t
 
 // Helper function definitions - always_inline wrappers
 // VZIP/VUNZIP - Vector Zip/Unzip operations
-static inline __attribute__((always_inline)) void
-esp_vzip_8_m(esp_vec128_t Qx, esp_vec128_t Qy, esp_vec128_t *qx_out,
-             esp_vec128_t *qy_out) {
-  __builtin_riscv_esp_vzip_8_m(Qx, Qy, qx_out, qy_out);
-}
-
-static inline __attribute__((always_inline)) void
-esp_vzip_16_m(esp_vec128_16_t Qx, esp_vec128_16_t Qy, esp_vec128_16_t *qx_out,
-              esp_vec128_16_t *qy_out) {
-  __builtin_riscv_esp_vzip_16_m(Qx, Qy, qx_out, qy_out);
-}
-
-static inline __attribute__((always_inline)) void
-esp_vzip_32_m(esp_vec128_32_t Qx, esp_vec128_32_t Qy, esp_vec128_32_t *qx_out,
-              esp_vec128_32_t *qy_out) {
-  __builtin_riscv_esp_vzip_32_m(Qx, Qy, qx_out, qy_out);
-}
-
-static inline __attribute__((always_inline)) void
-esp_vunzip_8_m(esp_vec128_t Qx, esp_vec128_t Qy, esp_vec128_t *qx_out,
-               esp_vec128_t *qy_out) {
-  __builtin_riscv_esp_vunzip_8_m(Qx, Qy, qx_out, qy_out);
-}
-
-static inline __attribute__((always_inline)) void
-esp_vunzip_16_m(esp_vec128_16_t Qx, esp_vec128_16_t Qy, esp_vec128_16_t *qx_out,
-                esp_vec128_16_t *qy_out) {
-  __builtin_riscv_esp_vunzip_16_m(Qx, Qy, qx_out, qy_out);
-}
-
-static inline __attribute__((always_inline)) void
-esp_vunzip_32_m(esp_vec128_32_t Qx, esp_vec128_32_t Qy, esp_vec128_32_t *qx_out,
-                esp_vec128_32_t *qy_out) {
-  __builtin_riscv_esp_vunzip_32_m(Qx, Qy, qx_out, qy_out);
-}
 
 // VZIPT/VUNZIPT - Vector zip/unzip transpose (3 vectors)
-static inline __attribute__((always_inline)) void
-esp_vzipt_8_m(esp_vec128_t Qx, esp_vec128_t Qy, esp_vec128_t Qw,
-              esp_vec128_t *qx_out, esp_vec128_t *qy_out,
-              esp_vec128_t *qw_out) {
-  __builtin_riscv_esp_vzipt_8_m(Qx, Qy, Qw, qx_out, qy_out, qw_out);
-}
-
-static inline __attribute__((always_inline)) void
-esp_vzipt_16_m(esp_vec128_16_t Qx, esp_vec128_16_t Qy, esp_vec128_16_t Qw,
-               esp_vec128_16_t *qx_out, esp_vec128_16_t *qy_out,
-               esp_vec128_16_t *qw_out) {
-  __builtin_riscv_esp_vzipt_16_m(Qx, Qy, Qw, qx_out, qy_out, qw_out);
-}
-
-static inline __attribute__((always_inline)) void
-esp_vunzipt_8_m(esp_vec128_t Qx, esp_vec128_t Qy, esp_vec128_t Qw,
-                esp_vec128_t *qx_out, esp_vec128_t *qy_out,
-                esp_vec128_t *qw_out) {
-  __builtin_riscv_esp_vunzipt_8_m(Qx, Qy, Qw, qx_out, qy_out, qw_out);
-}
-
-static inline __attribute__((always_inline)) void
-esp_vunzipt_16_m(esp_vec128_16_t Qx, esp_vec128_16_t Qy, esp_vec128_16_t Qw,
-                 esp_vec128_16_t *qx_out, esp_vec128_16_t *qy_out,
-                 esp_vec128_16_t *qw_out) {
-  __builtin_riscv_esp_vunzipt_16_m(Qx, Qy, Qw, qx_out, qy_out, qw_out);
-}
 
 #if defined(__cplusplus)
 }
