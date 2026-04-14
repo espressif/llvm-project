@@ -868,8 +868,7 @@ RISCVESP32P4LoopVersioningPass::run(Function &F, FunctionAnalysisManager &FAM) {
     if (L->isInvalid())
       continue;
 
-    SmallVector<Loop *, 4> PostOrderWorklist(post_order(L));
-    for (Loop *SubL : PostOrderWorklist) {
+    for (Loop *SubL : post_order(L)) {
       if (SubL->isInvalid())
         continue;
       Changed |= runOnLoop(SubL, AA, LI, DT, SE);
