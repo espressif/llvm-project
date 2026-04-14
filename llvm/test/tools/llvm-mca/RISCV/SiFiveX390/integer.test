@@ -78,8 +78,8 @@
 # CHECK-NEXT:  1      1     1.00           *             1     VLEN1024X300SiFive7PipeA,VLEN1024X300SiFive7PipeAB SD                 sd	t0, 0(a0)
 # CHECK-NEXT:  1      1     1.00                  U      1     VLEN1024X300SiFive7PipeAB,VLEN1024X300SiFive7PipeB CSRRW              csrrw	t0, 4095, t1
 # CHECK-NEXT:  1      1     1.00                  U      1     VLEN1024X300SiFive7PipeAB,VLEN1024X300SiFive7PipeB CSRRS              csrrs	s3, fflags, s5
-# CHECK-NEXT:  1      1     1.00                  U      1     VLEN1024X300SiFive7PipeAB,VLEN1024X300SiFive7PipeB CSRRC              csrrc	sp, 0, ra
-# CHECK-NEXT:  1      1     1.00                  U      1     VLEN1024X300SiFive7PipeAB,VLEN1024X300SiFive7PipeB CSRRWI             csrrwi	a5, 0, 0
+# CHECK-NEXT:  1      1     1.00                  U      1     VLEN1024X300SiFive7PipeAB,VLEN1024X300SiFive7PipeB CSRRC              csrrc	sp, ustatus, ra
+# CHECK-NEXT:  1      1     1.00                  U      1     VLEN1024X300SiFive7PipeAB,VLEN1024X300SiFive7PipeB CSRRWI             csrrwi	a5, ustatus, 0
 # CHECK-NEXT:  1      1     1.00                  U      1     VLEN1024X300SiFive7PipeAB,VLEN1024X300SiFive7PipeB CSRRSI             csrrsi	t2, 4095, 31
 # CHECK-NEXT:  1      1     1.00                  U      1     VLEN1024X300SiFive7PipeAB,VLEN1024X300SiFive7PipeB CSRRCI             csrrci	t1, sscratch, 5
 
@@ -152,7 +152,7 @@
 # CHECK-NEXT:  -      -     1.00    -      -      -      -      -      -     sd	t0, 0(a0)
 # CHECK-NEXT:  -      -      -     1.00    -      -      -      -      -     csrrw	t0, 4095, t1
 # CHECK-NEXT:  -      -      -     1.00    -      -      -      -      -     csrrs	s3, fflags, s5
-# CHECK-NEXT:  -      -      -     1.00    -      -      -      -      -     csrrc	sp, 0, ra
-# CHECK-NEXT:  -      -      -     1.00    -      -      -      -      -     csrrwi	a5, 0, 0
+# CHECK-NEXT:  -      -      -     1.00    -      -      -      -      -     csrrc	sp, ustatus, ra
+# CHECK-NEXT:  -      -      -     1.00    -      -      -      -      -     csrrwi	a5, ustatus, 0
 # CHECK-NEXT:  -      -      -     1.00    -      -      -      -      -     csrrsi	t2, 4095, 31
 # CHECK-NEXT:  -      -      -     1.00    -      -      -      -      -     csrrci	t1, sscratch, 5
