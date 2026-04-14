@@ -72,7 +72,7 @@ check_commit_message:
       - ${DIST_DIR}/
       - ${BUILD_DIR}/build/*.log
     when: always
-    expire_in: 1 day
+    expire_in: 3 days
   dependencies: []
   retry: 2
   variables:
@@ -248,7 +248,7 @@ build_and_test:
       - ${DIST_DIR}/
       - ${BUILD_DIR}/*.log
     when: always
-    expire_in: 1 day
+    expire_in: 3 days
   retry: 1
   variables:
     PACK_TOOL: "tar cJhvf"
