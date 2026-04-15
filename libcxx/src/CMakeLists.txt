@@ -171,6 +171,7 @@ split_list(LIBCXX_LINK_FLAGS)
 
 include(FindLibcCommonUtils)
 
+if (LIBCXX_ENABLE_SHARED)
 # Build the shared library.
 add_library(cxx_shared SHARED ${LIBCXX_SOURCES} ${LIBCXX_HEADERS})
 target_include_directories(cxx_shared PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
@@ -288,6 +289,7 @@ if (LIBCXX_HERMETIC_STATIC_LIBRARY)
   # _LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS can be defined in __config_site
   # too. Define it in the same way here, to avoid redefinition conflicts.
   target_compile_definitions(cxx_static PRIVATE _LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS=)
+endif()
 endif()
 
 # Attempt to merge the libc++.a archive and the ABI library archive into one.
