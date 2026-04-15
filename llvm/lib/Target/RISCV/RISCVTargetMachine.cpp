@@ -745,7 +745,15 @@ void RISCVTargetMachine::registerPassBuilderCallbacks(PassBuilder &PB) {
         }
         return false;
       });
-
+  PB.registerPipelineParsingCallback(
+      [](StringRef Name, ModulePassManager &MPM,
+         ArrayRef<PassBuilder::PipelineElement>) {
+        if (Name == "riscv-dotprod-conditional-loop-extractor") {
+          MPM.addPass(RISCVConditionalLoopExtractorPass());
+          return true;
+        }
+        return false;
+      });
   PB.registerOptimizerLastEPCallback([](ModulePassManager &PM,
                                         OptimizationLevel Level,
                                         ThinOrFullLTOPhase Phase) {
