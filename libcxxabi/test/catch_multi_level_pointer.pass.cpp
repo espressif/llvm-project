@@ -12,6 +12,9 @@
 // memory and this test requires almost 5 MB
 // UNSUPPORTED: LIBCXX-PICOLIBC-FIXME
 
+// ESP: Exceeds available memory
+// UNSUPPORTED: target={{.*}}-esp-elf
+
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>

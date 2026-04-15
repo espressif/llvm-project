@@ -9,6 +9,8 @@
 // Test that the default verbose termination function aborts the program.
 // XFAIL: availability-verbose_abort-missing
 
+// UNSUPPORTED: LIBCXX-ESP-FIXME
+
 #include <__verbose_abort>
 #include <csignal>
 #include <cstdlib>

@@ -11,6 +11,8 @@
 // UNSUPPORTED: clang-modules-build
 // GCC complains about "ambiguating" `__builtin_memmove`.
 // UNSUPPORTED: gcc
+// ESP: Exceeds available memory
+// UNSUPPORTED: target={{.*}}-esp-elf
 
 // <algorithm>
 

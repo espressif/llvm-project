@@ -161,7 +161,7 @@ void test() {
   static_assert(std::atomic<void*>::is_always_lock_free == (2 == ATOMIC_POINTER_LOCK_FREE), "");
   static_assert(std::atomic<std::nullptr_t>::is_always_lock_free == (2 == ATOMIC_POINTER_LOCK_FREE), "");
 
-#if TEST_STD_VER >= 20
+#if TEST_STD_VER >= 20 && !defined(_LIBCPP_NO_LOCK_FREE_TYPES)
   static_assert(std::atomic_signed_lock_free::is_always_lock_free, "");
   static_assert(std::atomic_unsigned_lock_free::is_always_lock_free, "");
 #endif
