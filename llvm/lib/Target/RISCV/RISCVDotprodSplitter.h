@@ -7,11 +7,11 @@
 //===----------------------------------------------------------------------===//
 //
 // This file declares the RISCVDotprodSplitterPass class.
-// This pass identifies a specific pattern often associated with calls to inner
-// dot product computation functions, where the result is passed via a pointer
-// argument (typically an alloca in the caller). The pattern involves a
-// sequence of lifetime start, the call instruction, a load from the result
-// pointer, and lifetime end, all within the same basic block.
+// This pass identifies calls to inner dot-product helpers that pass the
+// running accumulator through a pointer (usually an entry-block alloca). The
+// expected caller shape is: optional @llvm.lifetime.start, the call, a single
+// reload from that slot, optional @llvm.lifetime.end, in one basic block; if
+// the reload was sunk to the unique successor, the pass can hoist it back.
 //
 // If this unique pattern is found, the pass restructures the control flow
 // graph (CFG) to create specialized paths for common constant "step" or
@@ -57,16 +57,24 @@ struct RISCVDotprodSplitterPass
 
   static bool isRequired() { return true; }
 
-  /// Check if the function contains patterns that can be processed by this
-  /// pass.
+  /// True if the function has a nested loop that looks like a dot-product inner
+  /// loop (legacy two-load \c mul, offset variant, or Clang-style MAC with
+  /// multiple affine loads). Used by the conditional loop extractor gate and
+  /// related tooling.
   static bool hasProcessablePattern(Function &F);
 };
 
 /// Conditional LoopExtractor Pass that only runs when dotprod patterns exist.
 ///
-/// This pass runs LoopExtractor only on modules that contain processable
-/// dot product patterns, avoiding unnecessary loop extraction on modules
-/// that won't benefit from the dotprod splitter optimization.
+/// This pass runs selective CodeExtractor-based loop extraction only on
+/// modules that contain processable dot product patterns (same heuristic as
+/// \c RISCVDotprodSplitterPass::hasProcessablePattern), avoiding work on other
+/// modules. Enable with the same \c -riscv-dotprod-splitter flag as the
+/// splitter pass.
+///
+/// Pipeline name (RISC-V target): \c riscv-dotprod-conditional-loop-extractor
+/// (module pass). Run before \c riscv-dotprod-splitter when extracting inner
+/// loops from Clang output is required.
 struct RISCVConditionalLoopExtractorPass
     : public PassInfoMixin<RISCVConditionalLoopExtractorPass> {
 

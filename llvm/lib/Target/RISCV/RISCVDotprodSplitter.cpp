@@ -13,6 +13,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "RISCVDotprodSplitter.h"
+#include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/Statistic.h"
 #include "llvm/Analysis/AssumptionCache.h"
@@ -675,6 +676,46 @@ static bool isValidDotProductMultiply(Instruction &MulInst, Loop *L,
   return true;
 }
 
+/// Inner loops produced by Clang for stepped image/filter dot products often
+/// use \c mul(iv, invariant_step) for GEP indices and a separate integer MAC
+/// (\c mul(add(...), ...) -> widen -> add to i64 phi). That shape does not
+/// satisfy \c isValidDotProductMultiply (two load operands). For extraction we
+/// only need a recognizable MAC plus multiple affine loads in the same loop.
+static bool hasMacMulWithAffineLoadsPattern(Loop *L, ScalarEvolution &SE) {
+  bool HasMacMul = false;
+  unsigned AffineLoadCount = 0;
+  for (BasicBlock *BB : L->getBlocks()) {
+    for (Instruction &I : *BB) {
+      if (I.getOpcode() == Instruction::Mul && hasAccumulationPattern(I)) {
+        HasMacMul = true;
+        LLVM_DEBUG(dbgs() << "Found MAC-style multiply for extraction gate: "
+                          << I << "\n");
+      }
+      auto *Ld = dyn_cast<LoadInst>(&I);
+      if (!Ld)
+        continue;
+      if (!isSimpleForwardAccess(Ld, L, SE))
+        continue;
+      ++AffineLoadCount;
+      LLVM_DEBUG(dbgs() << "  Affine sequential load: " << *Ld << "\n");
+    }
+  }
+  if (!HasMacMul) {
+    LLVM_DEBUG(dbgs() << "No mul with accumulation chain in loop\n");
+    return false;
+  }
+
+  if (AffineLoadCount < 2) {
+    LLVM_DEBUG(dbgs() << "MAC gate: need >= 2 affine loads, have "
+                      << AffineLoadCount << "\n");
+    return false;
+  }
+
+  LLVM_DEBUG(dbgs() << "Matched Clang-style dotprod loop (MAC + "
+                    << AffineLoadCount << " affine loads)\n");
+  return true;
+}
+
 // Check for multiply-accumulate pattern (refactored for better readability)
 static bool hasMultiplyAccumulatePattern(Loop *L, ScalarEvolution &SE) {
   LLVM_DEBUG(
@@ -691,7 +732,11 @@ static bool hasMultiplyAccumulatePattern(Loop *L, ScalarEvolution &SE) {
   }
 
   LLVM_DEBUG(dbgs() << "No standard pattern found, checking offset pattern\n");
-  return hasOffsetDotProductPattern(L);
+  if (hasOffsetDotProductPattern(L))
+    return true;
+
+  LLVM_DEBUG(dbgs() << "Checking Clang-style MAC + affine loads pattern\n");
+  return hasMacMulWithAffineLoadsPattern(L, SE);
 }
 
 // Conditional LoopExtractor implementation
@@ -985,15 +1030,21 @@ static bool hasNestedLoopsWithProcessablePatterns(Function &F) {
 
   ScalarEvolution SE(F, TLI, AC, DT, LI);
 
-  // Check nested loops for multiply-accumulate patterns
-  for (Loop *L : LI.getLoopsInPreorder()) {
-    if (!L->getSubLoops().empty()) {
-      // Has nested loops, check if inner loops have multiply-accumulate pattern
-      for (Loop *InnerL : L->getSubLoops()) {
-        if (hasMultiplyAccumulatePattern(InnerL, SE)) {
-          return true;
-        }
-      }
+  // Walk every inner loop (descendant of a top-level loop) once; deeper nests
+  // may hold the per-x dot body.
+  SmallPtrSet<Loop *, 16> Seen;
+  SmallVector<Loop *, 8> Stack;
+  for (Loop *Top : LI) {
+    for (Loop *SL : Top->getSubLoops())
+      Stack.push_back(SL);
+    while (!Stack.empty()) {
+      Loop *Cur = Stack.pop_back_val();
+      if (!Seen.insert(Cur).second)
+        continue;
+      if (hasMultiplyAccumulatePattern(Cur, SE))
+        return true;
+      for (Loop *Child : Cur->getSubLoops())
+        Stack.push_back(Child);
     }
   }
 
