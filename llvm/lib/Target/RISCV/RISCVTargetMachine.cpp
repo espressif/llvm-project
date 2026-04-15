@@ -18,6 +18,7 @@
 #include "RISCVEsp32P4MemIntrin.h"
 #include "RISCVIntLoopUnrollAndRemainder.h"
 #include "RISCVESP32P4ConditionSplit.h"
+#include "RISCVESP32P4FunctionSpecialization.h"
 #include "RISCVESP32P4LoopVectorizeExtractor.h"
 #include "RISCVDotprodSplitter.h"
 #include "RISCVLoopUnrollAndRemainder.h"
@@ -707,6 +708,10 @@ void RISCVTargetMachine::registerPassBuilderCallbacks(PassBuilder &PB) {
         }
         if (Name == "riscv-loop-unroll-and-remainder") {
           FPM.addPass(RISCVLoopUnrollAndRemainderPass());
+          return true;
+        }
+        if (Name == "riscv-esp32p4-function-specialization") {
+          FPM.addPass(RISCVESP32P4FunctionSpecializationPass());
           return true;
         }
         if (Name == "riscv-esp32-p4-mem-intrin") {
