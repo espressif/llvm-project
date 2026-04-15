@@ -204,6 +204,7 @@ if (LIBCXXABI_SUPPORTS_SHARED_LIBRARY)
     target_add_compile_flags_if_supported(cxxabi_shared_objects PRIVATE -fvisibility=hidden)
   endif()
 
+  if (LIBCXXABI_ENABLE_SHARED)
   add_library(cxxabi_shared SHARED)
   set_target_properties(cxxabi_shared
     PROPERTIES
@@ -227,6 +228,7 @@ if (LIBCXXABI_SUPPORTS_SHARED_LIBRARY)
   target_link_libraries(cxxabi_shared
     PUBLIC cxxabi_shared_objects runtimes-libc-shared
     PRIVATE ${LIBCXXABI_LIBRARIES})
+  endif()
 
   # TODO: Move this to libc++'s HandleLibCXXABI.cmake since this is effectively trying to control
   #       what libc++ re-exports.

@@ -148,6 +148,7 @@ if (LIBUNWIND_SUPPORTS_SHARED_LIBRARY)
     set_target_properties(unwind_shared_objects PROPERTIES POSITION_INDEPENDENT_CODE ON) # must set manually because it's an object library
   endif()
 
+  if (LIBUNWIND_ENABLE_SHARED)
   add_library(unwind_shared SHARED)
   target_link_libraries(unwind_shared PUBLIC unwind_shared_objects runtimes-libc-shared)
   set_target_properties(unwind_shared
@@ -159,7 +160,8 @@ if (LIBUNWIND_SUPPORTS_SHARED_LIBRARY)
       VERSION     "${LIBUNWIND_LIBRARY_VERSION}"
       SOVERSION   "1"
   )
-endif(LIBUNWIND_SUPPORTS_SHARED_LIBRARY)
+  endif()
+endif()
 
 # Build the static library.
 add_library(unwind_static_objects OBJECT EXCLUDE_FROM_ALL ${LIBUNWIND_SOURCES} ${LIBUNWIND_HEADERS})
