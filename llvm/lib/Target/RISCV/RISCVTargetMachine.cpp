@@ -17,6 +17,7 @@
 #include "RISCVESP32P4LoopVersioning.h"
 #include "RISCVEsp32P4MemIntrin.h"
 #include "RISCVIntLoopUnrollAndRemainder.h"
+#include "RISCVESP32P4LoopVectorizeExtractor.h"
 #include "RISCVDotprodSplitter.h"
 #include "RISCVLoopUnrollAndRemainder.h"
 #include "RISCVMachineFunctionInfo.h"
@@ -721,6 +722,10 @@ void RISCVTargetMachine::registerPassBuilderCallbacks(PassBuilder &PB) {
         }
         if (Name == "riscv-esp32p4-loop-versioning") {
           FPM.addPass(RISCVESP32P4LoopVersioningPass());
+          return true;
+        }
+        if (Name == "riscv-esp32p4-loop-vectorize-extractor") {
+          FPM.addPass(RISCVESP32P4LoopVectorizeExtractorPass());
           return true;
         }
         return false;
