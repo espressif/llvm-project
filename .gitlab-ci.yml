@@ -23,6 +23,8 @@ variables:
   DIST_DIR: "dist"
   BUILD_DIR: "build"
   GITLAB_SERVER_URL: https://gitlab-ci-token:${CI_JOB_TOKEN}@${GITLAB_HTTPS_SERVER}
+  CCACHE_DIR: ${CI_PROJECT_DIR}/.ccache
+  CCACHE_MAXSIZE: 10G
 
 workflow:
   rules:
@@ -88,7 +90,13 @@ check_commit_message:
     PACK_TOOLCHAIN: "ON"
     PACK_STANDALONE_LIBS: "ON"
     PACK_TARGET_LIBS: "OFF"
+  cache:
+    key: ccache-$CI_JOB_NAME
+    paths:
+      - $CCACHE_DIR
   before_script:
+    - ccache --zero-stats || true
+    - ccache --show-stats || true
     - git config --global --add safe.directory $CI_PROJECT_DIR
   after_script:
     # help to identify that build failed due to OOM
@@ -100,6 +108,7 @@ check_commit_message:
         [ ! -f "${BUILD_DIR}/lld-tests.log" ] || grep -i "internal compiler error\|Killed" ${BUILD_DIR}/lld-tests.log || true
         [ ! -f "${BUILD_DIR}/pkg-tests.log" ] || grep -i "internal compiler error\|Killed" ${BUILD_DIR}/pkg-tests.log || true
       fi
+    - ccache --show-stats
   script:
     - *get_toolchain_build_scripts
     - LLVM_PROJECT_PATH=$PWD
@@ -131,6 +140,11 @@ check_commit_message:
           export USE_RTLIB="";
         fi
       fi
+    - AUX_BUILD_ARGS="";
+    - >
+      if [ "${ESP_FORCE_LLVM_PARALLEL_COMPILE_JOBS:-}" != "" ]; then
+        AUX_BUILD_ARGS="${AUX_BUILD_ARGS} -DLLVM_PARALLEL_COMPILE_JOBS=${ESP_FORCE_LLVM_PARALLEL_COMPILE_JOBS}";
+      fi
     # build toolchain core w/o any libs and GNU components
     - cmake $PWD/esp-llvm-embedded-toolchain -GNinja
       -DFETCHCONTENT_SOURCE_DIR_LLVMPROJECT=${LLVM_PROJECT_PATH}
@@ -150,10 +164,10 @@ check_commit_message:
       -DLLVM_TOOLCHAIN_PACKAGE_NAME="esp-clang"
       -DLLVM_USE_LINKER=${USE_LINKER}
       -DLLVM_PARALLEL_LINK_JOBS=${ESP_LLVM_PARALLEL_LINK_JOBS}
-      -DLLVM_PARALLEL_COMPILE_JOBS=${ESP_LLVM_PARALLEL_COMPILE_JOBS}
       -DCLANG_REPOSITORY_STRING="${GH_REPO_HTTPS}"
       -DCPACK_ARCHIVE_THREADS=0
       --install-prefix=${INSTALL_PATH}
+      ${AUX_BUILD_ARGS}
       -B ${BUILD_PATH} 2>&1 > ${BUILD_PATH}/build.log
     # Do not run unit tests for cross-builds.
     # Run as non-root user because permission tests fail when run by root.
@@ -162,6 +176,7 @@ check_commit_message:
         export CUR_USER=$(whoami);
         useradd -m test_runner;
         chown -R test_runner ${BUILD_PATH};
+        chown -R test_runner ${CCACHE_DIR};
         runuser -u test_runner -- git config --global --add safe.directory $CI_PROJECT_DIR;
         chown -R test_runner $PWD/esp-llvm-embedded-toolchain;
         runuser -u test_runner -- git config --global --add safe.directory $PWD/esp-llvm-embedded-toolchain;
@@ -191,6 +206,7 @@ check_commit_message:
         fi
         chown -R ${CUR_USER} $PWD/esp-llvm-embedded-toolchain;
         chown -R ${CUR_USER} ${BUILD_PATH};
+        chown -R ${CUR_USER} ${CCACHE_DIR};
       fi
     # pack distro
     - mkdir -p ${PWD}/${DIST_DIR}
@@ -254,7 +270,13 @@ build_and_test:
   retry: 1
   variables:
     PACK_TOOL: "tar cJhvf"
+  cache:
+    key: ccache-$CI_JOB_NAME
+    paths:
+      - $CCACHE_DIR
   before_script:
+    - ccache --zero-stats || true
+    - ccache --show-stats || true
     - git config --global --add safe.directory $CI_PROJECT_DIR
   after_script:
     # help to identify that build failed due to OOM
@@ -264,10 +286,16 @@ build_and_test:
         [ ! -f "${BUILD_DIR}/tests.log" ] || grep -i "internal compiler error\|Killed" ${BUILD_DIR}/tests.log || true
         [ ! -f "${BUILD_DIR}/lld-tests.log" ] || grep -i "internal compiler error\|Killed" ${BUILD_DIR}/lld-tests.log || true
       fi
+    - ccache --show-stats
   script:
     - BUILD_PATH=$PWD/${BUILD_DIR}
     - LLVM_PROJECT_PATH=$PWD
     - mkdir -p ${BUILD_PATH}
+    - AUX_BUILD_ARGS="";
+    - >
+      if [ "${ESP_FORCE_LLVM_PARALLEL_COMPILE_JOBS:-}" != "" ]; then
+        AUX_BUILD_ARGS="${AUX_BUILD_ARGS} -DLLVM_PARALLEL_COMPILE_JOBS=${ESP_FORCE_LLVM_PARALLEL_COMPILE_JOBS}";
+      fi
     - cmake -G Ninja
       -S llvm
       -DLLVM_ENABLE_PROJECTS="clang;lld;clang-tools-extra"
@@ -277,14 +305,17 @@ build_and_test:
       -DLLDB_INCLUDE_TESTS=OFF
       -DLLVM_TARGETS_TO_BUILD="X86;RISCV"
       -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=Xtensa
-      -DLLVM_USE_LINKER="gold"
+      -DCMAKE_C_COMPILER_LAUNCHER=ccache
+      -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+      -DLLVM_USE_LINKER=lld
       -DLLVM_PARALLEL_LINK_JOBS=${ESP_LLVM_PARALLEL_LINK_JOBS}
-      -DLLVM_PARALLEL_COMPILE_JOBS=${ESP_LLVM_PARALLEL_COMPILE_JOBS}
       -DLLVM_FORCE_VC_REPOSITORY="${GH_REPO_HTTPS}"
+      ${AUX_BUILD_ARGS}
       -B ${BUILD_PATH} 2>&1 > ${BUILD_PATH}/build.log
     - export CUR_USER=$(whoami);
     - useradd -m test_runner;
     - chown -R test_runner ${BUILD_PATH};
+    - chown -R test_runner ${CCACHE_DIR};
     - runuser -u test_runner -- git config --global --add safe.directory $CI_PROJECT_DIR
     - echo "Run LLVM/Clang unit tests";
     - touch ${BUILD_PATH}/tests.log;
@@ -295,6 +326,7 @@ build_and_test:
     - chmod o+w ${BUILD_PATH}/lld-tests.log;
     - runuser -u test_runner -- ninja -C ${BUILD_PATH} check-lld 2>&1 > ${BUILD_PATH}/lld-tests.log;
     - chown -R ${CUR_USER} ${BUILD_PATH};
+    - chown -R ${CUR_USER} ${CCACHE_DIR};
     - mkdir -p ${PWD}/${DIST_DIR}
     - PIE_TEST_TOOLS_ARCH=${PWD}/${DIST_DIR}/pie_test_tools.tar.xz
     - pushd ${BUILD_PATH}
@@ -306,16 +338,19 @@ build_and_test:
 .build_linux-gnu_template:
   extends: .build_toolchain_template
   variables:
+    # we'd use LLD, but GCC in cross-build ARM docker images has problems with -fuse-ld=lld option
+    # So use gold linker instead
     USE_LINKER: "gold"
 
 # Actually this job builds and packs distro for x86_64-linux-gnu,
 # but also it runs package tests. So keep it in 'test_build' stage
 build_x86_64-linux-gnu:
   extends: .build_linux-gnu_template
-  stage: build
+  stage: test_build
   needs: []
   variables:
     CONF_HOST: "x86_64-linux-gnu"
+    USE_LINKER: "lld"
     # Build complete distro it is necessary for running package tests
     BUILD_TARGET_LIBS: "ON"
     RUN_TOOLCHAIN_TESTS: "ON"
@@ -328,7 +363,6 @@ build_x86_64-linux-gnu:
 build_target_libs:
   extends: .build_linux-gnu_template
   stage: build
-  needs: []
   variables:
     CONF_HOST: "x86_64-linux-gnu"
     PACK_TARGET_LIBS: "ON"
