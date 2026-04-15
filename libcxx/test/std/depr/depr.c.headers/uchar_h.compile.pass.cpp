@@ -15,6 +15,9 @@
 // XFAIL: LIBCXX-PICOLIBC-FIXME
 // XFAIL: LLVM-LIBC-FIXME
 
+// mbrtoc16 and mbrtoc32 are not defined.
+// UNSUPPORTED: LIBCXX-ESP-FIXME
+
 // <uchar.h>
 
 #include <uchar.h>

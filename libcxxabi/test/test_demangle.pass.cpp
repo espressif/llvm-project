@@ -8,6 +8,7 @@
 
 // This test is too big for most embedded devices.
 // XFAIL: LIBCXX-PICOLIBC-FIXME
+// UNSUPPORTED: target={{.*}}-esp-elf
 
 // This test exercises support for char array initializer lists added in
 // dd8b266ef.

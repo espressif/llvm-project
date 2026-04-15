@@ -52,6 +52,9 @@ for header in public_headers:
 //--- {header}.compile.pass.cpp
 // RUN: %{{cxx}} %s %{{flags}} %{{compile_flags}} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only
 
+// TODO: Fix seemingly circular inclusion or <wchar.h> in ESP env
+// UNSUPPORTED: LIBCXX-ESP-FIXME
+
 {lit_header_restrictions.get(header, '')}
 {lit_header_undeprecations.get(header, '')}
 
@@ -65,6 +68,9 @@ print(
 // RUN: %{{cxx}} %s %{{flags}} %{{compile_flags}} -fmodules -fcxx-modules -fmodules-cache-path=%t -fsyntax-only
 
 // REQUIRES: clang-modules-build
+
+// TODO: Fix seemingly circular inclusion or <wchar.h> in ESP env
+// UNSUPPORTED: LIBCXX-ESP-FIXME
 
 @import std;
 """

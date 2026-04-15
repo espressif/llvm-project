@@ -8,6 +8,9 @@
 
 // UNSUPPORTED: c++03, c++11
 
+// ESP: Exceeds available memory
+// UNSUPPORTED: target={{.*}}-esp-elf
+
 // <algorithm>
 
 // template<class Iter>

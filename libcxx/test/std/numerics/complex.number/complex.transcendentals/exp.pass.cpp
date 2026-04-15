@@ -9,6 +9,9 @@
 // Missing some long double math functions.
 // XFAIL: LLVM-LIBC-FIXME
 
+// TODO: Reccursive calls to expl in libm
+// UNSUPPORTED: LIBCXX-ESP-FIXME
+
 // <complex>
 
 // template<class T>
