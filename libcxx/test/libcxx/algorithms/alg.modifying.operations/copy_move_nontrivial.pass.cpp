@@ -10,6 +10,8 @@
 
 // GCC complains about "ambiguating" `__builtin_memmove`.
 // UNSUPPORTED: gcc
+// ESP: Exceeds available memory
+// UNSUPPORTED: target={{.*}}-esp-elf
 
 // In the modules build, adding another overload of `memmove` doesn't work.
 // ADDITIONAL_COMPILE_FLAGS: -fno-modules

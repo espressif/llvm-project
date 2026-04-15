@@ -10,6 +10,8 @@
 // UNSUPPORTED: LLVM-LIBC-FIXME
 
 // XFAIL: !has-1024-bit-atomics
+// TODO: This test unexpectedly passes in ESP test environment. Investigate and fix.
+// UNSUPPORTED: LIBCXX-ESP-FIXME
 
 // <atomic>
 

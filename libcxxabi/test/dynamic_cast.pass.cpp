@@ -9,6 +9,9 @@
 // This test requires PR33425, PR33487 and PR33439.
 // XFAIL: using-built-library-before-llvm-9
 
+// ESP: Exceeds available memory
+// UNSUPPORTED: target={{.*}}-esp-elf
+
 #include <cassert>
 
 // This test explicitly tests dynamic cast with types that have inaccessible

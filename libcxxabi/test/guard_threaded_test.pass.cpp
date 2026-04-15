@@ -10,6 +10,10 @@
 // UNSUPPORTED: no-threads
 // UNSUPPORTED: no-exceptions
 
+// Espressif builds libcxx with pthreads.
+// But for tests under QEMU simple pthread stubs are used for single-thread tests only.
+// UNSUPPORTED: LIBCXX-ESP-FIXME
+
 #define TESTING_CXA_GUARD
 #include "../src/cxa_guard_impl.h"
 #include <unordered_map>

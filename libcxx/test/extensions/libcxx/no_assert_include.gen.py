@@ -11,6 +11,9 @@
 
 # RUN: %{python} %s %{libcxx-dir}/utils
 
+# block Lit from interpreting a RUN/XFAIL/etc inside the generation script
+# END.
+
 import sys
 
 sys.path.append(sys.argv[1])
@@ -26,6 +29,11 @@ for header in public_headers:
     print(
         f"""\
 //--- {header}.compile.pass.cpp
+// TODO: Espressif newlib is configured with --enable-newlib-reent-check-verify
+//       which enables asserts in _REENT_CHECK macros defined in reent.h.
+//       So assert.h gets included into standard headers.
+// UNSUPPORTED: LIBCXX-ESP-FIXME
+
 {lit_header_undeprecations.get(header, '')}
 
 #include <{header}>
