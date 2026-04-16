@@ -9,7 +9,7 @@ target triple = "riscv32-esp-unknown-elf"
 ; Function Attrs: nofree norecurse nosync nounwind memory(argmem: readwrite)
 define dso_local noundef i32 @dspm_mult_s16_ansi(ptr nocapture noundef readonly %A, ptr nocapture noundef readonly %B, ptr nocapture noundef writeonly %C, i32 noundef %m, i32 noundef %n, i32 noundef %k, i32 noundef %shift) local_unnamed_addr #0 {
 ; CHECK-LABEL: define dso_local noundef i32 @dspm_mult_s16_ansi(
-; CHECK-SAME: ptr nocapture noundef readonly [[A:%.*]], ptr nocapture noundef readonly [[B:%.*]], ptr nocapture noundef writeonly [[C:%.*]], i32 noundef [[M:%.*]], i32 noundef [[N:%.*]], i32 noundef [[K:%.*]], i32 noundef [[SHIFT:%.*]]) local_unnamed_addr #[[ATTR0:[0-9]+]] {
+; CHECK-SAME: ptr noundef readonly captures(none) [[A:%.*]], ptr noundef readonly captures(none) [[B:%.*]], ptr noundef writeonly captures(none) [[C:%.*]], i32 noundef [[M:%.*]], i32 noundef [[N:%.*]], i32 noundef [[K:%.*]], i32 noundef [[SHIFT:%.*]]) local_unnamed_addr #[[ATTR0:[0-9]+]] {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
 ; CHECK-NEXT:    [[CMP100:%.*]] = icmp sgt i32 [[M]], 0
 ; CHECK-NEXT:    br i1 [[CMP100]], label %[[FOR_COND1_PREHEADER_LR_PH:.*]], label %[[FOR_COND_CLEANUP:.*]]
