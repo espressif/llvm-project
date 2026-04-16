@@ -1,4 +1,4 @@
-//===- RISCVESPOperands.td - ESP32P4 instruction operands -*- tblgen-*--===//
+//===- RISCVESPOperands.td - ESP32P4 instruction operands -*- tblgen-*--======//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -36,6 +36,9 @@ def offset_16_16: Immediate<i32, [{ return (Imm >= -128 && Imm <= 112) && ((Imm 
   let EncoderMethod = "getOffset_16_16OpValue";
   let DecoderMethod = "decodeOffset_16_16Operand";
 }
+
+// Offset_256_1 predicate - 8-bit signed immediate in the range [-128,127]
+def offset_256_1 : RISCVSImmOp<8>;
 
 // offset_256_8 predicate - 4-bit signed immediate in the range [-1024,1016] with an interval
 // of 8.
@@ -149,5 +152,25 @@ def shamt : RISCVUImmOp<6> {
     if (!MCOp.evaluateAsConstantImm(Imm))
       return false;
     return isUInt<}]# bitsNum #[{>(Imm) && Imm <= 32>;
+  }];
+}
+
+def sat : RISCVUImmOp<1> {
+  let PrintMethod = "printSATOperand";
+  let MCOperandPredicate = [{
+ . int64_t Imm;
+   if (!MCOp.evaluateAsConstantImm(Imm))
+      return false;
+    return isUInt<}]# bitsNum #[{>(Imm)>;
+  }];
+}
+
+def rm : RISCVUImmOp<3> {
+  let PrintMethod = "printRMOperand";
+  let MCOperandPredicate = [{
+ . int64_t Imm;
+   if (!MCOp.evaluateAsConstantImm(Imm))
+      return false;
+    return isUInt<}]# bitsNum #[{>(Imm)>;
   }];
 }
