@@ -249,9 +249,9 @@ Mappings:
 
 # Below is a workaround to support multilib for xespv variant
 # Currently it is added for ESP32-P4 arch only
-- Match: -march=rv32imafc_xespv
+- Match: -march=rv32imafc_xespv_xesploop
   Flags:
   - -march=rv32imafc_zicsr_zifencei
-- Match: -march=rv32imafc_zicsr_zifencei_xespv
+- Match: -march=rv32imafc_zicsr_zifencei_xespv_xesploop
   Flags:
   - -march=rv32imafc_zicsr_zifencei
