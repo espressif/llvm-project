@@ -27,7 +27,7 @@ variables:
 workflow:
   rules:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_TAG && $CI_COMMIT_TAG != "esp_main_synced"
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 .use_ci_tools: &use_ci_tools |
