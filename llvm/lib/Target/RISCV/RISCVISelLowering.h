@@ -29,6 +29,9 @@ struct RISCVRegisterInfo;
 class RISCVTargetLowering : public TargetLowering {
   const RISCVSubtarget &Subtarget;
 
+private:
+  void initializeESPVTargetLowering(const RISCVSubtarget &Subtarget);
+
 public:
   explicit RISCVTargetLowering(const TargetMachine &TM,
                                const RISCVSubtarget &STI);

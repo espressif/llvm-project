@@ -200,6 +200,7 @@ public:
 #include "RISCVGenDAGISel.inc"
 
 private:
+  bool selectESP(SDNode *Node);
   bool doPeepholeSExtW(SDNode *Node);
   bool doPeepholeMaskedRVV(MachineSDNode *Node);
   bool doPeepholeNoRegPassThru();
