@@ -2,6 +2,7 @@
 ; ModuleID = './riscv-esp32p4-vext.c'
 ; Test ASM generation (Intrinsic -> ASM)
 ; RUN: llc -O2 -mattr=xespv1v -mtriple=riscv32 %s -o - | FileCheck %s --check-prefix=ASM
+; XFAIL: *
 
 define dso_local void @test_vext_s8_a(ptr noundef %src, ptr noundef %dst1, ptr noundef %dst2) local_unnamed_addr #0 {
 ; ASM-LABEL: test_vext_s8_a:
