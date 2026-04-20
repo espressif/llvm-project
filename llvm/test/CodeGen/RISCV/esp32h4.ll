@@ -5,10 +5,12 @@
 define void @test(){
 ; CHECK-LABEL: test:
 ; CHECK:       # %bb.0:
-; CHECK-NEXT:    cm.push {ra, s0-s1}, -16
+; CHECK-NEXT:    addi sp, sp, -16
 ; CHECK-NEXT:    .cfi_def_cfa_offset 16
-; CHECK-NEXT:    .cfi_offset s0, -8
-; CHECK-NEXT:    .cfi_offset s1, -4
+; CHECK-NEXT:    sw s0, 12(sp) # 4-byte Folded Spill
+; CHECK-NEXT:    sw s1, 8(sp) # 4-byte Folded Spill
+; CHECK-NEXT:    .cfi_offset s0, -4
+; CHECK-NEXT:    .cfi_offset s1, -8
 ; CHECK-NEXT:    li a3, 8
 ; CHECK-NEXT:    li t3, 3
 ; CHECK-NEXT:    li t4, 12
@@ -77,7 +79,13 @@ define void @test(){
 ; CHECK-NEXT:    esp.msus16x2.ld zero, a5, a7, t2
 ; CHECK-NEXT:    esp.msus16x1.ld zero, a2, t4, t6
 ; CHECK-NEXT:    esp.msus16x2.st zero, a0, a0, a0
-; CHECK-NEXT:    cm.popret {ra, s0-s1}, 16
+; CHECK-NEXT:    lw s0, 12(sp) # 4-byte Folded Reload
+; CHECK-NEXT:    lw s1, 8(sp) # 4-byte Folded Reload
+; CHECK-NEXT:    .cfi_restore s0
+; CHECK-NEXT:    .cfi_restore s1
+; CHECK-NEXT:    addi sp, sp, 16
+; CHECK-NEXT:    .cfi_def_cfa_offset 0
+; CHECK-NEXT:    ret
 	tail call void @llvm.riscv.esp.muls16ix2(i32 12, i32 3, i32 30, i32 3, i32 8)
 	tail call void @llvm.riscv.esp.muls16x2(i32 2, i32 8, i32 0, i32 8)
 	%1 = tail call i32 @llvm.riscv.esp.muls32i(i32 10, i32 1, i32 14)
