@@ -2507,7 +2507,7 @@ static SDValue LowerLDQAXP(SDValue Op, SelectionDAG &DAG, unsigned ISDOpcode) {
 // ESPV intrinsic lowering for INTRINSIC_WO_CHAIN
 SDValue lowerESPVIntrinsicWOChain(SDValue Op, SelectionDAG &DAG,
                                   const RISCVSubtarget &Subtarget) {
-  if (!Subtarget.hasVendorXespv())
+  if (!Subtarget.hasVendorXespv1v())
     return SDValue();
 
   unsigned IntNo = Op.getConstantOperandVal(0);
