@@ -1,4 +1,4 @@
-let Features = "xespv2p1" in {
+let Features = "xespv1v" in {
 def esp_vcmulas_s16_qacc_h : RISCVBuiltin<"void(unsigned int, unsigned int)">;
 def esp_vcmulas_s16_qacc_h_ld_ip : RISCVBuiltin<"int(unsigned int, unsigned int, unsigned int, int, unsigned int)">;
 def esp_vcmulas_s16_qacc_h_ld_xp : RISCVBuiltin<"int(unsigned int, unsigned int, unsigned int, unsigned int, unsigned int)">;
