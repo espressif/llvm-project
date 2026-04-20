@@ -16,6 +16,9 @@
 
 #include "test_macros.h"
 
+// For RISCV newlib defines macros below only for chips with HW float support
+#if !defined(__riscv) || defined(__riscv_flen) || defined(__riscv_zfinx)
+
 #ifndef FE_DIVBYZERO
 #error FE_DIVBYZERO not defined
 #endif
@@ -73,3 +76,5 @@ ASSERT_SAME_TYPE(int, decltype(::fegetenv(&fenv)));
 ASSERT_SAME_TYPE(int, decltype(::feholdexcept(&fenv)));
 ASSERT_SAME_TYPE(int, decltype(::fesetenv(&fenv)));
 ASSERT_SAME_TYPE(int, decltype(::feupdateenv(&fenv)));
+
+#endif
