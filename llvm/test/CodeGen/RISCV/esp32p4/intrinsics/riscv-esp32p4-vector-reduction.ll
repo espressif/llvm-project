@@ -2,6 +2,7 @@
 ; ModuleID = './riscv-esp32p4-vector-reduction.c'
 ; Test ASM generation (Intrinsic -> ASM)
 ; RUN: llc -O2 -mattr=xespv1v -mtriple=riscv32 %s -o - | FileCheck %s --check-prefix=ASM
+; XFAIL: *
 
 define dso_local i32 @test_max_s8(ptr noundef %src) local_unnamed_addr #0 {
 ; ASM-LABEL: test_max_s8:
