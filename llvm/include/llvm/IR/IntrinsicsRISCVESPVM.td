@@ -15,6 +15,29 @@ def int_riscv_esp_ld_128_usar_ip_m : Intrinsic<[llvm_v16i8_ty, llvm_ptr_ty, llvm
                                          [llvm_ptr_ty, llvm_i32_ty], 
                                          [IntrReadMem, IntrArgMemOnly]>;
 
+// ESP.LD.UA.STATE.IP (_m version) - Load 128-bit data to UA_STATE[127:0]
+// Returns: updated pointer + new UA_STATE (128-bit)
+// Parameters: [current UA_STATE (passthru), pointer, immediate offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_ld_ua_state_ip_m : Intrinsic<
+    [llvm_v16i8_ty, llvm_ptr_ty],        // Returns: new UA_STATE (128-bit) + pointer
+    [llvm_v16i8_ty,                       // Current UA_STATE (passthru)
+     llvm_ptr_ty,                         // pointer
+     llvm_i32_ty],                        // offset
+    [IntrReadMem, IntrArgMemOnly]>;       // No IntrHasSideEffects
+
+// ESP.ST.UA.STATE.IP (_m version) - Store UA_STATE register to memory
+// Returns: updated pointer + new UA_STATE (explicit state passing)
+// Parameters: [current UA_STATE (passthru), pointer, immediate offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_st_ua_state_ip_m : Intrinsic<
+    [llvm_v16i8_ty,                       // Returns: new UA_STATE (explicit state passing)
+     llvm_ptr_ty],                        // Returns: pointer
+    [llvm_v16i8_ty,                       // Current UA_STATE (passthru)
+     llvm_ptr_ty,                         // pointer
+     llvm_i32_ty],                        // offset
+    [IntrWriteMem, IntrArgMemOnly]>;       // No IntrHasSideEffects
+
 // Load with Post-Increment (Register offset)
 // Returns: { vector data, updated pointer }
 // Parameters: [ original pointer, offset (register) ]
@@ -453,12 +476,83 @@ def int_riscv_esp_movx_r_fft_bit_width_m : Intrinsic<[llvm_i32_ty],
                                                      [llvm_i32_ty], 
                                                      [IntrNoMem]>;
 
+// FFT.R2BF.S16 - FFT Radix-2 Butterfly operation
+// Has 2 outputs (qz, qv) and 3 inputs (qx, qy, sel2)
+// Returns a struct containing both output vectors
+def int_riscv_esp_fft_r2bf_s16_m : Intrinsic<[llvm_v8i16_ty, llvm_v8i16_ty], 
+                                                 [llvm_v8i16_ty, llvm_v8i16_ty, llvm_i32_ty], 
+                                                 [IntrNoMem]>;
+
+// FFT.AMS.S16.LD.INCP - FFT Add-Multiply-Subtract with load and increment
+// Returns struct {v16i8 qu, v8i16 qz, v8i16 qv, i8* ptr}
+// Inputs: qx (v8i16), qy (v8i16), qw (v8i16), rs1 (ptr), sel2 (i32)
+// FFT.AMS.S16.LD.INCP (_m version) - FFT AMS with explicit SAR state passing
+// Returns struct {v16i8 qu, v8i16 qz, v8i16 qv, i8* ptr}
+// Inputs: qx (v8i16), qy (v8i16), qw (v8i16), rs1 (ptr), sel2 (i32), sar (i64)
+def int_riscv_esp_fft_ams_s16_ld_incp_m : Intrinsic<[llvm_v16i8_ty, llvm_v8i16_ty, llvm_v8i16_ty, llvm_ptr_ty],
+                                                      [llvm_v8i16_ty, llvm_v8i16_ty, llvm_v8i16_ty, llvm_ptr_ty, llvm_i32_ty, llvm_i32_ty],
+                                                      [IntrReadMem, IntrArgMemOnly]>;
+
+// FFT.R2BF.S16.ST.INCP - Returns struct {v8i16 qz, i8* ptr}
+// Inputs: qx (v8i16), qy (v8i16), rs1 (ptr), sel4 (i32)
+def int_riscv_esp_fft_r2bf_s16_st_incp_m : Intrinsic<[llvm_v8i16_ty, llvm_ptr_ty],
+                                                      [llvm_v8i16_ty, llvm_v8i16_ty, llvm_ptr_ty, llvm_i32_ty],
+                                                      [IntrWriteMem, IntrArgMemOnly]>;
+
+// FFT.AMS.S16.LD.R32.DECP - Returns struct {v16i8 qu, v8i16 qz, v8i16 qv, i8* ptr}
+// Inputs: qx (v8i16), qy (v8i16), qw (v8i16), rs1 (ptr), sel2 (i32)
+// FFT.AMS.S16.LD.R32.DECP (_m version) - FFT AMS with load, big-endian word order, decrement pointer, and explicit SAR state passing
+// Returns struct {v16i8 qu, v8i16 qz, v8i16 qv, i8* ptr}
+// Operands: qx (v8i16), qy (v8i16), qw (v8i16), rs1 (pointer), sel2 (i32 immediate), sar (i32)
+// Note: Same as LD.INCP but decrements pointer instead of incrementing
+def int_riscv_esp_fft_ams_s16_ld_r32_decp_m : Intrinsic<[llvm_v16i8_ty, llvm_v8i16_ty, llvm_v8i16_ty, llvm_ptr_ty],
+                                                         [llvm_v8i16_ty, llvm_v8i16_ty, llvm_v8i16_ty, llvm_ptr_ty, llvm_i32_ty, llvm_i32_ty],
+                                                         [IntrReadMem, IntrArgMemOnly]>;
+
+// FFT.AMS.S16.ST.INCP (_m version) - FFT AMS with store and increment and explicit SAR state passing
+// Returns struct {v8i16 qz, i8* ptr}
+// Inputs: qx (v8i16), qy (v8i16), qw (v8i16), qu (v16i8), rs1 (ptr), rs2 (ptr), sel2 (i32), sar (i64)
+// Note: rs2 is updated with computation result
+// SAR is passed explicitly as i64 for explicit state passing
+def int_riscv_esp_fft_ams_s16_st_incp_m : Intrinsic<[llvm_v8i16_ty, llvm_ptr_ty],
+                                                      [llvm_v8i16_ty, llvm_v8i16_ty, llvm_v8i16_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_ptr_ty, llvm_i32_ty, llvm_i32_ty],
+                                                      [IntrWriteMem, IntrArgMemOnly]>;
+
 // FFT.BITREV - FFT bit reverse operation
 // Returns: { ptr (updated pointer), v8i16 (result vector) }
 // Parameters: [ ptr (source pointer), i32 (FFT_BIT_WIDTH, 32-bit unsigned) ]
 def int_riscv_esp_fft_bitrev_m : Intrinsic<[llvm_ptr_ty, llvm_v8i16_ty], 
                                             [llvm_ptr_ty, llvm_i32_ty], 
                                             [IntrNoMem]>;
+
+// FFT.CMUL.S16.LD.XP (_m version) - Complex multiply with load and register offset and explicit SAR state passing
+// Returns struct {v8i16 qz, v16i8 qu, i8* ptr}
+// Inputs: qx (v8i16), qy (v8i16), rs1 (ptr), rs2 (ptr), sel8 (i32), sar (i64)
+// SAR is passed explicitly as i64 for explicit state passing
+def int_riscv_esp_fft_cmul_s16_ld_xp_m : Intrinsic<[llvm_v8i16_ty, llvm_v16i8_ty, llvm_ptr_ty],
+                                                     [llvm_v8i16_ty, llvm_v8i16_ty, llvm_ptr_ty, llvm_ptr_ty, llvm_i32_ty, llvm_i32_ty],
+                                                     [IntrReadMem, IntrArgMemOnly]>;
+
+// FFT.CMUL.S16.ST.XP (_m version) - Complex multiply with store and register offset and explicit SAR state passing
+// Returns struct {i8* ptr}
+// Inputs: qx (v8i16), qy (v8i16), qu (v16i8), rs1 (ptr), rs2 (ptr), sel8 (i32), upd4 (i32), sel4 (i32), sar (i64)
+// SAR is passed explicitly as i64 for explicit state passing
+def int_riscv_esp_fft_cmul_s16_st_xp_m : Intrinsic<[llvm_ptr_ty],
+                                                     [llvm_v8i16_ty, llvm_v8i16_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_ptr_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty],
+                                                     [IntrWriteMem, IntrArgMemOnly]>;
+
+// FFT.VST.R32.DECP - Returns struct {i8* ptr}
+// Inputs: qu (v16i8), rs1 (ptr), sel2 (i32)
+def int_riscv_esp_fft_vst_r32_decp_m : Intrinsic<[llvm_ptr_ty],
+                                                   [llvm_v16i8_ty, llvm_ptr_ty, llvm_i32_ty],
+                                                   [IntrWriteMem, IntrArgMemOnly]>;
+
+// FFT.AMS.S16.LD.INCP.UAUP - FFT AMS S16 Load with Post-Increment and UA_STATE update
+// Returns: { v16i8 (qu), v8i16 (qz), v8i16 (qv), ptr (updated pointer), v16i8 (ua_state_out) }
+// Parameters: [ v8i16 (qx), v8i16 (qy), v8i16 (qw), ptr (rs1), i32 (sel2), v16i8 (ua_state_in), i32 (sar_bytes_in), i32 (sar_in) ]
+def int_riscv_esp_fft_ams_s16_ld_incp_uaup_m : Intrinsic<[llvm_v16i8_ty, llvm_v8i16_ty, llvm_v8i16_ty, llvm_ptr_ty, llvm_v16i8_ty],
+                                                         [llvm_v8i16_ty, llvm_v8i16_ty, llvm_v8i16_ty, llvm_ptr_ty, llvm_i32_ty, llvm_v16i8_ty, llvm_i32_ty, llvm_i32_ty],
+                                                         [IntrReadMem, IntrArgMemOnly]>;
 
 // VSLD - Vector Shift Left Dynamic
 // Performs vector shift left/right based on shift amounts from qw segments
@@ -485,6 +579,13 @@ def int_riscv_esp_vsrd_8_m : Intrinsic<[llvm_v16i8_ty],
 def int_riscv_esp_movx_w_sar_m : Intrinsic<[llvm_i32_ty], 
                                           [llvm_i32_ty], 
                                           [IntrNoMem]>;
+
+// MOVX.W.SAR_BYTES - Write SAR_BYTES register
+// Returns: i32 (SAR_BYTES value, 32-bit unsigned, only low 4 bits used)
+// Parameters: [ i32 value to write (rs1, 32-bit unsigned) ]
+def int_riscv_esp_movx_w_sar_bytes_m : Intrinsic<[llvm_i32_ty], 
+                                                 [llvm_i32_ty], 
+                                                 [IntrNoMem]>;
 
 // VSR - Vector Shift Right (using SAR register)
 // VSR.S32 - Signed arithmetic right shift
@@ -716,6 +817,38 @@ def int_riscv_esp_zero_qacc_m : Intrinsic<[llvm_v16i8_ty, llvm_v16i8_ty, llvm_v1
                                            [], 
                                            [IntrNoMem]>;
 
+// MOV.S16.QACC - Sign extend 8x16-bit to 64-bit, store to QACC_H and QACC_L
+// Returns: {v16i8, v16i8, v16i8, v16i8} (4x128-bit QACC)
+// Parameters: [v8i16] (input vector)
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_mov_s16_qacc_m : Intrinsic<[llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],
+                                              [llvm_v8i16_ty],
+                                              [IntrNoMem]>;
+
+// MOV.S8.QACC - Sign extend 16x8-bit to 32-bit, store to QACC_H and QACC_L
+// Returns: {v16i8, v16i8, v16i8, v16i8} (4x128-bit QACC)
+// Parameters: [v16i8] (input vector)
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_mov_s8_qacc_m : Intrinsic<[llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],
+                                             [llvm_v16i8_ty],
+                                             [IntrNoMem]>;
+
+// MOV.U16.QACC - Zero extend 8x16-bit to 64-bit, store to QACC_H and QACC_L
+// Returns: {v16i8, v16i8, v16i8, v16i8} (4x128-bit QACC)
+// Parameters: [v8i16] (input vector)
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_mov_u16_qacc_m : Intrinsic<[llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],
+                                              [llvm_v8i16_ty],
+                                              [IntrNoMem]>;
+
+// MOV.U8.QACC - Zero extend 16x8-bit to 32-bit, store to QACC_H and QACC_L
+// Returns: {v16i8, v16i8, v16i8, v16i8} (4x128-bit QACC)
+// Parameters: [v16i8] (input vector)
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_mov_u8_qacc_m : Intrinsic<[llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],
+                                             [llvm_v16i8_ty],
+                                             [IntrNoMem]>;
+
 // ZERO.XACC - Zero XACC accumulator
 // Returns: {i32, i32} (XACC set to zero {i32 low=0, i32 high=0})
 // Parameters: []
@@ -763,6 +896,182 @@ def int_riscv_esp_vcmulas_s16_qacc_h_m :
                llvm_v8i16_ty,                     // qx
                llvm_v8i16_ty],                    // qy
               [IntrNoMem]>;                       // No IntrHasSideEffects
+
+// ESP.VCMULAS.S16.QACC.H.LD.IP (_m version)
+// Returns: updated pointer + qu vector + new QACC_H (2x128-bit)
+// Parameters: [current QACC_H (2x128-bit passthru), qx, qy, pointer, immediate offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_vcmulas_s16_qacc_h_ld_ip_m : Intrinsic<
+    [llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: ptr + qu + 2x128-bit QACC_H (4 values)
+    [llvm_v16i8_ty, llvm_v16i8_ty,                               // Current QACC_H (2x128-bit passthru)
+     llvm_v8i16_ty,                                               // qx
+     llvm_v8i16_ty,                                               // qy
+     llvm_ptr_ty,                                                 // pointer
+     llvm_i32_ty],                                                // offset
+    [IntrReadMem, IntrArgMemOnly]>;                               // No IntrHasSideEffects
+
+// ESP.VCMULAS.S16.QACC.H.LD.XP (_m version)
+// Returns: updated pointer + qu vector + new QACC_H (2x128-bit)
+// Parameters: [current QACC_H (2x128-bit passthru), qx, qy, pointer, register offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_vcmulas_s16_qacc_h_ld_xp_m : Intrinsic<
+    [llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: ptr + qu + 2x128-bit QACC_H (4 values)
+    [llvm_v16i8_ty, llvm_v16i8_ty,                               // Current QACC_H (2x128-bit passthru)
+     llvm_v8i16_ty,                                               // qx
+     llvm_v8i16_ty,                                               // qy
+     llvm_ptr_ty,                                                 // pointer
+     llvm_i32_ty],                                                // register offset
+    [IntrReadMem, IntrArgMemOnly]>;                               // No IntrHasSideEffects
+
+// ESP.VCMULAS.S16.QACC.L.LD.IP (_m version)
+// Returns: updated pointer + qu vector + new QACC_L (2x128-bit)
+// Parameters: [current QACC_L (2x128-bit passthru), qx, qy, pointer, immediate offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_vcmulas_s16_qacc_l_ld_ip_m : Intrinsic<
+    [llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: ptr + qu + 2x128-bit QACC_L (4 values)
+    [llvm_v16i8_ty, llvm_v16i8_ty,                               // Current QACC_L (2x128-bit passthru)
+     llvm_v8i16_ty,                                               // qx
+     llvm_v8i16_ty,                                               // qy
+     llvm_ptr_ty,                                                 // pointer
+     llvm_i32_ty],                                                // offset
+    [IntrReadMem, IntrArgMemOnly]>;                               // No IntrHasSideEffects
+
+// ESP.VCMULAS.S16.QACC.L.LD.XP (_m version)
+// Returns: updated pointer + qu vector + new QACC_L (2x128-bit)
+// Parameters: [current QACC_L (2x128-bit passthru), qx, qy, pointer, register offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_vcmulas_s16_qacc_l_ld_xp_m : Intrinsic<
+    [llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: ptr + qu + 2x128-bit QACC_L (4 values)
+    [llvm_v16i8_ty, llvm_v16i8_ty,                               // Current QACC_L (2x128-bit passthru)
+     llvm_v8i16_ty,                                               // qx
+     llvm_v8i16_ty,                                               // qy
+     llvm_ptr_ty,                                                 // pointer
+     llvm_i32_ty],                                                // register offset
+    [IntrReadMem, IntrArgMemOnly]>;                               // No IntrHasSideEffects
+
+// ESP.VCMULAS.S8.QACC.H (_m version)
+// Returns: {v16i8, v16i8} - 2x128-bit QACC_H directly
+// Parameters: [v16i8, v16i8 (2x128-bit QACC_H passthru), qx, qy]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+// QACC_H is split into 2x128-bit: QACC_H_LOW (v2) and QACC_H_HIGH (v3)
+// Note: No ClangBuiltin - builtin signature (void with 6 params) doesn't match intrinsic signature ({v16i8, v16i8} with 4 params)
+def int_riscv_esp_vcmulas_s8_qacc_h_m :
+	Intrinsic<[llvm_v16i8_ty, llvm_v16i8_ty],     // Returns: 2x128-bit QACC_H (qacc_h_l, qacc_h_h)
+              [llvm_v16i8_ty,                     // QACC_H[127:0] passthru (v16i8)
+               llvm_v16i8_ty,                     // QACC_H[255:128] passthru (v16i8)
+               llvm_v16i8_ty,                     // qx
+               llvm_v16i8_ty],                    // qy
+              [IntrNoMem]>;                       // No IntrHasSideEffects
+
+// ESP.VCMULAS.S8.QACC.H.LD.IP (_m version)
+// Returns: updated pointer + qu vector + new QACC_H (2x128-bit)
+// Parameters: [current QACC_H (2x128-bit passthru), qx, qy, pointer, immediate offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_vcmulas_s8_qacc_h_ld_ip_m : Intrinsic<
+    [llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: ptr + qu + 2x128-bit QACC_H (4 values)
+    [llvm_v16i8_ty, llvm_v16i8_ty,                               // Current QACC_H (2x128-bit passthru)
+     llvm_v16i8_ty,                                               // qx
+     llvm_v16i8_ty,                                               // qy
+     llvm_ptr_ty,                                                 // pointer
+     llvm_i32_ty],                                                // offset
+    [IntrReadMem, IntrArgMemOnly]>;                               // No IntrHasSideEffects
+
+// ESP.VCMULAS.S8.QACC.H.LD.XP (_m version)
+// Returns: updated pointer + qu vector + new QACC_H (2x128-bit)
+// Parameters: [current QACC_H (2x128-bit passthru), qx, qy, pointer, register offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_vcmulas_s8_qacc_h_ld_xp_m : Intrinsic<
+    [llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: ptr + qu + 2x128-bit QACC_H (4 values)
+    [llvm_v16i8_ty, llvm_v16i8_ty,                               // Current QACC_H (2x128-bit passthru)
+     llvm_v16i8_ty,                                               // qx
+     llvm_v16i8_ty,                                               // qy
+     llvm_ptr_ty,                                                 // pointer
+     llvm_i32_ty],                                                // register offset
+    [IntrReadMem, IntrArgMemOnly]>;                               // No IntrHasSideEffects
+
+// ESP.VCMULAS.S8.QACC.L (_m version)
+// Returns: {v16i8, v16i8} - 2x128-bit QACC_L directly
+// Parameters: [v16i8, v16i8 (2x128-bit QACC_L passthru), qx, qy]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+// QACC_L is split into 2x128-bit: QACC_L_LOW (v0) and QACC_L_HIGH (v1)
+// Note: No ClangBuiltin - builtin signature (void with 6 params) doesn't match intrinsic signature ({v16i8, v16i8} with 4 params)
+def int_riscv_esp_vcmulas_s8_qacc_l_m :
+	Intrinsic<[llvm_v16i8_ty, llvm_v16i8_ty],     // Returns: 2x128-bit QACC_L (qacc_l_l, qacc_l_h)
+              [llvm_v16i8_ty,                     // QACC_L[127:0] passthru (v16i8)
+               llvm_v16i8_ty,                     // QACC_L[255:128] passthru (v16i8)
+               llvm_v16i8_ty,                     // qx
+               llvm_v16i8_ty],                    // qy
+              [IntrNoMem]>;                       // No IntrHasSideEffects
+
+// ESP.VCMULAS.S8.QACC.L.LD.IP (_m version)
+// Returns: updated pointer + qu vector + new QACC_L (2x128-bit)
+// Parameters: [current QACC_L (2x128-bit passthru), qx, qy, pointer, immediate offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_vcmulas_s8_qacc_l_ld_ip_m : Intrinsic<
+    [llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: ptr + qu + 2x128-bit QACC_L (4 values)
+    [llvm_v16i8_ty, llvm_v16i8_ty,                               // Current QACC_L (2x128-bit passthru)
+     llvm_v16i8_ty,                                               // qx
+     llvm_v16i8_ty,                                               // qy
+     llvm_ptr_ty,                                                 // pointer
+     llvm_i32_ty],                                                // offset
+    [IntrReadMem, IntrArgMemOnly]>;                               // No IntrHasSideEffects
+
+// ESP.VCMULAS.S8.QACC.L.LD.XP (_m version)
+// Returns: updated pointer + qu vector + new QACC_L (2x128-bit)
+// Parameters: [current QACC_L (2x128-bit passthru), qx, qy, pointer, register offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_vcmulas_s8_qacc_l_ld_xp_m : Intrinsic<
+    [llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: ptr + qu + 2x128-bit QACC_L (4 values)
+    [llvm_v16i8_ty, llvm_v16i8_ty,                               // Current QACC_L (2x128-bit passthru)
+     llvm_v16i8_ty,                                               // qx
+     llvm_v16i8_ty,                                               // qy
+     llvm_ptr_ty,                                                 // pointer
+     llvm_i32_ty],                                                // register offset
+    [IntrReadMem, IntrArgMemOnly]>;                               // No IntrHasSideEffects
+
+// ESP.LD.QACC.H.H.128.IP (_m version)
+// Load 128-bit data to QACC_H[255:128]
+// Subregister model: returns loaded 128-bit data (v16i8) + updated pointer
+// Parameters: [pointer, immediate offset]
+// Note: Hardware loads 128-bit data to QACC_H[255:128], QACC_H[127:0] remains unchanged
+def int_riscv_esp_ld_qacc_h_h_128_ip_m : Intrinsic<
+    [llvm_v16i8_ty, llvm_ptr_ty],        // Returns: loaded 128-bit data + pointer
+    [llvm_ptr_ty,                         // pointer
+     llvm_i32_ty],                        // offset
+    [IntrReadMem, IntrArgMemOnly]>;       // No IntrHasSideEffects
+
+// ESP.LD.QACC.H.L.128.IP (_m version)
+// Load 128-bit data to QACC_H[127:0]
+// Subregister model: returns loaded 128-bit data (v16i8) + updated pointer
+// Parameters: [pointer, immediate offset]
+// Note: Hardware loads 128-bit data to QACC_H[127:0], QACC_H[255:128] remains unchanged
+def int_riscv_esp_ld_qacc_h_l_128_ip_m : Intrinsic<
+    [llvm_v16i8_ty, llvm_ptr_ty],        // Returns: loaded 128-bit data + pointer
+    [llvm_ptr_ty,                         // pointer
+     llvm_i32_ty],                        // offset
+    [IntrReadMem, IntrArgMemOnly]>;       // No IntrHasSideEffects
+
+// ESP.LD.QACC.L.H.128.IP (_m version)
+// Load 128-bit data to QACC_L[255:128]
+// Subregister model: returns loaded 128-bit data (v16i8) + updated pointer
+// Parameters: [pointer, immediate offset]
+// Note: Hardware loads 128-bit data to QACC_L[255:128], QACC_L[127:0] remains unchanged
+def int_riscv_esp_ld_qacc_l_h_128_ip_m : Intrinsic<
+    [llvm_v16i8_ty, llvm_ptr_ty],        // Returns: loaded 128-bit data + pointer
+    [llvm_ptr_ty,                         // pointer
+     llvm_i32_ty],                        // offset
+    [IntrReadMem, IntrArgMemOnly]>;       // No IntrHasSideEffects
+
+// ESP.LD.QACC.L.L.128.IP (_m version)
+// Load 128-bit data to QACC_L[127:0]
+// Subregister model: returns loaded 128-bit data (v16i8) + updated pointer
+// Parameters: [pointer, immediate offset]
+// Note: Hardware loads 128-bit data to QACC_L[127:0], QACC_L[255:128] remains unchanged
+def int_riscv_esp_ld_qacc_l_l_128_ip_m : Intrinsic<
+    [llvm_v16i8_ty, llvm_ptr_ty],        // Returns: loaded 128-bit data + pointer
+    [llvm_ptr_ty,                         // pointer
+     llvm_i32_ty],                        // offset
+    [IntrReadMem, IntrArgMemOnly]>;       // No IntrHasSideEffects
 
 // ESP.ST.QACC.H.H.128.IP (_m version)
 // Store QACC_H[255:128] to memory
@@ -817,6 +1126,102 @@ def int_riscv_esp_st_qacc_l_l_128_ip_m : Intrinsic<
      llvm_ptr_ty,                         // pointer
      llvm_i32_ty],                        // offset
     [IntrWriteMem, IntrArgMemOnly]>;      //  No IntrHasSideEffects
+
+// ESP.LDQA.S16.128.IP (_m version)
+// Load 128-bit data, sign-extend 8x16-bit to 64-bit, store to QACC_H and QACC_L
+// Returns: updated pointer + 4x128-bit QACC (QACC_L_LOW, QACC_L_HIGH, QACC_H_LOW, QACC_H_HIGH)
+// Parameters: [current QACC (passthru, v64i8), pointer, immediate offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_ldqa_s16_128_ip_m : Intrinsic<
+    [llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: pointer + 4x128-bit QACC
+    [llvm_v64i8_ty,                       // Current QACC (passthru)
+     llvm_ptr_ty,                         // pointer
+     llvm_i32_ty],                        // offset
+    [IntrReadMem, IntrArgMemOnly]>;       // No IntrHasSideEffects
+
+// ESP.LDQA.S16.128.XP (_m version)
+// Load 128-bit data, sign-extend 8x16-bit to 64-bit, store to QACC_H and QACC_L
+// Returns: updated pointer + new QACC (512-bit: {QACC_H, QACC_L})
+// Parameters: [current QACC (passthru), pointer, register offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_ldqa_s16_128_xp_m : Intrinsic<
+    [llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: pointer + 4x128-bit QACC
+    [llvm_v64i8_ty,                       // Current QACC (passthru)
+     llvm_ptr_ty,                         // pointer
+     llvm_i32_ty],                        // register offset
+    [IntrReadMem, IntrArgMemOnly]>;       // No IntrHasSideEffects
+
+// ESP.LDQA.S8.128.IP (_m version)
+// Load 128-bit data, sign-extend 16x8-bit to 32-bit, store to QACC_H and QACC_L
+// Returns: updated pointer + new QACC (512-bit: {QACC_H, QACC_L})
+// Parameters: [current QACC (passthru), pointer, immediate offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_ldqa_s8_128_ip_m : Intrinsic<
+    [llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: pointer + 4x128-bit QACC
+    [llvm_v64i8_ty,                       // Current QACC (passthru)
+     llvm_ptr_ty,                         // pointer
+     llvm_i32_ty],                        // offset
+    [IntrReadMem, IntrArgMemOnly]>;       // No IntrHasSideEffects
+
+// ESP.LDQA.S8.128.XP (_m version)
+// Load 128-bit data, sign-extend 16x8-bit to 32-bit, store to QACC_H and QACC_L
+// Returns: updated pointer + new QACC (512-bit: {QACC_H, QACC_L})
+// Parameters: [current QACC (passthru), pointer, register offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_ldqa_s8_128_xp_m : Intrinsic<
+    [llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: pointer + 4x128-bit QACC
+    [llvm_v64i8_ty,                       // Current QACC (passthru)
+     llvm_ptr_ty,                         // pointer
+     llvm_i32_ty],                        // register offset
+    [IntrReadMem, IntrArgMemOnly]>;       // No IntrHasSideEffects
+
+// ESP.LDQA.U16.128.IP (_m version)
+// Load 128-bit data, zero-extend 8x16-bit to 64-bit, store to QACC_H and QACC_L
+// Returns: updated pointer + new QACC (512-bit: {QACC_H, QACC_L})
+// Parameters: [current QACC (passthru), pointer, immediate offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_ldqa_u16_128_ip_m : Intrinsic<
+    [llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: pointer + 4x128-bit QACC
+    [llvm_v64i8_ty,                       // Current QACC (passthru)
+     llvm_ptr_ty,                         // pointer
+     llvm_i32_ty],                        // offset
+    [IntrReadMem, IntrArgMemOnly]>;       // No IntrHasSideEffects
+
+// ESP.LDQA.U16.128.XP (_m version)
+// Load 128-bit data, zero-extend 8x16-bit to 64-bit, store to QACC_H and QACC_L
+// Returns: updated pointer + new QACC (512-bit: {QACC_H, QACC_L})
+// Parameters: [current QACC (passthru), pointer, register offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_ldqa_u16_128_xp_m : Intrinsic<
+    [llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: pointer + 4x128-bit QACC
+    [llvm_v64i8_ty,                       // Current QACC (passthru)
+     llvm_ptr_ty,                         // pointer
+     llvm_i32_ty],                        // register offset
+    [IntrReadMem, IntrArgMemOnly]>;       // No IntrHasSideEffects
+
+// ESP.LDQA.U8.128.IP (_m version)
+// Load 128-bit data, zero-extend 16x8-bit to 32-bit, store to QACC_H and QACC_L
+// Returns: updated pointer + new QACC (512-bit: {QACC_H, QACC_L})
+// Parameters: [current QACC (passthru), pointer, immediate offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_ldqa_u8_128_ip_m : Intrinsic<
+    [llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: pointer + 4x128-bit QACC
+    [llvm_v64i8_ty,                       // Current QACC (passthru)
+     llvm_ptr_ty,                         // pointer
+     llvm_i32_ty],                        // offset
+    [IntrReadMem, IntrArgMemOnly]>;       // No IntrHasSideEffects
+
+// ESP.LDQA.U8.128.XP (_m version)
+// Load 128-bit data, zero-extend 16x8-bit to 32-bit, store to QACC_H and QACC_L
+// Returns: updated pointer + new QACC (512-bit: {QACC_H, QACC_L})
+// Parameters: [current QACC (passthru), pointer, register offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_ldqa_u8_128_xp_m : Intrinsic<
+    [llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: pointer + 4x128-bit QACC
+    [llvm_v64i8_ty,                       // Current QACC (passthru)
+     llvm_ptr_ty,                         // pointer
+     llvm_i32_ty],                        // register offset
+    [IntrReadMem, IntrArgMemOnly]>;       // No IntrHasSideEffects
 
 // CMUL - Complex Multiplication
 // CMUL.S16 - Signed 16-bit complex multiplication
@@ -909,4 +1314,356 @@ def int_riscv_esp_cmul_u8_st_incp_m : Intrinsic<[llvm_v16i8_ty, llvm_ptr_ty],
 def int_riscv_esp_movx_r_sar_m : Intrinsic<[llvm_i32_ty], 
                                             [llvm_i32_ty], 
                                             [IntrNoMem]>;
+
+// MOVX.R.SAR_BYTES - Read SAR_BYTES register
+// Returns: i32 (SAR_BYTES register value, low 4 bits)
+// Parameters: [ i32 sar_bytes (SAR_BYTES register value, passthru for explicit state passing) ]
+def int_riscv_esp_movx_r_sar_bytes_m : Intrinsic<[llvm_i32_ty], 
+                                                   [llvm_i32_ty], 
+                                                   [IntrNoMem]>;
+
+// ESP.VADD.S16.LD.INCP (_m version)
+// Returns struct {v8i16 qv, v16i8 qu, i8* ptr}
+def int_riscv_esp_vadd_s16_ld_incp_m : Intrinsic<
+	[llvm_v8i16_ty, llvm_v16i8_ty, llvm_ptr_ty],  // Returns: qv, qu, ptr
+	[llvm_v8i16_ty, llvm_v8i16_ty, llvm_ptr_ty],  // Parameters: qx, qy, rs1
+	[IntrReadMem, IntrArgMemOnly]
+>;
+
+// ESP.VADD.S16.ST.INCP (_m version)
+// Returns struct {v8i16 qv, i8* ptr}
+// ESP.VADD.S16.ST.INCP (_m version)
+// Returns struct {v8i16 qv, i8* ptr}
+// Note: qv is input parameter (for register selection) but output from instruction
+def int_riscv_esp_vadd_s16_st_incp_m : Intrinsic<
+	[llvm_v8i16_ty, llvm_ptr_ty],  // Returns: qv, ptr
+	[llvm_v8i16_ty, llvm_v8i16_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_v8i16_ty],  // Parameters: qx, qy, qu, rs1, qv
+	[IntrWriteMem, IntrArgMemOnly]
+>;
+
+// ESP.VADD.S8.LD.INCP (_m version)
+// Returns struct {v16i8 qv, v16i8 qu, i8* ptr}
+// Key: Remove ClangBuiltin, use manual CodeGen
+def int_riscv_esp_vadd_s8_ld_incp_m : Intrinsic<
+	[llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty],  // Returns: qv, qu, ptr
+	[llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty],  // Parameters: qx, qy, rs1
+	[IntrReadMem, IntrArgMemOnly]  // Attributes: read memory
+>;
+
+// ESP.VADD.S8.ST.INCP (_m version)
+// Returns struct {v16i8 qv, i8* ptr}
+// Note: qv is input parameter (for register selection) but output from instruction
+def int_riscv_esp_vadd_s8_st_incp_m : Intrinsic<
+	[llvm_v16i8_ty, llvm_ptr_ty],  // Returns: qv, ptr
+	[llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_v16i8_ty],  // Parameters: qx, qy, qu, rs1, qv
+	[IntrWriteMem, IntrArgMemOnly]
+>;
+
+// ESP.VADD.U16.LD.INCP (_m version)
+// Returns struct {v8i16 qv, v16i8 qu, i8* ptr}
+def int_riscv_esp_vadd_u16_ld_incp_m : Intrinsic<
+	[llvm_v8i16_ty, llvm_v16i8_ty, llvm_ptr_ty],  // Returns: qv, qu, ptr
+	[llvm_v8i16_ty, llvm_v8i16_ty, llvm_ptr_ty],  // Parameters: qx, qy, rs1
+	[IntrReadMem, IntrArgMemOnly]
+>;
+
+// ESP.VADD.U16.ST.INCP (_m version)
+// Returns struct {v8i16 qv, i8* ptr}
+// Note: qv is input parameter (for register selection) but output from instruction
+def int_riscv_esp_vadd_u16_st_incp_m : Intrinsic<
+	[llvm_v8i16_ty, llvm_ptr_ty],  // Returns: qv, ptr
+	[llvm_v8i16_ty, llvm_v8i16_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_v8i16_ty],  // Parameters: qx, qy, qu, rs1, qv
+	[IntrWriteMem, IntrArgMemOnly]
+>;
+
+// ESP.VADD.U8.LD.INCP (_m version)
+// Returns struct {v16i8 qv, v16i8 qu, i8* ptr}
+def int_riscv_esp_vadd_u8_ld_incp_m : Intrinsic<
+	[llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty],  // Returns: qv, qu, ptr
+	[llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty],  // Parameters: qx, qy, rs1
+	[IntrReadMem, IntrArgMemOnly]
+>;
+
+// ESP.VADD.U8.ST.INCP (_m version)
+// Returns struct {v16i8 qv, i8* ptr}
+// Note: qv is input parameter (for register selection) but output from instruction
+def int_riscv_esp_vadd_u8_st_incp_m : Intrinsic<
+	[llvm_v16i8_ty, llvm_ptr_ty],  // Returns: qv, ptr
+	[llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_v16i8_ty],  // Parameters: qx, qy, qu, rs1, qv
+	[IntrWriteMem, IntrArgMemOnly]
+>;
+
+// SRCMB.S16.QACC - Shift amount from rs1 register (rs1[5:0])
+// Returns v8i16 (saturated 16-bit signed values)
+// QACC is passed as explicit phantom operand (4x128-bit) for proper data flow tracking
+def int_riscv_esp_srcmb_s16_qacc_m : Intrinsic<[llvm_v8i16_ty], 
+                                                 [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_i32_ty, llvm_i32_ty], 
+                                                 [IntrNoMem]>;
+
+// SRCMB.S8.QACC - Shift amount from rs1 register (rs1[4:0])
+// Returns v16i8 (saturated 8-bit signed values)
+// QACC is passed as explicit phantom operand (4x128-bit) for proper data flow tracking
+def int_riscv_esp_srcmb_s8_qacc_m : Intrinsic<[llvm_v16i8_ty], 
+                                                 [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_i32_ty, llvm_i32_ty], 
+                                                 [IntrNoMem]>;
+
+// SRCMB.U16.QACC - Shift amount from rs1 register (rs1[5:0])
+// Returns v8i16 (saturated 16-bit unsigned values)
+// QACC is passed as explicit phantom operand (4x128-bit) for proper data flow tracking
+def int_riscv_esp_srcmb_u16_qacc_m : Intrinsic<[llvm_v8i16_ty], 
+                                                  [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_i32_ty, llvm_i32_ty], 
+                                                  [IntrNoMem]>;
+
+// SRCMB.U8.QACC - Shift amount from rs1 register (rs1[4:0])
+// Returns v16i8 (saturated 8-bit unsigned values)
+// QACC is passed as explicit phantom operand (4x128-bit) for proper data flow tracking
+def int_riscv_esp_srcmb_u8_qacc_m : Intrinsic<[llvm_v16i8_ty], 
+                                                 [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_i32_ty, llvm_i32_ty], 
+                                                 [IntrNoMem]>;
+
+// ESP.VMULAS.S16.QACC (_m version) - Multiply-accumulate to QACC_H and QACC_L
+// Returns: {v16i8, v16i8, v16i8, v16i8} - 4x128-bit QACC directly
+// Parameters: v16i8, v16i8, v16i8, v16i8 (4x128-bit QACC passthru), v8i16, v8i16 (qx, qy)
+def int_riscv_esp_vmulas_s16_qacc_m :
+	Intrinsic<[llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: 4x128-bit QACC
+              [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty,   // Current QACC (4x128-bit passthru)
+               llvm_v8i16_ty,                                                   // qx
+               llvm_v8i16_ty],                                                  // qy
+              [IntrNoMem]>;
+
+// ESP.VMULAS.S16.QACC.LD.IP (_m version) - Load 128-bit, multiply-accumulate to QACC_H and QACC_L
+// Returns: {ptr, v16i8 qu, v16i8, v16i8, v16i8, v16i8} - ptr + qu + 4x128-bit QACC directly
+// Parameters: v16i8, v16i8, v16i8, v16i8 (4x128-bit QACC passthru), v8i16, v8i16 (qx, qy), ptr, i32 (offset)
+def int_riscv_esp_vmulas_s16_qacc_ld_ip_m :
+	Intrinsic<[llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: ptr + qu + 4x128-bit QACC (6 values)
+              [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty,               // Current QACC (4x128-bit passthru)
+               llvm_v8i16_ty,                                                               // qx
+               llvm_v8i16_ty,                                                               // qy
+               llvm_ptr_ty,                                 // pointer
+               llvm_i32_ty],                                // offset
+              [IntrReadMem, IntrArgMemOnly]>;
+
+// ESP.VMULAS.S16.QACC.LD.XP (_m version)
+def int_riscv_esp_vmulas_s16_qacc_ld_xp_m :
+	Intrinsic<[llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: ptr + qu + 4x128-bit QACC (6 values)
+              [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty,               // Current QACC (4x128-bit passthru)
+               llvm_v8i16_ty,                                                               // qx
+               llvm_v8i16_ty,                                                               // qy
+               llvm_ptr_ty,                                 // pointer
+               llvm_i32_ty],                                // register offset
+              [IntrReadMem, IntrArgMemOnly]>;
+
+// ESP.VMULAS.S16.QACC.ST.IP (_m version)
+def int_riscv_esp_vmulas_s16_qacc_st_ip_m :
+	Intrinsic<[llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: ptr + 4x128-bit QACC
+              [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty,               // Current QACC (4x128-bit passthru)
+               llvm_v16i8_ty,                                                               // qu
+               llvm_v8i16_ty,                                                               // qx
+               llvm_v8i16_ty,                                                               // qy
+               llvm_ptr_ty,                                 // pointer
+               llvm_i32_ty],                                // offset
+              [IntrWriteMem, IntrArgMemOnly]>;
+
+// ESP.VMULAS.S16.QACC.ST.XP (_m version)
+def int_riscv_esp_vmulas_s16_qacc_st_xp_m :
+	Intrinsic<[llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: ptr + 4x128-bit QACC
+              [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty,               // Current QACC (4x128-bit passthru)
+               llvm_v16i8_ty,                                                               // qu
+               llvm_v8i16_ty,                                                               // qx
+               llvm_v8i16_ty,                                                               // qy
+               llvm_ptr_ty,                                 // pointer
+               llvm_i32_ty],                                // rs2 register offset
+              [IntrWriteMem, IntrArgMemOnly]>;
+
+// ESP.VMULAS.S8.QACC (_m version) - Multiply-accumulate to QACC_H and QACC_L
+// Returns: {v16i8, v16i8, v16i8, v16i8} - 4x128-bit QACC directly
+// Parameters: v16i8, v16i8, v16i8, v16i8 (4x128-bit QACC passthru), v16i8, v16i8 (qx, qy)
+def int_riscv_esp_vmulas_s8_qacc_m :
+	Intrinsic<[llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: 4x128-bit QACC
+              [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty,   // Current QACC (4x128-bit passthru)
+               llvm_v16i8_ty,                                                   // qx
+               llvm_v16i8_ty],                                                  // qy
+              [IntrNoMem]>;
+
+// ESP.VMULAS.S8.QACC.LD.IP (_m version)
+def int_riscv_esp_vmulas_s8_qacc_ld_ip_m :
+	Intrinsic<[llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: ptr + qu + 4x128-bit QACC
+              [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty,               // Current QACC (4x128-bit passthru)
+               llvm_v16i8_ty,                                                               // qx
+               llvm_v16i8_ty,                                                               // qy
+               llvm_ptr_ty,                                 // pointer
+               llvm_i32_ty],                                // offset
+              [IntrReadMem, IntrArgMemOnly]>;
+
+// ESP.VMULAS.S8.QACC.LD.XP (_m version)
+def int_riscv_esp_vmulas_s8_qacc_ld_xp_m :
+	Intrinsic<[llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: ptr + qu + 4x128-bit QACC (6 values)
+              [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty,               // Current QACC (4x128-bit passthru)
+               llvm_v16i8_ty,                                                               // qx
+               llvm_v16i8_ty,                                                               // qy
+               llvm_ptr_ty,                                 // pointer
+               llvm_i32_ty],                                // register offset
+              [IntrReadMem, IntrArgMemOnly]>;
+
+// ESP.VMULAS.S8.QACC.ST.IP (_m version)
+def int_riscv_esp_vmulas_s8_qacc_st_ip_m :
+	Intrinsic<[llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: ptr + 4x128-bit QACC
+              [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty,               // Current QACC (4x128-bit passthru)
+               llvm_v16i8_ty,                                                               // qu
+               llvm_v16i8_ty,                                                               // qx
+               llvm_v16i8_ty,                                                               // qy
+               llvm_ptr_ty,                                 // pointer
+               llvm_i32_ty],                                // offset
+              [IntrWriteMem, IntrArgMemOnly]>;
+
+// ESP.VMULAS.S8.QACC.ST.XP (_m version)
+def int_riscv_esp_vmulas_s8_qacc_st_xp_m :
+	Intrinsic<[llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: ptr + 4x128-bit QACC
+              [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty,               // Current QACC (4x128-bit passthru)
+               llvm_v16i8_ty,                                                               // qu
+               llvm_v16i8_ty,                                                               // qx
+               llvm_v16i8_ty,                                                               // qy
+               llvm_ptr_ty,                                 // pointer
+               llvm_i32_ty],                                // rs2 register offset
+              [IntrWriteMem, IntrArgMemOnly]>;
+
+// ESP.VMULAS.U16.QACC (_m version) - Multiply-accumulate to QACC_H and QACC_L
+// Returns: {v16i8, v16i8, v16i8, v16i8} - 4x128-bit QACC directly
+// Parameters: v16i8, v16i8, v16i8, v16i8 (4x128-bit QACC passthru), v8i16, v8i16 (qx, qy)
+def int_riscv_esp_vmulas_u16_qacc_m :
+	Intrinsic<[llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: 4x128-bit QACC
+              [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty,   // Current QACC (4x128-bit passthru)
+               llvm_v8i16_ty,                                                   // qx
+               llvm_v8i16_ty],                                                  // qy
+              [IntrNoMem]>;
+
+// ESP.VMULAS.U16.QACC.LD.IP (_m version)
+def int_riscv_esp_vmulas_u16_qacc_ld_ip_m :
+	Intrinsic<[llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: ptr + qu + 4x128-bit QACC
+              [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty,               // Current QACC (4x128-bit passthru)
+               llvm_v8i16_ty,                                                               // qx
+               llvm_v8i16_ty,                                                               // qy
+               llvm_ptr_ty,                                 // pointer
+               llvm_i32_ty],                                // offset
+              [IntrReadMem, IntrArgMemOnly]>;
+
+// ESP.VMULAS.U16.QACC.LD.XP (_m version)
+def int_riscv_esp_vmulas_u16_qacc_ld_xp_m :
+	Intrinsic<[llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: ptr + qu + 4x128-bit QACC (6 values)
+              [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty,               // Current QACC (4x128-bit passthru)
+               llvm_v8i16_ty,                                                               // qx
+               llvm_v8i16_ty,                                                               // qy
+               llvm_ptr_ty,                                 // pointer
+               llvm_i32_ty],                                // register offset
+              [IntrReadMem, IntrArgMemOnly]>;
+
+// ESP.VMULAS.U16.QACC.ST.IP (_m version)
+def int_riscv_esp_vmulas_u16_qacc_st_ip_m :
+	Intrinsic<[llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: ptr + 4x128-bit QACC
+              [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty,               // Current QACC (4x128-bit passthru)
+               llvm_v16i8_ty,                                                               // qu
+               llvm_v8i16_ty,                                                               // qx
+               llvm_v8i16_ty,                                                               // qy
+               llvm_ptr_ty,                                 // pointer
+               llvm_i32_ty],                                // offset
+              [IntrWriteMem, IntrArgMemOnly]>;
+
+// ESP.VMULAS.U16.QACC.ST.XP (_m version)
+def int_riscv_esp_vmulas_u16_qacc_st_xp_m :
+	Intrinsic<[llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: ptr + 4x128-bit QACC
+              [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty,               // Current QACC (4x128-bit passthru)
+               llvm_v16i8_ty,                                                               // qu
+               llvm_v8i16_ty,                                                               // qx
+               llvm_v8i16_ty,                                                               // qy
+               llvm_ptr_ty,                                 // pointer
+               llvm_i32_ty],                                // rs2 register offset
+              [IntrWriteMem, IntrArgMemOnly]>;
+
+// ESP.VMULAS.U8.QACC (_m version) - Multiply-accumulate to QACC_H and QACC_L
+// Returns: {v16i8, v16i8, v16i8, v16i8} - 4x128-bit QACC directly
+// Parameters: v16i8, v16i8, v16i8, v16i8 (4x128-bit QACC passthru), v16i8, v16i8 (qx, qy)
+def int_riscv_esp_vmulas_u8_qacc_m :
+	Intrinsic<[llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: 4x128-bit QACC
+              [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty,   // Current QACC (4x128-bit passthru)
+               llvm_v16i8_ty,                                                   // qx
+               llvm_v16i8_ty],                                                  // qy
+              [IntrNoMem]>;
+
+// ESP.VMULAS.U8.QACC.LD.IP (_m version)
+def int_riscv_esp_vmulas_u8_qacc_ld_ip_m :
+	Intrinsic<[llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: ptr + qu + 4x128-bit QACC
+              [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty,               // Current QACC (4x128-bit passthru)
+               llvm_v16i8_ty,                                                               // qx
+               llvm_v16i8_ty,                                                               // qy
+               llvm_ptr_ty,                                 // pointer
+               llvm_i32_ty],                                // offset
+              [IntrReadMem, IntrArgMemOnly]>;
+
+// ESP.VMULAS.U8.QACC.LD.XP (_m version)
+def int_riscv_esp_vmulas_u8_qacc_ld_xp_m :
+	Intrinsic<[llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: ptr + qu + 4x128-bit QACC (6 values)
+              [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty,               // Current QACC (4x128-bit passthru)
+               llvm_v16i8_ty,                                                               // qx
+               llvm_v16i8_ty,                                                               // qy
+               llvm_ptr_ty,                                 // pointer
+               llvm_i32_ty],                                // register offset
+              [IntrReadMem, IntrArgMemOnly]>;
+
+// ESP.VMULAS.U8.QACC.ST.IP (_m version)
+def int_riscv_esp_vmulas_u8_qacc_st_ip_m :
+	Intrinsic<[llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: ptr + 4x128-bit QACC
+              [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty,               // Current QACC (4x128-bit passthru)
+               llvm_v16i8_ty,                                                               // qu
+               llvm_v16i8_ty,                                                               // qx
+               llvm_v16i8_ty,                                                               // qy
+               llvm_ptr_ty,                                 // pointer
+               llvm_i32_ty],                                // offset
+              [IntrWriteMem, IntrArgMemOnly]>;
+
+// ESP.VMULAS.U8.QACC.ST.XP (_m version)
+def int_riscv_esp_vmulas_u8_qacc_st_xp_m :
+	Intrinsic<[llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: ptr + 4x128-bit QACC
+              [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty,               // Current QACC (4x128-bit passthru)
+               llvm_v16i8_ty,                                                               // qu
+               llvm_v16i8_ty,                                                               // qx
+               llvm_v16i8_ty,                                                               // qy
+               llvm_ptr_ty,                                 // pointer
+               llvm_i32_ty],                                // rs2 register offset
+              [IntrWriteMem, IntrArgMemOnly]>;
+
+// ESP.VMULAS.S16.QACC.LDBC.INCP (_m version)
+def int_riscv_esp_vmulas_s16_qacc_ldbc_incp_m :
+	Intrinsic<[llvm_v16i8_ty, llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: qu + ptr + 4x128-bit QACC (6 values)
+              [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty,               // Current QACC (4x128-bit passthru)
+               llvm_v8i16_ty,                                                               // qx
+               llvm_v8i16_ty,                                                               // qy
+               llvm_ptr_ty],                                 // pointer
+              [IntrReadMem, IntrArgMemOnly]>;
+
+// ESP.VMULAS.S8.QACC.LDBC.INCP (_m version)
+def int_riscv_esp_vmulas_s8_qacc_ldbc_incp_m :
+	Intrinsic<[llvm_v16i8_ty, llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: qu + ptr + 4x128-bit QACC (6 values)
+              [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty,               // Current QACC (4x128-bit passthru)
+               llvm_v16i8_ty,                                                               // qx
+               llvm_v16i8_ty,                                                               // qy
+               llvm_ptr_ty],                                 // pointer
+              [IntrReadMem, IntrArgMemOnly]>;
+
+// ESP.VMULAS.U16.QACC.LDBC.INCP (_m version)
+def int_riscv_esp_vmulas_u16_qacc_ldbc_incp_m :
+	Intrinsic<[llvm_v16i8_ty, llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: qu + ptr + 4x128-bit QACC (6 values)
+              [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty,               // Current QACC (4x128-bit passthru)
+               llvm_v8i16_ty,                                                               // qx
+               llvm_v8i16_ty,                                                               // qy
+               llvm_ptr_ty],                                 // pointer
+              [IntrReadMem, IntrArgMemOnly]>;
+
+// ESP.VMULAS.U8.QACC.LDBC.INCP (_m version)
+def int_riscv_esp_vmulas_u8_qacc_ldbc_incp_m :
+	Intrinsic<[llvm_v16i8_ty, llvm_ptr_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty],  // Returns: qu + ptr + 4x128-bit QACC (6 values)
+              [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty,               // Current QACC (4x128-bit passthru)
+               llvm_v16i8_ty,                                                               // qx
+               llvm_v16i8_ty,                                                               // qy
+               llvm_ptr_ty],                                 // pointer
+              [IntrReadMem, IntrArgMemOnly]>;
 }
