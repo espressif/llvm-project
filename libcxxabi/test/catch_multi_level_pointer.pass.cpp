@@ -13,7 +13,7 @@
 // UNSUPPORTED: LIBCXX-PICOLIBC-FIXME
 
 // ESP: Exceeds available memory
-// UNSUPPORTED: target={{.*}}-esp-elf
+// UNSUPPORTED: target={{.*}}-esp{{(-unknown)?}}-elf
 
 #include <cassert>
 #include <cstdio>

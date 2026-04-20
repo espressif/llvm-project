@@ -17,6 +17,9 @@
 
 #include "test_macros.h"
 
+// For RISCV newlib defines macros below only for chips with HW float support
+#if !defined(__riscv) || defined(__riscv_flen) || defined(__riscv_zfinx)
+
 #ifndef FE_DIVBYZERO
 #error FE_DIVBYZERO not defined
 #endif
@@ -61,8 +64,11 @@
 #error FE_DFL_ENV not defined
 #endif
 
+#endif
+
 int main(int, char**)
 {
+  #if !defined(__riscv) || defined(__riscv_flen) || defined(__riscv_zfinx)
     std::fenv_t fenv;
     std::fexcept_t fex;
     ((void)fenv); // Prevent unused warning
@@ -78,6 +84,7 @@ int main(int, char**)
     static_assert((std::is_same<decltype(std::feholdexcept(&fenv)), int>::value), "");
     static_assert((std::is_same<decltype(std::fesetenv(&fenv)), int>::value), "");
     static_assert((std::is_same<decltype(std::feupdateenv(&fenv)), int>::value), "");
+  #endif
 
   return 0;
 }
