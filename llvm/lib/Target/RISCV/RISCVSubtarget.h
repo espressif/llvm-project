@@ -176,6 +176,13 @@ public:
   bool GETTER() const { return ATTRIBUTE; }
 #include "RISCVGenSubtargetInfo.inc"
 
+  /// ESPV target lowering is enabled only when both the ESPV ISA (xespv1v) and
+  /// the opt-in flag (espv-lowering) are set. Default off; use -mattr=+espv-lowering
+  /// for tests and IDF builds until well tested.
+  bool hasESPVTargetLowering() const {
+    return hasVendorXespv1v() && hasVendorXespvLowering();
+  }
+
   LLVM_DEPRECATED("Now Equivalent to hasStdExtZcd", "hasStdExtZcd")
   bool hasStdExtCOrZcd() const { return HasStdExtZcd; }
   LLVM_DEPRECATED("Now Equivalent to hasStdExtZcf", "hasStdExtZcf")

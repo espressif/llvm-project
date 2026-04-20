@@ -20,6 +20,7 @@
 ; CHECK-NEXT:   e                                - 'E' (Embedded Instruction Set with 16 GPRs).
 ; CHECK-NEXT:   enable-select-opt                - Enable the select optimize pass for select loop heuristics.
 ; CHECK-NEXT:   enable-vsetvli-sched-heuristic   - Enable vsetvli-based scheduling heuristic.
+; CHECK-NEXT:   espv-lowering                     - Enable Espressif ESPV target lowering (DAG/instruction selection).
 ; CHECK-NEXT:   exact-asm                        - Enable Exact Assembly (Disables Compression and Relaxation).
 ; CHECK-NEXT:   experimental                     - Experimental intrinsics.
 ; CHECK-NEXT:   experimental-p                   - 'P' ('Base P' (Packed SIMD)).
