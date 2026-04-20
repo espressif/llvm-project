@@ -1312,7 +1312,7 @@ void RISCVDAGToDAGISel::Select(SDNode *Node) {
     Node->setNodeId(-1);
     return;
   }
-  if (Subtarget->hasVendorXespv2p1() && selectESP(Node))
+  if (Subtarget->hasVendorXespv1v() && selectESP(Node))
     return;
 
   // Instruction Selection not handled by the auto-generated tablegen selection
