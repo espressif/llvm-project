@@ -1220,7 +1220,7 @@ void RISCVDAGToDAGISel::Select(SDNode *Node) {
     Node->setNodeId(-1);
     return;
   }
-  if (Subtarget->hasVendorXespv1v() && selectESP(Node))
+  if (Subtarget->hasESPVTargetLowering() && selectESP(Node))
     return;
 
   // Instruction Selection not handled by the auto-generated tablegen selection
@@ -3035,7 +3035,7 @@ void RISCVDAGToDAGISel::Select(SDNode *Node) {
     SDLoc DL(V);
 
     // ESP32P4: Handle special ESPV extract_subvector cases
-    if (Subtarget->hasVendorXespv1v()) {
+    if (Subtarget->hasESPVTargetLowering()) {
       selectESPVExtractSubvector(Node, V, Idx, InVT, VT, DL);
       return;
     }

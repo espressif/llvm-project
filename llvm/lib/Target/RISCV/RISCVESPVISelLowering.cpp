@@ -381,7 +381,7 @@ bool getESPVTgtMemIntrinsic(TargetLowering::IntrinsicInfo &Info,
 // ESPV intrinsic lowering for INTRINSIC_W_CHAIN
 SDValue lowerESPVIntrinsicWChain(SDValue Op, SelectionDAG &DAG,
                                  const RISCVSubtarget &Subtarget) {
-  if (!Subtarget.hasVendorXespv1v())
+  if (!Subtarget.hasESPVTargetLowering())
     return SDValue();
 
   unsigned IntNo = Op.getConstantOperandVal(1);
@@ -2507,7 +2507,7 @@ static SDValue LowerLDQAXP(SDValue Op, SelectionDAG &DAG, unsigned ISDOpcode) {
 // ESPV intrinsic lowering for INTRINSIC_WO_CHAIN
 SDValue lowerESPVIntrinsicWOChain(SDValue Op, SelectionDAG &DAG,
                                   const RISCVSubtarget &Subtarget) {
-  if (!Subtarget.hasVendorXespv1v())
+  if (!Subtarget.hasESPVTargetLowering())
     return SDValue();
 
   unsigned IntNo = Op.getConstantOperandVal(0);
