@@ -914,7 +914,7 @@ def ESP_VMULAS_S16_QACC_ST_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs
 // ESP.VMULAS.S16.XACC (_m version) - Multiply-accumulate with explicit state passing
 // Mixed model: XACC as struct {i32 (XACC[31:0]), i8 (XACC[39:32])}
 // Note: Uses manual instruction selection (RISCVISelDAGToDAG.cpp) because Pattern
-// cannot handle multiple outputs directly. Pattern matching is done in RISCVInstrInfoESP32P4Patterns.td
+// cannot handle multiple outputs directly. Pattern matching is done in RISCVInstrInfoESPVPatterns.td
 def ESP_VMULAS_S16_XACC: EspVInst<(outs XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), 
                                    (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, QR:$qx, QR:$qy),
                    "esp.vmulas.s16.xacc\t $qx, $qy", []> 
@@ -1445,7 +1445,7 @@ def ESP_VMULAS_S8_QACC_ST_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2
 // ESP.VMULAS.S8.XACC (_m version) - Multiply-accumulate with explicit state passing
 // Mixed model: XACC as struct {i32 (XACC[31:0]), i8 (XACC[39:32])}
 // Note: Uses manual instruction selection (RISCVISelDAGToDAG.cpp) because Pattern
-// cannot handle multiple outputs directly. Pattern matching is done in RISCVInstrInfoESP32P4Patterns.td
+// cannot handle multiple outputs directly. Pattern matching is done in RISCVInstrInfoESPVPatterns.td
 def ESP_VMULAS_S8_XACC: EspVInst<(outs XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), 
                                    (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, QR:$qx, QR:$qy),
                    "esp.vmulas.s8.xacc\t $qx, $qy", []> 
@@ -1976,7 +1976,7 @@ def ESP_VMULAS_U16_QACC_ST_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs
 // ESP.VMULAS.U16.XACC (_m version) - Multiply-accumulate with explicit state passing
 // Mixed model: XACC as struct {i32 (XACC[31:0]), i8 (XACC[39:32])}
 // Note: Uses manual instruction selection (RISCVISelDAGToDAG.cpp) because Pattern
-// cannot handle multiple outputs directly. Pattern matching is done in RISCVInstrInfoESP32P4Patterns.td
+// cannot handle multiple outputs directly. Pattern matching is done in RISCVInstrInfoESPVPatterns.td
 def ESP_VMULAS_U16_XACC: EspVInst<(outs XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), 
                                    (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, QR:$qx, QR:$qy),
                    "esp.vmulas.u16.xacc\t $qx, $qy", []> 
@@ -2507,7 +2507,7 @@ def ESP_VMULAS_U8_QACC_ST_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2
 // ESP.VMULAS.U8.XACC (_m version) - Multiply-accumulate with explicit state passing
 // Mixed model: XACC as struct {i32 (XACC[31:0]), i8 (XACC[39:32])}
 // Note: Uses manual instruction selection (RISCVISelDAGToDAG.cpp) because Pattern
-// cannot handle multiple outputs directly. Pattern matching is done in RISCVInstrInfoESP32P4Patterns.td
+// cannot handle multiple outputs directly. Pattern matching is done in RISCVInstrInfoESPVPatterns.td
 def ESP_VMULAS_U8_XACC: EspVInst<(outs XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), 
                                    (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, QR:$qx, QR:$qy),
                    "esp.vmulas.u8.xacc\t $qx, $qy", []> 
@@ -11330,7 +11330,7 @@ def ESP_MOVX_R_XACC_H: EspVInst<(outs GPRPIE:$rd), (ins XACC_HIGH:$xacc_h_in),
                    // Return value: XACC[39:32] (i32, zero-extended from 8-bit)
                    // Input: xacc_h_in (passthru for explicit state passing, XACC_HIGH type to match ESP_MOVX_W_XACC_H output)
                    // Hardware reads directly from XACC register, but xacc_h_in maintains data flow dependency
-                   // Pattern matching is done in RISCVInstrInfoESP32P4Patterns.td
+                   // Pattern matching is done in RISCVInstrInfoESPVPatterns.td
                    []> 
 {
   bits<5> rd;
@@ -11376,7 +11376,7 @@ def ESP_MOVX_R_XACC_L: EspVInst<(outs GPRPIE:$rd), (ins XACC_LOW:$xacc_l_in),
                    // Return value: XACC[31:0] (i32)
                    // Input: xacc_l_in (passthru for explicit state passing, XACC_LOW type to match ESP_MOVX_W_XACC_L output)
                    // Hardware reads directly from XACC register, but xacc_l_in maintains data flow dependency
-                   // Pattern matching is done in RISCVInstrInfoESP32P4Patterns.td
+                   // Pattern matching is done in RISCVInstrInfoESPVPatterns.td
                    []> 
 {
   bits<5> rd;
@@ -11647,7 +11647,7 @@ def ESP_MOVX_W_XACC_H: EspVInst<(outs XACC_HIGH:$xacc_out), (ins GPRPIE:$rs1),
                    // Subregister model: writes to XACC[39:32] (high 8 bits)
                    // Instruction writes XACC[39:32] = rs1[7:0], XACC[31:0] remains unchanged (hardware passthru)
                    // Returns XACC_HIGH register (matches ESP_MOVX_R_XACC_H input type)
-                   // Pattern matching is done in RISCVInstrInfoESP32P4Patterns.td
+                   // Pattern matching is done in RISCVInstrInfoESPVPatterns.td
                    []> 
 {
   bits<5> rs1;
@@ -11692,7 +11692,7 @@ def ESP_MOVX_W_XACC_L: EspVInst<(outs XACC_LOW:$xacc_out), (ins GPRPIE:$rs1),
                    // Subregister model: writes to XACC[31:0] (low 32 bits)
                    // Instruction writes XACC[31:0] = rs1[31:0], XACC[39:32] remains unchanged (hardware passthru)
                    // Returns XACC[31:0] (i32)
-                   // Pattern matching is done in RISCVInstrInfoESP32P4Patterns.td
+                   // Pattern matching is done in RISCVInstrInfoESPVPatterns.td
                    []> 
 {
   bits<5> rs1;
@@ -17193,7 +17193,7 @@ def ESP_ST_U_XACC_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset
 				"!esp_st_u_xacc_ip_p $rs1, $off2568",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_st_u_xacc_ip GPRPIE:$rs1, timm:$off2568))]>;
 
-include "RISCVInstrInfoESP32P4Patterns.td"
+include "RISCVInstrInfoESPVPatterns.td"
 
 def ESP_VCMULAS_S16_QACC_H_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$sat),
                    "esp.vcmulas.s16.qacc.h\t $qx, $qy, $sat", []> 

@@ -2,7 +2,7 @@
 ; ModuleID = './riscv-esp32p4-ld-st-qacc-ip.c'
 ; Test ASM generation (Intrinsic -> ASM)
 ; RUN: llc -O2 -mattr=xespv1v -mtriple=riscv32 %s -o - | FileCheck %s --check-prefix=ASM
-; XFAIL: *
+
 
 define dso_local ptr @test_ld_st_qacc_h_l_128_ip_m(ptr noundef %src, ptr noundef %dst) local_unnamed_addr #0 {
 ; ASM-LABEL: test_ld_st_qacc_h_l_128_ip_m:

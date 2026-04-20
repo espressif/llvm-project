@@ -2,7 +2,7 @@
 ; ModuleID = './riscv-esp32p4-movx-r-w-fft-bit-width.c'
 ; Test ASM generation (Intrinsic -> ASM)
 ; RUN: llc -O2 -mattr=xespv1v -mtriple=riscv32 %s -o - | FileCheck %s --check-prefix=ASM
-; XFAIL: *
+
 
 define dso_local i32 @test_movx_fft_bit_width_write_read(i32 noundef %rs1_val) local_unnamed_addr #0 {
 ; ASM-LABEL: test_movx_fft_bit_width_write_read:
