@@ -2,7 +2,7 @@
 ; ModuleID = './riscv-esp32p4-vector-max-min.c'
 ; Test ASM generation (Intrinsic -> ASM)
 ; RUN: llc -O2 -mattr=xespv1v -mtriple=riscv32 %s -o - | FileCheck %s --check-prefix=ASM
-; XFAIL: *
+
 
 define dso_local void @test_vmax_s8(ptr noundef %src1, ptr noundef %src2, ptr noundef %dst) local_unnamed_addr #0 {
 ; ASM-LABEL: test_vmax_s8:

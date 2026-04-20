@@ -2,7 +2,7 @@
 ; ModuleID = './riscv-esp32p4-load-store-1.c'
 ; Test ASM generation (Intrinsic -> ASM)
 ; RUN: llc -O2 -mattr=xespv1v -mtriple=riscv32 %s -o - | FileCheck %s --check-prefix=ASM
-; XFAIL: *
+
 
 define dso_local void @test_ip(ptr noundef %src, ptr noundef %dst) local_unnamed_addr #0 {
 ; ASM-LABEL: test_ip:
