@@ -35,7 +35,7 @@ static SDValue LowerSTXACCIP(SDValue Op, SelectionDAG &DAG, unsigned ISDOpcode);
 // ESPV intrinsic lowering for INTRINSIC_W_CHAIN
 SDValue lowerESPVIntrinsicWChain(SDValue Op, SelectionDAG &DAG,
                                  const RISCVSubtarget &Subtarget) {
-  if (!Subtarget.hasVendorXespv())
+  if (!Subtarget.hasVendorXespv2p1())
     return SDValue();
 
   unsigned IntNo = Op.getConstantOperandVal(1);
