@@ -1318,7 +1318,7 @@ R"(All available -march extensions for RISC-V
     xespdsp              2.1
     xesploop             1.0
     xespv                2.2
-    xespv2p1             2.1
+    xespv1v              2.1
     xmipscbop            1.0
     xmipscmov            1.0
     xmipsexectl          1.0
