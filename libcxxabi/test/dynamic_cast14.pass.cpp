@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 // ESP: Exceeds available memory
-// UNSUPPORTED: target={{.*}}-esp-elf
+// UNSUPPORTED: target={{.*}}-esp{{(-unknown)?}}-elf
 
 #include <cassert>
 #include "support/timer.h"

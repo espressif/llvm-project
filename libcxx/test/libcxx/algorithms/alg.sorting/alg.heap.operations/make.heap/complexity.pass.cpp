@@ -9,7 +9,7 @@
 // UNSUPPORTED: c++03, c++11
 
 // ESP: Exceeds available memory
-// UNSUPPORTED: target={{.*}}-esp-elf
+// UNSUPPORTED: target={{.*}}-esp-unknown-elf
 
 // <algorithm>
 
