@@ -1,4 +1,4 @@
-# RUN: llvm-mc %s -triple=riscv32 -mcpu=esp32p4 -show-encoding | FileCheck -check-prefixes=CHECK %s
+# RUN: llvm-mc %s -triple=riscv32 -mattr=+xespv2p1 -show-encoding | FileCheck -check-prefixes=CHECK %s
 
 esp.vcmulas.s16.qacc.h q2, q2
 # CHECK: esp.vcmulas.s16.qacc.h	 q2, q2         # encoding: [0x5f,0x80,0x87,0x4a]

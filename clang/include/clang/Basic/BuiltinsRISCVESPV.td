@@ -1,4 +1,4 @@
-let Features = "xespv" in {
+let Features = "xespv2p1" in {
 def esp_vcmulas_s16_qacc_h : RISCVBuiltin<"void(unsigned int, unsigned int)">;
 def esp_vcmulas_s16_qacc_h_ld_ip : RISCVBuiltin<"int(unsigned int, unsigned int, unsigned int, int, unsigned int)">;
 def esp_vcmulas_s16_qacc_h_ld_xp : RISCVBuiltin<"int(unsigned int, unsigned int, unsigned int, unsigned int, unsigned int)">;
@@ -354,7 +354,7 @@ def esp_vsrd_8 : RISCVBuiltin<"void(unsigned int, unsigned int, unsigned int)">;
 def esp_st_s_xacc_ip : RISCVBuiltin<"int(unsigned int, int)">;
 def esp_st_u_xacc_ip : RISCVBuiltin<"int(unsigned int, int)">;
 }
-let Features = "xespv2p2" in {
+let Features = "xespv" in {
 def esp_vcmulas_s16_qacc_h_2p2 : RISCVBuiltin<"void(unsigned int, unsigned int, unsigned int)">;
 def esp_vcmulas_s16_qacc_h_ld_ip_2p2 : RISCVBuiltin<"int(unsigned int, unsigned int, unsigned int, unsigned int, int, unsigned int)">;
 def esp_vcmulas_s16_qacc_h_ld_xp_2p2 : RISCVBuiltin<"int(unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int)">;
