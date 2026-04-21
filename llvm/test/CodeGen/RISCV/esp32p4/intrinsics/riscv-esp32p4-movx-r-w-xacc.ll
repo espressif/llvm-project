@@ -699,6 +699,4 @@ attributes #5 = { nounwind }
 attributes #6 = { nounwind }
 
 
-!6 = !{!7, !7, i64 0}
-!7 = !{!"omnipotent char", !8, i64 0}
-!8 = !{!"Simple C/C++ TBAA"}
+
