@@ -38,6 +38,18 @@ def int_riscv_esp_st_ua_state_ip_m : Intrinsic<
      llvm_i32_ty],                        // offset
     [IntrWriteMem, IntrArgMemOnly]>;       // No IntrHasSideEffects
 
+// ESP.LD.XACC.IP (_m version) - Load 64-bit data and store low 40 bits to XACC
+// Returns: updated pointer + new XACC as {i32 low, i32 high}
+// Parameters: [xacc_low_in (i32), xacc_high_in (i32, only low 8 bits valid), ptr, offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_ld_xacc_ip_m : Intrinsic<
+    [llvm_ptr_ty, llvm_i32_ty, llvm_i32_ty],  // Returns: pointer + new XACC {i32 low, i32 high}
+    [llvm_i32_ty,                              // xacc_low_in (i32)
+     llvm_i32_ty,                              // xacc_high_in (i32, only low 8 bits valid)
+     llvm_ptr_ty,                              // pointer
+     llvm_i32_ty],                             // offset
+    [IntrReadMem, IntrArgMemOnly]>;            // No IntrHasSideEffects
+
 // Load with Post-Increment (Register offset)
 // Returns: { vector data, updated pointer }
 // Parameters: [ original pointer, offset (register) ]
@@ -583,9 +595,46 @@ def int_riscv_esp_movx_w_sar_m : Intrinsic<[llvm_i32_ty],
 // MOVX.W.SAR_BYTES - Write SAR_BYTES register
 // Returns: i32 (SAR_BYTES value, 32-bit unsigned, only low 4 bits used)
 // Parameters: [ i32 value to write (rs1, 32-bit unsigned) ]
-def int_riscv_esp_movx_w_sar_bytes_m : Intrinsic<[llvm_i32_ty], 
-                                                 [llvm_i32_ty], 
-                                                 [IntrNoMem]>;
+// MOVX.W - Write implicit registers (all return void)
+
+def int_riscv_esp_movx_w_sar_bytes_m : Intrinsic<
+    [llvm_i32_ty],                          // Return: SAR_BYTES value (32-bit unsigned, only low 4 bits used, range 0-15)
+    [llvm_i32_ty],                          // Value to write (rs1, 32-bit unsigned)
+    [IntrNoMem]>;                           //  No IntrHasSideEffects!
+
+// ESP.MOVX.R.XACC_H (_m version) - Read XACC[39:32] with explicit state passing
+// Returns: XACC[39:32] as i32 (only low 8 bits valid)
+// Parameters: [xacc_h (passthru, i32, only low 8 bits valid)]
+def int_riscv_esp_movx_r_xacc_h_m : Intrinsic<
+    [llvm_i32_ty],                          // Return: XACC[39:32] as i32 (only low 8 bits valid)
+    [llvm_i32_ty],                          // Input: xacc_h (passthru, i32, only low 8 bits valid)
+    [IntrNoMem]>;                           //  No IntrHasSideEffects!
+// ESP.MOVX.R.XACC_L (_m version) - Subregister model: reads XACC[31:0] only
+// Returns: XACC[31:0] value as i32 (unsigned int)
+// Parameters: [xacc_l (passthru for explicit state passing)]
+def int_riscv_esp_movx_r_xacc_l_m : Intrinsic<
+    [llvm_i32_ty],                          // Return: XACC[31:0] value (i32, unsigned int)
+    [llvm_i32_ty],                          // Input: xacc_l (passthru for explicit state passing)
+    [IntrNoMem]>;                           //  No IntrHasSideEffects!
+
+// MOVX.W - Write implicit registers (all return void)
+def int_riscv_esp_movx_w_cfg_m : Intrinsic<[], [llvm_i32_ty],
+                                            [IntrNoMem,IntrHasSideEffects]>;
+
+// ESP.MOVX.W.XACC_H (_m version) - Write XACC[39:32] with explicit state passing
+// Returns: i32 (GPRPIE register class, only low 8 bits valid)
+// Parameters: [value to write (i32, only low 8 bits used)]
+def int_riscv_esp_movx_w_xacc_h_m : Intrinsic<
+    [llvm_i32_ty],                          // Return: i32 (GPRPIE register class, only low 8 bits valid)
+    [llvm_i32_ty],                          // Value to write (i32, only low 8 bits used)
+    [IntrNoMem]>;                           //  No IntrHasSideEffects!
+// ESP.MOVX.W.XACC_L (_m version) - Subregister model: writes XACC[31:0] only
+// Returns: new XACC[31:0] value as i32 (unsigned int)
+// Parameters: [value to write (i32, unsigned int)]
+def int_riscv_esp_movx_w_xacc_l_m : Intrinsic<
+    [llvm_i32_ty],                          // Return: new XACC[31:0] value (i32, unsigned int)
+    [llvm_i32_ty],                          // Value to write (i32, unsigned int)
+    [IntrNoMem]>;                           //  No IntrHasSideEffects!
 
 // VSR - Vector Shift Right (using SAR register)
 // VSR.S32 - Signed arithmetic right shift
@@ -774,6 +823,50 @@ def int_riscv_esp_vmul_s16_m : Intrinsic<[llvm_v8i16_ty],
                                          [llvm_v8i16_ty, llvm_v8i16_ty, llvm_i32_ty], 
                                          [IntrNoMem]>;
 
+// ESP.VMUL.S16.LD.INCP (_m version)
+// Returns: qv, qu, ptr
+// Parameters: [qx, qy, rs1, sar]
+def int_riscv_esp_vmul_s16_ld_incp_m : Intrinsic<
+	[llvm_v8i16_ty, llvm_v16i8_ty, llvm_ptr_ty],  // Returns: qv, qu, ptr
+	[llvm_v8i16_ty, llvm_v8i16_ty, llvm_ptr_ty, llvm_i32_ty],  // Parameters: qx, qy, rs1, sar
+	[IntrReadMem, IntrArgMemOnly]
+>;
+
+// ESP.VMUL.S16.S8XS8 (_m version)
+// Returns two v8i16 vectors (qz, qv) from v16i8 inputs (qx, qy)
+// SAR is passed explicitly as i32 for explicit state passing
+// SAR stores unsigned shift amount (0-63), only low 6 bits are used
+// Note: Not marked as ClangBuiltin to avoid generic intrinsic path in EmitBuiltinExpr
+// This builtin has 5 parameters (2 vectors + 2 pointers + SAR) but intrinsic has only 3 parameters (2 vectors + SAR)
+// So we handle it manually in EmitRISCVBuiltinExpr
+def int_riscv_esp_vmul_s16_s8xs8_m : Intrinsic<[llvm_v8i16_ty, llvm_v8i16_ty], [llvm_v16i8_ty, llvm_v16i8_ty, llvm_i32_ty], [IntrNoMem]>;
+
+// ESP.VMUL.S16.ST.INCP (_m version)
+// Returns struct {v8i16 qv, i8* ptr}
+// SAR is passed explicitly as i32 for explicit state passing
+// SAR stores unsigned shift amount (0-63), only low 6 bits are used
+def int_riscv_esp_vmul_s16_st_incp_m : Intrinsic<
+	[llvm_v8i16_ty, llvm_ptr_ty],  // Returns: qv, ptr
+	[llvm_v8i16_ty, llvm_v8i16_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_v8i16_ty, llvm_i32_ty],  // Parameters: qx, qy, qu, rs1, qv, sar
+	[IntrWriteMem, IntrArgMemOnly]
+>;
+
+// ESP.VMUL.S32.S16XS16 (_m version)
+// Returns two v4i32 vectors (qz, qv) from v8i16 inputs (qx, qy)
+// SAR is passed explicitly as i32 for explicit state passing
+// SAR stores unsigned shift amount (0-63), only low 6 bits are used
+// Note: Not marked as ClangBuiltin to avoid generic intrinsic path in EmitBuiltinExpr
+// This builtin has 5 parameters (2 vectors + 2 pointers + SAR) but intrinsic has only 3 parameters (2 vectors + SAR)
+// So we handle it manually in EmitRISCVBuiltinExpr
+def int_riscv_esp_vmul_s32_s16xs16_m : Intrinsic<[llvm_v4i32_ty, llvm_v4i32_ty], [llvm_v8i16_ty, llvm_v8i16_ty, llvm_i32_ty], [IntrNoMem]>;
+
+// ESP.VMUL.U16 (_m version)
+// SAR is passed explicitly as i32 for explicit state passing
+// SAR stores unsigned shift amount (0-63), only low 6 bits are used
+def int_riscv_esp_vmul_u16_m : Intrinsic<[llvm_v8i16_ty], 
+                                         [llvm_v8i16_ty, llvm_v8i16_ty, llvm_i32_ty], 
+                                         [IntrNoMem]>;
+
 // Bitwise Operations
 // ANDQ - Vector bitwise AND
 // Returns: v16i8 (bitwise AND results)
@@ -862,6 +955,18 @@ def int_riscv_esp_zero_xacc_m : Intrinsic<[llvm_i32_ty, llvm_i32_ty],
 // Migration: Explicit state passing (no IntrHasSideEffects)
 // Note: XACC value is unchanged after store, so output XACC equals input XACC
 def int_riscv_esp_st_s_xacc_ip_m : Intrinsic<
+    [llvm_ptr_ty, llvm_i32_ty, llvm_i32_ty],  // Returns: pointer + XACC unchanged {i32 low, i32 high}
+    [llvm_i32_ty,                              // xacc_low_in (i32)
+     llvm_i32_ty,                              // xacc_high_in (i32, only low 8 bits valid)
+     llvm_ptr_ty,                              // pointer
+     llvm_i32_ty],                             // offset
+    [IntrWriteMem, IntrArgMemOnly]>;           // No IntrHasSideEffects
+
+// ESP.ST.U.XACC.IP (_m version) - Store XACC zero-extended to 64-bit memory
+// Returns: updated pointer + XACC unchanged {i32 low, i32 high}
+// Parameters: [xacc_low_in (i32), xacc_high_in (i32, only low 8 bits valid), ptr, offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+def int_riscv_esp_st_u_xacc_ip_m : Intrinsic<
     [llvm_ptr_ty, llvm_i32_ty, llvm_i32_ty],  // Returns: pointer + XACC unchanged {i32 low, i32 high}
     [llvm_i32_ty,                              // xacc_low_in (i32)
      llvm_i32_ty,                              // xacc_high_in (i32, only low 8 bits valid)
@@ -1315,6 +1420,11 @@ def int_riscv_esp_movx_r_sar_m : Intrinsic<[llvm_i32_ty],
                                             [llvm_i32_ty], 
                                             [IntrNoMem]>;
 
+// MOVX - Read/Write implicit registers
+// MOVX.R - Read implicit registers (all return i32)
+def int_riscv_esp_movx_r_cfg_m : Intrinsic<[llvm_i32_ty], [],
+                                            [IntrNoMem,IntrHasSideEffects]>;
+
 // MOVX.R.SAR_BYTES - Read SAR_BYTES register
 // Returns: i32 (SAR_BYTES register value, low 4 bits)
 // Parameters: [ i32 sar_bytes (SAR_BYTES register value, passthru for explicit state passing) ]
@@ -1392,6 +1502,57 @@ def int_riscv_esp_vadd_u8_st_incp_m : Intrinsic<
 	[llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_v16i8_ty],  // Parameters: qx, qy, qu, rs1, qv
 	[IntrWriteMem, IntrArgMemOnly]
 >;
+
+// SRC.Q - Shift Right Concatenated Quad registers (_m version)
+// Performs arithmetic right shift on concatenated qy and qw using SAR_BYTES register
+// Returns: shifted result in qz
+// Parameters: [SAR_BYTES (64-bit, only low 4 bits used), qy, qw]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+// Note: Shift amount is SAR_BYTES[3:0] << 3 (hardware automatically uses only low 4 bits)
+def int_riscv_esp_src_q_m : Intrinsic<[llvm_v16i8_ty], 
+                                         [llvm_i32_ty, llvm_v16i8_ty, llvm_v16i8_ty], 
+                                         [IntrNoMem]>;
+
+// SRC.Q.LD.IP - Shift Right Concatenated Quad registers with Load and Immediate Post-increment (_m version)
+// Performs arithmetic right shift on concatenated qy and qw, loads data to qu, updates pointer
+// Returns: qw (updated), qu (loaded), ptr (updated)
+// Parameters: [SAR_BYTES (32-bit, only low 4 bits used, range 0-15), qy, qw, ptr, offset]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+// Note: Shift amount is SAR_BYTES[3:0] << 3 (hardware automatically uses only low 4 bits)
+def int_riscv_esp_src_q_ld_ip_m : Intrinsic<[llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty], 
+                                              [llvm_i32_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_i32_ty], 
+                                              [IntrReadMem, IntrArgMemOnly]>;
+
+// SRC.Q.LD.XP - Shift Right Concatenated Quad registers with Load and Register Post-increment (_m version)
+// Performs arithmetic right shift on concatenated qy and qw, loads data to qu, updates pointer
+// Returns: qw (updated), qu (loaded), ptr (updated)
+// Parameters: [SAR_BYTES (64-bit, only low 4 bits used), qy, qw, ptr, offset_reg]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+// Note: Shift amount is SAR_BYTES[3:0] << 3 (hardware automatically uses only low 4 bits)
+def int_riscv_esp_src_q_ld_xp_m : Intrinsic<[llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty], 
+                                              [llvm_i32_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty, llvm_i32_ty], 
+                                              [IntrReadMem, IntrArgMemOnly]>;
+
+// SRC.Q.qup - Shift Right Concatenated Quad registers with Update (_m version)
+// Performs arithmetic right shift on concatenated qw and qy, updates qw = qy
+// Returns: qz (new), qw (updated)
+// Parameters: [SAR_BYTES (64-bit, only low 4 bits used), qy, qw]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+// Note: Shift amount is SAR_BYTES[3:0] << 3 (hardware automatically uses only low 4 bits)
+def int_riscv_esp_src_q_qup_m : Intrinsic<[llvm_v16i8_ty, llvm_v16i8_ty], 
+                                             [llvm_i32_ty, llvm_v16i8_ty, llvm_v16i8_ty], 
+                                             [IntrNoMem]>;
+
+// SRCQ.128.ST.INCP - Shift Right Concatenated Quad registers with Store and Increment Pointer (_m version)
+// Performs arithmetic right shift on concatenated qy and qw, stores result, updates pointer
+// Returns: ptr (updated pointer)
+// Parameters: [SAR_BYTES (32-bit, only low 4 bits used, range 0-15), qy, qw, ptr]
+// Migration: Explicit state passing (no IntrHasSideEffects)
+// Note: Shift amount is SAR_BYTES[3:0] << 3 (hardware automatically uses only low 4 bits)
+// SAR_BYTES is i32 to match SAR_BYTESReg register class definition
+def int_riscv_esp_srcq_128_st_incp_m : Intrinsic<[llvm_ptr_ty], 
+                                                   [llvm_i32_ty, llvm_v16i8_ty, llvm_v16i8_ty, llvm_ptr_ty], 
+                                                   [IntrWriteMem, IntrArgMemOnly]>;
 
 // SRCMB.S16.QACC - Shift amount from rs1 register (rs1[5:0])
 // Returns v8i16 (saturated 16-bit signed values)
