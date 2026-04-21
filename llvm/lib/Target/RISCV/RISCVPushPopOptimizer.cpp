@@ -137,6 +137,8 @@ bool RISCVPushPopOpt::runOnMachineFunction(MachineFunction &Fn) {
   const RISCVSubtarget *Subtarget = &Fn.getSubtarget<RISCVSubtarget>();
   if (!Subtarget->hasStdExtZcmp() && !Subtarget->hasVendorXqccmp())
     return false;
+  if (!Subtarget->enableCMPopRetWorkaround())
+    return false;
 
   TII = Subtarget->getInstrInfo();
   TRI = Subtarget->getRegisterInfo();
