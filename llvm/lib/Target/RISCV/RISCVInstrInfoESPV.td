@@ -15787,7 +15787,7 @@ def ESP_SLCI_2Q_P : PseudoEsp<(outs), (ins imm8:$qy, imm8:$qw, select_16:$sel16)
 
 def ESP_SLCXXP_2Q: EspVInst<(outs QR:$qyr, QR:$qwr, GPRPIE:$rs1r), (ins GPRPIE:$rs1, GPRPIE:$rs2, QR:$qy, QR:$qw),
                    "esp.slcxxp.2q\t $qy, $qw, $rs1, $rs2", 
-                   []>
+                   [(set QR:$qyr, QR:$qwr, GPRPIE:$rs1r, (riscv_esp_slcxxp_2q_m QR:$qy, QR:$qw, GPRPIE:$rs1, GPRPIE:$rs2))]>
 {
   bits<5> rs1;
   bits<5> rs2;
@@ -16089,7 +16089,7 @@ def ESP_SRCI_2Q_P : PseudoEsp<(outs), (ins imm8:$qy, imm8:$qw, select_16:$sel16)
 
 def ESP_SRCMB_S16_Q_QACC: EspVInst<(outs QR:$qu), (ins QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, QR:$qw, select_2:$sel2),
                    "esp.srcmb.s16.q.qacc\t $qu, $qw, $sel2", 
-                   []> 
+                   [(set QR:$qu, (riscv_esp_srcmb_s16_q_qacc_m QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, QR:$qw, select_2:$sel2))]> 
 {
   bits<3> qw;
   bits<1> sel2;
@@ -16184,7 +16184,7 @@ def ESP_SRCMB_S16_QACC_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, select_2:$sel2, i
 
 def ESP_SRCMB_S8_Q_QACC: EspVInst<(outs QR:$qu), (ins QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, QR:$qw, select_2:$sel2),
                    "esp.srcmb.s8.q.qacc\t $qu, $qw, $sel2", 
-                   []> 
+                   [(set QR:$qu, (riscv_esp_srcmb_s8_q_qacc_m QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, QR:$qw, select_2:$sel2))]> 
 {
   bits<3> qw;
   bits<1> sel2;
@@ -16520,7 +16520,7 @@ def ESP_SRCQ_128_ST_INCP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qy, imm8:
 
 def ESP_SRCXXP_2Q: EspVInst<(outs QR:$qyr, QR:$qwr, GPRPIE:$rs1r), (ins GPRPIE:$rs1, GPRPIE:$rs2, QR:$qy, QR:$qw),
                    "esp.srcxxp.2q\t $qy, $qw, $rs1, $rs2", 
-                   []> 
+                   [(set QR:$qyr, QR:$qwr, GPRPIE:$rs1r, (riscv_esp_srcxxp_2q_m QR:$qy, QR:$qw, GPRPIE:$rs1, GPRPIE:$rs2))]> 
 {
   bits<5> rs1;
   bits<5> rs2;
