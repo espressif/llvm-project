@@ -1382,6 +1382,13 @@ Value *CodeGenFunction::EmitRISCVBuiltinExpr(unsigned BuiltinID,
   case RISCV::BI__builtin_riscv_nds_fcvt_bf16_s:
     return Builder.CreateFPTrunc(Ops[0], BFloatTy);
 
+    // ESPV builtins are handled from here.
+#include "clang/Basic/riscv_espv_builtin_cg.inc"
+
+    // Note: Scalar instructions (ADDX2, ADDX4, SUBX2, SUBX4, SAT) are already
+    // handled through ClangBuiltin in IntrinsicsRISCVESPV.td, so they don't
+    // need manual builtin implementation here.
+
     // Vector builtins are handled from here.
 #include "clang/Basic/riscv_vector_builtin_cg.inc"
 

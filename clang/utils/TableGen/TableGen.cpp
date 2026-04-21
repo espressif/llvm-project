@@ -120,6 +120,7 @@ enum ActionType {
   GenRISCVAndesVectorBuiltinSema,
   GenHLSLAliasIntrinsics,
   GenHLSLInlineIntrinsics,
+  GenRISCVESPVBuiltinCG,
   GenAttrDocs,
   GenBuiltinDocs,
   GenDiagDocs,
@@ -354,6 +355,8 @@ cl::opt<ActionType> Action(
         clEnumValN(GenHLSLInlineIntrinsics, "gen-hlsl-inline-intrinsics",
                    "Generate HLSL inline intrinsic overloads for "
                    "hlsl_intrinsics.h"),
+        clEnumValN(GenRISCVESPVBuiltinCG, "gen-riscv-espv-builtin-codegen",
+                   "Generate riscv_espv_builtin_cg.inc for clang"),
         clEnumValN(GenAttrDocs, "gen-attr-docs",
                    "Generate attribute documentation"),
         clEnumValN(GenBuiltinDocs, "gen-builtin-docs",
@@ -667,6 +670,9 @@ bool ClangTableGenMain(raw_ostream &OS, const RecordKeeper &Records) {
     break;
   case GenHLSLInlineIntrinsics:
     EmitHLSLInlineIntrinsics(Records, OS);
+    break;
+  case GenRISCVESPVBuiltinCG:
+    EmitESPVBuiltinCodeGen(Records, OS);
     break;
   case GenAttrDocs:
     EmitClangAttrDocs(Records, OS);
