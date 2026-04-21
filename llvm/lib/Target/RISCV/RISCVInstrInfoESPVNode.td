@@ -100,6 +100,34 @@ def riscv_esp_src_q_ld_ip_m : RVSDNode<"ESP_SRC_Q_LD_IP_M", SDT_ESPSRCQLDIPM,
 def riscv_esp_src_q_ld_xp_m : RVSDNode<"ESP_SRC_Q_LD_XP_M", SDT_ESPSRCQLDXPM,
                                        [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
 
+// SRCXXP.2Q SDNode
+// Results: qyr (v16i8), qwr (v16i8), rs1r (ptr)
+// Operands: qy (v16i8), qw (v16i8), rs1 (ptr), rs2 (i32)
+def SDT_ESPSRCXXP2QM : SDTypeProfile<3, 4, [
+  SDTCisVT<0, v16i8>,      // Result 0: qyr (updated qy)
+  SDTCisVT<1, v16i8>,      // Result 1: qwr (updated qw)
+  SDTCisPtrTy<2>,          // Result 2: rs1r (updated pointer)
+  SDTCisVT<3, v16i8>,      // Operand 0: qy
+  SDTCisVT<4, v16i8>,      // Operand 1: qw
+  SDTCisPtrTy<5>,          // Operand 2: rs1 (pointer)
+  SDTCisVT<6, i32>         // Operand 3: rs2 (offset)
+]>;
+def riscv_esp_srcxxp_2q_m : RVSDNode<"ESP_SRCXXP_2Q_M", SDT_ESPSRCXXP2QM, []>;
+
+// SLCXXP.2Q SDNode
+// Results: qyr (v16i8), qwr (v16i8), rs1r (ptr)
+// Operands: qy (v16i8), qw (v16i8), rs1 (ptr), rs2 (i32)
+def SDT_ESPSLCXXP2QM : SDTypeProfile<3, 4, [
+  SDTCisVT<0, v16i8>,      // Result 0: qyr (updated qy)
+  SDTCisVT<1, v16i8>,      // Result 1: qwr (updated qw)
+  SDTCisPtrTy<2>,          // Result 2: rs1r (updated pointer)
+  SDTCisVT<3, v16i8>,      // Operand 0: qy
+  SDTCisVT<4, v16i8>,      // Operand 1: qw
+  SDTCisPtrTy<5>,          // Operand 2: rs1 (pointer)
+  SDTCisVT<6, i32>         // Operand 3: rs2 (offset)
+]>;
+def riscv_esp_slcxxp_2q_m : RVSDNode<"ESP_SLCXXP_2Q_M", SDT_ESPSLCXXP2QM, []>;
+
 // VLD/VST H.64/L.64 SDNodes
 def SDT_ESPVLDH64IPM : SDTypeProfile<2, 2, [
   SDTCisVT<0, v8i8>,       // Result 0: vector
@@ -1202,6 +1230,38 @@ def SDT_ESPSRCMBU8QACCM : SDTypeProfile<1, 6, [
 def riscv_esp_srcmb_u8_qacc_m : RVSDNode<"ESP_SRCMB_U8_QACC_M", SDT_ESPSRCMBU8QACCM,
                                              [SDNPSideEffect]>;
 
+// SRCMB.S16.Q.QACC SDNode
+// QACC is passed as explicit phantom operand (4x128-bit) for proper data flow tracking
+// Results: qu (v8i16)
+// Operands: v0 (v16i8), v1 (v16i8), v2 (v16i8), v3 (v16i8), qw (v8i16), sel2 (i32)
+// v0: QACC_L[127:0], v1: QACC_L[255:128], v2: QACC_H[127:0], v3: QACC_H[255:128]
+def SDT_ESPSRCMBS16QQACCM : SDTypeProfile<1, 6, [
+  SDTCisVT<0, v8i16>,      // Result 0: qu vector
+  SDTCisVT<1, v16i8>,      // Operand 0: QACC_L[127:0] (phantom operand)
+  SDTCisVT<2, v16i8>,      // Operand 1: QACC_L[255:128] (phantom operand)
+  SDTCisVT<3, v16i8>,      // Operand 2: QACC_H[127:0] (phantom operand)
+  SDTCisVT<4, v16i8>,      // Operand 3: QACC_H[255:128] (phantom operand)
+  SDTCisVT<5, v8i16>,      // Operand 4: qw (shift amounts vector)
+  SDTCisVT<6, i32>         // Operand 5: sel2 immediate
+]>;
+def riscv_esp_srcmb_s16_q_qacc_m : RVSDNode<"ESP_SRCMB_S16_Q_QACC_M", SDT_ESPSRCMBS16QQACCM>;
+
+// SRCMB.S8.Q.QACC SDNode
+// QACC is passed as explicit phantom operand (4x128-bit) for proper data flow tracking
+// Results: qu (v16i8)
+// Operands: v0 (v16i8), v1 (v16i8), v2 (v16i8), v3 (v16i8), qw (v16i8), sel2 (i32)
+// v0: QACC_L[127:0], v1: QACC_L[255:128], v2: QACC_H[127:0], v3: QACC_H[255:128]
+def SDT_ESPSRCMBS8QQACCM : SDTypeProfile<1, 6, [
+  SDTCisVT<0, v16i8>,      // Result 0: qu vector
+  SDTCisVT<1, v16i8>,      // Operand 0: QACC_L[127:0] (phantom operand)
+  SDTCisVT<2, v16i8>,      // Operand 1: QACC_L[255:128] (phantom operand)
+  SDTCisVT<3, v16i8>,      // Operand 2: QACC_H[127:0] (phantom operand)
+  SDTCisVT<4, v16i8>,      // Operand 3: QACC_H[255:128] (phantom operand)
+  SDTCisVT<5, v16i8>,      // Operand 4: qw (shift amounts vector)
+  SDTCisVT<6, i32>         // Operand 5: sel2 immediate
+]>;
+def riscv_esp_srcmb_s8_q_qacc_m : RVSDNode<"ESP_SRCMB_S8_Q_QACC_M", SDT_ESPSRCMBS8QQACCM>;
+
 // VMULAS QACC SDNodes - Vector Multiply-Accumulate to QACC with explicit state passing
 // Results: 4x128-bit QACC (v16i8, v16i8, v16i8, v16i8)
 // Operands: 4x128-bit QACC passthru (v16i8, v16i8, v16i8, v16i8) + qx + qy
@@ -1258,6 +1318,38 @@ def riscv_esp_vmulas_s16_qacc_m : RVSDNode<"ESP_VMULAS_S16_QACC_M", SDT_ESPVMULA
 def riscv_esp_vmulas_s8_qacc_m : RVSDNode<"ESP_VMULAS_S8_QACC_M", SDT_ESPVMULASS8QACCM>;
 def riscv_esp_vmulas_u16_qacc_m : RVSDNode<"ESP_VMULAS_U16_QACC_M", SDT_ESPVMULASU16QACCM>;
 def riscv_esp_vmulas_u8_qacc_m : RVSDNode<"ESP_VMULAS_U8_QACC_M", SDT_ESPVMULASU8QACCM>;
+
+// VSMULAS QACC SDNodes - Vector Scalar Multiply-Accumulate to QACC with explicit state passing
+// Results: 4x128-bit QACC (v16i8, v16i8, v16i8, v16i8)
+// Operands: 4x128-bit QACC passthru (v16i8, v16i8, v16i8, v16i8) + qx + qy + sel16 (i32)
+def SDT_ESPVSMULASS16QACCM : SDTypeProfile<4, 7, [
+  SDTCisVT<0, v16i8>,        // Result 0: QACC_L[127:0] (128-bit)
+  SDTCisVT<1, v16i8>,        // Result 1: QACC_L[255:128] (128-bit)
+  SDTCisVT<2, v16i8>,        // Result 2: QACC_H[127:0] (128-bit)
+  SDTCisVT<3, v16i8>,        // Result 3: QACC_H[255:128] (128-bit)
+  SDTCisVT<4, v16i8>,        // Operand 0: QACC_L[127:0] passthru (phantom operand)
+  SDTCisVT<5, v16i8>,        // Operand 1: QACC_L[255:128] passthru (phantom operand)
+  SDTCisVT<6, v16i8>,        // Operand 2: QACC_H[127:0] passthru (phantom operand)
+  SDTCisVT<7, v16i8>,        // Operand 3: QACC_H[255:128] passthru (phantom operand)
+  SDTCisVT<8, v8i16>,        // Operand 4: qx vector (8x i16)
+  SDTCisVT<9, v8i16>,        // Operand 5: qy vector (8x i16)
+  SDTCisVT<10, i32>          // Operand 6: sel16 immediate (i32)
+]>;
+def SDT_ESPVSMULASS8QACCM : SDTypeProfile<4, 7, [
+  SDTCisVT<0, v16i8>,        // Result 0: QACC_L[127:0] (128-bit)
+  SDTCisVT<1, v16i8>,        // Result 1: QACC_L[255:128] (128-bit)
+  SDTCisVT<2, v16i8>,        // Result 2: QACC_H[127:0] (128-bit)
+  SDTCisVT<3, v16i8>,        // Result 3: QACC_H[255:128] (128-bit)
+  SDTCisVT<4, v16i8>,        // Operand 0: QACC_L[127:0] passthru (phantom operand)
+  SDTCisVT<5, v16i8>,        // Operand 1: QACC_L[255:128] passthru (phantom operand)
+  SDTCisVT<6, v16i8>,        // Operand 2: QACC_H[127:0] passthru (phantom operand)
+  SDTCisVT<7, v16i8>,        // Operand 3: QACC_H[255:128] passthru (phantom operand)
+  SDTCisVT<8, v16i8>,        // Operand 4: qx vector (16x i8)
+  SDTCisVT<9, v16i8>,        // Operand 5: qy vector (16x i8)
+  SDTCisVT<10, i32>          // Operand 6: sel16 immediate (i32)
+]>;
+def riscv_esp_vsmulas_s16_qacc_m : RVSDNode<"ESP_VSMULAS_S16_QACC_M", SDT_ESPVSMULASS16QACCM>;
+def riscv_esp_vsmulas_s8_qacc_m : RVSDNode<"ESP_VSMULAS_S8_QACC_M", SDT_ESPVSMULASS8QACCM>;
 
 // VMULAS XACC SDNodes - Vector Multiply-Accumulate to XACC with explicit state passing
 // Results: new XACC (i64, only low 40 bits used) as {i32 low, i32 high}
