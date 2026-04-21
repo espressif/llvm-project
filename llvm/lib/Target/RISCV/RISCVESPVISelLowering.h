@@ -33,6 +33,8 @@ SDValue lowerESPVIntrinsicWOChain(SDValue Op, SelectionDAG &DAG,
                                   const RISCVSubtarget &Subtarget);
 SDValue lowerESPVIntrinsicWChain(SDValue Op, SelectionDAG &DAG,
                                   const RISCVSubtarget &Subtarget);
+SDValue lowerESPVectorShuffle(SDValue Op, SelectionDAG &DAG,
+                               const RISCVSubtarget &Subtarget);
 
 } // namespace RISCV
 } // namespace llvm
