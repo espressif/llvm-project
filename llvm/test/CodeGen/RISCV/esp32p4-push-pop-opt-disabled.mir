@@ -1,0 +1,24 @@
+# RUN: llc -mtriple=riscv32 -mcpu=generic -mattr=+zcmp,+cm-popret -x mir -start-before=prologepilog -stop-after=riscv-push-pop-opt -verify-machineinstrs -o - %s \
+# RUN: | FileCheck -check-prefixes=WORKAROUND-NO-OPT %s
+# RUN: llc -mtriple=riscv32 -mcpu=generic -mattr=+zcmp -x mir -start-before=prologepilog -stop-after=riscv-push-pop-opt -verify-machineinstrs -o - %s \
+# RUN: | FileCheck -check-prefixes=GENERIC-OPT %s
+---
+name: popret_rvlist5
+tracksRegLiveness: true
+body:                   |
+  bb.0:
+    ; WORKAROUND-NO-OPT-LABEL: name: popret_rvlist5
+    ; WORKAROUND-NO-OPT: frame-setup CM_PUSH
+    ; WORKAROUND-NO-OPT: frame-destroy CM_POP 5, 0
+    ; WORKAROUND-NO-OPT: PseudoRET
+    ; WORKAROUND-NO-OPT-NOT: CM_POPRET
+    ;
+    ; GENERIC-OPT-LABEL: name: popret_rvlist5
+    ; GENERIC-OPT: frame-setup CM_PUSH
+    ; GENERIC-OPT: frame-destroy CM_POPRET 5, 0
+    ; GENERIC-OPT-NOT: frame-destroy CM_POP 5, 0
+    ; GENERIC-OPT-NOT: PseudoRET
+    $x1 = IMPLICIT_DEF
+    $x8 = IMPLICIT_DEF
+    PseudoRET
+...
