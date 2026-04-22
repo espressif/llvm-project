@@ -28,11 +28,11 @@ define dso_local i32 @dspm_mult_s16_ansi(ptr noundef %A, ptr noundef %B, ptr nou
 ; CHECK-NEXT:    store i32 [[N]], ptr [[N_ADDR]], align 4
 ; CHECK-NEXT:    store i32 [[K]], ptr [[K_ADDR]], align 4
 ; CHECK-NEXT:    store i32 [[SHIFT]], ptr [[SHIFT_ADDR]], align 4
-; CHECK-NEXT:    call void @llvm.lifetime.start.p0(i64 4, ptr [[FINAL_SHIFT]])
+; CHECK-NEXT:    call void @llvm.lifetime.start.p0(ptr [[FINAL_SHIFT]])
 ; CHECK-NEXT:    [[TMP0:%.*]] = load i32, ptr [[SHIFT_ADDR]], align 4
 ; CHECK-NEXT:    [[SUB:%.*]] = sub nsw i32 [[TMP0]], 15
 ; CHECK-NEXT:    store i32 [[SUB]], ptr [[FINAL_SHIFT]], align 4
-; CHECK-NEXT:    call void @llvm.lifetime.start.p0(i64 4, ptr [[I]])
+; CHECK-NEXT:    call void @llvm.lifetime.start.p0(ptr [[I]])
 ; CHECK-NEXT:    store i32 0, ptr [[I]], align 4
 ; CHECK-NEXT:    br label %[[FOR_COND:.*]]
 ; CHECK:       [[FOR_COND]]:
@@ -42,10 +42,10 @@ define dso_local i32 @dspm_mult_s16_ansi(ptr noundef %A, ptr noundef %B, ptr nou
 ; CHECK-NEXT:    br i1 [[CMP]], label %[[FOR_BODY:.*]], label %[[FOR_COND_CLEANUP:.*]]
 ; CHECK:       [[FOR_COND_CLEANUP]]:
 ; CHECK-NEXT:    store i32 2, ptr [[CLEANUP_DEST_SLOT]], align 4
-; CHECK-NEXT:    call void @llvm.lifetime.end.p0(i64 4, ptr [[I]])
+; CHECK-NEXT:    call void @llvm.lifetime.end.p0(ptr [[I]])
 ; CHECK-NEXT:    br label %[[FOR_END36:.*]]
 ; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    call void @llvm.lifetime.start.p0(i64 4, ptr [[J]])
+; CHECK-NEXT:    call void @llvm.lifetime.start.p0(ptr [[J]])
 ; CHECK-NEXT:    store i32 0, ptr [[J]], align 4
 ; CHECK-NEXT:    br label %[[FOR_COND1:.*]]
 ; CHECK:       [[FOR_COND1]]:
@@ -55,15 +55,15 @@ define dso_local i32 @dspm_mult_s16_ansi(ptr noundef %A, ptr noundef %B, ptr nou
 ; CHECK-NEXT:    br i1 [[CMP2]], label %[[FOR_BODY4:.*]], label %[[FOR_COND_CLEANUP3:.*]]
 ; CHECK:       [[FOR_COND_CLEANUP3]]:
 ; CHECK-NEXT:    store i32 5, ptr [[CLEANUP_DEST_SLOT]], align 4
-; CHECK-NEXT:    call void @llvm.lifetime.end.p0(i64 4, ptr [[J]])
+; CHECK-NEXT:    call void @llvm.lifetime.end.p0(ptr [[J]])
 ; CHECK-NEXT:    br label %[[FOR_END33:.*]]
 ; CHECK:       [[FOR_BODY4]]:
-; CHECK-NEXT:    call void @llvm.lifetime.start.p0(i64 8, ptr [[ACC]])
+; CHECK-NEXT:    call void @llvm.lifetime.start.p0(ptr [[ACC]])
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i32, ptr [[SHIFT_ADDR]], align 4
 ; CHECK-NEXT:    [[SHR:%.*]] = ashr i32 32767, [[TMP5]]
 ; CHECK-NEXT:    [[CONV:%.*]] = sext i32 [[SHR]] to i64
 ; CHECK-NEXT:    store i64 [[CONV]], ptr [[ACC]], align 8
-; CHECK-NEXT:    call void @llvm.lifetime.start.p0(i64 4, ptr [[S]])
+; CHECK-NEXT:    call void @llvm.lifetime.start.p0(ptr [[S]])
 ; CHECK-NEXT:    store i32 0, ptr [[S]], align 4
 ; CHECK-NEXT:    br label %[[FOR_COND5:.*]]
 ; CHECK:       [[FOR_COND5]]:
@@ -73,7 +73,7 @@ define dso_local i32 @dspm_mult_s16_ansi(ptr noundef %A, ptr noundef %B, ptr nou
 ; CHECK-NEXT:    br i1 [[CMP6]], label %[[FOR_BODY9:.*]], label %[[FOR_COND_CLEANUP8:.*]]
 ; CHECK:       [[FOR_COND_CLEANUP8]]:
 ; CHECK-NEXT:    store i32 8, ptr [[CLEANUP_DEST_SLOT]], align 4
-; CHECK-NEXT:    call void @llvm.lifetime.end.p0(i64 4, ptr [[S]])
+; CHECK-NEXT:    call void @llvm.lifetime.end.p0(ptr [[S]])
 ; CHECK-NEXT:    br label %[[FOR_END:.*]]
 ; CHECK:       [[FOR_BODY9]]:
 ; CHECK-NEXT:    [[TMP8:%.*]] = load ptr, ptr [[A_ADDR]], align 4
@@ -125,7 +125,7 @@ define dso_local i32 @dspm_mult_s16_ansi(ptr noundef %A, ptr noundef %B, ptr nou
 ; CHECK-NEXT:    store i16 [[CONV20]], ptr [[ARRAYIDX23]], align 2
 ; CHECK-NEXT:    br label %[[IF_END:.*]]
 ; CHECK:       [[IF_END]]:
-; CHECK-NEXT:    call void @llvm.lifetime.end.p0(i64 8, ptr [[ACC]])
+; CHECK-NEXT:    call void @llvm.lifetime.end.p0(ptr [[ACC]])
 ; CHECK-NEXT:    br label %[[FOR_INC31:.*]]
 ; CHECK:       [[FOR_INC31]]:
 ; CHECK-NEXT:    [[TMP27:%.*]] = load i32, ptr [[J]], align 4
@@ -141,7 +141,7 @@ define dso_local i32 @dspm_mult_s16_ansi(ptr noundef %A, ptr noundef %B, ptr nou
 ; CHECK-NEXT:    br label %[[FOR_COND]]
 ; CHECK:       [[FOR_END36]]:
 ; CHECK-NEXT:    store i32 1, ptr [[CLEANUP_DEST_SLOT]], align 4
-; CHECK-NEXT:    call void @llvm.lifetime.end.p0(i64 4, ptr [[FINAL_SHIFT]])
+; CHECK-NEXT:    call void @llvm.lifetime.end.p0(ptr [[FINAL_SHIFT]])
 ; CHECK-NEXT:    ret i32 0
 ; CHECK:       [[K_ALIGN_CHECK]]:
 ; CHECK-NEXT:    [[K_VAL:%.*]] = load i32, ptr [[K_ADDR]], align 4
