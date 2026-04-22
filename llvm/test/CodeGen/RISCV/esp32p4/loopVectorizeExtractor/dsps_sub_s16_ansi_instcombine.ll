@@ -7,12 +7,9 @@ define dso_local range(i32 0, 458756) i32 @dsps_sub_s16_ansi(ptr noundef readonl
 ; CHECK-LABEL: define dso_local range(i32 0, 458756) i32 @dsps_sub_s16_ansi(
 ; CHECK-SAME: ptr noundef readonly [[INPUT1:%.*]], ptr noundef readonly [[INPUT2:%.*]], ptr noundef writeonly [[OUTPUT:%.*]], i32 noundef [[LEN:%.*]], i32 noundef [[STEP1:%.*]], i32 noundef [[STEP2:%.*]], i32 noundef [[STEP_OUT:%.*]], i32 noundef [[SHIFT:%.*]]) local_unnamed_addr #[[ATTR0:[0-9]+]] {
 ; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[INPUT214:%.*]] = ptrtoint ptr [[INPUT2]] to i32
-; CHECK-NEXT:    [[INPUT112:%.*]] = ptrtoint ptr [[INPUT1]] to i32
-; CHECK-NEXT:    [[OUTPUT11:%.*]] = ptrtoint ptr [[OUTPUT]] to i32
-; CHECK-NEXT:    [[INPUT27:%.*]] = ptrtoint ptr [[INPUT2]] to i32
-; CHECK-NEXT:    [[INPUT16:%.*]] = ptrtoint ptr [[INPUT1]] to i32
-; CHECK-NEXT:    [[OUTPUT5:%.*]] = ptrtoint ptr [[OUTPUT]] to i32
+; CHECK-NEXT:    [[INPUT27:%.*]] = ptrtoaddr ptr [[INPUT2]] to i32
+; CHECK-NEXT:    [[INPUT16:%.*]] = ptrtoaddr ptr [[INPUT1]] to i32
+; CHECK-NEXT:    [[OUTPUT5:%.*]] = ptrtoaddr ptr [[OUTPUT]] to i32
 ; CHECK-NEXT:    [[CMP:%.*]] = icmp eq ptr [[INPUT1]], null
 ; CHECK-NEXT:    [[CMP1:%.*]] = icmp eq ptr [[INPUT2]], null
 ; CHECK-NEXT:    [[OR_COND:%.*]] = or i1 [[CMP]], [[CMP1]]
@@ -94,9 +91,9 @@ define dso_local range(i32 0, 458756) i32 @dsps_sub_s16_ansi(ptr noundef readonl
 ; CHECK-NEXT:    [[MIN_ITERS_CHECK19:%.*]] = icmp ult i32 [[LEN]], 8
 ; CHECK-NEXT:    br i1 [[MIN_ITERS_CHECK19]], label %[[SCALAR_PH17:.*]], label %[[VECTOR_MEMCHECK10:.*]]
 ; CHECK:       [[VECTOR_MEMCHECK10]]:
-; CHECK-NEXT:    [[TMP22:%.*]] = sub i32 [[OUTPUT11]], [[INPUT112]]
+; CHECK-NEXT:    [[TMP22:%.*]] = sub i32 [[OUTPUT5]], [[INPUT16]]
 ; CHECK-NEXT:    [[DIFF_CHECK13:%.*]] = icmp ult i32 [[TMP22]], 16
-; CHECK-NEXT:    [[TMP23:%.*]] = sub i32 [[OUTPUT11]], [[INPUT214]]
+; CHECK-NEXT:    [[TMP23:%.*]] = sub i32 [[OUTPUT5]], [[INPUT27]]
 ; CHECK-NEXT:    [[DIFF_CHECK15:%.*]] = icmp ult i32 [[TMP23]], 16
 ; CHECK-NEXT:    [[CONFLICT_RDX16:%.*]] = or i1 [[DIFF_CHECK13]], [[DIFF_CHECK15]]
 ; CHECK-NEXT:    br i1 [[CONFLICT_RDX16]], label %[[SCALAR_PH17]], label %[[VECTOR_PH19:.*]]
