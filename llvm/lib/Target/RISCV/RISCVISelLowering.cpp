@@ -2107,8 +2107,10 @@ void RISCVTargetLowering::getTgtMemIntrinsic(
   const auto &Subtarget = MF.getSubtarget<RISCVSubtarget>();
   // Delegate ESPV mem intrinsics only when ESPV target lowering is enabled.
   if (Subtarget.hasESPVTargetLowering() &&
-      RISCV::getESPVTgtMemIntrinsic(Info, I, Intrinsic))
+      RISCV::getESPVTgtMemIntrinsic(Info, I, Intrinsic)) {
+    Infos.push_back(Info);
     return;
+  }
   switch (Intrinsic) {
   default:
     return;
