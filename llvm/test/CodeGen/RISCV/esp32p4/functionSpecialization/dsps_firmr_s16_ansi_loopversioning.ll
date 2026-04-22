@@ -68,24 +68,24 @@ define dso_local i32 @dsps_firmr_s16_ansi(ptr nocapture noundef %fir, ptr nocapt
 ; CHECK-NEXT:    [[SUB100_US:%.*]] = add i16 [[TMP8]], -1
 ; CHECK-NEXT:    br label %[[CODEREPL:.*]]
 ; CHECK:       [[CODEREPL]]:
-; CHECK-NEXT:    call void @llvm.lifetime.start.p0(i64 -1, ptr [[RESULT_1_LCSSA_US_LOC]])
+; CHECK-NEXT:    call void @llvm.lifetime.start.p0(ptr [[RESULT_1_LCSSA_US_LOC]])
 ; CHECK-NEXT:    call void @dsps_firmr_s16_ansi.for.body.us(i16 [[DOTPRE188]], ptr [[INPUT]], ptr [[TMP2]], ptr [[START_POS]], i16 [[TMP7]], ptr [[POS]], i16 [[TMP8]], ptr [[TMP9]], i32 [[CONV26_US_US]], i64 [[ROUNDING_0]], i32 [[CONV19165_US]], i64 [[SH_PROM70]], ptr [[OUTPUT]], i32 [[CONV84_US_US]], i16 [[SUB100_US]], i32 [[INPUT_LEN]], ptr [[RESULT_1_LCSSA_US_LOC]])
 ; CHECK-NEXT:    [[RESULT_1_LCSSA_US_RELOAD:%.*]] = load i32, ptr [[RESULT_1_LCSSA_US_LOC]], align 4
-; CHECK-NEXT:    call void @llvm.lifetime.end.p0(i64 -1, ptr [[RESULT_1_LCSSA_US_LOC]])
+; CHECK-NEXT:    call void @llvm.lifetime.end.p0(ptr [[RESULT_1_LCSSA_US_LOC]])
 ; CHECK-NEXT:    br label %[[FOR_COND_CLEANUP_LOOPEXIT:.*]]
 ; CHECK:       [[FOR_COND_CLEANUP_LOOPEXIT]]:
 ; CHECK-NEXT:    br label %[[FOR_COND_CLEANUP]]
 ; CHECK:       [[CODEREPL1_THEN]]:
-; CHECK-NEXT:    call void @llvm.lifetime.start.p0(i64 -1, ptr [[RESULT_1_LCSSA_LOC]])
+; CHECK-NEXT:    call void @llvm.lifetime.start.p0(ptr [[RESULT_1_LCSSA_LOC]])
 ; CHECK-NEXT:    call void @dsps_firmr_s16_ansi.for.body(i16 [[DOTPRE188]], ptr [[INPUT]], ptr [[TMP2]], ptr [[START_POS]], i16 [[TMP3]], ptr [[POS]], i16 [[TMP4]], ptr [[TMP5]], i32 [[CONV26]], i64 [[ROUNDING_0]], i32 [[CONV19165]], i64 [[SH_PROM77]], ptr [[OUTPUT]], i32 [[CONV84]], i16 [[SUB100]], i32 [[INPUT_LEN]], ptr [[RESULT_1_LCSSA_LOC]])
 ; CHECK-NEXT:    [[TMP11:%.*]] = load i32, ptr [[RESULT_1_LCSSA_LOC]], align 4
-; CHECK-NEXT:    call void @llvm.lifetime.end.p0(i64 -1, ptr [[RESULT_1_LCSSA_LOC]])
+; CHECK-NEXT:    call void @llvm.lifetime.end.p0(ptr [[RESULT_1_LCSSA_LOC]])
 ; CHECK-NEXT:    br label %[[FOR_COND_CLEANUP_LOOPEXIT1:.*]]
 ; CHECK:       [[CODEREPL1_ELSE]]:
-; CHECK-NEXT:    call void @llvm.lifetime.start.p0(i64 -1, ptr [[RESULT_1_LCSSA_LOC]])
+; CHECK-NEXT:    call void @llvm.lifetime.start.p0(ptr [[RESULT_1_LCSSA_LOC]])
 ; CHECK-NEXT:    call void @dsps_firmr_s16_ansi.for.body(i16 [[DOTPRE188]], ptr [[INPUT]], ptr [[TMP2]], ptr [[START_POS]], i16 [[TMP3]], ptr [[POS]], i16 [[TMP4]], ptr [[TMP5]], i32 [[CONV26]], i64 [[ROUNDING_0]], i32 [[CONV19165]], i64 [[SH_PROM77]], ptr [[OUTPUT]], i32 [[CONV84]], i16 [[SUB100]], i32 [[INPUT_LEN]], ptr [[RESULT_1_LCSSA_LOC]])
 ; CHECK-NEXT:    [[TMP12:%.*]] = load i32, ptr [[RESULT_1_LCSSA_LOC]], align 4
-; CHECK-NEXT:    call void @llvm.lifetime.end.p0(i64 -1, ptr [[RESULT_1_LCSSA_LOC]])
+; CHECK-NEXT:    call void @llvm.lifetime.end.p0(ptr [[RESULT_1_LCSSA_LOC]])
 ; CHECK-NEXT:    br label %[[FOR_COND_CLEANUP_LOOPEXIT1]]
 ; CHECK:       [[FOR_COND_CLEANUP_LOOPEXIT1]]:
 ; CHECK-NEXT:    [[RESULT_1_LCSSA_RELOAD_PHI:%.*]] = phi i32 [ [[TMP11]], %[[CODEREPL1_THEN]] ], [ [[TMP12]], %[[CODEREPL1_ELSE]] ]
