@@ -20,10 +20,11 @@
 // CHECK-NEXT:     zba                  1.0       'Zba' (Address Generation Instructions)
 // CHECK-NEXT:     zbb                  1.0       'Zbb' (Basic Bit-Manipulation)
 // CHECK-NEXT:     zbc                  1.0       'Zbc' (Carry-Less Multiplication)
+// CHECK-NEXT:     zbkc                 1.0       'Zbkc' (Carry-less multiply instructions for Cryptography)
 // CHECK-NEXT:     zbs                  1.0       'Zbs' (Single-Bit Instructions)
 // CHECK-NEXT:     xesploop             1.0       'Xesploop' ('Espressif ESPLOOP')
 // CHECK-NEXT:     xespv                2.2       'Xespv' ('Espressif ESPV 2.2')
 // CHECK-EMPTY:
 // CHECK-NEXT: Experimental extensions
 // CHECK-EMPTY:
-// CHECK-NEXT: ISA String: rv32i2p1_m2p0_a2p1_f2p2_c2p0_b1p0_zicsr2p0_zifencei2p0_zmmul1p0_zaamo1p0_zalrsc1p0_zca1p0_zcb1p0_zcf1p0_zcmt1p0_zba1p0_zbb1p0_zbc1p0_zbs1p0_xesploop1p0_xespv2p2
+// CHECK-NEXT: ISA String: rv32i2p1_m2p0_a2p1_f2p2_c2p0_b1p0_zicsr2p0_zifencei2p0_zmmul1p0_zaamo1p0_zalrsc1p0_zca1p0_zcb1p0_zcf1p0_zcmt1p0_zba1p0_zbb1p0_zbc1p0_zbkc1p0_zbs1p0_xesploop1p0_xespv2p2
