@@ -22,7 +22,7 @@ void *__builtin_riscv_esp_st_u_xacc_ip_m(unsigned int xacc_low_in, unsigned int 
 // CHECK-NEXT:    [[TMP0:%.*]] = tail call { i32, i32 } @llvm.riscv.esp.zero.xacc.m()
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { i32, i32 } [[TMP0]], 0
 // CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { i32, i32 } [[TMP0]], 1
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.ld.xacc.ip.m(i32 [[TMP1]], i32 [[TMP2]], ptr [[SRC]], i32 8), !noalias [[META6:![0-9]+]]
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.ld.xacc.ip.m(i32 [[TMP1]], i32 [[TMP2]], ptr [[SRC]], i32 8), !noalias [[META9:![0-9]+]]
 // CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { ptr, i32, i32 } [[TMP3]], 1
 // CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { ptr, i32, i32 } [[TMP3]], 2
 // CHECK-NEXT:    [[TMP6:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.st.s.xacc.ip.m(i32 [[TMP4]], i32 [[TMP5]], ptr [[DST]], i32 8)
@@ -56,7 +56,7 @@ void *test_ld_st_s_xacc_ip_m(void const *src, void *dst) {
 // CHECK-NEXT:    [[TMP0:%.*]] = tail call { i32, i32 } @llvm.riscv.esp.zero.xacc.m()
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { i32, i32 } [[TMP0]], 0
 // CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { i32, i32 } [[TMP0]], 1
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.ld.xacc.ip.m(i32 [[TMP1]], i32 [[TMP2]], ptr [[SRC]], i32 8), !noalias [[META9:![0-9]+]]
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.ld.xacc.ip.m(i32 [[TMP1]], i32 [[TMP2]], ptr [[SRC]], i32 8), !noalias [[META12:![0-9]+]]
 // CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { ptr, i32, i32 } [[TMP3]], 1
 // CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { ptr, i32, i32 } [[TMP3]], 2
 // CHECK-NEXT:    [[TMP6:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.st.u.xacc.ip.m(i32 [[TMP4]], i32 [[TMP5]], ptr [[DST]], i32 8)
@@ -81,10 +81,10 @@ void *test_ld_st_u_xacc_ip_m(void const *src, void *dst) {
 }
 
 //.
-// CHECK: [[META6]] = !{[[META7:![0-9]+]]}
-// CHECK: [[META7]] = distinct !{[[META7]], [[META8:![0-9]+]], !"esp_ld_xacc_ip_m: %agg.result"}
-// CHECK: [[META8]] = distinct !{[[META8]], !"esp_ld_xacc_ip_m"}
 // CHECK: [[META9]] = !{[[META10:![0-9]+]]}
 // CHECK: [[META10]] = distinct !{[[META10]], [[META11:![0-9]+]], !"esp_ld_xacc_ip_m: %agg.result"}
 // CHECK: [[META11]] = distinct !{[[META11]], !"esp_ld_xacc_ip_m"}
+// CHECK: [[META12]] = !{[[META13:![0-9]+]]}
+// CHECK: [[META13]] = distinct !{[[META13]], [[META14:![0-9]+]], !"esp_ld_xacc_ip_m: %agg.result"}
+// CHECK: [[META14]] = distinct !{[[META14]], !"esp_ld_xacc_ip_m"}
 //.

@@ -15,12 +15,12 @@
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 0)
 // CHECK-NEXT:    [[TMP1:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar.bytes.m(i32 0)
-// CHECK-NEXT:    [[TMP2:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.ld.ua.state.ip.m(<16 x i8> undef, ptr [[SRC]], i32 16), !noalias [[META6:![0-9]+]]
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.ld.ua.state.ip.m(<16 x i8> undef, ptr [[SRC]], i32 16), !noalias [[META9:![0-9]+]]
 // CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP2]], 0
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC]], i32 16), !noalias [[META9:![0-9]+]]
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC]], i32 16), !noalias [[META12:![0-9]+]]
 // CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP4]], 0
 // CHECK-NEXT:    [[TMP6:%.*]] = bitcast <16 x i8> [[TMP5]] to <8 x i16>
-// CHECK-NEXT:    [[TMP7:%.*]] = tail call { <16 x i8>, <8 x i16>, <8 x i16>, ptr, <16 x i8> } @llvm.riscv.esp.fft.ams.s16.ld.incp.uaup.m(<8 x i16> [[TMP6]], <8 x i16> [[TMP6]], <8 x i16> [[TMP6]], ptr [[SRC]], i32 0, <16 x i8> [[TMP3]], i32 [[TMP1]], i32 [[TMP0]]), !noalias [[META12:![0-9]+]]
+// CHECK-NEXT:    [[TMP7:%.*]] = tail call { <16 x i8>, <8 x i16>, <8 x i16>, ptr, <16 x i8> } @llvm.riscv.esp.fft.ams.s16.ld.incp.uaup.m(<8 x i16> [[TMP6]], <8 x i16> [[TMP6]], <8 x i16> [[TMP6]], ptr [[SRC]], i32 0, <16 x i8> [[TMP3]], i32 [[TMP1]], i32 [[TMP0]]), !noalias [[META15:![0-9]+]]
 // CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, <8 x i16>, <8 x i16>, ptr, <16 x i8> } [[TMP7]], 0
 // CHECK-NEXT:    [[TMP9:%.*]] = extractvalue { <16 x i8>, <8 x i16>, <8 x i16>, ptr, <16 x i8> } [[TMP7]], 1
 // CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <16 x i8>, <8 x i16>, <8 x i16>, ptr, <16 x i8> } [[TMP7]], 2
@@ -69,13 +69,13 @@ void test_fft_ams_s16_ld_incp_uaup(void const *src, void *dst) {
 }
 
 //.
-// CHECK: [[META6]] = !{[[META7:![0-9]+]]}
-// CHECK: [[META7]] = distinct !{[[META7]], [[META8:![0-9]+]], !"esp_ld_ua_state_ip_m: %agg.result"}
-// CHECK: [[META8]] = distinct !{[[META8]], !"esp_ld_ua_state_ip_m"}
 // CHECK: [[META9]] = !{[[META10:![0-9]+]]}
-// CHECK: [[META10]] = distinct !{[[META10]], [[META11:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
-// CHECK: [[META11]] = distinct !{[[META11]], !"esp_vld_128_ip_m"}
+// CHECK: [[META10]] = distinct !{[[META10]], [[META11:![0-9]+]], !"esp_ld_ua_state_ip_m: %agg.result"}
+// CHECK: [[META11]] = distinct !{[[META11]], !"esp_ld_ua_state_ip_m"}
 // CHECK: [[META12]] = !{[[META13:![0-9]+]]}
-// CHECK: [[META13]] = distinct !{[[META13]], [[META14:![0-9]+]], !"esp_fft_ams_s16_ld_incp_uaup_m: %agg.result"}
-// CHECK: [[META14]] = distinct !{[[META14]], !"esp_fft_ams_s16_ld_incp_uaup_m"}
+// CHECK: [[META13]] = distinct !{[[META13]], [[META14:![0-9]+]], !"esp_vld_128_ip_m: %agg.result"}
+// CHECK: [[META14]] = distinct !{[[META14]], !"esp_vld_128_ip_m"}
+// CHECK: [[META15]] = !{[[META16:![0-9]+]]}
+// CHECK: [[META16]] = distinct !{[[META16]], [[META17:![0-9]+]], !"esp_fft_ams_s16_ld_incp_uaup_m: %agg.result"}
+// CHECK: [[META17]] = distinct !{[[META17]], !"esp_fft_ams_s16_ld_incp_uaup_m"}
 //.
