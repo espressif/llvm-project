@@ -7,10 +7,8 @@ define dso_local range(i32 0, 458756) i32 @dsps_mulc_s16_ansi(ptr noundef readon
 ; CHECK-LABEL: define dso_local range(i32 0, 458756) i32 @dsps_mulc_s16_ansi(
 ; CHECK-SAME: ptr noundef readonly [[INPUT:%.*]], ptr noundef writeonly [[OUTPUT:%.*]], i32 noundef [[LEN:%.*]], i16 noundef signext [[C:%.*]], i32 noundef [[STEP_IN:%.*]], i32 noundef [[STEP_OUT:%.*]]) local_unnamed_addr #[[ATTR0:[0-9]+]] {
 ; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[INPUT7:%.*]] = ptrtoint ptr [[INPUT]] to i32
-; CHECK-NEXT:    [[OUTPUT6:%.*]] = ptrtoint ptr [[OUTPUT]] to i32
-; CHECK-NEXT:    [[INPUT4:%.*]] = ptrtoint ptr [[INPUT]] to i32
-; CHECK-NEXT:    [[OUTPUT3:%.*]] = ptrtoint ptr [[OUTPUT]] to i32
+; CHECK-NEXT:    [[INPUT4:%.*]] = ptrtoaddr ptr [[INPUT]] to i32
+; CHECK-NEXT:    [[OUTPUT3:%.*]] = ptrtoaddr ptr [[OUTPUT]] to i32
 ; CHECK-NEXT:    [[CMP:%.*]] = icmp eq ptr [[INPUT]], null
 ; CHECK-NEXT:    [[CMP1:%.*]] = icmp eq ptr [[OUTPUT]], null
 ; CHECK-NEXT:    [[OR_COND:%.*]] = or i1 [[CMP]], [[CMP1]]
@@ -34,7 +32,8 @@ define dso_local range(i32 0, 458756) i32 @dsps_mulc_s16_ansi(ptr noundef readon
 ; CHECK-NEXT:    br i1 [[TMP1]], label %[[SCALAR_PH]], label %[[VECTOR_MEMCHECK:.*]]
 ; CHECK:       [[VECTOR_MEMCHECK]]:
 ; CHECK-NEXT:    [[TMP2:%.*]] = sub i32 [[OUTPUT3]], [[INPUT4]]
-; CHECK-NEXT:    [[DIFF_CHECK:%.*]] = icmp ult i32 [[TMP2]], 4
+; CHECK-NEXT:    [[TMP2ADJ:%.*]] = sub i32 [[TMP2]], 1
+; CHECK-NEXT:    [[DIFF_CHECK:%.*]] = icmp ult i32 [[TMP2ADJ]], 3
 ; CHECK-NEXT:    br i1 [[DIFF_CHECK]], label %[[SCALAR_PH]], label %[[VECTOR_PH:.*]]
 ; CHECK:       [[VECTOR_PH]]:
 ; CHECK-NEXT:    [[N_MOD_VF:%.*]] = urem i32 [[LEN]], 2
@@ -77,8 +76,9 @@ define dso_local range(i32 0, 458756) i32 @dsps_mulc_s16_ansi(ptr noundef readon
 ; CHECK-NEXT:    [[MIN_ITERS_CHECK11:%.*]] = icmp ult i32 [[LEN]], 8
 ; CHECK-NEXT:    br i1 [[MIN_ITERS_CHECK11]], label %[[SCALAR_PH9:.*]], label %[[VECTOR_MEMCHECK5:.*]]
 ; CHECK:       [[VECTOR_MEMCHECK5]]:
-; CHECK-NEXT:    [[TMP15:%.*]] = sub i32 [[OUTPUT6]], [[INPUT7]]
-; CHECK-NEXT:    [[DIFF_CHECK8:%.*]] = icmp ult i32 [[TMP15]], 16
+; CHECK-NEXT:    [[TMP15:%.*]] = sub i32 [[OUTPUT3]], [[INPUT4]]
+; CHECK-NEXT:    [[TMP15ADJ:%.*]] = sub i32 [[TMP15]], 1
+; CHECK-NEXT:    [[DIFF_CHECK8:%.*]] = icmp ult i32 [[TMP15ADJ]], 15
 ; CHECK-NEXT:    br i1 [[DIFF_CHECK8]], label %[[SCALAR_PH9]], label %[[VECTOR_PH11:.*]]
 ; CHECK:       [[VECTOR_PH11]]:
 ; CHECK-NEXT:    [[N_MOD_VF13:%.*]] = urem i32 [[LEN]], 8
