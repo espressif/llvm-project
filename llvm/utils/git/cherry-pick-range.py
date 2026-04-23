@@ -13,12 +13,22 @@ With -c/--continue: runs git cherry-pick --continue first (same failure handling
 on success reads .esp_rebase_HEAD and moves the sync tag to that hash, then proceeds
 with the usual cherry-pick range.
 
+With --no-abort and -b/--wip-br: on a cherry-pick conflict, stages all files, runs
+git cherry-pick --continue, and creates local branch
+sync_fail/<dest_BASE>_<sync_tag_TARGET>_<failed_COMMIT> (7-char short hashes: dest head and
+sync-tag target as of script start, and the failed source commit) at HEAD without checking
+it out; the branch name is written to .esp_rebase_WIP_BRANCH (overwrites if present). The
+current branch is then reset with `git reset --hard HEAD~1` so the conflict cherry-pick commit
+is dropped from the destination while it remains on the WIP branch. The sync tag is not
+advanced and remaining picks are skipped.
+
 Requires: pip install GitPython
 """
 
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import sys
 from pathlib import Path
@@ -34,6 +44,7 @@ except ImportError:
 
 DEFAULT_TAG = "esp_main_synced"
 ESP_REBASE_HEAD_FILE = ".esp_rebase_HEAD"
+ESP_REBASE_WIP_BRANCH_FILE = ".esp_rebase_WIP_BRANCH"
 
 
 def _die(msg: str, code: int = 1) -> None:
@@ -131,6 +142,67 @@ def _read_esp_rebase_head_hash(repo: Any) -> str:
         _die(f"hash in {ESP_REBASE_HEAD_FILE} is not a valid commit: {line!r}")
 
 
+def _git_cherry_pick_continue_no_editor(repo: Any) -> None:
+    """Run `git cherry-pick --continue` with a no-op editor (non-interactive)."""
+    keys = ("GIT_EDITOR", "EDITOR", "VISUAL", "SEQUENCE_EDITOR")
+    saved = {k: os.environ.get(k) for k in keys}
+    try:
+        for k in keys:
+            os.environ[k] = "true"
+        repo.git.cherry_pick("--continue")
+    finally:
+        for k in keys:
+            v = saved.get(k)
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+
+
+def _wip_br_finish(
+    repo: Any,
+    failed_full_hash: str,
+    dest_base_short: str,
+    sync_tag_target_short: str,
+) -> str:
+    """Complete WIP pick, create sync_fail branch at HEAD, then drop that commit on current branch."""
+    if repo.working_tree_dir is None:
+        _die("bare repository: --wip-br is not supported")
+    repo.git.add("-u")
+    try:
+        _git_cherry_pick_continue_no_editor(repo)
+    except GitCommandError as e:
+        _print_git_command_error(e)
+        _die("git cherry-pick --continue failed after staging; fix manually")
+    try:
+        commit_short = repo.git.rev_parse("--short=7", failed_full_hash).strip()
+    except GitCommandError:
+        commit_short = failed_full_hash[:7]
+    if not re.fullmatch(r"[0-9a-f]+", commit_short, re.I):
+        commit_short = failed_full_hash[:7]
+    base = dest_base_short.strip()
+    tag_s = sync_tag_target_short.strip()
+    for label, h in (("dest base", base), ("sync tag", tag_s), ("commit", commit_short)):
+        if not re.fullmatch(r"[0-9a-f]+", h, re.I):
+            _die(f"invalid {label} short hash for WIP branch name: {h!r}")
+    branch = f"sync_fail/{base}_{tag_s}_{commit_short}"
+    try:
+        repo.git.branch("-f", branch, "HEAD")
+    except GitCommandError as e:
+        _die(f"git branch -f {branch!r} HEAD failed: {e}")
+    root = Path(repo.working_tree_dir)
+    (root / ESP_REBASE_WIP_BRANCH_FILE).write_text(branch + "\n", encoding="utf-8")
+    try:
+        repo.git.reset("--hard", "HEAD~1")
+    except GitCommandError as e:
+        _die(
+            f"WIP branch {branch!r} was created, but git reset --hard HEAD~1 on the current "
+            f"branch failed: {e}. Remove the conflict commit manually if needed; WIP still points "
+            f"to the recorded commit."
+        )
+    return branch
+
+
 def _print_git_command_error(e: BaseException) -> None:
     """Print stdout/stderr from a failed git invocation (GitPython GitCommandError)."""
     stdout = _as_text(getattr(e, "stdout", None)).strip()
@@ -214,7 +286,21 @@ def main() -> None:
             "repository in the failed cherry-pick state for manual fix."
         ),
     )
+    parser.add_argument(
+        "-b",
+        "--wip-br",
+        action="store_true",
+        default=False,
+        help=(
+            "Only with --no-abort. On conflict: stage, cherry-pick --continue, create WIP branch "
+            "sync_fail/<dest_BASE>_<tag_TARGET>_<failed_COMMIT> at that commit, then "
+            "git reset --hard HEAD~1 on the current branch, and stop without advancing the sync tag."
+        ),
+    )
     args = parser.parse_args()
+
+    if args.wip_br and not args.no_abort:
+        _die("--wip-br requires --no-abort")
 
     if git is None:
         print(
@@ -233,9 +319,21 @@ def main() -> None:
         _die("not inside a git repository")
 
     source_ref = _rev_parse_verify(repo, source_branch)
-    _rev_parse_verify(repo, dest_branch)
+    dest_original_head = _rev_parse_verify(repo, dest_branch)
+    try:
+        dest_base_short = repo.git.rev_parse("--short=7", dest_original_head).strip()
+    except GitCommandError:
+        dest_base_short = dest_original_head[:7]
+    if not re.fullmatch(r"[0-9a-f]+", dest_base_short, re.I):
+        dest_base_short = dest_original_head[:7]
 
     tag_commit = _tag_commit_sha(repo, tag)
+    try:
+        sync_tag_target_short = repo.git.rev_parse("--short=7", tag_commit).strip()
+    except GitCommandError:
+        sync_tag_target_short = tag_commit[:7]
+    if not re.fullmatch(r"[0-9a-f]+", sync_tag_target_short, re.I):
+        sync_tag_target_short = tag_commit[:7]
     try:
         repo.git.merge_base("--is-ancestor", tag_commit, source_ref)
     except GitCommandError:
@@ -269,15 +367,15 @@ def main() -> None:
         head_hash = _read_esp_rebase_head_hash(repo)
 
         _advance_sync_tag(repo, tag, head_hash)
-        path = _esp_rebase_head_path(repo)
-        if path is not None and path.is_file():
-            try:
-                path.unlink()
-            except OSError as e:
-                print(
-                    f"warning: could not remove {ESP_REBASE_HEAD_FILE}: {e}",
-                    file=sys.stderr,
-                )
+        # path = _esp_rebase_head_path(repo)
+        # if path is not None and path.is_file():
+        #     try:
+        #         path.unlink()
+        #     except OSError as e:
+        #         print(
+        #             f"warning: could not remove {ESP_REBASE_HEAD_FILE}: {e}",
+        #             file=sys.stderr,
+        #         )
 
     repo.git.checkout(dest_branch)
 
@@ -301,6 +399,20 @@ def main() -> None:
                 file=sys.stderr,
             )
             _print_git_command_error(e)
+            if (
+                args.wip_br
+                and _cherry_pick_in_progress(repo)
+            ):
+                _write_failed_pick_head(repo, commit)
+                wip = _wip_br_finish(
+                    repo, commit, dest_base_short, sync_tag_target_short
+                )
+                print(
+                    f"Created WIP branch {wip!r} (it keeps the conflict cherry-pick). "
+                    f"Removed that commit from the current branch (git reset --hard HEAD~1). "
+                    f"Sync tag {tag!r} was not advanced; remaining commits were not cherry-picked.",
+                )
+                raise SystemExit(1 if picked_count == 0 else 2)
             pick_failed = True
             failed_pick_commit = commit
             break
