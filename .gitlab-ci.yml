@@ -18,10 +18,10 @@ variables:
   DIST_DIR: "dist"
   BUILD_DIR: "build"
   GITLAB_SERVER_URL: https://gitlab-ci-token:${CI_JOB_TOKEN}@${GITLAB_HTTPS_SERVER}
-  REBASE_PUSH_REMOTE: "https://gitlab-ci-token:${ESP_MAIN_MAINT_TOKEN}@${GITLAB_HTTPS_SERVER}/${CI_PROJECT_PATH}.git"
+  REBASE_PUSH_REMOTE: "https://gitlab-ci-token:${ESP_MAINT_TOKEN}@${GITLAB_HTTPS_SERVER}/${CI_PROJECT_PATH}.git"
   ESP_MAIN_SYNCED_TAG: "esp_main_synced"
   ESP_RELEASE_BRANCH: origin/$CI_DEFAULT_BRANCH
-  ESP_MAIN_BRANCH: $SCHED_REBASE_BR
+  ESP_MAIN_BRANCH: $SCHED_REBASE
 
 workflow:
   rules:
@@ -68,8 +68,9 @@ workflow:
 before_script:
   - *use_ci_tools
   - *add_gitlab_key
-  - git config --global user.email "llwm-project-ci@espressif.com"
-  - git config --global user.name "LLVM Project CI"
+  # Set the displayed user with the commits that are about to be made
+  - git config --global user.email "${GITLAB_USER_EMAIL}"
+  - git config --global user.name "${GITLAB_USER_NAME}"
 
 esp_release_branch_sync:
   stage: esp_branch_sync
@@ -77,10 +78,13 @@ esp_release_branch_sync:
     - .rules:scheduled-esp-branch-sync
   tags: [ "amd64", "build" ]
   dependencies: []
+  variables:
+    MR_CREATE_PATH: "/api/v4/projects/${CI_PROJECT_ID}/merge_requests"
+    MR_LABELS: "sync_fail"
+    CI_TOKEN_HEADER: "PRIVATE-TOKEN: ${ESP_MAINT_TOKEN}"
+    CONT_TYPE_HEADER: "Content-Type: application/json"
   script:
     - set -euxo pipefail
-    # TODO: update docker image to include the requirements
-    - pip install -r $PWD/llvm/utils/git/requirements-cherry-pick-range.txt
     - git remote add push-remote ${REBASE_PUSH_REMOTE}
     - git remote -v
     - BRANCH_NAME=${CI_COMMIT_REF_NAME}
@@ -88,14 +92,45 @@ esp_release_branch_sync:
     - git checkout -b $BRANCH_NAME
     - ORIG_TAG_HASH=$(git rev-parse $ESP_MAIN_SYNCED_TAG^{commit})
     - echo "Sync tag '$ESP_MAIN_SYNCED_TAG' original hash -> '$ORIG_TAG_HASH'"
+    - rc=0
+    - llvm/utils/git/cherry-pick-range.py --no-abort -b $ESP_RELEASE_BRANCH $BRANCH_NAME $ESP_MAIN_SYNCED_TAG || rc=$?
+    - echo "rc=$rc"
     - |
-      rc=0
-      $PWD/llvm/utils/git/cherry-pick-range.py $ESP_RELEASE_BRANCH $BRANCH_NAME $ESP_MAIN_SYNCED_TAG || rc=$?
+      # if neither commits were picked, create WIP branch and MR to resolve conflict and merge
       if [ "$rc" -ne 0 ] && [ "$rc" -ne 2 ]; then
-        exit "$rc"
+        WIP_BRANCH=$(cat .esp_rebase_WIP_BRANCH)
+        if [ -z "$WIP_BRANCH" ]; then
+          echo "WIP branch not found"
+          exit 1
+        fi
+        echo "Push conflict resolution WIP branch '$WIP_BRANCH' to '$REBASE_PUSH_REMOTE'"
+        git push --force push-remote $WIP_BRANCH
+        git status
+        CONFLICT_HASH=$(cat .esp_rebase_HEAD)
+        MR_DESC="MR created by $CI_JOB_URL to fix \`$ESP_RELEASE_BRANCH\` -> \`$BRANCH_NAME\` sync conflict."
+        MR_DESC="${MR_DESC}\n\nTODO:"
+        MR_DESC="${MR_DESC}\n- [ ] Look for \`<<<<<<<\` and \`>>>>>>>\` markers in the files and solve conflicts."
+        MR_DESC="${MR_DESC}\n- [ ] Ensure pipeline passes."
+        MR_DESC="${MR_DESC}\n- [ ] DISABLE SYNC WITH RELEASE BRANCH SCHEDULED PIPELINE!"
+        MR_DESC="${MR_DESC}\n- [ ] Merge this MR."
+        MR_DESC="${MR_DESC}\n- [ ] Move \`$ESP_MAIN_SYNCED_TAG\` tag to $CONFLICT_HASH."
+        MR_DESC="${MR_DESC}\n- [ ] ENABLE SYNC WITH RELEASE BRANCH SCHEDULED PIPELINE!"
+        MR_BODY='{
+          "id": '"$CI_PROJECT_ID"',
+          "source_branch": "'"${WIP_BRANCH}"'",
+          "target_branch": "'"${BRANCH_NAME}"'",
+          "title": "Draft: '"${WIP_BRANCH}"'",
+          "description": "'"${MR_DESC}"'",
+          "assignee_id": '"${GITLAB_USER_ID}"',
+          "labels": "'"${MR_LABELS}"'",
+          "remove_source_branch": true
+        }'
+        curl -X POST "${CI_SERVER_URL}${MR_CREATE_PATH}" --header "$CI_TOKEN_HEADER" --header "$CONT_TYPE_HEADER" --data "${MR_BODY}"
+        exit 1
       fi
-    - echo "Push updated branch '$BRANCH_NAME' and sync tag '$ESP_MAIN_SYNCED_TAG' to '$REBASE_PUSH_REMOTE'"
     # Push synced branch with updated tag atomically
+    # if one cherry-pick failed, but some commits were picked (rc is 2), WIP branch will be created on the next run of this job.
+    - echo "Push updated branch '$BRANCH_NAME' and sync tag '$ESP_MAIN_SYNCED_TAG' to '$REBASE_PUSH_REMOTE'"
     - git push --force --atomic push-remote $BRANCH_NAME $ESP_MAIN_SYNCED_TAG
     - git status
 
