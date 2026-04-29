@@ -66,10 +66,10 @@ unsigned int test_movx_xacc_l_write_read(unsigned int rs1_val) {
 
 // Test ESP.VMULAS.S16.XACC with mixed model (struct for whole XACC)
 // CHECK-LABEL: define dso_local i32 @test_vmulas_s16_xacc(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]]) local_unnamed_addr #[[ATTR2:[0-9]+]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]]) local_unnamed_addr #[[ATTR2:[0-9]+]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP0]], align 16, !tbaa [[TBAA6:![0-9]+]]
-// CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
+// CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP0]], align 16, !tbaa [[TBAA10:![0-9]+]]
+// CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
 // CHECK-NEXT:    [[CONV2:%.*]] = and i32 [[TMP3]], 255
@@ -96,10 +96,10 @@ unsigned int test_vmulas_s16_xacc(unsigned int init_val, esp_vec128_16_t Qx, esp
 
 // Test ESP.VMULAS.S8.XACC with mixed model (struct for whole XACC)
 // CHECK-LABEL: define dso_local i32 @test_vmulas_s8_xacc(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]]) local_unnamed_addr #[[ATTR2]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]]) local_unnamed_addr #[[ATTR2]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
+// CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
 // CHECK-NEXT:    [[CONV2:%.*]] = and i32 [[TMP3]], 255
@@ -126,10 +126,10 @@ unsigned int test_vmulas_s8_xacc(unsigned int init_val, esp_vec128_t Qx, esp_vec
 
 // Test ESP.VMULAS.U16.XACC with mixed model (struct for whole XACC)
 // CHECK-LABEL: define dso_local i32 @test_vmulas_u16_xacc(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]]) local_unnamed_addr #[[ATTR2]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]]) local_unnamed_addr #[[ATTR2]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP0]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
+// CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
 // CHECK-NEXT:    [[CONV2:%.*]] = and i32 [[TMP3]], 255
@@ -156,10 +156,10 @@ unsigned int test_vmulas_u16_xacc(unsigned int init_val, esp_vec128_16_t Qx, esp
 
 // Test ESP.VMULAS.U8.XACC with mixed model (struct for whole XACC)
 // CHECK-LABEL: define dso_local i32 @test_vmulas_u8_xacc(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]]) local_unnamed_addr #[[ATTR2]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]]) local_unnamed_addr #[[ATTR2]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
+// CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
 // CHECK-NEXT:    [[CONV2:%.*]] = and i32 [[TMP3]], 255
@@ -255,13 +255,13 @@ unsigned int test_srs_u_xacc(unsigned int init_val, int32_t shift_amount) {
 
 // Test ESP.VMULAS.S16.XACC.LD.IP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_s16_xacc_ld_ip(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly [[PTR:%.*]]) local_unnamed_addr #[[ATTR3:[0-9]+]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly [[PTR:%.*]]) local_unnamed_addr #[[ATTR3:[0-9]+]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP0]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
+// CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.ld.ip.m(i32 [[TMP2]], i32 [[TMP3]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 16), !noalias [[META9:![0-9]+]]
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.ld.ip.m(i32 [[TMP2]], i32 [[TMP3]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 16), !noalias [[META11:![0-9]+]]
 // CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP5]]
 //
@@ -281,13 +281,13 @@ unsigned int test_vmulas_s16_xacc_ld_ip(unsigned int init_val, esp_vec128_16_t Q
 
 // Test ESP.VMULAS.S16.XACC.LD.XP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_s16_xacc_ld_xp(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR3]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR3]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP0]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
+// CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.ld.xp.m(i32 [[TMP2]], i32 [[TMP3]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 [[REG]]), !noalias [[META12:![0-9]+]]
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.ld.xp.m(i32 [[TMP2]], i32 [[TMP3]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 [[REG]]), !noalias [[META14:![0-9]+]]
 // CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP5]]
 //
@@ -307,14 +307,14 @@ unsigned int test_vmulas_s16_xacc_ld_xp(unsigned int init_val, esp_vec128_16_t Q
 
 // Test ESP.VMULAS.S16.XACC.ST.IP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_s16_xacc_st_ip(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]]) local_unnamed_addr #[[ATTR4:[0-9]+]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]]) local_unnamed_addr #[[ATTR4:[0-9]+]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP2]], align 16, !tbaa [[TBAA6]]
+// CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP2]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.st.ip.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 16), !noalias [[META15:![0-9]+]]
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.st.ip.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 16), !noalias [[META17:![0-9]+]]
 // CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP6]]
 //
@@ -334,14 +334,14 @@ unsigned int test_vmulas_s16_xacc_st_ip(unsigned int init_val, esp_vec128_t Qu, 
 
 // Test ESP.VMULAS.S16.XACC.ST.XP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_s16_xacc_st_xp(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR4]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR4]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP2]], align 16, !tbaa [[TBAA6]]
+// CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP2]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.st.xp.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 [[REG]]), !noalias [[META18:![0-9]+]]
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.st.xp.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 [[REG]]), !noalias [[META20:![0-9]+]]
 // CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP6]]
 //
@@ -361,13 +361,13 @@ unsigned int test_vmulas_s16_xacc_st_xp(unsigned int init_val, esp_vec128_t Qu, 
 
 // Test ESP.VMULAS.S8.XACC.LD.IP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_s8_xacc_ld_ip(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly [[PTR:%.*]]) local_unnamed_addr #[[ATTR3]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly [[PTR:%.*]]) local_unnamed_addr #[[ATTR3]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
+// CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.ld.ip.m(i32 [[TMP2]], i32 [[TMP3]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 16), !noalias [[META21:![0-9]+]]
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.ld.ip.m(i32 [[TMP2]], i32 [[TMP3]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 16), !noalias [[META23:![0-9]+]]
 // CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP5]]
 //
@@ -387,13 +387,13 @@ unsigned int test_vmulas_s8_xacc_ld_ip(unsigned int init_val, esp_vec128_t Qx, e
 
 // Test ESP.VMULAS.S8.XACC.LD.XP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_s8_xacc_ld_xp(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR3]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR3]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
+// CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.ld.xp.m(i32 [[TMP2]], i32 [[TMP3]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 [[REG]]), !noalias [[META24:![0-9]+]]
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.ld.xp.m(i32 [[TMP2]], i32 [[TMP3]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 [[REG]]), !noalias [[META26:![0-9]+]]
 // CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP5]]
 //
@@ -413,14 +413,14 @@ unsigned int test_vmulas_s8_xacc_ld_xp(unsigned int init_val, esp_vec128_t Qx, e
 
 // Test ESP.VMULAS.S8.XACC.ST.IP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_s8_xacc_st_ip(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]]) local_unnamed_addr #[[ATTR4]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]]) local_unnamed_addr #[[ATTR4]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP2]], align 16, !tbaa [[TBAA6]]
+// CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP2]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.st.ip.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 16), !noalias [[META27:![0-9]+]]
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.st.ip.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 16), !noalias [[META29:![0-9]+]]
 // CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP6]]
 //
@@ -440,14 +440,14 @@ unsigned int test_vmulas_s8_xacc_st_ip(unsigned int init_val, esp_vec128_t Qu, e
 
 // Test ESP.VMULAS.S8.XACC.ST.XP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_s8_xacc_st_xp(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR4]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR4]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP2]], align 16, !tbaa [[TBAA6]]
+// CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP2]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.st.xp.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 [[REG]]), !noalias [[META30:![0-9]+]]
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.st.xp.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 [[REG]]), !noalias [[META32:![0-9]+]]
 // CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP6]]
 //
@@ -467,13 +467,13 @@ unsigned int test_vmulas_s8_xacc_st_xp(unsigned int init_val, esp_vec128_t Qu, e
 
 // Test ESP.VMULAS.U16.XACC.LD.IP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_u16_xacc_ld_ip(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly [[PTR:%.*]]) local_unnamed_addr #[[ATTR3]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly [[PTR:%.*]]) local_unnamed_addr #[[ATTR3]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP0]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
+// CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.ld.ip.m(i32 [[TMP2]], i32 [[TMP3]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 16), !noalias [[META33:![0-9]+]]
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.ld.ip.m(i32 [[TMP2]], i32 [[TMP3]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 16), !noalias [[META35:![0-9]+]]
 // CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP5]]
 //
@@ -493,13 +493,13 @@ unsigned int test_vmulas_u16_xacc_ld_ip(unsigned int init_val, esp_vec128_16_t Q
 
 // Test ESP.VMULAS.U16.XACC.LD.XP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_u16_xacc_ld_xp(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR3]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR3]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP0]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
+// CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.ld.xp.m(i32 [[TMP2]], i32 [[TMP3]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 [[REG]]), !noalias [[META36:![0-9]+]]
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.ld.xp.m(i32 [[TMP2]], i32 [[TMP3]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 [[REG]]), !noalias [[META38:![0-9]+]]
 // CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP5]]
 //
@@ -519,14 +519,14 @@ unsigned int test_vmulas_u16_xacc_ld_xp(unsigned int init_val, esp_vec128_16_t Q
 
 // Test ESP.VMULAS.U16.XACC.ST.IP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_u16_xacc_st_ip(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]]) local_unnamed_addr #[[ATTR4]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]]) local_unnamed_addr #[[ATTR4]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP2]], align 16, !tbaa [[TBAA6]]
+// CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP2]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.st.ip.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 16), !noalias [[META39:![0-9]+]]
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.st.ip.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 16), !noalias [[META41:![0-9]+]]
 // CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP6]]
 //
@@ -546,14 +546,14 @@ unsigned int test_vmulas_u16_xacc_st_ip(unsigned int init_val, esp_vec128_t Qu, 
 
 // Test ESP.VMULAS.U16.XACC.ST.XP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_u16_xacc_st_xp(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR4]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR4]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP2]], align 16, !tbaa [[TBAA6]]
+// CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP2]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.st.xp.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 [[REG]]), !noalias [[META42:![0-9]+]]
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.st.xp.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 [[REG]]), !noalias [[META44:![0-9]+]]
 // CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP6]]
 //
@@ -573,13 +573,13 @@ unsigned int test_vmulas_u16_xacc_st_xp(unsigned int init_val, esp_vec128_t Qu, 
 
 // Test ESP.VMULAS.U8.XACC.LD.IP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_u8_xacc_ld_ip(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly [[PTR:%.*]]) local_unnamed_addr #[[ATTR3]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly [[PTR:%.*]]) local_unnamed_addr #[[ATTR3]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
+// CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.ld.ip.m(i32 [[TMP2]], i32 [[TMP3]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 16), !noalias [[META45:![0-9]+]]
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.ld.ip.m(i32 [[TMP2]], i32 [[TMP3]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 16), !noalias [[META47:![0-9]+]]
 // CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP5]]
 //
@@ -599,13 +599,13 @@ unsigned int test_vmulas_u8_xacc_ld_ip(unsigned int init_val, esp_vec128_t Qx, e
 
 // Test ESP.VMULAS.U8.XACC.LD.XP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_u8_xacc_ld_xp(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR3]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR3]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
+// CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.ld.xp.m(i32 [[TMP2]], i32 [[TMP3]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 [[REG]]), !noalias [[META48:![0-9]+]]
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.ld.xp.m(i32 [[TMP2]], i32 [[TMP3]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 [[REG]]), !noalias [[META50:![0-9]+]]
 // CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP5]]
 //
@@ -625,14 +625,14 @@ unsigned int test_vmulas_u8_xacc_ld_xp(unsigned int init_val, esp_vec128_t Qx, e
 
 // Test ESP.VMULAS.U8.XACC.ST.IP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_u8_xacc_st_ip(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]]) local_unnamed_addr #[[ATTR4]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]]) local_unnamed_addr #[[ATTR4]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP2]], align 16, !tbaa [[TBAA6]]
+// CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP2]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.st.ip.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 16), !noalias [[META51:![0-9]+]]
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.st.ip.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 16), !noalias [[META53:![0-9]+]]
 // CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP6]]
 //
@@ -652,14 +652,14 @@ unsigned int test_vmulas_u8_xacc_st_ip(unsigned int init_val, esp_vec128_t Qu, e
 
 // Test ESP.VMULAS.U8.XACC.ST.XP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_u8_xacc_st_xp(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR4]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR4]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP2]], align 16, !tbaa [[TBAA6]]
+// CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP2]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
 // CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.st.xp.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 [[REG]]), !noalias [[META54:![0-9]+]]
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.st.xp.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 [[REG]]), !noalias [[META56:![0-9]+]]
 // CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP6]]
 //
@@ -694,55 +694,55 @@ unsigned int test_vmulas_u8_xacc_st_xp(unsigned int init_val, esp_vec128_t Qu, e
 
 
 //.
-// CHECK: [[TBAA6]] = !{[[META7:![0-9]+]], [[META7]], i64 0}
-// CHECK: [[META7]] = !{!"omnipotent char", [[META8:![0-9]+]], i64 0}
-// CHECK: [[META8]] = !{!"Simple C/C++ TBAA"}
-// CHECK: [[META9]] = !{[[META10:![0-9]+]]}
-// CHECK: [[META10]] = distinct !{[[META10]], [[META11:![0-9]+]], !"esp_vmulas_s16_xacc_ld_ip_m: %agg.result"}
-// CHECK: [[META11]] = distinct !{[[META11]], !"esp_vmulas_s16_xacc_ld_ip_m"}
-// CHECK: [[META12]] = !{[[META13:![0-9]+]]}
-// CHECK: [[META13]] = distinct !{[[META13]], [[META14:![0-9]+]], !"esp_vmulas_s16_xacc_ld_xp_m: %agg.result"}
-// CHECK: [[META14]] = distinct !{[[META14]], !"esp_vmulas_s16_xacc_ld_xp_m"}
-// CHECK: [[META15]] = !{[[META16:![0-9]+]]}
-// CHECK: [[META16]] = distinct !{[[META16]], [[META17:![0-9]+]], !"esp_vmulas_s16_xacc_st_ip_m: %agg.result"}
-// CHECK: [[META17]] = distinct !{[[META17]], !"esp_vmulas_s16_xacc_st_ip_m"}
-// CHECK: [[META18]] = !{[[META19:![0-9]+]]}
-// CHECK: [[META19]] = distinct !{[[META19]], [[META20:![0-9]+]], !"esp_vmulas_s16_xacc_st_xp_m: %agg.result"}
-// CHECK: [[META20]] = distinct !{[[META20]], !"esp_vmulas_s16_xacc_st_xp_m"}
-// CHECK: [[META21]] = !{[[META22:![0-9]+]]}
-// CHECK: [[META22]] = distinct !{[[META22]], [[META23:![0-9]+]], !"esp_vmulas_s8_xacc_ld_ip_m: %agg.result"}
-// CHECK: [[META23]] = distinct !{[[META23]], !"esp_vmulas_s8_xacc_ld_ip_m"}
-// CHECK: [[META24]] = !{[[META25:![0-9]+]]}
-// CHECK: [[META25]] = distinct !{[[META25]], [[META26:![0-9]+]], !"esp_vmulas_s8_xacc_ld_xp_m: %agg.result"}
-// CHECK: [[META26]] = distinct !{[[META26]], !"esp_vmulas_s8_xacc_ld_xp_m"}
-// CHECK: [[META27]] = !{[[META28:![0-9]+]]}
-// CHECK: [[META28]] = distinct !{[[META28]], [[META29:![0-9]+]], !"esp_vmulas_s8_xacc_st_ip_m: %agg.result"}
-// CHECK: [[META29]] = distinct !{[[META29]], !"esp_vmulas_s8_xacc_st_ip_m"}
-// CHECK: [[META30]] = !{[[META31:![0-9]+]]}
-// CHECK: [[META31]] = distinct !{[[META31]], [[META32:![0-9]+]], !"esp_vmulas_s8_xacc_st_xp_m: %agg.result"}
-// CHECK: [[META32]] = distinct !{[[META32]], !"esp_vmulas_s8_xacc_st_xp_m"}
-// CHECK: [[META33]] = !{[[META34:![0-9]+]]}
-// CHECK: [[META34]] = distinct !{[[META34]], [[META35:![0-9]+]], !"esp_vmulas_u16_xacc_ld_ip_m: %agg.result"}
-// CHECK: [[META35]] = distinct !{[[META35]], !"esp_vmulas_u16_xacc_ld_ip_m"}
-// CHECK: [[META36]] = !{[[META37:![0-9]+]]}
-// CHECK: [[META37]] = distinct !{[[META37]], [[META38:![0-9]+]], !"esp_vmulas_u16_xacc_ld_xp_m: %agg.result"}
-// CHECK: [[META38]] = distinct !{[[META38]], !"esp_vmulas_u16_xacc_ld_xp_m"}
-// CHECK: [[META39]] = !{[[META40:![0-9]+]]}
-// CHECK: [[META40]] = distinct !{[[META40]], [[META41:![0-9]+]], !"esp_vmulas_u16_xacc_st_ip_m: %agg.result"}
-// CHECK: [[META41]] = distinct !{[[META41]], !"esp_vmulas_u16_xacc_st_ip_m"}
-// CHECK: [[META42]] = !{[[META43:![0-9]+]]}
-// CHECK: [[META43]] = distinct !{[[META43]], [[META44:![0-9]+]], !"esp_vmulas_u16_xacc_st_xp_m: %agg.result"}
-// CHECK: [[META44]] = distinct !{[[META44]], !"esp_vmulas_u16_xacc_st_xp_m"}
-// CHECK: [[META45]] = !{[[META46:![0-9]+]]}
-// CHECK: [[META46]] = distinct !{[[META46]], [[META47:![0-9]+]], !"esp_vmulas_u8_xacc_ld_ip_m: %agg.result"}
-// CHECK: [[META47]] = distinct !{[[META47]], !"esp_vmulas_u8_xacc_ld_ip_m"}
-// CHECK: [[META48]] = !{[[META49:![0-9]+]]}
-// CHECK: [[META49]] = distinct !{[[META49]], [[META50:![0-9]+]], !"esp_vmulas_u8_xacc_ld_xp_m: %agg.result"}
-// CHECK: [[META50]] = distinct !{[[META50]], !"esp_vmulas_u8_xacc_ld_xp_m"}
-// CHECK: [[META51]] = !{[[META52:![0-9]+]]}
-// CHECK: [[META52]] = distinct !{[[META52]], [[META53:![0-9]+]], !"esp_vmulas_u8_xacc_st_ip_m: %agg.result"}
-// CHECK: [[META53]] = distinct !{[[META53]], !"esp_vmulas_u8_xacc_st_ip_m"}
-// CHECK: [[META54]] = !{[[META55:![0-9]+]]}
-// CHECK: [[META55]] = distinct !{[[META55]], [[META56:![0-9]+]], !"esp_vmulas_u8_xacc_st_xp_m: %agg.result"}
-// CHECK: [[META56]] = distinct !{[[META56]], !"esp_vmulas_u8_xacc_st_xp_m"}
+// CHECK: [[META8:![0-9]+]] = !{!"omnipotent char", [[META9:![0-9]+]], i64 0}
+// CHECK: [[META9]] = !{!"Simple C/C++ TBAA"}
+// CHECK: [[TBAA10]] = !{[[META8]], [[META8]], i64 0}
+// CHECK: [[META11]] = !{[[META12:![0-9]+]]}
+// CHECK: [[META12]] = distinct !{[[META12]], [[META13:![0-9]+]], !"esp_vmulas_s16_xacc_ld_ip_m: %agg.result"}
+// CHECK: [[META13]] = distinct !{[[META13]], !"esp_vmulas_s16_xacc_ld_ip_m"}
+// CHECK: [[META14]] = !{[[META15:![0-9]+]]}
+// CHECK: [[META15]] = distinct !{[[META15]], [[META16:![0-9]+]], !"esp_vmulas_s16_xacc_ld_xp_m: %agg.result"}
+// CHECK: [[META16]] = distinct !{[[META16]], !"esp_vmulas_s16_xacc_ld_xp_m"}
+// CHECK: [[META17]] = !{[[META18:![0-9]+]]}
+// CHECK: [[META18]] = distinct !{[[META18]], [[META19:![0-9]+]], !"esp_vmulas_s16_xacc_st_ip_m: %agg.result"}
+// CHECK: [[META19]] = distinct !{[[META19]], !"esp_vmulas_s16_xacc_st_ip_m"}
+// CHECK: [[META20]] = !{[[META21:![0-9]+]]}
+// CHECK: [[META21]] = distinct !{[[META21]], [[META22:![0-9]+]], !"esp_vmulas_s16_xacc_st_xp_m: %agg.result"}
+// CHECK: [[META22]] = distinct !{[[META22]], !"esp_vmulas_s16_xacc_st_xp_m"}
+// CHECK: [[META23]] = !{[[META24:![0-9]+]]}
+// CHECK: [[META24]] = distinct !{[[META24]], [[META25:![0-9]+]], !"esp_vmulas_s8_xacc_ld_ip_m: %agg.result"}
+// CHECK: [[META25]] = distinct !{[[META25]], !"esp_vmulas_s8_xacc_ld_ip_m"}
+// CHECK: [[META26]] = !{[[META27:![0-9]+]]}
+// CHECK: [[META27]] = distinct !{[[META27]], [[META28:![0-9]+]], !"esp_vmulas_s8_xacc_ld_xp_m: %agg.result"}
+// CHECK: [[META28]] = distinct !{[[META28]], !"esp_vmulas_s8_xacc_ld_xp_m"}
+// CHECK: [[META29]] = !{[[META30:![0-9]+]]}
+// CHECK: [[META30]] = distinct !{[[META30]], [[META31:![0-9]+]], !"esp_vmulas_s8_xacc_st_ip_m: %agg.result"}
+// CHECK: [[META31]] = distinct !{[[META31]], !"esp_vmulas_s8_xacc_st_ip_m"}
+// CHECK: [[META32]] = !{[[META33:![0-9]+]]}
+// CHECK: [[META33]] = distinct !{[[META33]], [[META34:![0-9]+]], !"esp_vmulas_s8_xacc_st_xp_m: %agg.result"}
+// CHECK: [[META34]] = distinct !{[[META34]], !"esp_vmulas_s8_xacc_st_xp_m"}
+// CHECK: [[META35]] = !{[[META36:![0-9]+]]}
+// CHECK: [[META36]] = distinct !{[[META36]], [[META37:![0-9]+]], !"esp_vmulas_u16_xacc_ld_ip_m: %agg.result"}
+// CHECK: [[META37]] = distinct !{[[META37]], !"esp_vmulas_u16_xacc_ld_ip_m"}
+// CHECK: [[META38]] = !{[[META39:![0-9]+]]}
+// CHECK: [[META39]] = distinct !{[[META39]], [[META40:![0-9]+]], !"esp_vmulas_u16_xacc_ld_xp_m: %agg.result"}
+// CHECK: [[META40]] = distinct !{[[META40]], !"esp_vmulas_u16_xacc_ld_xp_m"}
+// CHECK: [[META41]] = !{[[META42:![0-9]+]]}
+// CHECK: [[META42]] = distinct !{[[META42]], [[META43:![0-9]+]], !"esp_vmulas_u16_xacc_st_ip_m: %agg.result"}
+// CHECK: [[META43]] = distinct !{[[META43]], !"esp_vmulas_u16_xacc_st_ip_m"}
+// CHECK: [[META44]] = !{[[META45:![0-9]+]]}
+// CHECK: [[META45]] = distinct !{[[META45]], [[META46:![0-9]+]], !"esp_vmulas_u16_xacc_st_xp_m: %agg.result"}
+// CHECK: [[META46]] = distinct !{[[META46]], !"esp_vmulas_u16_xacc_st_xp_m"}
+// CHECK: [[META47]] = !{[[META48:![0-9]+]]}
+// CHECK: [[META48]] = distinct !{[[META48]], [[META49:![0-9]+]], !"esp_vmulas_u8_xacc_ld_ip_m: %agg.result"}
+// CHECK: [[META49]] = distinct !{[[META49]], !"esp_vmulas_u8_xacc_ld_ip_m"}
+// CHECK: [[META50]] = !{[[META51:![0-9]+]]}
+// CHECK: [[META51]] = distinct !{[[META51]], [[META52:![0-9]+]], !"esp_vmulas_u8_xacc_ld_xp_m: %agg.result"}
+// CHECK: [[META52]] = distinct !{[[META52]], !"esp_vmulas_u8_xacc_ld_xp_m"}
+// CHECK: [[META53]] = !{[[META54:![0-9]+]]}
+// CHECK: [[META54]] = distinct !{[[META54]], [[META55:![0-9]+]], !"esp_vmulas_u8_xacc_st_ip_m: %agg.result"}
+// CHECK: [[META55]] = distinct !{[[META55]], !"esp_vmulas_u8_xacc_st_ip_m"}
+// CHECK: [[META56]] = !{[[META57:![0-9]+]]}
+// CHECK: [[META57]] = distinct !{[[META57]], [[META58:![0-9]+]], !"esp_vmulas_u8_xacc_st_xp_m: %agg.result"}
+// CHECK: [[META58]] = distinct !{[[META58]], !"esp_vmulas_u8_xacc_st_xp_m"}
 //.
