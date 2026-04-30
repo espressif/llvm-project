@@ -3276,6 +3276,7 @@ bool RISCVInstrInfo::verifyInstruction(const MachineInstr &MI,
         CASE_OPERAND_UIMM(8)
         CASE_OPERAND_UIMM(9)
         CASE_OPERAND_UIMM(10)
+        CASE_OPERAND_UIMM(11)
         CASE_OPERAND_UIMM(12)
         CASE_OPERAND_UIMM(16)
         CASE_OPERAND_UIMM(32)
@@ -3299,17 +3300,48 @@ bool RISCVInstrInfo::verifyInstruction(const MachineInstr &MI,
         case RISCVOp::OPERAND_UIMM5_PLUS1:
           Ok = Imm >= 1 && Imm <= 32;
           break;
+        case RISCVOp::OPERAND_UIMM5_GE6_PLUS1:
+          Ok = Imm >= 6 && Imm <= 32;
+          break;
+        case RISCVOp::OPERAND_UIMM5_SLIST:
+          Ok = (Imm == 0 || Imm == 1 || Imm == 2 || Imm == 4 || Imm == 8 ||
+                Imm == 16 || Imm == 15 || Imm == 31);
+          break;
         case RISCVOp::OPERAND_UIMM6_PLUS1:
           Ok = Imm >= 1 && Imm <= 64;
           break;
         case RISCVOp::OPERAND_UIMM7_EQ_XLEN:
           Ok = Imm == STI.getXLen();
           break;
+        case RISCVOp::OPERAND_UIMM6_LSB0:
+          Ok = isShiftedUInt<5, 1>(Imm);
+          break;
+        case RISCVOp::OPERAND_UIMM7_LSB00:
+          Ok = isShiftedUInt<5, 2>(Imm);
+          break;
+        case RISCVOp::OPERAND_UIMM7_LSB000:
+          Ok = isShiftedUInt<4, 3>(Imm);
+          break;
+        case RISCVOp::OPERAND_UIMM8_LSB00:
+          Ok = isShiftedUInt<6, 2>(Imm);
+          break;
+        case RISCVOp::OPERAND_UIMM8_LSB000:
+          Ok = isShiftedUInt<5, 3>(Imm);
+          break;
         case RISCVOp::OPERAND_UIMM8_GE32:
           Ok = isUInt<8>(Imm) && Imm >= 32;
           break;
         case RISCVOp::OPERAND_UIMM9_YBNDSWI:
           Ok = RISCV::isValidYBNDSWImm(Imm);
+          break;
+        case RISCVOp::OPERAND_UIMM9_LSB000:
+          Ok = isShiftedUInt<6, 3>(Imm);
+          break;
+        case RISCVOp::OPERAND_SIMM8_UNSIGNED:
+          Ok = isInt<8>(Imm);
+          break;
+        case RISCVOp::OPERAND_SIMM8_NONZERO:
+          Ok = isInt<8>(Imm) && (Imm != 0);
           break;
         case RISCVOp::OPERAND_SIMM10_LSB0000_NONZERO:
           Ok = isShiftedInt<6, 4>(Imm) && (Imm != 0);
@@ -3319,6 +3351,9 @@ bool RISCVInstrInfo::verifyInstruction(const MachineInstr &MI,
           break;
         case RISCVOp::OPERAND_UIMM10_STEP4:
           Ok = isUInt<10>(Imm) && (Imm != 0);
+          break;
+        case RISCVOp::OPERAND_UIMM14_LSB00:
+          Ok = isShiftedUInt<12, 2>(Imm);
           break;
         case RISCVOp::OPERAND_UIMM13_STEP4:
           Ok = isUInt<13>(Imm) && (Imm != 0);
@@ -3341,8 +3376,12 @@ bool RISCVInstrInfo::verifyInstruction(const MachineInstr &MI,
         CASE_OPERAND_SIMM(8)
         CASE_OPERAND_SIMM(10)
         CASE_OPERAND_SIMM(11)
+        CASE_OPERAND_SIMM(16)
         CASE_OPERAND_SIMM(26)
         // clang-format on
+        case RISCVOp::OPERAND_SIMM10_UNSIGNED:
+          Ok = isInt<10>(Imm);
+          break;
         case RISCVOp::OPERAND_SIMM5_PLUS1:
           Ok = Imm >= -15 && Imm <= 16;
           break;
