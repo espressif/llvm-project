@@ -520,6 +520,9 @@ sign_aarch64-apple-darwin:
       else
         P4ECO4=NO
       fi
+    # Enable ESPV target lowering for test IDF builds (opt-in per code review !296)
+    - echo "set(extra_flags -Xclang=-target-feature -Xclang=+espv-lowering)" >> CMakeLists.txt
+    - echo 'idf_build_set_property(COMPILE_OPTIONS "${extra_flags}" APPEND)' >> CMakeLists.txt
     - idf.py set-target ${CHIP} 2>&1 | tee ${BUILD_LOG}
     - >
       if [ "${P4ECO4}" == "YES" ]; then
