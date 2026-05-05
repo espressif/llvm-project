@@ -183,8 +183,13 @@ rebase_on_main:
   stage: pre_check
   tags: [ "amd64", "build" ]
   rules:
+    # Relax only when the MR is explicitly marked (CI_MERGE_REQUEST_LABELS is set for MR pipelines).
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_LABELS =~ /(^|,)allow_format_checks_failure(,|$)/'
+      when: on_success
+      allow_failure: true
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
       when: on_success
+      allow_failure: false
     - when: never
 
 check_code_format:
