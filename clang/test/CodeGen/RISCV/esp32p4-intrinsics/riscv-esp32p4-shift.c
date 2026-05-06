@@ -569,7 +569,7 @@ esp_vld_res_t Res2;
 // CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP2]], 0
 // CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.srcxxp.2q.m(<16 x i8> [[TMP1]], <16 x i8> [[TMP3]], ptr [[PTR]], i32 [[OFFSET]])
 // CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[TMP4]], 2
-// CHECK-NEXT:    store ptr [[TMP5]], ptr [[DST]], align 4, !tbaa [[TBAA6:![0-9]+]]
+// CHECK-NEXT:    store ptr [[TMP5]], ptr [[DST]], align 4, !tbaa [[TBAA10:![0-9]+]]
 // CHECK-NEXT:    ret void
 //
 void test_srcxxp_2q(void *src1, void *src2, void *Ptr, int offset, void *dst) {
@@ -594,7 +594,7 @@ esp_vld_res_t Res2;
 // CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP2]], 0
 // CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.slcxxp.2q.m(<16 x i8> [[TMP1]], <16 x i8> [[TMP3]], ptr [[PTR]], i32 [[OFFSET]])
 // CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[TMP4]], 2
-// CHECK-NEXT:    store ptr [[TMP5]], ptr [[DST]], align 4, !tbaa [[TBAA6]]
+// CHECK-NEXT:    store ptr [[TMP5]], ptr [[DST]], align 4, !tbaa [[TBAA10]]
 // CHECK-NEXT:    ret void
 //
 void test_slcxxp_2q(void *src1, void *src2, void *Ptr, int offset, void *dst) {
@@ -698,8 +698,8 @@ void* test_st_u_xacc_ip(void *dst) {
 }
 
 //.
-// CHECK: [[TBAA6]] = !{[[META7:![0-9]+]], [[META7]], i64 0}
-// CHECK: [[META7]] = !{!"any pointer", [[META8:![0-9]+]], i64 0}
-// CHECK: [[META8]] = !{!"omnipotent char", [[META9:![0-9]+]], i64 0}
+// CHECK: [[META8:![0-9]+]] = !{!"omnipotent char", [[META9:![0-9]+]], i64 0}
 // CHECK: [[META9]] = !{!"Simple C/C++ TBAA"}
+// CHECK: [[TBAA10]] = !{[[META11:![0-9]+]], [[META11]], i64 0}
+// CHECK: [[META11]] = !{!"any pointer", [[META8]], i64 0}
 //.

@@ -1189,7 +1189,7 @@ esp_vld_res_t res3;
 }
 
 // CHECK-LABEL: define dso_local void @test_movx_perf_m(
-// CHECK-SAME: ) local_unnamed_addr #[[ATTR6:[0-9]+]] {
+// CHECK-SAME: ) local_unnamed_addr #[[ATTR4:[0-9]+]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.perf.m(i32 0, i32 1)
 // CHECK-NEXT:    [[TMP1:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.perf.m(i32 [[TMP0]], i32 2)
@@ -1223,7 +1223,7 @@ esp_vld_res_t r1;
 }
 
 // CHECK-LABEL: define dso_local void @test_vldhbc_16_incp_m(
-// CHECK-SAME: ptr noundef [[SRC:%.*]], ptr noundef writeonly captures(none) initializes((0, 16)) [[D0:%.*]], ptr noundef writeonly captures(none) initializes((0, 16)) [[D1:%.*]]) local_unnamed_addr #[[ATTR8:[0-9]+]] {
+// CHECK-SAME: ptr noundef [[SRC:%.*]], ptr noundef writeonly captures(none) initializes((0, 16)) [[D0:%.*]], ptr noundef writeonly captures(none) initializes((0, 16)) [[D1:%.*]]) local_unnamed_addr #[[ATTR6:[0-9]+]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.vldhbc.16.incp.m(ptr [[SRC]])
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[TMP0]], 0

@@ -854,10 +854,10 @@ void test_fft_ams_s16_ld_incp_uaup_with_sar(void *src, void *qu_out, void *qz_ou
 // CHECK-LABEL: define dso_local void @test_fft_ams_s16_st_incp_with_sar(
 // CHECK-SAME: ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP2:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP3:%.*]], ptr noundef [[DST:%.*]], ptr noundef [[RS2:%.*]], ptr noundef writeonly captures(none) initializes((0, 16)) [[QZ_OUT:%.*]], i32 noundef [[SAR_VAL:%.*]]) local_unnamed_addr #[[ATTR2]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP0]], align 16, !tbaa [[TBAA6:![0-9]+]]
-// CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[QW:%.*]] = load <8 x i16>, ptr [[TMP2]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP3]], align 16, !tbaa [[TBAA6]]
+// CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP0]], align 16, !tbaa [[TBAA10:![0-9]+]]
+// CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[QW:%.*]] = load <8 x i16>, ptr [[TMP2]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP3]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 [[SAR_VAL]])
 // CHECK-NEXT:    [[TMP5:%.*]] = tail call { <8 x i16>, ptr } @llvm.riscv.esp.fft.ams.s16.st.incp.m(<8 x i16> [[QX]], <8 x i16> [[QY]], <8 x i16> [[QW]], <16 x i8> [[QU]], ptr [[DST]], ptr [[RS2]], i32 0, i32 [[TMP4]])
 // CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <8 x i16>, ptr } [[TMP5]], 0
@@ -912,9 +912,9 @@ esp_vld_res_t res_qy;
 // CHECK-LABEL: define dso_local void @test_fft_cmul_s16_st_xp_with_sar(
 // CHECK-SAME: ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[DST:%.*]], ptr noundef [[RS2:%.*]], i32 noundef [[SAR_VAL:%.*]]) local_unnamed_addr #[[ATTR2]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP0]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP2]], align 16, !tbaa [[TBAA6]]
+// CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP2]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 [[SAR_VAL]])
 // CHECK-NEXT:    [[TMP4:%.*]] = tail call ptr @llvm.riscv.esp.fft.cmul.s16.st.xp.m(<8 x i16> [[QX]], <8 x i16> [[QY]], <16 x i8> [[QU]], ptr [[DST]], ptr [[RS2]], i32 0, i32 0, i32 0, i32 [[TMP3]])
 // CHECK-NEXT:    ret void
@@ -929,7 +929,7 @@ void test_fft_cmul_s16_st_xp_with_sar(esp_vec128_16_t Qx, esp_vec128_16_t Qy, es
     (void)new_ptr;  // Suppress unused variable warning
 }
 //.
-// CHECK: [[TBAA6]] = !{[[META7:![0-9]+]], [[META7]], i64 0}
-// CHECK: [[META7]] = !{!"omnipotent char", [[META8:![0-9]+]], i64 0}
-// CHECK: [[META8]] = !{!"Simple C/C++ TBAA"}
+// CHECK: [[META8:![0-9]+]] = !{!"omnipotent char", [[META9:![0-9]+]], i64 0}
+// CHECK: [[META9]] = !{!"Simple C/C++ TBAA"}
+// CHECK: [[TBAA10]] = !{[[META8]], [[META8]], i64 0}
 //.
