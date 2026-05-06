@@ -316,7 +316,7 @@ esp_vmulas_xacc_ld_res_t Res;
 
 // Test ESP.VMULAS.S16.XACC.ST.IP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_s16_xacc_st_ip(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]]) local_unnamed_addr #[[ATTR5:[0-9]+]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]]) local_unnamed_addr #[[ATTR5:[0-9]+]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
@@ -350,7 +350,7 @@ esp_vmulas_xacc_st_res_t Res;
 
 // Test ESP.VMULAS.S16.XACC.ST.XP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_s16_xacc_st_xp(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR5]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR5]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
@@ -438,7 +438,7 @@ esp_vmulas_xacc_ld_res_t Res;
 
 // Test ESP.VMULAS.S8.XACC.ST.IP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_s8_xacc_st_ip(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]]) local_unnamed_addr #[[ATTR5]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]]) local_unnamed_addr #[[ATTR5]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
@@ -468,7 +468,7 @@ esp_vmulas_xacc_st_res_t Res;
 
 // Test ESP.VMULAS.S8.XACC.ST.XP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_s8_xacc_st_xp(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR5]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR5]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
@@ -556,7 +556,7 @@ esp_vmulas_xacc_ld_res_t Res;
 
 // Test ESP.VMULAS.U16.XACC.ST.IP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_u16_xacc_st_ip(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]]) local_unnamed_addr #[[ATTR5]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]]) local_unnamed_addr #[[ATTR5]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
@@ -586,7 +586,7 @@ esp_vmulas_xacc_st_res_t Res;
 
 // Test ESP.VMULAS.U16.XACC.ST.XP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_u16_xacc_st_xp(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR5]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR5]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
@@ -674,7 +674,7 @@ esp_vmulas_xacc_ld_res_t Res;
 
 // Test ESP.VMULAS.U8.XACC.ST.IP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_u8_xacc_st_ip(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]]) local_unnamed_addr #[[ATTR5]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]]) local_unnamed_addr #[[ATTR5]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
@@ -704,7 +704,7 @@ esp_vmulas_xacc_st_res_t Res;
 
 // Test ESP.VMULAS.U8.XACC.ST.XP with explicit state passing
 // CHECK-LABEL: define dso_local i32 @test_vmulas_u8_xacc_st_xp(
-// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr noundef readonly captures(none) [[TMP0:%.*]], ptr noundef readonly captures(none) [[TMP1:%.*]], ptr noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR5]] {
+// CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[PTR:%.*]], i32 noundef [[REG:%.*]]) local_unnamed_addr #[[ATTR5]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
@@ -749,7 +749,7 @@ esp_vmulas_xacc_st_res_t Res;
 
 
 //.
-// CHECK: [[TBAA6]] = !{[[META7:![0-9]+]], [[META7]], i64 0}
-// CHECK: [[META7]] = !{!"omnipotent char", [[META8:![0-9]+]], i64 0}
-// CHECK: [[META8]] = !{!"Simple C/C++ TBAA"}
+// CHECK: [[META8:![0-9]+]] = !{!"omnipotent char", [[META9:![0-9]+]], i64 0}
+// CHECK: [[META9]] = !{!"Simple C/C++ TBAA"}
+// CHECK: [[TBAA10]] = !{[[META8]], [[META8]], i64 0}
 //.

@@ -141,8 +141,8 @@ void test_zero_qacc(void *dst) {
 // CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } @llvm.riscv.esp.zero.qacc.m()
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP0]], 0
 // CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP0]], 1
-// CHECK-NEXT:    [[TMP3:%.*]] = load <8 x i16>, ptr [[QX]], align 16, !tbaa [[TBAA6:![0-9]+]]
-// CHECK-NEXT:    [[TMP4:%.*]] = load <8 x i16>, ptr [[QY]], align 16, !tbaa [[TBAA6]]
+// CHECK-NEXT:    [[TMP3:%.*]] = load <8 x i16>, ptr [[QX]], align 16, !tbaa [[TBAA10:![0-9]+]]
+// CHECK-NEXT:    [[TMP4:%.*]] = load <8 x i16>, ptr [[QY]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[TMP5:%.*]] = tail call { <16 x i8>, <16 x i8> } @llvm.riscv.esp.vcmulas.s16.qacc.l.m(<16 x i8> [[TMP1]], <16 x i8> [[TMP2]], <8 x i16> [[TMP3]], <8 x i16> [[TMP4]])
 // CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8> } [[TMP5]], 0
 // CHECK-NEXT:    [[TMP7:%.*]] = tail call ptr @llvm.riscv.esp.st.qacc.l.l.128.ip.m(<16 x i8> [[TMP6]], ptr [[DST]], i32 16)
@@ -165,8 +165,8 @@ void test_zero_qacc_use_l(void *dst, esp_vec128_16_t *Qx, esp_vec128_16_t *Qy) {
 // CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } @llvm.riscv.esp.zero.qacc.m()
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP0]], 2
 // CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, <16 x i8>, <16 x i8>, <16 x i8> } [[TMP0]], 3
-// CHECK-NEXT:    [[TMP3:%.*]] = load <8 x i16>, ptr [[QX]], align 16, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[TMP4:%.*]] = load <8 x i16>, ptr [[QY]], align 16, !tbaa [[TBAA6]]
+// CHECK-NEXT:    [[TMP3:%.*]] = load <8 x i16>, ptr [[QX]], align 16, !tbaa [[TBAA10]]
+// CHECK-NEXT:    [[TMP4:%.*]] = load <8 x i16>, ptr [[QY]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[TMP5:%.*]] = tail call { <16 x i8>, <16 x i8> } @llvm.riscv.esp.vcmulas.s16.qacc.h.m(<16 x i8> [[TMP1]], <16 x i8> [[TMP2]], <8 x i16> [[TMP3]], <8 x i16> [[TMP4]])
 // CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8> } [[TMP5]], 1
 // CHECK-NEXT:    [[TMP7:%.*]] = tail call ptr @llvm.riscv.esp.st.qacc.h.h.128.ip.m(<16 x i8> [[TMP6]], ptr [[DST]], i32 16)
@@ -231,7 +231,7 @@ void* test_zero_xacc_store(void *Ptr) {
 }
 
 //.
-// CHECK: [[TBAA6]] = !{[[META7:![0-9]+]], [[META7]], i64 0}
-// CHECK: [[META7]] = !{!"omnipotent char", [[META8:![0-9]+]], i64 0}
-// CHECK: [[META8]] = !{!"Simple C/C++ TBAA"}
+// CHECK: [[META8:![0-9]+]] = !{!"omnipotent char", [[META9:![0-9]+]], i64 0}
+// CHECK: [[META9]] = !{!"Simple C/C++ TBAA"}
+// CHECK: [[TBAA10]] = !{[[META8]], [[META8]], i64 0}
 //.
