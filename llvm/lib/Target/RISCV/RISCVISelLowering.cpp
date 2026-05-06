@@ -11605,14 +11605,11 @@ static inline SDValue getVCIXISDNodeVOID(SDValue Op, SelectionDAG &DAG,
   return DAG.getNode(Type, SDLoc(Op), Op.getValueType(), Operands);
 }
 
-SDValue RISCVTargetLowering::LowerINTRINSIC_W_CHAIN(SDValue Op,
-                                                    SelectionDAG &DAG) const {
-  unsigned IntNo = Op.getConstantOperandVal(1);
-  
-  // Try ESPV intrinsic lowering first
-  if (SDValue V = RISCV::lowerESPVIntrinsicWChain(Op, DAG, Subtarget))
-    return V;
-
+static SDValue
+lowerFixedVectorSegLoadIntrinsics(unsigned IntNo, SDValue Op,
+                                  const RISCVSubtarget &Subtarget,
+                                  SelectionDAG &DAG) {
+  bool IsStrided;
   switch (IntNo) {
   case Intrinsic::riscv_seg2_load_mask:
   case Intrinsic::riscv_seg3_load_mask:
@@ -11634,7 +11631,7 @@ SDValue RISCVTargetLowering::LowerINTRINSIC_W_CHAIN(SDValue Op,
     break;
   default:
     llvm_unreachable("unexpected intrinsic ID");
-  };
+  }
 
   static const Intrinsic::ID VlsegInts[7] = {
       Intrinsic::riscv_vlseg2_mask, Intrinsic::riscv_vlseg3_mask,
@@ -11689,7 +11686,7 @@ SDValue RISCVTargetLowering::LowerINTRINSIC_W_CHAIN(SDValue Op,
       DAG.getMemIntrinsicNode(ISD::INTRINSIC_W_CHAIN, DL, VTs, Ops,
                               Load->getMemoryVT(), Load->getMemOperand());
   SmallVector<SDValue, 9> Results;
-  for (unsigned int RetIdx = 0; RetIdx < NF; RetIdx++) {
+  for (unsigned RetIdx = 0; RetIdx < NF; RetIdx++) {
     SDValue SubVec = DAG.getNode(RISCVISD::TUPLE_EXTRACT, DL, ContainerVT,
                                  Result.getValue(0),
                                  DAG.getTargetConstant(RetIdx, DL, MVT::i32));
@@ -11702,7 +11699,7 @@ SDValue RISCVTargetLowering::LowerINTRINSIC_W_CHAIN(SDValue Op,
 SDValue RISCVTargetLowering::LowerINTRINSIC_W_CHAIN(SDValue Op,
                                                     SelectionDAG &DAG) const {
   unsigned IntNo = Op.getConstantOperandVal(1);
-  
+
   // Try ESPV intrinsic lowering first
   if (SDValue V = RISCV::lowerESPVIntrinsicWChain(Op, DAG, Subtarget))
     return V;
