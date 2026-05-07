@@ -256,6 +256,7 @@ if(WIN32 AND NOT MINGW AND NOT "${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Windows")
                           APPEND_STRING PROPERTY LINK_FLAGS " -Xlinker /MANIFEST:NO")
   endif()
 endif()
+endif()
 
 set(CMAKE_STATIC_LIBRARY_PREFIX "lib")
 
@@ -289,7 +290,6 @@ if (LIBCXX_HERMETIC_STATIC_LIBRARY)
   # _LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS can be defined in __config_site
   # too. Define it in the same way here, to avoid redefinition conflicts.
   target_compile_definitions(cxx_static PRIVATE _LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS=)
-endif()
 endif()
 
 # Attempt to merge the libc++.a archive and the ABI library archive into one.
