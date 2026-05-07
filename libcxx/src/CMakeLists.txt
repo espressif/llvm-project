@@ -293,7 +293,6 @@ if (LIBCXX_HERMETIC_STATIC_LIBRARY)
   # too. Define it in the same way here, to avoid redefinition conflicts.
   target_compile_definitions(cxx_static PRIVATE _LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS=)
 endif()
-endif()
 
 # Attempt to merge the libc++.a archive and the ABI library archive into one.
 if (LIBCXX_STATICALLY_LINK_ABI_IN_STATIC_LIBRARY)
