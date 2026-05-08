@@ -13,7 +13,7 @@ define dso_local void @dsps_wind_blackman_nuttall_f32(ptr nocapture noundef writ
 ; CHECK-NEXT:    [[CONV:%.*]] = sitofp i32 [[SUB]] to float
 ; CHECK-NEXT:    [[DIV:%.*]] = fdiv float 1.000000e+00, [[CONV]]
 ; CHECK-NEXT:    [[CONV4:%.*]] = fpext float [[DIV]] to double
-; CHECK-NEXT:    [[MUL1:%.*]] = fmul double [[CONV4]], 0x401921FB54442D18
+; CHECK-NEXT:    [[MUL1:%.*]] = fmul double [[CONV4]], f0x401921FB54442D18
 ; CHECK-NEXT:    [[CONV22:%.*]] = fptrunc double [[MUL1]] to float
 ; CHECK-NEXT:    [[MUL33:%.*]] = fmul float [[CONV22]], 2.000000e+00
 ; CHECK-NEXT:    [[MUL4:%.*]] = fmul float [[CONV22]], 3.000000e+00
@@ -25,13 +25,13 @@ define dso_local void @dsps_wind_blackman_nuttall_f32(ptr nocapture noundef writ
 ; CHECK-NEXT:    [[CONV5:%.*]] = sitofp i32 [[I_033]] to float
 ; CHECK-NEXT:    [[MUL6:%.*]] = fmul float [[CONV22]], [[CONV5]]
 ; CHECK-NEXT:    [[CALL:%.*]] = tail call float @cosf(float noundef [[MUL6]])
-; CHECK-NEXT:    [[TMP0:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL]], float 0xBFDF4EAF20000000, float 0x3FD744ED00000000)
+; CHECK-NEXT:    [[TMP0:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL]], float f0xBEFA7579, float f0x3EBA2768)
 ; CHECK-NEXT:    [[MUL9:%.*]] = fmul float [[MUL33]], [[CONV5]]
 ; CHECK-NEXT:    [[CALL14:%.*]] = tail call float @cosf(float noundef [[MUL9]])
-; CHECK-NEXT:    [[TMP1:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL14]], float 0x3FC17C17A0000000, float [[TMP0]])
+; CHECK-NEXT:    [[TMP1:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL14]], float f0x3E0BE0BD, float [[TMP0]])
 ; CHECK-NEXT:    [[MUL124:%.*]] = fmul float [[MUL4]], [[CONV5]]
 ; CHECK-NEXT:    [[CALL22:%.*]] = tail call float @cosf(float noundef [[MUL124]])
-; CHECK-NEXT:    [[TMP2:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL22]], float 0xBF85CB0040000000, float [[TMP1]])
+; CHECK-NEXT:    [[TMP2:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL22]], float -1.064110e-02, float [[TMP1]])
 ; CHECK-NEXT:    [[ARRAYIDX:%.*]] = getelementptr inbounds float, ptr [[WINDOW]], i32 [[I_033]]
 ; CHECK-NEXT:    store float [[TMP2]], ptr [[ARRAYIDX]], align 4
 ; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_033]], 1

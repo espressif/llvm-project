@@ -13,7 +13,7 @@ define dso_local void @dsps_f32_wind_blackman_ansi(ptr nocapture noundef writeon
 ; CHECK-NEXT:    [[CONV:%.*]] = sitofp i32 [[SUB]] to float
 ; CHECK-NEXT:    [[DIV:%.*]] = fdiv nnan float 1.000000e+00, [[CONV]]
 ; CHECK-NEXT:    [[CONV4:%.*]] = fpext nnan float [[DIV]] to double
-; CHECK-NEXT:    [[MUL1:%.*]] = fmul nnan double [[CONV4]], 0x401921FB54442D18
+; CHECK-NEXT:    [[MUL1:%.*]] = fmul nnan double [[CONV4]], f0x401921FB54442D18
 ; CHECK-NEXT:    [[CONV22:%.*]] = fptrunc double [[MUL1]] to float
 ; CHECK-NEXT:    [[MUL33:%.*]] = fmul nnan float [[CONV22]], 2.000000e+00
 ; CHECK-NEXT:    [[SUB4:%.*]] = add nsw i32 [[LEN]], -7
@@ -30,80 +30,80 @@ define dso_local void @dsps_f32_wind_blackman_ansi(ptr nocapture noundef writeon
 ; CHECK-NEXT:    [[CONV5:%.*]] = uitofp nneg i32 [[I_023]] to float
 ; CHECK-NEXT:    [[MUL6:%.*]] = fmul float [[CONV22]], [[CONV5]]
 ; CHECK-NEXT:    [[CALL:%.*]] = tail call float @cosf(float noundef [[MUL6]])
-; CHECK-NEXT:    [[TMP0:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL]], float -5.000000e-01, float 0x3FDAE147A0000000)
+; CHECK-NEXT:    [[TMP0:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL]], float -5.000000e-01, float 4.200000e-01)
 ; CHECK-NEXT:    [[MUL9:%.*]] = fmul float [[MUL33]], [[CONV5]]
 ; CHECK-NEXT:    [[CALL14:%.*]] = tail call float @cosf(float noundef [[MUL9]])
-; CHECK-NEXT:    [[TMP1:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL14]], float 0x3FB47AE140000000, float [[TMP0]])
+; CHECK-NEXT:    [[TMP1:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL14]], float 8.000000e-02, float [[TMP0]])
 ; CHECK-NEXT:    [[ARRAYIDX:%.*]] = getelementptr inbounds nuw [4 x i8], ptr [[WINDOW]], i32 [[I_023]]
 ; CHECK-NEXT:    store float [[TMP1]], ptr [[ARRAYIDX]], align 4
 ; CHECK-NEXT:    [[INC:%.*]] = or disjoint i32 [[I_023]], 1
 ; CHECK-NEXT:    [[CONV5_1:%.*]] = uitofp nneg i32 [[INC]] to float
 ; CHECK-NEXT:    [[MUL6_1:%.*]] = fmul nnan float [[CONV22]], [[CONV5_1]]
 ; CHECK-NEXT:    [[CALL_1:%.*]] = tail call float @cosf(float noundef [[MUL6_1]])
-; CHECK-NEXT:    [[TMP2:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL_1]], float -5.000000e-01, float 0x3FDAE147A0000000)
+; CHECK-NEXT:    [[TMP2:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL_1]], float -5.000000e-01, float 4.200000e-01)
 ; CHECK-NEXT:    [[MUL9_1:%.*]] = fmul nnan float [[MUL33]], [[CONV5_1]]
 ; CHECK-NEXT:    [[CALL14_1:%.*]] = tail call float @cosf(float noundef [[MUL9_1]])
-; CHECK-NEXT:    [[TMP3:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL14_1]], float 0x3FB47AE140000000, float [[TMP2]])
+; CHECK-NEXT:    [[TMP3:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL14_1]], float 8.000000e-02, float [[TMP2]])
 ; CHECK-NEXT:    [[ARRAYIDX_1:%.*]] = getelementptr inbounds nuw [4 x i8], ptr [[WINDOW]], i32 [[INC]]
 ; CHECK-NEXT:    store float [[TMP3]], ptr [[ARRAYIDX_1]], align 4
 ; CHECK-NEXT:    [[INC_1:%.*]] = or disjoint i32 [[I_023]], 2
 ; CHECK-NEXT:    [[CONV5_2:%.*]] = uitofp nneg i32 [[INC_1]] to float
 ; CHECK-NEXT:    [[MUL6_2:%.*]] = fmul nnan float [[CONV22]], [[CONV5_2]]
 ; CHECK-NEXT:    [[CALL_2:%.*]] = tail call float @cosf(float noundef [[MUL6_2]])
-; CHECK-NEXT:    [[TMP4:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL_2]], float -5.000000e-01, float 0x3FDAE147A0000000)
+; CHECK-NEXT:    [[TMP4:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL_2]], float -5.000000e-01, float 4.200000e-01)
 ; CHECK-NEXT:    [[MUL9_2:%.*]] = fmul nnan float [[MUL33]], [[CONV5_2]]
 ; CHECK-NEXT:    [[CALL14_2:%.*]] = tail call float @cosf(float noundef [[MUL9_2]])
-; CHECK-NEXT:    [[TMP5:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL14_2]], float 0x3FB47AE140000000, float [[TMP4]])
+; CHECK-NEXT:    [[TMP5:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL14_2]], float 8.000000e-02, float [[TMP4]])
 ; CHECK-NEXT:    [[ARRAYIDX_2:%.*]] = getelementptr inbounds nuw [4 x i8], ptr [[WINDOW]], i32 [[INC_1]]
 ; CHECK-NEXT:    store float [[TMP5]], ptr [[ARRAYIDX_2]], align 4
 ; CHECK-NEXT:    [[INC_2:%.*]] = or disjoint i32 [[I_023]], 3
 ; CHECK-NEXT:    [[CONV5_3:%.*]] = uitofp nneg i32 [[INC_2]] to float
 ; CHECK-NEXT:    [[MUL6_3:%.*]] = fmul nnan float [[CONV22]], [[CONV5_3]]
 ; CHECK-NEXT:    [[CALL_3:%.*]] = tail call float @cosf(float noundef [[MUL6_3]])
-; CHECK-NEXT:    [[TMP6:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL_3]], float -5.000000e-01, float 0x3FDAE147A0000000)
+; CHECK-NEXT:    [[TMP6:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL_3]], float -5.000000e-01, float 4.200000e-01)
 ; CHECK-NEXT:    [[MUL9_3:%.*]] = fmul nnan float [[MUL33]], [[CONV5_3]]
 ; CHECK-NEXT:    [[CALL14_3:%.*]] = tail call float @cosf(float noundef [[MUL9_3]])
-; CHECK-NEXT:    [[TMP7:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL14_3]], float 0x3FB47AE140000000, float [[TMP6]])
+; CHECK-NEXT:    [[TMP7:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL14_3]], float 8.000000e-02, float [[TMP6]])
 ; CHECK-NEXT:    [[ARRAYIDX_3:%.*]] = getelementptr inbounds nuw [4 x i8], ptr [[WINDOW]], i32 [[INC_2]]
 ; CHECK-NEXT:    store float [[TMP7]], ptr [[ARRAYIDX_3]], align 4
 ; CHECK-NEXT:    [[INC_3:%.*]] = or disjoint i32 [[I_023]], 4
 ; CHECK-NEXT:    [[CONV5_4:%.*]] = uitofp nneg i32 [[INC_3]] to float
 ; CHECK-NEXT:    [[MUL6_4:%.*]] = fmul nnan float [[CONV22]], [[CONV5_4]]
 ; CHECK-NEXT:    [[CALL_4:%.*]] = tail call float @cosf(float noundef [[MUL6_4]])
-; CHECK-NEXT:    [[TMP8:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL_4]], float -5.000000e-01, float 0x3FDAE147A0000000)
+; CHECK-NEXT:    [[TMP8:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL_4]], float -5.000000e-01, float 4.200000e-01)
 ; CHECK-NEXT:    [[MUL9_4:%.*]] = fmul nnan float [[MUL33]], [[CONV5_4]]
 ; CHECK-NEXT:    [[CALL14_4:%.*]] = tail call float @cosf(float noundef [[MUL9_4]])
-; CHECK-NEXT:    [[TMP9:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL14_4]], float 0x3FB47AE140000000, float [[TMP8]])
+; CHECK-NEXT:    [[TMP9:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL14_4]], float 8.000000e-02, float [[TMP8]])
 ; CHECK-NEXT:    [[ARRAYIDX_4:%.*]] = getelementptr inbounds nuw [4 x i8], ptr [[WINDOW]], i32 [[INC_3]]
 ; CHECK-NEXT:    store float [[TMP9]], ptr [[ARRAYIDX_4]], align 4
 ; CHECK-NEXT:    [[INC_4:%.*]] = or disjoint i32 [[I_023]], 5
 ; CHECK-NEXT:    [[CONV5_5:%.*]] = uitofp nneg i32 [[INC_4]] to float
 ; CHECK-NEXT:    [[MUL6_5:%.*]] = fmul nnan float [[CONV22]], [[CONV5_5]]
 ; CHECK-NEXT:    [[CALL_5:%.*]] = tail call float @cosf(float noundef [[MUL6_5]])
-; CHECK-NEXT:    [[TMP10:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL_5]], float -5.000000e-01, float 0x3FDAE147A0000000)
+; CHECK-NEXT:    [[TMP10:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL_5]], float -5.000000e-01, float 4.200000e-01)
 ; CHECK-NEXT:    [[MUL9_5:%.*]] = fmul nnan float [[MUL33]], [[CONV5_5]]
 ; CHECK-NEXT:    [[CALL14_5:%.*]] = tail call float @cosf(float noundef [[MUL9_5]])
-; CHECK-NEXT:    [[TMP11:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL14_5]], float 0x3FB47AE140000000, float [[TMP10]])
+; CHECK-NEXT:    [[TMP11:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL14_5]], float 8.000000e-02, float [[TMP10]])
 ; CHECK-NEXT:    [[ARRAYIDX_5:%.*]] = getelementptr inbounds nuw [4 x i8], ptr [[WINDOW]], i32 [[INC_4]]
 ; CHECK-NEXT:    store float [[TMP11]], ptr [[ARRAYIDX_5]], align 4
 ; CHECK-NEXT:    [[INC_5:%.*]] = or disjoint i32 [[I_023]], 6
 ; CHECK-NEXT:    [[CONV5_6:%.*]] = uitofp nneg i32 [[INC_5]] to float
 ; CHECK-NEXT:    [[MUL6_6:%.*]] = fmul nnan float [[CONV22]], [[CONV5_6]]
 ; CHECK-NEXT:    [[CALL_6:%.*]] = tail call float @cosf(float noundef [[MUL6_6]])
-; CHECK-NEXT:    [[TMP12:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL_6]], float -5.000000e-01, float 0x3FDAE147A0000000)
+; CHECK-NEXT:    [[TMP12:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL_6]], float -5.000000e-01, float 4.200000e-01)
 ; CHECK-NEXT:    [[MUL9_6:%.*]] = fmul nnan float [[MUL33]], [[CONV5_6]]
 ; CHECK-NEXT:    [[CALL14_6:%.*]] = tail call float @cosf(float noundef [[MUL9_6]])
-; CHECK-NEXT:    [[TMP13:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL14_6]], float 0x3FB47AE140000000, float [[TMP12]])
+; CHECK-NEXT:    [[TMP13:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL14_6]], float 8.000000e-02, float [[TMP12]])
 ; CHECK-NEXT:    [[ARRAYIDX_6:%.*]] = getelementptr inbounds nuw [4 x i8], ptr [[WINDOW]], i32 [[INC_5]]
 ; CHECK-NEXT:    store float [[TMP13]], ptr [[ARRAYIDX_6]], align 4
 ; CHECK-NEXT:    [[INC_6:%.*]] = or disjoint i32 [[I_023]], 7
 ; CHECK-NEXT:    [[CONV5_7:%.*]] = uitofp nneg i32 [[INC_6]] to float
 ; CHECK-NEXT:    [[MUL6_7:%.*]] = fmul nnan float [[CONV22]], [[CONV5_7]]
 ; CHECK-NEXT:    [[CALL_7:%.*]] = tail call float @cosf(float noundef [[MUL6_7]])
-; CHECK-NEXT:    [[TMP14:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL_7]], float -5.000000e-01, float 0x3FDAE147A0000000)
+; CHECK-NEXT:    [[TMP14:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL_7]], float -5.000000e-01, float 4.200000e-01)
 ; CHECK-NEXT:    [[MUL9_7:%.*]] = fmul nnan float [[MUL33]], [[CONV5_7]]
 ; CHECK-NEXT:    [[CALL14_7:%.*]] = tail call float @cosf(float noundef [[MUL9_7]])
-; CHECK-NEXT:    [[TMP15:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL14_7]], float 0x3FB47AE140000000, float [[TMP14]])
+; CHECK-NEXT:    [[TMP15:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL14_7]], float 8.000000e-02, float [[TMP14]])
 ; CHECK-NEXT:    [[ARRAYIDX_7:%.*]] = getelementptr inbounds nuw [4 x i8], ptr [[WINDOW]], i32 [[INC_6]]
 ; CHECK-NEXT:    store float [[TMP15]], ptr [[ARRAYIDX_7]], align 4
 ; CHECK-NEXT:    [[INC_7]] = add nuw nsw i32 [[I_023]], 8
@@ -114,10 +114,10 @@ define dso_local void @dsps_f32_wind_blackman_ansi(ptr nocapture noundef writeon
 ; CHECK-NEXT:    [[CONV5_CLONE:%.*]] = sitofp i32 [[I_023_CLONE]] to float
 ; CHECK-NEXT:    [[MUL6_CLONE:%.*]] = fmul float [[CONV22]], [[CONV5_CLONE]]
 ; CHECK-NEXT:    [[CALL_CLONE:%.*]] = tail call float @cosf(float noundef [[MUL6_CLONE]])
-; CHECK-NEXT:    [[TMP16:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL_CLONE]], float -5.000000e-01, float 0x3FDAE147A0000000)
+; CHECK-NEXT:    [[TMP16:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL_CLONE]], float -5.000000e-01, float 4.200000e-01)
 ; CHECK-NEXT:    [[MUL9_CLONE:%.*]] = fmul float [[MUL33]], [[CONV5_CLONE]]
 ; CHECK-NEXT:    [[CALL14_CLONE:%.*]] = tail call float @cosf(float noundef [[MUL9_CLONE]])
-; CHECK-NEXT:    [[TMP17:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL14_CLONE]], float 0x3FB47AE140000000, float [[TMP16]])
+; CHECK-NEXT:    [[TMP17:%.*]] = tail call float @llvm.fmuladd.f32(float [[CALL14_CLONE]], float 8.000000e-02, float [[TMP16]])
 ; CHECK-NEXT:    [[ARRAYIDX_CLONE:%.*]] = getelementptr inbounds [4 x i8], ptr [[WINDOW]], i32 [[I_023_CLONE]]
 ; CHECK-NEXT:    store float [[TMP17]], ptr [[ARRAYIDX_CLONE]], align 4
 ; CHECK-NEXT:    [[INC_CLONE]] = add nuw nsw i32 [[I_023_CLONE]], 1
