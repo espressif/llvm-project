@@ -13,7 +13,7 @@ define dso_local void @dsps_wind_hann_f32(ptr nocapture noundef writeonly %windo
 ; CHECK-NEXT:    [[CONV:%.*]] = sitofp i32 [[SUB]] to float
 ; CHECK-NEXT:    [[DIV:%.*]] = fdiv float 1.000000e+00, [[CONV]]
 ; CHECK-NEXT:    [[CONV4:%.*]] = fpext float [[DIV]] to double
-; CHECK-NEXT:    [[MUL1:%.*]] = fmul double [[CONV4]], 0x401921FB54442D18
+; CHECK-NEXT:    [[MUL1:%.*]] = fmul double [[CONV4]], f0x401921FB54442D18
 ; CHECK-NEXT:    [[CONV22:%.*]] = fptrunc double [[MUL1]] to float
 ; CHECK-NEXT:    br label [[FOR_BODY:%.*]]
 ; CHECK:       for.cond.cleanup:
