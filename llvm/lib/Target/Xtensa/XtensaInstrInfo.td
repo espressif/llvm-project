@@ -314,6 +314,13 @@ def : Pat<(i32 (extloadi16 addr_ish2:$addr)), (L16UI addr_ish2:$addr)>;
 def : Pat<(i32 (load (add i32:$s, (Xtensa_pcrel_wrapper tconstpool:$in)))),
           (L32I (ADD i32:$s, (L32R tconstpool:$in)), 0)>;
 
+// In some cases load from aggregate constant pattern maybe not matched.
+// It is assumed that load 4-byte constant pattern is already
+// applied, so this is the case of load from the aggregate constant.
+// We just load an address of aggregate constant.
+let AddedComplexity = -1 in
+def : Pat<(Xtensa_pcrel_wrapper tconstpool:$in), (L32R tconstpool:$in)>;
+
 //===----------------------------------------------------------------------===//
 // Conditional branch instructions
 //===----------------------------------------------------------------------===//
