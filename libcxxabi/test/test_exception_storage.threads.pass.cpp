@@ -8,6 +8,9 @@
 
 // UNSUPPORTED: c++03, no-threads
 
+// Does not fit to memory limits to run this test in ESP test environment.
+// UNSUPPORTED: LIBCXX-ESP-FIXME
+
 #include "test_macros.h"
 
 #include <algorithm>
