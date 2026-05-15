@@ -688,10 +688,10 @@ sign_aarch64-apple-darwin:
     - pack_aarch64-apple-darwin
 
 .prepare_test_app_build: &prepare_test_app_build |
+  pushd ${IDF_PATH}
   # Use custom idf in case custom branch is present
   if [ -n "${TEST_APP_IDF_CUSTOM_BRANCH:-}" ]; then
     echo "TEST_APP_IDF_CUSTOM_BRANCH=$TEST_APP_IDF_CUSTOM_BRANCH"
-    pushd $IDF_PATH
     git remote add gitlab https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}:${CI_SERVER_PORT}/espressif/esp-idf.git
     git fetch gitlab ${TEST_APP_IDF_CUSTOM_BRANCH}:${TEST_APP_IDF_CUSTOM_BRANCH}
     git checkout ${TEST_APP_IDF_CUSTOM_BRANCH}
@@ -762,7 +762,6 @@ test_build_idf_hello_world:
   extends:
     - .test_build_idf_app_template
   variables:
-    TEST_APP_IDF_CUSTOM_BRANCH: upgrade_clang_21
     TEST_APP_PATH: examples/get-started/hello_world
 
 test_build_esp_dsp:
@@ -770,7 +769,6 @@ test_build_esp_dsp:
     - .test_build_idf_app_template
   allow_failure: true
   variables:
-    TEST_APP_IDF_CUSTOM_BRANCH: upgrade_clang_21
     TEST_APP_PATH: components/esp-dsp/test_app
     TEST_APP_SUBMODULE_URL: https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}:${CI_SERVER_PORT}/idf/esp-dsp.git
     TEST_APP_SUBMODULE_PATH: components/esp-dsp
