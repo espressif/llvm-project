@@ -138,7 +138,17 @@ static inline bool isLoop(uint8_t *loc) {
 void Xtensa::relocate(uint8_t *loc, const Relocation &rel, uint64_t val) const {
   switch (rel.type) {
   case R_XTENSA_32:
-    write32le(loc, val);
+    // R_XTENSA_32 is a partial_inplace relocation (GNU bfd howto:
+    // src_mask = dst_mask = 0xffffffff). The GNU Xtensa assembler stores the
+    // addend in the relocated word itself and leaves the RELA r_addend as 0,
+    // so the result must be S + r_addend + <existing contents>. Objects from
+    // the LLVM Xtensa backend keep the addend in r_addend and zero the field,
+    // so reading the contents back adds 0 and is harmless. Plain
+    // write32le(loc, val) drops the in-place addend, which miscomputes every
+    // R_XTENSA_32 with a nonzero addend -- e.g. the switch jump tables in the
+    // precompiled Espressif Wi-Fi blobs, which then point at a section base
+    // instead of the intended in-section offset.
+    write32le(loc, val + read32le(loc));
     break;
   case R_XTENSA_SLOT0_OP: {
     // HACK: calculate the instruction location based on the PC-relative
