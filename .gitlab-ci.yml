@@ -792,7 +792,10 @@ test_pie_optimizations:
     - when: on_success
   allow_failure: true
   script:
-    - LLVM_PROJECT_PATH=$PWD
+    - export LLVM_PROJECT_PATH=$PWD
+    - export ESP_LLVM_BIN_PREPEND_DISABLED=1
+    - export DSP_ASM_COMPARE_MODE=relaxed
+    - export DSP_ASM_COMPARE_SHOW_SIMILARITY=1
     - ls -l ${PWD}/${DIST_DIR}
     - PIE_TEST_TOOLS_ARCH=${PWD}/${DIST_DIR}/pie_test_tools.tar.xz
     - echo "Unpacking tools for PIE optimization tests"
