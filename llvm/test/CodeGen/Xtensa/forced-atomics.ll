@@ -111,14 +111,14 @@ define i8 @cmpxchg8(ptr %p) nounwind {
 ; XTENSA-NEXT:    entry a1, 48
 ; XTENSA-NEXT:    or a10, a2, a2
 ; XTENSA-NEXT:    movi a8, 0
-; XTENSA-NEXT:    s8i a8, a1, 0
-; XTENSA-NEXT:    addi a11, a1, 0
+; XTENSA-NEXT:    s8i a8, a1, 3
+; XTENSA-NEXT:    addi a11, a1, 3
 ; XTENSA-NEXT:    movi a12, 1
 ; XTENSA-NEXT:    movi a13, 5
 ; XTENSA-NEXT:    l32r a8, .LCPI3_0
 ; XTENSA-NEXT:    or a14, a13, a13
 ; XTENSA-NEXT:    callx8 a8
-; XTENSA-NEXT:    l8ui a2, a1, 0
+; XTENSA-NEXT:    l8ui a2, a1, 3
 ; XTENSA-NEXT:    retw
 ;
 ; XTENSA-ATOMIC-LABEL: cmpxchg8:
@@ -278,14 +278,14 @@ define i16 @cmpxchg16(ptr %p) nounwind {
 ; XTENSA-NEXT:    entry a1, 48
 ; XTENSA-NEXT:    or a10, a2, a2
 ; XTENSA-NEXT:    movi a8, 0
-; XTENSA-NEXT:    s16i a8, a1, 0
-; XTENSA-NEXT:    addi a11, a1, 0
+; XTENSA-NEXT:    s16i a8, a1, 2
+; XTENSA-NEXT:    addi a11, a1, 2
 ; XTENSA-NEXT:    movi a12, 1
 ; XTENSA-NEXT:    movi a13, 5
 ; XTENSA-NEXT:    l32r a8, .LCPI7_0
 ; XTENSA-NEXT:    or a14, a13, a13
 ; XTENSA-NEXT:    callx8 a8
-; XTENSA-NEXT:    l16ui a2, a1, 0
+; XTENSA-NEXT:    l16ui a2, a1, 2
 ; XTENSA-NEXT:    retw
 ;
 ; XTENSA-ATOMIC-LABEL: cmpxchg16:
