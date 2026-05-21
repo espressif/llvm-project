@@ -3,7 +3,7 @@ stages:
   - test
   - upstream_sync
 
-image: ${CI_DOCKER_REGISTRY}/llvm-build:5
+image: ${CI_DOCKER_REGISTRY}/llvm-build:7
 
 default:
   interruptible: true
