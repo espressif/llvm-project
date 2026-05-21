@@ -1,0 +1,2 @@
+# For llvm/utils/git/cherry-pick-range.py
+GitPython>=3.1.0
