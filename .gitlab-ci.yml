@@ -1,4 +1,6 @@
 stages:
+  - esp_branch_sync
+  - upstream_sync
   - test_build
   - test
   - upstream_sync
@@ -9,7 +11,7 @@ default:
   interruptible: true
 
 variables:
-  ESP_LLVM_EMBEDDED_TOOLCHAIN_REF: "llvm_release_19"
+  ESP_LLVM_EMBEDDED_TOOLCHAIN_REF: "esp_dev_on_llvm19"
   ESP_GNU_TOOLCHAIN_VER: "14.2.0_20241119"
   CROSS_ARM_IMAGE: $CI_DOCKER_REGISTRY/llvm-build-cross-arm:2
   CROSS_WIN_IMAGE: $CI_DOCKER_REGISTRY/llvm-build-cross-win:3
@@ -17,6 +19,9 @@ variables:
   BUILD_DIR: "build"
   GITLAB_SERVER_URL: https://gitlab-ci-token:${CI_JOB_TOKEN}@${GITLAB_HTTPS_SERVER}
   REBASE_PUSH_REMOTE: "https://gitlab-ci-token:${ESP_MAIN_MAINT_TOKEN}@${GITLAB_HTTPS_SERVER}/${CI_PROJECT_PATH}.git"
+  ESP_MAIN_SYNCED_TAG: "esp_main_synced"
+  ESP_RELEASE_BRANCH: origin/$CI_DEFAULT_BRANCH
+  ESP_MAIN_BRANCH: $SCHED_REBASE_BR
 
 workflow:
   rules:
@@ -24,7 +29,8 @@ workflow:
     - if: $CI_COMMIT_TAG
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_TYPE == "rebase_on_main"
-    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $SCHED_REBASE_BR
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_TYPE == "esp_branch_sync"
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $ESP_MAIN_BRANCH
 
 .use_ci_tools: &use_ci_tools |
   curl -sSL ${CIT_LOADER_URL} -o cit_loader.sh && sh cit_loader.sh
@@ -42,34 +48,74 @@ workflow:
       variables:
         PUSH_RESULT: "ON"
 
-.rules:not-scheduled-rebase-on-main:
+.rules:scheduled-esp-branch-sync:
   rules:
-    - if: $CI_PIPELINE_SOURCE != "schedule" || $SCHEDULE_TYPE != "rebase_on_main"
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_TYPE == "esp_branch_sync"
+
+.rules:not-scheduled-sync:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_TYPE == "rebase_on_main"
+      when: never
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_TYPE == "esp_branch_sync"
+      when: never
+    - when: always
+
+.rules:not-esp-main:
+  rules:
+    - if: $CI_COMMIT_BRANCH == $ESP_MAIN_BRANCH
+      when: never
 
 before_script:
   - *use_ci_tools
   - *add_gitlab_key
+  - git config --global user.email "llwm-project-ci@espressif.com"
+  - git config --global user.name "LLVM Project CI"
+
+esp_release_branch_sync:
+  stage: esp_branch_sync
+  extends:
+    - .rules:scheduled-esp-branch-sync
+  tags: [ "amd64", "build" ]
+  dependencies: []
+  script:
+    - set -euxo pipefail
+    # TODO: update docker image to include the requirements
+    - pip install -r $PWD/llvm/utils/git/requirements-cherry-pick-range.txt
+    - git remote add push-remote ${REBASE_PUSH_REMOTE}
+    - git remote -v
+    - BRANCH_NAME=${CI_COMMIT_REF_NAME}
+    - git branch -D $BRANCH_NAME || true
+    - git checkout -b $BRANCH_NAME
+    - ORIG_TAG_HASH=$(git rev-parse $ESP_MAIN_SYNCED_TAG^{commit})
+    - echo "Sync tag '$ESP_MAIN_SYNCED_TAG' original hash -> '$ORIG_TAG_HASH'"
+    - |
+      rc=0
+      $PWD/llvm/utils/git/cherry-pick-range.py $ESP_RELEASE_BRANCH $BRANCH_NAME $ESP_MAIN_SYNCED_TAG || rc=$?
+      if [ "$rc" -ne 0 ] && [ "$rc" -ne 2 ]; then
+        exit "$rc"
+      fi
+    - echo "Push updated branch '$BRANCH_NAME' and sync tag '$ESP_MAIN_SYNCED_TAG' to '$REBASE_PUSH_REMOTE'"
+    # Push synced branch with updated tag atomically
+    - git push --force --atomic push-remote $BRANCH_NAME $ESP_MAIN_SYNCED_TAG
+    - git status
 
 rebase_on_main:
   stage: upstream_sync
   extends:
     - .rules:scheduled-rebase-on-main
   tags: [ "amd64", "build" ]
-  dependencies: []
   variables:
     PUSH_RESULT: "OFF"
   script:
+    - set -euxo pipefail
+    - GIT_DIR=$( git rev-parse --git-dir )
+    - git fetch origin $SCHED_REBASE_ONTO_BR
+    - git remote add push-remote ${REBASE_PUSH_REMOTE}
+    - git remote -v
+    - BRANCH_NAME=${CI_COMMIT_REF_NAME}
+    - git branch -D $BRANCH_NAME || true
+    - git checkout -b $BRANCH_NAME
     - | 
-      set -euxo pipefail
-      git config --global user.email "llwm-project-ci-rebase@espressif.com"
-      git config --global user.name "LLVM Project CI Rebase"
-      GIT_DIR=$( git rev-parse --git-dir )
-      git fetch origin $SCHED_REBASE_ONTO_BR
-      git remote add push-remote ${REBASE_PUSH_REMOTE}
-      git remote -v
-      BRANCH_NAME=${CI_COMMIT_REF_NAME}
-      git branch -D $BRANCH_NAME || true
-      git checkout -b $BRANCH_NAME
       rc=0
       echo "Rebase branch '$BRANCH_NAME' on 'origin/$SCHED_REBASE_ONTO_BR'"
       if git rebase origin/$SCHED_REBASE_ONTO_BR ; then
@@ -94,13 +140,13 @@ rebase_on_main:
       exit $rc
 
 # some Clang/LLVM unit tests fail if we build Clang for RISCV+Xtensa only
-# this job is intended to run unit tests only, so it builds Clang with all backends
+# this job is intended to run unit tests only, so it builds Clang with X86, RISCV and Xtensa backends
 # TODO: LLVM-326 and LLVM-401
 build_and_test:
   tags: [ "amd64", "build" ]
   stage: test_build
   extends:
-    - .rules:not-scheduled-rebase-on-main
+    - .rules:not-scheduled-sync
   artifacts:
     paths:
       - ${DIST_DIR}/
@@ -131,10 +177,10 @@ build_and_test:
       -DLLVM_ENABLE_ASSERTIONS=ON
       -DLLVM_APPEND_VC_REV=OFF
       -DLLDB_INCLUDE_TESTS=OFF
+      -DLLVM_TARGETS_TO_BUILD="X86;RISCV"
       -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=Xtensa
       -DLLVM_USE_LINKER="gold"
       -DLLVM_PARALLEL_LINK_JOBS=${ESP_LLVM_PARALLEL_LINK_JOBS}
-      -DLLVM_PARALLEL_COMPILE_JOBS=${ESP_LLVM_PARALLEL_COMPILE_JOBS}
       -DLLVM_FORCE_VC_REPOSITORY="${GH_REPO_HTTPS}"
       -B ${BUILD_PATH} 2>&1 > ${BUILD_PATH}/build.log
     - export CUR_USER=$(whoami);
@@ -162,7 +208,7 @@ test_pie_optimizations:
   tags: [ "amd64", "build" ]
   stage: test
   extends:
-    - .rules:not-scheduled-rebase-on-main
+    - .rules:not-scheduled-sync
   needs:
     - job: "build_and_test"
   artifacts:
