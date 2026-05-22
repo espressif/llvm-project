@@ -105,10 +105,10 @@ esp_release_branch_sync:
         MR_DESC="${MR_DESC}\n\nTODO:"
         MR_DESC="${MR_DESC}\n- [ ] Look for \`<<<<<<<\` and \`>>>>>>>\` markers in the files and solve conflicts."
         MR_DESC="${MR_DESC}\n- [ ] Ensure pipeline passes."
-        MR_DESC="${MR_DESC}\n- [ ] DISABLE SYNC WITH RELEASE BRANCH SCHEDULED PIPELINE!"
-        MR_DESC="${MR_DESC}\n- [ ] Merge this MR."
+        MR_DESC="${MR_DESC}\n- [ ] DISABLE ALL SCHEDULED SYNC PIPELINES for \`$BRANCH_NAME\`!"
+        MR_DESC="${MR_DESC}\n- [ ] Rebase if necessary and merge this MR."
         MR_DESC="${MR_DESC}\n- [ ] Move \`$ESP_MAIN_SYNCED_TAG\` tag to $CONFLICT_HASH."
-        MR_DESC="${MR_DESC}\n- [ ] ENABLE SYNC WITH RELEASE BRANCH SCHEDULED PIPELINE!"
+        MR_DESC="${MR_DESC}\n- [ ] RE-ENABLE ALL SCHEDULED SYNC PIPELINES for \`$BRANCH_NAME\`!"
         MR_BODY='{
           "id": '"$CI_PROJECT_ID"',
           "source_branch": "'"${WIP_BRANCH}"'",
