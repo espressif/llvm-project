@@ -40,7 +40,7 @@ workflow:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
     - if: '$CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_TYPE == "rebase_on_main"'
     - if: '$CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_TYPE == "esp_branch_sync"'
-    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $SCHED_REBASE_BR'
+    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $ESP_MAIN_BRANCH'
 
 .use_ci_tools: &use_ci_tools |
   curl -sSL ${CIT_LOADER_URL} -o cit_loader.sh && sh cit_loader.sh
@@ -62,13 +62,11 @@ workflow:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_TYPE == "esp_branch_sync"'
 
-.rules:not-scheduled-sync:
-  rules:
-    - if: '$CI_PIPELINE_SOURCE != "schedule" || ($SCHEDULE_TYPE != "rebase_on_main" && $SCHEDULE_TYPE != "esp_branch_sync")'
+.if-scheduled-sync: &if-scheduled-sync
+  if: '$CI_PIPELINE_SOURCE == "schedule" && ($SCHEDULE_TYPE == "rebase_on_main" || $SCHEDULE_TYPE == "esp_branch_sync")'
 
-.rules:not-esp-main:
-  rules:
-    - if: '$CI_COMMIT_REF_NAME != $SCHED_REBASE_BR && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME != $SCHED_REBASE_BR'
+.if-esp-main-workflow: &if-esp-main-workflow
+  if: '$CI_COMMIT_REF_NAME == $ESP_MAIN_BRANCH || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $ESP_MAIN_BRANCH'
 
 before_script:
   - *use_ci_tools
@@ -206,9 +204,6 @@ check_commit_message:
       $CI_MERGE_REQUEST_DIFF_BASE_SHA..HEAD
 
 .build_toolchain_template:
-  extends:
-    - .rules:not-scheduled-sync
-    - .rules:not-esp-main
   tags: [ "amd64", "build" ]
   artifacts:
     paths:
@@ -229,6 +224,12 @@ check_commit_message:
     PACK_TOOLCHAIN: "ON"
     PACK_STANDALONE_LIBS: "ON"
     PACK_TARGET_LIBS: "OFF"
+  rules:
+    - <<: *if-esp-main-workflow
+      when: never
+    - <<: *if-scheduled-sync
+      when: never
+    - when: on_success
   cache:
     key: ccache-$CI_JOB_NAME
     paths:
@@ -400,8 +401,6 @@ build_and_test:
   tags: [ "amd64", "build" ]
   stage: test_build
   needs: []
-  extends:
-    - .rules:not-scheduled-sync
   artifacts:
     paths:
       - ${DIST_DIR}/
@@ -411,8 +410,16 @@ build_and_test:
   retry: 1
   variables:
     PACK_TOOL: "tar cJhvf"
+    CACHE_KEY: ccache-$CI_JOB_NAME
+  rules:
+    - <<: *if-scheduled-sync
+      when: never
+    - if: '$CI_COMMIT_REF_NAME == $ESP_MAIN_BRANCH || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $ESP_MAIN_BRANCH'
+      variables:
+        CACHE_KEY: ccache-esp_main-$CI_JOB_NAME
+    - when: on_success
   cache:
-    key: ccache-$CI_JOB_NAME
+    key: $CACHE_KEY
     paths:
       - $CCACHE_DIR
   before_script:
@@ -560,9 +567,6 @@ build_aarch64-apple-darwin:
 
 .pack_template:
   stage: pack
-  extends:
-    - .rules:not-scheduled-sync
-    - .rules:not-esp-main
   tags: [ "amd64", "build" ]
   artifacts:
     paths:
@@ -572,6 +576,12 @@ build_aarch64-apple-darwin:
   variables:
     PACK_TOOL: "tar cJf"
     UNPACK_TOOL: "tar xJf"
+  rules:
+    - <<: *if-esp-main-workflow
+      when: never
+    - <<: *if-scheduled-sync
+      when: never
+    - when: on_success
   script:
     # update distro
     - *unpack_distro
@@ -637,6 +647,10 @@ pack_aarch64-apple-darwin:
 .macos_codesign_template:
   stage: sign
   rules:
+    - <<: *if-esp-main-workflow
+      when: never
+    - <<: *if-scheduled-sync
+      when: never
     - if: $CI_COMMIT_TAG
       when: on_success
       allow_failure: false
@@ -664,16 +678,12 @@ pack_aarch64-apple-darwin:
 sign_x86_64-apple-darwin:
   extends: 
     - .macos_codesign_template
-    - .rules:not-scheduled-sync
-    - .rules:not-esp-main
   needs:
     - pack_x86_64-apple-darwin
 
 sign_aarch64-apple-darwin:
   extends: 
     - .macos_codesign_template
-    - .rules:not-scheduled-sync
-    - .rules:not-esp-main
   needs:
     - pack_aarch64-apple-darwin
 
@@ -699,9 +709,6 @@ sign_aarch64-apple-darwin:
   stage: test
   image: espressif/idf:latest
   tags: [ "amd64", "build" ]
-  extends:
-    - .rules:not-scheduled-sync
-    - .rules:not-esp-main
   artifacts:
     paths:
       - ${BUILD_DIR}/*.log
@@ -720,6 +727,12 @@ sign_aarch64-apple-darwin:
     TEST_APP_SUBMODULE_PATH: ""
     CONF_HOST: "x86_64-linux-gnu"
     UNPACK_TOOL: "tar xJf"
+  rules:
+    - <<: *if-esp-main-workflow
+      when: never
+    - <<: *if-scheduled-sync
+      when: never
+    - when: on_success
   script:
     - mkdir -p $PWD/${BUILD_DIR}
     - export BUILD_LOG=$PWD/${BUILD_DIR}/build.log
@@ -765,8 +778,6 @@ test_build_esp_dsp:
 test_pie_optimizations:
   tags: [ "amd64", "build" ]
   stage: test
-  extends:
-    - .rules:not-scheduled-sync
   needs:
     - job: "build_and_test"
   artifacts:
@@ -777,6 +788,10 @@ test_pie_optimizations:
   variables:
     TEST_APP_ESP_DSP_CUSTOM_BRANCH: "llvm-23-optimization-test-v3"
     UNPACK_TOOL: "tar xJvf"
+  rules:
+    - <<: *if-scheduled-sync
+      when: never
+    - when: on_success
   allow_failure: true
   script:
     - LLVM_PROJECT_PATH=$PWD
@@ -818,15 +833,18 @@ test_xesppie:
 
 upload_to_http:
   stage: private_deploy
-  extends:
-    - .rules:not-scheduled-sync
-    - .rules:not-esp-main
   when: manual
   allow_failure: true
   tags: [ "deploy", "shiny" ]
   variables:
     # force the fetch strategy to clean old archives up in dist/ dir
     GIT_STRATEGY: fetch
+  rules:
+    - <<: *if-esp-main-workflow
+      when: never
+    - <<: *if-scheduled-sync
+      when: never
+    - when: on_success
   needs:
     - job: build_x86_64-linux-gnu
   script:
