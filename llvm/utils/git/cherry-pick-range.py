@@ -185,7 +185,8 @@ def _wip_br_finish(
     for label, h in (("dest base", base), ("sync tag", tag_s), ("commit", commit_short)):
         if not re.fullmatch(r"[0-9a-f]+", h, re.I):
             _die(f"invalid {label} short hash for WIP branch name: {h!r}")
-    branch = f"sync_fail/{base}_{tag_s}_{commit_short}"
+    #branch = f"sync_fail/{base}_{tag_s}_{commit_short}"
+    branch = f"sync_fail/{tag_s}_{commit_short}"
     try:
         repo.git.branch("-f", branch, "HEAD")
     except GitCommandError as e:
