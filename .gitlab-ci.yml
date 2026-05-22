@@ -63,7 +63,7 @@ workflow:
 
 .rules:not-esp-main:
   rules:
-    - if: '$CI_COMMIT_BRANCH != $SCHED_REBASE_BR'
+    - if: '$CI_COMMIT_REF_NAME != $SCHED_REBASE_BR && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME != $SCHED_REBASE_BR'
 
 before_script:
   - *use_ci_tools
@@ -176,6 +176,7 @@ rebase_on_main:
 
 .build_toolchain_template:
   extends:
+    - .rules:not-scheduled-sync
     - .rules:not-esp-main
   tags: [ "amd64", "build" ]
   artifacts:
@@ -483,6 +484,7 @@ build_aarch64-apple-darwin:
 .pack_template:
   stage: pack
   extends:
+    - .rules:not-scheduled-sync
     - .rules:not-esp-main
   tags: [ "amd64", "build" ]
   artifacts:
@@ -585,6 +587,7 @@ pack_aarch64-apple-darwin:
 sign_x86_64-apple-darwin:
   extends: 
     - .macos_codesign_template
+    - .rules:not-scheduled-sync
     - .rules:not-esp-main
   needs:
     - pack_x86_64-apple-darwin
@@ -592,6 +595,7 @@ sign_x86_64-apple-darwin:
 sign_aarch64-apple-darwin:
   extends: 
     - .macos_codesign_template
+    - .rules:not-scheduled-sync
     - .rules:not-esp-main
   needs:
     - pack_aarch64-apple-darwin
@@ -621,6 +625,7 @@ sign_aarch64-apple-darwin:
 test_esp_dsp:
   stage: test
   extends:
+    - .rules:not-scheduled-sync
     - .rules:not-esp-main
   image: espressif/idf:latest
   tags: [ "amd64", "build" ]
@@ -709,6 +714,7 @@ test_xesppie:
 upload_to_http:
   stage: private_deploy
   extends:
+    - .rules:not-scheduled-sync
     - .rules:not-esp-main
   when: manual
   allow_failure: true
