@@ -98,7 +98,7 @@ esp_release_branch_sync:
           exit 1
         fi
         echo "Push conflict resolution WIP branch '$WIP_BRANCH' to '$REBASE_PUSH_REMOTE'"
-        git push --force push-remote $WIP_BRANCH
+        git push push-remote $WIP_BRANCH
         git status
         CONFLICT_HASH=$(cat .esp_rebase_HEAD)
         MR_DESC="MR created by $CI_JOB_URL to fix \`$ESP_RELEASE_BRANCH\` -> \`$BRANCH_NAME\` sync conflict."
