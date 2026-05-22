@@ -112,7 +112,7 @@ esp_release_branch_sync:
         git push push-remote $WIP_BRANCH
         git status
         CONFLICT_HASH=$(cat .esp_rebase_HEAD)
-        MR_DESC="MR created by $CI_JOB_URL to fix \`$ESP_RELEASE_BRANCH\` -> \`$BRANCH_NAME\` sync conflict."
+        MR_DESC="MR created by $CI_JOB_URL to fix conflict happened when cherry-picking $CONFLICT_HASH from \`$ESP_RELEASE_BRANCH\` to \`$BRANCH_NAME\`."
         MR_DESC="${MR_DESC}\n\nTODO:"
         MR_DESC="${MR_DESC}\n- [ ] Look for \`<<<<<<<\` and \`>>>>>>>\` markers in the files and solve conflicts."
         MR_DESC="${MR_DESC}\n- [ ] Ensure pipeline passes."
