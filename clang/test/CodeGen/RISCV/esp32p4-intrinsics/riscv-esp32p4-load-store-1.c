@@ -486,4 +486,3 @@ esp_vldext_res_t Res;
 //
 // // Additional VLDEXT test variants with different immediate values
 // //
-

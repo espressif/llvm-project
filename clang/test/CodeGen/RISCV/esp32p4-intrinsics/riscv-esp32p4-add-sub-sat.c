@@ -185,4 +185,3 @@ esp_vld_res_t Res;
     U.V16 = Result;
     (void)__builtin_riscv_esp_vst_128_ip_m(U.V8, dst, 16);
 }
-

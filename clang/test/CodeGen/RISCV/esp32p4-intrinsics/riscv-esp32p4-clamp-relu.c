@@ -76,4 +76,3 @@ esp_vld_res_t Res2;
     esp_vec128_16_t Result = __builtin_riscv_esp_vprelu_s16_m(Res1.Val.V16, Res2.Val.V16, shift);
     (void)__builtin_riscv_esp_vst_128_ip_m(esp_vec128_16_to_8(Result), dst, 16);
 }
-

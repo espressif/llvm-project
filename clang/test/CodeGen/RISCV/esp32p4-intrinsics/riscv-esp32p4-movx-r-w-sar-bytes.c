@@ -225,5 +225,3 @@ esp_vld_res_t Res2;
     // ESP.SRCQ.128.ST.INCP with explicit SAR_BYTES input (SAR_BYTES is last parameter)
     __builtin_riscv_esp_srcq_128_st_incp_m(Res1.Val.V8, Res2.Val.V8, dst, Res1.SarBytes);
 }
-
-

@@ -275,5 +275,3 @@ esp_vmulas_xacc_ld_res_t Res;
       &Res.xacc_high);
     return Res.Ptr;
 }
-
-

@@ -62,4 +62,3 @@ esp_vld_res_t Res2;
 
 // Vector max/min (8-bit)
 //
-

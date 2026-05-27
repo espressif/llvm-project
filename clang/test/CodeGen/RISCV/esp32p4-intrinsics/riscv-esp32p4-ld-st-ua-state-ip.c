@@ -28,4 +28,3 @@ esp_ua_state_res_t Res;
     // Store UA_STATE register to dst
     (void)__builtin_riscv_esp_st_ua_state_ip_m(Res.UaState, dst, 16);
 }
-

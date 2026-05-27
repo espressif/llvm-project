@@ -46,4 +46,3 @@ esp_vld_res_t Res;
 
 // Vector comparison (8-bit)
 //
-

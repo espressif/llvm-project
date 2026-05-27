@@ -239,4 +239,3 @@ esp_vop_ld_incp_res_t vadd_res;
     esp_vec128_t Qu = vadd_res.Qu;
     __builtin_riscv_esp_vadd_u16_st_incp_m(Qx, Qy, Qu, dst, Qv);
 }
-
