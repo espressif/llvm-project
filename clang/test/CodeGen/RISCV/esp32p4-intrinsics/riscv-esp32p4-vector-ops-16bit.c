@@ -515,4 +515,3 @@ esp_vld_res_t R;
   R.Ptr = __builtin_riscv_esp_vld_128_ip_m(src, 16, &R.Val.V8);
     return __builtin_riscv_esp_min_u16_a_m(R.Val.V16);
 }
-

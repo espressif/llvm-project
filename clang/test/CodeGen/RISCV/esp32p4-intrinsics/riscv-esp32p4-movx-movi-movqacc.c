@@ -355,4 +355,3 @@ esp_vld_res_t Res;
     __builtin_riscv_esp_st_qacc_h_l_128_ip_m(qacc_res.v2, dst_h_low, 16);
     __builtin_riscv_esp_st_qacc_h_h_128_ip_m(qacc_res.v3, dst_h_high, 16);
 }
-

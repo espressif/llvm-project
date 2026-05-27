@@ -101,4 +101,3 @@ esp_xacc_res_t Res;
     static volatile unsigned int xacc_low_out, xacc_high_out;
     return __builtin_riscv_esp_st_u_xacc_ip_m(Res.xacc_low, Res.xacc_high, dst, 8, (void*)&ptr_out, (unsigned int*)&xacc_low_out, (unsigned int*)&xacc_high_out);
 }
-

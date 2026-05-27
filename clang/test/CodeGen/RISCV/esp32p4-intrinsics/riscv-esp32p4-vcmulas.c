@@ -392,4 +392,3 @@ esp_vld_res_t res4;
 //     qacc_h = __builtin_riscv_esp_vcmulas_s16_qacc_h_m(qacc_h, Res1.Val.V16, Res2.Val.V16);
 //     return qacc_h;
 // }
-

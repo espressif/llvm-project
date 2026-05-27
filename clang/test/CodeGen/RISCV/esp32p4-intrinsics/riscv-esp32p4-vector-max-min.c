@@ -149,4 +149,3 @@ unsigned test_gpr_subx4_m(unsigned a, unsigned b) {
 
 // Vector absolute value (8-bit)
 //
-

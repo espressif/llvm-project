@@ -387,4 +387,3 @@ esp_vld_res_t Res3;
     (void)__builtin_riscv_esp_vst_128_ip_m(c2.V8, dst2, 16);
     (void)__builtin_riscv_esp_vst_128_ip_m(c3.V8, dst3, 16);
 }
-

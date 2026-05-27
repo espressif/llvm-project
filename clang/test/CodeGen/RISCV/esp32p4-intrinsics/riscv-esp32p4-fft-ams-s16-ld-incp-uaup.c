@@ -77,4 +77,3 @@ esp_fft_ams_s16_ld_incp_uaup_res_t Res;
     (void)__builtin_riscv_esp_vst_128_ip_m(qz_conv.V8, dst, 16);  // Store Qz (v8i16 converted to v16i8)
     (void)__builtin_riscv_esp_vst_128_ip_m(QvConv.V8, dst, 16);  // Store Qv (v8i16 converted to v16i8)
 }
-

@@ -256,4 +256,3 @@ esp_vmulas_qacc_ld_res_t Res;
   Res.Ptr = UpdatedPtr;
     return Res.Ptr;
 }
-

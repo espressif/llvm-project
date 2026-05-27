@@ -27,4 +27,3 @@ esp_vld_res_t Res;
 
 // Vector saturation (8-bit)
 //
-

@@ -2465,4 +2465,3 @@ void *test_vcmulas_s8_qacc_l_ld_xp_m(void const *src, void *dst, int shift_amoun
     // 5. Store final Result
     return __builtin_riscv_esp_vst_128_ip_m(qu_result, dst, 16);
 }
-

@@ -116,4 +116,3 @@ esp_vld_res_t Res;
     (void)__builtin_riscv_esp_vst_128_ip_m(out1, dst1, 16);
     (void)__builtin_riscv_esp_vst_128_ip_m(out2, dst2, 16);
 }
-

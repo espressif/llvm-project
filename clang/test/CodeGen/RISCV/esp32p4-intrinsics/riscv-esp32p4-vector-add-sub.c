@@ -105,4 +105,3 @@ esp_vld_res_t Res2;
 
 // Vector multiplication (8-bit)
 //
-

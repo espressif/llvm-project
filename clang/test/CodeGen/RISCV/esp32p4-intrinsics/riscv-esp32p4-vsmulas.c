@@ -896,4 +896,3 @@ esp_vld_res_t res_qw;
 // ASM: esp.srcmb.s16.qacc
 // ASM: esp.vst.128.ip
 // ASM: ret
-

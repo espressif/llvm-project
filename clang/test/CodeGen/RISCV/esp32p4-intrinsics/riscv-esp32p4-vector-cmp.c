@@ -151,4 +151,3 @@ esp_vld_res_t Res2;
 
 // Reduction operations (max/min) - 8-bit
 //
-
