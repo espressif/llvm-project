@@ -852,7 +852,7 @@ void test_fft_ams_s16_ld_incp_uaup_with_sar(void *src, void *qu_out, void *qz_ou
 
 // ESP.FFT.AMS.S16.ST.INCP test with explicit SAR state passing
 // CHECK-LABEL: define dso_local void @test_fft_ams_s16_st_incp_with_sar(
-// CHECK-SAME: ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP2:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP3:%.*]], ptr noundef [[DST:%.*]], ptr noundef [[RS2:%.*]], ptr noundef writeonly captures(none) initializes((0, 16)) [[QZ_OUT:%.*]], i32 noundef [[SAR_VAL:%.*]]) local_unnamed_addr #[[ATTR2]] {
+// CHECK-SAME: ptr noundef readonly captures(none) dead_on_return [[TMP0:%.*]], ptr noundef readonly captures(none) dead_on_return [[TMP1:%.*]], ptr noundef readonly captures(none) dead_on_return [[TMP2:%.*]], ptr noundef readonly captures(none) dead_on_return [[TMP3:%.*]], ptr noundef [[DST:%.*]], ptr noundef [[RS2:%.*]], ptr noundef writeonly captures(none) initializes((0, 16)) [[QZ_OUT:%.*]], i32 noundef [[SAR_VAL:%.*]]) local_unnamed_addr #[[ATTR2]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP0]], align 16, !tbaa [[TBAA10:![0-9]+]]
 // CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
@@ -910,7 +910,7 @@ esp_vld_res_t res_qy;
 
 // ESP.FFT.CMUL.S16.ST.XP test with explicit SAR state passing
 // CHECK-LABEL: define dso_local void @test_fft_cmul_s16_st_xp_with_sar(
-// CHECK-SAME: ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[DST:%.*]], ptr noundef [[RS2:%.*]], i32 noundef [[SAR_VAL:%.*]]) local_unnamed_addr #[[ATTR2]] {
+// CHECK-SAME: ptr noundef readonly captures(none) dead_on_return [[TMP0:%.*]], ptr noundef readonly captures(none) dead_on_return [[TMP1:%.*]], ptr noundef readonly captures(none) dead_on_return [[TMP2:%.*]], ptr noundef [[DST:%.*]], ptr noundef [[RS2:%.*]], i32 noundef [[SAR_VAL:%.*]]) local_unnamed_addr #[[ATTR2]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]

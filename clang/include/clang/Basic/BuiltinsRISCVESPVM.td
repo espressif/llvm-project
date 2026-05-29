@@ -1,5 +1,5 @@
 
-let Features = "xespv", Attributes = [NoThrow, RequiredVectorWidth<128>] in
+let Features = "xespv|xespv1v", Attributes = [NoThrow, RequiredVectorWidth<128>] in
 {
   // ESP.VCMULAS.S16.QACC.H (_m version)
   // Explicit state passing: Input QACC_H (2x128-bit), Output QACC_H (2x128-bit) via pointers
@@ -1417,7 +1417,7 @@ let Features = "xespv", Attributes = [NoThrow, RequiredVectorWidth<128>] in
 }
 
 // GPR ALU (.m): SSA result = op(rs1, rs2); lowers to esp.{addx2,addx4,subx2,subx4}.
-let Features = "xespv", Attributes = [NoThrow] in {
+let Features = "xespv|xespv1v", Attributes = [NoThrow] in {
   def esp_addx2_m : RISCVBuiltin<"unsigned int(unsigned int, unsigned int)">;
   def esp_addx4_m : RISCVBuiltin<"unsigned int(unsigned int, unsigned int)">;
   def esp_subx2_m : RISCVBuiltin<"unsigned int(unsigned int, unsigned int)">;
@@ -1427,7 +1427,7 @@ let Features = "xespv", Attributes = [NoThrow] in {
 
 // MOVX - Read/Write implicit registers (_m version)
 // These are scalar instructions, so they don't need RequiredVectorWidth<128>
-let Features = "xespv", Attributes = [NoThrow] in {
+let Features = "xespv|xespv1v", Attributes = [NoThrow] in {
   // ZERO.XACC - Zero XACC accumulator
   // Returns: i64 (XACC value, low 40 bits are zero)
   // ESP.ZERO.XACC (_m version) - Mixed model: XACC as {unsigned int low, unsigned int high}
