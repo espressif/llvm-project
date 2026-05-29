@@ -262,6 +262,7 @@ def esp_vzipt_16 : RISCVBuiltin<"void(unsigned int, unsigned int, unsigned int)"
 def esp_vzipt_8 : RISCVBuiltin<"void(unsigned int, unsigned int, unsigned int)">;
 def esp_zero_q : RISCVBuiltin<"void(unsigned int)">;
 def esp_zero_qacc : RISCVBuiltin<"void()">;
+let Features = "xespv|xespv1v" in
 def esp_zero_xacc : RISCVBuiltin<"void()">;
 def esp_fft_ams_s16_ld_incp : RISCVBuiltin<"int(unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int)">;
 def esp_fft_ams_s16_ld_incp_uaup : RISCVBuiltin<"int(unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int)">;

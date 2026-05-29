@@ -162,7 +162,7 @@ esp_vld_res_t res_qw;
 
 // FFT.AMS.S16.ST.INCP
 // CHECK-LABEL: define dso_local void @test_fft_ams_s16_st_incp_m(
-// CHECK-SAME: ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP2:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP3:%.*]], ptr noundef [[DST:%.*]], ptr noundef [[RS2:%.*]]) local_unnamed_addr #[[ATTR0]] {
+// CHECK-SAME: ptr noundef readonly captures(none) dead_on_return [[TMP0:%.*]], ptr noundef readonly captures(none) dead_on_return [[TMP1:%.*]], ptr noundef readonly captures(none) dead_on_return [[TMP2:%.*]], ptr noundef readonly captures(none) dead_on_return [[TMP3:%.*]], ptr noundef [[DST:%.*]], ptr noundef [[RS2:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP0]], align 16, !tbaa [[TBAA10:![0-9]+]]
 // CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
@@ -236,7 +236,7 @@ esp_vld_res_t res_qy;
 
 // FFT.CMUL.S16.ST.XP
 // CHECK-LABEL: define dso_local void @test_fft_cmul_s16_st_xp_m(
-// CHECK-SAME: ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP1:%.*]], ptr dead_on_return noundef readonly captures(none) [[TMP2:%.*]], ptr noundef [[DST:%.*]], ptr noundef [[RS2:%.*]]) local_unnamed_addr #[[ATTR0]] {
+// CHECK-SAME: ptr noundef readonly captures(none) dead_on_return [[TMP0:%.*]], ptr noundef readonly captures(none) dead_on_return [[TMP1:%.*]], ptr noundef readonly captures(none) dead_on_return [[TMP2:%.*]], ptr noundef [[DST:%.*]], ptr noundef [[RS2:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
@@ -255,7 +255,7 @@ void test_fft_cmul_s16_st_xp_m(esp_vec128_16_t Qx, esp_vec128_16_t Qy, esp_vec12
 
 // FFT.VST.R32.DECP
 // CHECK-LABEL: define dso_local void @test_fft_vst_r32_decp_m(
-// CHECK-SAME: ptr dead_on_return noundef readonly captures(none) [[TMP0:%.*]], ptr noundef [[DST:%.*]]) local_unnamed_addr #[[ATTR0]] {
+// CHECK-SAME: ptr noundef readonly captures(none) dead_on_return [[TMP0:%.*]], ptr noundef [[DST:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[TMP1:%.*]] = tail call ptr @llvm.riscv.esp.fft.vst.r32.decp.m(<16 x i8> [[QU]], ptr [[DST]], i32 0)
