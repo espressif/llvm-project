@@ -159,16 +159,36 @@ def _git_cherry_pick_continue_no_editor(repo: Any) -> None:
                 os.environ[k] = v
 
 
+def _has_staged_changes(repo: Any) -> bool:
+    """Return True if the index has staged changes relative to HEAD."""
+    try:
+        repo.git.diff("--cached", "--quiet")
+        return False
+    except GitCommandError:
+        return True
+
+
 def _wip_br_finish(
     repo: Any,
     failed_full_hash: str,
     dest_base_short: str,
     sync_tag_target_short: str,
-) -> str:
-    """Complete WIP pick, create sync_fail branch at HEAD, then drop that commit on current branch."""
+) -> str | None:
+    """Complete WIP pick, create sync_fail branch at HEAD, then drop that commit on current branch.
+
+    If staging leaves nothing to commit, skip the cherry-pick and return None so the caller
+    can advance the sync tag and continue with remaining commits.
+    """
     if repo.working_tree_dir is None:
         _die("bare repository: --wip-br is not supported")
     repo.git.add("-u")
+    if not _has_staged_changes(repo):
+        try:
+            repo.git.cherry_pick("--skip")
+        except GitCommandError as e:
+            _print_git_command_error(e)
+            _die("git cherry-pick --skip failed after empty staged index")
+        return None
     try:
         _git_cherry_pick_continue_no_editor(repo)
     except GitCommandError as e:
@@ -404,10 +424,18 @@ def main() -> None:
                 args.wip_br
                 and _cherry_pick_in_progress(repo)
             ):
-                _write_failed_pick_head(repo, commit)
                 wip = _wip_br_finish(
                     repo, commit, dest_base_short, sync_tag_target_short
                 )
+                if wip is None:
+                    print(
+                        f"cherry-pick of {commit[:12]} produced no staged changes after "
+                        f"git add -u; skipped commit and continuing.",
+                    )
+                    picked_count += 1
+                    _advance_sync_tag(repo, tag, commit)
+                    continue
+                _write_failed_pick_head(repo, commit)
                 print(
                     f"Created WIP branch {wip!r} (it keeps the conflict cherry-pick). "
                     f"Removed that commit from the current branch (git reset --hard HEAD~1). "
