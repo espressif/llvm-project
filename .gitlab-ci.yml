@@ -1,5 +1,7 @@
 stages:
   - pre_check
+  - esp_branch_sync
+  - upstream_sync
   - test_build
   - build
   - pack
@@ -23,16 +25,22 @@ variables:
   DIST_DIR: "dist"
   BUILD_DIR: "build"
   GITLAB_SERVER_URL: https://gitlab-ci-token:${CI_JOB_TOKEN}@${GITLAB_HTTPS_SERVER}
+  REBASE_PUSH_REMOTE: "https://gitlab-ci-token:${ESP_MAINT_TOKEN}@${GITLAB_HTTPS_SERVER}/${CI_PROJECT_PATH}.git"
+  ESP_MAIN_SYNCED_TAG: "esp_main_synced"
+  ESP_RELEASE_BRANCH: origin/$CI_DEFAULT_BRANCH
   CCACHE_DIR: ${CI_PROJECT_DIR}/.ccache
   CCACHE_MAXSIZE: 10G
 
 workflow:
   rules:
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_TAG =~ /^esp_main_synced.*/'
       when: never
     - if: $CI_COMMIT_TAG
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - if: '$CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_TYPE == "rebase_on_main"'
+    - if: '$CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_TYPE == "esp_branch_sync"'
+    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $ESP_MAIN_BRANCH'
 
 .use_ci_tools: &use_ci_tools |
   curl -sSL ${CIT_LOADER_URL} -o cit_loader.sh && sh cit_loader.sh
@@ -42,11 +50,132 @@ workflow:
   cit_add_ssh_key "${GITLAB_KEY}"
 
 .get_toolchain_build_scripts: &get_toolchain_build_scripts |
-  git clone -b ${ESP_LLVM_EMBEDDED_TOOLCHAIN_REF} ${GITLAB_SERVER_URL}/${ESP_LLVM_EMBEDDED_TOOLCHAIN_REPO_PATH}.git
+  git clone -b ${ESP_LLVM_EMBEDDED_TOOLCHAIN_REF} --single-branch ${GITLAB_SERVER_URL}/${ESP_LLVM_EMBEDDED_TOOLCHAIN_REPO_PATH}.git
+
+.rules:scheduled-rebase-on-main:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_TYPE == "rebase_on_main"'
+      variables:
+        PUSH_RESULT: "ON"
+
+.rules:scheduled-esp-branch-sync:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_TYPE == "esp_branch_sync"'
+
+.if-scheduled-sync: &if-scheduled-sync
+  if: '$CI_PIPELINE_SOURCE == "schedule" && ($SCHEDULE_TYPE == "rebase_on_main" || $SCHEDULE_TYPE == "esp_branch_sync")'
+
+.if-esp-main-workflow: &if-esp-main-workflow
+  if: '$CI_COMMIT_REF_NAME == $ESP_MAIN_BRANCH || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $ESP_MAIN_BRANCH'
 
 before_script:
   - *use_ci_tools
   - *add_gitlab_key
+  # Set the displayed user with the commits that are about to be made
+  - git config --global user.email "${GITLAB_USER_EMAIL}"
+  - git config --global user.name "${GITLAB_USER_NAME}"
+
+esp_release_branch_sync:
+  stage: esp_branch_sync
+  extends:
+    - .rules:scheduled-esp-branch-sync
+  tags: [ "amd64", "build" ]
+  dependencies: []
+  variables:
+    MR_CREATE_PATH: "/api/v4/projects/${CI_PROJECT_ID}/merge_requests"
+    MR_LABELS: "sync_fail"
+    CI_TOKEN_HEADER: "PRIVATE-TOKEN: ${ESP_MAINT_TOKEN}"
+    CONT_TYPE_HEADER: "Content-Type: application/json"
+  script:
+    - set -euxo pipefail
+    - git remote add push-remote ${REBASE_PUSH_REMOTE}
+    - git remote -v
+    - BRANCH_NAME=${CI_COMMIT_REF_NAME}
+    - git branch -D $BRANCH_NAME || true
+    - git checkout -b $BRANCH_NAME
+    - ORIG_TAG_HASH=$(git rev-parse $ESP_MAIN_SYNCED_TAG^{commit})
+    - echo "Sync tag '$ESP_MAIN_SYNCED_TAG' original hash -> '$ORIG_TAG_HASH'"
+    - rc=0
+    - llvm/utils/git/cherry-pick-range.py --no-abort -b $ESP_RELEASE_BRANCH $BRANCH_NAME $ESP_MAIN_SYNCED_TAG || rc=$?
+    - echo "rc=$rc"
+    - |
+      # if neither commits were picked, create WIP branch and MR to resolve conflict and merge
+      if [ "$rc" -ne 0 ] && [ "$rc" -ne 2 ]; then
+        WIP_BRANCH=$(cat .esp_rebase_WIP_BRANCH)
+        if [ -z "$WIP_BRANCH" ]; then
+          echo "WIP branch not found"
+          exit 1
+        fi
+        echo "Push conflict resolution WIP branch '$WIP_BRANCH' to '$REBASE_PUSH_REMOTE'"
+        git push push-remote $WIP_BRANCH
+        git status
+        CONFLICT_HASH=$(cat .esp_rebase_HEAD)
+        MR_DESC="MR created by $CI_JOB_URL to fix conflict happened when cherry-picking $CONFLICT_HASH from \`$ESP_RELEASE_BRANCH\` to \`$BRANCH_NAME\`."
+        MR_DESC="${MR_DESC}\n\nTODO:"
+        MR_DESC="${MR_DESC}\n- [ ] Look for \`<<<<<<<\` and \`>>>>>>>\` markers in the files and solve conflicts."
+        MR_DESC="${MR_DESC}\n- [ ] Ensure pipeline passes."
+        MR_DESC="${MR_DESC}\n- [ ] DISABLE ALL SCHEDULED SYNC PIPELINES for \`$BRANCH_NAME\`!"
+        MR_DESC="${MR_DESC}\n- [ ] Rebase if necessary and merge this MR."
+        MR_DESC="${MR_DESC}\n- [ ] Move \`$ESP_MAIN_SYNCED_TAG\` tag to $CONFLICT_HASH."
+        MR_DESC="${MR_DESC}\n- [ ] RE-ENABLE ALL SCHEDULED SYNC PIPELINES for \`$BRANCH_NAME\`!"
+        MR_BODY='{
+          "id": '"$CI_PROJECT_ID"',
+          "source_branch": "'"${WIP_BRANCH}"'",
+          "target_branch": "'"${BRANCH_NAME}"'",
+          "title": "Draft: '"${WIP_BRANCH}"'",
+          "description": "'"${MR_DESC}"'",
+          "assignee_id": '"${GITLAB_USER_ID}"',
+          "labels": "'"${MR_LABELS}"'",
+          "remove_source_branch": true
+        }'
+        curl -X POST "${CI_SERVER_URL}${MR_CREATE_PATH}" --header "$CI_TOKEN_HEADER" --header "$CONT_TYPE_HEADER" --data "${MR_BODY}"
+        exit 1
+      fi
+    # Push synced branch with updated tag atomically
+    # if one cherry-pick failed, but some commits were picked (rc is 2), WIP branch will be created on the next run of this job.
+    - echo "Push updated branch '$BRANCH_NAME' and sync tag '$ESP_MAIN_SYNCED_TAG' to '$REBASE_PUSH_REMOTE'"
+    - git push --force --atomic push-remote $BRANCH_NAME $ESP_MAIN_SYNCED_TAG
+    - git status
+
+rebase_on_main:
+  stage: upstream_sync
+  extends:
+    - .rules:scheduled-rebase-on-main
+  tags: [ "amd64", "build" ]
+  variables:
+    PUSH_RESULT: "OFF"
+  script:
+    - set -euxo pipefail
+    - GIT_DIR=$( git rev-parse --git-dir )
+    - git fetch origin $SCHED_REBASE_ONTO_BR
+    - git remote add push-remote ${REBASE_PUSH_REMOTE}
+    - git remote -v
+    - BRANCH_NAME=${CI_COMMIT_REF_NAME}
+    - git branch -D $BRANCH_NAME || true
+    - git checkout -b $BRANCH_NAME
+    - |
+      rc=0
+      echo "Rebase branch '$BRANCH_NAME' on 'origin/$SCHED_REBASE_ONTO_BR'"
+      if git rebase origin/$SCHED_REBASE_ONTO_BR ; then
+        echo "Successfully rebased branch '$BRANCH_NAME'"
+        if [[ "${PUSH_RESULT}" == "ON" ]]; then
+          # --force-with-lease doesn't work on shallow clones
+          echo "Push rebased branch '$BRANCH_NAME' to '$REBASE_PUSH_REMOTE'"
+          git push push-remote $BRANCH_NAME --force
+        else
+          echo "Skip pushing rebased branch '$BRANCH_NAME'"
+        fi
+      else
+        rc=$?
+        echo "Rebasing branch '$BRANCH_NAME' on 'origin/$SCHED_REBASE_ONTO_BR' failed!"
+        echo “Please rebase '$BRANCH_NAME' onto 'origin/$SCHED_REBASE_ONTO_BR' branch manually.”
+        if [ -d "${GIT_DIR}/rebase-merge" ] || [ -d "${GIT_DIR}/rebase-apply" ] ; then
+            echo "Abort rebase"
+            git rebase --abort
+        fi
+      fi
+      git status
+      exit $rc
 
 .check_pre_commit_template:
   stage: pre_check
@@ -95,6 +224,12 @@ check_commit_message:
     PACK_TOOLCHAIN: "ON"
     PACK_STANDALONE_LIBS: "ON"
     PACK_TARGET_LIBS: "OFF"
+  rules:
+    - <<: *if-esp-main-workflow
+      when: never
+    - <<: *if-scheduled-sync
+      when: never
+    - when: on_success
   cache:
     key: ccache-$CI_JOB_NAME
     paths:
@@ -260,7 +395,7 @@ check_commit_message:
     - ls -l ${PWD}/${DIST_DIR}
 
 # some Clang/LLVM unit tests fail if we build Clang for RISCV+Xtensa only
-# this job is intended to run unit tests only, so it builds Clang with all backends
+# this job is intended to run unit tests only, so it builds Clang with X86, RISCV and Xtensa backends
 # TODO: LLVM-326 and LLVM-401
 build_and_test:
   tags: [ "amd64", "build" ]
@@ -275,8 +410,16 @@ build_and_test:
   retry: 1
   variables:
     PACK_TOOL: "tar cJhvf"
+    CACHE_KEY: ccache-$CI_JOB_NAME
+  rules:
+    - <<: *if-scheduled-sync
+      when: never
+    - if: '$CI_COMMIT_REF_NAME == $ESP_MAIN_BRANCH || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $ESP_MAIN_BRANCH'
+      variables:
+        CACHE_KEY: ccache-esp_main-$CI_JOB_NAME
+    - when: on_success
   cache:
-    key: ccache-$CI_JOB_NAME
+    key: $CACHE_KEY
     paths:
       - $CCACHE_DIR
   before_script:
@@ -325,11 +468,11 @@ build_and_test:
     - echo "Run LLVM/Clang unit tests";
     - touch ${BUILD_PATH}/tests.log;
     - chmod o+w ${BUILD_PATH}/tests.log;
-    - runuser -u test_runner -- ninja -C ${BUILD_PATH} check-all 2>&1 > ${BUILD_PATH}/tests.log;
+    - runuser -u test_runner -- ninja -C ${BUILD_PATH} check-all 2>&1 | tee ${BUILD_PATH}/tests.log;
     - echo "Run LLD unit tests";
     - touch ${BUILD_PATH}/lld-tests.log;
     - chmod o+w ${BUILD_PATH}/lld-tests.log;
-    - runuser -u test_runner -- ninja -C ${BUILD_PATH} check-lld 2>&1 > ${BUILD_PATH}/lld-tests.log;
+    - runuser -u test_runner -- ninja -C ${BUILD_PATH} check-lld 2>&1 | tee ${BUILD_PATH}/lld-tests.log;
     - chown -R ${CUR_USER} ${BUILD_PATH};
     - chown -R ${CUR_USER} ${CCACHE_DIR};
     - mkdir -p ${PWD}/${DIST_DIR}
@@ -433,6 +576,12 @@ build_aarch64-apple-darwin:
   variables:
     PACK_TOOL: "tar cJf"
     UNPACK_TOOL: "tar xJf"
+  rules:
+    - <<: *if-esp-main-workflow
+      when: never
+    - <<: *if-scheduled-sync
+      when: never
+    - when: on_success
   script:
     # update distro
     - *unpack_distro
@@ -498,6 +647,10 @@ pack_aarch64-apple-darwin:
 .macos_codesign_template:
   stage: sign
   rules:
+    - <<: *if-esp-main-workflow
+      when: never
+    - <<: *if-scheduled-sync
+      when: never
     - if: $CI_COMMIT_TAG
       when: on_success
       allow_failure: false
@@ -523,12 +676,14 @@ pack_aarch64-apple-darwin:
     - ./macos_codesign_notarization/run.sh
 
 sign_x86_64-apple-darwin:
-  extends: .macos_codesign_template
+  extends: 
+    - .macos_codesign_template
   needs:
     - pack_x86_64-apple-darwin
 
 sign_aarch64-apple-darwin:
-  extends: .macos_codesign_template
+  extends: 
+    - .macos_codesign_template
   needs:
     - pack_aarch64-apple-darwin
 
@@ -572,6 +727,12 @@ sign_aarch64-apple-darwin:
     TEST_APP_SUBMODULE_PATH: ""
     CONF_HOST: "x86_64-linux-gnu"
     UNPACK_TOOL: "tar xJf"
+  rules:
+    - <<: *if-esp-main-workflow
+      when: never
+    - <<: *if-scheduled-sync
+      when: never
+    - when: on_success
   script:
     - mkdir -p $PWD/${BUILD_DIR}
     - export BUILD_LOG=$PWD/${BUILD_DIR}/build.log
@@ -598,12 +759,14 @@ sign_aarch64-apple-darwin:
     - idf.py build 2>&1 | tee -a ${BUILD_LOG}
 
 test_build_idf_hello_world:
-  extends: .test_build_idf_app_template
+  extends:
+    - .test_build_idf_app_template
   variables:
     TEST_APP_PATH: examples/get-started/hello_world
 
 test_build_esp_dsp:
-  extends: .test_build_idf_app_template
+  extends:
+    - .test_build_idf_app_template
   allow_failure: true
   variables:
     TEST_APP_PATH: components/esp-dsp/test_app
@@ -623,6 +786,10 @@ test_pie_optimizations:
   variables:
     TEST_APP_ESP_DSP_CUSTOM_BRANCH: "llvm-23-optimization-test-v3"
     UNPACK_TOOL: "tar xJvf"
+  rules:
+    - <<: *if-scheduled-sync
+      when: never
+    - when: on_success
   allow_failure: true
   script:
     - export LLVM_PROJECT_PATH=$PWD
@@ -638,7 +805,7 @@ test_pie_optimizations:
     - ls -l $PWD
     - export PATH=${PWD}/bin:${PATH}
     - popd
-    - git clone --shallow-submodules --recursive --single-branch --branch $TEST_APP_ESP_DSP_CUSTOM_BRANCH -- https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}:${CI_SERVER_PORT}/idf/esp-dsp.git esp-dsp
+    - git clone --shallow-submodules --recursive --single-branch --branch $TEST_APP_ESP_DSP_CUSTOM_BRANCH -- ${GITLAB_SERVER_URL}/idf/esp-dsp.git esp-dsp
     - pushd $PWD/esp-dsp/
     - echo ${LLVM_PROJECT_PATH}/llvm/utils/update_test_checks.py
     - ./test_all.sh ${LLVM_PROJECT_PATH}/llvm/utils/update_test_checks.py
@@ -673,6 +840,12 @@ upload_to_http:
   variables:
     # force the fetch strategy to clean old archives up in dist/ dir
     GIT_STRATEGY: fetch
+  rules:
+    - <<: *if-esp-main-workflow
+      when: never
+    - <<: *if-scheduled-sync
+      when: never
+    - when: on_success
   needs:
     - job: build_x86_64-linux-gnu
   script:
