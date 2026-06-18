@@ -1737,6 +1737,38 @@ static unsigned getScavSlotsNumForRVV(MachineFunction &MF) {
   return MaxScavSlotsNum;
 }
 
+static unsigned getScavSlotsNumForESPV(const MachineFunction &MF) {
+  if (!MF.getSubtarget<RISCVSubtarget>().hasESPVTargetLowering())
+    return 0;
+
+  for (const MachineBasicBlock &MBB : MF)
+    for (const MachineInstr &MI : MBB)
+      switch (MI.getOpcode()) {
+      default:
+        break;
+      case RISCV::PseudoESP_VSPILL_128:
+      case RISCV::PseudoESP_VRELOAD_128:
+      case RISCV::ESP_VST_128_IP:
+      case RISCV::ESP_VLD_128_IP:
+      case RISCV::ESP_VST_128_IP_2P2:
+      case RISCV::ESP_VLD_128_IP_2P2:
+      case RISCV::ESP_VST_H_64_IP:
+      case RISCV::ESP_VLD_H_64_IP:
+      case RISCV::ESP_VST_H_64_IP_2P2:
+      case RISCV::ESP_VLD_H_64_IP_2P2:
+      case RISCV::ESP_VST_L_64_IP:
+      case RISCV::ESP_VLD_L_64_IP:
+      case RISCV::ESP_VST_L_64_IP_2P2:
+      case RISCV::ESP_VLD_L_64_IP_2P2:
+        for (const MachineOperand &MO : MI.operands())
+          if (MO.isFI())
+            return 1;
+        break;
+      }
+
+  return 0;
+}
+
 static bool hasRVVFrameObject(const MachineFunction &MF) {
   // Originally, the function will scan all the stack objects to check whether
   // if there is any scalable vector object on the stack or not. However, it
@@ -1834,6 +1866,11 @@ void RISCVFrameLowering::processFunctionBeforeFrameFinalized(
   // so we must always reserve an emergency spill slot if the MachineFunction
   // contains any RVV spills.
   ScavSlotsNum = std::max(ScavSlotsNum, getScavSlotsNumForRVV(MF));
+
+  // ESPV stack accesses materialize frame addresses in GPRPIE after frame
+  // index elimination. High GPRPIE pressure can therefore require an emergency
+  // spill slot during the post-PEI scavenging pass.
+  ScavSlotsNum = std::max(ScavSlotsNum, getScavSlotsNumForESPV(MF));
 
   for (unsigned I = 0; I < ScavSlotsNum; I++) {
     int FI = MFI.CreateSpillStackObject(RegInfo->getSpillSize(*RC),

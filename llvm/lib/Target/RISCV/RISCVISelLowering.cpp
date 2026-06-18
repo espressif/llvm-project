@@ -33,6 +33,7 @@
 #include "llvm/CodeGen/MachineRegisterInfo.h"
 #include "llvm/CodeGen/SDPatternMatch.h"
 #include "llvm/CodeGen/SelectionDAGAddressAnalysis.h"
+#include "llvm/CodeGen/SelectionDAGNodes.h"
 #include "llvm/CodeGen/TargetLoweringObjectFileImpl.h"
 #include "llvm/CodeGen/ValueTypes.h"
 #include "llvm/IR/DiagnosticInfo.h"
@@ -96,10 +97,39 @@ static const unsigned ZvfbfaOps[] = {
     ISD::FSUB,        ISD::FMUL,        ISD::FMINNUM,   ISD::FMAXNUM,
     ISD::FMINIMUMNUM, ISD::FMAXIMUMNUM, ISD::FMINIMUM,  ISD::FMAXIMUM,
     ISD::FMA};
+/// Extract WordIndex-th 32-bit lane from a scalar integer (power-of-2 bits).
+/// Uses SRL+TRUNCATE so RV32 never materializes an illegal i64 via
+/// EXTRACT_ELEMENT(i128 -> i64).
+static SDValue extractScalarI32Word(SelectionDAG &DAG, SDValue Val, EVT ValVT,
+                                    unsigned WordIndex, const SDLoc &DL) {
+  assert(ValVT.isInteger() && !ValVT.isVector() && "Expected scalar integer");
+  unsigned Bits = ValVT.getFixedSizeInBits();
+  assert(WordIndex * 32 < Bits && (Bits % 32) == 0 && isPowerOf2_32(Bits) &&
+         "Expected i32-aligned power-of-2 scalar");
+  if (Bits == 32)
+    return Val;
+  const TargetLowering &TLI = DAG.getTargetLoweringInfo();
+  EVT ShiftTy = TLI.getShiftAmountTy(ValVT, DAG.getDataLayout());
+  SDValue ShAmt = DAG.getConstant(WordIndex * 32, DL, ShiftTy);
+  SDValue Shifted = DAG.getNode(ISD::SRL, DL, ValVT, Val, ShAmt);
+  return DAG.getNode(ISD::TRUNCATE, DL, MVT::i32, Shifted);
+}
+/// Trace ESPV BUILD_VECTOR combine in Release builds (LLVM_DEBUG is a no-op
+/// when NDEBUG).
+static cl::opt<bool> DebugESPVBuildVectorCombine(
+    DEBUG_TYPE "-debug-espv-build-vector-combine", cl::Hidden,
+    cl::desc("Print performBUILD_VECTORCombine diagnostics for ESPV v16i8"),
+    cl::init(false));
 
 RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
                                          const RISCVSubtarget &STI)
     : TargetLowering(TM, STI), Subtarget(STI) {
+
+  if (DebugESPVBuildVectorCombine) {
+    errs() << DEBUG_TYPE << ": ESPV BUILD_VECTOR debug enabled "
+              "(lower + performBUILD_VECTORCombine tracing)\n";
+    errs().flush();
+  }
 
   RISCVABI::ABI ABI = Subtarget.getTargetABI();
   assert(ABI != RISCVABI::ABI_Unknown && "Improperly initialised target ABI");
@@ -158,6 +188,38 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
   // ESPV register classes: +xespv (2.2), or +xespv1v with +espv-lowering.
   if (Subtarget.hasESPVTargetLowering()) {
     initializeESPVTargetLowering(Subtarget);
+    // Packed boolean vectors occupy one or two bytes in memory; lower them
+    // explicitly before generic legalization promotes the memory type to i8/i16.
+    setTruncStoreAction(MVT::v16i8, MVT::v16i1, Custom);
+    setLoadExtAction({ISD::EXTLOAD, ISD::SEXTLOAD, ISD::ZEXTLOAD}, MVT::v16i8,
+                     MVT::v16i1, Custom);
+    setTruncStoreAction(MVT::v2i32, MVT::v2i1, Custom);
+    setLoadExtAction({ISD::EXTLOAD, ISD::SEXTLOAD, ISD::ZEXTLOAD}, MVT::v2i32,
+                     MVT::v2i1, Custom);
+    setTruncStoreAction(MVT::v2i16, MVT::v2i1, Custom);
+    setLoadExtAction({ISD::EXTLOAD, ISD::SEXTLOAD, ISD::ZEXTLOAD}, MVT::v2i16,
+                     MVT::v2i1, Custom);
+    setTruncStoreAction(MVT::v2i8, MVT::v2i1, Custom);
+    setLoadExtAction({ISD::EXTLOAD, ISD::SEXTLOAD, ISD::ZEXTLOAD}, MVT::v2i8,
+                     MVT::v2i1, Custom);
+    setTruncStoreAction(MVT::v4i32, MVT::v4i1, Custom);
+    setLoadExtAction({ISD::EXTLOAD, ISD::SEXTLOAD, ISD::ZEXTLOAD}, MVT::v4i32,
+                     MVT::v4i1, Custom);
+    setTruncStoreAction(MVT::v4i16, MVT::v4i1, Custom);
+    setLoadExtAction({ISD::EXTLOAD, ISD::SEXTLOAD, ISD::ZEXTLOAD}, MVT::v4i16,
+                     MVT::v4i1, Custom);
+    setTruncStoreAction(MVT::v4i8, MVT::v4i1, Custom);
+    setLoadExtAction({ISD::EXTLOAD, ISD::SEXTLOAD, ISD::ZEXTLOAD}, MVT::v4i8,
+                     MVT::v4i1, Custom);
+    setTruncStoreAction(MVT::v8i16, MVT::v8i8, Custom);
+    setLoadExtAction({ISD::EXTLOAD, ISD::SEXTLOAD, ISD::ZEXTLOAD}, MVT::v8i16,
+                     MVT::v8i8, Custom);
+    setTruncStoreAction(MVT::v8i16, MVT::v8i1, Custom);
+    setLoadExtAction({ISD::EXTLOAD, ISD::SEXTLOAD, ISD::ZEXTLOAD}, MVT::v8i16,
+                     MVT::v8i1, Custom);
+    setTruncStoreAction(MVT::v8i8, MVT::v8i1, Custom);
+    setLoadExtAction({ISD::EXTLOAD, ISD::SEXTLOAD, ISD::ZEXTLOAD}, MVT::v8i8,
+                     MVT::v8i1, Custom);
     // ESPV: Support for v64i8 (512-bit QACC pair)
     // v64i8 needs to be split into two v32i8 parts for return values
     // Note: We let LLVM's default TypeSplit handle v64i8 -> v32i8 splitting.
@@ -165,6 +227,24 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
     // No custom action needed - let the default split logic handle it
   }
 
+  if (Subtarget.hasVendorXespv()) {
+    addRegisterClass(MVT::v16i8, &RISCV::QRRegClass);
+    addRegisterClass(MVT::v8i16, &RISCV::QRRegClass);
+    addRegisterClass(MVT::v4i32, &RISCV::QRRegClass);
+    addRegisterClass(MVT::v2i32, &RISCV::QRRegClass);
+    addRegisterClass(MVT::v4i16, &RISCV::QRRegClass);
+    addRegisterClass(MVT::v8i8, &RISCV::QRRegClass);
+    setOperationAction(ISD::VECTOR_SHUFFLE, MVT::v2i32, Expand);
+    setOperationAction(ISD::VECTOR_SHUFFLE, MVT::v4i16, Expand);
+    setOperationAction(ISD::VECTOR_SHUFFLE, MVT::v8i8, Expand);
+    setOperationAction(ISD::SIGN_EXTEND, MVT::v8i32, Expand);
+    setOperationAction(ISD::SIGN_EXTEND, MVT::v16i16, Expand);
+    setOperationAction(ISD::ZERO_EXTEND, MVT::v8i32, Expand);
+    setOperationAction(ISD::ZERO_EXTEND, MVT::v16i16, Expand);
+    setOperationAction(ISD::VECTOR_SHUFFLE, MVT::v8i16, Expand);
+    setOperationAction(ISD::VECTOR_SHUFFLE, MVT::v4i32, Expand);
+    setOperationAction(ISD::VECTOR_SHUFFLE, MVT::v16i8, Expand);
+  }
   static const MVT::SimpleValueType BoolVecVTs[] = {
       MVT::nxv1i1,  MVT::nxv2i1,  MVT::nxv4i1, MVT::nxv8i1,
       MVT::nxv16i1, MVT::nxv32i1, MVT::nxv64i1};
@@ -794,7 +874,13 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
   else if (Subtarget.hasStdExtZicbop())
     setOperationAction(ISD::PREFETCH, MVT::Other, Legal);
 
-  if (Subtarget.hasStdExtZalrsc()) {
+  if (Subtarget.hasVendorXesploop()) {
+    setTargetDAGCombine(ISD::BR);
+    // The default legalizer can't promote this to i32, so we do it manually
+    setOperationAction(ISD::INTRINSIC_W_CHAIN, MVT::i1, Custom);
+  }
+
+  if (Subtarget.hasStdExtA()) {
     setMaxAtomicSizeInBitsSupported(Subtarget.getXLen());
     if (Subtarget.hasStdExtZabha() && Subtarget.hasStdExtZacas())
       setMinCmpXchgSizeInBits(8);
@@ -1451,9 +1537,12 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
         setOperationAction({ISD::INSERT_SUBVECTOR, ISD::EXTRACT_SUBVECTOR}, VT,
                            Custom);
 
-        setOperationAction(
-            {ISD::BUILD_VECTOR, ISD::CONCAT_VECTORS, ISD::VECTOR_REVERSE}, VT,
-            Custom);
+        setOperationAction({ISD::BUILD_VECTOR, ISD::CONCAT_VECTORS}, VT,
+                           Custom);
+        // ESP-V QR fixed types: use Custom + lowerVECTOR_REVERSE scalar path.
+        // OperationAction::Expand does not lower VECTOR_REVERSE (ExpandNode has
+        // no case), so Expand would leave the node for isel and fail.
+        setOperationAction(ISD::VECTOR_REVERSE, VT, Custom);
 
         setOperationAction({ISD::VECTOR_INTERLEAVE, ISD::VECTOR_DEINTERLEAVE},
                            VT, Custom);
