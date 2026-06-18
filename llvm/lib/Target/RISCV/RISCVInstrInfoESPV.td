@@ -29347,7 +29347,8 @@ def ESP_FFT_R2BF_S16_ST_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$q
 			[(set GPRPIE:$rs1r, (int_riscv_esp_fft_r2bf_s16_st_incp_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$sel4, timm:$qz))]>;
 
 def ESP_FFT_VST_R32_DECP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR:$qu, GPRPIE:$rs1, select_2:$sel2),
-                   "esp.fft.vst.r32.decp\t $qu, $rs1, $sel2", []> 
+                   "esp.fft.vst.r32.decp\t $qu, $rs1, $sel2",
+                   [(set GPRPIE:$rs1r, (riscv_esp_fft_vst_r32_decp_m QR:$qu, GPRPIE:$rs1, select_2:$sel2))]> 
 {
   bits<3> qu;
   bits<5> rs1;
