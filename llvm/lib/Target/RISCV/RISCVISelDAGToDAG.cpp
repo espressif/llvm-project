@@ -4992,14 +4992,16 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
     SDValue FftBitWidth =
         Node->getOperand(1); // FFT_BIT_WIDTH (i32, phantom operand)
 
-    unsigned Opc = RISCV::ESP_FFT_BITREV;
+    unsigned Opc = Subtarget->hasVendorXespv() ? RISCV::ESP_FFT_BITREV_2P2
+                                               : RISCV::ESP_FFT_BITREV;
 
     // Instruction outputs: GPRPIE:$rs1r, QR:$qvr
-    // Instruction inputs: GPRPIE:$rs1, FFT_BIT_WIDTHReg:$fft_bit_width_in
+    // 2.1 inputs: GPRPIE:$rs1, FFT_BIT_WIDTHReg:$fft_bit_width_in
+    // 2.2 inputs: GPRPIE:$rs1, QR:$qv (FFT bit width via movx; qv tied to qvr)
     EVT PtrVT = RS1.getValueType();
     SDVTList VTList = CurDAG->getVTList(PtrVT, MVT::v8i16);
-    // Operand order: [rs1, fft_bit_width] - matches instruction definition
-    SDValue Ops[] = {RS1, FftBitWidth};
+    SDValue QVIn = CurDAG->getTargetConstant(0, DL, MVT::i32);
+    SDValue Ops[] = {RS1, Subtarget->hasVendorXespv() ? QVIn : FftBitWidth};
     MachineSDNode *Res = CurDAG->getMachineNode(Opc, DL, VTList, Ops);
 
     // Extract outputs from instruction
