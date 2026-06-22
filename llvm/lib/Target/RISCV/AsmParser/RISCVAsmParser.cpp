@@ -214,6 +214,8 @@ class RISCVAsmParser : public MCTargetAsmParser {
   template <bool IsRV64Inst> ParseStatus parseGPRPair(OperandVector &Operands);
   ParseStatus parseGPRPair(OperandVector &Operands, bool IsRV64Inst);
   ParseStatus parseFRMArg(OperandVector &Operands);
+  ParseStatus parseSATArg(OperandVector &Operands);
+  ParseStatus parseRMArg(OperandVector &Operands);
   ParseStatus parseFenceArg(OperandVector &Operands);
   ParseStatus parseRegList(OperandVector &Operands, bool MustIncludeS0 = false);
   ParseStatus parseRegListS0(OperandVector &Operands) {
@@ -284,6 +286,8 @@ class RISCVAsmParser : public MCTargetAsmParser {
   std::unique_ptr<RISCVOperand> defaultMaskRegOp() const;
   std::unique_ptr<RISCVOperand> defaultFRMArgOp() const;
   std::unique_ptr<RISCVOperand> defaultFRMArgLegacyOp() const;
+  std::unique_ptr<RISCVOperand> defaultSATOp() const;
+  std::unique_ptr<RISCVOperand> defaultRMOp() const;
 
 public:
   enum RISCVMatchResultTy : unsigned {
@@ -642,6 +646,18 @@ public:
   bool isFRMArg() const { return Kind == KindTy::FRM; }
   bool isFRMArgLegacy() const { return Kind == KindTy::FRM; }
   bool isRTZArg() const { return isFRMArg() && FRM.FRM == RISCVFPRndMode::RTZ; }
+
+  /// Return true if the operand is a valid ESP saturation mode.
+  bool isSATArg() const {
+    int64_t Imm;
+    return isExpr() && evaluateConstantExpr(getExpr(), Imm) && isUInt<1>(Imm);
+  }
+
+  /// Return true if the operand is a valid ESP rounding mode.
+  bool isRMArg() const {
+    int64_t Imm;
+    return isExpr() && evaluateConstantExpr(getExpr(), Imm) && isUInt<3>(Imm);
+  }
 
   /// Return true if the operand is a valid fli.s floating-point immediate.
   bool isLoadFPImm() const {
@@ -2703,6 +2719,106 @@ ParseStatus RISCVAsmParser::parseFRMArg(OperandVector &Operands) {
   return ParseStatus::Success;
 }
 
+static bool parseESPSATMode(StringRef Str, int64_t &Imm) {
+  if (Str == "sat") {
+    Imm = 1;
+    return true;
+  }
+  if (Str == "trunc") {
+    Imm = 0;
+    return true;
+  }
+  return false;
+}
+
+static bool parseESPRoundingMode(StringRef Str, int64_t &Imm) {
+  if (Str == "rdn") {
+    Imm = 0;
+    return true;
+  }
+  if (Str == "rup") {
+    Imm = 1;
+    return true;
+  }
+  if (Str == "raz") {
+    Imm = 2;
+    return true;
+  }
+  if (Str == "rtz") {
+    Imm = 3;
+    return true;
+  }
+  if (Str == "rhaz") {
+    Imm = 4;
+    return true;
+  }
+  if (Str == "rhtz") {
+    Imm = 5;
+    return true;
+  }
+  if (Str == "rne") {
+    Imm = 6;
+    return true;
+  }
+  if (Str == "dyn") {
+    Imm = 7;
+    return true;
+  }
+  return false;
+}
+
+ParseStatus RISCVAsmParser::parseSATArg(OperandVector &Operands) {
+  SMLoc S = getLoc();
+  int64_t Imm = 0;
+
+  if (getLexer().is(AsmToken::Integer)) {
+    Imm = getLexer().getTok().getIntVal();
+    if (!isUInt<1>(Imm))
+      return TokError("operand must be 0 or 1");
+    Operands.push_back(RISCVOperand::createExpr(
+        MCConstantExpr::create(Imm, getContext()), S, getLoc(), isRV64()));
+    Lex();
+    return ParseStatus::Success;
+  }
+
+  if (getLexer().is(AsmToken::Identifier)) {
+    if (!parseESPSATMode(getLexer().getTok().getIdentifier(), Imm))
+      return TokError("operand must be 'sat' or 'trunc'");
+    Operands.push_back(RISCVOperand::createExpr(
+        MCConstantExpr::create(Imm, getContext()), S, getLoc(), isRV64()));
+    Lex();
+    return ParseStatus::Success;
+  }
+
+  return TokError("operand must be 'sat' or 'trunc'");
+}
+
+ParseStatus RISCVAsmParser::parseRMArg(OperandVector &Operands) {
+  SMLoc S = getLoc();
+  int64_t Imm = 0;
+
+  if (getLexer().is(AsmToken::Integer)) {
+    Imm = getLexer().getTok().getIntVal();
+    if (!isUInt<3>(Imm))
+      return TokError("operand must be between 0 and 7");
+    Operands.push_back(RISCVOperand::createExpr(
+        MCConstantExpr::create(Imm, getContext()), S, getLoc(), isRV64()));
+    Lex();
+    return ParseStatus::Success;
+  }
+
+  if (getLexer().is(AsmToken::Identifier)) {
+    if (!parseESPRoundingMode(getLexer().getTok().getIdentifier(), Imm))
+      return TokError("operand must be a valid rounding mode mnemonic");
+    Operands.push_back(RISCVOperand::createExpr(
+        MCConstantExpr::create(Imm, getContext()), S, getLoc(), isRV64()));
+    Lex();
+    return ParseStatus::Success;
+  }
+
+  return TokError("operand must be a valid rounding mode mnemonic");
+}
+
 ParseStatus RISCVAsmParser::parseFenceArg(OperandVector &Operands) {
   const AsmToken &Tok = getLexer().getTok();
 
@@ -3868,6 +3984,18 @@ std::unique_ptr<RISCVOperand> RISCVAsmParser::defaultFRMArgOp() const {
 std::unique_ptr<RISCVOperand> RISCVAsmParser::defaultFRMArgLegacyOp() const {
   return RISCVOperand::createFRMArg(RISCVFPRndMode::RoundingMode::RNE,
                                     llvm::SMLoc());
+}
+
+std::unique_ptr<RISCVOperand> RISCVAsmParser::defaultSATOp() const {
+  MCContext &Ctx = const_cast<RISCVAsmParser *>(this)->getContext();
+  return RISCVOperand::createExpr(MCConstantExpr::create(1, Ctx), llvm::SMLoc(),
+                                  llvm::SMLoc(), isRV64());
+}
+
+std::unique_ptr<RISCVOperand> RISCVAsmParser::defaultRMOp() const {
+  MCContext &Ctx = const_cast<RISCVAsmParser *>(this)->getContext();
+  return RISCVOperand::createExpr(MCConstantExpr::create(7, Ctx), llvm::SMLoc(),
+                                  llvm::SMLoc(), isRV64());
 }
 
 bool RISCVAsmParser::validateInstruction(MCInst &Inst,

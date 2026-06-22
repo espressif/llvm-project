@@ -30,23 +30,23 @@ define void @test(){
 ; CHECK-NEXT:    esp.vld.128.ip q6, a1, 496
 ; CHECK-NEXT:    esp.vld.128.ip q7, a1, 496
 ; CHECK-NEXT:    li a1, 9
-; CHECK-NEXT:    esp.vcmulas.s16.qacc.h q6, q7, sat
+; CHECK-NEXT:    esp.vcmulas.s16.qacc.h q6, q7
 ; CHECK-NEXT:    esp.vcmulas.s16.qacc.h.ld.ip q6, a1, 32, q2, q1, trunc
 ; CHECK-NEXT:    li a1, 11
 ; CHECK-NEXT:    li a2, 1
 ; CHECK-NEXT:    esp.vcmulas.s16.qacc.h.ld.xp q3, a2, a1, q6, q5, trunc
-; CHECK-NEXT:    esp.vcmulas.s16.qacc.l q2, q3, sat
+; CHECK-NEXT:    esp.vcmulas.s16.qacc.l q2, q3
 ; CHECK-NEXT:    li a2, 3
 ; CHECK-NEXT:    li a3, 13
-; CHECK-NEXT:    esp.vcmulas.s16.qacc.l.ld.ip q5, a2, -64, q1, q2, sat
-; CHECK-NEXT:    esp.vcmulas.s16.qacc.l.ld.xp q2, a3, a0, q3, q1, sat
+; CHECK-NEXT:    esp.vcmulas.s16.qacc.l.ld.ip q5, a2, -64, q1, q2
+; CHECK-NEXT:    esp.vcmulas.s16.qacc.l.ld.xp q2, a3, a0, q3, q1
 ; CHECK-NEXT:    li a2, 2
 ; CHECK-NEXT:    esp.vcmulas.s8.qacc.h q1, q6, trunc
 ; CHECK-NEXT:    esp.vcmulas.s8.qacc.h.ld.ip q0, a2, -128, q0, q0, trunc
 ; CHECK-NEXT:    li a2, 8
 ; CHECK-NEXT:    li a3, 2
 ; CHECK-NEXT:    li a4, 3
-; CHECK-NEXT:    esp.vcmulas.s8.qacc.h.ld.xp q1, a3, a2, q1, q0, sat
+; CHECK-NEXT:    esp.vcmulas.s8.qacc.h.ld.xp q1, a3, a2, q1, q0
 ; CHECK-NEXT:    esp.vcmulas.s8.qacc.l q0, q0, trunc
 ; CHECK-NEXT:    esp.vcmulas.s8.qacc.l.ld.ip q2, a4, -96, q5, q5, trunc
 ; CHECK-NEXT:    li a4, 1
@@ -55,24 +55,24 @@ define void @test(){
 ; CHECK-NEXT:    esp.vcmulas.s8.qacc.l.ld.xp q6, a5, a4, q2, q1, trunc
 ; CHECK-NEXT:    li a5, 11
 ; CHECK-NEXT:    li t3, 3
-; CHECK-NEXT:    esp.vmulas.s16.qacc q2, q4, sat
+; CHECK-NEXT:    esp.vmulas.s16.qacc q2, q4
 ; CHECK-NEXT:    esp.vmulas.s16.qacc.ld.ip q1, a5, 96, q6, q7, trunc
-; CHECK-NEXT:    esp.vmulas.s16.qacc.ld.xp q4, t3, a2, q2, q7, sat
+; CHECK-NEXT:    esp.vmulas.s16.qacc.ld.xp q4, t3, a2, q2, q7
 ; CHECK-NEXT:    li a5, 1
-; CHECK-NEXT:    esp.vmulas.s16.qacc.st.ip q3, a5, -32, q6, q0, sat
+; CHECK-NEXT:    esp.vmulas.s16.qacc.st.ip q3, a5, -32, q6, q0
 ; CHECK-NEXT:    li a5, 14
 ; CHECK-NEXT:    esp.vmulas.s16.qacc.st.xp q2, a5, a0, q4, q5, trunc
 ; CHECK-NEXT:    li t3, 3
 ; CHECK-NEXT:    li a5, 6
 ; CHECK-NEXT:    li t4, 6
 ; CHECK-NEXT:    esp.vmulas.s16.xacc q1, q4, trunc
-; CHECK-NEXT:    esp.vmulas.s16.xacc.ld.ip q0, a5, -128, q6, q3, sat
+; CHECK-NEXT:    esp.vmulas.s16.xacc.ld.ip q0, a5, -128, q6, q3
 ; CHECK-NEXT:    esp.vmulas.s16.xacc.ld.xp q1, t4, t3, q2, q7, trunc
 ; CHECK-NEXT:    li a5, 4
-; CHECK-NEXT:    esp.vmulas.s16.xacc.st.ip q3, a5, -80, q4, q4, sat
+; CHECK-NEXT:    esp.vmulas.s16.xacc.st.ip q3, a5, -80, q4, q4
 ; CHECK-NEXT:    li s1, 9
 ; CHECK-NEXT:    li t4, 6
-; CHECK-NEXT:    esp.vmulas.s16.xacc.st.xp q3, t4, s1, q4, q1, sat
+; CHECK-NEXT:    esp.vmulas.s16.xacc.st.xp q3, t4, s1, q4, q1
 ; CHECK-NEXT:    esp.vmulas.s8.qacc q6, q2, trunc
 ; CHECK-NEXT:    li t4, 8
 ; CHECK-NEXT:    esp.vmulas.s8.qacc.ld.ip q6, t4, -80, q5, q3, trunc
@@ -84,21 +84,21 @@ define void @test(){
 ; CHECK-NEXT:    li t5, 11
 ; CHECK-NEXT:    esp.vmulas.s8.qacc.st.xp q5, t5, t4, q5, q2, trunc
 ; CHECK-NEXT:    li t5, 5
-; CHECK-NEXT:    esp.vmulas.s8.xacc q7, q3, sat
+; CHECK-NEXT:    esp.vmulas.s8.xacc q7, q3
 ; CHECK-NEXT:    esp.vmulas.s8.xacc.ld.ip q3, t5, -64, q1, q4, trunc
 ; CHECK-NEXT:    li t6, 6
 ; CHECK-NEXT:    li t5, 8
 ; CHECK-NEXT:    esp.vmulas.s8.xacc.ld.xp q5, t5, t6, q3, q2, trunc
 ; CHECK-NEXT:    li t5, 9
-; CHECK-NEXT:    esp.vmulas.s8.xacc.st.ip q1, t5, 64, q4, q1, sat
+; CHECK-NEXT:    esp.vmulas.s8.xacc.st.ip q1, t5, 64, q4, q1
 ; CHECK-NEXT:    li t5, 2
 ; CHECK-NEXT:    esp.vmulas.s8.xacc.st.xp q0, t5, a4, q4, q0, trunc
-; CHECK-NEXT:    esp.vmulas.u16.qacc q2, q5, sat
+; CHECK-NEXT:    esp.vmulas.u16.qacc q2, q5
 ; CHECK-NEXT:    li t5, 13
-; CHECK-NEXT:    esp.vmulas.u16.qacc.ld.ip q0, t5, 64, q5, q7, sat
+; CHECK-NEXT:    esp.vmulas.u16.qacc.ld.ip q0, t5, 64, q5, q7
 ; CHECK-NEXT:    li t5, 4
 ; CHECK-NEXT:    li s0, 12
-; CHECK-NEXT:    esp.vmulas.u16.qacc.ld.xp q6, s0, t5, q6, q0, sat
+; CHECK-NEXT:    esp.vmulas.u16.qacc.ld.xp q6, s0, t5, q6, q0
 ; CHECK-NEXT:    li s0, 4
 ; CHECK-NEXT:    esp.vmulas.u16.qacc.st.ip q1, s0, 16, q3, q3, trunc
 ; CHECK-NEXT:    li s0, 9
@@ -107,10 +107,10 @@ define void @test(){
 ; CHECK-NEXT:    li s0, 14
 ; CHECK-NEXT:    li s8, 7
 ; CHECK-NEXT:    esp.vmulas.u16.xacc q0, q0, trunc
-; CHECK-NEXT:    esp.vmulas.u16.xacc.ld.ip q3, s0, 32, q0, q1, sat
-; CHECK-NEXT:    esp.vmulas.u16.xacc.ld.xp q7, s8, a2, q4, q1, sat
+; CHECK-NEXT:    esp.vmulas.u16.xacc.ld.ip q3, s0, 32, q0, q1
+; CHECK-NEXT:    esp.vmulas.u16.xacc.ld.xp q7, s8, a2, q4, q1
 ; CHECK-NEXT:    li s0, 6
-; CHECK-NEXT:    esp.vmulas.u16.xacc.st.ip q1, s0, -48, q0, q6, sat
+; CHECK-NEXT:    esp.vmulas.u16.xacc.st.ip q1, s0, -48, q0, q6
 ; CHECK-NEXT:    li s0, 7
 ; CHECK-NEXT:    li s8, 1
 ; CHECK-NEXT:    esp.vmulas.u16.xacc.st.xp q3, s8, s0, q6, q4, trunc
@@ -120,15 +120,15 @@ define void @test(){
 ; CHECK-NEXT:    li s8, 4
 ; CHECK-NEXT:    esp.vmulas.u8.qacc.ld.xp q0, s8, a0, q4, q1, trunc
 ; CHECK-NEXT:    li s8, 8
-; CHECK-NEXT:    esp.vmulas.u8.qacc.st.ip q3, s8, 0, q2, q4, sat
+; CHECK-NEXT:    esp.vmulas.u8.qacc.st.ip q3, s8, 0, q2, q4
 ; CHECK-NEXT:    li s8, 1
-; CHECK-NEXT:    esp.vmulas.u8.qacc.st.xp q6, s8, s8, q3, q1, sat
+; CHECK-NEXT:    esp.vmulas.u8.qacc.st.xp q6, s8, s8, q3, q1
 ; CHECK-NEXT:    li s8, 7
-; CHECK-NEXT:    esp.vmulas.u8.xacc q3, q5, sat
-; CHECK-NEXT:    esp.vmulas.u8.xacc.ld.ip q5, s8, 80, q3, q2, sat
+; CHECK-NEXT:    esp.vmulas.u8.xacc q3, q5
+; CHECK-NEXT:    esp.vmulas.u8.xacc.ld.ip q5, s8, 80, q3, q2
 ; CHECK-NEXT:    li s8, 14
 ; CHECK-NEXT:    li s9, 7
-; CHECK-NEXT:    esp.vmulas.u8.xacc.ld.xp q4, s9, s8, q1, q0, sat
+; CHECK-NEXT:    esp.vmulas.u8.xacc.ld.xp q4, s9, s8, q1, q0
 ; CHECK-NEXT:    li s9, 0
 ; CHECK-NEXT:    esp.vmulas.u8.xacc.st.ip q5, s9, -112, q6, q6, trunc
 ; CHECK-NEXT:    li s9, 11
@@ -138,41 +138,41 @@ define void @test(){
 ; CHECK-NEXT:    li s11, 6
 ; CHECK-NEXT:    esp.vmulas.s16.qacc.ldbc.incp q5, s9, q3, q5, trunc
 ; CHECK-NEXT:    esp.vmulas.s8.qacc.ldbc.incp q5, s10, q1, q6, trunc
-; CHECK-NEXT:    esp.vmulas.u16.qacc.ldbc.incp q1, s11, q6, q0, sat
+; CHECK-NEXT:    esp.vmulas.u16.qacc.ldbc.incp q1, s11, q6, q0
 ; CHECK-NEXT:    li s9, 1
 ; CHECK-NEXT:    li s10, 8
 ; CHECK-NEXT:    li s11, 8
 ; CHECK-NEXT:    esp.vmulas.u8.qacc.ldbc.incp q4, s9, q1, q7, trunc
 ; CHECK-NEXT:    li s9, 13
-; CHECK-NEXT:    esp.vsmulas.s16.qacc q7, q7, 13, sat
+; CHECK-NEXT:    esp.vsmulas.s16.qacc q7, q7, 13
 ; CHECK-NEXT:    esp.vsmulas.s16.qacc.ld.incp q4, s10, q5, q5, 1, trunc
 ; CHECK-NEXT:    li s10, 0
 ; CHECK-NEXT:    esp.vsmulas.s8.qacc q7, q7, 2, trunc
 ; CHECK-NEXT:    esp.vsmulas.s8.qacc.ld.incp q4, s11, q7, q3, 10, trunc
 ; CHECK-NEXT:    esp.vsmulas.u16.qacc q7, q7, 6, trunc
-; CHECK-NEXT:    esp.vsmulas.u16.qacc.ld.incp q0, s9, q2, q7, 14, sat
+; CHECK-NEXT:    esp.vsmulas.u16.qacc.ld.incp q0, s9, q2, q7, 14
 ; CHECK-NEXT:    esp.vsmulas.u8.qacc q7, q5, 10, trunc
 ; CHECK-NEXT:    esp.vsmulas.u8.qacc.ld.incp q3, s10, q5, q1, 11, trunc
 ; CHECK-NEXT:    li s9, 2
 ; CHECK-NEXT:    li s10, 4
 ; CHECK-NEXT:    li s11, 2
-; CHECK-NEXT:    esp.cmul.s16 q2, q7, q3, 0, sat, rup
+; CHECK-NEXT:    esp.cmul.s16 q2, q7, q3, 0, rup
 ; CHECK-NEXT:    esp.cmul.s16.ld.incp q0, s9, q1, q7, q2, 1, trunc, rhtz
 ; CHECK-NEXT:    esp.cmul.s16.st.incp q3, s10, q1, q7, q5, 3, trunc, raz
 ; CHECK-NEXT:    esp.cmul.s8 q4, q1, q4, 2, trunc, rhtz
-; CHECK-NEXT:    esp.cmul.s8.ld.incp q5, s11, q6, q3, q7, 2, sat, rtz
+; CHECK-NEXT:    esp.cmul.s8.ld.incp q5, s11, q6, q3, q7, 2, rtz
 ; CHECK-NEXT:    li s9, 12
 ; CHECK-NEXT:    li s10, 13
-; CHECK-NEXT:    esp.cmul.s8.st.incp q1, s9, q0, q1, q6, 0, sat, rdn
-; CHECK-NEXT:    esp.cmul.u16 q6, q7, q2, 3, sat, rup
-; CHECK-NEXT:    esp.cmul.u16.ld.incp q6, s10, q6, q5, q0, 0, sat, rne
+; CHECK-NEXT:    esp.cmul.s8.st.incp q1, s9, q0, q1, q6, 0, rdn
+; CHECK-NEXT:    esp.cmul.u16 q6, q7, q2, 3, rup
+; CHECK-NEXT:    esp.cmul.u16.ld.incp q6, s10, q6, q5, q0, 0, rne
 ; CHECK-NEXT:    li s9, 4
 ; CHECK-NEXT:    li s10, 8
-; CHECK-NEXT:    esp.cmul.u16.st.incp q5, s9, q6, q6, q4, 1, sat, raz
+; CHECK-NEXT:    esp.cmul.u16.st.incp q5, s9, q6, q6, q4, 1, raz
 ; CHECK-NEXT:    esp.cmul.u8 q2, q5, q1, 3, trunc, rhtz
-; CHECK-NEXT:    esp.cmul.u8.ld.incp q1, s10, q6, q6, q4, 3, trunc, dyn
+; CHECK-NEXT:    esp.cmul.u8.ld.incp q1, s10, q6, q6, q4, 3, trunc
 ; CHECK-NEXT:    li s9, 12
-; CHECK-NEXT:    esp.cmul.u8.st.incp q2, s9, q3, q4, q6, 0, sat, rdn
+; CHECK-NEXT:    esp.cmul.u8.st.incp q2, s9, q3, q4, q6, 0, rdn
 ; CHECK-NEXT:    li s9, 5
 ; CHECK-NEXT:    li s10, 14
 ; CHECK-NEXT:    li s11, 10
@@ -193,9 +193,9 @@ define void @test(){
 ; CHECK-NEXT:    esp.vabs.8 q7, q7
 ; CHECK-NEXT:    esp.vadd.s16 q2, q6, q4, trunc
 ; CHECK-NEXT:    esp.vadd.s16.ld.incp q3, s9, q3, q7, q6, trunc
-; CHECK-NEXT:    esp.vadd.s16.st.incp q4, s10, q3, q6, q4, sat
-; CHECK-NEXT:    esp.vadd.s32 q4, q3, q7, sat
-; CHECK-NEXT:    esp.vadd.s32.ld.incp q5, s11, q2, q6, q0, sat
+; CHECK-NEXT:    esp.vadd.s16.st.incp q4, s10, q3, q6, q4
+; CHECK-NEXT:    esp.vadd.s32 q4, q3, q7
+; CHECK-NEXT:    esp.vadd.s32.ld.incp q5, s11, q2, q6, q0
 ; CHECK-NEXT:    li a2, 4
 ; CHECK-NEXT:    li s9, 4
 ; CHECK-NEXT:    esp.vadd.s32.st.incp q6, a2, q0, q4, q4, trunc
@@ -204,17 +204,17 @@ define void @test(){
 ; CHECK-NEXT:    li a2, 13
 ; CHECK-NEXT:    esp.vadd.s8.st.incp q4, a2, q4, q1, q5, trunc
 ; CHECK-NEXT:    li a2, 12
-; CHECK-NEXT:    esp.vadd.u16 q2, q5, q6, sat
+; CHECK-NEXT:    esp.vadd.u16 q2, q5, q6
 ; CHECK-NEXT:    esp.vadd.u16.ld.incp q4, a2, q5, q7, q5, trunc
 ; CHECK-NEXT:    li a2, 11
 ; CHECK-NEXT:    li s9, 8
-; CHECK-NEXT:    esp.vadd.u16.st.incp q1, a2, q1, q0, q4, sat
-; CHECK-NEXT:    esp.vadd.u32 q5, q1, q1, sat
+; CHECK-NEXT:    esp.vadd.u16.st.incp q1, a2, q1, q0, q4
+; CHECK-NEXT:    esp.vadd.u32 q5, q1, q1
 ; CHECK-NEXT:    esp.vadd.u32.ld.incp q4, s9, q0, q7, q5, trunc
 ; CHECK-NEXT:    li a2, 8
 ; CHECK-NEXT:    li s9, 14
 ; CHECK-NEXT:    esp.vadd.u32.st.incp q3, a2, q5, q4, q7, trunc
-; CHECK-NEXT:    esp.vadd.u8 q1, q3, q2, sat
+; CHECK-NEXT:    esp.vadd.u8 q1, q3, q2
 ; CHECK-NEXT:    esp.vadd.u8.ld.incp q0, s9, q6, q4, q7, trunc
 ; CHECK-NEXT:    li a2, 8
 ; CHECK-NEXT:    li s9, 14
@@ -282,22 +282,22 @@ define void @test(){
 ; CHECK-NEXT:    li s10, 0
 ; CHECK-NEXT:    esp.vmin.u8.st.incp q3, a2, q1, q2, q4
 ; CHECK-NEXT:    li a2, 0
-; CHECK-NEXT:    esp.vmul.s16 q4, q7, q7, sat, rne
+; CHECK-NEXT:    esp.vmul.s16 q4, q7, q7, rne
 ; CHECK-NEXT:    esp.vmul.s16.ld.incp q0, s9, q7, q1, q5, trunc, rhaz
 ; CHECK-NEXT:    li s9, 6
-; CHECK-NEXT:    esp.vmul.s16.s8xs8 q1, q2, q2, q1, dyn
+; CHECK-NEXT:    esp.vmul.s16.s8xs8 q1, q2, q2, q1
 ; CHECK-NEXT:    esp.vmul.s16.st.incp q3, s10, q7, q6, q5, trunc, raz
 ; CHECK-NEXT:    li s10, 5
 ; CHECK-NEXT:    esp.vmul.s32.s16xs16 q1, q2, q3, q0, rhaz
 ; CHECK-NEXT:    esp.vmul.s8 q5, q3, q5, trunc, raz
 ; CHECK-NEXT:    esp.vmul.s8.ld.incp q3, a2, q3, q3, q6, trunc, rtz
-; CHECK-NEXT:    esp.vmul.s8.st.incp q6, s9, q5, q1, q1, sat, rne
-; CHECK-NEXT:    esp.vmul.u16 q7, q4, q4, sat, rup
+; CHECK-NEXT:    esp.vmul.s8.st.incp q6, s9, q5, q1, q1, rne
+; CHECK-NEXT:    esp.vmul.u16 q7, q4, q4, rup
 ; CHECK-NEXT:    esp.vmul.u16.ld.incp q4, s10, q5, q4, q0, trunc, rne
 ; CHECK-NEXT:    li a2, 13
-; CHECK-NEXT:    esp.vmul.u16.st.incp q3, a2, q3, q1, q4, sat, raz
+; CHECK-NEXT:    esp.vmul.u16.st.incp q3, a2, q3, q1, q4, raz
 ; CHECK-NEXT:    li a2, 2
-; CHECK-NEXT:    esp.vmul.u8 q7, q7, q4, sat, rup
+; CHECK-NEXT:    esp.vmul.u8 q7, q7, q4, rup
 ; CHECK-NEXT:    esp.vmul.u8.ld.incp q2, a2, q4, q5, q0, trunc, rdn
 ; CHECK-NEXT:    li s9, 5
 ; CHECK-NEXT:    li a2, 0
@@ -305,11 +305,11 @@ define void @test(){
 ; CHECK-NEXT:    esp.vmul.u8.st.incp q7, a2, q6, q1, q6, trunc, rne
 ; CHECK-NEXT:    li a2, 10
 ; CHECK-NEXT:    esp.vprelu.s16 q1, q6, q4, a2, trunc, rtz
-; CHECK-NEXT:    esp.vprelu.s8 q7, q2, q6, s0, sat, raz
+; CHECK-NEXT:    esp.vprelu.s8 q7, q2, q6, s0, raz
 ; CHECK-NEXT:    esp.vrelu.s16 q6, t6, s0, trunc, rhtz
-; CHECK-NEXT:    esp.vrelu.s8 q0, a0, t5, sat, rup
-; CHECK-NEXT:    esp.vsadds.s16 q5, q3, s9, sat
-; CHECK-NEXT:    esp.vsadds.s8 q1, q1, s1, sat
+; CHECK-NEXT:    esp.vrelu.s8 q0, a0, t5, rup
+; CHECK-NEXT:    esp.vsadds.s16 q5, q3, s9
+; CHECK-NEXT:    esp.vsadds.s8 q1, q1, s1
 ; CHECK-NEXT:    esp.vsadds.u16 q5, q0, a1, trunc
 ; CHECK-NEXT:    li a3, 8
 ; CHECK-NEXT:    esp.vsadds.u8 q7, q3, a3, trunc
@@ -320,39 +320,39 @@ define void @test(){
 ; CHECK-NEXT:    esp.vsat.u32 q0, q6, t4, a1
 ; CHECK-NEXT:    esp.vsat.u8 q1, q6, a4, t3
 ; CHECK-NEXT:    esp.vssubs.s16 q1, q3, t5, trunc
-; CHECK-NEXT:    esp.vssubs.s8 q5, q3, a0, sat
-; CHECK-NEXT:    esp.vssubs.u16 q7, q3, t3, sat
-; CHECK-NEXT:    esp.vssubs.u8 q6, q2, a2, sat
-; CHECK-NEXT:    esp.vsub.s16 q2, q1, q1, sat
-; CHECK-NEXT:    esp.vsub.s16.ld.incp q6, s10, q5, q0, q7, sat
+; CHECK-NEXT:    esp.vssubs.s8 q5, q3, a0
+; CHECK-NEXT:    esp.vssubs.u16 q7, q3, t3
+; CHECK-NEXT:    esp.vssubs.u8 q6, q2, a2
+; CHECK-NEXT:    esp.vsub.s16 q2, q1, q1
+; CHECK-NEXT:    esp.vsub.s16.ld.incp q6, s10, q5, q0, q7
 ; CHECK-NEXT:    li a2, 11
 ; CHECK-NEXT:    li s10, 1
-; CHECK-NEXT:    esp.vsub.s16.st.incp q6, a2, q2, q0, q6, sat
+; CHECK-NEXT:    esp.vsub.s16.st.incp q6, a2, q2, q0, q6
 ; CHECK-NEXT:    li a2, 14
-; CHECK-NEXT:    esp.vsub.s32 q4, q1, q6, sat
+; CHECK-NEXT:    esp.vsub.s32 q4, q1, q6
 ; CHECK-NEXT:    esp.vsub.s32.ld.incp q0, s10, q7, q1, q7, trunc
 ; CHECK-NEXT:    esp.vsub.s32.st.incp q5, a2, q5, q6, q3, trunc
 ; CHECK-NEXT:    esp.vsub.s8 q0, q5, q4, trunc
 ; CHECK-NEXT:    li a2, 3
-; CHECK-NEXT:    esp.vsub.s8.ld.incp q2, a2, q2, q7, q2, sat
+; CHECK-NEXT:    esp.vsub.s8.ld.incp q2, a2, q2, q7, q2
 ; CHECK-NEXT:    li a2, 1
 ; CHECK-NEXT:    li s10, 3
-; CHECK-NEXT:    esp.vsub.s8.st.incp q2, a2, q1, q7, q1, sat
+; CHECK-NEXT:    esp.vsub.s8.st.incp q2, a2, q1, q7, q1
 ; CHECK-NEXT:    li a2, 11
 ; CHECK-NEXT:    esp.vsub.u16 q7, q6, q4, trunc
 ; CHECK-NEXT:    esp.vsub.u16.ld.incp q2, s10, q0, q5, q1, trunc
 ; CHECK-NEXT:    li s10, 1
-; CHECK-NEXT:    esp.vsub.u16.st.incp q3, a2, q2, q7, q3, sat
+; CHECK-NEXT:    esp.vsub.u16.st.incp q3, a2, q2, q7, q3
 ; CHECK-NEXT:    esp.vsub.u32 q2, q3, q3, trunc
 ; CHECK-NEXT:    esp.vsub.u32.ld.incp q2, s10, q4, q4, q2, trunc
 ; CHECK-NEXT:    li a2, 2
 ; CHECK-NEXT:    li s10, 7
 ; CHECK-NEXT:    esp.vsub.u32.st.incp q7, a2, q3, q7, q2, trunc
 ; CHECK-NEXT:    esp.vsub.u8 q4, q4, q7, trunc
-; CHECK-NEXT:    esp.vsub.u8.ld.incp q0, s10, q7, q2, q7, sat
+; CHECK-NEXT:    esp.vsub.u8.ld.incp q0, s10, q7, q2, q7
 ; CHECK-NEXT:    li a2, 2
 ; CHECK-NEXT:    li s10, 13
-; CHECK-NEXT:    esp.vsub.u8.st.incp q7, a2, q6, q6, q0, sat
+; CHECK-NEXT:    esp.vsub.u8.st.incp q7, a2, q6, q6, q0
 ; CHECK-NEXT:    li s11, 5
 ; CHECK-NEXT:    esp.addx2 a2, s0, t5
 ; CHECK-NEXT:    esp.addx4 a2, t5, t4
@@ -425,11 +425,11 @@ define void @test(){
 ; CHECK-NEXT:    esp.zero.q q1
 ; CHECK-NEXT:    esp.zero.qacc
 ; CHECK-NEXT:    esp.zero.xacc
-; CHECK-NEXT:    esp.fft.ams.s16.ld.incp q2, s11, q7, q1, q4, q2, q6, 1, sat
+; CHECK-NEXT:    esp.fft.ams.s16.ld.incp q2, s11, q7, q1, q4, q2, q6, 1
 ; CHECK-NEXT:    li a2, 8
 ; CHECK-NEXT:    li s10, 2
 ; CHECK-NEXT:    esp.fft.ams.s16.ld.incp.uaup q0, a2, q7, q4, q1, q5, q5, 1, trunc
-; CHECK-NEXT:    esp.fft.ams.s16.ld.r32.decp q0, s10, q3, q1, q6, q1, q3, 1, sat
+; CHECK-NEXT:    esp.fft.ams.s16.ld.r32.decp q0, s10, q3, q1, q6, q1, q3, 1
 ; CHECK-NEXT:    li a2, 6
 ; CHECK-NEXT:    li s10, 6
 ; CHECK-NEXT:    esp.fft.ams.s16.st.incp q4, q3, s10, a2, q4, q5, q3, 1, trunc
@@ -441,7 +441,7 @@ define void @test(){
 ; CHECK-NEXT:    li a2, 14
 ; CHECK-NEXT:    esp.fft.cmul.s16.st.xp q5, q2, q5, a2, t4, 6, 2, 3, trunc
 ; CHECK-NEXT:    li a2, 5
-; CHECK-NEXT:    esp.fft.r2bf.s16 q3, q2, q3, q4, 1, sat
+; CHECK-NEXT:    esp.fft.r2bf.s16 q3, q2, q3, q4, 1
 ; CHECK-NEXT:    esp.fft.r2bf.s16.st.incp q7, q4, q6, a2, 0, trunc
 ; CHECK-NEXT:    li a2, 7
 ; CHECK-NEXT:    esp.fft.vst.r32.decp q1, a2, 1
@@ -551,7 +551,7 @@ define void @test(){
 ; CHECK-NEXT:    esp.srci.2q q3, q5, 8
 ; CHECK-NEXT:    esp.srcmb.s16.q.qacc q2, q4, trunc, rhtz
 ; CHECK-NEXT:    esp.srcmb.s16.qacc q6, s1, trunc, rdn
-; CHECK-NEXT:    esp.srcmb.s8.q.qacc q7, q7, sat, rhaz
+; CHECK-NEXT:    esp.srcmb.s8.q.qacc q7, q7, rhaz
 ; CHECK-NEXT:    esp.srcmb.s8.qacc q2, a4, trunc, rhaz
 ; CHECK-NEXT:    esp.srcmb.u16.q.qacc q2, q5, trunc, rhtz
 ; CHECK-NEXT:    esp.srcmb.u16.qacc q1, t4, trunc, rdn
@@ -560,18 +560,18 @@ define void @test(){
 ; CHECK-NEXT:    li a1, 8
 ; CHECK-NEXT:    esp.srcq.128.st.incp q1, q7, a1
 ; CHECK-NEXT:    esp.srcxxp.2q q4, q0, s1, t4
-; CHECK-NEXT:    esp.srs.s.xacc a1, a5, sat, rtz
+; CHECK-NEXT:    esp.srs.s.xacc a1, a5, rtz
 ; CHECK-NEXT:    esp.srs.u.xacc a1, a3, trunc, rhaz
 ; CHECK-NEXT:    esp.vsl.s32 q3, q1, trunc
 ; CHECK-NEXT:    esp.vsl.u32 q7, q0, trunc
 ; CHECK-NEXT:    esp.vsld.16 q2, q7, q0, trunc, rne
-; CHECK-NEXT:    esp.vsld.32 q1, q2, q0, sat, rne
+; CHECK-NEXT:    esp.vsld.32 q1, q2, q0, rne
 ; CHECK-NEXT:    esp.vsld.8 q6, q6, q2, trunc, raz
 ; CHECK-NEXT:    esp.vsr.s32 q0, q3, rne
 ; CHECK-NEXT:    esp.vsr.u32 q1, q3, rup
-; CHECK-NEXT:    esp.vsrd.16 q0, q2, q2, sat, raz
-; CHECK-NEXT:    esp.vsrd.32 q5, q6, q0, trunc, dyn
-; CHECK-NEXT:    esp.vsrd.8 q2, q2, q0, sat, rtz
+; CHECK-NEXT:    esp.vsrd.16 q0, q2, q2, raz
+; CHECK-NEXT:    esp.vsrd.32 q5, q6, q0, trunc
+; CHECK-NEXT:    esp.vsrd.8 q2, q2, q0, rtz
 ; CHECK-NEXT:    esp.st.s.xacc.ip t5, -600
 ; CHECK-NEXT:    esp.st.u.xacc.ip a0, 680
 ; CHECK-NEXT:    lw s0, 28(sp) # 4-byte Folded Reload

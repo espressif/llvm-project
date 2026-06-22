@@ -155,22 +155,42 @@ def shamt : RISCVUImmOp<6> {
   }];
 }
 
+def SATAsmOperand : AsmOperandClass {
+  let Name = "SATAsmOperand";
+  let RenderMethod = "addImmOperands";
+  let ParserMethod = "parseSATArg";
+  let PredicateMethod = "isSATArg";
+  let IsOptional = 1;
+  let DefaultMethod = "defaultSATOp";
+}
+
 def sat : RISCVUImmOp<1> {
+  let ParserMatchClass = SATAsmOperand;
   let PrintMethod = "printSATOperand";
   let MCOperandPredicate = [{
- . int64_t Imm;
-   if (!MCOp.evaluateAsConstantImm(Imm))
+    int64_t Imm;
+    if (!MCOp.evaluateAsConstantImm(Imm))
       return false;
-    return isUInt<}]# bitsNum #[{>(Imm)>;
+    return isUInt<}]# bitsNum #[{>(Imm);
   }];
 }
 
+def RMAsmOperand : AsmOperandClass {
+  let Name = "RMAsmOperand";
+  let RenderMethod = "addImmOperands";
+  let ParserMethod = "parseRMArg";
+  let PredicateMethod = "isRMArg";
+  let IsOptional = 1;
+  let DefaultMethod = "defaultRMOp";
+}
+
 def rm : RISCVUImmOp<3> {
+  let ParserMatchClass = RMAsmOperand;
   let PrintMethod = "printRMOperand";
   let MCOperandPredicate = [{
- . int64_t Imm;
-   if (!MCOp.evaluateAsConstantImm(Imm))
+    int64_t Imm;
+    if (!MCOp.evaluateAsConstantImm(Imm))
       return false;
-    return isUInt<}]# bitsNum #[{>(Imm)>;
+    return isUInt<}]# bitsNum #[{>(Imm);
   }];
 }
