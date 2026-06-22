@@ -4,33 +4,33 @@
 esp.vcmulas.s16.qacc.h q6, q0, 0
 // CHECK: esp.vcmulas.s16.qacc.h	 q6, q0, trunc  # encoding: [0x1b,0xa0,0x86,0xc2]
 esp.vcmulas.s16.qacc.h.ld.ip q4, a3, -80, q3, q0, 1
-// CHECK: esp.vcmulas.s16.qacc.h.ld.ip	 q4, a3, -80, q3, q0, sat # encoding: [0x9f,0xb2,0xda,0x63]
+// CHECK: esp.vcmulas.s16.qacc.h.ld.ip	 q4, a3, -80, q3, q0 # encoding: [0x9f,0xb2,0xda,0x63]
 esp.vcmulas.s16.qacc.h.ld.xp q1, a0, a3, q1, q3, 0
 // CHECK: esp.vcmulas.s16.qacc.h.ld.xp	 q1, a0, a3, q1, q3, trunc # encoding: [0x9f,0x47,0x51,0x2f]
 esp.vcmulas.s16.qacc.l q4, q0, 1
-// CHECK: esp.vcmulas.s16.qacc.l	 q4, q0, sat    # encoding: [0x1b,0xa0,0x83,0x82]
+// CHECK: esp.vcmulas.s16.qacc.l	 q4, q0         # encoding: [0x1b,0xa0,0x83,0x82]
 esp.vcmulas.s16.qacc.l.ld.ip q5, a1, 0, q5, q2, 0
 // CHECK: esp.vcmulas.s16.qacc.l.ld.ip	 q5, a1, 0, q5, q2, trunc # encoding: [0x9f,0xb6,0x01,0xa9]
 esp.vcmulas.s16.qacc.l.ld.xp q1, a5, a3, q2, q3, 1
-// CHECK: esp.vcmulas.s16.qacc.l.ld.xp	 q1, a5, a3, q2, q3, sat # encoding: [0x9f,0xc7,0x5b,0x4d]
+// CHECK: esp.vcmulas.s16.qacc.l.ld.xp	 q1, a5, a3, q2, q3 # encoding: [0x9f,0xc7,0x5b,0x4d]
 esp.vcmulas.s8.qacc.h q2, q6, 0
 // CHECK: esp.vcmulas.s8.qacc.h	 q2, q6, trunc  # encoding: [0x1b,0xa0,0x84,0x5a]
 esp.vcmulas.s8.qacc.h.ld.ip q5, a3, -64, q0, q3, 1
-// CHECK: esp.vcmulas.s8.qacc.h.ld.ip	 q5, a3, -64, q0, q3, sat # encoding: [0x9f,0xb6,0xe2,0x0e]
+// CHECK: esp.vcmulas.s8.qacc.h.ld.ip	 q5, a3, -64, q0, q3 # encoding: [0x9f,0xb6,0xe2,0x0e]
 esp.vcmulas.s8.qacc.h.ld.xp q1, a3, a2, q3, q6, 1
-// CHECK: esp.vcmulas.s8.qacc.h.ld.xp	 q1, a3, a2, q3, q6, sat # encoding: [0x9f,0xc7,0x4a,0x7a]
+// CHECK: esp.vcmulas.s8.qacc.h.ld.xp	 q1, a3, a2, q3, q6 # encoding: [0x9f,0xc7,0x4a,0x7a]
 esp.vcmulas.s8.qacc.l q4, q6, 0
 // CHECK: esp.vcmulas.s8.qacc.l	 q4, q6, trunc  # encoding: [0x1b,0xa0,0x80,0x9a]
 esp.vcmulas.s8.qacc.l.ld.ip q6, a0, 96, q3, q1, 1
-// CHECK: esp.vcmulas.s8.qacc.l.ld.ip	 q6, a0, 96, q3, q1, sat # encoding: [0x9f,0x3a,0xb1,0x64]
+// CHECK: esp.vcmulas.s8.qacc.l.ld.ip	 q6, a0, 96, q3, q1 # encoding: [0x9f,0x3a,0xb1,0x64]
 esp.vcmulas.s8.qacc.l.ld.xp q2, a1, a5, q3, q6, 0
 // CHECK: esp.vcmulas.s8.qacc.l.ld.xp	 q2, a1, a5, q3, q6, trunc # encoding: [0x9f,0xcb,0x71,0x78]
 esp.vmulas.s16.qacc q2, q5, 1
-// CHECK: esp.vmulas.s16.qacc	 q2, q5, sat    # encoding: [0x1b,0xa0,0xa7,0x56]
+// CHECK: esp.vmulas.s16.qacc	 q2, q5         # encoding: [0x1b,0xa0,0xa7,0x56]
 esp.vmulas.s16.qacc.ld.ip q1, a2, 64, q1, q6, 1
-// CHECK: esp.vmulas.s16.qacc.ld.ip	 q1, a2, 64, q1, q6, sat # encoding: [0x1f,0x64,0xea,0x3a]
+// CHECK: esp.vmulas.s16.qacc.ld.ip	 q1, a2, 64, q1, q6 # encoding: [0x1f,0x64,0xea,0x3a]
 esp.vmulas.s16.qacc.ld.xp q3, a2, a3, q2, q3, 1
-// CHECK: esp.vmulas.s16.qacc.ld.xp	 q3, a2, a3, q2, q3, sat # encoding: [0x1f,0x2f,0x5a,0x4e]
+// CHECK: esp.vmulas.s16.qacc.ld.xp	 q3, a2, a3, q2, q3 # encoding: [0x1f,0x2f,0x5a,0x4e]
 esp.vmulas.s16.qacc.st.ip q4, a2, -32, q4, q5, 0
 // CHECK: esp.vmulas.s16.qacc.st.ip	 q4, a2, -32, q4, q5, trunc # encoding: [0x1f,0x72,0xda,0x97]
 esp.vmulas.s16.qacc.st.xp q6, a2, a1, q5, q3, 0
@@ -44,57 +44,57 @@ esp.vmulas.s16.xacc.ld.xp q4, a0, a2, q6, q5, 0
 esp.vmulas.s16.xacc.st.ip q4, a2, -16, q4, q5, 0
 // CHECK: esp.vmulas.s16.xacc.st.ip	 q4, a2, -16, q4, q5, trunc # encoding: [0x1f,0x73,0xda,0x95]
 esp.vmulas.s16.xacc.st.xp q4, a3, a4, q6, q5, 1
-// CHECK: esp.vmulas.s16.xacc.st.xp	 q4, a3, a4, q6, q5, sat # encoding: [0x1f,0xb3,0x6a,0xd5]
+// CHECK: esp.vmulas.s16.xacc.st.xp	 q4, a3, a4, q6, q5 # encoding: [0x1f,0xb3,0x6a,0xd5]
 esp.vmulas.s8.qacc q3, q4, 1
-// CHECK: esp.vmulas.s8.qacc	 q3, q4, sat    # encoding: [0x1b,0xa0,0xa5,0x72]
+// CHECK: esp.vmulas.s8.qacc	 q3, q4         # encoding: [0x1b,0xa0,0xa5,0x72]
 esp.vmulas.s8.qacc.ld.ip q5, a2, 0, q0, q5, 1
-// CHECK: esp.vmulas.s8.qacc.ld.ip	 q5, a2, 0, q0, q5, sat # encoding: [0x1f,0x74,0x62,0x16]
+// CHECK: esp.vmulas.s8.qacc.ld.ip	 q5, a2, 0, q0, q5 # encoding: [0x1f,0x74,0x62,0x16]
 esp.vmulas.s8.qacc.ld.xp q5, a4, a2, q6, q3, 1
-// CHECK: esp.vmulas.s8.qacc.ld.xp	 q5, a4, a2, q6, q3, sat # encoding: [0x1f,0x37,0x43,0xce]
+// CHECK: esp.vmulas.s8.qacc.ld.xp	 q5, a4, a2, q6, q3 # encoding: [0x1f,0x37,0x43,0xce]
 esp.vmulas.s8.qacc.st.ip q0, a4, 16, q4, q2, 1
-// CHECK: esp.vmulas.s8.qacc.st.ip	 q0, a4, 16, q4, q2, sat # encoding: [0x1f,0x61,0x63,0x8b]
+// CHECK: esp.vmulas.s8.qacc.st.ip	 q0, a4, 16, q4, q2 # encoding: [0x1f,0x61,0x63,0x8b]
 esp.vmulas.s8.qacc.st.xp q4, a3, a5, q2, q6, 0
 // CHECK: esp.vmulas.s8.qacc.st.xp	 q4, a3, a5, q2, q6, trunc # encoding: [0x1f,0xb2,0x72,0x5b]
 esp.vmulas.s8.xacc q0, q4, 1
-// CHECK: esp.vmulas.s8.xacc	 q0, q4, sat    # encoding: [0x1b,0xa0,0xa1,0x12]
+// CHECK: esp.vmulas.s8.xacc	 q0, q4         # encoding: [0x1b,0xa0,0xa1,0x12]
 esp.vmulas.s8.xacc.ld.ip q0, a1, -128, q3, q0, 0
 // CHECK: esp.vmulas.s8.xacc.ld.ip	 q0, a1, -128, q3, q0, trunc # encoding: [0x1f,0xe0,0x51,0x60]
 esp.vmulas.s8.xacc.ld.xp q0, a2, a2, q6, q4, 0
 // CHECK: esp.vmulas.s8.xacc.ld.xp	 q0, a2, a2, q6, q4, trunc # encoding: [0x1f,0x22,0x42,0xd0]
 esp.vmulas.s8.xacc.st.ip q4, a4, 32, q4, q1, 1
-// CHECK: esp.vmulas.s8.xacc.st.ip	 q4, a4, 32, q4, q1, sat # encoding: [0x1f,0x72,0x63,0x85]
+// CHECK: esp.vmulas.s8.xacc.st.ip	 q4, a4, 32, q4, q1 # encoding: [0x1f,0x72,0x63,0x85]
 esp.vmulas.s8.xacc.st.xp q0, a2, a3, q6, q6, 1
-// CHECK: esp.vmulas.s8.xacc.st.xp	 q0, a2, a3, q6, q6, sat # encoding: [0x1f,0x23,0x52,0xd9]
+// CHECK: esp.vmulas.s8.xacc.st.xp	 q0, a2, a3, q6, q6 # encoding: [0x1f,0x23,0x52,0xd9]
 esp.vmulas.u16.qacc q5, q5, 1
-// CHECK: esp.vmulas.u16.qacc	 q5, q5, sat    # encoding: [0x1b,0xa0,0xa6,0xb6]
+// CHECK: esp.vmulas.u16.qacc	 q5, q5         # encoding: [0x1b,0xa0,0xa6,0xb6]
 esp.vmulas.u16.qacc.ld.ip q4, a1, -48, q3, q5, 0
 // CHECK: esp.vmulas.u16.qacc.ld.ip	 q4, a1, -48, q3, q5, trunc # encoding: [0x1f,0xf1,0x99,0x76]
 esp.vmulas.u16.qacc.ld.xp q1, a4, a2, q2, q3, 1
-// CHECK: esp.vmulas.u16.qacc.ld.xp	 q1, a4, a2, q2, q3, sat # encoding: [0x1f,0x25,0x4b,0x4e]
+// CHECK: esp.vmulas.u16.qacc.ld.xp	 q1, a4, a2, q2, q3 # encoding: [0x1f,0x25,0x4b,0x4e]
 esp.vmulas.u16.qacc.st.ip q6, a5, -48, q2, q0, 0
 // CHECK: esp.vmulas.u16.qacc.st.ip	 q6, a5, -48, q2, q0, trunc # encoding: [0x1f,0xf9,0x9b,0x43]
 esp.vmulas.u16.qacc.st.xp q4, a3, a0, q4, q1, 0
 // CHECK: esp.vmulas.u16.qacc.st.xp	 q4, a3, a0, q4, q1, trunc # encoding: [0x1f,0xb0,0x2a,0x87]
 esp.vmulas.u16.xacc q5, q5, 1
-// CHECK: esp.vmulas.u16.xacc	 q5, q5, sat    # encoding: [0x1b,0xa0,0xa2,0xb6]
+// CHECK: esp.vmulas.u16.xacc	 q5, q5         # encoding: [0x1b,0xa0,0xa2,0xb6]
 esp.vmulas.u16.xacc.ld.ip q6, a1, 0, q5, q6, 0
 // CHECK: esp.vmulas.u16.xacc.ld.ip	 q6, a1, 0, q5, q6, trunc # encoding: [0x1f,0xf8,0x81,0xb8]
 esp.vmulas.u16.xacc.ld.xp q2, a3, a5, q3, q3, 1
-// CHECK: esp.vmulas.u16.xacc.ld.xp	 q2, a3, a5, q3, q3, sat # encoding: [0x1f,0xa9,0x7a,0x6c]
+// CHECK: esp.vmulas.u16.xacc.ld.xp	 q2, a3, a5, q3, q3 # encoding: [0x1f,0xa9,0x7a,0x6c]
 esp.vmulas.u16.xacc.st.ip q3, a2, 32, q6, q6, 0
 // CHECK: esp.vmulas.u16.xacc.st.ip	 q3, a2, 32, q6, q6, trunc # encoding: [0x1f,0x6e,0x82,0xd9]
 esp.vmulas.u16.xacc.st.xp q4, a3, a4, q5, q0, 1
-// CHECK: esp.vmulas.u16.xacc.st.xp	 q4, a3, a4, q5, q0, sat # encoding: [0x1f,0xb1,0x6a,0xa1]
+// CHECK: esp.vmulas.u16.xacc.st.xp	 q4, a3, a4, q5, q0 # encoding: [0x1f,0xb1,0x6a,0xa1]
 esp.vmulas.u8.qacc q1, q2, 0
 // CHECK: esp.vmulas.u8.qacc	 q1, q2, trunc  # encoding: [0x1b,0x20,0xa4,0x2a]
 esp.vmulas.u8.qacc.ld.ip q3, a4, -96, q6, q0, 1
-// CHECK: esp.vmulas.u8.qacc.ld.ip	 q3, a4, -96, q6, q0, sat # encoding: [0x1f,0x6e,0x33,0xc2]
+// CHECK: esp.vmulas.u8.qacc.ld.ip	 q3, a4, -96, q6, q0 # encoding: [0x1f,0x6e,0x33,0xc2]
 esp.vmulas.u8.qacc.ld.xp q5, a1, a1, q0, q3, 1
-// CHECK: esp.vmulas.u8.qacc.ld.xp	 q5, a1, a1, q0, q3, sat # encoding: [0x1f,0xb5,0x31,0x0e]
+// CHECK: esp.vmulas.u8.qacc.ld.xp	 q5, a1, a1, q0, q3 # encoding: [0x1f,0xb5,0x31,0x0e]
 esp.vmulas.u8.qacc.st.ip q6, a1, 96, q2, q5, 0
 // CHECK: esp.vmulas.u8.qacc.st.ip	 q6, a1, 96, q2, q5, trunc # encoding: [0x1f,0xfa,0x09,0x57]
 esp.vmulas.u8.qacc.st.xp q6, a0, a1, q3, q0, 1
-// CHECK: esp.vmulas.u8.qacc.st.xp	 q6, a0, a1, q3, q0, sat # encoding: [0x1f,0x39,0x31,0x63]
+// CHECK: esp.vmulas.u8.qacc.st.xp	 q6, a0, a1, q3, q0 # encoding: [0x1f,0x39,0x31,0x63]
 esp.vmulas.u8.xacc q0, q0, 0
 // CHECK: esp.vmulas.u8.xacc	 q0, q0, trunc  # encoding: [0x1b,0x20,0xa0,0x02]
 esp.vmulas.u8.xacc.ld.ip q5, a1, 64, q4, q1, 0
@@ -102,13 +102,13 @@ esp.vmulas.u8.xacc.ld.ip q5, a1, 64, q4, q1, 0
 esp.vmulas.u8.xacc.ld.xp q4, a5, a0, q6, q5, 0
 // CHECK: esp.vmulas.u8.xacc.ld.xp	 q4, a5, a0, q6, q5, trunc # encoding: [0x1f,0xb0,0x23,0xd4]
 esp.vmulas.u8.xacc.st.ip q2, a1, 32, q3, q3, 1
-// CHECK: esp.vmulas.u8.xacc.st.ip	 q2, a1, 32, q3, q3, sat # encoding: [0x1f,0xea,0x21,0x6d]
+// CHECK: esp.vmulas.u8.xacc.st.ip	 q2, a1, 32, q3, q3 # encoding: [0x1f,0xea,0x21,0x6d]
 esp.vmulas.u8.xacc.st.xp q1, a4, a3, q4, q5, 1
-// CHECK: esp.vmulas.u8.xacc.st.xp	 q1, a4, a3, q4, q5, sat # encoding: [0x1f,0x25,0x53,0x95]
+// CHECK: esp.vmulas.u8.xacc.st.xp	 q1, a4, a3, q4, q5 # encoding: [0x1f,0x25,0x53,0x95]
 esp.vmulas.s16.qacc.ldbc.incp q4, a4, q4, q3, 0
 // CHECK: esp.vmulas.s16.qacc.ldbc.incp	 q4, a4, q4, q3, trunc # encoding: [0x9f,0x70,0xc3,0x8c]
 esp.vmulas.s8.qacc.ldbc.incp q2, a1, q4, q3, 1
-// CHECK: esp.vmulas.s8.qacc.ldbc.incp	 q2, a1, q4, q3, sat # encoding: [0x9f,0xe8,0x61,0x8c]
+// CHECK: esp.vmulas.s8.qacc.ldbc.incp	 q2, a1, q4, q3 # encoding: [0x9f,0xe8,0x61,0x8c]
 esp.vmulas.u16.qacc.ldbc.incp q6, a1, q6, q3, 0
 // CHECK: esp.vmulas.u16.qacc.ldbc.incp	 q6, a1, q6, q3, trunc # encoding: [0x9f,0xf8,0x81,0xcc]
 esp.vmulas.u8.qacc.ldbc.incp q6, a4, q4, q2, 0
@@ -116,39 +116,39 @@ esp.vmulas.u8.qacc.ldbc.incp q6, a4, q4, q2, 0
 esp.vsmulas.s16.qacc q1, q1, 1, 0
 // CHECK: esp.vsmulas.s16.qacc	 q1, q1, 1, trunc # encoding: [0x1b,0xa4,0xe0,0x26]
 esp.vsmulas.s16.qacc.ld.incp q3, a5, q3, q2, 11, 1
-// CHECK: esp.vsmulas.s16.qacc.ld.incp	 q3, a5, q3, q2, 11, sat # encoding: [0x9f,0xef,0xdb,0x6b]
+// CHECK: esp.vsmulas.s16.qacc.ld.incp	 q3, a5, q3, q2, 11 # encoding: [0x9f,0xef,0xdb,0x6b]
 esp.vsmulas.s8.qacc q6, q2, 1, 1
-// CHECK: esp.vsmulas.s8.qacc	 q6, q2, 1, sat # encoding: [0x1b,0xa4,0xb0,0xca]
+// CHECK: esp.vsmulas.s8.qacc	 q6, q2, 1      # encoding: [0x1b,0xa4,0xb0,0xca]
 esp.vsmulas.s8.qacc.ld.incp q3, a4, q1, q4, 5, 1
-// CHECK: esp.vsmulas.s8.qacc.ld.incp	 q3, a4, q1, q4, 5, sat # encoding: [0x9f,0x6f,0xab,0x31]
+// CHECK: esp.vsmulas.s8.qacc.ld.incp	 q3, a4, q1, q4, 5 # encoding: [0x9f,0x6f,0xab,0x31]
 esp.vsmulas.u16.qacc q6, q2, 9, 0
 // CHECK: esp.vsmulas.u16.qacc	 q6, q2, 9, trunc # encoding: [0x1b,0xa4,0xc4,0xca]
 esp.vsmulas.u16.qacc.ld.incp q4, a4, q4, q2, 9, 0
 // CHECK: esp.vsmulas.u16.qacc.ld.incp	 q4, a4, q4, q2, 9, trunc # encoding: [0x9f,0x73,0x4b,0x8a]
 esp.vsmulas.u8.qacc q0, q0, 2, 1
-// CHECK: esp.vsmulas.u8.qacc	 q0, q0, 2, sat # encoding: [0x1b,0x24,0x91,0x02]
+// CHECK: esp.vsmulas.u8.qacc	 q0, q0, 2      # encoding: [0x1b,0x24,0x91,0x02]
 esp.vsmulas.u8.qacc.ld.incp q2, a4, q6, q5, 7, 0
 // CHECK: esp.vsmulas.u8.qacc.ld.incp	 q2, a4, q6, q5, 7, trunc # encoding: [0x9f,0x6b,0x3b,0xd4]
 esp.cmul.s16 q1, q1, q1, 1, 0, 1
 // CHECK: esp.cmul.s16	 q1, q1, q1, 1, trunc, rup # encoding: [0x9f,0x84,0x84,0x27]
 esp.cmul.s16.ld.incp q5, a0, q3, q6, q4, 3, 1, 2
-// CHECK: esp.cmul.s16.ld.incp	 q5, a0, q3, q6, q4, 3, sat, raz # encoding: [0xfb,0x55,0xf1,0xd1]
+// CHECK: esp.cmul.s16.ld.incp	 q5, a0, q3, q6, q4, 3, raz # encoding: [0xfb,0x55,0xf1,0xd1]
 esp.cmul.s16.st.incp q4, a2, q1, q3, q3, 1, 1, 6
-// CHECK: esp.cmul.s16.st.incp	 q4, a2, q1, q3, q3, 1, sat, rne # encoding: [0xfb,0x50,0xda,0x6f]
+// CHECK: esp.cmul.s16.st.incp	 q4, a2, q1, q3, q3, 1, rne # encoding: [0xfb,0x50,0xda,0x6f]
 esp.cmul.s8 q1, q5, q5, 3, 1, 3
-// CHECK: esp.cmul.s8	 q1, q5, q5, 3, sat, rtz # encoding: [0x9f,0x8c,0x07,0xb7]
+// CHECK: esp.cmul.s8	 q1, q5, q5, 3, rtz     # encoding: [0x9f,0x8c,0x07,0xb7]
 esp.cmul.s8.ld.incp q6, a1, q6, q1, q2, 2, 0, 3
 // CHECK: esp.cmul.s8.ld.incp	 q6, a1, q6, q1, q2, 2, trunc, rtz # encoding: [0x7b,0xfb,0xa1,0x28]
 esp.cmul.s8.st.incp q4, a4, q0, q4, q6, 2, 0, 7
-// CHECK: esp.cmul.s8.st.incp	 q4, a4, q0, q4, q6, 2, trunc, dyn # encoding: [0x7b,0x70,0xab,0x9a]
+// CHECK: esp.cmul.s8.st.incp	 q4, a4, q0, q4, q6, 2, trunc # encoding: [0x7b,0x70,0xab,0x9a]
 esp.cmul.u16 q0, q1, q3, 2, 0, 0
 // CHECK: esp.cmul.u16	 q0, q1, q3, 2, trunc, rdn # encoding: [0x1f,0x00,0x81,0x2f]
 esp.cmul.u16.ld.incp q6, a2, q0, q1, q4, 3, 0, 0
 // CHECK: esp.cmul.u16.ld.incp	 q6, a2, q0, q1, q4, 3, trunc, rdn # encoding: [0x7b,0x18,0x32,0x31]
 esp.cmul.u16.st.incp q6, a5, q2, q3, q5, 2, 1, 7
-// CHECK: esp.cmul.u16.st.incp	 q6, a5, q2, q3, q5, 2, sat, dyn # encoding: [0x7b,0xf9,0x6b,0x77]
+// CHECK: esp.cmul.u16.st.incp	 q6, a5, q2, q3, q5, 2 # encoding: [0x7b,0xf9,0x6b,0x77]
 esp.cmul.u8 q2, q1, q2, 1, 1, 7
-// CHECK: esp.cmul.u8	 q2, q1, q2, 1, sat, dyn # encoding: [0x1f,0x9d,0x02,0x2b]
+// CHECK: esp.cmul.u8	 q2, q1, q2, 1          # encoding: [0x1f,0x9d,0x02,0x2b]
 esp.cmul.u8.ld.incp q5, a0, q3, q2, q0, 3, 0, 3
 // CHECK: esp.cmul.u8.ld.incp	 q5, a0, q3, q2, q0, 3, trunc, rtz # encoding: [0xfb,0x75,0x31,0x40]
 esp.cmul.u8.st.incp q1, a1, q2, q4, q5, 1, 0, 4
@@ -184,35 +184,35 @@ esp.vabs.32 q1, q1
 esp.vabs.8 q2, q6
 // CHECK: esp.vabs.8	 q2, q6                 # encoding: [0x1b,0x42,0x20,0x18]
 esp.vadd.s16 q2, q4, q5, 1
-// CHECK: esp.vadd.s16	 q2, q4, q5, sat        # encoding: [0x1b,0x23,0xa7,0x96]
+// CHECK: esp.vadd.s16	 q2, q4, q5             # encoding: [0x1b,0x23,0xa7,0x96]
 esp.vadd.s16.ld.incp q2, a3, q5, q2, q6, 1
-// CHECK: esp.vadd.s16.ld.incp	 q2, a3, q5, q2, q6, sat # encoding: [0x1f,0xc9,0xda,0x59]
+// CHECK: esp.vadd.s16.ld.incp	 q2, a3, q5, q2, q6 # encoding: [0x1f,0xc9,0xda,0x59]
 esp.vadd.s16.st.incp q0, a4, q3, q1, q4, 0
 // CHECK: esp.vadd.s16.st.incp	 q0, a4, q3, q1, q4, trunc # encoding: [0x1f,0x41,0xb3,0x33]
 esp.vadd.s32 q2, q5, q0, 0
 // CHECK: esp.vadd.s32	 q2, q5, q0, trunc      # encoding: [0x1b,0xa3,0xa4,0xa2]
 esp.vadd.s32.ld.incp q4, a3, q3, q0, q5, 1
-// CHECK: esp.vadd.s32.ld.incp	 q4, a3, q3, q0, q5, sat # encoding: [0x9f,0xd0,0x3a,0x15]
+// CHECK: esp.vadd.s32.ld.incp	 q4, a3, q3, q0, q5 # encoding: [0x9f,0xd0,0x3a,0x15]
 esp.vadd.s32.st.incp q4, a4, q2, q2, q1, 1
-// CHECK: esp.vadd.s32.st.incp	 q4, a4, q2, q2, q1, sat # encoding: [0x9f,0x50,0x2b,0x47]
+// CHECK: esp.vadd.s32.st.incp	 q4, a4, q2, q2, q1 # encoding: [0x9f,0x50,0x2b,0x47]
 esp.vadd.s8 q6, q4, q5, 0
 // CHECK: esp.vadd.s8	 q6, q4, q5, trunc      # encoding: [0x1b,0x23,0xe2,0x96]
 esp.vadd.s8.ld.incp q5, a3, q1, q1, q6, 1
-// CHECK: esp.vadd.s8.ld.incp	 q5, a3, q1, q1, q6, sat # encoding: [0x1f,0xd5,0x9a,0x38]
+// CHECK: esp.vadd.s8.ld.incp	 q5, a3, q1, q1, q6 # encoding: [0x1f,0xd5,0x9a,0x38]
 esp.vadd.s8.st.incp q5, a0, q1, q2, q5, 0
 // CHECK: esp.vadd.s8.st.incp	 q5, a0, q1, q2, q5, trunc # encoding: [0x1f,0x55,0x91,0x56]
 esp.vadd.u16 q1, q5, q0, 1
-// CHECK: esp.vadd.u16	 q1, q5, q0, sat        # encoding: [0x1b,0x23,0x95,0xa2]
+// CHECK: esp.vadd.u16	 q1, q5, q0             # encoding: [0x1b,0x23,0x95,0xa2]
 esp.vadd.u16.ld.incp q5, a1, q6, q1, q6, 0
 // CHECK: esp.vadd.u16.ld.incp	 q5, a1, q6, q1, q6, trunc # encoding: [0x1f,0xd5,0x61,0x39]
 esp.vadd.u16.st.incp q6, a3, q1, q3, q4, 1
-// CHECK: esp.vadd.u16.st.incp	 q6, a3, q1, q3, q4, sat # encoding: [0x1f,0xd9,0x1a,0x73]
+// CHECK: esp.vadd.u16.st.incp	 q6, a3, q1, q3, q4 # encoding: [0x1f,0xd9,0x1a,0x73]
 esp.vadd.u32 q1, q4, q2, 0
 // CHECK: esp.vadd.u32	 q1, q4, q2, trunc      # encoding: [0x1b,0xa3,0x90,0x8a]
 esp.vadd.u32.ld.incp q0, a0, q0, q0, q1, 1
-// CHECK: esp.vadd.u32.ld.incp	 q0, a0, q0, q0, q1, sat # encoding: [0x9f,0x40,0x09,0x04]
+// CHECK: esp.vadd.u32.ld.incp	 q0, a0, q0, q0, q1 # encoding: [0x9f,0x40,0x09,0x04]
 esp.vadd.u32.st.incp q0, a2, q6, q4, q0, 1
-// CHECK: esp.vadd.u32.st.incp	 q0, a2, q6, q4, q0, sat # encoding: [0x9f,0x40,0x6a,0x82]
+// CHECK: esp.vadd.u32.st.incp	 q0, a2, q6, q4, q0 # encoding: [0x9f,0x40,0x6a,0x82]
 esp.vadd.u8 q0, q6, q0, 0
 // CHECK: esp.vadd.u8	 q0, q6, q0, trunc      # encoding: [0x1b,0x23,0x80,0xc2]
 esp.vadd.u8.ld.incp q3, a2, q2, q3, q3, 0
@@ -296,7 +296,7 @@ esp.vmin.u8.st.incp q5, a5, q6, q3, q1
 esp.vmul.s16 q0, q2, q5, 0, 2
 // CHECK: esp.vmul.s16	 q0, q2, q5, trunc, raz # encoding: [0x1f,0x10,0xc6,0x57]
 esp.vmul.s16.ld.incp q5, a0, q6, q0, q5, 1, 5
-// CHECK: esp.vmul.s16.ld.incp	 q5, a0, q6, q0, q5, sat, rhtz # encoding: [0x5f,0x37,0xe9,0x15]
+// CHECK: esp.vmul.s16.ld.incp	 q5, a0, q6, q0, q5, rhtz # encoding: [0x5f,0x37,0xe9,0x15]
 esp.vmul.s16.s8xs8 q6, q5, q1, q4, 4
 // CHECK: esp.vmul.s16.s8xs8	 q6, q5, q1, q4, rhaz # encoding: [0x1f,0x03,0xd4,0x32]
 esp.vmul.s16.st.incp q4, a0, q1, q1, q3, 0, 1
@@ -306,33 +306,33 @@ esp.vmul.s32.s16xs16 q6, q0, q1, q1, 4
 esp.vmul.s8 q0, q1, q1, 0, 0
 // CHECK: esp.vmul.s8	 q0, q1, q1, trunc, rdn # encoding: [0x1f,0x00,0xc2,0x27]
 esp.vmul.s8.ld.incp q4, a5, q0, q3, q5, 1, 5
-// CHECK: esp.vmul.s8.ld.incp	 q4, a5, q0, q3, q5, sat, rhtz # encoding: [0x5f,0xb0,0xeb,0x74]
+// CHECK: esp.vmul.s8.ld.incp	 q4, a5, q0, q3, q5, rhtz # encoding: [0x5f,0xb0,0xeb,0x74]
 esp.vmul.s8.st.incp q3, a4, q2, q2, q6, 0, 7
-// CHECK: esp.vmul.s8.st.incp	 q3, a4, q2, q2, q6, trunc, dyn # encoding: [0x5f,0x2d,0xbb,0x5a]
+// CHECK: esp.vmul.s8.st.incp	 q3, a4, q2, q2, q6, trunc # encoding: [0x5f,0x2d,0xbb,0x5a]
 esp.vmul.u16 q6, q4, q5, 1, 5
-// CHECK: esp.vmul.u16	 q6, q4, q5, sat, rhtz  # encoding: [0x1f,0x8b,0xc5,0x97]
+// CHECK: esp.vmul.u16	 q6, q4, q5, rhtz       # encoding: [0x1f,0x8b,0xc5,0x97]
 esp.vmul.u16.ld.incp q0, a2, q2, q0, q5, 0, 6
 // CHECK: esp.vmul.u16.ld.incp	 q0, a2, q2, q0, q5, trunc, rne # encoding: [0x5f,0x21,0x32,0x15]
 esp.vmul.u16.st.incp q4, a1, q0, q1, q2, 1, 3
-// CHECK: esp.vmul.u16.st.incp	 q4, a1, q0, q1, q2, sat, rtz # encoding: [0x5f,0xb0,0x59,0x2b]
+// CHECK: esp.vmul.u16.st.incp	 q4, a1, q0, q1, q2, rtz # encoding: [0x5f,0xb0,0x59,0x2b]
 esp.vmul.u8 q1, q1, q2, 0, 4
 // CHECK: esp.vmul.u8	 q1, q1, q2, trunc, rhaz # encoding: [0x9f,0x80,0xc0,0x2b]
 esp.vmul.u8.ld.incp q3, a0, q1, q1, q1, 1, 7
-// CHECK: esp.vmul.u8.ld.incp	 q3, a0, q1, q1, q1, sat, dyn # encoding: [0xdf,0x2c,0x79,0x24]
+// CHECK: esp.vmul.u8.ld.incp	 q3, a0, q1, q1, q1 # encoding: [0xdf,0x2c,0x79,0x24]
 esp.vmul.u8.st.incp q5, a4, q3, q6, q6, 1, 6
-// CHECK: esp.vmul.u8.st.incp	 q5, a4, q3, q6, q6, sat, rne # encoding: [0xdf,0x35,0x73,0xda]
+// CHECK: esp.vmul.u8.st.incp	 q5, a4, q3, q6, q6, rne # encoding: [0xdf,0x35,0x73,0xda]
 esp.vprelu.s16 q2, q0, q4, a0, 1, 5
-// CHECK: esp.vprelu.s16	 q2, q0, q4, a0, sat, rhtz # encoding: [0x1f,0x15,0xf1,0x83]
+// CHECK: esp.vprelu.s16	 q2, q0, q4, a0, rhtz   # encoding: [0x1f,0x15,0xf1,0x83]
 esp.vprelu.s8 q1, q5, q4, a5, 1, 2
-// CHECK: esp.vprelu.s8	 q1, q5, q4, a5, sat, raz # encoding: [0x9f,0x88,0x73,0x97]
+// CHECK: esp.vprelu.s8	 q1, q5, q4, a5, raz    # encoding: [0x9f,0x88,0x73,0x97]
 esp.vrelu.s16 q1, a3, a0, 1, 2
-// CHECK: esp.vrelu.s16	 q1, a3, a0, sat, raz   # encoding: [0x1b,0x68,0x51,0xc7]
+// CHECK: esp.vrelu.s16	 q1, a3, a0, raz        # encoding: [0x1b,0x68,0x51,0xc7]
 esp.vrelu.s8 q0, a3, a0, 1, 1
-// CHECK: esp.vrelu.s8	 q0, a3, a0, sat, rup   # encoding: [0x1b,0x64,0x51,0xc1]
+// CHECK: esp.vrelu.s8	 q0, a3, a0, rup        # encoding: [0x1b,0x64,0x51,0xc1]
 esp.vsadds.s16 q2, q4, a2, 0
 // CHECK: esp.vsadds.s16	 q2, q4, a2, trunc      # encoding: [0x1b,0x21,0xa2,0x9a]
 esp.vsadds.s8 q5, q5, a4, 1
-// CHECK: esp.vsadds.s8	 q5, q5, a4, sat        # encoding: [0x1b,0x21,0xd3,0xae]
+// CHECK: esp.vsadds.s8	 q5, q5, a4             # encoding: [0x1b,0x21,0xd3,0xae]
 esp.vsadds.u16 q4, q6, a2, 0
 // CHECK: esp.vsadds.u16	 q4, q6, a2, trunc      # encoding: [0x1b,0x21,0xc2,0xd2]
 esp.vsadds.u8 q6, q4, a5, 0
@@ -358,7 +358,7 @@ esp.vssubs.u16 q3, q0, a3, 0
 esp.vssubs.u8 q5, q2, a4, 0
 // CHECK: esp.vssubs.u8	 q5, q2, a4, trunc      # encoding: [0x1b,0x25,0xd3,0x42]
 esp.vsub.s16 q2, q5, q1, 1
-// CHECK: esp.vsub.s16	 q2, q5, q1, sat        # encoding: [0x1b,0x27,0xa7,0xa6]
+// CHECK: esp.vsub.s16	 q2, q5, q1             # encoding: [0x1b,0x27,0xa7,0xa6]
 esp.vsub.s16.ld.incp q6, a5, q0, q5, q5, 0
 // CHECK: esp.vsub.s16.ld.incp	 q6, a5, q0, q5, q5, trunc # encoding: [0x9f,0xda,0x83,0xb5]
 esp.vsub.s16.st.incp q1, a0, q5, q0, q3, 0
@@ -370,11 +370,11 @@ esp.vsub.s32.ld.incp q6, a2, q1, q0, q6, 0
 esp.vsub.s32.st.incp q4, a0, q3, q5, q2, 0
 // CHECK: esp.vsub.s32.st.incp	 q4, a0, q3, q5, q2, trunc # encoding: [0x9f,0x51,0x31,0xab]
 esp.vsub.s8 q6, q3, q0, 1
-// CHECK: esp.vsub.s8	 q6, q3, q0, sat        # encoding: [0x1b,0x27,0xe3,0x62]
+// CHECK: esp.vsub.s8	 q6, q3, q0             # encoding: [0x1b,0x27,0xe3,0x62]
 esp.vsub.s8.ld.incp q6, a2, q6, q6, q5, 1
-// CHECK: esp.vsub.s8.ld.incp	 q6, a2, q6, q6, q5, sat # encoding: [0x9f,0x5a,0xea,0xd4]
+// CHECK: esp.vsub.s8.ld.incp	 q6, a2, q6, q6, q5 # encoding: [0x9f,0x5a,0xea,0xd4]
 esp.vsub.s8.st.incp q6, a5, q1, q5, q6, 1
-// CHECK: esp.vsub.s8.st.incp	 q6, a5, q1, q5, q6, sat # encoding: [0x9f,0xda,0x9b,0xba]
+// CHECK: esp.vsub.s8.st.incp	 q6, a5, q1, q5, q6 # encoding: [0x9f,0xda,0x9b,0xba]
 esp.vsub.u16 q3, q2, q5, 0
 // CHECK: esp.vsub.u16	 q3, q2, q5, trunc      # encoding: [0x1b,0x27,0xb4,0x56]
 esp.vsub.u16.ld.incp q1, a0, q5, q1, q5, 0
@@ -382,7 +382,7 @@ esp.vsub.u16.ld.incp q1, a0, q5, q1, q5, 0
 esp.vsub.u16.st.incp q3, a1, q1, q2, q4, 0
 // CHECK: esp.vsub.u16.st.incp	 q3, a1, q1, q2, q4, trunc # encoding: [0x9f,0xce,0x11,0x53]
 esp.vsub.u32 q6, q0, q1, 1
-// CHECK: esp.vsub.u32	 q6, q0, q1, sat        # encoding: [0x1b,0xa7,0xe2,0x06]
+// CHECK: esp.vsub.u32	 q6, q0, q1             # encoding: [0x1b,0xa7,0xe2,0x06]
 esp.vsub.u32.ld.incp q4, a2, q0, q3, q4, 0
 // CHECK: esp.vsub.u32.ld.incp	 q4, a2, q0, q3, q4, trunc # encoding: [0x9f,0x51,0x02,0x70]
 esp.vsub.u32.st.incp q3, a5, q3, q5, q0, 0
@@ -390,9 +390,9 @@ esp.vsub.u32.st.incp q3, a5, q3, q5, q0, 0
 esp.vsub.u8 q6, q6, q1, 0
 // CHECK: esp.vsub.u8	 q6, q6, q1, trunc      # encoding: [0x1b,0x27,0xe0,0xc6]
 esp.vsub.u8.ld.incp q6, a4, q0, q2, q2, 1
-// CHECK: esp.vsub.u8.ld.incp	 q6, a4, q0, q2, q2, sat # encoding: [0x9f,0x5a,0x0b,0x48]
+// CHECK: esp.vsub.u8.ld.incp	 q6, a4, q0, q2, q2 # encoding: [0x9f,0x5a,0x0b,0x48]
 esp.vsub.u8.st.incp q5, a5, q4, q3, q4, 1
-// CHECK: esp.vsub.u8.st.incp	 q5, a5, q4, q3, q4, sat # encoding: [0x9f,0xd6,0x4b,0x72]
+// CHECK: esp.vsub.u8.st.incp	 q5, a5, q4, q3, q4 # encoding: [0x9f,0xd6,0x4b,0x72]
 esp.addx2 a3, a4, a4
 // CHECK: esp.addx2	 a3, a4, a4             # encoding: [0xb3,0x06,0xe7,0x04]
 esp.addx4 a5, a3, a4
@@ -532,17 +532,17 @@ esp.zero.xacc
 esp.fft.ams.s16.ld.incp q1, a2, q1, q6, q1, q6, q4, 1, 0
 // CHECK: esp.fft.ams.s16.ld.incp	 q1, a2, q1, q6, q1, q6, q4, 1, trunc # encoding: [0xdb,0x04,0xea,0x32]
 esp.fft.ams.s16.ld.incp.uaup q4, a4, q1, q3, q0, q6, q2, 0, 1
-// CHECK: esp.fft.ams.s16.ld.incp.uaup	 q4, a4, q1, q3, q0, q6, q2, 0, sat # encoding: [0xbb,0x50,0x3b,0x0a]
+// CHECK: esp.fft.ams.s16.ld.incp.uaup	 q4, a4, q1, q3, q0, q6, q2, 0 # encoding: [0xbb,0x50,0x3b,0x0a]
 esp.fft.ams.s16.ld.r32.decp q0, a4, q2, q4, q1, q1, q4, 1, 1
-// CHECK: esp.fft.ams.s16.ld.r32.decp	 q0, a4, q2, q4, q1, q1, q4, 1, sat # encoding: [0x3b,0x61,0xc3,0x31]
+// CHECK: esp.fft.ams.s16.ld.r32.decp	 q0, a4, q2, q4, q1, q1, q4, 1 # encoding: [0x3b,0x61,0xc3,0x31]
 esp.fft.ams.s16.st.incp q0, q3, a5, a2, q1, q0, q5, 0, 1
-// CHECK: esp.fft.ams.s16.st.incp	 q0, q3, a5, a2, q1, q0, q5, 0, sat # encoding: [0xbf,0x21,0x72,0x34]
+// CHECK: esp.fft.ams.s16.st.incp	 q0, q3, a5, a2, q1, q0, q5, 0 # encoding: [0xbf,0x21,0x72,0x34]
 esp.fft.bitrev q3, a3
 // CHECK: esp.fft.bitrev	 q3, a3                 # encoding: [0x1b,0xc0,0x32,0x00]
 esp.fft.cmul.s16.ld.xp q0, a0, a1, q2, q6, q0, 4, 1
-// CHECK: esp.fft.cmul.s16.ld.xp	 q0, a0, a1, q2, q6, q0, 4, sat # encoding: [0x5b,0x21,0x31,0x1b]
+// CHECK: esp.fft.cmul.s16.ld.xp	 q0, a0, a1, q2, q6, q0, 4 # encoding: [0x5b,0x21,0x31,0x1b]
 esp.fft.cmul.s16.st.xp q6, q6, q0, a3, a2, 6, 3, 3, 1
-// CHECK: esp.fft.cmul.s16.st.xp	 q6, q6, q0, a3, a2, 6, 3, 3, sat # encoding: [0x7f,0xe3,0x4a,0xdb]
+// CHECK: esp.fft.cmul.s16.st.xp	 q6, q6, q0, a3, a2, 6, 3, 3 # encoding: [0x7f,0xe3,0x4a,0xdb]
 esp.fft.r2bf.s16 q1, q1, q3, q6, 0, 0
 // CHECK: esp.fft.r2bf.s16	 q1, q1, q3, q6, 0, trunc # encoding: [0x9f,0x00,0x10,0x7a]
 esp.fft.r2bf.s16.st.incp q2, q6, q0, a3, 3, 0
@@ -664,7 +664,7 @@ esp.src.q.qup q5, q6, q0
 esp.srci.2q q3, q4, 10
 // CHECK: esp.srci.2q	 q3, q4, 10             # encoding: [0x1b,0x24,0x48,0xcc]
 esp.srcmb.s16.q.qacc q4, q0, 1, 4
-// CHECK: esp.srcmb.s16.q.qacc	 q4, q0, sat, rhaz # encoding: [0x1b,0x32,0x44,0x9c]
+// CHECK: esp.srcmb.s16.q.qacc	 q4, q0, rhaz   # encoding: [0x1b,0x32,0x44,0x9c]
 esp.srcmb.s16.qacc q4, a3, 0, 2
 // CHECK: esp.srcmb.s16.qacc	 q4, a3, trunc, raz # encoding: [0x9f,0x90,0xa2,0xcb]
 esp.srcmb.s8.q.qacc q0, q6, 0, 2
@@ -672,11 +672,11 @@ esp.srcmb.s8.q.qacc q0, q6, 0, 2
 esp.srcmb.s8.qacc q0, a2, 0, 6
 // CHECK: esp.srcmb.s8.qacc	 q0, a2, trunc, rne # encoding: [0x9f,0x00,0xa2,0x5b]
 esp.srcmb.u16.q.qacc q4, q4, 1, 4
-// CHECK: esp.srcmb.u16.q.qacc	 q4, q4, sat, rhaz # encoding: [0x1b,0x32,0x4c,0x94]
+// CHECK: esp.srcmb.u16.q.qacc	 q4, q4, rhaz   # encoding: [0x1b,0x32,0x4c,0x94]
 esp.srcmb.u16.qacc q1, a0, 0, 2
 // CHECK: esp.srcmb.u16.qacc	 q1, a0, trunc, raz # encoding: [0x9f,0x04,0xa1,0x8b]
 esp.srcmb.u8.q.qacc q1, q6, 1, 2
-// CHECK: esp.srcmb.u8.q.qacc	 q1, q6, sat, raz # encoding: [0x1b,0x26,0x2c,0x86]
+// CHECK: esp.srcmb.u8.q.qacc	 q1, q6, raz    # encoding: [0x1b,0x26,0x2c,0x86]
 esp.srcmb.u8.qacc q2, a5, 0, 5
 // CHECK: esp.srcmb.u8.qacc	 q2, a5, trunc, rhtz # encoding: [0x9f,0x88,0xa3,0x17]
 esp.srcq.128.st.incp q0, q3, a0
@@ -684,19 +684,19 @@ esp.srcq.128.st.incp q0, q3, a0
 esp.srcxxp.2q q6, q3, a0, a3
 // CHECK: esp.srcxxp.2q	 q6, q3, a0, a3         # encoding: [0x1b,0x64,0x51,0x1b]
 esp.srs.s.xacc a2, a1, 1, 0
-// CHECK: esp.srs.s.xacc	 a2, a1, sat, rdn       # encoding: [0x1b,0xa2,0x91,0x98]
+// CHECK: esp.srs.s.xacc	 a2, a1, rdn            # encoding: [0x1b,0xa2,0x91,0x98]
 esp.srs.u.xacc a1, a5, 1, 4
-// CHECK: esp.srs.u.xacc	 a1, a5, sat, rhaz      # encoding: [0x9b,0xa1,0x93,0x8c]
+// CHECK: esp.srs.u.xacc	 a1, a5, rhaz           # encoding: [0x9b,0xa1,0x93,0x8c]
 esp.vsl.s32 q1, q6, 0
 // CHECK: esp.vsl.s32	 q1, q6, trunc          # encoding: [0x1b,0x24,0x04,0x9a]
 esp.vsl.u32 q0, q4, 1
-// CHECK: esp.vsl.u32	 q0, q4, sat            # encoding: [0x1b,0x20,0x04,0x91]
+// CHECK: esp.vsl.u32	 q0, q4                 # encoding: [0x1b,0x20,0x04,0x91]
 esp.vsld.16 q1, q2, q3, 1, 2
-// CHECK: esp.vsld.16	 q1, q2, q3, sat, raz   # encoding: [0x1b,0x65,0x64,0xcb]
+// CHECK: esp.vsld.16	 q1, q2, q3, raz        # encoding: [0x1b,0x65,0x64,0xcb]
 esp.vsld.32 q3, q3, q5, 0, 0
 // CHECK: esp.vsld.32	 q3, q3, q5, trunc, rdn # encoding: [0x1b,0x6d,0x09,0xcd]
 esp.vsld.8 q3, q2, q4, 1, 7
-// CHECK: esp.vsld.8	 q3, q2, q4, sat, dyn   # encoding: [0x1b,0x6d,0x3e,0xc8]
+// CHECK: esp.vsld.8	 q3, q2, q4             # encoding: [0x1b,0x6d,0x3e,0xc8]
 esp.vsr.s32 q2, q2, 6
 // CHECK: esp.vsr.s32	 q2, q2, rne            # encoding: [0x1b,0x28,0x54,0x8b]
 esp.vsr.u32 q1, q1, 4
@@ -704,9 +704,9 @@ esp.vsr.u32 q1, q1, 4
 esp.vsrd.16 q3, q2, q0, 0, 1
 // CHECK: esp.vsrd.16	 q3, q2, q0, trunc, rup # encoding: [0x1b,0x6d,0xc2,0xc8]
 esp.vsrd.32 q0, q1, q5, 1, 6
-// CHECK: esp.vsrd.32	 q0, q1, q5, sat, rne   # encoding: [0x1b,0x61,0xf9,0xc5]
+// CHECK: esp.vsrd.32	 q0, q1, q5, rne        # encoding: [0x1b,0x61,0xf9,0xc5]
 esp.vsrd.8 q4, q1, q0, 1, 6
-// CHECK: esp.vsrd.8	 q4, q1, q0, sat, rne   # encoding: [0x1b,0x71,0xb4,0xc4]
+// CHECK: esp.vsrd.8	 q4, q1, q0, rne        # encoding: [0x1b,0x71,0xb4,0xc4]
 esp.st.s.xacc.ip a2, 752
 // CHECK: esp.st.s.xacc.ip	 a2, 752                # encoding: [0x9f,0x19,0x72,0x14]
 esp.st.u.xacc.ip a3, -40

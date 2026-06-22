@@ -17256,7 +17256,7 @@ def ESP_ST_U_XACC_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset
 include "RISCVInstrInfoESPVPatterns.td"
 
 def ESP_VCMULAS_S16_QACC_H_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$sat),
-                   "esp.vcmulas.s16.qacc.h\t $qx, $qy, $sat", []> 
+                   "esp.vcmulas.s16.qacc.h\t $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -17297,11 +17297,11 @@ def ESP_VCMULAS_S16_QACC_H_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$
 
 let usesCustomInserter = 1 in 
 def ESP_VCMULAS_S16_QACC_H_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat),
-				"!esp_vcmulas_s16_qacc_h_2p2_p $qx, $qy, $sat",
+				"!esp_vcmulas_s16_qacc_h_2p2_p $qx, $qy$sat",
 			[(int_riscv_esp_vcmulas_s16_qacc_h_2p2 timm:$qx, timm:$qy, timm:$sat)]>;
 
 def ESP_VCMULAS_S16_QACC_H_LD_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616),
-                   "esp.vcmulas.s16.qacc.h.ld.ip\t $qu, $rs1, $off1616, $qx, $qy, $sat", []> 
+                   "esp.vcmulas.s16.qacc.h.ld.ip\t $qu, $rs1, $off1616, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -17341,11 +17341,11 @@ def ESP_VCMULAS_S16_QACC_H_LD_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r),
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VCMULAS_S16_QACC_H_LD_IP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616, imm8:$qu),
-				"!esp_vcmulas_s16_qacc_h_ld_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy, $sat",
+				"!esp_vcmulas_s16_qacc_h_ld_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vcmulas_s16_qacc_h_ld_ip_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$off1616, timm:$qu))]>;
 
 def ESP_VCMULAS_S16_QACC_H_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat),
-                   "esp.vcmulas.s16.qacc.h.ld.xp\t $qu, $rs1, $rs2, $qx, $qy, $sat", []> 
+                   "esp.vcmulas.s16.qacc.h.ld.xp\t $qu, $rs1, $rs2, $qx, $qy$sat", []> 
 {
   bits<5> rs2;
   bits<3> qx;
@@ -17386,11 +17386,11 @@ def ESP_VCMULAS_S16_QACC_H_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r),
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VCMULAS_S16_QACC_H_LD_XP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, imm8:$qu),
-				"!esp_vcmulas_s16_qacc_h_ld_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy, $sat",
+				"!esp_vcmulas_s16_qacc_h_ld_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vcmulas_s16_qacc_h_ld_xp_2p2 GPRPIE:$rs2, timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$qu))]>;
 
 def ESP_VCMULAS_S16_QACC_L_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$sat),
-                   "esp.vcmulas.s16.qacc.l\t $qx, $qy, $sat", []> 
+                   "esp.vcmulas.s16.qacc.l\t $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -17431,11 +17431,11 @@ def ESP_VCMULAS_S16_QACC_L_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$
 
 let usesCustomInserter = 1 in 
 def ESP_VCMULAS_S16_QACC_L_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat),
-				"!esp_vcmulas_s16_qacc_l_2p2_p $qx, $qy, $sat",
+				"!esp_vcmulas_s16_qacc_l_2p2_p $qx, $qy$sat",
 			[(int_riscv_esp_vcmulas_s16_qacc_l_2p2 timm:$qx, timm:$qy, timm:$sat)]>;
 
 def ESP_VCMULAS_S16_QACC_L_LD_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616),
-                   "esp.vcmulas.s16.qacc.l.ld.ip\t $qu, $rs1, $off1616, $qx, $qy, $sat", []> 
+                   "esp.vcmulas.s16.qacc.l.ld.ip\t $qu, $rs1, $off1616, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -17475,11 +17475,11 @@ def ESP_VCMULAS_S16_QACC_L_LD_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r),
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VCMULAS_S16_QACC_L_LD_IP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616, imm8:$qu),
-				"!esp_vcmulas_s16_qacc_l_ld_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy, $sat",
+				"!esp_vcmulas_s16_qacc_l_ld_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vcmulas_s16_qacc_l_ld_ip_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$off1616, timm:$qu))]>;
 
 def ESP_VCMULAS_S16_QACC_L_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat),
-                   "esp.vcmulas.s16.qacc.l.ld.xp\t $qu, $rs1, $rs2, $qx, $qy, $sat", []> 
+                   "esp.vcmulas.s16.qacc.l.ld.xp\t $qu, $rs1, $rs2, $qx, $qy$sat", []> 
 {
   bits<5> rs2;
   bits<3> qx;
@@ -17520,11 +17520,11 @@ def ESP_VCMULAS_S16_QACC_L_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r),
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VCMULAS_S16_QACC_L_LD_XP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, imm8:$qu),
-				"!esp_vcmulas_s16_qacc_l_ld_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy, $sat",
+				"!esp_vcmulas_s16_qacc_l_ld_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vcmulas_s16_qacc_l_ld_xp_2p2 GPRPIE:$rs2, timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$qu))]>;
 
 def ESP_VCMULAS_S8_QACC_H_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$sat),
-                   "esp.vcmulas.s8.qacc.h\t $qx, $qy, $sat", []> 
+                   "esp.vcmulas.s8.qacc.h\t $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -17565,11 +17565,11 @@ def ESP_VCMULAS_S8_QACC_H_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$s
 
 let usesCustomInserter = 1 in 
 def ESP_VCMULAS_S8_QACC_H_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat),
-				"!esp_vcmulas_s8_qacc_h_2p2_p $qx, $qy, $sat",
+				"!esp_vcmulas_s8_qacc_h_2p2_p $qx, $qy$sat",
 			[(int_riscv_esp_vcmulas_s8_qacc_h_2p2 timm:$qx, timm:$qy, timm:$sat)]>;
 
 def ESP_VCMULAS_S8_QACC_H_LD_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616),
-                   "esp.vcmulas.s8.qacc.h.ld.ip\t $qu, $rs1, $off1616, $qx, $qy, $sat", []> 
+                   "esp.vcmulas.s8.qacc.h.ld.ip\t $qu, $rs1, $off1616, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -17609,11 +17609,11 @@ def ESP_VCMULAS_S8_QACC_H_LD_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), 
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VCMULAS_S8_QACC_H_LD_IP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616, imm8:$qu),
-				"!esp_vcmulas_s8_qacc_h_ld_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy, $sat",
+				"!esp_vcmulas_s8_qacc_h_ld_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vcmulas_s8_qacc_h_ld_ip_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$off1616, timm:$qu))]>;
 
 def ESP_VCMULAS_S8_QACC_H_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat),
-                   "esp.vcmulas.s8.qacc.h.ld.xp\t $qu, $rs1, $rs2, $qx, $qy, $sat", []> 
+                   "esp.vcmulas.s8.qacc.h.ld.xp\t $qu, $rs1, $rs2, $qx, $qy$sat", []> 
 {
   bits<5> rs2;
   bits<3> qx;
@@ -17654,11 +17654,11 @@ def ESP_VCMULAS_S8_QACC_H_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), 
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VCMULAS_S8_QACC_H_LD_XP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, imm8:$qu),
-				"!esp_vcmulas_s8_qacc_h_ld_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy, $sat",
+				"!esp_vcmulas_s8_qacc_h_ld_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vcmulas_s8_qacc_h_ld_xp_2p2 GPRPIE:$rs2, timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$qu))]>;
 
 def ESP_VCMULAS_S8_QACC_L_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$sat),
-                   "esp.vcmulas.s8.qacc.l\t $qx, $qy, $sat", []> 
+                   "esp.vcmulas.s8.qacc.l\t $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -17699,11 +17699,11 @@ def ESP_VCMULAS_S8_QACC_L_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$s
 
 let usesCustomInserter = 1 in 
 def ESP_VCMULAS_S8_QACC_L_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat),
-				"!esp_vcmulas_s8_qacc_l_2p2_p $qx, $qy, $sat",
+				"!esp_vcmulas_s8_qacc_l_2p2_p $qx, $qy$sat",
 			[(int_riscv_esp_vcmulas_s8_qacc_l_2p2 timm:$qx, timm:$qy, timm:$sat)]>;
 
 def ESP_VCMULAS_S8_QACC_L_LD_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616),
-                   "esp.vcmulas.s8.qacc.l.ld.ip\t $qu, $rs1, $off1616, $qx, $qy, $sat", []> 
+                   "esp.vcmulas.s8.qacc.l.ld.ip\t $qu, $rs1, $off1616, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -17743,11 +17743,11 @@ def ESP_VCMULAS_S8_QACC_L_LD_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), 
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VCMULAS_S8_QACC_L_LD_IP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616, imm8:$qu),
-				"!esp_vcmulas_s8_qacc_l_ld_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy, $sat",
+				"!esp_vcmulas_s8_qacc_l_ld_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vcmulas_s8_qacc_l_ld_ip_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$off1616, timm:$qu))]>;
 
 def ESP_VCMULAS_S8_QACC_L_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat),
-                   "esp.vcmulas.s8.qacc.l.ld.xp\t $qu, $rs1, $rs2, $qx, $qy, $sat", []> 
+                   "esp.vcmulas.s8.qacc.l.ld.xp\t $qu, $rs1, $rs2, $qx, $qy$sat", []> 
 {
   bits<5> rs2;
   bits<3> qx;
@@ -17788,11 +17788,11 @@ def ESP_VCMULAS_S8_QACC_L_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), 
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VCMULAS_S8_QACC_L_LD_XP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, imm8:$qu),
-				"!esp_vcmulas_s8_qacc_l_ld_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy, $sat",
+				"!esp_vcmulas_s8_qacc_l_ld_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vcmulas_s8_qacc_l_ld_xp_2p2 GPRPIE:$rs2, timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$qu))]>;
 
 def ESP_VMULAS_S16_QACC_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$sat),
-                   "esp.vmulas.s16.qacc\t $qx, $qy, $sat", []> 
+                   "esp.vmulas.s16.qacc\t $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -17833,11 +17833,11 @@ def ESP_VMULAS_S16_QACC_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$sat
 
 let usesCustomInserter = 1 in 
 def ESP_VMULAS_S16_QACC_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat),
-				"!esp_vmulas_s16_qacc_2p2_p $qx, $qy, $sat",
+				"!esp_vmulas_s16_qacc_2p2_p $qx, $qy$sat",
 			[(int_riscv_esp_vmulas_s16_qacc_2p2 timm:$qx, timm:$qy, timm:$sat)]>;
 
 def ESP_VMULAS_S16_QACC_LD_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616),
-                   "esp.vmulas.s16.qacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy, $sat", []> 
+                   "esp.vmulas.s16.qacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -17878,11 +17878,11 @@ def ESP_VMULAS_S16_QACC_LD_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (i
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S16_QACC_LD_IP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616, imm8:$qu),
-				"!esp_vmulas_s16_qacc_ld_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy, $sat",
+				"!esp_vmulas_s16_qacc_ld_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_s16_qacc_ld_ip_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$off1616, timm:$qu))]>;
 
 def ESP_VMULAS_S16_QACC_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat),
-                   "esp.vmulas.s16.qacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy, $sat", []> 
+                   "esp.vmulas.s16.qacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy$sat", []> 
 {
   bits<5> rs2;
   bits<3> qx;
@@ -17923,11 +17923,11 @@ def ESP_VMULAS_S16_QACC_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (i
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S16_QACC_LD_XP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, imm8:$qu),
-				"!esp_vmulas_s16_qacc_ld_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy, $sat",
+				"!esp_vmulas_s16_qacc_ld_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_s16_qacc_ld_xp_2p2 GPRPIE:$rs2, timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$qu))]>;
 
 def ESP_VMULAS_S16_QACC_ST_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616),
-                   "esp.vmulas.s16.qacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy, $sat", []> 
+                   "esp.vmulas.s16.qacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -17968,11 +17968,11 @@ def ESP_VMULAS_S16_QACC_ST_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR:$q
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S16_QACC_ST_IP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616),
-				"!esp_vmulas_s16_qacc_st_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy, $sat",
+				"!esp_vmulas_s16_qacc_st_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_s16_qacc_st_ip_2p2 timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat, timm:$off1616))]>;
 
 def ESP_VMULAS_S16_QACC_ST_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat),
-                   "esp.vmulas.s16.qacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy, $sat", []> 
+                   "esp.vmulas.s16.qacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy$sat", []> 
 {
   bits<5> rs2;
   bits<3> qx;
@@ -18013,11 +18013,11 @@ def ESP_VMULAS_S16_QACC_ST_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPI
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S16_QACC_ST_XP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat),
-				"!esp_vmulas_s16_qacc_st_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy, $sat",
+				"!esp_vmulas_s16_qacc_st_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_s16_qacc_st_xp_2p2 GPRPIE:$rs2, timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat))]>;
 
 def ESP_VMULAS_S16_XACC_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$sat),
-                   "esp.vmulas.s16.xacc\t $qx, $qy, $sat", []> 
+                   "esp.vmulas.s16.xacc\t $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -18058,11 +18058,11 @@ def ESP_VMULAS_S16_XACC_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$sat
 
 let usesCustomInserter = 1 in 
 def ESP_VMULAS_S16_XACC_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat),
-				"!esp_vmulas_s16_xacc_2p2_p $qx, $qy, $sat",
+				"!esp_vmulas_s16_xacc_2p2_p $qx, $qy$sat",
 			[(int_riscv_esp_vmulas_s16_xacc_2p2 timm:$qx, timm:$qy, timm:$sat)]>;
 
 def ESP_VMULAS_S16_XACC_LD_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616),
-                   "esp.vmulas.s16.xacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy, $sat", []> 
+                   "esp.vmulas.s16.xacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -18103,11 +18103,11 @@ def ESP_VMULAS_S16_XACC_LD_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (i
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S16_XACC_LD_IP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616, imm8:$qu),
-				"!esp_vmulas_s16_xacc_ld_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy, $sat",
+				"!esp_vmulas_s16_xacc_ld_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_s16_xacc_ld_ip_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$off1616, timm:$qu))]>;
 
 def ESP_VMULAS_S16_XACC_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat),
-                   "esp.vmulas.s16.xacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy, $sat", []> 
+                   "esp.vmulas.s16.xacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy$sat", []> 
 {
   bits<5> rs2;
   bits<3> qx;
@@ -18148,11 +18148,11 @@ def ESP_VMULAS_S16_XACC_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (i
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S16_XACC_LD_XP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, imm8:$qu),
-				"!esp_vmulas_s16_xacc_ld_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy, $sat",
+				"!esp_vmulas_s16_xacc_ld_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_s16_xacc_ld_xp_2p2 GPRPIE:$rs2, timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$qu))]>;
 
 def ESP_VMULAS_S16_XACC_ST_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616),
-                   "esp.vmulas.s16.xacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy, $sat", []> 
+                   "esp.vmulas.s16.xacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -18193,11 +18193,11 @@ def ESP_VMULAS_S16_XACC_ST_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR:$q
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S16_XACC_ST_IP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616),
-				"!esp_vmulas_s16_xacc_st_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy, $sat",
+				"!esp_vmulas_s16_xacc_st_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_s16_xacc_st_ip_2p2 timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat, timm:$off1616))]>;
 
 def ESP_VMULAS_S16_XACC_ST_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat),
-                   "esp.vmulas.s16.xacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy, $sat", []> 
+                   "esp.vmulas.s16.xacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy$sat", []> 
 {
   bits<5> rs2;
   bits<3> qx;
@@ -18238,11 +18238,11 @@ def ESP_VMULAS_S16_XACC_ST_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPI
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S16_XACC_ST_XP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat),
-				"!esp_vmulas_s16_xacc_st_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy, $sat",
+				"!esp_vmulas_s16_xacc_st_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_s16_xacc_st_xp_2p2 GPRPIE:$rs2, timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat))]>;
 
 def ESP_VMULAS_S8_QACC_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$sat),
-                   "esp.vmulas.s8.qacc\t $qx, $qy, $sat", []> 
+                   "esp.vmulas.s8.qacc\t $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -18283,11 +18283,11 @@ def ESP_VMULAS_S8_QACC_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$sat)
 
 let usesCustomInserter = 1 in 
 def ESP_VMULAS_S8_QACC_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat),
-				"!esp_vmulas_s8_qacc_2p2_p $qx, $qy, $sat",
+				"!esp_vmulas_s8_qacc_2p2_p $qx, $qy$sat",
 			[(int_riscv_esp_vmulas_s8_qacc_2p2 timm:$qx, timm:$qy, timm:$sat)]>;
 
 def ESP_VMULAS_S8_QACC_LD_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616),
-                   "esp.vmulas.s8.qacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy, $sat", []> 
+                   "esp.vmulas.s8.qacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -18328,11 +18328,11 @@ def ESP_VMULAS_S8_QACC_LD_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (in
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S8_QACC_LD_IP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616, imm8:$qu),
-				"!esp_vmulas_s8_qacc_ld_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy, $sat",
+				"!esp_vmulas_s8_qacc_ld_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_s8_qacc_ld_ip_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$off1616, timm:$qu))]>;
 
 def ESP_VMULAS_S8_QACC_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat),
-                   "esp.vmulas.s8.qacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy, $sat", []> 
+                   "esp.vmulas.s8.qacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy$sat", []> 
 {
   bits<5> rs2;
   bits<3> qx;
@@ -18373,11 +18373,11 @@ def ESP_VMULAS_S8_QACC_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (in
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S8_QACC_LD_XP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, imm8:$qu),
-				"!esp_vmulas_s8_qacc_ld_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy, $sat",
+				"!esp_vmulas_s8_qacc_ld_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_s8_qacc_ld_xp_2p2 GPRPIE:$rs2, timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$qu))]>;
 
 def ESP_VMULAS_S8_QACC_ST_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616),
-                   "esp.vmulas.s8.qacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy, $sat", []> 
+                   "esp.vmulas.s8.qacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -18418,11 +18418,11 @@ def ESP_VMULAS_S8_QACC_ST_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR:$qx
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S8_QACC_ST_IP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616),
-				"!esp_vmulas_s8_qacc_st_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy, $sat",
+				"!esp_vmulas_s8_qacc_st_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_s8_qacc_st_ip_2p2 timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat, timm:$off1616))]>;
 
 def ESP_VMULAS_S8_QACC_ST_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat),
-                   "esp.vmulas.s8.qacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy, $sat", []> 
+                   "esp.vmulas.s8.qacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy$sat", []> 
 {
   bits<5> rs2;
   bits<3> qx;
@@ -18463,11 +18463,11 @@ def ESP_VMULAS_S8_QACC_ST_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S8_QACC_ST_XP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat),
-				"!esp_vmulas_s8_qacc_st_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy, $sat",
+				"!esp_vmulas_s8_qacc_st_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_s8_qacc_st_xp_2p2 GPRPIE:$rs2, timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat))]>;
 
 def ESP_VMULAS_S8_XACC_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$sat),
-                   "esp.vmulas.s8.xacc\t $qx, $qy, $sat", []> 
+                   "esp.vmulas.s8.xacc\t $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -18508,11 +18508,11 @@ def ESP_VMULAS_S8_XACC_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$sat)
 
 let usesCustomInserter = 1 in 
 def ESP_VMULAS_S8_XACC_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat),
-				"!esp_vmulas_s8_xacc_2p2_p $qx, $qy, $sat",
+				"!esp_vmulas_s8_xacc_2p2_p $qx, $qy$sat",
 			[(int_riscv_esp_vmulas_s8_xacc_2p2 timm:$qx, timm:$qy, timm:$sat)]>;
 
 def ESP_VMULAS_S8_XACC_LD_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616),
-                   "esp.vmulas.s8.xacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy, $sat", []> 
+                   "esp.vmulas.s8.xacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -18553,11 +18553,11 @@ def ESP_VMULAS_S8_XACC_LD_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (in
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S8_XACC_LD_IP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616, imm8:$qu),
-				"!esp_vmulas_s8_xacc_ld_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy, $sat",
+				"!esp_vmulas_s8_xacc_ld_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_s8_xacc_ld_ip_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$off1616, timm:$qu))]>;
 
 def ESP_VMULAS_S8_XACC_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat),
-                   "esp.vmulas.s8.xacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy, $sat", []> 
+                   "esp.vmulas.s8.xacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy$sat", []> 
 {
   bits<5> rs2;
   bits<3> qx;
@@ -18598,11 +18598,11 @@ def ESP_VMULAS_S8_XACC_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (in
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S8_XACC_LD_XP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, imm8:$qu),
-				"!esp_vmulas_s8_xacc_ld_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy, $sat",
+				"!esp_vmulas_s8_xacc_ld_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_s8_xacc_ld_xp_2p2 GPRPIE:$rs2, timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$qu))]>;
 
 def ESP_VMULAS_S8_XACC_ST_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616),
-                   "esp.vmulas.s8.xacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy, $sat", []> 
+                   "esp.vmulas.s8.xacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -18643,11 +18643,11 @@ def ESP_VMULAS_S8_XACC_ST_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR:$qx
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S8_XACC_ST_IP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616),
-				"!esp_vmulas_s8_xacc_st_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy, $sat",
+				"!esp_vmulas_s8_xacc_st_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_s8_xacc_st_ip_2p2 timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat, timm:$off1616))]>;
 
 def ESP_VMULAS_S8_XACC_ST_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat),
-                   "esp.vmulas.s8.xacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy, $sat", []> 
+                   "esp.vmulas.s8.xacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy$sat", []> 
 {
   bits<5> rs2;
   bits<3> qx;
@@ -18688,11 +18688,11 @@ def ESP_VMULAS_S8_XACC_ST_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S8_XACC_ST_XP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat),
-				"!esp_vmulas_s8_xacc_st_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy, $sat",
+				"!esp_vmulas_s8_xacc_st_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_s8_xacc_st_xp_2p2 GPRPIE:$rs2, timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat))]>;
 
 def ESP_VMULAS_U16_QACC_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$sat),
-                   "esp.vmulas.u16.qacc\t $qx, $qy, $sat", []> 
+                   "esp.vmulas.u16.qacc\t $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -18733,11 +18733,11 @@ def ESP_VMULAS_U16_QACC_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$sat
 
 let usesCustomInserter = 1 in 
 def ESP_VMULAS_U16_QACC_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat),
-				"!esp_vmulas_u16_qacc_2p2_p $qx, $qy, $sat",
+				"!esp_vmulas_u16_qacc_2p2_p $qx, $qy$sat",
 			[(int_riscv_esp_vmulas_u16_qacc_2p2 timm:$qx, timm:$qy, timm:$sat)]>;
 
 def ESP_VMULAS_U16_QACC_LD_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616),
-                   "esp.vmulas.u16.qacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy, $sat", []> 
+                   "esp.vmulas.u16.qacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -18778,11 +18778,11 @@ def ESP_VMULAS_U16_QACC_LD_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (i
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U16_QACC_LD_IP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616, imm8:$qu),
-				"!esp_vmulas_u16_qacc_ld_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy, $sat",
+				"!esp_vmulas_u16_qacc_ld_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_u16_qacc_ld_ip_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$off1616, timm:$qu))]>;
 
 def ESP_VMULAS_U16_QACC_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat),
-                   "esp.vmulas.u16.qacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy, $sat", []> 
+                   "esp.vmulas.u16.qacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy$sat", []> 
 {
   bits<5> rs2;
   bits<3> qx;
@@ -18823,11 +18823,11 @@ def ESP_VMULAS_U16_QACC_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (i
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U16_QACC_LD_XP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, imm8:$qu),
-				"!esp_vmulas_u16_qacc_ld_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy, $sat",
+				"!esp_vmulas_u16_qacc_ld_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_u16_qacc_ld_xp_2p2 GPRPIE:$rs2, timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$qu))]>;
 
 def ESP_VMULAS_U16_QACC_ST_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616),
-                   "esp.vmulas.u16.qacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy, $sat", []> 
+                   "esp.vmulas.u16.qacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -18868,11 +18868,11 @@ def ESP_VMULAS_U16_QACC_ST_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR:$q
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U16_QACC_ST_IP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616),
-				"!esp_vmulas_u16_qacc_st_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy, $sat",
+				"!esp_vmulas_u16_qacc_st_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_u16_qacc_st_ip_2p2 timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat, timm:$off1616))]>;
 
 def ESP_VMULAS_U16_QACC_ST_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat),
-                   "esp.vmulas.u16.qacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy, $sat", []> 
+                   "esp.vmulas.u16.qacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy$sat", []> 
 {
   bits<5> rs2;
   bits<3> qx;
@@ -18913,11 +18913,11 @@ def ESP_VMULAS_U16_QACC_ST_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPI
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U16_QACC_ST_XP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat),
-				"!esp_vmulas_u16_qacc_st_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy, $sat",
+				"!esp_vmulas_u16_qacc_st_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_u16_qacc_st_xp_2p2 GPRPIE:$rs2, timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat))]>;
 
 def ESP_VMULAS_U16_XACC_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$sat),
-                   "esp.vmulas.u16.xacc\t $qx, $qy, $sat", []> 
+                   "esp.vmulas.u16.xacc\t $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -18958,11 +18958,11 @@ def ESP_VMULAS_U16_XACC_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$sat
 
 let usesCustomInserter = 1 in 
 def ESP_VMULAS_U16_XACC_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat),
-				"!esp_vmulas_u16_xacc_2p2_p $qx, $qy, $sat",
+				"!esp_vmulas_u16_xacc_2p2_p $qx, $qy$sat",
 			[(int_riscv_esp_vmulas_u16_xacc_2p2 timm:$qx, timm:$qy, timm:$sat)]>;
 
 def ESP_VMULAS_U16_XACC_LD_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616),
-                   "esp.vmulas.u16.xacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy, $sat", []> 
+                   "esp.vmulas.u16.xacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -19003,11 +19003,11 @@ def ESP_VMULAS_U16_XACC_LD_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (i
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U16_XACC_LD_IP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616, imm8:$qu),
-				"!esp_vmulas_u16_xacc_ld_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy, $sat",
+				"!esp_vmulas_u16_xacc_ld_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_u16_xacc_ld_ip_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$off1616, timm:$qu))]>;
 
 def ESP_VMULAS_U16_XACC_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat),
-                   "esp.vmulas.u16.xacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy, $sat", []> 
+                   "esp.vmulas.u16.xacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy$sat", []> 
 {
   bits<5> rs2;
   bits<3> qx;
@@ -19048,11 +19048,11 @@ def ESP_VMULAS_U16_XACC_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (i
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U16_XACC_LD_XP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, imm8:$qu),
-				"!esp_vmulas_u16_xacc_ld_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy, $sat",
+				"!esp_vmulas_u16_xacc_ld_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_u16_xacc_ld_xp_2p2 GPRPIE:$rs2, timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$qu))]>;
 
 def ESP_VMULAS_U16_XACC_ST_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616),
-                   "esp.vmulas.u16.xacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy, $sat", []> 
+                   "esp.vmulas.u16.xacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -19093,11 +19093,11 @@ def ESP_VMULAS_U16_XACC_ST_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR:$q
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U16_XACC_ST_IP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616),
-				"!esp_vmulas_u16_xacc_st_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy, $sat",
+				"!esp_vmulas_u16_xacc_st_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_u16_xacc_st_ip_2p2 timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat, timm:$off1616))]>;
 
 def ESP_VMULAS_U16_XACC_ST_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat),
-                   "esp.vmulas.u16.xacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy, $sat", []> 
+                   "esp.vmulas.u16.xacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy$sat", []> 
 {
   bits<5> rs2;
   bits<3> qx;
@@ -19138,11 +19138,11 @@ def ESP_VMULAS_U16_XACC_ST_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPI
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U16_XACC_ST_XP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat),
-				"!esp_vmulas_u16_xacc_st_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy, $sat",
+				"!esp_vmulas_u16_xacc_st_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_u16_xacc_st_xp_2p2 GPRPIE:$rs2, timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat))]>;
 
 def ESP_VMULAS_U8_QACC_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$sat),
-                   "esp.vmulas.u8.qacc\t $qx, $qy, $sat", []> 
+                   "esp.vmulas.u8.qacc\t $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -19183,11 +19183,11 @@ def ESP_VMULAS_U8_QACC_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$sat)
 
 let usesCustomInserter = 1 in 
 def ESP_VMULAS_U8_QACC_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat),
-				"!esp_vmulas_u8_qacc_2p2_p $qx, $qy, $sat",
+				"!esp_vmulas_u8_qacc_2p2_p $qx, $qy$sat",
 			[(int_riscv_esp_vmulas_u8_qacc_2p2 timm:$qx, timm:$qy, timm:$sat)]>;
 
 def ESP_VMULAS_U8_QACC_LD_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616),
-                   "esp.vmulas.u8.qacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy, $sat", []> 
+                   "esp.vmulas.u8.qacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -19228,11 +19228,11 @@ def ESP_VMULAS_U8_QACC_LD_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (in
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U8_QACC_LD_IP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616, imm8:$qu),
-				"!esp_vmulas_u8_qacc_ld_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy, $sat",
+				"!esp_vmulas_u8_qacc_ld_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_u8_qacc_ld_ip_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$off1616, timm:$qu))]>;
 
 def ESP_VMULAS_U8_QACC_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat),
-                   "esp.vmulas.u8.qacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy, $sat", []> 
+                   "esp.vmulas.u8.qacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy$sat", []> 
 {
   bits<5> rs2;
   bits<3> qx;
@@ -19273,11 +19273,11 @@ def ESP_VMULAS_U8_QACC_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (in
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U8_QACC_LD_XP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, imm8:$qu),
-				"!esp_vmulas_u8_qacc_ld_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy, $sat",
+				"!esp_vmulas_u8_qacc_ld_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_u8_qacc_ld_xp_2p2 GPRPIE:$rs2, timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$qu))]>;
 
 def ESP_VMULAS_U8_QACC_ST_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616),
-                   "esp.vmulas.u8.qacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy, $sat", []> 
+                   "esp.vmulas.u8.qacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -19318,11 +19318,11 @@ def ESP_VMULAS_U8_QACC_ST_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR:$qx
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U8_QACC_ST_IP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616),
-				"!esp_vmulas_u8_qacc_st_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy, $sat",
+				"!esp_vmulas_u8_qacc_st_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_u8_qacc_st_ip_2p2 timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat, timm:$off1616))]>;
 
 def ESP_VMULAS_U8_QACC_ST_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat),
-                   "esp.vmulas.u8.qacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy, $sat", []> 
+                   "esp.vmulas.u8.qacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy$sat", []> 
 {
   bits<5> rs2;
   bits<3> qx;
@@ -19363,11 +19363,11 @@ def ESP_VMULAS_U8_QACC_ST_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U8_QACC_ST_XP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat),
-				"!esp_vmulas_u8_qacc_st_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy, $sat",
+				"!esp_vmulas_u8_qacc_st_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_u8_qacc_st_xp_2p2 GPRPIE:$rs2, timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat))]>;
 
 def ESP_VMULAS_U8_XACC_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$sat),
-                   "esp.vmulas.u8.xacc\t $qx, $qy, $sat", []> 
+                   "esp.vmulas.u8.xacc\t $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -19408,11 +19408,11 @@ def ESP_VMULAS_U8_XACC_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$sat)
 
 let usesCustomInserter = 1 in 
 def ESP_VMULAS_U8_XACC_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat),
-				"!esp_vmulas_u8_xacc_2p2_p $qx, $qy, $sat",
+				"!esp_vmulas_u8_xacc_2p2_p $qx, $qy$sat",
 			[(int_riscv_esp_vmulas_u8_xacc_2p2 timm:$qx, timm:$qy, timm:$sat)]>;
 
 def ESP_VMULAS_U8_XACC_LD_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616),
-                   "esp.vmulas.u8.xacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy, $sat", []> 
+                   "esp.vmulas.u8.xacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -19453,11 +19453,11 @@ def ESP_VMULAS_U8_XACC_LD_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (in
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U8_XACC_LD_IP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616, imm8:$qu),
-				"!esp_vmulas_u8_xacc_ld_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy, $sat",
+				"!esp_vmulas_u8_xacc_ld_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_u8_xacc_ld_ip_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$off1616, timm:$qu))]>;
 
 def ESP_VMULAS_U8_XACC_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat),
-                   "esp.vmulas.u8.xacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy, $sat", []> 
+                   "esp.vmulas.u8.xacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy$sat", []> 
 {
   bits<5> rs2;
   bits<3> qx;
@@ -19498,11 +19498,11 @@ def ESP_VMULAS_U8_XACC_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (in
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U8_XACC_LD_XP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, imm8:$qu),
-				"!esp_vmulas_u8_xacc_ld_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy, $sat",
+				"!esp_vmulas_u8_xacc_ld_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_u8_xacc_ld_xp_2p2 GPRPIE:$rs2, timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$qu))]>;
 
 def ESP_VMULAS_U8_XACC_ST_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616),
-                   "esp.vmulas.u8.xacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy, $sat", []> 
+                   "esp.vmulas.u8.xacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -19543,11 +19543,11 @@ def ESP_VMULAS_U8_XACC_ST_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR:$qx
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U8_XACC_ST_IP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat, offset_16_16:$off1616),
-				"!esp_vmulas_u8_xacc_st_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy, $sat",
+				"!esp_vmulas_u8_xacc_st_ip_2p2_p $qu, $rs1, $off1616, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_u8_xacc_st_ip_2p2 timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat, timm:$off1616))]>;
 
 def ESP_VMULAS_U8_XACC_ST_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat),
-                   "esp.vmulas.u8.xacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy, $sat", []> 
+                   "esp.vmulas.u8.xacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy$sat", []> 
 {
   bits<5> rs2;
   bits<3> qx;
@@ -19588,11 +19588,11 @@ def ESP_VMULAS_U8_XACC_ST_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U8_XACC_ST_XP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat),
-				"!esp_vmulas_u8_xacc_st_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy, $sat",
+				"!esp_vmulas_u8_xacc_st_xp_2p2_p $qu, $rs1, $rs2, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_u8_xacc_st_xp_2p2 GPRPIE:$rs2, timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat))]>;
 
 def ESP_VMULAS_S16_QACC_LDBC_INCP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat),
-                   "esp.vmulas.s16.qacc.ldbc.incp\t $qu, $rs1, $qx, $qy, $sat", []> 
+                   "esp.vmulas.s16.qacc.ldbc.incp\t $qu, $rs1, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -19634,11 +19634,11 @@ def ESP_VMULAS_S16_QACC_LDBC_INCP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r)
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S16_QACC_LDBC_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, imm8:$qu),
-				"!esp_vmulas_s16_qacc_ldbc_incp_2p2_p $qu, $rs1, $qx, $qy, $sat",
+				"!esp_vmulas_s16_qacc_ldbc_incp_2p2_p $qu, $rs1, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_s16_qacc_ldbc_incp_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$qu))]>;
 
 def ESP_VMULAS_S8_QACC_LDBC_INCP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat),
-                   "esp.vmulas.s8.qacc.ldbc.incp\t $qu, $rs1, $qx, $qy, $sat", []> 
+                   "esp.vmulas.s8.qacc.ldbc.incp\t $qu, $rs1, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -19680,11 +19680,11 @@ def ESP_VMULAS_S8_QACC_LDBC_INCP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r),
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S8_QACC_LDBC_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, imm8:$qu),
-				"!esp_vmulas_s8_qacc_ldbc_incp_2p2_p $qu, $rs1, $qx, $qy, $sat",
+				"!esp_vmulas_s8_qacc_ldbc_incp_2p2_p $qu, $rs1, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_s8_qacc_ldbc_incp_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$qu))]>;
 
 def ESP_VMULAS_U16_QACC_LDBC_INCP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat),
-                   "esp.vmulas.u16.qacc.ldbc.incp\t $qu, $rs1, $qx, $qy, $sat", []> 
+                   "esp.vmulas.u16.qacc.ldbc.incp\t $qu, $rs1, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -19726,11 +19726,11 @@ def ESP_VMULAS_U16_QACC_LDBC_INCP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r)
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U16_QACC_LDBC_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, imm8:$qu),
-				"!esp_vmulas_u16_qacc_ldbc_incp_2p2_p $qu, $rs1, $qx, $qy, $sat",
+				"!esp_vmulas_u16_qacc_ldbc_incp_2p2_p $qu, $rs1, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_u16_qacc_ldbc_incp_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$qu))]>;
 
 def ESP_VMULAS_U8_QACC_LDBC_INCP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat),
-                   "esp.vmulas.u8.qacc.ldbc.incp\t $qu, $rs1, $qx, $qy, $sat", []> 
+                   "esp.vmulas.u8.qacc.ldbc.incp\t $qu, $rs1, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -19772,11 +19772,11 @@ def ESP_VMULAS_U8_QACC_LDBC_INCP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r),
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U8_QACC_LDBC_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, imm8:$qu),
-				"!esp_vmulas_u8_qacc_ldbc_incp_2p2_p $qu, $rs1, $qx, $qy, $sat",
+				"!esp_vmulas_u8_qacc_ldbc_incp_2p2_p $qu, $rs1, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_u8_qacc_ldbc_incp_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$qu))]>;
 
 def ESP_VSMULAS_S16_QACC_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$sat, select_16:$sel16),
-                   "esp.vsmulas.s16.qacc\t $qx, $qy, $sel16, $sat", []> 
+                   "esp.vsmulas.s16.qacc\t $qx, $qy, $sel16$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -19815,11 +19815,11 @@ def ESP_VSMULAS_S16_QACC_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$sa
 
 let usesCustomInserter = 1 in 
 def ESP_VSMULAS_S16_QACC_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat, select_16:$sel16),
-				"!esp_vsmulas_s16_qacc_2p2_p $qx, $qy, $sel16, $sat",
+				"!esp_vsmulas_s16_qacc_2p2_p $qx, $qy, $sel16$sat",
 			[(int_riscv_esp_vsmulas_s16_qacc_2p2 timm:$qx, timm:$qy, timm:$sat, timm:$sel16)]>;
 
 def ESP_VSMULAS_S16_QACC_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat, select_16:$sel16),
-                   "esp.vsmulas.s16.qacc.ld.incp\t $qu, $rs1, $qx, $qy, $sel16, $sat", []> 
+                   "esp.vsmulas.s16.qacc.ld.incp\t $qu, $rs1, $qx, $qy, $sel16$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -19859,11 +19859,11 @@ def ESP_VSMULAS_S16_QACC_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r),
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VSMULAS_S16_QACC_LD_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, select_16:$sel16, imm8:$qu),
-				"!esp_vsmulas_s16_qacc_ld_incp_2p2_p $qu, $rs1, $qx, $qy, $sel16, $sat",
+				"!esp_vsmulas_s16_qacc_ld_incp_2p2_p $qu, $rs1, $qx, $qy, $sel16$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vsmulas_s16_qacc_ld_incp_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$sel16, timm:$qu))]>;
 
 def ESP_VSMULAS_S8_QACC_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$sat, select_16:$sel16),
-                   "esp.vsmulas.s8.qacc\t $qx, $qy, $sel16, $sat", []> 
+                   "esp.vsmulas.s8.qacc\t $qx, $qy, $sel16$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -19902,11 +19902,11 @@ def ESP_VSMULAS_S8_QACC_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$sat
 
 let usesCustomInserter = 1 in 
 def ESP_VSMULAS_S8_QACC_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat, select_16:$sel16),
-				"!esp_vsmulas_s8_qacc_2p2_p $qx, $qy, $sel16, $sat",
+				"!esp_vsmulas_s8_qacc_2p2_p $qx, $qy, $sel16$sat",
 			[(int_riscv_esp_vsmulas_s8_qacc_2p2 timm:$qx, timm:$qy, timm:$sat, timm:$sel16)]>;
 
 def ESP_VSMULAS_S8_QACC_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat, select_16:$sel16),
-                   "esp.vsmulas.s8.qacc.ld.incp\t $qu, $rs1, $qx, $qy, $sel16, $sat", []> 
+                   "esp.vsmulas.s8.qacc.ld.incp\t $qu, $rs1, $qx, $qy, $sel16$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -19946,11 +19946,11 @@ def ESP_VSMULAS_S8_QACC_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), 
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VSMULAS_S8_QACC_LD_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, select_16:$sel16, imm8:$qu),
-				"!esp_vsmulas_s8_qacc_ld_incp_2p2_p $qu, $rs1, $qx, $qy, $sel16, $sat",
+				"!esp_vsmulas_s8_qacc_ld_incp_2p2_p $qu, $rs1, $qx, $qy, $sel16$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vsmulas_s8_qacc_ld_incp_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$sel16, timm:$qu))]>;
 
 def ESP_VSMULAS_U16_QACC_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$sat, select_16:$sel16),
-                   "esp.vsmulas.u16.qacc\t $qx, $qy, $sel16, $sat", []> 
+                   "esp.vsmulas.u16.qacc\t $qx, $qy, $sel16$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -19989,11 +19989,11 @@ def ESP_VSMULAS_U16_QACC_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$sa
 
 let usesCustomInserter = 1 in 
 def ESP_VSMULAS_U16_QACC_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat, select_16:$sel16),
-				"!esp_vsmulas_u16_qacc_2p2_p $qx, $qy, $sel16, $sat",
+				"!esp_vsmulas_u16_qacc_2p2_p $qx, $qy, $sel16$sat",
 			[(int_riscv_esp_vsmulas_u16_qacc_2p2 timm:$qx, timm:$qy, timm:$sat, timm:$sel16)]>;
 
 def ESP_VSMULAS_U16_QACC_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat, select_16:$sel16),
-                   "esp.vsmulas.u16.qacc.ld.incp\t $qu, $rs1, $qx, $qy, $sel16, $sat", []> 
+                   "esp.vsmulas.u16.qacc.ld.incp\t $qu, $rs1, $qx, $qy, $sel16$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -20033,11 +20033,11 @@ def ESP_VSMULAS_U16_QACC_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r),
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VSMULAS_U16_QACC_LD_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, select_16:$sel16, imm8:$qu),
-				"!esp_vsmulas_u16_qacc_ld_incp_2p2_p $qu, $rs1, $qx, $qy, $sel16, $sat",
+				"!esp_vsmulas_u16_qacc_ld_incp_2p2_p $qu, $rs1, $qx, $qy, $sel16$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vsmulas_u16_qacc_ld_incp_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$sel16, timm:$qu))]>;
 
 def ESP_VSMULAS_U8_QACC_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$sat, select_16:$sel16),
-                   "esp.vsmulas.u8.qacc\t $qx, $qy, $sel16, $sat", []> 
+                   "esp.vsmulas.u8.qacc\t $qx, $qy, $sel16$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -20076,11 +20076,11 @@ def ESP_VSMULAS_U8_QACC_2P2: Esp32V2P2Inst<(outs), (ins QR:$qx, QR:$qy, sat:$sat
 
 let usesCustomInserter = 1 in 
 def ESP_VSMULAS_U8_QACC_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat, select_16:$sel16),
-				"!esp_vsmulas_u8_qacc_2p2_p $qx, $qy, $sel16, $sat",
+				"!esp_vsmulas_u8_qacc_2p2_p $qx, $qy, $sel16$sat",
 			[(int_riscv_esp_vsmulas_u8_qacc_2p2 timm:$qx, timm:$qy, timm:$sat, timm:$sel16)]>;
 
 def ESP_VSMULAS_U8_QACC_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat, select_16:$sel16),
-                   "esp.vsmulas.u8.qacc.ld.incp\t $qu, $rs1, $qx, $qy, $sel16, $sat", []> 
+                   "esp.vsmulas.u8.qacc.ld.incp\t $qu, $rs1, $qx, $qy, $sel16$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -20120,11 +20120,11 @@ def ESP_VSMULAS_U8_QACC_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), 
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VSMULAS_U8_QACC_LD_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, select_16:$sel16, imm8:$qu),
-				"!esp_vsmulas_u8_qacc_ld_incp_2p2_p $qu, $rs1, $qx, $qy, $sel16, $sat",
+				"!esp_vsmulas_u8_qacc_ld_incp_2p2_p $qu, $rs1, $qx, $qy, $sel16$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vsmulas_u8_qacc_ld_incp_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$sel16, timm:$qu))]>;
 
 def ESP_CMUL_S16_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy, sat:$sat, select_4:$sel4, rm:$rm),
-                   "esp.cmul.s16\t $qz, $qx, $qy, $sel4, $sat, $rm", []> 
+                   "esp.cmul.s16\t $qz, $qx, $qy, $sel4$sat$rm", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -20163,11 +20163,11 @@ def ESP_CMUL_S16_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy, sat:$sat
 
 let usesCustomInserter = 1 in 
 def ESP_CMUL_S16_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat, select_4:$sel4, rm:$rm, imm8:$qz),
-				"!esp_cmul_s16_2p2_p $qz, $qx, $qy, $sel4, $sat, $rm",
+				"!esp_cmul_s16_2p2_p $qz, $qx, $qy, $sel4$sat$rm",
 			[(int_riscv_esp_cmul_s16_2p2 timm:$qx, timm:$qy, timm:$sat, timm:$sel4, timm:$rm, timm:$qz)]>;
 
 def ESP_CMUL_S16_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat, select_4:$sel4, rm:$rm),
-                   "esp.cmul.s16.ld.incp\t $qu, $rs1, $qz, $qx, $qy, $sel4, $sat, $rm", []> 
+                   "esp.cmul.s16.ld.incp\t $qu, $rs1, $qz, $qx, $qy, $sel4$sat$rm", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -20208,11 +20208,11 @@ def ESP_CMUL_S16_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, QR:$qu, GPRPIE:$rs1r),
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_CMUL_S16_LD_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, select_4:$sel4, rm:$rm, imm8:$qz, imm8:$qu),
-				"!esp_cmul_s16_ld_incp_2p2_p $qu, $rs1, $qz, $qx, $qy, $sel4, $sat, $rm",
+				"!esp_cmul_s16_ld_incp_2p2_p $qu, $rs1, $qz, $qx, $qy, $sel4$sat$rm",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_cmul_s16_ld_incp_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$sel4, timm:$rm, timm:$qz, timm:$qu))]>;
 
 def ESP_CMUL_S16_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat, select_4:$sel4, rm:$rm),
-                   "esp.cmul.s16.st.incp\t $qu, $rs1, $qz, $qx, $qy, $sel4, $sat, $rm", []> 
+                   "esp.cmul.s16.st.incp\t $qu, $rs1, $qz, $qx, $qy, $sel4$sat$rm", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -20253,11 +20253,11 @@ def ESP_CMUL_S16_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, GPRPIE:$rs1r), (ins QR
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_CMUL_S16_ST_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat, select_4:$sel4, rm:$rm, imm8:$qz),
-				"!esp_cmul_s16_st_incp_2p2_p $qu, $rs1, $qz, $qx, $qy, $sel4, $sat, $rm",
+				"!esp_cmul_s16_st_incp_2p2_p $qu, $rs1, $qz, $qx, $qy, $sel4$sat$rm",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_cmul_s16_st_incp_2p2 timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat, timm:$sel4, timm:$rm, timm:$qz))]>;
 
 def ESP_CMUL_S8_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy, sat:$sat, select_4:$sel4, rm:$rm),
-                   "esp.cmul.s8\t $qz, $qx, $qy, $sel4, $sat, $rm", []> 
+                   "esp.cmul.s8\t $qz, $qx, $qy, $sel4$sat$rm", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -20296,11 +20296,11 @@ def ESP_CMUL_S8_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy, sat:$sat,
 
 let usesCustomInserter = 1 in 
 def ESP_CMUL_S8_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat, select_4:$sel4, rm:$rm, imm8:$qz),
-				"!esp_cmul_s8_2p2_p $qz, $qx, $qy, $sel4, $sat, $rm",
+				"!esp_cmul_s8_2p2_p $qz, $qx, $qy, $sel4$sat$rm",
 			[(int_riscv_esp_cmul_s8_2p2 timm:$qx, timm:$qy, timm:$sat, timm:$sel4, timm:$rm, timm:$qz)]>;
 
 def ESP_CMUL_S8_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat, select_4:$sel4, rm:$rm),
-                   "esp.cmul.s8.ld.incp\t $qu, $rs1, $qz, $qx, $qy, $sel4, $sat, $rm", []> 
+                   "esp.cmul.s8.ld.incp\t $qu, $rs1, $qz, $qx, $qy, $sel4$sat$rm", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -20341,11 +20341,11 @@ def ESP_CMUL_S8_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, QR:$qu, GPRPIE:$rs1r), 
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_CMUL_S8_LD_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, select_4:$sel4, rm:$rm, imm8:$qz, imm8:$qu),
-				"!esp_cmul_s8_ld_incp_2p2_p $qu, $rs1, $qz, $qx, $qy, $sel4, $sat, $rm",
+				"!esp_cmul_s8_ld_incp_2p2_p $qu, $rs1, $qz, $qx, $qy, $sel4$sat$rm",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_cmul_s8_ld_incp_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$sel4, timm:$rm, timm:$qz, timm:$qu))]>;
 
 def ESP_CMUL_S8_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat, select_4:$sel4, rm:$rm),
-                   "esp.cmul.s8.st.incp\t $qu, $rs1, $qz, $qx, $qy, $sel4, $sat, $rm", []> 
+                   "esp.cmul.s8.st.incp\t $qu, $rs1, $qz, $qx, $qy, $sel4$sat$rm", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -20386,11 +20386,11 @@ def ESP_CMUL_S8_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, GPRPIE:$rs1r), (ins QR:
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_CMUL_S8_ST_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat, select_4:$sel4, rm:$rm, imm8:$qz),
-				"!esp_cmul_s8_st_incp_2p2_p $qu, $rs1, $qz, $qx, $qy, $sel4, $sat, $rm",
+				"!esp_cmul_s8_st_incp_2p2_p $qu, $rs1, $qz, $qx, $qy, $sel4$sat$rm",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_cmul_s8_st_incp_2p2 timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat, timm:$sel4, timm:$rm, timm:$qz))]>;
 
 def ESP_CMUL_U16_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy, sat:$sat, select_4:$sel4, rm:$rm),
-                   "esp.cmul.u16\t $qz, $qx, $qy, $sel4, $sat, $rm", []> 
+                   "esp.cmul.u16\t $qz, $qx, $qy, $sel4$sat$rm", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -20429,11 +20429,11 @@ def ESP_CMUL_U16_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy, sat:$sat
 
 let usesCustomInserter = 1 in 
 def ESP_CMUL_U16_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat, select_4:$sel4, rm:$rm, imm8:$qz),
-				"!esp_cmul_u16_2p2_p $qz, $qx, $qy, $sel4, $sat, $rm",
+				"!esp_cmul_u16_2p2_p $qz, $qx, $qy, $sel4$sat$rm",
 			[(int_riscv_esp_cmul_u16_2p2 timm:$qx, timm:$qy, timm:$sat, timm:$sel4, timm:$rm, timm:$qz)]>;
 
 def ESP_CMUL_U16_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat, select_4:$sel4, rm:$rm),
-                   "esp.cmul.u16.ld.incp\t $qu, $rs1, $qz, $qx, $qy, $sel4, $sat, $rm", []> 
+                   "esp.cmul.u16.ld.incp\t $qu, $rs1, $qz, $qx, $qy, $sel4$sat$rm", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -20474,11 +20474,11 @@ def ESP_CMUL_U16_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, QR:$qu, GPRPIE:$rs1r),
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_CMUL_U16_LD_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, select_4:$sel4, rm:$rm, imm8:$qz, imm8:$qu),
-				"!esp_cmul_u16_ld_incp_2p2_p $qu, $rs1, $qz, $qx, $qy, $sel4, $sat, $rm",
+				"!esp_cmul_u16_ld_incp_2p2_p $qu, $rs1, $qz, $qx, $qy, $sel4$sat$rm",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_cmul_u16_ld_incp_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$sel4, timm:$rm, timm:$qz, timm:$qu))]>;
 
 def ESP_CMUL_U16_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat, select_4:$sel4, rm:$rm),
-                   "esp.cmul.u16.st.incp\t $qu, $rs1, $qz, $qx, $qy, $sel4, $sat, $rm", []> 
+                   "esp.cmul.u16.st.incp\t $qu, $rs1, $qz, $qx, $qy, $sel4$sat$rm", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -20519,11 +20519,11 @@ def ESP_CMUL_U16_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, GPRPIE:$rs1r), (ins QR
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_CMUL_U16_ST_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat, select_4:$sel4, rm:$rm, imm8:$qz),
-				"!esp_cmul_u16_st_incp_2p2_p $qu, $rs1, $qz, $qx, $qy, $sel4, $sat, $rm",
+				"!esp_cmul_u16_st_incp_2p2_p $qu, $rs1, $qz, $qx, $qy, $sel4$sat$rm",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_cmul_u16_st_incp_2p2 timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat, timm:$sel4, timm:$rm, timm:$qz))]>;
 
 def ESP_CMUL_U8_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy, sat:$sat, select_4:$sel4, rm:$rm),
-                   "esp.cmul.u8\t $qz, $qx, $qy, $sel4, $sat, $rm", []> 
+                   "esp.cmul.u8\t $qz, $qx, $qy, $sel4$sat$rm", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -20562,11 +20562,11 @@ def ESP_CMUL_U8_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy, sat:$sat,
 
 let usesCustomInserter = 1 in 
 def ESP_CMUL_U8_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat, select_4:$sel4, rm:$rm, imm8:$qz),
-				"!esp_cmul_u8_2p2_p $qz, $qx, $qy, $sel4, $sat, $rm",
+				"!esp_cmul_u8_2p2_p $qz, $qx, $qy, $sel4$sat$rm",
 			[(int_riscv_esp_cmul_u8_2p2 timm:$qx, timm:$qy, timm:$sat, timm:$sel4, timm:$rm, timm:$qz)]>;
 
 def ESP_CMUL_U8_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat, select_4:$sel4, rm:$rm),
-                   "esp.cmul.u8.ld.incp\t $qu, $rs1, $qz, $qx, $qy, $sel4, $sat, $rm", []> 
+                   "esp.cmul.u8.ld.incp\t $qu, $rs1, $qz, $qx, $qy, $sel4$sat$rm", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -20607,11 +20607,11 @@ def ESP_CMUL_U8_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, QR:$qu, GPRPIE:$rs1r), 
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_CMUL_U8_LD_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, select_4:$sel4, rm:$rm, imm8:$qz, imm8:$qu),
-				"!esp_cmul_u8_ld_incp_2p2_p $qu, $rs1, $qz, $qx, $qy, $sel4, $sat, $rm",
+				"!esp_cmul_u8_ld_incp_2p2_p $qu, $rs1, $qz, $qx, $qy, $sel4$sat$rm",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_cmul_u8_ld_incp_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$sel4, timm:$rm, timm:$qz, timm:$qu))]>;
 
 def ESP_CMUL_U8_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat, select_4:$sel4, rm:$rm),
-                   "esp.cmul.u8.st.incp\t $qu, $rs1, $qz, $qx, $qy, $sel4, $sat, $rm", []> 
+                   "esp.cmul.u8.st.incp\t $qu, $rs1, $qz, $qx, $qy, $sel4$sat$rm", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -20652,7 +20652,7 @@ def ESP_CMUL_U8_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, GPRPIE:$rs1r), (ins QR:
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_CMUL_U8_ST_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat, select_4:$sel4, rm:$rm, imm8:$qz),
-				"!esp_cmul_u8_st_incp_2p2_p $qu, $rs1, $qz, $qx, $qy, $sel4, $sat, $rm",
+				"!esp_cmul_u8_st_incp_2p2_p $qu, $rs1, $qz, $qx, $qy, $sel4$sat$rm",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_cmul_u8_st_incp_2p2 timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat, timm:$sel4, timm:$rm, timm:$qz))]>;
 
 def ESP_MAX_S16_A_2P2: Esp32V2P2Inst<(outs GPRPIE:$rd), (ins QR:$qw),
@@ -21328,7 +21328,7 @@ def ESP_VABS_8_2P2_P : PseudoEsp<(outs), (ins imm8:$qy, imm8:$qv),
 			[(int_riscv_esp_vabs_8_2p2 timm:$qy, timm:$qv)]>;
 
 def ESP_VADD_S16_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins QR:$qx, QR:$qy, sat:$sat),
-                   "esp.vadd.s16\t $qv, $qx, $qy, $sat", []> 
+                   "esp.vadd.s16\t $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -21368,11 +21368,11 @@ def ESP_VADD_S16_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins QR:$qx, QR:$qy, sat:$sat
 
 let usesCustomInserter = 1 in 
 def ESP_VADD_S16_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat, imm8:$qv),
-				"!esp_vadd_s16_2p2_p $qv, $qx, $qy, $sat",
+				"!esp_vadd_s16_2p2_p $qv, $qx, $qy$sat",
 			[(int_riscv_esp_vadd_s16_2p2 timm:$qx, timm:$qy, timm:$sat, timm:$qv)]>;
 
 def ESP_VADD_S16_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat),
-                   "esp.vadd.s16.ld.incp\t $qu, $rs1, $qv, $qx, $qy, $sat", []> 
+                   "esp.vadd.s16.ld.incp\t $qu, $rs1, $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -21413,11 +21413,11 @@ def ESP_VADD_S16_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, QR:$qu, GPRPIE:$rs1r),
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VADD_S16_LD_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, imm8:$qv, imm8:$qu),
-				"!esp_vadd_s16_ld_incp_2p2_p $qu, $rs1, $qv, $qx, $qy, $sat",
+				"!esp_vadd_s16_ld_incp_2p2_p $qu, $rs1, $qv, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vadd_s16_ld_incp_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$qv, timm:$qu))]>;
 
 def ESP_VADD_S16_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat),
-                   "esp.vadd.s16.st.incp\t $qu, $rs1, $qv, $qx, $qy, $sat", []> 
+                   "esp.vadd.s16.st.incp\t $qu, $rs1, $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -21458,11 +21458,11 @@ def ESP_VADD_S16_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, GPRPIE:$rs1r), (ins QR
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VADD_S16_ST_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat, imm8:$qv),
-				"!esp_vadd_s16_st_incp_2p2_p $qu, $rs1, $qv, $qx, $qy, $sat",
+				"!esp_vadd_s16_st_incp_2p2_p $qu, $rs1, $qv, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vadd_s16_st_incp_2p2 timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat, timm:$qv))]>;
 
 def ESP_VADD_S32_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins QR:$qx, QR:$qy, sat:$sat),
-                   "esp.vadd.s32\t $qv, $qx, $qy, $sat", []> 
+                   "esp.vadd.s32\t $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -21502,11 +21502,11 @@ def ESP_VADD_S32_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins QR:$qx, QR:$qy, sat:$sat
 
 let usesCustomInserter = 1 in 
 def ESP_VADD_S32_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat, imm8:$qv),
-				"!esp_vadd_s32_2p2_p $qv, $qx, $qy, $sat",
+				"!esp_vadd_s32_2p2_p $qv, $qx, $qy$sat",
 			[(int_riscv_esp_vadd_s32_2p2 timm:$qx, timm:$qy, timm:$sat, timm:$qv)]>;
 
 def ESP_VADD_S32_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat),
-                   "esp.vadd.s32.ld.incp\t $qu, $rs1, $qv, $qx, $qy, $sat", []> 
+                   "esp.vadd.s32.ld.incp\t $qu, $rs1, $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -21547,11 +21547,11 @@ def ESP_VADD_S32_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, QR:$qu, GPRPIE:$rs1r),
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VADD_S32_LD_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, imm8:$qv, imm8:$qu),
-				"!esp_vadd_s32_ld_incp_2p2_p $qu, $rs1, $qv, $qx, $qy, $sat",
+				"!esp_vadd_s32_ld_incp_2p2_p $qu, $rs1, $qv, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vadd_s32_ld_incp_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$qv, timm:$qu))]>;
 
 def ESP_VADD_S32_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat),
-                   "esp.vadd.s32.st.incp\t $qu, $rs1, $qv, $qx, $qy, $sat", []> 
+                   "esp.vadd.s32.st.incp\t $qu, $rs1, $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -21592,11 +21592,11 @@ def ESP_VADD_S32_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, GPRPIE:$rs1r), (ins QR
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VADD_S32_ST_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat, imm8:$qv),
-				"!esp_vadd_s32_st_incp_2p2_p $qu, $rs1, $qv, $qx, $qy, $sat",
+				"!esp_vadd_s32_st_incp_2p2_p $qu, $rs1, $qv, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vadd_s32_st_incp_2p2 timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat, timm:$qv))]>;
 
 def ESP_VADD_S8_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins QR:$qx, QR:$qy, sat:$sat),
-                   "esp.vadd.s8\t $qv, $qx, $qy, $sat", []> 
+                   "esp.vadd.s8\t $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -21636,11 +21636,11 @@ def ESP_VADD_S8_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins QR:$qx, QR:$qy, sat:$sat)
 
 let usesCustomInserter = 1 in 
 def ESP_VADD_S8_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat, imm8:$qv),
-				"!esp_vadd_s8_2p2_p $qv, $qx, $qy, $sat",
+				"!esp_vadd_s8_2p2_p $qv, $qx, $qy$sat",
 			[(int_riscv_esp_vadd_s8_2p2 timm:$qx, timm:$qy, timm:$sat, timm:$qv)]>;
 
 def ESP_VADD_S8_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat),
-                   "esp.vadd.s8.ld.incp\t $qu, $rs1, $qv, $qx, $qy, $sat", []> 
+                   "esp.vadd.s8.ld.incp\t $qu, $rs1, $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -21681,11 +21681,11 @@ def ESP_VADD_S8_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, QR:$qu, GPRPIE:$rs1r), 
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VADD_S8_LD_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, imm8:$qv, imm8:$qu),
-				"!esp_vadd_s8_ld_incp_2p2_p $qu, $rs1, $qv, $qx, $qy, $sat",
+				"!esp_vadd_s8_ld_incp_2p2_p $qu, $rs1, $qv, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vadd_s8_ld_incp_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$qv, timm:$qu))]>;
 
 def ESP_VADD_S8_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat),
-                   "esp.vadd.s8.st.incp\t $qu, $rs1, $qv, $qx, $qy, $sat", []> 
+                   "esp.vadd.s8.st.incp\t $qu, $rs1, $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -21726,11 +21726,11 @@ def ESP_VADD_S8_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, GPRPIE:$rs1r), (ins QR:
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VADD_S8_ST_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat, imm8:$qv),
-				"!esp_vadd_s8_st_incp_2p2_p $qu, $rs1, $qv, $qx, $qy, $sat",
+				"!esp_vadd_s8_st_incp_2p2_p $qu, $rs1, $qv, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vadd_s8_st_incp_2p2 timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat, timm:$qv))]>;
 
 def ESP_VADD_U16_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins QR:$qx, QR:$qy, sat:$sat),
-                   "esp.vadd.u16\t $qv, $qx, $qy, $sat", []> 
+                   "esp.vadd.u16\t $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -21770,11 +21770,11 @@ def ESP_VADD_U16_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins QR:$qx, QR:$qy, sat:$sat
 
 let usesCustomInserter = 1 in 
 def ESP_VADD_U16_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat, imm8:$qv),
-				"!esp_vadd_u16_2p2_p $qv, $qx, $qy, $sat",
+				"!esp_vadd_u16_2p2_p $qv, $qx, $qy$sat",
 			[(int_riscv_esp_vadd_u16_2p2 timm:$qx, timm:$qy, timm:$sat, timm:$qv)]>;
 
 def ESP_VADD_U16_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat),
-                   "esp.vadd.u16.ld.incp\t $qu, $rs1, $qv, $qx, $qy, $sat", []> 
+                   "esp.vadd.u16.ld.incp\t $qu, $rs1, $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -21815,11 +21815,11 @@ def ESP_VADD_U16_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, QR:$qu, GPRPIE:$rs1r),
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VADD_U16_LD_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, imm8:$qv, imm8:$qu),
-				"!esp_vadd_u16_ld_incp_2p2_p $qu, $rs1, $qv, $qx, $qy, $sat",
+				"!esp_vadd_u16_ld_incp_2p2_p $qu, $rs1, $qv, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vadd_u16_ld_incp_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$qv, timm:$qu))]>;
 
 def ESP_VADD_U16_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat),
-                   "esp.vadd.u16.st.incp\t $qu, $rs1, $qv, $qx, $qy, $sat", []> 
+                   "esp.vadd.u16.st.incp\t $qu, $rs1, $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -21860,11 +21860,11 @@ def ESP_VADD_U16_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, GPRPIE:$rs1r), (ins QR
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VADD_U16_ST_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat, imm8:$qv),
-				"!esp_vadd_u16_st_incp_2p2_p $qu, $rs1, $qv, $qx, $qy, $sat",
+				"!esp_vadd_u16_st_incp_2p2_p $qu, $rs1, $qv, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vadd_u16_st_incp_2p2 timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat, timm:$qv))]>;
 
 def ESP_VADD_U32_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins QR:$qx, QR:$qy, sat:$sat),
-                   "esp.vadd.u32\t $qv, $qx, $qy, $sat", []> 
+                   "esp.vadd.u32\t $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -21904,11 +21904,11 @@ def ESP_VADD_U32_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins QR:$qx, QR:$qy, sat:$sat
 
 let usesCustomInserter = 1 in 
 def ESP_VADD_U32_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat, imm8:$qv),
-				"!esp_vadd_u32_2p2_p $qv, $qx, $qy, $sat",
+				"!esp_vadd_u32_2p2_p $qv, $qx, $qy$sat",
 			[(int_riscv_esp_vadd_u32_2p2 timm:$qx, timm:$qy, timm:$sat, timm:$qv)]>;
 
 def ESP_VADD_U32_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat),
-                   "esp.vadd.u32.ld.incp\t $qu, $rs1, $qv, $qx, $qy, $sat", []> 
+                   "esp.vadd.u32.ld.incp\t $qu, $rs1, $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -21949,11 +21949,11 @@ def ESP_VADD_U32_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, QR:$qu, GPRPIE:$rs1r),
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VADD_U32_LD_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, imm8:$qv, imm8:$qu),
-				"!esp_vadd_u32_ld_incp_2p2_p $qu, $rs1, $qv, $qx, $qy, $sat",
+				"!esp_vadd_u32_ld_incp_2p2_p $qu, $rs1, $qv, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vadd_u32_ld_incp_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$qv, timm:$qu))]>;
 
 def ESP_VADD_U32_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat),
-                   "esp.vadd.u32.st.incp\t $qu, $rs1, $qv, $qx, $qy, $sat", []> 
+                   "esp.vadd.u32.st.incp\t $qu, $rs1, $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -21994,11 +21994,11 @@ def ESP_VADD_U32_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, GPRPIE:$rs1r), (ins QR
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VADD_U32_ST_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat, imm8:$qv),
-				"!esp_vadd_u32_st_incp_2p2_p $qu, $rs1, $qv, $qx, $qy, $sat",
+				"!esp_vadd_u32_st_incp_2p2_p $qu, $rs1, $qv, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vadd_u32_st_incp_2p2 timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat, timm:$qv))]>;
 
 def ESP_VADD_U8_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins QR:$qx, QR:$qy, sat:$sat),
-                   "esp.vadd.u8\t $qv, $qx, $qy, $sat", []> 
+                   "esp.vadd.u8\t $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -22038,11 +22038,11 @@ def ESP_VADD_U8_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins QR:$qx, QR:$qy, sat:$sat)
 
 let usesCustomInserter = 1 in 
 def ESP_VADD_U8_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat, imm8:$qv),
-				"!esp_vadd_u8_2p2_p $qv, $qx, $qy, $sat",
+				"!esp_vadd_u8_2p2_p $qv, $qx, $qy$sat",
 			[(int_riscv_esp_vadd_u8_2p2 timm:$qx, timm:$qy, timm:$sat, timm:$qv)]>;
 
 def ESP_VADD_U8_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat),
-                   "esp.vadd.u8.ld.incp\t $qu, $rs1, $qv, $qx, $qy, $sat", []> 
+                   "esp.vadd.u8.ld.incp\t $qu, $rs1, $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -22083,11 +22083,11 @@ def ESP_VADD_U8_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, QR:$qu, GPRPIE:$rs1r), 
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VADD_U8_LD_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, imm8:$qv, imm8:$qu),
-				"!esp_vadd_u8_ld_incp_2p2_p $qu, $rs1, $qv, $qx, $qy, $sat",
+				"!esp_vadd_u8_ld_incp_2p2_p $qu, $rs1, $qv, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vadd_u8_ld_incp_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$qv, timm:$qu))]>;
 
 def ESP_VADD_U8_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat),
-                   "esp.vadd.u8.st.incp\t $qu, $rs1, $qv, $qx, $qy, $sat", []> 
+                   "esp.vadd.u8.st.incp\t $qu, $rs1, $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -22128,7 +22128,7 @@ def ESP_VADD_U8_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, GPRPIE:$rs1r), (ins QR:
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VADD_U8_ST_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat, imm8:$qv),
-				"!esp_vadd_u8_st_incp_2p2_p $qu, $rs1, $qv, $qx, $qy, $sat",
+				"!esp_vadd_u8_st_incp_2p2_p $qu, $rs1, $qv, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vadd_u8_st_incp_2p2 timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat, timm:$qv))]>;
 
 def ESP_VCLAMP_S16_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, select_16:$sel16),
@@ -23746,7 +23746,7 @@ def ESP_VMIN_U8_ST_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, im
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmin_u8_st_incp_2p2 timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$qz))]>;
 
 def ESP_VMUL_S16_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy, sat:$sat, rm:$rm),
-                   "esp.vmul.s16\t $qz, $qx, $qy, $sat, $rm", []> 
+                   "esp.vmul.s16\t $qz, $qx, $qy$sat$rm", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -23786,11 +23786,11 @@ def ESP_VMUL_S16_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy, sat:$sat
 
 let usesCustomInserter = 1 in 
 def ESP_VMUL_S16_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat, rm:$rm, imm8:$qz),
-				"!esp_vmul_s16_2p2_p $qz, $qx, $qy, $sat, $rm",
+				"!esp_vmul_s16_2p2_p $qz, $qx, $qy$sat$rm",
 			[(int_riscv_esp_vmul_s16_2p2 timm:$qx, timm:$qy, timm:$sat, timm:$rm, timm:$qz)]>;
 
 def ESP_VMUL_S16_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat, rm:$rm),
-                   "esp.vmul.s16.ld.incp\t $qu, $rs1, $qz, $qx, $qy, $sat, $rm", []> 
+                   "esp.vmul.s16.ld.incp\t $qu, $rs1, $qz, $qx, $qy$sat$rm", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -23830,11 +23830,11 @@ def ESP_VMUL_S16_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, QR:$qu, GPRPIE:$rs1r),
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMUL_S16_LD_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, rm:$rm, imm8:$qz, imm8:$qu),
-				"!esp_vmul_s16_ld_incp_2p2_p $qu, $rs1, $qz, $qx, $qy, $sat, $rm",
+				"!esp_vmul_s16_ld_incp_2p2_p $qu, $rs1, $qz, $qx, $qy$sat$rm",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmul_s16_ld_incp_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$rm, timm:$qz, timm:$qu))]>;
 
 def ESP_VMUL_S16_S8XS8_2P2: Esp32V2P2Inst<(outs QR:$qz, QR:$qv), (ins QR:$qx, QR:$qy, rm:$rm),
-                   "esp.vmul.s16.s8xs8\t $qz, $qv, $qx, $qy, $rm", []> 
+                   "esp.vmul.s16.s8xs8\t $qz, $qv, $qx, $qy$rm", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -23871,11 +23871,11 @@ def ESP_VMUL_S16_S8XS8_2P2: Esp32V2P2Inst<(outs QR:$qz, QR:$qv), (ins QR:$qx, QR
 
 let usesCustomInserter = 1 in 
 def ESP_VMUL_S16_S8XS8_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, rm:$rm, imm8:$qz, imm8:$qv),
-				"!esp_vmul_s16_s8xs8_2p2_p $qz, $qv, $qx, $qy, $rm",
+				"!esp_vmul_s16_s8xs8_2p2_p $qz, $qv, $qx, $qy$rm",
 			[(int_riscv_esp_vmul_s16_s8xs8_2p2 timm:$qx, timm:$qy, timm:$rm, timm:$qz, timm:$qv)]>;
 
 def ESP_VMUL_S16_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat, rm:$rm),
-                   "esp.vmul.s16.st.incp\t $qu, $rs1, $qz, $qx, $qy, $sat, $rm", []> 
+                   "esp.vmul.s16.st.incp\t $qu, $rs1, $qz, $qx, $qy$sat$rm", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -23915,11 +23915,11 @@ def ESP_VMUL_S16_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, GPRPIE:$rs1r), (ins QR
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMUL_S16_ST_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat, rm:$rm, imm8:$qz),
-				"!esp_vmul_s16_st_incp_2p2_p $qu, $rs1, $qz, $qx, $qy, $sat, $rm",
+				"!esp_vmul_s16_st_incp_2p2_p $qu, $rs1, $qz, $qx, $qy$sat$rm",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmul_s16_st_incp_2p2 timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat, timm:$rm, timm:$qz))]>;
 
 def ESP_VMUL_S32_S16XS16_2P2: Esp32V2P2Inst<(outs QR:$qz, QR:$qv), (ins QR:$qx, QR:$qy, rm:$rm),
-                   "esp.vmul.s32.s16xs16\t $qz, $qv, $qx, $qy, $rm", []> 
+                   "esp.vmul.s32.s16xs16\t $qz, $qv, $qx, $qy$rm", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -23956,11 +23956,11 @@ def ESP_VMUL_S32_S16XS16_2P2: Esp32V2P2Inst<(outs QR:$qz, QR:$qv), (ins QR:$qx, 
 
 let usesCustomInserter = 1 in 
 def ESP_VMUL_S32_S16XS16_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, rm:$rm, imm8:$qz, imm8:$qv),
-				"!esp_vmul_s32_s16xs16_2p2_p $qz, $qv, $qx, $qy, $rm",
+				"!esp_vmul_s32_s16xs16_2p2_p $qz, $qv, $qx, $qy$rm",
 			[(int_riscv_esp_vmul_s32_s16xs16_2p2 timm:$qx, timm:$qy, timm:$rm, timm:$qz, timm:$qv)]>;
 
 def ESP_VMUL_S8_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy, sat:$sat, rm:$rm),
-                   "esp.vmul.s8\t $qz, $qx, $qy, $sat, $rm", []> 
+                   "esp.vmul.s8\t $qz, $qx, $qy$sat$rm", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -24000,11 +24000,11 @@ def ESP_VMUL_S8_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy, sat:$sat,
 
 let usesCustomInserter = 1 in 
 def ESP_VMUL_S8_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat, rm:$rm, imm8:$qz),
-				"!esp_vmul_s8_2p2_p $qz, $qx, $qy, $sat, $rm",
+				"!esp_vmul_s8_2p2_p $qz, $qx, $qy$sat$rm",
 			[(int_riscv_esp_vmul_s8_2p2 timm:$qx, timm:$qy, timm:$sat, timm:$rm, timm:$qz)]>;
 
 def ESP_VMUL_S8_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat, rm:$rm),
-                   "esp.vmul.s8.ld.incp\t $qu, $rs1, $qz, $qx, $qy, $sat, $rm", []> 
+                   "esp.vmul.s8.ld.incp\t $qu, $rs1, $qz, $qx, $qy$sat$rm", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -24044,11 +24044,11 @@ def ESP_VMUL_S8_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, QR:$qu, GPRPIE:$rs1r), 
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMUL_S8_LD_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, rm:$rm, imm8:$qz, imm8:$qu),
-				"!esp_vmul_s8_ld_incp_2p2_p $qu, $rs1, $qz, $qx, $qy, $sat, $rm",
+				"!esp_vmul_s8_ld_incp_2p2_p $qu, $rs1, $qz, $qx, $qy$sat$rm",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmul_s8_ld_incp_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$rm, timm:$qz, timm:$qu))]>;
 
 def ESP_VMUL_S8_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat, rm:$rm),
-                   "esp.vmul.s8.st.incp\t $qu, $rs1, $qz, $qx, $qy, $sat, $rm", []> 
+                   "esp.vmul.s8.st.incp\t $qu, $rs1, $qz, $qx, $qy$sat$rm", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -24088,11 +24088,11 @@ def ESP_VMUL_S8_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, GPRPIE:$rs1r), (ins QR:
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMUL_S8_ST_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat, rm:$rm, imm8:$qz),
-				"!esp_vmul_s8_st_incp_2p2_p $qu, $rs1, $qz, $qx, $qy, $sat, $rm",
+				"!esp_vmul_s8_st_incp_2p2_p $qu, $rs1, $qz, $qx, $qy$sat$rm",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmul_s8_st_incp_2p2 timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat, timm:$rm, timm:$qz))]>;
 
 def ESP_VMUL_U16_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy, sat:$sat, rm:$rm),
-                   "esp.vmul.u16\t $qz, $qx, $qy, $sat, $rm", []> 
+                   "esp.vmul.u16\t $qz, $qx, $qy$sat$rm", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -24132,11 +24132,11 @@ def ESP_VMUL_U16_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy, sat:$sat
 
 let usesCustomInserter = 1 in 
 def ESP_VMUL_U16_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat, rm:$rm, imm8:$qz),
-				"!esp_vmul_u16_2p2_p $qz, $qx, $qy, $sat, $rm",
+				"!esp_vmul_u16_2p2_p $qz, $qx, $qy$sat$rm",
 			[(int_riscv_esp_vmul_u16_2p2 timm:$qx, timm:$qy, timm:$sat, timm:$rm, timm:$qz)]>;
 
 def ESP_VMUL_U16_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat, rm:$rm),
-                   "esp.vmul.u16.ld.incp\t $qu, $rs1, $qz, $qx, $qy, $sat, $rm", []> 
+                   "esp.vmul.u16.ld.incp\t $qu, $rs1, $qz, $qx, $qy$sat$rm", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -24176,11 +24176,11 @@ def ESP_VMUL_U16_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, QR:$qu, GPRPIE:$rs1r),
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMUL_U16_LD_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, rm:$rm, imm8:$qz, imm8:$qu),
-				"!esp_vmul_u16_ld_incp_2p2_p $qu, $rs1, $qz, $qx, $qy, $sat, $rm",
+				"!esp_vmul_u16_ld_incp_2p2_p $qu, $rs1, $qz, $qx, $qy$sat$rm",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmul_u16_ld_incp_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$rm, timm:$qz, timm:$qu))]>;
 
 def ESP_VMUL_U16_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat, rm:$rm),
-                   "esp.vmul.u16.st.incp\t $qu, $rs1, $qz, $qx, $qy, $sat, $rm", []> 
+                   "esp.vmul.u16.st.incp\t $qu, $rs1, $qz, $qx, $qy$sat$rm", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -24220,11 +24220,11 @@ def ESP_VMUL_U16_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, GPRPIE:$rs1r), (ins QR
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMUL_U16_ST_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat, rm:$rm, imm8:$qz),
-				"!esp_vmul_u16_st_incp_2p2_p $qu, $rs1, $qz, $qx, $qy, $sat, $rm",
+				"!esp_vmul_u16_st_incp_2p2_p $qu, $rs1, $qz, $qx, $qy$sat$rm",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmul_u16_st_incp_2p2 timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat, timm:$rm, timm:$qz))]>;
 
 def ESP_VMUL_U8_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy, sat:$sat, rm:$rm),
-                   "esp.vmul.u8\t $qz, $qx, $qy, $sat, $rm", []> 
+                   "esp.vmul.u8\t $qz, $qx, $qy$sat$rm", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -24264,11 +24264,11 @@ def ESP_VMUL_U8_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy, sat:$sat,
 
 let usesCustomInserter = 1 in 
 def ESP_VMUL_U8_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat, rm:$rm, imm8:$qz),
-				"!esp_vmul_u8_2p2_p $qz, $qx, $qy, $sat, $rm",
+				"!esp_vmul_u8_2p2_p $qz, $qx, $qy$sat$rm",
 			[(int_riscv_esp_vmul_u8_2p2 timm:$qx, timm:$qy, timm:$sat, timm:$rm, timm:$qz)]>;
 
 def ESP_VMUL_U8_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat, rm:$rm),
-                   "esp.vmul.u8.ld.incp\t $qu, $rs1, $qz, $qx, $qy, $sat, $rm", []> 
+                   "esp.vmul.u8.ld.incp\t $qu, $rs1, $qz, $qx, $qy$sat$rm", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -24308,11 +24308,11 @@ def ESP_VMUL_U8_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, QR:$qu, GPRPIE:$rs1r), 
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMUL_U8_LD_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, rm:$rm, imm8:$qz, imm8:$qu),
-				"!esp_vmul_u8_ld_incp_2p2_p $qu, $rs1, $qz, $qx, $qy, $sat, $rm",
+				"!esp_vmul_u8_ld_incp_2p2_p $qu, $rs1, $qz, $qx, $qy$sat$rm",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmul_u8_ld_incp_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$rm, timm:$qz, timm:$qu))]>;
 
 def ESP_VMUL_U8_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat, rm:$rm),
-                   "esp.vmul.u8.st.incp\t $qu, $rs1, $qz, $qx, $qy, $sat, $rm", []> 
+                   "esp.vmul.u8.st.incp\t $qu, $rs1, $qz, $qx, $qy$sat$rm", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -24352,11 +24352,11 @@ def ESP_VMUL_U8_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, GPRPIE:$rs1r), (ins QR:
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMUL_U8_ST_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat, rm:$rm, imm8:$qz),
-				"!esp_vmul_u8_st_incp_2p2_p $qu, $rs1, $qz, $qx, $qy, $sat, $rm",
+				"!esp_vmul_u8_st_incp_2p2_p $qu, $rs1, $qz, $qx, $qy$sat$rm",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmul_u8_st_incp_2p2 timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat, timm:$rm, timm:$qz))]>;
 
 def ESP_VPRELU_S16_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins GPRPIE:$rs1, QR:$qx, QR:$qy, sat:$sat, rm:$rm),
-                   "esp.vprelu.s16\t $qz, $qy, $qx, $rs1, $sat, $rm", []> 
+                   "esp.vprelu.s16\t $qz, $qy, $qx, $rs1$sat$rm", []> 
 {
   bits<5> rs1;
   bits<3> qx;
@@ -24394,11 +24394,11 @@ def ESP_VPRELU_S16_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins GPRPIE:$rs1, QR:$qx, Q
 
 let usesCustomInserter = 1 in 
 def ESP_VPRELU_S16_2P2_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, imm8:$qx, imm8:$qy, sat:$sat, rm:$rm, imm8:$qz),
-				"!esp_vprelu_s16_2p2_p $qz, $qy, $qx, $rs1, $sat, $rm",
+				"!esp_vprelu_s16_2p2_p $qz, $qy, $qx, $rs1$sat$rm",
 			[(int_riscv_esp_vprelu_s16_2p2 GPRPIE:$rs1, timm:$qx, timm:$qy, timm:$sat, timm:$rm, timm:$qz)]>;
 
 def ESP_VPRELU_S8_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins GPRPIE:$rs1, QR:$qx, QR:$qy, sat:$sat, rm:$rm),
-                   "esp.vprelu.s8\t $qz, $qy, $qx, $rs1, $sat, $rm", []> 
+                   "esp.vprelu.s8\t $qz, $qy, $qx, $rs1$sat$rm", []> 
 {
   bits<5> rs1;
   bits<3> qx;
@@ -24436,11 +24436,11 @@ def ESP_VPRELU_S8_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins GPRPIE:$rs1, QR:$qx, QR
 
 let usesCustomInserter = 1 in 
 def ESP_VPRELU_S8_2P2_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, imm8:$qx, imm8:$qy, sat:$sat, rm:$rm, imm8:$qz),
-				"!esp_vprelu_s8_2p2_p $qz, $qy, $qx, $rs1, $sat, $rm",
+				"!esp_vprelu_s8_2p2_p $qz, $qy, $qx, $rs1$sat$rm",
 			[(int_riscv_esp_vprelu_s8_2p2 GPRPIE:$rs1, timm:$qx, timm:$qy, timm:$sat, timm:$rm, timm:$qz)]>;
 
 def ESP_VRELU_S16_2P2: Esp32V2P2Inst<(outs QR:$qyr), (ins GPRPIE:$rs1, GPRPIE:$rs2, QR:$qy, sat:$sat, rm:$rm),
-                   "esp.vrelu.s16\t $qy, $rs2, $rs1, $sat, $rm", []> 
+                   "esp.vrelu.s16\t $qy, $rs2, $rs1$sat$rm", []> 
 {
   bits<5> rs1;
   bits<5> rs2;
@@ -24482,11 +24482,11 @@ def ESP_VRELU_S16_2P2: Esp32V2P2Inst<(outs QR:$qyr), (ins GPRPIE:$rs1, GPRPIE:$r
 
 let usesCustomInserter = 1 in 
 def ESP_VRELU_S16_2P2_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, GPRPIE:$rs2, imm8:$qy, sat:$sat, rm:$rm),
-				"!esp_vrelu_s16_2p2_p $qy, $rs2, $rs1, $sat, $rm",
+				"!esp_vrelu_s16_2p2_p $qy, $rs2, $rs1$sat$rm",
 			[(int_riscv_esp_vrelu_s16_2p2 GPRPIE:$rs1, GPRPIE:$rs2, timm:$qy, timm:$sat, timm:$rm)]>;
 
 def ESP_VRELU_S8_2P2: Esp32V2P2Inst<(outs QR:$qyr), (ins GPRPIE:$rs1, GPRPIE:$rs2, QR:$qy, sat:$sat, rm:$rm),
-                   "esp.vrelu.s8\t $qy, $rs2, $rs1, $sat, $rm", []> 
+                   "esp.vrelu.s8\t $qy, $rs2, $rs1$sat$rm", []> 
 {
   bits<5> rs1;
   bits<5> rs2;
@@ -24528,11 +24528,11 @@ def ESP_VRELU_S8_2P2: Esp32V2P2Inst<(outs QR:$qyr), (ins GPRPIE:$rs1, GPRPIE:$rs
 
 let usesCustomInserter = 1 in 
 def ESP_VRELU_S8_2P2_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, GPRPIE:$rs2, imm8:$qy, sat:$sat, rm:$rm),
-				"!esp_vrelu_s8_2p2_p $qy, $rs2, $rs1, $sat, $rm",
+				"!esp_vrelu_s8_2p2_p $qy, $rs2, $rs1$sat$rm",
 			[(int_riscv_esp_vrelu_s8_2p2 GPRPIE:$rs1, GPRPIE:$rs2, timm:$qy, timm:$sat, timm:$rm)]>;
 
 def ESP_VSADDS_S16_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins GPRPIE:$rs1, QR:$qx, sat:$sat),
-                   "esp.vsadds.s16\t $qv, $qx, $rs1, $sat", []> 
+                   "esp.vsadds.s16\t $qv, $qx, $rs1$sat", []> 
 {
   bits<5> rs1;
   bits<3> qx;
@@ -24572,11 +24572,11 @@ def ESP_VSADDS_S16_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins GPRPIE:$rs1, QR:$qx, s
 
 let usesCustomInserter = 1 in 
 def ESP_VSADDS_S16_2P2_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, imm8:$qx, sat:$sat, imm8:$qv),
-				"!esp_vsadds_s16_2p2_p $qv, $qx, $rs1, $sat",
+				"!esp_vsadds_s16_2p2_p $qv, $qx, $rs1$sat",
 			[(int_riscv_esp_vsadds_s16_2p2 GPRPIE:$rs1, timm:$qx, timm:$sat, timm:$qv)]>;
 
 def ESP_VSADDS_S8_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins GPRPIE:$rs1, QR:$qx, sat:$sat),
-                   "esp.vsadds.s8\t $qv, $qx, $rs1, $sat", []> 
+                   "esp.vsadds.s8\t $qv, $qx, $rs1$sat", []> 
 {
   bits<5> rs1;
   bits<3> qx;
@@ -24616,11 +24616,11 @@ def ESP_VSADDS_S8_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins GPRPIE:$rs1, QR:$qx, sa
 
 let usesCustomInserter = 1 in 
 def ESP_VSADDS_S8_2P2_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, imm8:$qx, sat:$sat, imm8:$qv),
-				"!esp_vsadds_s8_2p2_p $qv, $qx, $rs1, $sat",
+				"!esp_vsadds_s8_2p2_p $qv, $qx, $rs1$sat",
 			[(int_riscv_esp_vsadds_s8_2p2 GPRPIE:$rs1, timm:$qx, timm:$sat, timm:$qv)]>;
 
 def ESP_VSADDS_U16_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins GPRPIE:$rs1, QR:$qx, sat:$sat),
-                   "esp.vsadds.u16\t $qv, $qx, $rs1, $sat", []> 
+                   "esp.vsadds.u16\t $qv, $qx, $rs1$sat", []> 
 {
   bits<5> rs1;
   bits<3> qx;
@@ -24660,11 +24660,11 @@ def ESP_VSADDS_U16_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins GPRPIE:$rs1, QR:$qx, s
 
 let usesCustomInserter = 1 in 
 def ESP_VSADDS_U16_2P2_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, imm8:$qx, sat:$sat, imm8:$qv),
-				"!esp_vsadds_u16_2p2_p $qv, $qx, $rs1, $sat",
+				"!esp_vsadds_u16_2p2_p $qv, $qx, $rs1$sat",
 			[(int_riscv_esp_vsadds_u16_2p2 GPRPIE:$rs1, timm:$qx, timm:$sat, timm:$qv)]>;
 
 def ESP_VSADDS_U8_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins GPRPIE:$rs1, QR:$qx, sat:$sat),
-                   "esp.vsadds.u8\t $qv, $qx, $rs1, $sat", []> 
+                   "esp.vsadds.u8\t $qv, $qx, $rs1$sat", []> 
 {
   bits<5> rs1;
   bits<3> qx;
@@ -24704,7 +24704,7 @@ def ESP_VSADDS_U8_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins GPRPIE:$rs1, QR:$qx, sa
 
 let usesCustomInserter = 1 in 
 def ESP_VSADDS_U8_2P2_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, imm8:$qx, sat:$sat, imm8:$qv),
-				"!esp_vsadds_u8_2p2_p $qv, $qx, $rs1, $sat",
+				"!esp_vsadds_u8_2p2_p $qv, $qx, $rs1$sat",
 			[(int_riscv_esp_vsadds_u8_2p2 GPRPIE:$rs1, timm:$qx, timm:$sat, timm:$qv)]>;
 
 def ESP_VSAT_S16_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins GPRPIE:$rs1, GPRPIE:$rs2, QR:$qx),
@@ -24960,7 +24960,7 @@ def ESP_VSAT_U8_2P2_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, GPRPIE:$rs2, imm8:$q
 			[(int_riscv_esp_vsat_u8_2p2 GPRPIE:$rs1, GPRPIE:$rs2, timm:$qx, timm:$qz)]>;
 
 def ESP_VSSUBS_S16_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins GPRPIE:$rs1, QR:$qx, sat:$sat),
-                   "esp.vssubs.s16\t $qv, $qx, $rs1, $sat", []> 
+                   "esp.vssubs.s16\t $qv, $qx, $rs1$sat", []> 
 {
   bits<5> rs1;
   bits<3> qx;
@@ -25000,11 +25000,11 @@ def ESP_VSSUBS_S16_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins GPRPIE:$rs1, QR:$qx, s
 
 let usesCustomInserter = 1 in 
 def ESP_VSSUBS_S16_2P2_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, imm8:$qx, sat:$sat, imm8:$qv),
-				"!esp_vssubs_s16_2p2_p $qv, $qx, $rs1, $sat",
+				"!esp_vssubs_s16_2p2_p $qv, $qx, $rs1$sat",
 			[(int_riscv_esp_vssubs_s16_2p2 GPRPIE:$rs1, timm:$qx, timm:$sat, timm:$qv)]>;
 
 def ESP_VSSUBS_S8_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins GPRPIE:$rs1, QR:$qx, sat:$sat),
-                   "esp.vssubs.s8\t $qv, $qx, $rs1, $sat", []> 
+                   "esp.vssubs.s8\t $qv, $qx, $rs1$sat", []> 
 {
   bits<5> rs1;
   bits<3> qx;
@@ -25044,11 +25044,11 @@ def ESP_VSSUBS_S8_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins GPRPIE:$rs1, QR:$qx, sa
 
 let usesCustomInserter = 1 in 
 def ESP_VSSUBS_S8_2P2_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, imm8:$qx, sat:$sat, imm8:$qv),
-				"!esp_vssubs_s8_2p2_p $qv, $qx, $rs1, $sat",
+				"!esp_vssubs_s8_2p2_p $qv, $qx, $rs1$sat",
 			[(int_riscv_esp_vssubs_s8_2p2 GPRPIE:$rs1, timm:$qx, timm:$sat, timm:$qv)]>;
 
 def ESP_VSSUBS_U16_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins GPRPIE:$rs1, QR:$qx, sat:$sat),
-                   "esp.vssubs.u16\t $qv, $qx, $rs1, $sat", []> 
+                   "esp.vssubs.u16\t $qv, $qx, $rs1$sat", []> 
 {
   bits<5> rs1;
   bits<3> qx;
@@ -25088,11 +25088,11 @@ def ESP_VSSUBS_U16_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins GPRPIE:$rs1, QR:$qx, s
 
 let usesCustomInserter = 1 in 
 def ESP_VSSUBS_U16_2P2_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, imm8:$qx, sat:$sat, imm8:$qv),
-				"!esp_vssubs_u16_2p2_p $qv, $qx, $rs1, $sat",
+				"!esp_vssubs_u16_2p2_p $qv, $qx, $rs1$sat",
 			[(int_riscv_esp_vssubs_u16_2p2 GPRPIE:$rs1, timm:$qx, timm:$sat, timm:$qv)]>;
 
 def ESP_VSSUBS_U8_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins GPRPIE:$rs1, QR:$qx, sat:$sat),
-                   "esp.vssubs.u8\t $qv, $qx, $rs1, $sat", []> 
+                   "esp.vssubs.u8\t $qv, $qx, $rs1$sat", []> 
 {
   bits<5> rs1;
   bits<3> qx;
@@ -25132,11 +25132,11 @@ def ESP_VSSUBS_U8_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins GPRPIE:$rs1, QR:$qx, sa
 
 let usesCustomInserter = 1 in 
 def ESP_VSSUBS_U8_2P2_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, imm8:$qx, sat:$sat, imm8:$qv),
-				"!esp_vssubs_u8_2p2_p $qv, $qx, $rs1, $sat",
+				"!esp_vssubs_u8_2p2_p $qv, $qx, $rs1$sat",
 			[(int_riscv_esp_vssubs_u8_2p2 GPRPIE:$rs1, timm:$qx, timm:$sat, timm:$qv)]>;
 
 def ESP_VSUB_S16_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins QR:$qx, QR:$qy, sat:$sat),
-                   "esp.vsub.s16\t $qv, $qx, $qy, $sat", []> 
+                   "esp.vsub.s16\t $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -25176,11 +25176,11 @@ def ESP_VSUB_S16_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins QR:$qx, QR:$qy, sat:$sat
 
 let usesCustomInserter = 1 in 
 def ESP_VSUB_S16_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat, imm8:$qv),
-				"!esp_vsub_s16_2p2_p $qv, $qx, $qy, $sat",
+				"!esp_vsub_s16_2p2_p $qv, $qx, $qy$sat",
 			[(int_riscv_esp_vsub_s16_2p2 timm:$qx, timm:$qy, timm:$sat, timm:$qv)]>;
 
 def ESP_VSUB_S16_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat),
-                   "esp.vsub.s16.ld.incp\t $qu, $rs1, $qv, $qx, $qy, $sat", []> 
+                   "esp.vsub.s16.ld.incp\t $qu, $rs1, $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -25221,11 +25221,11 @@ def ESP_VSUB_S16_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, QR:$qu, GPRPIE:$rs1r),
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VSUB_S16_LD_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, imm8:$qv, imm8:$qu),
-				"!esp_vsub_s16_ld_incp_2p2_p $qu, $rs1, $qv, $qx, $qy, $sat",
+				"!esp_vsub_s16_ld_incp_2p2_p $qu, $rs1, $qv, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vsub_s16_ld_incp_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$qv, timm:$qu))]>;
 
 def ESP_VSUB_S16_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat),
-                   "esp.vsub.s16.st.incp\t $qu, $rs1, $qv, $qx, $qy, $sat", []> 
+                   "esp.vsub.s16.st.incp\t $qu, $rs1, $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -25266,11 +25266,11 @@ def ESP_VSUB_S16_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, GPRPIE:$rs1r), (ins QR
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VSUB_S16_ST_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat, imm8:$qv),
-				"!esp_vsub_s16_st_incp_2p2_p $qu, $rs1, $qv, $qx, $qy, $sat",
+				"!esp_vsub_s16_st_incp_2p2_p $qu, $rs1, $qv, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vsub_s16_st_incp_2p2 timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat, timm:$qv))]>;
 
 def ESP_VSUB_S32_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins QR:$qx, QR:$qy, sat:$sat),
-                   "esp.vsub.s32\t $qv, $qx, $qy, $sat", []> 
+                   "esp.vsub.s32\t $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -25310,11 +25310,11 @@ def ESP_VSUB_S32_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins QR:$qx, QR:$qy, sat:$sat
 
 let usesCustomInserter = 1 in 
 def ESP_VSUB_S32_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat, imm8:$qv),
-				"!esp_vsub_s32_2p2_p $qv, $qx, $qy, $sat",
+				"!esp_vsub_s32_2p2_p $qv, $qx, $qy$sat",
 			[(int_riscv_esp_vsub_s32_2p2 timm:$qx, timm:$qy, timm:$sat, timm:$qv)]>;
 
 def ESP_VSUB_S32_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat),
-                   "esp.vsub.s32.ld.incp\t $qu, $rs1, $qv, $qx, $qy, $sat", []> 
+                   "esp.vsub.s32.ld.incp\t $qu, $rs1, $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -25355,11 +25355,11 @@ def ESP_VSUB_S32_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, QR:$qu, GPRPIE:$rs1r),
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VSUB_S32_LD_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, imm8:$qv, imm8:$qu),
-				"!esp_vsub_s32_ld_incp_2p2_p $qu, $rs1, $qv, $qx, $qy, $sat",
+				"!esp_vsub_s32_ld_incp_2p2_p $qu, $rs1, $qv, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vsub_s32_ld_incp_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$qv, timm:$qu))]>;
 
 def ESP_VSUB_S32_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat),
-                   "esp.vsub.s32.st.incp\t $qu, $rs1, $qv, $qx, $qy, $sat", []> 
+                   "esp.vsub.s32.st.incp\t $qu, $rs1, $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -25400,11 +25400,11 @@ def ESP_VSUB_S32_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, GPRPIE:$rs1r), (ins QR
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VSUB_S32_ST_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat, imm8:$qv),
-				"!esp_vsub_s32_st_incp_2p2_p $qu, $rs1, $qv, $qx, $qy, $sat",
+				"!esp_vsub_s32_st_incp_2p2_p $qu, $rs1, $qv, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vsub_s32_st_incp_2p2 timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat, timm:$qv))]>;
 
 def ESP_VSUB_S8_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins QR:$qx, QR:$qy, sat:$sat),
-                   "esp.vsub.s8\t $qv, $qx, $qy, $sat", []> 
+                   "esp.vsub.s8\t $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -25444,11 +25444,11 @@ def ESP_VSUB_S8_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins QR:$qx, QR:$qy, sat:$sat)
 
 let usesCustomInserter = 1 in 
 def ESP_VSUB_S8_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat, imm8:$qv),
-				"!esp_vsub_s8_2p2_p $qv, $qx, $qy, $sat",
+				"!esp_vsub_s8_2p2_p $qv, $qx, $qy$sat",
 			[(int_riscv_esp_vsub_s8_2p2 timm:$qx, timm:$qy, timm:$sat, timm:$qv)]>;
 
 def ESP_VSUB_S8_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat),
-                   "esp.vsub.s8.ld.incp\t $qu, $rs1, $qv, $qx, $qy, $sat", []> 
+                   "esp.vsub.s8.ld.incp\t $qu, $rs1, $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -25489,11 +25489,11 @@ def ESP_VSUB_S8_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, QR:$qu, GPRPIE:$rs1r), 
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VSUB_S8_LD_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, imm8:$qv, imm8:$qu),
-				"!esp_vsub_s8_ld_incp_2p2_p $qu, $rs1, $qv, $qx, $qy, $sat",
+				"!esp_vsub_s8_ld_incp_2p2_p $qu, $rs1, $qv, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vsub_s8_ld_incp_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$qv, timm:$qu))]>;
 
 def ESP_VSUB_S8_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat),
-                   "esp.vsub.s8.st.incp\t $qu, $rs1, $qv, $qx, $qy, $sat", []> 
+                   "esp.vsub.s8.st.incp\t $qu, $rs1, $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -25534,11 +25534,11 @@ def ESP_VSUB_S8_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, GPRPIE:$rs1r), (ins QR:
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VSUB_S8_ST_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat, imm8:$qv),
-				"!esp_vsub_s8_st_incp_2p2_p $qu, $rs1, $qv, $qx, $qy, $sat",
+				"!esp_vsub_s8_st_incp_2p2_p $qu, $rs1, $qv, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vsub_s8_st_incp_2p2 timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat, timm:$qv))]>;
 
 def ESP_VSUB_U16_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins QR:$qx, QR:$qy, sat:$sat),
-                   "esp.vsub.u16\t $qv, $qx, $qy, $sat", []> 
+                   "esp.vsub.u16\t $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -25578,11 +25578,11 @@ def ESP_VSUB_U16_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins QR:$qx, QR:$qy, sat:$sat
 
 let usesCustomInserter = 1 in 
 def ESP_VSUB_U16_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat, imm8:$qv),
-				"!esp_vsub_u16_2p2_p $qv, $qx, $qy, $sat",
+				"!esp_vsub_u16_2p2_p $qv, $qx, $qy$sat",
 			[(int_riscv_esp_vsub_u16_2p2 timm:$qx, timm:$qy, timm:$sat, timm:$qv)]>;
 
 def ESP_VSUB_U16_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat),
-                   "esp.vsub.u16.ld.incp\t $qu, $rs1, $qv, $qx, $qy, $sat", []> 
+                   "esp.vsub.u16.ld.incp\t $qu, $rs1, $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -25623,11 +25623,11 @@ def ESP_VSUB_U16_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, QR:$qu, GPRPIE:$rs1r),
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VSUB_U16_LD_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, imm8:$qv, imm8:$qu),
-				"!esp_vsub_u16_ld_incp_2p2_p $qu, $rs1, $qv, $qx, $qy, $sat",
+				"!esp_vsub_u16_ld_incp_2p2_p $qu, $rs1, $qv, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vsub_u16_ld_incp_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$qv, timm:$qu))]>;
 
 def ESP_VSUB_U16_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat),
-                   "esp.vsub.u16.st.incp\t $qu, $rs1, $qv, $qx, $qy, $sat", []> 
+                   "esp.vsub.u16.st.incp\t $qu, $rs1, $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -25668,11 +25668,11 @@ def ESP_VSUB_U16_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, GPRPIE:$rs1r), (ins QR
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VSUB_U16_ST_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat, imm8:$qv),
-				"!esp_vsub_u16_st_incp_2p2_p $qu, $rs1, $qv, $qx, $qy, $sat",
+				"!esp_vsub_u16_st_incp_2p2_p $qu, $rs1, $qv, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vsub_u16_st_incp_2p2 timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat, timm:$qv))]>;
 
 def ESP_VSUB_U32_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins QR:$qx, QR:$qy, sat:$sat),
-                   "esp.vsub.u32\t $qv, $qx, $qy, $sat", []> 
+                   "esp.vsub.u32\t $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -25712,11 +25712,11 @@ def ESP_VSUB_U32_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins QR:$qx, QR:$qy, sat:$sat
 
 let usesCustomInserter = 1 in 
 def ESP_VSUB_U32_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat, imm8:$qv),
-				"!esp_vsub_u32_2p2_p $qv, $qx, $qy, $sat",
+				"!esp_vsub_u32_2p2_p $qv, $qx, $qy$sat",
 			[(int_riscv_esp_vsub_u32_2p2 timm:$qx, timm:$qy, timm:$sat, timm:$qv)]>;
 
 def ESP_VSUB_U32_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat),
-                   "esp.vsub.u32.ld.incp\t $qu, $rs1, $qv, $qx, $qy, $sat", []> 
+                   "esp.vsub.u32.ld.incp\t $qu, $rs1, $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -25757,11 +25757,11 @@ def ESP_VSUB_U32_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, QR:$qu, GPRPIE:$rs1r),
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VSUB_U32_LD_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, imm8:$qv, imm8:$qu),
-				"!esp_vsub_u32_ld_incp_2p2_p $qu, $rs1, $qv, $qx, $qy, $sat",
+				"!esp_vsub_u32_ld_incp_2p2_p $qu, $rs1, $qv, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vsub_u32_ld_incp_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$qv, timm:$qu))]>;
 
 def ESP_VSUB_U32_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat),
-                   "esp.vsub.u32.st.incp\t $qu, $rs1, $qv, $qx, $qy, $sat", []> 
+                   "esp.vsub.u32.st.incp\t $qu, $rs1, $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -25802,11 +25802,11 @@ def ESP_VSUB_U32_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, GPRPIE:$rs1r), (ins QR
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VSUB_U32_ST_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat, imm8:$qv),
-				"!esp_vsub_u32_st_incp_2p2_p $qu, $rs1, $qv, $qx, $qy, $sat",
+				"!esp_vsub_u32_st_incp_2p2_p $qu, $rs1, $qv, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vsub_u32_st_incp_2p2 timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat, timm:$qv))]>;
 
 def ESP_VSUB_U8_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins QR:$qx, QR:$qy, sat:$sat),
-                   "esp.vsub.u8\t $qv, $qx, $qy, $sat", []> 
+                   "esp.vsub.u8\t $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -25846,11 +25846,11 @@ def ESP_VSUB_U8_2P2: Esp32V2P2Inst<(outs QR:$qv), (ins QR:$qx, QR:$qy, sat:$sat)
 
 let usesCustomInserter = 1 in 
 def ESP_VSUB_U8_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, sat:$sat, imm8:$qv),
-				"!esp_vsub_u8_2p2_p $qv, $qx, $qy, $sat",
+				"!esp_vsub_u8_2p2_p $qv, $qx, $qy$sat",
 			[(int_riscv_esp_vsub_u8_2p2 timm:$qx, timm:$qy, timm:$sat, timm:$qv)]>;
 
 def ESP_VSUB_U8_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat),
-                   "esp.vsub.u8.ld.incp\t $qu, $rs1, $qv, $qx, $qy, $sat", []> 
+                   "esp.vsub.u8.ld.incp\t $qu, $rs1, $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -25891,11 +25891,11 @@ def ESP_VSUB_U8_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, QR:$qu, GPRPIE:$rs1r), 
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VSUB_U8_LD_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, imm8:$qv, imm8:$qu),
-				"!esp_vsub_u8_ld_incp_2p2_p $qu, $rs1, $qv, $qx, $qy, $sat",
+				"!esp_vsub_u8_ld_incp_2p2_p $qu, $rs1, $qv, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vsub_u8_ld_incp_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$qv, timm:$qu))]>;
 
 def ESP_VSUB_U8_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat),
-                   "esp.vsub.u8.st.incp\t $qu, $rs1, $qv, $qx, $qy, $sat", []> 
+                   "esp.vsub.u8.st.incp\t $qu, $rs1, $qv, $qx, $qy$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -25936,7 +25936,7 @@ def ESP_VSUB_U8_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qv, GPRPIE:$rs1r), (ins QR:
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VSUB_U8_ST_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat, imm8:$qv),
-				"!esp_vsub_u8_st_incp_2p2_p $qu, $rs1, $qv, $qx, $qy, $sat",
+				"!esp_vsub_u8_st_incp_2p2_p $qu, $rs1, $qv, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vsub_u8_st_incp_2p2 timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat, timm:$qv))]>;
 
 def ESP_ADDX2_2P2: Esp32V2P2Inst<(outs GPRPIE:$rd), (ins GPRPIE:$rs1, GPRPIE:$rs2),
@@ -28938,7 +28938,7 @@ def ESP_ZERO_XACC_2P2_P : PseudoEsp<(outs), (ins),
 			[(int_riscv_esp_zero_xacc_2p2)]>;
 
 def ESP_FFT_AMS_S16_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qu, QR:$qz, QR:$qv, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qw, GPRPIE:$rs1, select_2:$sel2, sat:$sat),
-                   "esp.fft.ams.s16.ld.incp\t $qu, $rs1, $qz, $qv, $qx, $qw, $qy, $sel2, $sat", []> 
+                   "esp.fft.ams.s16.ld.incp\t $qu, $rs1, $qz, $qv, $qx, $qw, $qy, $sel2$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -28979,11 +28979,11 @@ def ESP_FFT_AMS_S16_LD_INCP_2P2: Esp32V2P2Inst<(outs QR:$qu, QR:$qz, QR:$qv, GPR
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_FFT_AMS_S16_LD_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qw, GPRPIE:$rs1, select_2:$sel2, sat:$sat, imm8:$qu, imm8:$qz, imm8:$qv),
-				"!esp_fft_ams_s16_ld_incp_2p2_p $qu, $rs1, $qz, $qv, $qx, $qw, $qy, $sel2, $sat",
+				"!esp_fft_ams_s16_ld_incp_2p2_p $qu, $rs1, $qz, $qv, $qx, $qw, $qy, $sel2$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_fft_ams_s16_ld_incp_2p2 timm:$qx, timm:$qy, timm:$qw, GPRPIE:$rs1, timm:$sel2, timm:$sat, timm:$qu, timm:$qz, timm:$qv))]>;
 
 def ESP_FFT_AMS_S16_LD_INCP_UAUP_2P2: Esp32V2P2Inst<(outs QR:$qu, QR:$qz, QR:$qv, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qw, GPRPIE:$rs1, select_2:$sel2, sat:$sat),
-                   "esp.fft.ams.s16.ld.incp.uaup\t $qu, $rs1, $qz, $qv, $qx, $qw, $qy, $sel2, $sat", []> 
+                   "esp.fft.ams.s16.ld.incp.uaup\t $qu, $rs1, $qz, $qv, $qx, $qw, $qy, $sel2$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -29024,11 +29024,11 @@ def ESP_FFT_AMS_S16_LD_INCP_UAUP_2P2: Esp32V2P2Inst<(outs QR:$qu, QR:$qz, QR:$qv
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_FFT_AMS_S16_LD_INCP_UAUP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qw, GPRPIE:$rs1, select_2:$sel2, sat:$sat, imm8:$qu, imm8:$qz, imm8:$qv),
-				"!esp_fft_ams_s16_ld_incp_uaup_2p2_p $qu, $rs1, $qz, $qv, $qx, $qw, $qy, $sel2, $sat",
+				"!esp_fft_ams_s16_ld_incp_uaup_2p2_p $qu, $rs1, $qz, $qv, $qx, $qw, $qy, $sel2$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_fft_ams_s16_ld_incp_uaup_2p2 timm:$qx, timm:$qy, timm:$qw, GPRPIE:$rs1, timm:$sel2, timm:$sat, timm:$qu, timm:$qz, timm:$qv))]>;
 
 def ESP_FFT_AMS_S16_LD_R32_DECP_2P2: Esp32V2P2Inst<(outs QR:$qu, QR:$qz, QR:$qv, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qw, GPRPIE:$rs1, select_2:$sel2, sat:$sat),
-                   "esp.fft.ams.s16.ld.r32.decp\t $qu, $rs1, $qz, $qv, $qx, $qw, $qy, $sel2, $sat", []> 
+                   "esp.fft.ams.s16.ld.r32.decp\t $qu, $rs1, $qz, $qv, $qx, $qw, $qy, $sel2$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -29069,11 +29069,11 @@ def ESP_FFT_AMS_S16_LD_R32_DECP_2P2: Esp32V2P2Inst<(outs QR:$qu, QR:$qz, QR:$qv,
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_FFT_AMS_S16_LD_R32_DECP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qw, GPRPIE:$rs1, select_2:$sel2, sat:$sat, imm8:$qu, imm8:$qz, imm8:$qv),
-				"!esp_fft_ams_s16_ld_r32_decp_2p2_p $qu, $rs1, $qz, $qv, $qx, $qw, $qy, $sel2, $sat",
+				"!esp_fft_ams_s16_ld_r32_decp_2p2_p $qu, $rs1, $qz, $qv, $qx, $qw, $qy, $sel2$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_fft_ams_s16_ld_r32_decp_2p2 timm:$qx, timm:$qy, timm:$qw, GPRPIE:$rs1, timm:$sel2, timm:$sat, timm:$qu, timm:$qz, timm:$qv))]>;
 
 def ESP_FFT_AMS_S16_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, GPRPIE:$rs1r, GPRPIE:$rs2r), (ins QR:$qx, QR:$qy, QR:$qw, QR:$qu, GPRPIE:$rs1, GPRPIE:$rs2, select_2:$sel2, sat:$sat),
-                   "esp.fft.ams.s16.st.incp\t $qu, $qz, $rs2, $rs1, $qx, $qw, $qy, $sel2, $sat", []> 
+                   "esp.fft.ams.s16.st.incp\t $qu, $qz, $rs2, $rs1, $qx, $qw, $qy, $sel2$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -29115,7 +29115,7 @@ def ESP_FFT_AMS_S16_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, GPRPIE:$rs1r, GPRPI
 
 let usesCustomInserter = 1 in 
 def ESP_FFT_AMS_S16_ST_INCP_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, imm8:$qw, imm8:$qu, GPRPIE:$rs1, GPRPIE:$rs2, select_2:$sel2, sat:$sat, imm8:$qz),
-				"!esp_fft_ams_s16_st_incp_2p2_p $qu, $qz, $rs2, $rs1, $qx, $qw, $qy, $sel2, $sat",
+				"!esp_fft_ams_s16_st_incp_2p2_p $qu, $qz, $rs2, $rs1, $qx, $qw, $qy, $sel2$sat",
 			[(int_riscv_esp_fft_ams_s16_st_incp_2p2 timm:$qx, timm:$qy, timm:$qw, timm:$qu, GPRPIE:$rs1, GPRPIE:$rs2, timm:$sel2, timm:$sat, timm:$qz)]>;
 
 def ESP_FFT_BITREV_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r, QR:$qvr), (ins GPRPIE:$rs1, QR:$qv),
@@ -29167,7 +29167,7 @@ def ESP_FFT_BITREV_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, imm8
 			[(set GPRPIE:$rs1r, (int_riscv_esp_fft_bitrev_2p2 GPRPIE:$rs1, timm:$qv))]>;
 
 def ESP_FFT_CMUL_S16_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qz, QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat, select_8:$sel8),
-                   "esp.fft.cmul.s16.ld.xp\t $qu, $rs1, $rs2, $qz, $qy, $qx, $sel8, $sat", []> 
+                   "esp.fft.cmul.s16.ld.xp\t $qu, $rs1, $rs2, $qz, $qy, $qx, $sel8$sat", []> 
 {
   bits<5> rs2;
   bits<3> qx;
@@ -29208,11 +29208,11 @@ def ESP_FFT_CMUL_S16_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qz, QR:$qu, GPRPIE:$rs1r
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_FFT_CMUL_S16_LD_XP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, select_8:$sel8, imm8:$qz, imm8:$qu),
-				"!esp_fft_cmul_s16_ld_xp_2p2_p $qu, $rs1, $rs2, $qz, $qy, $qx, $sel8, $sat",
+				"!esp_fft_cmul_s16_ld_xp_2p2_p $qu, $rs1, $rs2, $qz, $qy, $qx, $sel8$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_fft_cmul_s16_ld_xp_2p2 GPRPIE:$rs2, timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$sel8, timm:$qz, timm:$qu))]>;
 
 def ESP_FFT_CMUL_S16_ST_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, sat:$sat, select_4:$sel4, select_4:$upd4, select_8:$sel8),
-                   "esp.fft.cmul.s16.st.xp\t $qy, $qx, $qu, $rs1, $rs2, $sel8, $upd4, $sel4, $sat", []> 
+                   "esp.fft.cmul.s16.st.xp\t $qy, $qx, $qu, $rs1, $rs2, $sel8, $upd4, $sel4$sat", []> 
 {
   bits<5> rs2;
   bits<3> qx;
@@ -29253,11 +29253,11 @@ def ESP_FFT_CMUL_S16_ST_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_FFT_CMUL_S16_ST_XP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, sat:$sat, select_4:$sel4, select_4:$upd4, select_8:$sel8),
-				"!esp_fft_cmul_s16_st_xp_2p2_p $qy, $qx, $qu, $rs1, $rs2, $sel8, $upd4, $sel4, $sat",
+				"!esp_fft_cmul_s16_st_xp_2p2_p $qy, $qx, $qu, $rs1, $rs2, $sel8, $upd4, $sel4$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_fft_cmul_s16_st_xp_2p2 GPRPIE:$rs2, timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat, timm:$sel4, timm:$upd4, timm:$sel8))]>;
 
 def ESP_FFT_R2BF_S16_2P2: Esp32V2P2Inst<(outs QR:$qz, QR:$qv), (ins QR:$qx, QR:$qy, select_2:$sel2, sat:$sat),
-                   "esp.fft.r2bf.s16\t $qz, $qv, $qx, $qy, $sel2, $sat", []> 
+                   "esp.fft.r2bf.s16\t $qz, $qv, $qx, $qy, $sel2$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -29297,11 +29297,11 @@ def ESP_FFT_R2BF_S16_2P2: Esp32V2P2Inst<(outs QR:$qz, QR:$qv), (ins QR:$qx, QR:$
 
 let usesCustomInserter = 1 in 
 def ESP_FFT_R2BF_S16_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, select_2:$sel2, sat:$sat, imm8:$qz, imm8:$qv),
-				"!esp_fft_r2bf_s16_2p2_p $qz, $qv, $qx, $qy, $sel2, $sat",
+				"!esp_fft_r2bf_s16_2p2_p $qz, $qv, $qx, $qy, $sel2$sat",
 			[(int_riscv_esp_fft_r2bf_s16_2p2 timm:$qx, timm:$qy, timm:$sel2, timm:$sat, timm:$qz, timm:$qv)]>;
 
 def ESP_FFT_R2BF_S16_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, sat:$sat, select_4:$sel4),
-                   "esp.fft.r2bf.s16.st.incp\t $qz, $qx, $qy, $rs1, $sel4, $sat", []> 
+                   "esp.fft.r2bf.s16.st.incp\t $qz, $qx, $qy, $rs1, $sel4$sat", []> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -29343,7 +29343,7 @@ def ESP_FFT_R2BF_S16_ST_INCP_2P2: Esp32V2P2Inst<(outs QR:$qz, GPRPIE:$rs1r), (in
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_FFT_R2BF_S16_ST_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, sat:$sat, select_4:$sel4, imm8:$qz),
-				"!esp_fft_r2bf_s16_st_incp_2p2_p $qz, $qx, $qy, $rs1, $sel4, $sat",
+				"!esp_fft_r2bf_s16_st_incp_2p2_p $qz, $qx, $qy, $rs1, $sel4$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_fft_r2bf_s16_st_incp_2p2 timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sat, timm:$sel4, timm:$qz))]>;
 
 def ESP_FFT_VST_R32_DECP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR:$qu, GPRPIE:$rs1, select_2:$sel2),
@@ -31944,7 +31944,7 @@ def ESP_SRCI_2Q_2P2_P : PseudoEsp<(outs), (ins imm8:$qy, imm8:$qw, select_16:$se
 			[(int_riscv_esp_srci_2q_2p2 timm:$qy, timm:$qw, timm:$sel16)]>;
 
 def ESP_SRCMB_S16_Q_QACC_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins QR:$qw, sat:$sat, rm:$rm),
-                   "esp.srcmb.s16.q.qacc\t $qu, $qw, $sat, $rm", []> 
+                   "esp.srcmb.s16.q.qacc\t $qu, $qw$sat$rm", []> 
 {
   bits<3> qw;
   bits<1> sat;
@@ -31985,11 +31985,11 @@ def ESP_SRCMB_S16_Q_QACC_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins QR:$qw, sat:$sat
 
 let usesCustomInserter = 1 in 
 def ESP_SRCMB_S16_Q_QACC_2P2_P : PseudoEsp<(outs), (ins imm8:$qw, sat:$sat, rm:$rm, imm8:$qu),
-				"!esp_srcmb_s16_q_qacc_2p2_p $qu, $qw, $sat, $rm",
+				"!esp_srcmb_s16_q_qacc_2p2_p $qu, $qw$sat$rm",
 			[(int_riscv_esp_srcmb_s16_q_qacc_2p2 timm:$qw, timm:$sat, timm:$rm, timm:$qu)]>;
 
 def ESP_SRCMB_S16_QACC_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins GPRPIE:$rs1, sat:$sat, rm:$rm),
-                   "esp.srcmb.s16.qacc\t $qu, $rs1, $sat, $rm", []> 
+                   "esp.srcmb.s16.qacc\t $qu, $rs1$sat$rm", []> 
 {
   bits<5> rs1;
   bits<1> sat;
@@ -32029,11 +32029,11 @@ def ESP_SRCMB_S16_QACC_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins GPRPIE:$rs1, sat:$
 
 let usesCustomInserter = 1 in 
 def ESP_SRCMB_S16_QACC_2P2_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, sat:$sat, rm:$rm, imm8:$qu),
-				"!esp_srcmb_s16_qacc_2p2_p $qu, $rs1, $sat, $rm",
+				"!esp_srcmb_s16_qacc_2p2_p $qu, $rs1$sat$rm",
 			[(int_riscv_esp_srcmb_s16_qacc_2p2 GPRPIE:$rs1, timm:$sat, timm:$rm, timm:$qu)]>;
 
 def ESP_SRCMB_S8_Q_QACC_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins QR:$qw, sat:$sat, rm:$rm),
-                   "esp.srcmb.s8.q.qacc\t $qu, $qw, $sat, $rm", []> 
+                   "esp.srcmb.s8.q.qacc\t $qu, $qw$sat$rm", []> 
 {
   bits<3> qw;
   bits<1> sat;
@@ -32074,11 +32074,11 @@ def ESP_SRCMB_S8_Q_QACC_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins QR:$qw, sat:$sat,
 
 let usesCustomInserter = 1 in 
 def ESP_SRCMB_S8_Q_QACC_2P2_P : PseudoEsp<(outs), (ins imm8:$qw, sat:$sat, rm:$rm, imm8:$qu),
-				"!esp_srcmb_s8_q_qacc_2p2_p $qu, $qw, $sat, $rm",
+				"!esp_srcmb_s8_q_qacc_2p2_p $qu, $qw$sat$rm",
 			[(int_riscv_esp_srcmb_s8_q_qacc_2p2 timm:$qw, timm:$sat, timm:$rm, timm:$qu)]>;
 
 def ESP_SRCMB_S8_QACC_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins GPRPIE:$rs1, sat:$sat, rm:$rm),
-                   "esp.srcmb.s8.qacc\t $qu, $rs1, $sat, $rm", []> 
+                   "esp.srcmb.s8.qacc\t $qu, $rs1$sat$rm", []> 
 {
   bits<5> rs1;
   bits<1> sat;
@@ -32118,11 +32118,11 @@ def ESP_SRCMB_S8_QACC_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins GPRPIE:$rs1, sat:$s
 
 let usesCustomInserter = 1 in 
 def ESP_SRCMB_S8_QACC_2P2_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, sat:$sat, rm:$rm, imm8:$qu),
-				"!esp_srcmb_s8_qacc_2p2_p $qu, $rs1, $sat, $rm",
+				"!esp_srcmb_s8_qacc_2p2_p $qu, $rs1$sat$rm",
 			[(int_riscv_esp_srcmb_s8_qacc_2p2 GPRPIE:$rs1, timm:$sat, timm:$rm, timm:$qu)]>;
 
 def ESP_SRCMB_U16_Q_QACC_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins QR:$qw, sat:$sat, rm:$rm),
-                   "esp.srcmb.u16.q.qacc\t $qu, $qw, $sat, $rm", []> 
+                   "esp.srcmb.u16.q.qacc\t $qu, $qw$sat$rm", []> 
 {
   bits<3> qw;
   bits<1> sat;
@@ -32163,11 +32163,11 @@ def ESP_SRCMB_U16_Q_QACC_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins QR:$qw, sat:$sat
 
 let usesCustomInserter = 1 in 
 def ESP_SRCMB_U16_Q_QACC_2P2_P : PseudoEsp<(outs), (ins imm8:$qw, sat:$sat, rm:$rm, imm8:$qu),
-				"!esp_srcmb_u16_q_qacc_2p2_p $qu, $qw, $sat, $rm",
+				"!esp_srcmb_u16_q_qacc_2p2_p $qu, $qw$sat$rm",
 			[(int_riscv_esp_srcmb_u16_q_qacc_2p2 timm:$qw, timm:$sat, timm:$rm, timm:$qu)]>;
 
 def ESP_SRCMB_U16_QACC_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins GPRPIE:$rs1, sat:$sat, rm:$rm),
-                   "esp.srcmb.u16.qacc\t $qu, $rs1, $sat, $rm", []> 
+                   "esp.srcmb.u16.qacc\t $qu, $rs1$sat$rm", []> 
 {
   bits<5> rs1;
   bits<1> sat;
@@ -32207,11 +32207,11 @@ def ESP_SRCMB_U16_QACC_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins GPRPIE:$rs1, sat:$
 
 let usesCustomInserter = 1 in 
 def ESP_SRCMB_U16_QACC_2P2_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, sat:$sat, rm:$rm, imm8:$qu),
-				"!esp_srcmb_u16_qacc_2p2_p $qu, $rs1, $sat, $rm",
+				"!esp_srcmb_u16_qacc_2p2_p $qu, $rs1$sat$rm",
 			[(int_riscv_esp_srcmb_u16_qacc_2p2 GPRPIE:$rs1, timm:$sat, timm:$rm, timm:$qu)]>;
 
 def ESP_SRCMB_U8_Q_QACC_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins QR:$qw, sat:$sat, rm:$rm),
-                   "esp.srcmb.u8.q.qacc\t $qu, $qw, $sat, $rm", []> 
+                   "esp.srcmb.u8.q.qacc\t $qu, $qw$sat$rm", []> 
 {
   bits<3> qw;
   bits<1> sat;
@@ -32252,11 +32252,11 @@ def ESP_SRCMB_U8_Q_QACC_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins QR:$qw, sat:$sat,
 
 let usesCustomInserter = 1 in 
 def ESP_SRCMB_U8_Q_QACC_2P2_P : PseudoEsp<(outs), (ins imm8:$qw, sat:$sat, rm:$rm, imm8:$qu),
-				"!esp_srcmb_u8_q_qacc_2p2_p $qu, $qw, $sat, $rm",
+				"!esp_srcmb_u8_q_qacc_2p2_p $qu, $qw$sat$rm",
 			[(int_riscv_esp_srcmb_u8_q_qacc_2p2 timm:$qw, timm:$sat, timm:$rm, timm:$qu)]>;
 
 def ESP_SRCMB_U8_QACC_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins GPRPIE:$rs1, sat:$sat, rm:$rm),
-                   "esp.srcmb.u8.qacc\t $qu, $rs1, $sat, $rm", []> 
+                   "esp.srcmb.u8.qacc\t $qu, $rs1$sat$rm", []> 
 {
   bits<5> rs1;
   bits<1> sat;
@@ -32296,7 +32296,7 @@ def ESP_SRCMB_U8_QACC_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins GPRPIE:$rs1, sat:$s
 
 let usesCustomInserter = 1 in 
 def ESP_SRCMB_U8_QACC_2P2_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, sat:$sat, rm:$rm, imm8:$qu),
-				"!esp_srcmb_u8_qacc_2p2_p $qu, $rs1, $sat, $rm",
+				"!esp_srcmb_u8_qacc_2p2_p $qu, $rs1$sat$rm",
 			[(int_riscv_esp_srcmb_u8_qacc_2p2 GPRPIE:$rs1, timm:$sat, timm:$rm, timm:$qu)]>;
 
 def ESP_SRCQ_128_ST_INCP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR:$qy, QR:$qw, GPRPIE:$rs1),
@@ -32394,7 +32394,7 @@ def ESP_SRCXXP_2Q_2P2_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, GPRPIE:$rs2, imm8:
 			[(int_riscv_esp_srcxxp_2q_2p2 GPRPIE:$rs1, GPRPIE:$rs2, timm:$qy, timm:$qw)]>;
 
 def ESP_SRS_S_XACC_2P2: Esp32V2P2Inst<(outs GPRPIE:$rd), (ins GPRPIE:$rs1, sat:$sat, rm:$rm),
-                   "esp.srs.s.xacc\t $rd, $rs1, $sat, $rm", []> 
+                   "esp.srs.s.xacc\t $rd, $rs1$sat$rm", []> 
 {
   bits<5> rs1;
   bits<1> sat;
@@ -32435,11 +32435,11 @@ def ESP_SRS_S_XACC_2P2: Esp32V2P2Inst<(outs GPRPIE:$rd), (ins GPRPIE:$rs1, sat:$
 
 let usesCustomInserter = 1 in 
 def ESP_SRS_S_XACC_2P2_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, sat:$sat, rm:$rm, GPRPIE:$rd),
-				"!esp_srs_s_xacc_2p2_p $rd, $rs1, $sat, $rm",
+				"!esp_srs_s_xacc_2p2_p $rd, $rs1$sat$rm",
 			[(int_riscv_esp_srs_s_xacc_2p2 GPRPIE:$rs1, timm:$sat, timm:$rm, GPRPIE:$rd)]>;
 
 def ESP_SRS_U_XACC_2P2: Esp32V2P2Inst<(outs GPRPIE:$rd), (ins GPRPIE:$rs1, sat:$sat, rm:$rm),
-                   "esp.srs.u.xacc\t $rd, $rs1, $sat, $rm", []> 
+                   "esp.srs.u.xacc\t $rd, $rs1$sat$rm", []> 
 {
   bits<5> rs1;
   bits<1> sat;
@@ -32480,11 +32480,11 @@ def ESP_SRS_U_XACC_2P2: Esp32V2P2Inst<(outs GPRPIE:$rd), (ins GPRPIE:$rs1, sat:$
 
 let usesCustomInserter = 1 in 
 def ESP_SRS_U_XACC_2P2_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, sat:$sat, rm:$rm, GPRPIE:$rd),
-				"!esp_srs_u_xacc_2p2_p $rd, $rs1, $sat, $rm",
+				"!esp_srs_u_xacc_2p2_p $rd, $rs1$sat$rm",
 			[(int_riscv_esp_srs_u_xacc_2p2 GPRPIE:$rs1, timm:$sat, timm:$rm, GPRPIE:$rd)]>;
 
 def ESP_VSL_S32_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins QR:$qy, sat:$sat),
-                   "esp.vsl.s32\t $qu, $qy, $sat", []> 
+                   "esp.vsl.s32\t $qu, $qy$sat", []> 
 {
   bits<3> qy;
   bits<1> sat;
@@ -32525,11 +32525,11 @@ def ESP_VSL_S32_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins QR:$qy, sat:$sat),
 
 let usesCustomInserter = 1 in 
 def ESP_VSL_S32_2P2_P : PseudoEsp<(outs), (ins imm8:$qy, sat:$sat, imm8:$qu),
-				"!esp_vsl_s32_2p2_p $qu, $qy, $sat",
+				"!esp_vsl_s32_2p2_p $qu, $qy$sat",
 			[(int_riscv_esp_vsl_s32_2p2 timm:$qy, timm:$sat, timm:$qu)]>;
 
 def ESP_VSL_U32_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins QR:$qy, sat:$sat),
-                   "esp.vsl.u32\t $qu, $qy, $sat", []> 
+                   "esp.vsl.u32\t $qu, $qy$sat", []> 
 {
   bits<3> qy;
   bits<1> sat;
@@ -32570,11 +32570,11 @@ def ESP_VSL_U32_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins QR:$qy, sat:$sat),
 
 let usesCustomInserter = 1 in 
 def ESP_VSL_U32_2P2_P : PseudoEsp<(outs), (ins imm8:$qy, sat:$sat, imm8:$qu),
-				"!esp_vsl_u32_2p2_p $qu, $qy, $sat",
+				"!esp_vsl_u32_2p2_p $qu, $qy$sat",
 			[(int_riscv_esp_vsl_u32_2p2 timm:$qy, timm:$sat, timm:$qu)]>;
 
 def ESP_VSLD_16_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins QR:$qy, QR:$qw, sat:$sat, rm:$rm),
-                   "esp.vsld.16\t $qu, $qy, $qw, $sat, $rm", []> 
+                   "esp.vsld.16\t $qu, $qy, $qw$sat$rm", []> 
 {
   bits<3> qy;
   bits<3> qw;
@@ -32615,11 +32615,11 @@ def ESP_VSLD_16_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins QR:$qy, QR:$qw, sat:$sat,
 
 let usesCustomInserter = 1 in 
 def ESP_VSLD_16_2P2_P : PseudoEsp<(outs), (ins imm8:$qy, imm8:$qw, sat:$sat, rm:$rm, imm8:$qu),
-				"!esp_vsld_16_2p2_p $qu, $qy, $qw, $sat, $rm",
+				"!esp_vsld_16_2p2_p $qu, $qy, $qw$sat$rm",
 			[(int_riscv_esp_vsld_16_2p2 timm:$qy, timm:$qw, timm:$sat, timm:$rm, timm:$qu)]>;
 
 def ESP_VSLD_32_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins QR:$qy, QR:$qw, sat:$sat, rm:$rm),
-                   "esp.vsld.32\t $qu, $qy, $qw, $sat, $rm", []> 
+                   "esp.vsld.32\t $qu, $qy, $qw$sat$rm", []> 
 {
   bits<3> qy;
   bits<3> qw;
@@ -32660,11 +32660,11 @@ def ESP_VSLD_32_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins QR:$qy, QR:$qw, sat:$sat,
 
 let usesCustomInserter = 1 in 
 def ESP_VSLD_32_2P2_P : PseudoEsp<(outs), (ins imm8:$qy, imm8:$qw, sat:$sat, rm:$rm, imm8:$qu),
-				"!esp_vsld_32_2p2_p $qu, $qy, $qw, $sat, $rm",
+				"!esp_vsld_32_2p2_p $qu, $qy, $qw$sat$rm",
 			[(int_riscv_esp_vsld_32_2p2 timm:$qy, timm:$qw, timm:$sat, timm:$rm, timm:$qu)]>;
 
 def ESP_VSLD_8_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins QR:$qy, QR:$qw, sat:$sat, rm:$rm),
-                   "esp.vsld.8\t $qu, $qy, $qw, $sat, $rm", []> 
+                   "esp.vsld.8\t $qu, $qy, $qw$sat$rm", []> 
 {
   bits<3> qy;
   bits<3> qw;
@@ -32705,11 +32705,11 @@ def ESP_VSLD_8_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins QR:$qy, QR:$qw, sat:$sat, 
 
 let usesCustomInserter = 1 in 
 def ESP_VSLD_8_2P2_P : PseudoEsp<(outs), (ins imm8:$qy, imm8:$qw, sat:$sat, rm:$rm, imm8:$qu),
-				"!esp_vsld_8_2p2_p $qu, $qy, $qw, $sat, $rm",
+				"!esp_vsld_8_2p2_p $qu, $qy, $qw$sat$rm",
 			[(int_riscv_esp_vsld_8_2p2 timm:$qy, timm:$qw, timm:$sat, timm:$rm, timm:$qu)]>;
 
 def ESP_VSR_S32_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins QR:$qy, rm:$rm),
-                   "esp.vsr.s32\t $qu, $qy, $rm", []> 
+                   "esp.vsr.s32\t $qu, $qy$rm", []> 
 {
   bits<3> qy;
   bits<3> rm;
@@ -32749,11 +32749,11 @@ def ESP_VSR_S32_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins QR:$qy, rm:$rm),
 
 let usesCustomInserter = 1 in 
 def ESP_VSR_S32_2P2_P : PseudoEsp<(outs), (ins imm8:$qy, rm:$rm, imm8:$qu),
-				"!esp_vsr_s32_2p2_p $qu, $qy, $rm",
+				"!esp_vsr_s32_2p2_p $qu, $qy$rm",
 			[(int_riscv_esp_vsr_s32_2p2 timm:$qy, timm:$rm, timm:$qu)]>;
 
 def ESP_VSR_U32_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins QR:$qy, rm:$rm),
-                   "esp.vsr.u32\t $qu, $qy, $rm", []> 
+                   "esp.vsr.u32\t $qu, $qy$rm", []> 
 {
   bits<3> qy;
   bits<3> rm;
@@ -32793,11 +32793,11 @@ def ESP_VSR_U32_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins QR:$qy, rm:$rm),
 
 let usesCustomInserter = 1 in 
 def ESP_VSR_U32_2P2_P : PseudoEsp<(outs), (ins imm8:$qy, rm:$rm, imm8:$qu),
-				"!esp_vsr_u32_2p2_p $qu, $qy, $rm",
+				"!esp_vsr_u32_2p2_p $qu, $qy$rm",
 			[(int_riscv_esp_vsr_u32_2p2 timm:$qy, timm:$rm, timm:$qu)]>;
 
 def ESP_VSRD_16_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins QR:$qy, QR:$qw, sat:$sat, rm:$rm),
-                   "esp.vsrd.16\t $qu, $qy, $qw, $sat, $rm", []> 
+                   "esp.vsrd.16\t $qu, $qy, $qw$sat$rm", []> 
 {
   bits<3> qy;
   bits<3> qw;
@@ -32838,11 +32838,11 @@ def ESP_VSRD_16_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins QR:$qy, QR:$qw, sat:$sat,
 
 let usesCustomInserter = 1 in 
 def ESP_VSRD_16_2P2_P : PseudoEsp<(outs), (ins imm8:$qy, imm8:$qw, sat:$sat, rm:$rm, imm8:$qu),
-				"!esp_vsrd_16_2p2_p $qu, $qy, $qw, $sat, $rm",
+				"!esp_vsrd_16_2p2_p $qu, $qy, $qw$sat$rm",
 			[(int_riscv_esp_vsrd_16_2p2 timm:$qy, timm:$qw, timm:$sat, timm:$rm, timm:$qu)]>;
 
 def ESP_VSRD_32_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins QR:$qy, QR:$qw, sat:$sat, rm:$rm),
-                   "esp.vsrd.32\t $qu, $qy, $qw, $sat, $rm", []> 
+                   "esp.vsrd.32\t $qu, $qy, $qw$sat$rm", []> 
 {
   bits<3> qy;
   bits<3> qw;
@@ -32883,11 +32883,11 @@ def ESP_VSRD_32_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins QR:$qy, QR:$qw, sat:$sat,
 
 let usesCustomInserter = 1 in 
 def ESP_VSRD_32_2P2_P : PseudoEsp<(outs), (ins imm8:$qy, imm8:$qw, sat:$sat, rm:$rm, imm8:$qu),
-				"!esp_vsrd_32_2p2_p $qu, $qy, $qw, $sat, $rm",
+				"!esp_vsrd_32_2p2_p $qu, $qy, $qw$sat$rm",
 			[(int_riscv_esp_vsrd_32_2p2 timm:$qy, timm:$qw, timm:$sat, timm:$rm, timm:$qu)]>;
 
 def ESP_VSRD_8_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins QR:$qy, QR:$qw, sat:$sat, rm:$rm),
-                   "esp.vsrd.8\t $qu, $qy, $qw, $sat, $rm", []> 
+                   "esp.vsrd.8\t $qu, $qy, $qw$sat$rm", []> 
 {
   bits<3> qy;
   bits<3> qw;
@@ -32928,7 +32928,7 @@ def ESP_VSRD_8_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins QR:$qy, QR:$qw, sat:$sat, 
 
 let usesCustomInserter = 1 in 
 def ESP_VSRD_8_2P2_P : PseudoEsp<(outs), (ins imm8:$qy, imm8:$qw, sat:$sat, rm:$rm, imm8:$qu),
-				"!esp_vsrd_8_2p2_p $qu, $qy, $qw, $sat, $rm",
+				"!esp_vsrd_8_2p2_p $qu, $qy, $qw$sat$rm",
 			[(int_riscv_esp_vsrd_8_2p2 timm:$qy, timm:$qw, timm:$sat, timm:$rm, timm:$qu)]>;
 
 def ESP_ST_S_XACC_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_8:$off2568),
