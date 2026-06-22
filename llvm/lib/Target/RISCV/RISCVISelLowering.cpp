@@ -12,10 +12,10 @@
 //===----------------------------------------------------------------------===//
 
 #include "RISCVISelLowering.h"
-#include "RISCVESPVISelLowering.h"
 #include "MCTargetDesc/RISCVMatInt.h"
 #include "RISCV.h"
 #include "RISCVConstantPoolValue.h"
+#include "RISCVESPVISelLowering.h"
 #include "RISCVMachineFunctionInfo.h"
 #include "RISCVRegisterInfo.h"
 #include "RISCVSelectionDAGInfo.h"
@@ -144,12 +144,6 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
                                          const RISCVSubtarget &STI)
     : TargetLowering(TM, STI), Subtarget(STI) {
 
-  if (DebugESPVBuildVectorCombine) {
-    errs() << DEBUG_TYPE << ": ESPV BUILD_VECTOR debug enabled "
-              "(lower + performBUILD_VECTORCombine tracing)\n";
-    errs().flush();
-  }
-
   RISCVABI::ABI ABI = Subtarget.getTargetABI();
   assert(ABI != RISCVABI::ABI_Unknown && "Improperly initialised target ABI");
 
@@ -208,7 +202,8 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
   if (Subtarget.hasESPVTargetLowering()) {
     initializeESPVTargetLowering(Subtarget);
     // Packed boolean vectors occupy one or two bytes in memory; lower them
-    // explicitly before generic legalization promotes the memory type to i8/i16.
+    // explicitly before generic legalization promotes the memory type to
+    // i8/i16.
     setTruncStoreAction(MVT::v16i8, MVT::v16i1, Custom);
     setLoadExtAction({ISD::EXTLOAD, ISD::SEXTLOAD, ISD::ZEXTLOAD}, MVT::v16i8,
                      MVT::v16i1, Custom);
@@ -2979,6 +2974,16 @@ bool RISCVTargetLowering::isExtractSubvectorCheap(EVT ResVT, EVT SrcVT,
 MVT RISCVTargetLowering::getRegisterTypeForCallingConv(LLVMContext &Context,
                                                       CallingConv::ID CC,
                                                       EVT VT) const {
+  if (Subtarget.hasESPVTargetLowering() && !Subtarget.hasVInstructions() &&
+      VT.isFixedLengthVector()) {
+    EVT IntermediateVT;
+    MVT RegisterVT;
+    unsigned NumIntermediates;
+    getVectorTypeBreakdownForCallingConv(Context, CC, VT, IntermediateVT,
+                                         NumIntermediates, RegisterVT);
+    return RegisterVT;
+  }
+
   // Use f32 to pass f16 if it is legal and Zfh/Zfhmin is not enabled.
   // We might still end up using a GPR but that will be decided based on ABI.
   if (VT == MVT::f16 && Subtarget.hasStdExtFOrZfinx() &&
@@ -3002,6 +3007,15 @@ RISCVTargetLowering::getNumRegisters(LLVMContext &Context, EVT VT,
 unsigned RISCVTargetLowering::getNumRegistersForCallingConv(LLVMContext &Context,
                                                            CallingConv::ID CC,
                                                            EVT VT) const {
+  if (Subtarget.hasESPVTargetLowering() && !Subtarget.hasVInstructions() &&
+      VT.isFixedLengthVector()) {
+    EVT IntermediateVT;
+    MVT RegisterVT;
+    unsigned NumIntermediates;
+    return getVectorTypeBreakdownForCallingConv(Context, CC, VT, IntermediateVT,
+                                                NumIntermediates, RegisterVT);
+  }
+
   // Use f32 to pass f16 if it is legal and Zfh/Zfhmin is not enabled.
   // We might still end up using a GPR but that will be decided based on ABI.
   if (VT == MVT::f16 && Subtarget.hasStdExtFOrZfinx() &&
@@ -3009,6 +3023,26 @@ unsigned RISCVTargetLowering::getNumRegistersForCallingConv(LLVMContext &Context
     return 1;
 
   return TargetLowering::getNumRegistersForCallingConv(Context, CC, VT);
+}
+
+unsigned RISCVTargetLowering::getVectorTypeBreakdownForCallingConv(
+    LLVMContext &Context, CallingConv::ID CC, EVT VT, EVT &IntermediateVT,
+    unsigned &NumIntermediates, MVT &RegisterVT) const {
+  if (Subtarget.hasESPVTargetLowering() && !Subtarget.hasVInstructions() &&
+      VT.isFixedLengthVector()) {
+    // ESPV without RVV has no vector ABI. Scalarize ABI-visible fixed vectors
+    // so stress-generated IR is lowered through normal scalar GPR locations.
+    IntermediateVT = VT.getVectorElementType();
+    NumIntermediates = VT.getVectorNumElements();
+    RegisterVT = getRegisterTypeForCallingConv(Context, CC, IntermediateVT);
+    return NumIntermediates *
+           getNumRegistersForCallingConv(Context, CC, IntermediateVT);
+  }
+
+  unsigned NumRegs = TargetLowering::getVectorTypeBreakdownForCallingConv(
+      Context, CC, VT, IntermediateVT, NumIntermediates, RegisterVT);
+
+  return NumRegs;
 }
 
 // Changes the condition code and swaps operands if necessary, so the SetCC
@@ -3304,6 +3338,18 @@ bool RISCVTargetLowering::mergeStoresAfterLegalization(EVT VT) const {
 
   return !Subtarget.useRVVForFixedLengthVectors() ||
          VT.isFixedLengthVectorOf(MVT::i1);
+}
+
+bool RISCVTargetLowering::canMergeStoresTo(unsigned AS, EVT MemVT,
+                                           const MachineFunction &MF) const {
+  // DAGCombiner can merge two 128-bit ESPV loads/stores into one v32i8
+  // (256-bit) memory op. There is no single native 256-bit load/store; v32i8 is
+  // lowered via Custom LOAD/STORE. Blocking wide merge keeps 128-bit ops and
+  // avoids legalization/assert issues on store-of-load chains.
+  if (Subtarget.hasESPVTargetLowering() && MemVT.isVector() &&
+      MemVT.getSizeInBits() > 128)
+    return false;
+  return TargetLowering::canMergeStoresTo(AS, MemVT, MF);
 }
 
 bool RISCVTargetLowering::isLegalElementTypeForRVV(EVT ScalarTy) const {
@@ -6518,8 +6564,6 @@ static SDValue tryWidenMaskForShuffle(SDValue Op, SelectionDAG &DAG) {
   return DAG.getBitcast(VT, DAG.getVectorShuffle(NewVT, DL, V0, V1, NewMask));
 }
 
-// Match an interleave shuffle that forms a P-extension packed zip:
-//   <a0, b0, a1, b1, ...> -> zip*p/wzip*p
 static SDValue lowerVECTOR_SHUFFLEAsPZip(ShuffleVectorSDNode *SVN,
                                          SelectionDAG &DAG) {
   SDValue V1 = SVN->getOperand(0);
@@ -6568,6 +6612,353 @@ static SDValue lowerVECTOR_SHUFFLEAsPUnzip(ShuffleVectorSDNode *SVN,
   return DAG.getNode(Opc, DL, VT, V1, V2);
 }
 
+// Find another shuffle of the same inputs that is the other half of a zip or
+// unzip, so both results can be produced by one ESP pair instruction.
+// N is the number of elements in each result (8 for i16, 4 for i32, 16 for i8).
+template <unsigned N>
+static SDNode *findPairedShuffle(SDValue Op, SDValue V1, SDValue V2,
+                                 bool IsUZP1, bool IsUZP2, bool IsZIP1,
+                                 bool IsZIP2) {
+  auto isComplementary = [](ArrayRef<int> Mask, bool WantUZP1, bool WantUZP2,
+                            bool WantZIP1, bool WantZIP2) {
+    if (Mask.size() != N)
+      return false;
+    for (unsigned I = 0; I < N; ++I) {
+      int Expected;
+      if (WantUZP1)
+        Expected = I * 2;
+      else if (WantUZP2)
+        Expected = I * 2 + 1;
+      else if (WantZIP1)
+        Expected = (I % 2 == 0) ? (int)(I / 2) : (int)(I / 2 + N);
+      else if (WantZIP2)
+        Expected = (I % 2 == 0) ? (int)(I / 2 + N / 2)
+                                : (int)(I / 2 + N + N / 2);
+      else
+        return false;
+      if (Mask[I] != Expected)
+        return false;
+    }
+    return true;
+  };
+
+  // The caller describes this shuffle; the pair has the other half.
+  bool WantUZP1 = IsUZP2;
+  bool WantUZP2 = IsUZP1;
+  bool WantZIP1 = IsZIP2;
+  bool WantZIP2 = IsZIP1;
+
+  for (SDNode *User : V1->users()) {
+    if (User == Op.getNode() || User->getOpcode() != ISD::VECTOR_SHUFFLE)
+      continue;
+    if (User->getOperand(0) != V1 || User->getOperand(1) != V2)
+      continue;
+    if (isComplementary(cast<ShuffleVectorSDNode>(User)->getMask(), WantUZP1,
+                        WantUZP2, WantZIP1, WantZIP2))
+      return User;
+  }
+  return nullptr;
+}
+
+static SDValue lowerESPVectorShuffle16(SDValue Op, SelectionDAG &DAG, SDLoc DL,
+                                       MVT VT, SDValue V1, SDValue V2,
+                                       ShuffleVectorSDNode *SVN,
+                                       ArrayRef<int> Mask) {
+  // Check UZP1 pattern: [0, 2, 4, 6, 8, 10, 12, 14]
+  bool IsUZP1 = true;
+  for (int i = 0; i < 8; ++i) {
+    if (Mask[i] != i * 2) {
+      IsUZP1 = false;
+      break;
+    }
+  }
+
+  // Check UZP2 pattern: [1, 3, 5, 7, 9, 11, 13, 15]
+  bool IsUZP2 = true;
+  for (int i = 0; i < 8; ++i) {
+    if (Mask[i] != i * 2 + 1) {
+      IsUZP2 = false;
+      break;
+    }
+  }
+
+  if (IsUZP1 || IsUZP2) {
+    SDNode *PairNode =
+        findPairedShuffle<8>(Op, V1, V2, IsUZP1, IsUZP2, false, false);
+
+    if (PairNode) {
+      // Found pair, generate ESP_VUNZIP_16_PAIR node
+      SDVTList VTs = DAG.getVTList(VT, VT);
+      SDValue VUnzipPair =
+          DAG.getNode(RISCVISD::ESP_VUNZIP_16_PAIR, DL, VTs, V1, V2);
+
+      if (IsUZP1) {
+        DAG.ReplaceAllUsesWith(SDValue(PairNode, 0), VUnzipPair.getValue(1));
+        return VUnzipPair.getValue(0); // UZP1 result
+      }
+      DAG.ReplaceAllUsesWith(SDValue(PairNode, 0), VUnzipPair.getValue(0));
+      return VUnzipPair.getValue(1); // UZP2 result
+    }
+
+    // No pair found, use individual SDNode
+    if (IsUZP1)
+      return DAG.getNode(RISCVISD::ESP_VUNZIP_16_UZP1, DL, VT, V1, V2);
+    return DAG.getNode(RISCVISD::ESP_VUNZIP_16_UZP2, DL, VT, V1, V2);
+  }
+
+  // Check ZIP1 pattern: [0, 8, 1, 9, 2, 10, 3, 11]
+  bool IsZIP1 = true;
+  for (int i = 0; i < 8; ++i) {
+    int expected = (i % 2 == 0) ? i / 2 : (i / 2) + 8;
+    if (Mask[i] != expected) {
+      IsZIP1 = false;
+      break;
+    }
+  }
+
+  // Check ZIP2 pattern: [4, 12, 5, 13, 6, 14, 7, 15]
+  bool IsZIP2 = true;
+  for (int i = 0; i < 8; ++i) {
+    int expected = (i % 2 == 0) ? (i / 2) + 4 : (i / 2) + 12;
+    if (Mask[i] != expected) {
+      IsZIP2 = false;
+      break;
+    }
+  }
+
+  if (IsZIP1 || IsZIP2) {
+    SDNode *PairNode =
+        findPairedShuffle<8>(Op, V1, V2, false, false, IsZIP1, IsZIP2);
+
+    if (PairNode) {
+      SDVTList VTs = DAG.getVTList(VT, VT);
+      SDValue VZipPair =
+          DAG.getNode(RISCVISD::ESP_VZIP_16_PAIR, DL, VTs, V1, V2);
+
+      if (IsZIP1) {
+        DAG.ReplaceAllUsesWith(SDValue(PairNode, 0), VZipPair.getValue(1));
+        return VZipPair.getValue(0);
+      }
+      DAG.ReplaceAllUsesWith(SDValue(PairNode, 0), VZipPair.getValue(0));
+      return VZipPair.getValue(1);
+    }
+
+    if (IsZIP1)
+      return DAG.getNode(RISCVISD::ESP_VZIP_16_ZIP1, DL, VT, V1, V2);
+    return DAG.getNode(RISCVISD::ESP_VZIP_16_ZIP2, DL, VT, V1, V2);
+  }
+
+  return SDValue();
+}
+
+static SDValue lowerESPVectorShuffle32(SDValue Op, SelectionDAG &DAG, SDLoc DL,
+                                       MVT VT, SDValue V1, SDValue V2,
+                                       ShuffleVectorSDNode *SVN,
+                                       ArrayRef<int> Mask) {
+  // Check UZP1 pattern: [0, 2, 4, 6]
+  bool IsUZP1 = true;
+  for (int i = 0; i < 4; ++i) {
+    if (Mask[i] != i * 2) {
+      IsUZP1 = false;
+      break;
+    }
+  }
+
+  // Check UZP2 pattern: [1, 3, 5, 7]
+  bool IsUZP2 = true;
+  for (int i = 0; i < 4; ++i) {
+    if (Mask[i] != i * 2 + 1) {
+      IsUZP2 = false;
+      break;
+    }
+  }
+
+  if (IsUZP1 || IsUZP2) {
+    SDNode *PairNode =
+        findPairedShuffle<4>(Op, V1, V2, IsUZP1, IsUZP2, false, false);
+
+    if (PairNode) {
+      SDVTList VTs = DAG.getVTList(VT, VT);
+      SDValue VUnzipPair =
+          DAG.getNode(RISCVISD::ESP_VUNZIP_32_PAIR, DL, VTs, V1, V2);
+
+      if (IsUZP1) {
+        DAG.ReplaceAllUsesWith(SDValue(PairNode, 0), VUnzipPair.getValue(1));
+        return VUnzipPair.getValue(0);
+      }
+      DAG.ReplaceAllUsesWith(SDValue(PairNode, 0), VUnzipPair.getValue(0));
+      return VUnzipPair.getValue(1);
+    }
+
+    if (IsUZP1)
+      return DAG.getNode(RISCVISD::ESP_VUNZIP_32_UZP1, DL, VT, V1, V2);
+    return DAG.getNode(RISCVISD::ESP_VUNZIP_32_UZP2, DL, VT, V1, V2);
+  }
+
+  // Check ZIP1 pattern: [0, 4, 1, 5]
+  bool IsZIP1 = true;
+  for (int i = 0; i < 4; ++i) {
+    int expected = (i % 2 == 0) ? i / 2 : (i / 2) + 4;
+    if (Mask[i] != expected) {
+      IsZIP1 = false;
+      break;
+    }
+  }
+
+  // Check ZIP2 pattern: [2, 6, 3, 7]
+  bool IsZIP2 = true;
+  for (int i = 0; i < 4; ++i) {
+    int expected = (i % 2 == 0) ? (i / 2) + 2 : (i / 2) + 6;
+    if (Mask[i] != expected) {
+      IsZIP2 = false;
+      break;
+    }
+  }
+
+  if (IsZIP1 || IsZIP2) {
+    SDNode *PairNode =
+        findPairedShuffle<4>(Op, V1, V2, false, false, IsZIP1, IsZIP2);
+
+    if (PairNode) {
+      SDVTList VTs = DAG.getVTList(VT, VT);
+      SDValue VZipPair =
+          DAG.getNode(RISCVISD::ESP_VZIP_32_PAIR, DL, VTs, V1, V2);
+
+      if (IsZIP1) {
+        DAG.ReplaceAllUsesWith(SDValue(PairNode, 0), VZipPair.getValue(1));
+        return VZipPair.getValue(0);
+      }
+      DAG.ReplaceAllUsesWith(SDValue(PairNode, 0), VZipPair.getValue(0));
+      return VZipPair.getValue(1);
+    }
+
+    if (IsZIP1)
+      return DAG.getNode(RISCVISD::ESP_VZIP_32_ZIP1, DL, VT, V1, V2);
+    return DAG.getNode(RISCVISD::ESP_VZIP_32_ZIP2, DL, VT, V1, V2);
+  }
+
+  return SDValue();
+}
+
+static SDValue lowerESPVectorShuffle8(SDValue Op, SelectionDAG &DAG, SDLoc DL,
+                                      MVT VT, SDValue V1, SDValue V2,
+                                      ShuffleVectorSDNode *SVN,
+                                      ArrayRef<int> Mask) {
+  // Check UZP1 pattern: [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28,
+  // 30]
+  bool IsUZP1 = true;
+  for (int i = 0; i < 16; ++i) {
+    if (Mask[i] != i * 2) {
+      IsUZP1 = false;
+      break;
+    }
+  }
+
+  // Check UZP2 pattern: [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29,
+  // 31]
+  bool IsUZP2 = true;
+  for (int i = 0; i < 16; ++i) {
+    if (Mask[i] != i * 2 + 1) {
+      IsUZP2 = false;
+      break;
+    }
+  }
+
+  if (IsUZP1 || IsUZP2) {
+    SDNode *PairNode =
+        findPairedShuffle<16>(Op, V1, V2, IsUZP1, IsUZP2, false, false);
+
+    if (PairNode) {
+      SDVTList VTs = DAG.getVTList(VT, VT);
+      SDValue VUnzipPair =
+          DAG.getNode(RISCVISD::ESP_VUNZIP_8_PAIR, DL, VTs, V1, V2);
+
+      if (IsUZP1) {
+        DAG.ReplaceAllUsesWith(SDValue(PairNode, 0), VUnzipPair.getValue(1));
+        return VUnzipPair.getValue(0);
+      }
+      DAG.ReplaceAllUsesWith(SDValue(PairNode, 0), VUnzipPair.getValue(0));
+      return VUnzipPair.getValue(1);
+    }
+
+    if (IsUZP1)
+      return DAG.getNode(RISCVISD::ESP_VUNZIP_8_UZP1, DL, VT, V1, V2);
+    return DAG.getNode(RISCVISD::ESP_VUNZIP_8_UZP2, DL, VT, V1, V2);
+  }
+
+  // Check ZIP1 pattern: [0, 16, 1, 17, 2, 18, 3, 19, 4, 20, 5, 21, 6, 22, 7,
+  // 23]
+  bool IsZIP1 = true;
+  for (int i = 0; i < 16; ++i) {
+    int expected = (i % 2 == 0) ? i / 2 : (i / 2) + 16;
+    if (Mask[i] != expected) {
+      IsZIP1 = false;
+      break;
+    }
+  }
+
+  // Check ZIP2 pattern: [8, 24, 9, 25, 10, 26, 11, 27, 12, 28, 13, 29, 14, 30,
+  // 15, 31]
+  bool IsZIP2 = true;
+  for (int i = 0; i < 16; ++i) {
+    int expected = (i % 2 == 0) ? (i / 2) + 8 : (i / 2) + 24;
+    if (Mask[i] != expected) {
+      IsZIP2 = false;
+      break;
+    }
+  }
+
+  if (IsZIP1 || IsZIP2) {
+    SDNode *PairNode =
+        findPairedShuffle<16>(Op, V1, V2, false, false, IsZIP1, IsZIP2);
+
+    if (PairNode) {
+      SDVTList VTs = DAG.getVTList(VT, VT);
+      SDValue VZipPair =
+          DAG.getNode(RISCVISD::ESP_VZIP_8_PAIR, DL, VTs, V1, V2);
+
+      if (IsZIP1) {
+        DAG.ReplaceAllUsesWith(SDValue(PairNode, 0), VZipPair.getValue(1));
+        return VZipPair.getValue(0);
+      }
+      DAG.ReplaceAllUsesWith(SDValue(PairNode, 0), VZipPair.getValue(0));
+      return VZipPair.getValue(1);
+    }
+
+    if (IsZIP1)
+      return DAG.getNode(RISCVISD::ESP_VZIP_8_ZIP1, DL, VT, V1, V2);
+    return DAG.getNode(RISCVISD::ESP_VZIP_8_ZIP2, DL, VT, V1, V2);
+  }
+
+  return SDValue();
+}
+
+// ESP32P4 vector shuffle lowering for ZIP/UZIP only (v8i16, v4i32, v16i8).
+// Named separately from RISCV::lowerESPVectorShuffle (concat/extract in
+// RISCVESPVISelLowering.cpp) to avoid confusion and ensure this runs first.
+static SDValue lowerESPVectorShuffleZipUnzip(SDValue Op, SelectionDAG &DAG,
+                                             const RISCVSubtarget &Subtarget) {
+  if (!Subtarget.hasESPVTargetLowering())
+    return SDValue();
+
+  SDValue V1 = Op.getOperand(0);
+  SDValue V2 = Op.getOperand(1);
+  SDLoc DL(Op);
+  MVT VT = Op.getSimpleValueType();
+  ShuffleVectorSDNode *SVN = cast<ShuffleVectorSDNode>(Op.getNode());
+  ArrayRef<int> Mask = SVN->getMask();
+
+  if (VT == MVT::v8i16)
+    return lowerESPVectorShuffle16(Op, DAG, DL, VT, V1, V2, SVN, Mask);
+  if (VT == MVT::v4i32)
+    return lowerESPVectorShuffle32(Op, DAG, DL, VT, V1, V2, SVN, Mask);
+  if (VT == MVT::v16i8)
+    return lowerESPVectorShuffle8(Op, DAG, DL, VT, V1, V2, SVN, Mask);
+
+  return SDValue();
+}
+
+
 SDValue RISCVTargetLowering::lowerVECTOR_SHUFFLE(SDValue Op,
                                                  SelectionDAG &DAG) const {
   SDValue V1 = Op.getOperand(0);
@@ -6577,8 +6968,11 @@ SDValue RISCVTargetLowering::lowerVECTOR_SHUFFLE(SDValue Op,
   MVT VT = Op.getSimpleValueType();
   unsigned NumElts = VT.getVectorNumElements();
   ShuffleVectorSDNode *SVN = cast<ShuffleVectorSDNode>(Op.getNode());
-
-  // Try ESP32P4 specific optimizations first
+  // Try ESP32P4 ZIP/UZIP first (must run before generic lowering to avoid
+  // vselect+v8i1 on xespv). Then try RISCV::lowerESPVectorShuffle (concat,
+  // extract) from RISCVESPVISelLowering.cpp.
+  if (SDValue V = lowerESPVectorShuffleZipUnzip(Op, DAG, Subtarget))
+    return V;
   if (SDValue V = RISCV::lowerESPVectorShuffle(Op, DAG, Subtarget))
     return V;
 
