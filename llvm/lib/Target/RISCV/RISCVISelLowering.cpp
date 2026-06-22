@@ -26073,6 +26073,38 @@ bool RISCVTargetLowering::isMulAddWithConstProfitable(SDValue AddNode,
   return true;
 }
 
+bool RISCVTargetLowering::allowsMemoryAccessForAlignment(
+    LLVMContext &Context, const DataLayout &DL, EVT VT, unsigned AddrSpace,
+    Align Alignment, MachineMemOperand::Flags Flags, unsigned *Fast) const {
+  // ESPV 128-bit memory instructions require 16-byte alignment. The data
+  // layout may still treat <4 x i32> as 8-byte aligned on RV32, which lets
+  // the vectorizer emit v4i32 loads/stores that cannot be selected.
+  if (Subtarget.hasESPVTargetLowering() && VT.isSimple() && VT.isVector()) {
+    MVT SVT = VT.getSimpleVT();
+    // ESPV supports only 128-bit fixed vectors in memory ops. Treat any other
+    // fixed-length vector memory access as illegal so it gets scalarized.
+    if (SVT.isFixedLengthVector() && SVT != MVT::v4i32 && SVT != MVT::v8i16 &&
+        SVT != MVT::v16i8) {
+      if (Fast)
+        *Fast = 0;
+      return false;
+    }
+
+    if (SVT == MVT::v4i32 || SVT == MVT::v8i16 || SVT == MVT::v16i8) {
+      if (Alignment >= Align(16)) {
+        if (Fast)
+          *Fast = 1;
+        return true;
+      }
+      if (Fast)
+        *Fast = 0;
+      return false;
+    }
+  }
+  return TargetLoweringBase::allowsMemoryAccessForAlignment(
+      Context, DL, VT, AddrSpace, Alignment, Flags, Fast);
+}
+
 bool RISCVTargetLowering::allowsMisalignedMemoryAccesses(
     EVT VT, unsigned AddrSpace, Align Alignment, MachineMemOperand::Flags Flags,
     unsigned *Fast) const {
