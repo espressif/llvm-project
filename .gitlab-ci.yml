@@ -205,7 +205,7 @@ check_commit_message:
       $CI_MERGE_REQUEST_DIFF_BASE_SHA..HEAD
 
 .build_toolchain_template:
-  tags: [ "amd64", "build" ]
+  tags: [ "amd64", "build", "nocaps" ]
   artifacts:
     paths:
       - ${DIST_DIR}/
@@ -399,7 +399,7 @@ check_commit_message:
 # this job is intended to run unit tests only, so it builds Clang with X86, RISCV and Xtensa backends
 # TODO: LLVM-326 and LLVM-401
 build_and_test:
-  tags: [ "amd64", "build" ]
+  tags: [ "amd64", "build", "nocaps" ]
   stage: test_build
   needs: []
   artifacts:
