@@ -11,7 +11,7 @@ stages:
   - public_deploy
   - update_idf_tools
 
-image: ${CI_DOCKER_REGISTRY}/llvm-build:7
+image: ${CI_DOCKER_REGISTRY}/llvm-test:1
 
 default:
   interruptible: true
@@ -19,6 +19,7 @@ default:
 variables:
   ESP_LLVM_EMBEDDED_TOOLCHAIN_REF: "llvm22_support"
   ESP_GNU_TOOLCHAIN_VER: "15.2.0_20251204"
+  AMD64_IMAGE: $CI_DOCKER_REGISTRY/llvm-build:8
   CROSS_ARM_IMAGE: $CI_DOCKER_REGISTRY/llvm-build-cross-arm:2
   CROSS_WIN_IMAGE: $CI_DOCKER_REGISTRY/llvm-build-cross-win:3
   CROSS_MACOS_IMAGE: $CI_DOCKER_REGISTRY/llvm-build-cross-macos:1
@@ -495,6 +496,7 @@ build_and_test:
 build_x86_64-linux-gnu:
   extends: .build_linux-gnu_template
   stage: test_build
+  image: ${AMD64_IMAGE}
   needs: []
   variables:
     CONF_HOST: "x86_64-linux-gnu"
@@ -511,6 +513,7 @@ build_x86_64-linux-gnu:
 build_target_libs:
   extends: .build_linux-gnu_template
   stage: build
+  image: ${AMD64_IMAGE}
   variables:
     CONF_HOST: "x86_64-linux-gnu"
     PACK_TARGET_LIBS: "ON"
