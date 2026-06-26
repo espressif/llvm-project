@@ -287,7 +287,7 @@ check_commit_message:
         AUX_BUILD_ARGS="${AUX_BUILD_ARGS} -DLLVM_PARALLEL_COMPILE_JOBS=${ESP_FORCE_LLVM_PARALLEL_COMPILE_JOBS}";
       fi
     # build toolchain core w/o any libs and GNU components
-    - cmake $PWD/esp-llvm-embedded-toolchain -GNinja
+    - time cmake $PWD/esp-llvm-embedded-toolchain -GNinja
       -DFETCHCONTENT_SOURCE_DIR_LLVMPROJECT=${LLVM_PROJECT_PATH}
       -DNEWLIB_REPO_URL="${GITLAB_SERVER_URL}/${NEWLIB_REPO_PATH}.git"
       -DBINUTILS_REPO_URL="${GITLAB_SERVER_URL}/${BINUTILS_REPO_PATH}.git"
@@ -332,18 +332,22 @@ check_commit_message:
           runuser -u test_runner -- ninja -C ${BUILD_PATH} check-lld 2>&1 > ${BUILD_PATH}/lld-tests.log;
         fi
         if [[ "${RUN_TOOLCHAIN_TESTS}" == "ON" ]]; then
-          echo "Run toolchain unit tests";
           touch ${BUILD_PATH}/toolchain-tests.log;
           chmod o+w ${BUILD_PATH}/toolchain-tests.log;
-          runuser -u test_runner -- ninja -C ${BUILD_PATH} check-llvm-toolchain 2>&1 > ${BUILD_PATH}/toolchain-tests.log;
-          runuser -u test_runner -- ninja -C ${BUILD_PATH} check-llvm-toolchain-runtimes 2>&1 >> ${BUILD_PATH}/toolchain-tests.log;
+          echo "Run toolchain unit tests";
+          time runuser -u test_runner -- ninja -C ${BUILD_PATH} check-llvm-toolchain 2>&1 > ${BUILD_PATH}/toolchain-tests.log;
+          echo "Toolchain unit tests finished";
+          echo "Run toolchain runtimes unit tests";
+          time runuser -u test_runner -- ninja -C ${BUILD_PATH} check-llvm-toolchain-runtimes 2>&1 >> ${BUILD_PATH}/toolchain-tests.log;
+          echo "Toolchain runtimes unit tests finished";
         fi
         if [[ "${RUN_PKG_TESTS}" == "ON" ]]; then
           echo "Run toolchain package tests";
           # to avoid test failure "fatal: detected dubious ownership in repository at '/builds/llvm-project'"
           touch ${BUILD_PATH}/pkg-tests.log;
           chmod o+w ${BUILD_PATH}/pkg-tests.log;
-          runuser -u test_runner -- ninja -C ${BUILD_PATH} check-package-llvm-toolchain 2>&1 > ${BUILD_PATH}/pkg-tests.log;
+          time runuser -u test_runner -- ninja -C ${BUILD_PATH} check-package-llvm-toolchain 2>&1 > ${BUILD_PATH}/pkg-tests.log;
+          echo "Toolchain package tests finished";
         fi
         chown -R ${CUR_USER} $PWD/esp-llvm-embedded-toolchain;
         chown -R ${CUR_USER} ${BUILD_PATH};
@@ -353,16 +357,22 @@ check_commit_message:
     - mkdir -p ${PWD}/${DIST_DIR}
     - >
       if [[ "${PACK_TOOLCHAIN}" == "ON" ]]; then
-        ninja -C ${BUILD_PATH} unpack-llvm-toolchain 2>&1  >> ${BUILD_PATH}/build.log
+        echo "Build/Unpack toolchain";
+        time ninja -C ${BUILD_PATH} unpack-llvm-toolchain 2>&1  >> ${BUILD_PATH}/build.log
+        echo "Build/Unpack toolchain finished";
         # pack clangd
-        ninja -C ${BUILD_PATH} package-clangd 2>&1  >> ${BUILD_PATH}/build.log
+        echo "Pack clangd";
+        time ninja -C ${BUILD_PATH} package-clangd 2>&1  >> ${BUILD_PATH}/build.log
+        echo "Pack clangd finished";
         DISTRO_PACK_PATH=$(ninja -C ${BUILD_PATH} print-clangd-package-path | tail -n 1)
         echo "DISTRO_PACK_PATH=${DISTRO_PACK_PATH}"
         mv ${DISTRO_PACK_PATH} ${PWD}/${DIST_DIR}/
         ARCHIVE_NAME=$(basename ${DISTRO_PACK_PATH})
         echo "${ARCHIVE_NAME}" > ${PWD}/${DIST_DIR}/clangd_dist_name_${CONF_HOST}
         # re-pack toolchain w/o clangd
-        ninja -C ${BUILD_PATH} repack-llvm-toolchain 2>&1  >> ${BUILD_PATH}/build.log
+        echo "Re-pack toolchain";
+        time ninja -C ${BUILD_PATH} repack-llvm-toolchain 2>&1  >> ${BUILD_PATH}/build.log
+        echo "Re-pack toolchain finished";
         DISTRO_PACK_PATH=$(ninja -C ${BUILD_PATH} print-llvm-toolchain-package-path | tail -n 1)
         echo "DISTRO_PACK_PATH=${DISTRO_PACK_PATH}"
         mv ${DISTRO_PACK_PATH} ${PWD}/${DIST_DIR}/
@@ -374,7 +384,9 @@ check_commit_message:
       if [[ "${PACK_STANDALONE_LIBS}" == "ON" ]]; then
         echo "Clean install dir ${INSTALL_PATH}"
         rm -rf ${INSTALL_PATH}
-        ninja -C ${BUILD_PATH} package-llvm-standalone-libs 2>&1  >> ${BUILD_PATH}/build.log
+        echo "Pack standalone libs";
+        time ninja -C ${BUILD_PATH} package-llvm-standalone-libs 2>&1  >> ${BUILD_PATH}/build.log
+        echo "Pack standalone libs finished";
         DISTRO_PACK_PATH=$(ninja -C ${BUILD_PATH} print-llvm-standalone-libs-package-path | tail -n 1)
         echo "DISTRO_PACK_PATH=${DISTRO_PACK_PATH}"
         mv ${DISTRO_PACK_PATH} ${PWD}/${DIST_DIR}/
@@ -386,7 +398,9 @@ check_commit_message:
       if [[ "${PACK_TARGET_LIBS}" == "ON" ]]; then
         echo "Clean install dir ${INSTALL_PATH}"
         rm -rf ${INSTALL_PATH}
-        ninja -C ${BUILD_PATH} package-llvm-toolchain-target-libs 2>&1  >> ${BUILD_PATH}/build.log
+        echo "Pack target libs";
+        time ninja -C ${BUILD_PATH} package-llvm-toolchain-target-libs 2>&1  >> ${BUILD_PATH}/build.log
+        echo "Pack target libs finished";
         DISTRO_PACK_PATH=$(ninja -C ${BUILD_PATH} print-llvm-toolchain-target-libs-package-path | tail -n 1)
         echo "DISTRO_PACK_PATH=${DISTRO_PACK_PATH}"
         mv ${DISTRO_PACK_PATH} ${PWD}/${DIST_DIR}/
@@ -445,7 +459,7 @@ build_and_test:
       if [ "${ESP_FORCE_LLVM_PARALLEL_COMPILE_JOBS:-}" != "" ]; then
         AUX_BUILD_ARGS="${AUX_BUILD_ARGS} -DLLVM_PARALLEL_COMPILE_JOBS=${ESP_FORCE_LLVM_PARALLEL_COMPILE_JOBS}";
       fi
-    - cmake -G Ninja
+    - time cmake -G Ninja
       -S llvm
       -DLLVM_ENABLE_PROJECTS="clang;lld;clang-tools-extra"
       -DCMAKE_BUILD_TYPE=Release
@@ -469,18 +483,21 @@ build_and_test:
     - echo "Run LLVM/Clang unit tests";
     - touch ${BUILD_PATH}/tests.log;
     - chmod o+w ${BUILD_PATH}/tests.log;
-    - runuser -u test_runner -- ninja -C ${BUILD_PATH} check-all 2>&1 | tee ${BUILD_PATH}/tests.log;
+    - time runuser -u test_runner -- ninja -C ${BUILD_PATH} check-all 2>&1 > ${BUILD_PATH}/tests.log;
+    - echo "LLVM/Clang unit tests finished";
     - echo "Run LLD unit tests";
     - touch ${BUILD_PATH}/lld-tests.log;
     - chmod o+w ${BUILD_PATH}/lld-tests.log;
-    - runuser -u test_runner -- ninja -C ${BUILD_PATH} check-lld 2>&1 | tee ${BUILD_PATH}/lld-tests.log;
+    - time runuser -u test_runner -- ninja -C ${BUILD_PATH} check-lld 2>&1 > ${BUILD_PATH}/lld-tests.log;
+    - echo "LLD unit tests finished";
     - chown -R ${CUR_USER} ${BUILD_PATH};
     - chown -R ${CUR_USER} ${CCACHE_DIR};
     - mkdir -p ${PWD}/${DIST_DIR}
     - PIE_TEST_TOOLS_ARCH=${PWD}/${DIST_DIR}/pie_test_tools.tar.xz
     - pushd ${BUILD_PATH}
     - echo "Packing tools for PIE optimization tests"
-    - ${PACK_TOOL} ${PIE_TEST_TOOLS_ARCH} bin/clang bin/llc bin/llvm-objdump bin/opt lib/clang
+    - time ${PACK_TOOL} ${PIE_TEST_TOOLS_ARCH} bin/clang bin/llc bin/llvm-objdump bin/opt lib/clang
+    - echo "Packing tools for PIE optimization tests finished";
     - popd
     - ls -l ${PWD}/${DIST_DIR}
 
