@@ -913,7 +913,8 @@ RISCVESP32P4LoopVersioningPass::run(Function &F, FunctionAnalysisManager &FAM) {
 
 // Find and transform Delay update logic in loop
 static void transformDelayUpdateInLoop(Loop *L, ValueToValueMapTy &VMap,
-                                       const FIRLoopAnalysisResult &Result) {
+                                       const FIRLoopAnalysisResult &Result,
+                                       LoopInfo &LI) {
   LLVM_DEBUG(dbgs() << "Attempting to transform delay update logic in loop "
                     << L->getHeader()->getName() << "\n");
 
@@ -1074,7 +1075,11 @@ static void transformDelayUpdateInLoop(Loop *L, ValueToValueMapTy &VMap,
   // it calls successors(BB) inside detachDeadBlocks.
   Builder.SetInsertPoint(HeaderBB);
   Builder.CreateBr(EndifBB);
-  L->removeBlockFromLoop(WrapBB);
+  // WrapBB may belong to an inner subloop of L. Use LoopInfo::removeBlock,
+  // which detaches it from *every* enclosing loop (and the block->loop map),
+  // before freeing it. Otherwise a subloop keeps a dangling pointer to the
+  // freed block that a later transform (transformMACsInLoop) would dereference.
+  LI.removeBlock(WrapBB);
   DeleteDeadBlock(WrapBB);
 
   if (NewStore->getNextNode()->getOpcode() == Instruction::SExt) {
@@ -1301,11 +1306,11 @@ static void transformFinalShiftInLoop(Loop *L, ValueToValueMapTy &VMap,
 // Apply all optimizations to fast path
 static void applyFastPathOptimizations(Loop *FastLoop, ValueToValueMapTy &VMap,
                                        const FIRLoopAnalysisResult &Result,
-                                       DominatorTree &DT) {
+                                       DominatorTree &DT, LoopInfo &LI) {
   LLVM_DEBUG(dbgs() << "Applying optimizations to fast path loop...\n");
 
   // 1. Transform Delay update loop (pos++ -> pos--)
-  transformDelayUpdateInLoop(FastLoop, VMap, Result);
+  transformDelayUpdateInLoop(FastLoop, VMap, Result, LI);
 
   // 2. Transform MAC loop (coeff_pos-- -> coeff_pos++)
   transformMACsInLoop(FastLoop, VMap, Result);
@@ -1352,7 +1357,7 @@ bool RISCVESP32P4LoopVersioningPass::performLoopVersioning(
   }
 
   // Step 4: Apply optimizations to fast path
-  applyFastPathOptimizations(FastLoop, VMap, Result, DT);
+  applyFastPathOptimizations(FastLoop, VMap, Result, DT, LI);
 
   // Step 5: Fix exit PHI nodes
   fixExitPhiNodes(OrigLoop, FastLoop, ExitBlock, VMap);
