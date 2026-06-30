@@ -500,6 +500,14 @@ opt<bool> EnableConfig{
     init(true),
 };
 
+opt<Path> CustomConfigFile{
+    "custom-config-file",
+    cat(Misc),
+    desc("Custom configuration file. Settings from this file take precedence "
+         "over user and project configs"),
+    init(""),
+};
+
 opt<bool> StrongWorkspaceMode{
     "strong-workspace-mode",
     cat(Features),
@@ -981,7 +989,19 @@ clangd accepts flags on the commandline, and in the CLANGD_FLAGS environment var
     } else {
       elog("Couldn't determine user config file, not loading");
     }
+
+    if (CustomConfigFile.getNumOccurrences()) {
+      if (llvm::sys::fs::exists(CustomConfigFile)) {
+        vlog("Custom config file is {0}", CustomConfigFile);
+        ProviderStack.push_back(config::Provider::fromYAMLFile(
+            CustomConfigFile, /*Directory=*/"", TFS, /*Trusted=*/true));
+      } else {
+        elog("Couldn't find custom config file {0}, not loading",
+             CustomConfigFile);
+      }
+    }
   }
+
   ProviderStack.push_back(std::make_unique<FlagsConfigProvider>());
   std::vector<const config::Provider *> ProviderPointers;
   for (const auto &P : ProviderStack)

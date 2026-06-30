@@ -1,0 +1,52 @@
+# RUN: rm -rf %t.dir && mkdir -p %t.dir
+
+# Testing the custom-config option using the CompileFlags::Remove as an example
+
+# Generate a compile_commands.json with GCC option -mtune=esp-base (clang does not support it).
+# RUN: echo '[{"directory": "%/t.dir", "command": "gcc the-file.cpp -mtune=esp-base", "file": "the-file.cpp"}]' > %t.dir/compile_commands.json
+
+# Create a custom YAML config file that removes the unsupported option.
+# RUN: echo 'CompileFlags:' > %t.dir/esp-clangd.yaml
+# RUN: echo '  Remove:' >> %t.dir/esp-clangd.yaml
+# RUN: echo '    - -mtune=esp-base' >> %t.dir/esp-clangd.yaml
+
+# RUN: sed -e "s|INPUT_DIR|%/t.dir|g" %s > %t.test.1
+# On Windows, we need the URI in didOpen to look like "uri":"file:///C:/..."
+# (with the extra slash in the front), so we add it here.
+# RUN: sed -E -e 's|"file://([A-Z]):/|"file:///\1:/|g' %t.test.1 > %t.test
+
+# First run: WITHOUT custom config.
+# сlang-frontend cannot handle it.
+# The symbolInfo request requires AST and should return "invalid AST".
+# RUN: clangd --clang-tidy=false -lit-test < %t.test 2>&1 | FileCheck -strict-whitespace --check-prefix=NO_CONFIG %t.test
+{"jsonrpc":"2.0","id":0,"method":"initialize","params":{}}
+---
+{
+  "jsonrpc":"2.0",
+  "method":"textDocument/didOpen",
+  "params": {
+    "textDocument": {
+      "uri": "file://INPUT_DIR/the-file.cpp",
+      "languageId":"cpp",
+      "version":1,
+      "text":"int x = 0;"
+    }
+  }
+}
+---
+{"jsonrpc":"2.0","id":1,"method":"textDocument/symbolInfo","params":{"textDocument":{"uri":"file://INPUT_DIR/the-file.cpp"},"position":{"line":0,"character":4}}}
+# NO_CONFIG: ASTWorker building file
+# NO_CONFIG: "message": "invalid AST"
+---
+{"jsonrpc":"2.0","id":10000,"method":"shutdown"}
+---
+{"jsonrpc":"2.0","method":"exit"}
+
+# Second run: WITH custom config.
+# -mtune=esp-base is removed by config's CompileFlags.
+# The symbolInfo response contains valid data.
+# Note: we need -enable-config because -lit-test otherwise disables it.
+# RUN: clangd --clang-tidy=false -lit-test -enable-config --custom-config-file=%t.dir/esp-clangd.yaml < %t.test 2>&1 | FileCheck -strict-whitespace --check-prefix=CONFIG %t.test
+# CONFIG: ASTWorker building file
+# CONFIG-NOT: invalid AST
+# CONFIG: "name": "x",
