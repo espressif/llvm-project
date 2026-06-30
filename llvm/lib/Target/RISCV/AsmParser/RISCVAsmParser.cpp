@@ -2782,15 +2782,19 @@ ParseStatus RISCVAsmParser::parseSATArg(OperandVector &Operands) {
   }
 
   if (getLexer().is(AsmToken::Identifier)) {
+    // 'sat' is an optional operand and may be preceded by another optional
+    // operand (e.g. 'rm') that the matcher tries first. Returning NoMatch
+    // (rather than a hard error) lets the matcher fall through to the other
+    // optional operand or to the default value instead of aborting parsing.
     if (!parseESPSATMode(getLexer().getTok().getIdentifier(), Imm))
-      return TokError("operand must be 'sat' or 'trunc'");
+      return ParseStatus::NoMatch;
     Operands.push_back(RISCVOperand::createExpr(
         MCConstantExpr::create(Imm, getContext()), S, getLoc(), isRV64()));
     Lex();
     return ParseStatus::Success;
   }
 
-  return TokError("operand must be 'sat' or 'trunc'");
+  return ParseStatus::NoMatch;
 }
 
 ParseStatus RISCVAsmParser::parseRMArg(OperandVector &Operands) {
@@ -2808,15 +2812,19 @@ ParseStatus RISCVAsmParser::parseRMArg(OperandVector &Operands) {
   }
 
   if (getLexer().is(AsmToken::Identifier)) {
+    // 'rm' is an optional operand; the matcher may try it before another
+    // optional operand (e.g. 'sat'). Returning NoMatch (rather than a hard
+    // error) on a non-rounding-mode token lets the matcher fall through to the
+    // other optional operand or to the default value instead of aborting.
     if (!parseESPRoundingMode(getLexer().getTok().getIdentifier(), Imm))
-      return TokError("operand must be a valid rounding mode mnemonic");
+      return ParseStatus::NoMatch;
     Operands.push_back(RISCVOperand::createExpr(
         MCConstantExpr::create(Imm, getContext()), S, getLoc(), isRV64()));
     Lex();
     return ParseStatus::Success;
   }
 
-  return TokError("operand must be a valid rounding mode mnemonic");
+  return ParseStatus::NoMatch;
 }
 
 ParseStatus RISCVAsmParser::parseFenceArg(OperandVector &Operands) {
