@@ -26,11 +26,11 @@ def ESP_LP_SETUPI: EspLoopInst<(outs), (ins uimm1:$id, uimm12:$count, uimm10_ste
   let hasSideEffects = 1;
   
   let Inst{31-20} = count{11-0};
-  let Inst{19-15} = offset{5-1};
+  let Inst{19-15} = offset{4-0};
   let Inst{14} = 1;
   let Inst{13} = 0;
   let Inst{12} = 1;
-  let Inst{11-8} = offset{9-6};
+  let Inst{11-8} = offset{8-5};
   let Inst{7} = id;
   let Inst{6} = 0;
   let Inst{5} = 1;
@@ -51,7 +51,7 @@ def ESP_LP_SETUP: EspLoopInst<(outs), (ins uimm1:$id, GPR:$rs1, uimm13_step4:$of
   let mayLoad = 0;
   let hasSideEffects = 1;
   
-  let Inst{31-20} = offset{12-1};
+  let Inst{31-20} = offset{11-0};
   let Inst{19-15} = rs1{4-0};
   let Inst{14} = 1;
   let Inst{13} = 0;
@@ -77,7 +77,7 @@ def ESP_LP_STARTI: EspLoopInst<(outs), (ins uimm1:$id, uimm13_step4:$offset),
   let mayLoad = 0;
   let hasSideEffects = 1;
   
-  let Inst{31-20} = offset{12-1};
+  let Inst{31-20} = offset{11-0};
   let Inst{19-15} = 0xb00000;
   let Inst{14} = 0;
   let Inst{13} = 0;
@@ -103,7 +103,7 @@ def ESP_LP_ENDI: EspLoopInst<(outs), (ins uimm1:$id, uimm13_step4:$offset),
   let mayLoad = 0;
   let hasSideEffects = 1;
   
-  let Inst{31-20} = offset{12-1};
+  let Inst{31-20} = offset{11-0};
   let Inst{19-15} = 0xb00000;
   let Inst{14} = 0;
   let Inst{13} = 0;
