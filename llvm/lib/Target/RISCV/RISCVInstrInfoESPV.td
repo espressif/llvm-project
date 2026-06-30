@@ -23,25 +23,13 @@ include "RISCVInstrInfoESPVNode.td"
 // ESP_VCMULAS_S16_QACC_H: Complex multiply-accumulate to QACC_H with explicit passthru
 // QACC_H_LOW:$qacc_h_l_in and QACC_H_HIGH:$qacc_h_h_in are phantom operands (not shown in assembly string)
 // for data flow tracking. They are explicit operands but hidden in assembly output.
-let Defs = []<Register> in
-def ESP_VCMULAS_S16_QACC_H: EspVInst<(outs QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                     (ins QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy),
-                   "esp.vcmulas.s16.qacc.h\t $qx, $qy", []> 
-{
+class ESP_VCMULAS_S16_QACC_H_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vcmulas.s16.qacc.h\t $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
-  bits<16> qacc_h_l;      // QACC_H_LOW register (128-bit, v16i8)
-  bits<16> qacc_h_h;       // QACC_H_HIGH register (128-bit, v16i8)
-  bits<16> qacc_h_l_in;    // QACC_H_LOW passthru (phantom operand, not shown in assembly)
-  bits<16> qacc_h_h_in;    // QACC_H_HIGH passthru (phantom operand, not shown in assembly)
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
-  // Tied constraints: QACC_H input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -72,16 +60,24 @@ def ESP_VCMULAS_S16_QACC_H: EspVInst<(outs QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qa
   let Inst{0} = 1;
 }
 
+let Defs = []<Register> , isCodeGenOnly = 1 in
+def ESP_VCMULAS_S16_QACC_H: ESP_VCMULAS_S16_QACC_H_Base<(outs QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy),
+                   []> {
+  let Constraints = "$qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
+}
+
+def ESP_VCMULAS_S16_QACC_H_MC: ESP_VCMULAS_S16_QACC_H_Base<(outs), (ins QR:$qx, QR:$qy), []> {
+  let hasSideEffects = 1;
+}
+
+
 let usesCustomInserter = 1 in 
 def ESP_VCMULAS_S16_QACC_H_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy),
 				"!esp_vcmulas_s16_qacc_h_p $qx, $qy",
 			[(int_riscv_esp_vcmulas_s16_qacc_h timm:$qx, timm:$qy)]>;
 
-def ESP_VCMULAS_S16_QACC_H_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                        (ins QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
-                   "esp.vcmulas.s16.qacc.h.ld.ip\t $qu, $rs1, $off1616, $qx, $qy", 
-                   []> 
-{
+class ESP_VCMULAS_S16_QACC_H_LD_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vcmulas.s16.qacc.h.ld.ip\t $qu, $rs1, $off1616, $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<5> rs1;
@@ -91,12 +87,6 @@ def ESP_VCMULAS_S16_QACC_H_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_H_LO
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // QACC_H tied constraints: Input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -120,35 +110,34 @@ def ESP_VCMULAS_S16_QACC_H_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_H_LO
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_VCMULAS_S16_QACC_H_LD_IP: ESP_VCMULAS_S16_QACC_H_LD_IP_Base<(outs QR:$qu, GPRPIE:$rs1r, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
+}
+
+def ESP_VCMULAS_S16_QACC_H_LD_IP_MC: ESP_VCMULAS_S16_QACC_H_LD_IP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VCMULAS_S16_QACC_H_LD_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, offset_16_16:$off1616, imm8:$qu),
 				"!esp_vcmulas_s16_qacc_h_ld_ip_p $qu, $rs1, $off1616, $qx, $qy",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vcmulas_s16_qacc_h_ld_ip timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$off1616, timm:$qu))]>;
 
-def ESP_VCMULAS_S16_QACC_H_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                        (ins QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, GPRPIE:$rs2),
-                   "esp.vcmulas.s16.qacc.h.ld.xp\t $qu, $rs1, $rs2, $qx, $qy", 
-                   []> 
-{
+class ESP_VCMULAS_S16_QACC_H_LD_XP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vcmulas.s16.qacc.h.ld.xp\t $qu, $rs1, $rs2, $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<5> rs1;
   bits<5> rs2;
   bits<3> qu;
   bits<5> rs1r;
-  bits<16> qacc_h_l;
-  bits<16> qacc_h_h;
-  bits<16> qacc_h_l_in;
-  bits<16> qacc_h_h_in;
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // QACC_H tied constraints: Input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -172,6 +161,18 @@ def ESP_VCMULAS_S16_QACC_H_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_H_LO
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let isCodeGenOnly = 1 in
+def ESP_VCMULAS_S16_QACC_H_LD_XP: ESP_VCMULAS_S16_QACC_H_LD_XP_Base<(outs QR:$qu, GPRPIE:$rs1r, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, GPRPIE:$rs2),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
+}
+
+def ESP_VCMULAS_S16_QACC_H_LD_XP_MC: ESP_VCMULAS_S16_QACC_H_LD_XP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, GPRPIE:$rs2), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VCMULAS_S16_QACC_H_LD_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, GPRPIE:$rs1, imm8:$qu),
@@ -181,25 +182,13 @@ def ESP_VCMULAS_S16_QACC_H_LD_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:
 // ESP_VCMULAS_S16_QACC_L: Complex multiply-accumulate to QACC_L with explicit passthru
 // QACC_L_LOW:$qacc_l_l_in and QACC_L_HIGH:$qacc_l_h_in are phantom operands (not shown in assembly string)
 // for data flow tracking. They are explicit operands but hidden in assembly output.
-let Defs = []<Register> in
-def ESP_VCMULAS_S16_QACC_L: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h), 
-                                     (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QR:$qx, QR:$qy),
-                   "esp.vcmulas.s16.qacc.l\t $qx, $qy", []> 
-{
+class ESP_VCMULAS_S16_QACC_L_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vcmulas.s16.qacc.l\t $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
-  bits<16> qacc_l_l;      // QACC_L_LOW register (128-bit, v16i8)
-  bits<16> qacc_l_h;       // QACC_L_HIGH register (128-bit, v16i8)
-  bits<16> qacc_l_l_in;    // QACC_L_LOW passthru (phantom operand, not shown in assembly)
-  bits<16> qacc_l_h_in;    // QACC_L_HIGH passthru (phantom operand, not shown in assembly)
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
-  // Tied constraints: QACC_L input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -230,16 +219,24 @@ def ESP_VCMULAS_S16_QACC_L: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qa
   let Inst{0} = 1;
 }
 
+let Defs = []<Register> , isCodeGenOnly = 1 in
+def ESP_VCMULAS_S16_QACC_L: ESP_VCMULAS_S16_QACC_L_Base<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QR:$qx, QR:$qy),
+                   []> {
+  let Constraints = "$qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in";
+}
+
+def ESP_VCMULAS_S16_QACC_L_MC: ESP_VCMULAS_S16_QACC_L_Base<(outs), (ins QR:$qx, QR:$qy), []> {
+  let hasSideEffects = 1;
+}
+
+
 let usesCustomInserter = 1 in 
 def ESP_VCMULAS_S16_QACC_L_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy),
 				"!esp_vcmulas_s16_qacc_l_p $qx, $qy",
 			[(int_riscv_esp_vcmulas_s16_qacc_l timm:$qx, timm:$qy)]>;
 
-def ESP_VCMULAS_S16_QACC_L_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h), 
-                                        (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
-                   "esp.vcmulas.s16.qacc.l.ld.ip\t $qu, $rs1, $off1616, $qx, $qy", 
-                   []> 
-{
+class ESP_VCMULAS_S16_QACC_L_LD_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vcmulas.s16.qacc.l.ld.ip\t $qu, $rs1, $off1616, $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<5> rs1;
@@ -249,12 +246,6 @@ def ESP_VCMULAS_S16_QACC_L_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LO
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // QACC_L tied constraints: Input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 0;
@@ -278,35 +269,34 @@ def ESP_VCMULAS_S16_QACC_L_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LO
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_VCMULAS_S16_QACC_L_LD_IP: ESP_VCMULAS_S16_QACC_L_LD_IP_Base<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in";
+}
+
+def ESP_VCMULAS_S16_QACC_L_LD_IP_MC: ESP_VCMULAS_S16_QACC_L_LD_IP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VCMULAS_S16_QACC_L_LD_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, offset_16_16:$off1616, imm8:$qu),
 				"!esp_vcmulas_s16_qacc_l_ld_ip_p $qu, $rs1, $off1616, $qx, $qy",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vcmulas_s16_qacc_l_ld_ip timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$off1616, timm:$qu))]>;
 
-def ESP_VCMULAS_S16_QACC_L_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h), 
-                                        (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, GPRPIE:$rs2),
-                   "esp.vcmulas.s16.qacc.l.ld.xp\t $qu, $rs1, $rs2, $qx, $qy", 
-                   []> 
-{
+class ESP_VCMULAS_S16_QACC_L_LD_XP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vcmulas.s16.qacc.l.ld.xp\t $qu, $rs1, $rs2, $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<5> rs1;
   bits<5> rs2;
   bits<3> qu;
   bits<5> rs1r;
-  bits<16> qacc_l_l;
-  bits<16> qacc_l_h;
-  bits<16> qacc_l_l_in;
-  bits<16> qacc_l_h_in;
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // QACC_L tied constraints: Input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 0;
@@ -331,6 +321,18 @@ def ESP_VCMULAS_S16_QACC_L_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LO
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_VCMULAS_S16_QACC_L_LD_XP: ESP_VCMULAS_S16_QACC_L_LD_XP_Base<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, GPRPIE:$rs2),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in";
+}
+
+def ESP_VCMULAS_S16_QACC_L_LD_XP_MC: ESP_VCMULAS_S16_QACC_L_LD_XP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, GPRPIE:$rs2), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VCMULAS_S16_QACC_L_LD_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, GPRPIE:$rs1, imm8:$qu),
 				"!esp_vcmulas_s16_qacc_l_ld_xp_p $qu, $rs1, $rs2, $qx, $qy",
@@ -339,21 +341,13 @@ def ESP_VCMULAS_S16_QACC_L_LD_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:
 // ESP_VCMULAS_S8_QACC_H: Complex multiply-accumulate to QACC_H with explicit passthru
 // QACC_H_LOW:$qacc_h_l_in and QACC_H_HIGH:$qacc_h_h_in are phantom operands (not shown in assembly string)
 // for data flow tracking. They are explicit operands but hidden in assembly output.
-let Defs = []<Register> in
-def ESP_VCMULAS_S8_QACC_H: EspVInst<(outs QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                    (ins QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy),
-                   "esp.vcmulas.s8.qacc.h\t $qx, $qy", []> 
-{
+class ESP_VCMULAS_S8_QACC_H_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vcmulas.s8.qacc.h\t $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
-  bits<16> qacc_h_l;      // QACC_H_LOW register (128-bit, v16i8)
-  bits<16> qacc_h_h;       // QACC_H_HIGH register (128-bit, v16i8)
-  bits<16> qacc_h_l_in;    // QACC_H_LOW passthru (phantom operand, not shown in assembly)
-  bits<16> qacc_h_h_in;    // QACC_H_HIGH passthru (phantom operand, not shown in assembly)
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -384,35 +378,31 @@ def ESP_VCMULAS_S8_QACC_H: EspVInst<(outs QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qac
   let Inst{0} = 1;
 }
 
+let Defs = []<Register> , isCodeGenOnly = 1 in
+def ESP_VCMULAS_S8_QACC_H: ESP_VCMULAS_S8_QACC_H_Base<(outs QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy),
+                   []>;
+
+def ESP_VCMULAS_S8_QACC_H_MC: ESP_VCMULAS_S8_QACC_H_Base<(outs), (ins QR:$qx, QR:$qy), []> {
+  let hasSideEffects = 1;
+}
+
+
 let usesCustomInserter = 1 in 
 def ESP_VCMULAS_S8_QACC_H_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy),
 				"!esp_vcmulas_s8_qacc_h_p $qx, $qy",
 			[(int_riscv_esp_vcmulas_s8_qacc_h timm:$qx, timm:$qy)]>;
 
-def ESP_VCMULAS_S8_QACC_H_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                        (ins QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
-                   "esp.vcmulas.s8.qacc.h.ld.ip\t $qu, $rs1, $off1616, $qx, $qy", 
-                   []> 
-{
+class ESP_VCMULAS_S8_QACC_H_LD_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vcmulas.s8.qacc.h.ld.ip\t $qu, $rs1, $off1616, $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<5> rs1;
   bits<4> off1616;
   bits<3> qu;
   bits<5> rs1r;
-  bits<16> qacc_h_l;
-  bits<16> qacc_h_h;
-  bits<16> qacc_h_l_in;
-  bits<16> qacc_h_h_in;
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // QACC_H tied constraints: Input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -436,35 +426,34 @@ def ESP_VCMULAS_S8_QACC_H_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_H_LOW
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_VCMULAS_S8_QACC_H_LD_IP: ESP_VCMULAS_S8_QACC_H_LD_IP_Base<(outs QR:$qu, GPRPIE:$rs1r, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
+}
+
+def ESP_VCMULAS_S8_QACC_H_LD_IP_MC: ESP_VCMULAS_S8_QACC_H_LD_IP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VCMULAS_S8_QACC_H_LD_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, offset_16_16:$off1616, imm8:$qu),
 				"!esp_vcmulas_s8_qacc_h_ld_ip_p $qu, $rs1, $off1616, $qx, $qy",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vcmulas_s8_qacc_h_ld_ip timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$off1616, timm:$qu))]>;
 
-def ESP_VCMULAS_S8_QACC_H_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                        (ins QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, GPRPIE:$rs2),
-                   "esp.vcmulas.s8.qacc.h.ld.xp\t $qu, $rs1, $rs2, $qx, $qy", 
-                   []> 
-{
+class ESP_VCMULAS_S8_QACC_H_LD_XP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vcmulas.s8.qacc.h.ld.xp\t $qu, $rs1, $rs2, $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<5> rs1;
   bits<5> rs2;
   bits<3> qu;
   bits<5> rs1r;
-  bits<16> qacc_h_l;
-  bits<16> qacc_h_h;
-  bits<16> qacc_h_l_in;
-  bits<16> qacc_h_h_in;
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // QACC_H tied constraints: Input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -489,6 +478,18 @@ def ESP_VCMULAS_S8_QACC_H_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_H_LOW
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_VCMULAS_S8_QACC_H_LD_XP: ESP_VCMULAS_S8_QACC_H_LD_XP_Base<(outs QR:$qu, GPRPIE:$rs1r, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, GPRPIE:$rs2),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
+}
+
+def ESP_VCMULAS_S8_QACC_H_LD_XP_MC: ESP_VCMULAS_S8_QACC_H_LD_XP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, GPRPIE:$rs2), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VCMULAS_S8_QACC_H_LD_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, GPRPIE:$rs1, imm8:$qu),
 				"!esp_vcmulas_s8_qacc_h_ld_xp_p $qu, $rs1, $rs2, $qx, $qy",
@@ -497,21 +498,13 @@ def ESP_VCMULAS_S8_QACC_H_LD_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$
 // ESP_VCMULAS_S8_QACC_L: Complex multiply-accumulate to QACC_L with explicit passthru
 // QACC_L_LOW:$qacc_l_l_in and QACC_L_HIGH:$qacc_l_h_in are phantom operands (not shown in assembly string)
 // for data flow tracking. They are explicit operands but hidden in assembly output.
-let Defs = []<Register> in
-def ESP_VCMULAS_S8_QACC_L: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h), 
-                                    (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QR:$qx, QR:$qy),
-                   "esp.vcmulas.s8.qacc.l\t $qx, $qy", []> 
-{
+class ESP_VCMULAS_S8_QACC_L_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vcmulas.s8.qacc.l\t $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
-  bits<16> qacc_l_l;      // QACC_L_LOW register (128-bit, v16i8)
-  bits<16> qacc_l_h;       // QACC_L_HIGH register (128-bit, v16i8)
-  bits<16> qacc_l_l_in;    // QACC_L_LOW passthru (phantom operand, not shown in assembly)
-  bits<16> qacc_l_h_in;    // QACC_L_HIGH passthru (phantom operand, not shown in assembly)
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -542,35 +535,31 @@ def ESP_VCMULAS_S8_QACC_L: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qac
   let Inst{0} = 1;
 }
 
+let Defs = []<Register> , isCodeGenOnly = 1 in
+def ESP_VCMULAS_S8_QACC_L: ESP_VCMULAS_S8_QACC_L_Base<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QR:$qx, QR:$qy),
+                   []>;
+
+def ESP_VCMULAS_S8_QACC_L_MC: ESP_VCMULAS_S8_QACC_L_Base<(outs), (ins QR:$qx, QR:$qy), []> {
+  let hasSideEffects = 1;
+}
+
+
 let usesCustomInserter = 1 in 
 def ESP_VCMULAS_S8_QACC_L_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy),
 				"!esp_vcmulas_s8_qacc_l_p $qx, $qy",
 			[(int_riscv_esp_vcmulas_s8_qacc_l timm:$qx, timm:$qy)]>;
 
-def ESP_VCMULAS_S8_QACC_L_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h), 
-                                        (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
-                   "esp.vcmulas.s8.qacc.l.ld.ip\t $qu, $rs1, $off1616, $qx, $qy", 
-                   []> 
-{
+class ESP_VCMULAS_S8_QACC_L_LD_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vcmulas.s8.qacc.l.ld.ip\t $qu, $rs1, $off1616, $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<5> rs1;
   bits<4> off1616;
   bits<3> qu;
   bits<5> rs1r;
-  bits<16> qacc_l_l;
-  bits<16> qacc_l_h;
-  bits<16> qacc_l_l_in;
-  bits<16> qacc_l_h_in;
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // QACC_L tied constraints: Input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 0;
@@ -594,35 +583,34 @@ def ESP_VCMULAS_S8_QACC_L_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_VCMULAS_S8_QACC_L_LD_IP: ESP_VCMULAS_S8_QACC_L_LD_IP_Base<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in";
+}
+
+def ESP_VCMULAS_S8_QACC_L_LD_IP_MC: ESP_VCMULAS_S8_QACC_L_LD_IP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VCMULAS_S8_QACC_L_LD_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, offset_16_16:$off1616, imm8:$qu),
 				"!esp_vcmulas_s8_qacc_l_ld_ip_p $qu, $rs1, $off1616, $qx, $qy",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vcmulas_s8_qacc_l_ld_ip timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$off1616, timm:$qu))]>;
 
-def ESP_VCMULAS_S8_QACC_L_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h), 
-                                        (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, GPRPIE:$rs2),
-                   "esp.vcmulas.s8.qacc.l.ld.xp\t $qu, $rs1, $rs2, $qx, $qy", 
-                   []> 
-{
+class ESP_VCMULAS_S8_QACC_L_LD_XP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vcmulas.s8.qacc.l.ld.xp\t $qu, $rs1, $rs2, $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<5> rs1;
   bits<5> rs2;
   bits<3> qu;
   bits<5> rs1r;
-  bits<16> qacc_l_l;
-  bits<16> qacc_l_h;
-  bits<16> qacc_l_l_in;
-  bits<16> qacc_l_h_in;
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // QACC_L tied constraints: Input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 0;
@@ -647,6 +635,18 @@ def ESP_VCMULAS_S8_QACC_L_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_VCMULAS_S8_QACC_L_LD_XP: ESP_VCMULAS_S8_QACC_L_LD_XP_Base<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, GPRPIE:$rs2),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in";
+}
+
+def ESP_VCMULAS_S8_QACC_L_LD_XP_MC: ESP_VCMULAS_S8_QACC_L_LD_XP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, GPRPIE:$rs2), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VCMULAS_S8_QACC_L_LD_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, GPRPIE:$rs1, imm8:$qu),
 				"!esp_vcmulas_s8_qacc_l_ld_xp_p $qu, $rs1, $rs2, $qx, $qy",
@@ -655,25 +655,13 @@ def ESP_VCMULAS_S8_QACC_L_LD_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$
 // ESP_VMULAS_S16_QACC: Multiply-accumulate to QACC with explicit passthru
 // QACC_H:$qacc_h_in and QACC_L:$qacc_l_in are phantom operands (not shown in assembly string)
 // for data flow tracking. They are explicit operands but hidden in assembly output.
-let Defs = []<Register> in
-def ESP_VMULAS_S16_QACC: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                  (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy),
-                   "esp.vmulas.s16.qacc\t $qx, $qy", []> 
-{
+class ESP_VMULAS_S16_QACC_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.s16.qacc\t $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
-  bits<16> qacc_l_l;      // QACC_L_LOW register (128-bit, v16i8)
-  bits<16> qacc_l_h;       // QACC_L_HIGH register (128-bit, v16i8)
-  bits<16> qacc_h_l;       // QACC_H_LOW register (128-bit, v16i8)
-  bits<16> qacc_h_h;       // QACC_H_HIGH register (128-bit, v16i8)
-  bits<16> qacc_l_l_in;    // QACC_L_LOW passthru (phantom operand, not shown in assembly)
-  bits<16> qacc_l_h_in;    // QACC_L_HIGH passthru (phantom operand, not shown in assembly)
-  bits<16> qacc_h_l_in;    // QACC_H_LOW passthru (phantom operand, not shown in assembly)
-  bits<16> qacc_h_h_in;    // QACC_H_HIGH passthru (phantom operand, not shown in assembly)
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -704,16 +692,22 @@ def ESP_VMULAS_S16_QACC: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_
   let Inst{0} = 1;
 }
 
+let Defs = []<Register> , isCodeGenOnly = 1 in
+def ESP_VMULAS_S16_QACC: ESP_VMULAS_S16_QACC_Base<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy),
+                   []>;
+
+def ESP_VMULAS_S16_QACC_MC: ESP_VMULAS_S16_QACC_Base<(outs), (ins QR:$qx, QR:$qy), []> {
+  let hasSideEffects = 1;
+}
+
+
 let usesCustomInserter = 1 in 
 def ESP_VMULAS_S16_QACC_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy),
 				"!esp_vmulas_s16_qacc_p $qx, $qy",
 			[(int_riscv_esp_vmulas_s16_qacc timm:$qx, timm:$qy)]>;
 
-def ESP_VMULAS_S16_QACC_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                        (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
-                   "esp.vmulas.s16.qacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy", 
-                   []> 
-{
+class ESP_VMULAS_S16_QACC_LD_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.s16.qacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<5> rs1;
@@ -723,12 +717,6 @@ def ESP_VMULAS_S16_QACC_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // QACC_L and QACC_H tied constraints: Input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -753,16 +741,25 @@ def ESP_VMULAS_S16_QACC_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_VMULAS_S16_QACC_LD_IP: ESP_VMULAS_S16_QACC_LD_IP_Base<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
+}
+
+def ESP_VMULAS_S16_QACC_LD_IP_MC: ESP_VMULAS_S16_QACC_LD_IP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S16_QACC_LD_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, offset_16_16:$off1616, imm8:$qu),
 				"!esp_vmulas_s16_qacc_ld_ip_p $qu, $rs1, $off1616, $qx, $qy",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_s16_qacc_ld_ip timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$off1616, timm:$qu))]>;
 
-def ESP_VMULAS_S16_QACC_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                        (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1),
-                   "esp.vmulas.s16.qacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy", 
-                   []> 
-{
+class ESP_VMULAS_S16_QACC_LD_XP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.s16.qacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy", pat> {
   bits<5> rs2;
   bits<3> qx;
   bits<3> qy;
@@ -772,12 +769,6 @@ def ESP_VMULAS_S16_QACC_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // QACC_L and QACC_H tied constraints: Input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -801,6 +792,18 @@ def ESP_VMULAS_S16_QACC_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let isCodeGenOnly = 1 in
+def ESP_VMULAS_S16_QACC_LD_XP: ESP_VMULAS_S16_QACC_LD_XP_Base<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
+}
+
+def ESP_VMULAS_S16_QACC_LD_XP_MC: ESP_VMULAS_S16_QACC_LD_XP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S16_QACC_LD_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, GPRPIE:$rs1, imm8:$qu),
@@ -809,12 +812,8 @@ def ESP_VMULAS_S16_QACC_LD_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs
 
 // QACC is passed as explicit 4x128-bit subregisters (QACC_L_LOW, QACC_L_HIGH, QACC_H_LOW, QACC_H_HIGH)
 // No implicit QACC_H_REG/QACC_L_REG references needed - similar to ESP_MOV_S16_QACC and ESP_VLD_128_IP
-let Defs = []<Register>, Uses = []<Register> in
-def ESP_VMULAS_S16_QACC_ST_IP: EspVInst<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                        (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qu, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
-                   "esp.vmulas.s16.qacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy", 
-                   []> 
-{
+class ESP_VMULAS_S16_QACC_ST_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.s16.qacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<3> qu;
@@ -824,12 +823,6 @@ def ESP_VMULAS_S16_QACC_ST_IP: EspVInst<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l
   let mayStore = 1;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // QACC tied constraints: Input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -854,6 +847,18 @@ def ESP_VMULAS_S16_QACC_ST_IP: EspVInst<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l
   let Inst{0} = 1;
 }
 
+let Defs = []<Register>, Uses = []<Register> , isCodeGenOnly = 1 in
+def ESP_VMULAS_S16_QACC_ST_IP: ESP_VMULAS_S16_QACC_ST_IP_Base<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qu, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
+}
+
+def ESP_VMULAS_S16_QACC_ST_IP_MC: ESP_VMULAS_S16_QACC_ST_IP_Base<(outs GPRPIE:$rs1r), (ins QR:$qu, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S16_QACC_ST_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, offset_16_16:$off1616),
 				"!esp_vmulas_s16_qacc_st_ip_p $qu, $rs1, $off1616, $qx, $qy",
@@ -861,12 +866,8 @@ def ESP_VMULAS_S16_QACC_ST_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, 
 
 // QACC is passed as explicit 4x128-bit subregisters (QACC_L_LOW, QACC_L_HIGH, QACC_H_LOW, QACC_H_HIGH)
 // No implicit QACC_H_REG/QACC_L_REG references needed - similar to ESP_MOV_S16_QACC and ESP_VLD_128_IP
-let Defs = []<Register>, Uses = []<Register> in
-def ESP_VMULAS_S16_QACC_ST_XP: EspVInst<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                        (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qu, QR:$qx, QR:$qy, GPRPIE:$rs1, GPRPIE:$rs2),
-                   "esp.vmulas.s16.qacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy", 
-                   []> 
-{
+class ESP_VMULAS_S16_QACC_ST_XP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.s16.qacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy", pat> {
   bits<5> rs2;
   bits<3> qx;
   bits<3> qy;
@@ -876,12 +877,6 @@ def ESP_VMULAS_S16_QACC_ST_XP: EspVInst<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l
   let mayStore = 1;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // QACC tied constraints: Input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -905,6 +900,18 @@ def ESP_VMULAS_S16_QACC_ST_XP: EspVInst<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let Defs = []<Register>, Uses = []<Register> , isCodeGenOnly = 1 in
+def ESP_VMULAS_S16_QACC_ST_XP: ESP_VMULAS_S16_QACC_ST_XP_Base<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qu, QR:$qx, QR:$qy, GPRPIE:$rs1, GPRPIE:$rs2),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
+}
+
+def ESP_VMULAS_S16_QACC_ST_XP_MC: ESP_VMULAS_S16_QACC_ST_XP_Base<(outs GPRPIE:$rs1r), (ins QR:$qu, QR:$qx, QR:$qy, GPRPIE:$rs1, GPRPIE:$rs2), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S16_QACC_ST_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1),
@@ -915,20 +922,13 @@ def ESP_VMULAS_S16_QACC_ST_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs
 // Mixed model: XACC as struct {i32 (XACC[31:0]), i8 (XACC[39:32])}
 // Note: Uses manual instruction selection (RISCVISelDAGToDAG.cpp) because Pattern
 // cannot handle multiple outputs directly. Pattern matching is done in RISCVInstrInfoESPVPatterns.td
-def ESP_VMULAS_S16_XACC: EspVInst<(outs XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), 
-                                   (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, QR:$qx, QR:$qy),
-                   "esp.vmulas.s16.xacc\t $qx, $qy", []> 
-{
+class ESP_VMULAS_S16_XACC_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.s16.xacc\t $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
-  // Tied constraints: XACC input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -958,6 +958,17 @@ def ESP_VMULAS_S16_XACC: EspVInst<(outs XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let isCodeGenOnly = 1 in
+def ESP_VMULAS_S16_XACC: ESP_VMULAS_S16_XACC_Base<(outs XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, QR:$qx, QR:$qy),
+                   []> {
+  let Constraints = "$xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
+}
+
+def ESP_VMULAS_S16_XACC_MC: ESP_VMULAS_S16_XACC_Base<(outs), (ins QR:$qx, QR:$qy), []> {
+  let hasSideEffects = 1;
+}
+
 
 let usesCustomInserter = 1 in 
 def ESP_VMULAS_S16_XACC_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy),
@@ -969,11 +980,8 @@ def ESP_VMULAS_S16_XACC_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy),
 // Note: Lowering code handles XACC via CopyToReg/CopyFromReg, so instruction uses implicit XACC
 // but intrinsic takes explicit XACC passthru and returns new XACC
 // Mixed model: XACC as {i32 low, i32 high}
-def ESP_VMULAS_S16_XACC_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
-                   "esp.vmulas.s16.xacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy", 
-                   // Lowering code handles XACC via CopyToReg/CopyFromReg
-                   []> 
-{
+class ESP_VMULAS_S16_XACC_LD_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.s16.xacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<5> rs1;
@@ -983,12 +991,6 @@ def ESP_VMULAS_S16_XACC_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xa
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // XACC tied constraints: Output equals input (passthru), must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 0;
@@ -1012,6 +1014,19 @@ def ESP_VMULAS_S16_XACC_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xa
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let isCodeGenOnly = 1 in
+def ESP_VMULAS_S16_XACC_LD_IP: ESP_VMULAS_S16_XACC_LD_IP_Base<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
+                   // Lowering code handles XACC via CopyToReg/CopyFromReg
+                   []> {
+  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
+}
+
+def ESP_VMULAS_S16_XACC_LD_IP_MC: ESP_VMULAS_S16_XACC_LD_IP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S16_XACC_LD_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, offset_16_16:$off1616, imm8:$qu),
@@ -1023,11 +1038,8 @@ def ESP_VMULAS_S16_XACC_LD_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, 
 // Note: Lowering code handles XACC via CopyToReg/CopyFromReg, so instruction uses implicit XACC
 // but intrinsic takes explicit XACC passthru and returns new XACC
 // Mixed model: XACC as {i32 low, i32 high}
-def ESP_VMULAS_S16_XACC_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1),
-                   "esp.vmulas.s16.xacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy", 
-                   // Lowering code handles XACC via CopyToReg/CopyFromReg
-                   []> 
-{
+class ESP_VMULAS_S16_XACC_LD_XP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.s16.xacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy", pat> {
   bits<5> rs2;
   bits<3> qx;
   bits<3> qy;
@@ -1037,12 +1049,6 @@ def ESP_VMULAS_S16_XACC_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xa
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // XACC tied constraints: Output equals input (passthru), must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 0;
@@ -1067,6 +1073,19 @@ def ESP_VMULAS_S16_XACC_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xa
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_VMULAS_S16_XACC_LD_XP: ESP_VMULAS_S16_XACC_LD_XP_Base<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1),
+                   // Lowering code handles XACC via CopyToReg/CopyFromReg
+                   []> {
+  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
+}
+
+def ESP_VMULAS_S16_XACC_LD_XP_MC: ESP_VMULAS_S16_XACC_LD_XP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S16_XACC_LD_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, GPRPIE:$rs1, imm8:$qu),
 				"!esp_vmulas_s16_xacc_ld_xp_p $qu, $rs1, $rs2, $qx, $qy",
@@ -1077,10 +1096,8 @@ def ESP_VMULAS_S16_XACC_LD_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs
 // Note: Lowering code handles XACC via CopyToReg/CopyFromReg, so instruction uses implicit XACC
 // but intrinsic takes explicit XACC passthru and returns new XACC
 // Mixed model: XACC as {i32 low, i32 high}
-def ESP_VMULAS_S16_XACC_ST_IP: EspVInst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, offset_16_16:$off1616),
-                   "esp.vmulas.s16.xacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy", 
-                   []> 
-{
+class ESP_VMULAS_S16_XACC_ST_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.s16.xacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<3> qu;
@@ -1090,12 +1107,6 @@ def ESP_VMULAS_S16_XACC_ST_IP: EspVInst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_o
   let mayStore = 1;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // XACC tied constraints: Output equals input (passthru), must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 0;
@@ -1120,6 +1131,18 @@ def ESP_VMULAS_S16_XACC_ST_IP: EspVInst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_o
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_VMULAS_S16_XACC_ST_IP: ESP_VMULAS_S16_XACC_ST_IP_Base<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, offset_16_16:$off1616),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
+}
+
+def ESP_VMULAS_S16_XACC_ST_IP_MC: ESP_VMULAS_S16_XACC_ST_IP_Base<(outs GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, offset_16_16:$off1616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S16_XACC_ST_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, offset_16_16:$off1616),
 				"!esp_vmulas_s16_xacc_st_ip_p $qu, $rs1, $off1616, $qx, $qy",
@@ -1130,10 +1153,8 @@ def ESP_VMULAS_S16_XACC_ST_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, 
 // Note: Lowering code handles XACC via CopyToReg/CopyFromReg, so instruction uses implicit XACC
 // but intrinsic takes explicit XACC passthru and returns new XACC
 // Mixed model: XACC as {i32 low, i32 high}
-def ESP_VMULAS_S16_XACC_ST_XP: EspVInst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs2, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1),
-                   "esp.vmulas.s16.xacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy", 
-                   []> 
-{
+class ESP_VMULAS_S16_XACC_ST_XP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.s16.xacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy", pat> {
   bits<5> rs2;
   bits<3> qx;
   bits<3> qy;
@@ -1143,12 +1164,6 @@ def ESP_VMULAS_S16_XACC_ST_XP: EspVInst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_o
   let mayStore = 1;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // XACC tied constraints: Output equals input (passthru), must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 0;
@@ -1173,6 +1188,18 @@ def ESP_VMULAS_S16_XACC_ST_XP: EspVInst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_o
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_VMULAS_S16_XACC_ST_XP: ESP_VMULAS_S16_XACC_ST_XP_Base<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs2, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
+}
+
+def ESP_VMULAS_S16_XACC_ST_XP_MC: ESP_VMULAS_S16_XACC_ST_XP_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S16_XACC_ST_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1),
 				"!esp_vmulas_s16_xacc_st_xp_p $qu, $rs1, $rs2, $qx, $qy",
@@ -1181,25 +1208,13 @@ def ESP_VMULAS_S16_XACC_ST_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs
 // ESP_VMULAS_S8_QACC: Multiply-accumulate to QACC with explicit passthru
 // QACC_H:$qacc_h_in and QACC_L:$qacc_l_in are phantom operands (not shown in assembly string)
 // for data flow tracking. They are explicit operands but hidden in assembly output.
-let Defs = []<Register> in
-def ESP_VMULAS_S8_QACC: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                 (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy),
-                   "esp.vmulas.s8.qacc\t $qx, $qy", []> 
-{
+class ESP_VMULAS_S8_QACC_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.s8.qacc\t $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
-  bits<16> qacc_l_l;      // QACC_L_LOW register (128-bit, v16i8)
-  bits<16> qacc_l_h;       // QACC_L_HIGH register (128-bit, v16i8)
-  bits<16> qacc_h_l;       // QACC_H_LOW register (128-bit, v16i8)
-  bits<16> qacc_h_h;       // QACC_H_HIGH register (128-bit, v16i8)
-  bits<16> qacc_l_l_in;    // QACC_L_LOW passthru (phantom operand, not shown in assembly)
-  bits<16> qacc_l_h_in;    // QACC_L_HIGH passthru (phantom operand, not shown in assembly)
-  bits<16> qacc_h_l_in;    // QACC_H_LOW passthru (phantom operand, not shown in assembly)
-  bits<16> qacc_h_h_in;    // QACC_H_HIGH passthru (phantom operand, not shown in assembly)
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -1230,6 +1245,15 @@ def ESP_VMULAS_S8_QACC: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l
   let Inst{0} = 1;
 }
 
+let Defs = []<Register> , isCodeGenOnly = 1 in
+def ESP_VMULAS_S8_QACC: ESP_VMULAS_S8_QACC_Base<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy),
+                   []>;
+
+def ESP_VMULAS_S8_QACC_MC: ESP_VMULAS_S8_QACC_Base<(outs), (ins QR:$qx, QR:$qy), []> {
+  let hasSideEffects = 1;
+}
+
+
 let usesCustomInserter = 1 in 
 def ESP_VMULAS_S8_QACC_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy),
 				"!esp_vmulas_s8_qacc_p $qx, $qy",
@@ -1237,12 +1261,8 @@ def ESP_VMULAS_S8_QACC_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy),
 
 // QACC is passed as explicit 4x128-bit subregisters (QACC_L_LOW, QACC_L_HIGH, QACC_H_LOW, QACC_H_HIGH)
 // No implicit QACC_H_REG/QACC_L_REG references needed - similar to ESP_MOV_S16_QACC and ESP_VLD_128_IP
-let Defs = []<Register>, Uses = []<Register> in
-def ESP_VMULAS_S8_QACC_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                        (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
-                   "esp.vmulas.s8.qacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy", 
-                   []> 
-{
+class ESP_VMULAS_S8_QACC_LD_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.s8.qacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<5> rs1;
@@ -1252,12 +1272,6 @@ def ESP_VMULAS_S8_QACC_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$q
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // QACC_L and QACC_H tied constraints: Input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -1282,16 +1296,25 @@ def ESP_VMULAS_S8_QACC_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$q
   let Inst{0} = 1;
 }
 
+let Defs = []<Register>, Uses = []<Register> , isCodeGenOnly = 1 in
+def ESP_VMULAS_S8_QACC_LD_IP: ESP_VMULAS_S8_QACC_LD_IP_Base<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
+}
+
+def ESP_VMULAS_S8_QACC_LD_IP_MC: ESP_VMULAS_S8_QACC_LD_IP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S8_QACC_LD_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, offset_16_16:$off1616, imm8:$qu),
 				"!esp_vmulas_s8_qacc_ld_ip_p $qu, $rs1, $off1616, $qx, $qy",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_s8_qacc_ld_ip timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$off1616, timm:$qu))]>;
 
-def ESP_VMULAS_S8_QACC_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                       (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1),
-                   "esp.vmulas.s8.qacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy", 
-                   []> 
-{
+class ESP_VMULAS_S8_QACC_LD_XP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.s8.qacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy", pat> {
   bits<5> rs2;
   bits<3> qx;
   bits<3> qy;
@@ -1301,12 +1324,6 @@ def ESP_VMULAS_S8_QACC_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$q
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // QACC_L and QACC_H tied constraints: Input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -1330,6 +1347,18 @@ def ESP_VMULAS_S8_QACC_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$q
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let isCodeGenOnly = 1 in
+def ESP_VMULAS_S8_QACC_LD_XP: ESP_VMULAS_S8_QACC_LD_XP_Base<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
+}
+
+def ESP_VMULAS_S8_QACC_LD_XP_MC: ESP_VMULAS_S8_QACC_LD_XP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S8_QACC_LD_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, GPRPIE:$rs1, imm8:$qu),
@@ -1338,12 +1367,8 @@ def ESP_VMULAS_S8_QACC_LD_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2
 
 // QACC is passed as explicit 4x128-bit subregisters (QACC_L_LOW, QACC_L_HIGH, QACC_H_LOW, QACC_H_HIGH)
 // No implicit QACC_H_REG/QACC_L_REG references needed - similar to ESP_MOV_S16_QACC and ESP_VLD_128_IP
-let Defs = []<Register>, Uses = []<Register> in
-def ESP_VMULAS_S8_QACC_ST_IP: EspVInst<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                        (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qu, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
-                   "esp.vmulas.s8.qacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy", 
-                   []> 
-{
+class ESP_VMULAS_S8_QACC_ST_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.s8.qacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<3> qu;
@@ -1353,12 +1378,6 @@ def ESP_VMULAS_S8_QACC_ST_IP: EspVInst<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l,
   let mayStore = 1;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // QACC tied constraints: Input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -1383,6 +1402,18 @@ def ESP_VMULAS_S8_QACC_ST_IP: EspVInst<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l,
   let Inst{0} = 1;
 }
 
+let Defs = []<Register>, Uses = []<Register> , isCodeGenOnly = 1 in
+def ESP_VMULAS_S8_QACC_ST_IP: ESP_VMULAS_S8_QACC_ST_IP_Base<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qu, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
+}
+
+def ESP_VMULAS_S8_QACC_ST_IP_MC: ESP_VMULAS_S8_QACC_ST_IP_Base<(outs GPRPIE:$rs1r), (ins QR:$qu, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S8_QACC_ST_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, offset_16_16:$off1616),
 				"!esp_vmulas_s8_qacc_st_ip_p $qu, $rs1, $off1616, $qx, $qy",
@@ -1390,12 +1421,8 @@ def ESP_VMULAS_S8_QACC_ST_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, i
 
 // QACC is passed as explicit 4x128-bit subregisters (QACC_L_LOW, QACC_L_HIGH, QACC_H_LOW, QACC_H_HIGH)
 // No implicit QACC_H_REG/QACC_L_REG references needed - similar to ESP_MOV_S16_QACC and ESP_VLD_128_IP
-let Defs = []<Register>, Uses = []<Register> in
-def ESP_VMULAS_S8_QACC_ST_XP: EspVInst<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                        (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qu, QR:$qx, QR:$qy, GPRPIE:$rs1, GPRPIE:$rs2),
-                   "esp.vmulas.s8.qacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy", 
-                   []> 
-{
+class ESP_VMULAS_S8_QACC_ST_XP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.s8.qacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy", pat> {
   bits<5> rs2;
   bits<3> qx;
   bits<3> qy;
@@ -1405,12 +1432,6 @@ def ESP_VMULAS_S8_QACC_ST_XP: EspVInst<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l,
   let mayStore = 1;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // QACC tied constraints: Input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -1434,6 +1455,18 @@ def ESP_VMULAS_S8_QACC_ST_XP: EspVInst<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l,
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let Defs = []<Register>, Uses = []<Register> , isCodeGenOnly = 1 in
+def ESP_VMULAS_S8_QACC_ST_XP: ESP_VMULAS_S8_QACC_ST_XP_Base<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qu, QR:$qx, QR:$qy, GPRPIE:$rs1, GPRPIE:$rs2),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
+}
+
+def ESP_VMULAS_S8_QACC_ST_XP_MC: ESP_VMULAS_S8_QACC_ST_XP_Base<(outs GPRPIE:$rs1r), (ins QR:$qu, QR:$qx, QR:$qy, GPRPIE:$rs1, GPRPIE:$rs2), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S8_QACC_ST_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1),
@@ -1446,20 +1479,13 @@ def ESP_VMULAS_S8_QACC_ST_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2
 // Mixed model: XACC as struct {i32 (XACC[31:0]), i8 (XACC[39:32])}
 // Note: Uses manual instruction selection (RISCVISelDAGToDAG.cpp) because Pattern
 // cannot handle multiple outputs directly. Pattern matching is done in RISCVInstrInfoESPVPatterns.td
-def ESP_VMULAS_S8_XACC: EspVInst<(outs XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), 
-                                   (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, QR:$qx, QR:$qy),
-                   "esp.vmulas.s8.xacc\t $qx, $qy", []> 
-{
+class ESP_VMULAS_S8_XACC_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.s8.xacc\t $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
-  // Tied constraints: XACC input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -1490,6 +1516,17 @@ def ESP_VMULAS_S8_XACC: EspVInst<(outs XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_h
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_VMULAS_S8_XACC: ESP_VMULAS_S8_XACC_Base<(outs XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, QR:$qx, QR:$qy),
+                   []> {
+  let Constraints = "$xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
+}
+
+def ESP_VMULAS_S8_XACC_MC: ESP_VMULAS_S8_XACC_Base<(outs), (ins QR:$qx, QR:$qy), []> {
+  let hasSideEffects = 1;
+}
+
+
 let usesCustomInserter = 1 in 
 def ESP_VMULAS_S8_XACC_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy),
 				"!esp_vmulas_s8_xacc_p $qx, $qy",
@@ -1500,11 +1537,8 @@ def ESP_VMULAS_S8_XACC_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy),
 // Note: Lowering code handles XACC via CopyToReg/CopyFromReg, so instruction uses implicit XACC
 // but intrinsic takes explicit XACC passthru and returns new XACC
 // Mixed model: XACC as {i32 low, i32 high}
-def ESP_VMULAS_S8_XACC_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
-                   "esp.vmulas.s8.xacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy", 
-                   // Lowering code handles XACC via CopyToReg/CopyFromReg
-                   []> 
-{
+class ESP_VMULAS_S8_XACC_LD_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.s8.xacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<5> rs1;
@@ -1514,12 +1548,6 @@ def ESP_VMULAS_S8_XACC_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xac
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // XACC tied constraints: Output equals input (passthru), must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 0;
@@ -1543,6 +1571,19 @@ def ESP_VMULAS_S8_XACC_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xac
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let isCodeGenOnly = 1 in
+def ESP_VMULAS_S8_XACC_LD_IP: ESP_VMULAS_S8_XACC_LD_IP_Base<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
+                   // Lowering code handles XACC via CopyToReg/CopyFromReg
+                   []> {
+  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
+}
+
+def ESP_VMULAS_S8_XACC_LD_IP_MC: ESP_VMULAS_S8_XACC_LD_IP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S8_XACC_LD_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, offset_16_16:$off1616, imm8:$qu),
@@ -1554,11 +1595,8 @@ def ESP_VMULAS_S8_XACC_LD_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, i
 // Note: Lowering code handles XACC via CopyToReg/CopyFromReg, so instruction uses implicit XACC
 // but intrinsic takes explicit XACC passthru and returns new XACC
 // Mixed model: XACC as {i32 low, i32 high}
-def ESP_VMULAS_S8_XACC_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1),
-                   "esp.vmulas.s8.xacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy", 
-                   // Lowering code handles XACC via CopyToReg/CopyFromReg
-                   []> 
-{
+class ESP_VMULAS_S8_XACC_LD_XP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.s8.xacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy", pat> {
   bits<5> rs2;
   bits<3> qx;
   bits<3> qy;
@@ -1568,12 +1606,6 @@ def ESP_VMULAS_S8_XACC_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xac
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // XACC tied constraints: Output equals input (passthru), must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 0;
@@ -1598,6 +1630,19 @@ def ESP_VMULAS_S8_XACC_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xac
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_VMULAS_S8_XACC_LD_XP: ESP_VMULAS_S8_XACC_LD_XP_Base<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1),
+                   // Lowering code handles XACC via CopyToReg/CopyFromReg
+                   []> {
+  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
+}
+
+def ESP_VMULAS_S8_XACC_LD_XP_MC: ESP_VMULAS_S8_XACC_LD_XP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S8_XACC_LD_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, GPRPIE:$rs1, imm8:$qu),
 				"!esp_vmulas_s8_xacc_ld_xp_p $qu, $rs1, $rs2, $qx, $qy",
@@ -1608,10 +1653,8 @@ def ESP_VMULAS_S8_XACC_LD_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2
 // Note: Lowering code handles XACC via CopyToReg/CopyFromReg, so instruction uses implicit XACC
 // but intrinsic takes explicit XACC passthru and returns new XACC
 // Mixed model: XACC as {i32 low, i32 high}
-def ESP_VMULAS_S8_XACC_ST_IP: EspVInst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, offset_16_16:$off1616),
-                   "esp.vmulas.s8.xacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy", 
-                   []> 
-{
+class ESP_VMULAS_S8_XACC_ST_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.s8.xacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<3> qu;
@@ -1621,12 +1664,6 @@ def ESP_VMULAS_S8_XACC_ST_IP: EspVInst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_ou
   let mayStore = 1;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // XACC tied constraints: Output equals input (passthru), must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 0;
@@ -1651,6 +1688,18 @@ def ESP_VMULAS_S8_XACC_ST_IP: EspVInst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_ou
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_VMULAS_S8_XACC_ST_IP: ESP_VMULAS_S8_XACC_ST_IP_Base<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, offset_16_16:$off1616),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
+}
+
+def ESP_VMULAS_S8_XACC_ST_IP_MC: ESP_VMULAS_S8_XACC_ST_IP_Base<(outs GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, offset_16_16:$off1616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S8_XACC_ST_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, offset_16_16:$off1616),
 				"!esp_vmulas_s8_xacc_st_ip_p $qu, $rs1, $off1616, $qx, $qy",
@@ -1661,10 +1710,8 @@ def ESP_VMULAS_S8_XACC_ST_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, i
 // Note: Lowering code handles XACC via CopyToReg/CopyFromReg, so instruction uses implicit XACC
 // but intrinsic takes explicit XACC passthru and returns new XACC
 // Mixed model: XACC as {i32 low, i32 high}
-def ESP_VMULAS_S8_XACC_ST_XP: EspVInst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs2, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1),
-                   "esp.vmulas.s8.xacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy", 
-                   []> 
-{
+class ESP_VMULAS_S8_XACC_ST_XP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.s8.xacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy", pat> {
   bits<5> rs2;
   bits<3> qx;
   bits<3> qy;
@@ -1674,12 +1721,6 @@ def ESP_VMULAS_S8_XACC_ST_XP: EspVInst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_ou
   let mayStore = 1;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // XACC tied constraints: Output equals input (passthru), must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 0;
@@ -1704,6 +1745,18 @@ def ESP_VMULAS_S8_XACC_ST_XP: EspVInst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_ou
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_VMULAS_S8_XACC_ST_XP: ESP_VMULAS_S8_XACC_ST_XP_Base<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs2, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
+}
+
+def ESP_VMULAS_S8_XACC_ST_XP_MC: ESP_VMULAS_S8_XACC_ST_XP_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S8_XACC_ST_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1),
 				"!esp_vmulas_s8_xacc_st_xp_p $qu, $rs1, $rs2, $qx, $qy",
@@ -1712,25 +1765,13 @@ def ESP_VMULAS_S8_XACC_ST_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2
 // ESP_VMULAS_U16_QACC: Multiply-accumulate to QACC with explicit passthru
 // QACC_H:$qacc_h_in and QACC_L:$qacc_l_in are phantom operands (not shown in assembly string)
 // for data flow tracking. They are explicit operands but hidden in assembly output.
-let Defs = []<Register> in
-def ESP_VMULAS_U16_QACC: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                  (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy),
-                   "esp.vmulas.u16.qacc\t $qx, $qy", []> 
-{
+class ESP_VMULAS_U16_QACC_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.u16.qacc\t $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
-  bits<16> qacc_l_l;      // QACC_L_LOW register (128-bit, v16i8)
-  bits<16> qacc_l_h;       // QACC_L_HIGH register (128-bit, v16i8)
-  bits<16> qacc_h_l;       // QACC_H_LOW register (128-bit, v16i8)
-  bits<16> qacc_h_h;       // QACC_H_HIGH register (128-bit, v16i8)
-  bits<16> qacc_l_l_in;    // QACC_L_LOW passthru (phantom operand, not shown in assembly)
-  bits<16> qacc_l_h_in;    // QACC_L_HIGH passthru (phantom operand, not shown in assembly)
-  bits<16> qacc_h_l_in;    // QACC_H_LOW passthru (phantom operand, not shown in assembly)
-  bits<16> qacc_h_h_in;    // QACC_H_HIGH passthru (phantom operand, not shown in assembly)
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -1761,6 +1802,15 @@ def ESP_VMULAS_U16_QACC: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_
   let Inst{0} = 1;
 }
 
+let Defs = []<Register> , isCodeGenOnly = 1 in
+def ESP_VMULAS_U16_QACC: ESP_VMULAS_U16_QACC_Base<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy),
+                   []>;
+
+def ESP_VMULAS_U16_QACC_MC: ESP_VMULAS_U16_QACC_Base<(outs), (ins QR:$qx, QR:$qy), []> {
+  let hasSideEffects = 1;
+}
+
+
 let usesCustomInserter = 1 in 
 def ESP_VMULAS_U16_QACC_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy),
 				"!esp_vmulas_u16_qacc_p $qx, $qy",
@@ -1768,12 +1818,8 @@ def ESP_VMULAS_U16_QACC_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy),
 
 // QACC is passed as explicit 4x128-bit subregisters (QACC_L_LOW, QACC_L_HIGH, QACC_H_LOW, QACC_H_HIGH)
 // No implicit QACC_H_REG/QACC_L_REG references needed - similar to ESP_MOV_S16_QACC and ESP_VLD_128_IP
-let Defs = []<Register>, Uses = []<Register> in
-def ESP_VMULAS_U16_QACC_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                         (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
-                   "esp.vmulas.u16.qacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy", 
-                   []> 
-{
+class ESP_VMULAS_U16_QACC_LD_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.u16.qacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<5> rs1;
@@ -1783,12 +1829,6 @@ def ESP_VMULAS_U16_QACC_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // QACC_L and QACC_H tied constraints: Input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -1813,16 +1853,25 @@ def ESP_VMULAS_U16_QACC_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$
   let Inst{0} = 1;
 }
 
+let Defs = []<Register>, Uses = []<Register> , isCodeGenOnly = 1 in
+def ESP_VMULAS_U16_QACC_LD_IP: ESP_VMULAS_U16_QACC_LD_IP_Base<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
+}
+
+def ESP_VMULAS_U16_QACC_LD_IP_MC: ESP_VMULAS_U16_QACC_LD_IP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U16_QACC_LD_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, offset_16_16:$off1616, imm8:$qu),
 				"!esp_vmulas_u16_qacc_ld_ip_p $qu, $rs1, $off1616, $qx, $qy",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_u16_qacc_ld_ip timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$off1616, timm:$qu))]>;
 
-def ESP_VMULAS_U16_QACC_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                        (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1),
-                   "esp.vmulas.u16.qacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy", 
-                   []> 
-{
+class ESP_VMULAS_U16_QACC_LD_XP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.u16.qacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy", pat> {
   bits<5> rs2;
   bits<3> qx;
   bits<3> qy;
@@ -1832,12 +1881,6 @@ def ESP_VMULAS_U16_QACC_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // QACC_L and QACC_H tied constraints: Input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -1861,6 +1904,18 @@ def ESP_VMULAS_U16_QACC_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let isCodeGenOnly = 1 in
+def ESP_VMULAS_U16_QACC_LD_XP: ESP_VMULAS_U16_QACC_LD_XP_Base<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
+}
+
+def ESP_VMULAS_U16_QACC_LD_XP_MC: ESP_VMULAS_U16_QACC_LD_XP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U16_QACC_LD_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, GPRPIE:$rs1, imm8:$qu),
@@ -1869,12 +1924,8 @@ def ESP_VMULAS_U16_QACC_LD_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs
 
 // QACC is passed as explicit 4x128-bit subregisters (QACC_L_LOW, QACC_L_HIGH, QACC_H_LOW, QACC_H_HIGH)
 // No implicit QACC_H_REG/QACC_L_REG references needed - similar to ESP_MOV_S16_QACC and ESP_VLD_128_IP
-let Defs = []<Register>, Uses = []<Register> in
-def ESP_VMULAS_U16_QACC_ST_IP: EspVInst<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                         (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qu, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
-                   "esp.vmulas.u16.qacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy", 
-                   []> 
-{
+class ESP_VMULAS_U16_QACC_ST_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.u16.qacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<3> qu;
@@ -1884,12 +1935,6 @@ def ESP_VMULAS_U16_QACC_ST_IP: EspVInst<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l
   let mayStore = 1;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // QACC tied constraints: Input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -1914,6 +1959,18 @@ def ESP_VMULAS_U16_QACC_ST_IP: EspVInst<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l
   let Inst{0} = 1;
 }
 
+let Defs = []<Register>, Uses = []<Register> , isCodeGenOnly = 1 in
+def ESP_VMULAS_U16_QACC_ST_IP: ESP_VMULAS_U16_QACC_ST_IP_Base<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qu, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
+}
+
+def ESP_VMULAS_U16_QACC_ST_IP_MC: ESP_VMULAS_U16_QACC_ST_IP_Base<(outs GPRPIE:$rs1r), (ins QR:$qu, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U16_QACC_ST_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, offset_16_16:$off1616),
 				"!esp_vmulas_u16_qacc_st_ip_p $qu, $rs1, $off1616, $qx, $qy",
@@ -1921,12 +1978,8 @@ def ESP_VMULAS_U16_QACC_ST_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, 
 
 // QACC is passed as explicit 4x128-bit subregisters (QACC_L_LOW, QACC_L_HIGH, QACC_H_LOW, QACC_H_HIGH)
 // No implicit QACC_H_REG/QACC_L_REG references needed - similar to ESP_MOV_S16_QACC and ESP_VLD_128_IP
-let Defs = []<Register>, Uses = []<Register> in
-def ESP_VMULAS_U16_QACC_ST_XP: EspVInst<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                         (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qu, QR:$qx, QR:$qy, GPRPIE:$rs1, GPRPIE:$rs2),
-                   "esp.vmulas.u16.qacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy", 
-                   []> 
-{
+class ESP_VMULAS_U16_QACC_ST_XP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.u16.qacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy", pat> {
   bits<5> rs2;
   bits<3> qx;
   bits<3> qy;
@@ -1936,12 +1989,6 @@ def ESP_VMULAS_U16_QACC_ST_XP: EspVInst<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l
   let mayStore = 1;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // QACC tied constraints: Input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -1965,6 +2012,18 @@ def ESP_VMULAS_U16_QACC_ST_XP: EspVInst<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let Defs = []<Register>, Uses = []<Register> , isCodeGenOnly = 1 in
+def ESP_VMULAS_U16_QACC_ST_XP: ESP_VMULAS_U16_QACC_ST_XP_Base<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qu, QR:$qx, QR:$qy, GPRPIE:$rs1, GPRPIE:$rs2),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
+}
+
+def ESP_VMULAS_U16_QACC_ST_XP_MC: ESP_VMULAS_U16_QACC_ST_XP_Base<(outs GPRPIE:$rs1r), (ins QR:$qu, QR:$qx, QR:$qy, GPRPIE:$rs1, GPRPIE:$rs2), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U16_QACC_ST_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1),
@@ -1977,20 +2036,13 @@ def ESP_VMULAS_U16_QACC_ST_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs
 // Mixed model: XACC as struct {i32 (XACC[31:0]), i8 (XACC[39:32])}
 // Note: Uses manual instruction selection (RISCVISelDAGToDAG.cpp) because Pattern
 // cannot handle multiple outputs directly. Pattern matching is done in RISCVInstrInfoESPVPatterns.td
-def ESP_VMULAS_U16_XACC: EspVInst<(outs XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), 
-                                   (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, QR:$qx, QR:$qy),
-                   "esp.vmulas.u16.xacc\t $qx, $qy", []> 
-{
+class ESP_VMULAS_U16_XACC_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.u16.xacc\t $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
-  // Tied constraints: XACC input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -2021,6 +2073,17 @@ def ESP_VMULAS_U16_XACC: EspVInst<(outs XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_VMULAS_U16_XACC: ESP_VMULAS_U16_XACC_Base<(outs XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, QR:$qx, QR:$qy),
+                   []> {
+  let Constraints = "$xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
+}
+
+def ESP_VMULAS_U16_XACC_MC: ESP_VMULAS_U16_XACC_Base<(outs), (ins QR:$qx, QR:$qy), []> {
+  let hasSideEffects = 1;
+}
+
+
 let usesCustomInserter = 1 in 
 def ESP_VMULAS_U16_XACC_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy),
 				"!esp_vmulas_u16_xacc_p $qx, $qy",
@@ -2031,11 +2094,8 @@ def ESP_VMULAS_U16_XACC_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy),
 // Note: Lowering code handles XACC via CopyToReg/CopyFromReg, so instruction uses implicit XACC
 // but intrinsic takes explicit XACC passthru and returns new XACC
 // Mixed model: XACC as {i32 low, i32 high}
-def ESP_VMULAS_U16_XACC_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
-                   "esp.vmulas.u16.xacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy", 
-                   // Lowering code handles XACC via CopyToReg/CopyFromReg
-                   []> 
-{
+class ESP_VMULAS_U16_XACC_LD_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.u16.xacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<5> rs1;
@@ -2045,12 +2105,6 @@ def ESP_VMULAS_U16_XACC_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xa
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // XACC tied constraints: Output equals input (passthru), must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 0;
@@ -2074,6 +2128,19 @@ def ESP_VMULAS_U16_XACC_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xa
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let isCodeGenOnly = 1 in
+def ESP_VMULAS_U16_XACC_LD_IP: ESP_VMULAS_U16_XACC_LD_IP_Base<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
+                   // Lowering code handles XACC via CopyToReg/CopyFromReg
+                   []> {
+  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
+}
+
+def ESP_VMULAS_U16_XACC_LD_IP_MC: ESP_VMULAS_U16_XACC_LD_IP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U16_XACC_LD_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, offset_16_16:$off1616, imm8:$qu),
@@ -2085,11 +2152,8 @@ def ESP_VMULAS_U16_XACC_LD_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, 
 // Note: Lowering code handles XACC via CopyToReg/CopyFromReg, so instruction uses implicit XACC
 // but intrinsic takes explicit XACC passthru and returns new XACC
 // Mixed model: XACC as {i32 low, i32 high}
-def ESP_VMULAS_U16_XACC_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1),
-                   "esp.vmulas.u16.xacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy", 
-                   // Lowering code handles XACC via CopyToReg/CopyFromReg
-                   []> 
-{
+class ESP_VMULAS_U16_XACC_LD_XP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.u16.xacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy", pat> {
   bits<5> rs2;
   bits<3> qx;
   bits<3> qy;
@@ -2099,12 +2163,6 @@ def ESP_VMULAS_U16_XACC_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xa
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // XACC tied constraints: Output equals input (passthru), must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 0;
@@ -2129,6 +2187,19 @@ def ESP_VMULAS_U16_XACC_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xa
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_VMULAS_U16_XACC_LD_XP: ESP_VMULAS_U16_XACC_LD_XP_Base<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1),
+                   // Lowering code handles XACC via CopyToReg/CopyFromReg
+                   []> {
+  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
+}
+
+def ESP_VMULAS_U16_XACC_LD_XP_MC: ESP_VMULAS_U16_XACC_LD_XP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U16_XACC_LD_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, GPRPIE:$rs1, imm8:$qu),
 				"!esp_vmulas_u16_xacc_ld_xp_p $qu, $rs1, $rs2, $qx, $qy",
@@ -2139,10 +2210,8 @@ def ESP_VMULAS_U16_XACC_LD_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs
 // Note: Lowering code handles XACC via CopyToReg/CopyFromReg, so instruction uses implicit XACC
 // but intrinsic takes explicit XACC passthru and returns new XACC
 // Mixed model: XACC as {i32 low, i32 high}
-def ESP_VMULAS_U16_XACC_ST_IP: EspVInst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, offset_16_16:$off1616),
-                   "esp.vmulas.u16.xacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy", 
-                   []> 
-{
+class ESP_VMULAS_U16_XACC_ST_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.u16.xacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<3> qu;
@@ -2152,12 +2221,6 @@ def ESP_VMULAS_U16_XACC_ST_IP: EspVInst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_o
   let mayStore = 1;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // XACC tied constraints: Output equals input (passthru), must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 0;
@@ -2182,6 +2245,18 @@ def ESP_VMULAS_U16_XACC_ST_IP: EspVInst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_o
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_VMULAS_U16_XACC_ST_IP: ESP_VMULAS_U16_XACC_ST_IP_Base<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, offset_16_16:$off1616),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
+}
+
+def ESP_VMULAS_U16_XACC_ST_IP_MC: ESP_VMULAS_U16_XACC_ST_IP_Base<(outs GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, offset_16_16:$off1616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U16_XACC_ST_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, offset_16_16:$off1616),
 				"!esp_vmulas_u16_xacc_st_ip_p $qu, $rs1, $off1616, $qx, $qy",
@@ -2192,10 +2267,8 @@ def ESP_VMULAS_U16_XACC_ST_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, 
 // Note: Lowering code handles XACC via CopyToReg/CopyFromReg, so instruction uses implicit XACC
 // but intrinsic takes explicit XACC passthru and returns new XACC
 // Mixed model: XACC as {i32 low, i32 high}
-def ESP_VMULAS_U16_XACC_ST_XP: EspVInst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs2, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1),
-                   "esp.vmulas.u16.xacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy", 
-                   []> 
-{
+class ESP_VMULAS_U16_XACC_ST_XP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.u16.xacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy", pat> {
   bits<5> rs2;
   bits<3> qx;
   bits<3> qy;
@@ -2205,12 +2278,6 @@ def ESP_VMULAS_U16_XACC_ST_XP: EspVInst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_o
   let mayStore = 1;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // XACC tied constraints: Output equals input (passthru), must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 0;
@@ -2235,6 +2302,18 @@ def ESP_VMULAS_U16_XACC_ST_XP: EspVInst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_o
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_VMULAS_U16_XACC_ST_XP: ESP_VMULAS_U16_XACC_ST_XP_Base<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs2, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
+}
+
+def ESP_VMULAS_U16_XACC_ST_XP_MC: ESP_VMULAS_U16_XACC_ST_XP_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U16_XACC_ST_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1),
 				"!esp_vmulas_u16_xacc_st_xp_p $qu, $rs1, $rs2, $qx, $qy",
@@ -2243,25 +2322,13 @@ def ESP_VMULAS_U16_XACC_ST_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs
 // ESP_VMULAS_U8_QACC: Multiply-accumulate to QACC with explicit passthru
 // QACC_H:$qacc_h_in and QACC_L:$qacc_l_in are phantom operands (not shown in assembly string)
 // for data flow tracking. They are explicit operands but hidden in assembly output.
-let Defs = []<Register> in
-def ESP_VMULAS_U8_QACC: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                 (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy),
-                   "esp.vmulas.u8.qacc\t $qx, $qy", []> 
-{
+class ESP_VMULAS_U8_QACC_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.u8.qacc\t $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
-  bits<16> qacc_l_l;      // QACC_L_LOW register (128-bit, v16i8)
-  bits<16> qacc_l_h;       // QACC_L_HIGH register (128-bit, v16i8)
-  bits<16> qacc_h_l;       // QACC_H_LOW register (128-bit, v16i8)
-  bits<16> qacc_h_h;       // QACC_H_HIGH register (128-bit, v16i8)
-  bits<16> qacc_l_l_in;    // QACC_L_LOW passthru (phantom operand, not shown in assembly)
-  bits<16> qacc_l_h_in;    // QACC_L_HIGH passthru (phantom operand, not shown in assembly)
-  bits<16> qacc_h_l_in;    // QACC_H_LOW passthru (phantom operand, not shown in assembly)
-  bits<16> qacc_h_h_in;    // QACC_H_HIGH passthru (phantom operand, not shown in assembly)
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -2292,6 +2359,15 @@ def ESP_VMULAS_U8_QACC: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l
   let Inst{0} = 1;
 }
 
+let Defs = []<Register> , isCodeGenOnly = 1 in
+def ESP_VMULAS_U8_QACC: ESP_VMULAS_U8_QACC_Base<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy),
+                   []>;
+
+def ESP_VMULAS_U8_QACC_MC: ESP_VMULAS_U8_QACC_Base<(outs), (ins QR:$qx, QR:$qy), []> {
+  let hasSideEffects = 1;
+}
+
+
 let usesCustomInserter = 1 in 
 def ESP_VMULAS_U8_QACC_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy),
 				"!esp_vmulas_u8_qacc_p $qx, $qy",
@@ -2299,12 +2375,8 @@ def ESP_VMULAS_U8_QACC_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy),
 
 // QACC is passed as explicit 4x128-bit subregisters (QACC_L_LOW, QACC_L_HIGH, QACC_H_LOW, QACC_H_HIGH)
 // No implicit QACC_H_REG/QACC_L_REG references needed - similar to ESP_MOV_S16_QACC and ESP_VLD_128_IP
-let Defs = []<Register>, Uses = []<Register> in
-def ESP_VMULAS_U8_QACC_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                        (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
-                   "esp.vmulas.u8.qacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy", 
-                   []> 
-{
+class ESP_VMULAS_U8_QACC_LD_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.u8.qacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<5> rs1;
@@ -2314,12 +2386,6 @@ def ESP_VMULAS_U8_QACC_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$q
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // QACC_L and QACC_H tied constraints: Input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -2344,16 +2410,25 @@ def ESP_VMULAS_U8_QACC_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$q
   let Inst{0} = 1;
 }
 
+let Defs = []<Register>, Uses = []<Register> , isCodeGenOnly = 1 in
+def ESP_VMULAS_U8_QACC_LD_IP: ESP_VMULAS_U8_QACC_LD_IP_Base<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
+}
+
+def ESP_VMULAS_U8_QACC_LD_IP_MC: ESP_VMULAS_U8_QACC_LD_IP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U8_QACC_LD_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, offset_16_16:$off1616, imm8:$qu),
 				"!esp_vmulas_u8_qacc_ld_ip_p $qu, $rs1, $off1616, $qx, $qy",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_u8_qacc_ld_ip timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$off1616, timm:$qu))]>;
 
-def ESP_VMULAS_U8_QACC_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                       (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1),
-                   "esp.vmulas.u8.qacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy", 
-                   []> 
-{
+class ESP_VMULAS_U8_QACC_LD_XP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.u8.qacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy", pat> {
   bits<5> rs2;
   bits<3> qx;
   bits<3> qy;
@@ -2363,12 +2438,6 @@ def ESP_VMULAS_U8_QACC_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$q
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // QACC_L and QACC_H tied constraints: Input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -2392,6 +2461,18 @@ def ESP_VMULAS_U8_QACC_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$q
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let isCodeGenOnly = 1 in
+def ESP_VMULAS_U8_QACC_LD_XP: ESP_VMULAS_U8_QACC_LD_XP_Base<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
+}
+
+def ESP_VMULAS_U8_QACC_LD_XP_MC: ESP_VMULAS_U8_QACC_LD_XP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U8_QACC_LD_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, GPRPIE:$rs1, imm8:$qu),
@@ -2400,12 +2481,8 @@ def ESP_VMULAS_U8_QACC_LD_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2
 
 // QACC is passed as explicit 4x128-bit subregisters (QACC_L_LOW, QACC_L_HIGH, QACC_H_LOW, QACC_H_HIGH)
 // No implicit QACC_H_REG/QACC_L_REG references needed - similar to ESP_MOV_S16_QACC and ESP_VLD_128_IP
-let Defs = []<Register>, Uses = []<Register> in
-def ESP_VMULAS_U8_QACC_ST_IP: EspVInst<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                        (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qu, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
-                   "esp.vmulas.u8.qacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy", 
-                   []> 
-{
+class ESP_VMULAS_U8_QACC_ST_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.u8.qacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<3> qu;
@@ -2415,12 +2492,6 @@ def ESP_VMULAS_U8_QACC_ST_IP: EspVInst<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l,
   let mayStore = 1;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // QACC tied constraints: Input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -2445,6 +2516,18 @@ def ESP_VMULAS_U8_QACC_ST_IP: EspVInst<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l,
   let Inst{0} = 1;
 }
 
+let Defs = []<Register>, Uses = []<Register> , isCodeGenOnly = 1 in
+def ESP_VMULAS_U8_QACC_ST_IP: ESP_VMULAS_U8_QACC_ST_IP_Base<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qu, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
+}
+
+def ESP_VMULAS_U8_QACC_ST_IP_MC: ESP_VMULAS_U8_QACC_ST_IP_Base<(outs GPRPIE:$rs1r), (ins QR:$qu, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U8_QACC_ST_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, offset_16_16:$off1616),
 				"!esp_vmulas_u8_qacc_st_ip_p $qu, $rs1, $off1616, $qx, $qy",
@@ -2452,12 +2535,8 @@ def ESP_VMULAS_U8_QACC_ST_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, i
 
 // QACC is passed as explicit 4x128-bit subregisters (QACC_L_LOW, QACC_L_HIGH, QACC_H_LOW, QACC_H_HIGH)
 // No implicit QACC_H_REG/QACC_L_REG references needed - similar to ESP_MOV_S16_QACC and ESP_VLD_128_IP
-let Defs = []<Register>, Uses = []<Register> in
-def ESP_VMULAS_U8_QACC_ST_XP: EspVInst<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                        (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qu, QR:$qx, QR:$qy, GPRPIE:$rs1, GPRPIE:$rs2),
-                   "esp.vmulas.u8.qacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy", 
-                   []> 
-{
+class ESP_VMULAS_U8_QACC_ST_XP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.u8.qacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy", pat> {
   bits<5> rs2;
   bits<3> qx;
   bits<3> qy;
@@ -2467,12 +2546,6 @@ def ESP_VMULAS_U8_QACC_ST_XP: EspVInst<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l,
   let mayStore = 1;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // QACC tied constraints: Input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -2496,6 +2569,18 @@ def ESP_VMULAS_U8_QACC_ST_XP: EspVInst<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l,
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let Defs = []<Register>, Uses = []<Register> , isCodeGenOnly = 1 in
+def ESP_VMULAS_U8_QACC_ST_XP: ESP_VMULAS_U8_QACC_ST_XP_Base<(outs GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qu, QR:$qx, QR:$qy, GPRPIE:$rs1, GPRPIE:$rs2),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
+}
+
+def ESP_VMULAS_U8_QACC_ST_XP_MC: ESP_VMULAS_U8_QACC_ST_XP_Base<(outs GPRPIE:$rs1r), (ins QR:$qu, QR:$qx, QR:$qy, GPRPIE:$rs1, GPRPIE:$rs2), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U8_QACC_ST_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1),
@@ -2508,20 +2593,13 @@ def ESP_VMULAS_U8_QACC_ST_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2
 // Mixed model: XACC as struct {i32 (XACC[31:0]), i8 (XACC[39:32])}
 // Note: Uses manual instruction selection (RISCVISelDAGToDAG.cpp) because Pattern
 // cannot handle multiple outputs directly. Pattern matching is done in RISCVInstrInfoESPVPatterns.td
-def ESP_VMULAS_U8_XACC: EspVInst<(outs XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), 
-                                   (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, QR:$qx, QR:$qy),
-                   "esp.vmulas.u8.xacc\t $qx, $qy", []> 
-{
+class ESP_VMULAS_U8_XACC_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.u8.xacc\t $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
-  // Tied constraints: XACC input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -2552,6 +2630,17 @@ def ESP_VMULAS_U8_XACC: EspVInst<(outs XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_h
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_VMULAS_U8_XACC: ESP_VMULAS_U8_XACC_Base<(outs XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, QR:$qx, QR:$qy),
+                   []> {
+  let Constraints = "$xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
+}
+
+def ESP_VMULAS_U8_XACC_MC: ESP_VMULAS_U8_XACC_Base<(outs), (ins QR:$qx, QR:$qy), []> {
+  let hasSideEffects = 1;
+}
+
+
 let usesCustomInserter = 1 in 
 def ESP_VMULAS_U8_XACC_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy),
 				"!esp_vmulas_u8_xacc_p $qx, $qy",
@@ -2562,11 +2651,8 @@ def ESP_VMULAS_U8_XACC_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy),
 // Note: Lowering code handles XACC via CopyToReg/CopyFromReg, so instruction uses implicit XACC
 // but intrinsic takes explicit XACC passthru and returns new XACC
 // Mixed model: XACC as {i32 low, i32 high}
-def ESP_VMULAS_U8_XACC_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
-                   "esp.vmulas.u8.xacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy", 
-                   // Lowering code handles XACC via CopyToReg/CopyFromReg
-                   []> 
-{
+class ESP_VMULAS_U8_XACC_LD_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.u8.xacc.ld.ip\t $qu, $rs1, $off1616, $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<5> rs1;
@@ -2576,12 +2662,6 @@ def ESP_VMULAS_U8_XACC_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xac
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // XACC tied constraints: Output equals input (passthru), must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 0;
@@ -2605,6 +2685,19 @@ def ESP_VMULAS_U8_XACC_LD_IP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xac
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let isCodeGenOnly = 1 in
+def ESP_VMULAS_U8_XACC_LD_IP: ESP_VMULAS_U8_XACC_LD_IP_Base<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616),
+                   // Lowering code handles XACC via CopyToReg/CopyFromReg
+                   []> {
+  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
+}
+
+def ESP_VMULAS_U8_XACC_LD_IP_MC: ESP_VMULAS_U8_XACC_LD_IP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, offset_16_16:$off1616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U8_XACC_LD_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, offset_16_16:$off1616, imm8:$qu),
@@ -2616,11 +2709,8 @@ def ESP_VMULAS_U8_XACC_LD_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, i
 // Note: Lowering code handles XACC via CopyToReg/CopyFromReg, so instruction uses implicit XACC
 // but intrinsic takes explicit XACC passthru and returns new XACC
 // Mixed model: XACC as {i32 low, i32 high}
-def ESP_VMULAS_U8_XACC_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1),
-                   "esp.vmulas.u8.xacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy", 
-                   // Lowering code handles XACC via CopyToReg/CopyFromReg
-                   []> 
-{
+class ESP_VMULAS_U8_XACC_LD_XP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.u8.xacc.ld.xp\t $qu, $rs1, $rs2, $qx, $qy", pat> {
   bits<5> rs2;
   bits<3> qx;
   bits<3> qy;
@@ -2630,12 +2720,6 @@ def ESP_VMULAS_U8_XACC_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xac
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // XACC tied constraints: Output equals input (passthru), must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 0;
@@ -2660,6 +2744,19 @@ def ESP_VMULAS_U8_XACC_LD_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xac
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_VMULAS_U8_XACC_LD_XP: ESP_VMULAS_U8_XACC_LD_XP_Base<(outs QR:$qu, GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1),
+                   // Lowering code handles XACC via CopyToReg/CopyFromReg
+                   []> {
+  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
+}
+
+def ESP_VMULAS_U8_XACC_LD_XP_MC: ESP_VMULAS_U8_XACC_LD_XP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, GPRPIE:$rs1), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U8_XACC_LD_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, GPRPIE:$rs1, imm8:$qu),
 				"!esp_vmulas_u8_xacc_ld_xp_p $qu, $rs1, $rs2, $qx, $qy",
@@ -2670,10 +2767,8 @@ def ESP_VMULAS_U8_XACC_LD_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2
 // Note: Lowering code handles XACC via CopyToReg/CopyFromReg, so instruction uses implicit XACC
 // but intrinsic takes explicit XACC passthru and returns new XACC
 // Mixed model: XACC as {i32 low, i32 high}
-def ESP_VMULAS_U8_XACC_ST_IP: EspVInst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, offset_16_16:$off1616),
-                   "esp.vmulas.u8.xacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy", 
-                   []> 
-{
+class ESP_VMULAS_U8_XACC_ST_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.u8.xacc.st.ip\t $qu, $rs1, $off1616, $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<3> qu;
@@ -2683,12 +2778,6 @@ def ESP_VMULAS_U8_XACC_ST_IP: EspVInst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_ou
   let mayStore = 1;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // XACC tied constraints: Output equals input (passthru), must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 0;
@@ -2713,6 +2802,18 @@ def ESP_VMULAS_U8_XACC_ST_IP: EspVInst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_ou
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_VMULAS_U8_XACC_ST_IP: ESP_VMULAS_U8_XACC_ST_IP_Base<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, offset_16_16:$off1616),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
+}
+
+def ESP_VMULAS_U8_XACC_ST_IP_MC: ESP_VMULAS_U8_XACC_ST_IP_Base<(outs GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1, offset_16_16:$off1616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U8_XACC_ST_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1, offset_16_16:$off1616),
 				"!esp_vmulas_u8_xacc_st_ip_p $qu, $rs1, $off1616, $qx, $qy",
@@ -2723,10 +2824,8 @@ def ESP_VMULAS_U8_XACC_ST_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, i
 // Note: Lowering code handles XACC via CopyToReg/CopyFromReg, so instruction uses implicit XACC
 // but intrinsic takes explicit XACC passthru and returns new XACC
 // Mixed model: XACC as {i32 low, i32 high}
-def ESP_VMULAS_U8_XACC_ST_XP: EspVInst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs2, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1),
-                   "esp.vmulas.u8.xacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy", 
-                   []> 
-{
+class ESP_VMULAS_U8_XACC_ST_XP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.u8.xacc.st.xp\t $qu, $rs1, $rs2, $qx, $qy", pat> {
   bits<5> rs2;
   bits<3> qx;
   bits<3> qy;
@@ -2736,12 +2835,6 @@ def ESP_VMULAS_U8_XACC_ST_XP: EspVInst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_ou
   let mayStore = 1;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // XACC tied constraints: Output equals input (passthru), must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 0;
@@ -2766,6 +2859,18 @@ def ESP_VMULAS_U8_XACC_ST_XP: EspVInst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_ou
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_VMULAS_U8_XACC_ST_XP: ESP_VMULAS_U8_XACC_ST_XP_Base<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs2, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
+}
+
+def ESP_VMULAS_U8_XACC_ST_XP_MC: ESP_VMULAS_U8_XACC_ST_XP_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qx, QR:$qy, QR:$qu, GPRPIE:$rs1), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U8_XACC_ST_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, imm8:$qx, imm8:$qy, imm8:$qu, GPRPIE:$rs1),
 				"!esp_vmulas_u8_xacc_st_xp_p $qu, $rs1, $rs2, $qx, $qy",
@@ -2773,12 +2878,8 @@ def ESP_VMULAS_U8_XACC_ST_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2
 
 // QACC is passed as explicit 4x128-bit subregisters (QACC_L_LOW, QACC_L_HIGH, QACC_H_LOW, QACC_H_HIGH)
 // No implicit QACC_H_REG/QACC_L_REG references needed - similar to ESP_MOV_S16_QACC and ESP_VLD_128_IP
-let Defs = []<Register>, Uses = []<Register> in
-def ESP_VMULAS_S16_QACC_LDBC_INCP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                        (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1),
-                   "esp.vmulas.s16.qacc.ldbc.incp\t $qu, $rs1, $qx, $qy", 
-                   []> 
-{
+class ESP_VMULAS_S16_QACC_LDBC_INCP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.s16.qacc.ldbc.incp\t $qu, $rs1, $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<5> rs1;
@@ -2787,12 +2888,6 @@ def ESP_VMULAS_S16_QACC_LDBC_INCP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_L
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // QACC tied constraints: Input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 0;
@@ -2818,6 +2913,18 @@ def ESP_VMULAS_S16_QACC_LDBC_INCP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_L
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let Defs = []<Register>, Uses = []<Register> , isCodeGenOnly = 1 in
+def ESP_VMULAS_S16_QACC_LDBC_INCP: ESP_VMULAS_S16_QACC_LDBC_INCP_Base<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
+}
+
+def ESP_VMULAS_S16_QACC_LDBC_INCP_MC: ESP_VMULAS_S16_QACC_LDBC_INCP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S16_QACC_LDBC_INCP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, imm8:$qu),
@@ -2825,12 +2932,8 @@ def ESP_VMULAS_S16_QACC_LDBC_INCP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_s16_qacc_ldbc_incp timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$qu))]>;
 
 // QACC is passed as explicit 4x128-bit subregisters (QACC_L_LOW, QACC_L_HIGH, QACC_H_LOW, QACC_H_HIGH)
-let Defs = []<Register>, Uses = []<Register> in
-def ESP_VMULAS_S8_QACC_LDBC_INCP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                        (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1),
-                   "esp.vmulas.s8.qacc.ldbc.incp\t $qu, $rs1, $qx, $qy", 
-                   []> 
-{
+class ESP_VMULAS_S8_QACC_LDBC_INCP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.s8.qacc.ldbc.incp\t $qu, $rs1, $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<5> rs1;
@@ -2839,12 +2942,6 @@ def ESP_VMULAS_S8_QACC_LDBC_INCP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LO
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // QACC tied constraints: Input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 0;
@@ -2871,18 +2968,26 @@ def ESP_VMULAS_S8_QACC_LDBC_INCP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LO
   let Inst{0} = 1;
 }
 
+let Defs = []<Register>, Uses = []<Register> , isCodeGenOnly = 1 in
+def ESP_VMULAS_S8_QACC_LDBC_INCP: ESP_VMULAS_S8_QACC_LDBC_INCP_Base<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
+}
+
+def ESP_VMULAS_S8_QACC_LDBC_INCP_MC: ESP_VMULAS_S8_QACC_LDBC_INCP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_S8_QACC_LDBC_INCP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, imm8:$qu),
 				"!esp_vmulas_s8_qacc_ldbc_incp_p $qu, $rs1, $qx, $qy",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_s8_qacc_ldbc_incp timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$qu))]>;
 
 // QACC is passed as explicit 4x128-bit subregisters (QACC_L_LOW, QACC_L_HIGH, QACC_H_LOW, QACC_H_HIGH)
-let Defs = []<Register>, Uses = []<Register> in
-def ESP_VMULAS_U16_QACC_LDBC_INCP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                        (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1),
-                   "esp.vmulas.u16.qacc.ldbc.incp\t $qu, $rs1, $qx, $qy", 
-                   []> 
-{
+class ESP_VMULAS_U16_QACC_LDBC_INCP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.u16.qacc.ldbc.incp\t $qu, $rs1, $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<5> rs1;
@@ -2891,12 +2996,6 @@ def ESP_VMULAS_U16_QACC_LDBC_INCP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_L
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // QACC tied constraints: Input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 0;
@@ -2923,18 +3022,26 @@ def ESP_VMULAS_U16_QACC_LDBC_INCP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_L
   let Inst{0} = 1;
 }
 
+let Defs = []<Register>, Uses = []<Register> , isCodeGenOnly = 1 in
+def ESP_VMULAS_U16_QACC_LDBC_INCP: ESP_VMULAS_U16_QACC_LDBC_INCP_Base<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
+}
+
+def ESP_VMULAS_U16_QACC_LDBC_INCP_MC: ESP_VMULAS_U16_QACC_LDBC_INCP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U16_QACC_LDBC_INCP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, imm8:$qu),
 				"!esp_vmulas_u16_qacc_ldbc_incp_p $qu, $rs1, $qx, $qy",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vmulas_u16_qacc_ldbc_incp timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$qu))]>;
 
 // QACC is passed as explicit 4x128-bit subregisters (QACC_L_LOW, QACC_L_HIGH, QACC_H_LOW, QACC_H_HIGH)
-let Defs = []<Register>, Uses = []<Register> in
-def ESP_VMULAS_U8_QACC_LDBC_INCP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                        (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1),
-                   "esp.vmulas.u8.qacc.ldbc.incp\t $qu, $rs1, $qx, $qy", 
-                   []> 
-{
+class ESP_VMULAS_U8_QACC_LDBC_INCP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vmulas.u8.qacc.ldbc.incp\t $qu, $rs1, $qx, $qy", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<5> rs1;
@@ -2943,9 +3050,6 @@ def ESP_VMULAS_U8_QACC_LDBC_INCP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LO
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  let Constraints = "$rs1r = $rs1";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 0;
@@ -2971,6 +3075,18 @@ def ESP_VMULAS_U8_QACC_LDBC_INCP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LO
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let Defs = []<Register>, Uses = []<Register> , isCodeGenOnly = 1 in
+def ESP_VMULAS_U8_QACC_LDBC_INCP: ESP_VMULAS_U8_QACC_LDBC_INCP_Base<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1),
+                   []> {
+  let Constraints = "$rs1r = $rs1";
+}
+
+def ESP_VMULAS_U8_QACC_LDBC_INCP_MC: ESP_VMULAS_U8_QACC_LDBC_INCP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VMULAS_U8_QACC_LDBC_INCP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, imm8:$qu),
@@ -2980,26 +3096,14 @@ def ESP_VMULAS_U8_QACC_LDBC_INCP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$q
 // ESP_VSMULAS_S16_QACC: Multiply-accumulate to QACC with explicit passthru
 // QACC_H:$qacc_h_in and QACC_L:$qacc_l_in are phantom operands (not shown in assembly string)
 // for data flow tracking. They are explicit operands but hidden in assembly output.
-let Defs = []<Register> in
-def ESP_VSMULAS_S16_QACC: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                  (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, select_16:$sel16),
-                   "esp.vsmulas.s16.qacc\t $qx, $qy, $sel16", []> 
-{
+class ESP_VSMULAS_S16_QACC_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vsmulas.s16.qacc\t $qx, $qy, $sel16", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<4> sel16;
-  bits<16> qacc_l_l;      // QACC_L_LOW register (128-bit, v16i8)
-  bits<16> qacc_l_h;       // QACC_L_HIGH register (128-bit, v16i8)
-  bits<16> qacc_h_l;       // QACC_H_LOW register (128-bit, v16i8)
-  bits<16> qacc_h_h;       // QACC_H_HIGH register (128-bit, v16i8)
-  bits<16> qacc_l_l_in;    // QACC_L_LOW passthru (phantom operand, not shown in assembly)
-  bits<16> qacc_l_h_in;    // QACC_L_HIGH passthru (phantom operand, not shown in assembly)
-  bits<16> qacc_h_l_in;    // QACC_H_LOW passthru (phantom operand, not shown in assembly)
-  bits<16> qacc_h_h_in;    // QACC_H_HIGH passthru (phantom operand, not shown in assembly)
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -3027,17 +3131,22 @@ def ESP_VSMULAS_S16_QACC: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc
   let Inst{0} = 1;
 }
 
+let Defs = []<Register> , isCodeGenOnly = 1 in
+def ESP_VSMULAS_S16_QACC: ESP_VSMULAS_S16_QACC_Base<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, select_16:$sel16),
+                   []>;
+
+def ESP_VSMULAS_S16_QACC_MC: ESP_VSMULAS_S16_QACC_Base<(outs), (ins QR:$qx, QR:$qy, select_16:$sel16), []> {
+  let hasSideEffects = 1;
+}
+
+
 let usesCustomInserter = 1 in 
 def ESP_VSMULAS_S16_QACC_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, select_16:$sel16),
 				"!esp_vsmulas_s16_qacc_p $qx, $qy, $sel16",
 			[(int_riscv_esp_vsmulas_s16_qacc timm:$qx, timm:$qy, timm:$sel16)]>;
 
-let Defs = []<Register> in
-def ESP_VSMULAS_S16_QACC_LD_INCP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                        (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, select_16:$sel16),
-                   "esp.vsmulas.s16.qacc.ld.incp\t $qu, $rs1, $qx, $qy, $sel16", 
-                   []> 
-{
+class ESP_VSMULAS_S16_QACC_LD_INCP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vsmulas.s16.qacc.ld.incp\t $qu, $rs1, $qx, $qy, $sel16", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<5> rs1;
@@ -3047,9 +3156,6 @@ def ESP_VSMULAS_S16_QACC_LD_INCP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LO
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  let Constraints = "$rs1r = $rs1";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -3072,6 +3178,18 @@ def ESP_VSMULAS_S16_QACC_LD_INCP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LO
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let Defs = []<Register> , isCodeGenOnly = 1 in
+def ESP_VSMULAS_S16_QACC_LD_INCP: ESP_VSMULAS_S16_QACC_LD_INCP_Base<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, select_16:$sel16),
+                   []> {
+  let Constraints = "$rs1r = $rs1";
+}
+
+def ESP_VSMULAS_S16_QACC_LD_INCP_MC: ESP_VSMULAS_S16_QACC_LD_INCP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, select_16:$sel16), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VSMULAS_S16_QACC_LD_INCP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, select_16:$sel16, imm8:$qu),
@@ -3079,26 +3197,14 @@ def ESP_VSMULAS_S16_QACC_LD_INCP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$q
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vsmulas_s16_qacc_ld_incp timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sel16, timm:$qu))]>;
 
 // ESP_VSMULAS_S8_QACC: Multiply-accumulate to QACC with explicit passthru
-let Defs = []<Register> in
-def ESP_VSMULAS_S8_QACC: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                  (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, select_16:$sel16),
-                   "esp.vsmulas.s8.qacc\t $qx, $qy, $sel16", []> 
-{
+class ESP_VSMULAS_S8_QACC_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vsmulas.s8.qacc\t $qx, $qy, $sel16", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<4> sel16;
-  bits<16> qacc_l_l;      // QACC_L_LOW register (128-bit, v16i8)
-  bits<16> qacc_l_h;       // QACC_L_HIGH register (128-bit, v16i8)
-  bits<16> qacc_h_l;       // QACC_H_LOW register (128-bit, v16i8)
-  bits<16> qacc_h_h;       // QACC_H_HIGH register (128-bit, v16i8)
-  bits<16> qacc_l_l_in;    // QACC_L_LOW passthru (phantom operand, not shown in assembly)
-  bits<16> qacc_l_h_in;    // QACC_L_HIGH passthru (phantom operand, not shown in assembly)
-  bits<16> qacc_h_l_in;    // QACC_H_LOW passthru (phantom operand, not shown in assembly)
-  bits<16> qacc_h_h_in;    // QACC_H_HIGH passthru (phantom operand, not shown in assembly)
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -3126,17 +3232,22 @@ def ESP_VSMULAS_S8_QACC: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_
   let Inst{0} = 1;
 }
 
+let Defs = []<Register> , isCodeGenOnly = 1 in
+def ESP_VSMULAS_S8_QACC: ESP_VSMULAS_S8_QACC_Base<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, select_16:$sel16),
+                   []>;
+
+def ESP_VSMULAS_S8_QACC_MC: ESP_VSMULAS_S8_QACC_Base<(outs), (ins QR:$qx, QR:$qy, select_16:$sel16), []> {
+  let hasSideEffects = 1;
+}
+
+
 let usesCustomInserter = 1 in 
 def ESP_VSMULAS_S8_QACC_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, select_16:$sel16),
 				"!esp_vsmulas_s8_qacc_p $qx, $qy, $sel16",
 			[(int_riscv_esp_vsmulas_s8_qacc timm:$qx, timm:$qy, timm:$sel16)]>;
 
-let Defs = []<Register> in
-def ESP_VSMULAS_S8_QACC_LD_INCP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                        (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, select_16:$sel16),
-                   "esp.vsmulas.s8.qacc.ld.incp\t $qu, $rs1, $qx, $qy, $sel16", 
-                   []> 
-{
+class ESP_VSMULAS_S8_QACC_LD_INCP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vsmulas.s8.qacc.ld.incp\t $qu, $rs1, $qx, $qy, $sel16", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<5> rs1;
@@ -3146,9 +3257,6 @@ def ESP_VSMULAS_S8_QACC_LD_INCP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  let Constraints = "$rs1r = $rs1";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 0;
@@ -3172,32 +3280,32 @@ def ESP_VSMULAS_S8_QACC_LD_INCP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW
   let Inst{0} = 1;
 }
 
+let Defs = []<Register> , isCodeGenOnly = 1 in
+def ESP_VSMULAS_S8_QACC_LD_INCP: ESP_VSMULAS_S8_QACC_LD_INCP_Base<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, select_16:$sel16),
+                   []> {
+  let Constraints = "$rs1r = $rs1";
+}
+
+def ESP_VSMULAS_S8_QACC_LD_INCP_MC: ESP_VSMULAS_S8_QACC_LD_INCP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, select_16:$sel16), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VSMULAS_S8_QACC_LD_INCP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, select_16:$sel16, imm8:$qu),
 				"!esp_vsmulas_s8_qacc_ld_incp_p $qu, $rs1, $qx, $qy, $sel16",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vsmulas_s8_qacc_ld_incp timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sel16, timm:$qu))]>;
 
 // ESP_VSMULAS_U16_QACC: Multiply-accumulate to QACC with explicit passthru
-let Defs = []<Register> in
-def ESP_VSMULAS_U16_QACC: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                   (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, select_16:$sel16),
-                   "esp.vsmulas.u16.qacc\t $qx, $qy, $sel16", []> 
-{
+class ESP_VSMULAS_U16_QACC_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vsmulas.u16.qacc\t $qx, $qy, $sel16", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<4> sel16;
-  bits<16> qacc_l_l;      // QACC_L_LOW register (128-bit, v16i8)
-  bits<16> qacc_l_h;       // QACC_L_HIGH register (128-bit, v16i8)
-  bits<16> qacc_h_l;       // QACC_H_LOW register (128-bit, v16i8)
-  bits<16> qacc_h_h;       // QACC_H_HIGH register (128-bit, v16i8)
-  bits<16> qacc_l_l_in;    // QACC_L_LOW passthru (phantom operand, not shown in assembly)
-  bits<16> qacc_l_h_in;    // QACC_L_HIGH passthru (phantom operand, not shown in assembly)
-  bits<16> qacc_h_l_in;    // QACC_H_LOW passthru (phantom operand, not shown in assembly)
-  bits<16> qacc_h_h_in;    // QACC_H_HIGH passthru (phantom operand, not shown in assembly)
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -3225,17 +3333,22 @@ def ESP_VSMULAS_U16_QACC: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc
   let Inst{0} = 1;
 }
 
+let Defs = []<Register> , isCodeGenOnly = 1 in
+def ESP_VSMULAS_U16_QACC: ESP_VSMULAS_U16_QACC_Base<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, select_16:$sel16),
+                   []>;
+
+def ESP_VSMULAS_U16_QACC_MC: ESP_VSMULAS_U16_QACC_Base<(outs), (ins QR:$qx, QR:$qy, select_16:$sel16), []> {
+  let hasSideEffects = 1;
+}
+
+
 let usesCustomInserter = 1 in 
 def ESP_VSMULAS_U16_QACC_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, select_16:$sel16),
 				"!esp_vsmulas_u16_qacc_p $qx, $qy, $sel16",
 			[(int_riscv_esp_vsmulas_u16_qacc timm:$qx, timm:$qy, timm:$sel16)]>;
 
-let Defs = []<Register> in
-def ESP_VSMULAS_U16_QACC_LD_INCP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                        (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, select_16:$sel16),
-                   "esp.vsmulas.u16.qacc.ld.incp\t $qu, $rs1, $qx, $qy, $sel16", 
-                   []> 
-{
+class ESP_VSMULAS_U16_QACC_LD_INCP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vsmulas.u16.qacc.ld.incp\t $qu, $rs1, $qx, $qy, $sel16", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<5> rs1;
@@ -3245,12 +3358,6 @@ def ESP_VSMULAS_U16_QACC_LD_INCP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LO
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // QACC_L and QACC_H tied constraints: Input and output must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -3274,32 +3381,32 @@ def ESP_VSMULAS_U16_QACC_LD_INCP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LO
   let Inst{0} = 1;
 }
 
+let Defs = []<Register> , isCodeGenOnly = 1 in
+def ESP_VSMULAS_U16_QACC_LD_INCP: ESP_VSMULAS_U16_QACC_LD_INCP_Base<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, select_16:$sel16),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $qacc_l_l = $qacc_l_l_in, $qacc_l_h = $qacc_l_h_in, $qacc_h_l = $qacc_h_l_in, $qacc_h_h = $qacc_h_h_in";
+}
+
+def ESP_VSMULAS_U16_QACC_LD_INCP_MC: ESP_VSMULAS_U16_QACC_LD_INCP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, select_16:$sel16), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VSMULAS_U16_QACC_LD_INCP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, select_16:$sel16, imm8:$qu),
 				"!esp_vsmulas_u16_qacc_ld_incp_p $qu, $rs1, $qx, $qy, $sel16",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vsmulas_u16_qacc_ld_incp timm:$qx, timm:$qy, GPRPIE:$rs1, timm:$sel16, timm:$qu))]>;
 
 // ESP_VSMULAS_U8_QACC: Multiply-accumulate to QACC with explicit passthru
-let Defs = []<Register> in
-def ESP_VSMULAS_U8_QACC: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                  (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, select_16:$sel16),
-                   "esp.vsmulas.u8.qacc\t $qx, $qy, $sel16", []> 
-{
+class ESP_VSMULAS_U8_QACC_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vsmulas.u8.qacc\t $qx, $qy, $sel16", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<4> sel16;
-  bits<16> qacc_l_l;      // QACC_L_LOW register (128-bit, v16i8)
-  bits<16> qacc_l_h;       // QACC_L_HIGH register (128-bit, v16i8)
-  bits<16> qacc_h_l;       // QACC_H_LOW register (128-bit, v16i8)
-  bits<16> qacc_h_h;       // QACC_H_HIGH register (128-bit, v16i8)
-  bits<16> qacc_l_l_in;    // QACC_L_LOW passthru (phantom operand, not shown in assembly)
-  bits<16> qacc_l_h_in;    // QACC_L_HIGH passthru (phantom operand, not shown in assembly)
-  bits<16> qacc_h_l_in;    // QACC_H_LOW passthru (phantom operand, not shown in assembly)
-  bits<16> qacc_h_h_in;    // QACC_H_HIGH passthru (phantom operand, not shown in assembly)
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 1;
@@ -3327,17 +3434,22 @@ def ESP_VSMULAS_U8_QACC: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_
   let Inst{0} = 1;
 }
 
+let Defs = []<Register> , isCodeGenOnly = 1 in
+def ESP_VSMULAS_U8_QACC: ESP_VSMULAS_U8_QACC_Base<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, select_16:$sel16),
+                   []>;
+
+def ESP_VSMULAS_U8_QACC_MC: ESP_VSMULAS_U8_QACC_Base<(outs), (ins QR:$qx, QR:$qy, select_16:$sel16), []> {
+  let hasSideEffects = 1;
+}
+
+
 let usesCustomInserter = 1 in 
 def ESP_VSMULAS_U8_QACC_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, select_16:$sel16),
 				"!esp_vsmulas_u8_qacc_p $qx, $qy, $sel16",
 			[(int_riscv_esp_vsmulas_u8_qacc timm:$qx, timm:$qy, timm:$sel16)]>;
 
-let Defs = []<Register> in
-def ESP_VSMULAS_U8_QACC_LD_INCP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), 
-                                        (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, select_16:$sel16),
-                   "esp.vsmulas.u8.qacc.ld.incp\t $qu, $rs1, $qx, $qy, $sel16", 
-                   []> 
-{
+class ESP_VSMULAS_U8_QACC_LD_INCP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.vsmulas.u8.qacc.ld.incp\t $qu, $rs1, $qx, $qy, $sel16", pat> {
   bits<3> qx;
   bits<3> qy;
   bits<5> rs1;
@@ -3347,9 +3459,6 @@ def ESP_VSMULAS_U8_QACC_LD_INCP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  let Constraints = "$rs1r = $rs1";
-  
   let Inst{31-29} = qx{2-0};
   let Inst{28-26} = qy{2-0};
   let Inst{25} = 0;
@@ -3372,6 +3481,18 @@ def ESP_VSMULAS_U8_QACC_LD_INCP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let Defs = []<Register> , isCodeGenOnly = 1 in
+def ESP_VSMULAS_U8_QACC_LD_INCP: ESP_VSMULAS_U8_QACC_LD_INCP_Base<(outs QR:$qu, GPRPIE:$rs1r, QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QACC_L_LOW:$qacc_l_l_in, QACC_L_HIGH:$qacc_l_h_in, QACC_H_LOW:$qacc_h_l_in, QACC_H_HIGH:$qacc_h_h_in, QR:$qx, QR:$qy, GPRPIE:$rs1, select_16:$sel16),
+                   []> {
+  let Constraints = "$rs1r = $rs1";
+}
+
+def ESP_VSMULAS_U8_QACC_LD_INCP_MC: ESP_VSMULAS_U8_QACC_LD_INCP_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins QR:$qx, QR:$qy, GPRPIE:$rs1, select_16:$sel16), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_VSMULAS_U8_QACC_LD_INCP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$qy, GPRPIE:$rs1, select_16:$sel16, imm8:$qu),
@@ -10625,16 +10746,12 @@ def ESP_VCMP_LT_U8_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, imm8:$qz),
 				"!esp_vcmp_lt_u8_p $qz, $qx, $qy",
 			[(int_riscv_esp_vcmp_lt_u8 timm:$qx, timm:$qy, timm:$qz)]>;
 
-let Defs = []<Register> in
-def ESP_MOV_S16_QACC: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QR:$qu),
-                   "esp.mov.s16.qacc\t $qu", 
-                   []> 
-{
+class ESP_MOV_S16_QACC_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.mov.s16.qacc\t $qu", pat> {
   bits<3> qu;
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
   let Inst{31} = 0;
   let Inst{30} = 0;
   let Inst{29} = 0;
@@ -10666,22 +10783,27 @@ def ESP_MOV_S16_QACC: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let Defs = []<Register> , isCodeGenOnly = 1 in
+def ESP_MOV_S16_QACC: ESP_MOV_S16_QACC_Base<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QR:$qu),
+                   []>;
+
+def ESP_MOV_S16_QACC_MC: ESP_MOV_S16_QACC_Base<(outs), (ins QR:$qu), []> {
+  let hasSideEffects = 1;
+}
+
 
 let usesCustomInserter = 1 in 
 def ESP_MOV_S16_QACC_P : PseudoEsp<(outs), (ins imm8:$qu),
 				"!esp_mov_s16_qacc_p $qu",
 			[(int_riscv_esp_mov_s16_qacc timm:$qu)]>;
 
-let Defs = []<Register> in
-def ESP_MOV_S8_QACC: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QR:$qu),
-                   "esp.mov.s8.qacc\t $qu", 
-                   []> 
-{
+class ESP_MOV_S8_QACC_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.mov.s8.qacc\t $qu", pat> {
   bits<3> qu;
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
   let Inst{31} = 0;
   let Inst{30} = 0;
   let Inst{29} = 0;
@@ -10714,21 +10836,26 @@ def ESP_MOV_S8_QACC: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h,
   let Inst{0} = 1;
 }
 
+let Defs = []<Register> , isCodeGenOnly = 1 in
+def ESP_MOV_S8_QACC: ESP_MOV_S8_QACC_Base<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QR:$qu),
+                   []>;
+
+def ESP_MOV_S8_QACC_MC: ESP_MOV_S8_QACC_Base<(outs), (ins QR:$qu), []> {
+  let hasSideEffects = 1;
+}
+
+
 let usesCustomInserter = 1 in 
 def ESP_MOV_S8_QACC_P : PseudoEsp<(outs), (ins imm8:$qu),
 				"!esp_mov_s8_qacc_p $qu",
 			[(int_riscv_esp_mov_s8_qacc timm:$qu)]>;
 
-let Defs = []<Register> in
-def ESP_MOV_U16_QACC: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QR:$qu),
-                   "esp.mov.u16.qacc\t $qu", 
-                   []> 
-{
+class ESP_MOV_U16_QACC_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.mov.u16.qacc\t $qu", pat> {
   bits<3> qu;
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
   let Inst{31} = 0;
   let Inst{30} = 0;
   let Inst{29} = 0;
@@ -10761,21 +10888,26 @@ def ESP_MOV_U16_QACC: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h
   let Inst{0} = 1;
 }
 
+let Defs = []<Register> , isCodeGenOnly = 1 in
+def ESP_MOV_U16_QACC: ESP_MOV_U16_QACC_Base<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QR:$qu),
+                   []>;
+
+def ESP_MOV_U16_QACC_MC: ESP_MOV_U16_QACC_Base<(outs), (ins QR:$qu), []> {
+  let hasSideEffects = 1;
+}
+
+
 let usesCustomInserter = 1 in 
 def ESP_MOV_U16_QACC_P : PseudoEsp<(outs), (ins imm8:$qu),
 				"!esp_mov_u16_qacc_p $qu",
 			[(int_riscv_esp_mov_u16_qacc timm:$qu)]>;
 
-let Defs = []<Register> in
-def ESP_MOV_U8_QACC: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QR:$qu),
-                   "esp.mov.u8.qacc\t $qu", 
-                   []> 
-{
+class ESP_MOV_U8_QACC_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.mov.u8.qacc\t $qu", pat> {
   bits<3> qu;
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
   let Inst{31} = 0;
   let Inst{30} = 0;
   let Inst{29} = 0;
@@ -10807,6 +10939,15 @@ def ESP_MOV_U8_QACC: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h,
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let Defs = []<Register> , isCodeGenOnly = 1 in
+def ESP_MOV_U8_QACC: ESP_MOV_U8_QACC_Base<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins QR:$qu),
+                   []>;
+
+def ESP_MOV_U8_QACC_MC: ESP_MOV_U8_QACC_Base<(outs), (ins QR:$qu), []> {
+  let hasSideEffects = 1;
+}
+
 
 let usesCustomInserter = 1 in 
 def ESP_MOV_U8_QACC_P : PseudoEsp<(outs), (ins imm8:$qu),
@@ -11349,19 +11490,12 @@ def ESP_MOVX_R_SAR_BYTES: EspVInst<(outs GPRPIE:$rd), (ins SAR_BYTESReg:$sar_byt
   let Inst{0} = 1;
 }
 
-def ESP_MOVX_R_XACC_H: EspVInst<(outs GPRPIE:$rd), (ins XACC_HIGH:$xacc_h_in),
-                   "esp.movx.r.xacc.h\t $rd", 
-                   // Subregister model: reads from XACC[39:32] (high 8 bits)
-                   // Return value: XACC[39:32] (i32, zero-extended from 8-bit)
-                   // Input: xacc_h_in (passthru for explicit state passing, XACC_HIGH type to match ESP_MOVX_W_XACC_H output)
-                   // Hardware reads directly from XACC register, but xacc_h_in maintains data flow dependency
-                   [(set GPRPIE:$rd, (int_riscv_esp_movx_r_xacc_h_m XACC_HIGH:$xacc_h_in))]> 
-{
+class ESP_MOVX_R_XACC_H_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.movx.r.xacc.h\t $rd", pat> {
   bits<5> rd;
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;  // Explicit state passing, no side effects
-  
   let Inst{31} = 1;
   let Inst{30} = 0;
   let Inst{29} = 0;
@@ -11394,19 +11528,25 @@ def ESP_MOVX_R_XACC_H: EspVInst<(outs GPRPIE:$rd), (ins XACC_HIGH:$xacc_h_in),
   let Inst{0} = 1;
 }
 
-def ESP_MOVX_R_XACC_L: EspVInst<(outs GPRPIE:$rd), (ins XACC_LOW:$xacc_l_in),
-                   "esp.movx.r.xacc.l\t $rd", 
-                   // Subregister model: reads from XACC[31:0] (low 32 bits)
-                   // Return value: XACC[31:0] (i32)
-                   // Input: xacc_l_in (passthru for explicit state passing, XACC_LOW type to match ESP_MOVX_W_XACC_L output)
-                   // Hardware reads directly from XACC register, but xacc_l_in maintains data flow dependency
-                   [(set GPRPIE:$rd, (int_riscv_esp_movx_r_xacc_l_m XACC_LOW:$xacc_l_in))]> 
-{
+let isCodeGenOnly = 1 in
+def ESP_MOVX_R_XACC_H: ESP_MOVX_R_XACC_H_Base<(outs GPRPIE:$rd), (ins XACC_HIGH:$xacc_h_in),
+                   // Subregister model: reads from XACC[39:32] (high 8 bits)
+                   // Return value: XACC[39:32] (i32, zero-extended from 8-bit)
+                   // Input: xacc_h_in (passthru for explicit state passing, XACC_HIGH type to match ESP_MOVX_W_XACC_H output)
+                   // Hardware reads directly from XACC register, but xacc_h_in maintains data flow dependency
+                   [(set GPRPIE:$rd, (int_riscv_esp_movx_r_xacc_h_m XACC_HIGH:$xacc_h_in))]>;
+
+def ESP_MOVX_R_XACC_H_MC: ESP_MOVX_R_XACC_H_Base<(outs GPRPIE:$rd), (ins), []> {
+  let hasSideEffects = 1;
+}
+
+
+class ESP_MOVX_R_XACC_L_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.movx.r.xacc.l\t $rd", pat> {
   bits<5> rd;
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;  // Explicit state passing, no side effects
-  
   let Inst{31} = 1;
   let Inst{30} = 0;
   let Inst{29} = 0;
@@ -11438,6 +11578,19 @@ def ESP_MOVX_R_XACC_L: EspVInst<(outs GPRPIE:$rd), (ins XACC_LOW:$xacc_l_in),
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let isCodeGenOnly = 1 in
+def ESP_MOVX_R_XACC_L: ESP_MOVX_R_XACC_L_Base<(outs GPRPIE:$rd), (ins XACC_LOW:$xacc_l_in),
+                   // Subregister model: reads from XACC[31:0] (low 32 bits)
+                   // Return value: XACC[31:0] (i32)
+                   // Input: xacc_l_in (passthru for explicit state passing, XACC_LOW type to match ESP_MOVX_W_XACC_L output)
+                   // Hardware reads directly from XACC register, but xacc_l_in maintains data flow dependency
+                   [(set GPRPIE:$rd, (int_riscv_esp_movx_r_xacc_l_m XACC_LOW:$xacc_l_in))]>;
+
+def ESP_MOVX_R_XACC_L_MC: ESP_MOVX_R_XACC_L_Base<(outs GPRPIE:$rd), (ins), []> {
+  let hasSideEffects = 1;
+}
+
 
 def ESP_MOVX_W_CFG: EspVInst<(outs), (ins GPRPIE:$rs1), 
                    "esp.movx.w.cfg\t $rs1",
@@ -11666,18 +11819,12 @@ def ESP_MOVX_W_SAR_BYTES: EspVInst<(outs SAR_BYTESReg:$sar_bytes_out), (ins GPRP
   let Inst{0} = 1;
 }
 
-def ESP_MOVX_W_XACC_H: EspVInst<(outs XACC_HIGH:$xacc_out), (ins GPRPIE:$rs1),
-                   "esp.movx.w.xacc.h\t $rs1", 
-                   // Subregister model: writes to XACC[39:32] (high 8 bits)
-                   // Instruction writes XACC[39:32] = rs1[7:0], XACC[31:0] remains unchanged (hardware passthru)
-                   // Returns XACC_HIGH register (matches ESP_MOVX_R_XACC_H input type)
-                   [(set XACC_HIGH:$xacc_out, (int_riscv_esp_movx_w_xacc_h_m GPRPIE:$rs1))]> 
-{
+class ESP_MOVX_W_XACC_H_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.movx.w.xacc.h\t $rs1", pat> {
   bits<5> rs1;
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;  // Explicit state passing, no side effects
-  
   let Inst{31} = 1;
   let Inst{30} = 0;
   let Inst{29} = 0;
@@ -11710,18 +11857,24 @@ def ESP_MOVX_W_XACC_H: EspVInst<(outs XACC_HIGH:$xacc_out), (ins GPRPIE:$rs1),
   let Inst{0} = 1;
 }
 
-def ESP_MOVX_W_XACC_L: EspVInst<(outs XACC_LOW:$xacc_out), (ins GPRPIE:$rs1),
-                   "esp.movx.w.xacc.l\t $rs1", 
-                   // Subregister model: writes to XACC[31:0] (low 32 bits)
-                   // Instruction writes XACC[31:0] = rs1[31:0], XACC[39:32] remains unchanged (hardware passthru)
-                   // Returns XACC[31:0] (i32)
-                   [(set XACC_LOW:$xacc_out, (int_riscv_esp_movx_w_xacc_l_m GPRPIE:$rs1))]> 
-{
+let isCodeGenOnly = 1 in
+def ESP_MOVX_W_XACC_H: ESP_MOVX_W_XACC_H_Base<(outs XACC_HIGH:$xacc_out), (ins GPRPIE:$rs1),
+                   // Subregister model: writes to XACC[39:32] (high 8 bits)
+                   // Instruction writes XACC[39:32] = rs1[7:0], XACC[31:0] remains unchanged (hardware passthru)
+                   // Returns XACC_HIGH register (matches ESP_MOVX_R_XACC_H input type)
+                   [(set XACC_HIGH:$xacc_out, (int_riscv_esp_movx_w_xacc_h_m GPRPIE:$rs1))]>;
+
+def ESP_MOVX_W_XACC_H_MC: ESP_MOVX_W_XACC_H_Base<(outs), (ins GPRPIE:$rs1), []> {
+  let hasSideEffects = 1;
+}
+
+
+class ESP_MOVX_W_XACC_L_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.movx.w.xacc.l\t $rs1", pat> {
   bits<5> rs1;
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;  // Explicit state passing, no side effects
-  
   let Inst{31} = 1;
   let Inst{30} = 0;
   let Inst{29} = 0;
@@ -11753,6 +11906,18 @@ def ESP_MOVX_W_XACC_L: EspVInst<(outs XACC_LOW:$xacc_out), (ins GPRPIE:$rs1),
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let isCodeGenOnly = 1 in
+def ESP_MOVX_W_XACC_L: ESP_MOVX_W_XACC_L_Base<(outs XACC_LOW:$xacc_out), (ins GPRPIE:$rs1),
+                   // Subregister model: writes to XACC[31:0] (low 32 bits)
+                   // Instruction writes XACC[31:0] = rs1[31:0], XACC[39:32] remains unchanged (hardware passthru)
+                   // Returns XACC[31:0] (i32)
+                   [(set XACC_LOW:$xacc_out, (int_riscv_esp_movx_w_xacc_l_m GPRPIE:$rs1))]>;
+
+def ESP_MOVX_W_XACC_L_MC: ESP_MOVX_W_XACC_L_Base<(outs), (ins GPRPIE:$rs1), []> {
+  let hasSideEffects = 1;
+}
+
 
 def ESP_VEXT_S16: EspVInst<(outs QR:$qz, QR:$qv), (ins QR:$qw),
                    "esp.vext.s16\t $qz, $qv, $qw", 
@@ -12492,14 +12657,11 @@ let Defs = []<Register>,        // Force clear implicit-def to prevent self-inte
     isAsCheapAsAMove = 1,       // Tell RA: regenerating me is as cheap as a Move
     hasSideEffects = 0          // Tell RA: I don't read/write memory, don't modify other state, safe to delete/rebuild
 in
-def ESP_ZERO_QACC: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins),
-                   "esp.zero.qacc\t", 
-                   [(set QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, (int_riscv_esp_zero_qacc_m))]> 
-{
+class ESP_ZERO_QACC_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.zero.qacc\t", pat> {
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
   let Inst{31} = 0;
   let Inst{30} = 0;
   let Inst{29} = 0;
@@ -12534,6 +12696,15 @@ def ESP_ZERO_QACC: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, Q
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_ZERO_QACC: ESP_ZERO_QACC_Base<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins),
+                   [(set QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, (int_riscv_esp_zero_qacc_m))]>;
+
+def ESP_ZERO_QACC_MC: ESP_ZERO_QACC_Base<(outs), (ins), []> {
+  let hasSideEffects = 1;
+}
+
+
 let usesCustomInserter = 1 in 
 def ESP_ZERO_QACC_P : PseudoEsp<(outs), (ins),
 				"!esp_zero_qacc_p",
@@ -12557,14 +12728,10 @@ in
 // Mixed model: XACC as {i32 low, i32 high}
 // Hardware instruction operates on implicit XACC register, but outputs are explicit for data flow
 // Pattern matching: SDNode returns {i32, i32}, instruction outputs XACC_LOW and XACC_HIGH
-let Defs = [XACC] in
-def ESP_ZERO_XACC: EspVInst<(outs XACC_LOW:$xacc_low, XACC_HIGH:$xacc_high), (ins),
-                   "esp.zero.xacc\t", 
-                   []>
-{
+class ESP_ZERO_XACC_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.zero.xacc\t", pat> {
   let mayStore = 0;
   let mayLoad = 0;
-  
   let Inst{31} = 0;
   let Inst{30} = 0;
   let Inst{29} = 0;
@@ -12598,6 +12765,15 @@ def ESP_ZERO_XACC: EspVInst<(outs XACC_LOW:$xacc_low, XACC_HIGH:$xacc_high), (in
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let Defs = [XACC] , isCodeGenOnly = 1 in
+def ESP_ZERO_XACC: ESP_ZERO_XACC_Base<(outs XACC_LOW:$xacc_low, XACC_HIGH:$xacc_high), (ins),
+                   []>;
+
+def ESP_ZERO_XACC_MC: ESP_ZERO_XACC_Base<(outs), (ins), []> {
+  let hasSideEffects = 1;
+}
+
 
 let usesCustomInserter = 1 in 
 def ESP_ZERO_XACC_P : PseudoEsp<(outs), (ins),
@@ -13193,23 +13369,14 @@ def ESP_LD_128_USAR_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRP
 // Mixed model: XACC as {i32 low, i32 high}
 // Hardware instruction operates on implicit XACC register, but outputs are explicit for data flow
 // Pattern matching: SDNode returns {ptr, i32, i32}, instruction outputs XACC_LOW and XACC_HIGH
-def ESP_LD_XACC_IP: EspVInst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low, XACC_HIGH:$xacc_high), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs1, offset_256_8:$off2568),
-                   "esp.ld.xacc.ip\t $rs1, $off2568", 
-                   []> 
-{
+class ESP_LD_XACC_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.ld.xacc.ip\t $rs1, $off2568", pat> {
   bits<5> rs1;
   bits<8> off2568;
   bits<5> rs1r;
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // XACC tied constraints: Force input and output to use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  // Without this, register allocator may fail when it thinks it needs two registers
-  let Constraints = "$rs1r = $rs1, $xacc_low = $xacc_low_in, $xacc_high = $xacc_high_in";
-  
   let Inst{31} = off2568{7};
   let Inst{30} = 0;
   let Inst{29} = 1;
@@ -13237,25 +13404,31 @@ def ESP_LD_XACC_IP: EspVInst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low, XACC_HIGH:$
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_LD_XACC_IP: ESP_LD_XACC_IP_Base<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low, XACC_HIGH:$xacc_high), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs1, offset_256_8:$off2568),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $xacc_low = $xacc_low_in, $xacc_high = $xacc_high_in";
+}
+
+def ESP_LD_XACC_IP_MC: ESP_LD_XACC_IP_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_8:$off2568), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_LD_XACC_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_8:$off2568),
 				"!esp_ld_xacc_ip_p $rs1, $off2568",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_ld_xacc_ip GPRPIE:$rs1, timm:$off2568))]>;
 
-let Defs = []<Register> in
-def ESP_LDQA_S16_128_IP: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
-                   "esp.ldqa.s16.128.ip\t $rs1, $off25616", 
-                   []> 
-{
+class ESP_LDQA_S16_128_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.ldqa.s16.128.ip\t $rs1, $off25616", pat> {
   bits<5> rs1;
   bits<8> off25616;
   bits<5> rs1r;
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  let Constraints = "$rs1r = $rs1";
-  
   let Inst{31} = 1;
   let Inst{30} = 1;
   let Inst{29} = 1;
@@ -13282,25 +13455,31 @@ def ESP_LDQA_S16_128_IP: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_
   let Inst{0} = 1;
 }
 
+let Defs = []<Register> , isCodeGenOnly = 1 in
+def ESP_LDQA_S16_128_IP: ESP_LDQA_S16_128_IP_Base<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
+                   []> {
+  let Constraints = "$rs1r = $rs1";
+}
+
+def ESP_LDQA_S16_128_IP_MC: ESP_LDQA_S16_128_IP_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_LDQA_S16_128_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
 				"!esp_ldqa_s16_128_ip_p $rs1, $off25616",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_ldqa_s16_128_ip GPRPIE:$rs1, timm:$off25616))]>;
 
-let Defs = []<Register> in
-def ESP_LDQA_S16_128_XP: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1),
-                   "esp.ldqa.s16.128.xp\t $rs1, $rs2", 
-                   []> 
-{
+class ESP_LDQA_S16_128_XP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.ldqa.s16.128.xp\t $rs1, $rs2", pat> {
   bits<5> rs2;
   bits<5> rs1;
   bits<5> rs1r;
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  let Constraints = "$rs1r = $rs1";
-  
   let Inst{31} = 0;
   let Inst{30} = 0;
   let Inst{29} = 0;
@@ -13331,25 +13510,31 @@ def ESP_LDQA_S16_128_XP: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_
   let Inst{0} = 1;
 }
 
+let Defs = []<Register> , isCodeGenOnly = 1 in
+def ESP_LDQA_S16_128_XP: ESP_LDQA_S16_128_XP_Base<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1),
+                   []> {
+  let Constraints = "$rs1r = $rs1";
+}
+
+def ESP_LDQA_S16_128_XP_MC: ESP_LDQA_S16_128_XP_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_LDQA_S16_128_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1),
 				"!esp_ldqa_s16_128_xp_p $rs1, $rs2",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_ldqa_s16_128_xp GPRPIE:$rs2, GPRPIE:$rs1))]>;
 
-let Defs = []<Register> in
-def ESP_LDQA_S8_128_IP: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
-                   "esp.ldqa.s8.128.ip\t $rs1, $off25616", 
-                   []> 
-{
+class ESP_LDQA_S8_128_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.ldqa.s8.128.ip\t $rs1, $off25616", pat> {
   bits<5> rs1;
   bits<8> off25616;
   bits<5> rs1r;
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  let Constraints = "$rs1r = $rs1";
-  
   let Inst{31} = 0;
   let Inst{30} = 1;
   let Inst{29} = 1;
@@ -13376,25 +13561,31 @@ def ESP_LDQA_S8_128_IP: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l
   let Inst{0} = 1;
 }
 
+let Defs = []<Register> , isCodeGenOnly = 1 in
+def ESP_LDQA_S8_128_IP: ESP_LDQA_S8_128_IP_Base<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
+                   []> {
+  let Constraints = "$rs1r = $rs1";
+}
+
+def ESP_LDQA_S8_128_IP_MC: ESP_LDQA_S8_128_IP_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_LDQA_S8_128_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
 				"!esp_ldqa_s8_128_ip_p $rs1, $off25616",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_ldqa_s8_128_ip GPRPIE:$rs1, timm:$off25616))]>;
 
-let Defs = []<Register> in
-def ESP_LDQA_S8_128_XP: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1),
-                   "esp.ldqa.s8.128.xp\t $rs1, $rs2", 
-                   []> 
-{
+class ESP_LDQA_S8_128_XP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.ldqa.s8.128.xp\t $rs1, $rs2", pat> {
   bits<5> rs2;
   bits<5> rs1;
   bits<5> rs1r;
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  let Constraints = "$rs1r = $rs1";
-  
   let Inst{31} = 0;
   let Inst{30} = 0;
   let Inst{29} = 0;
@@ -13425,25 +13616,31 @@ def ESP_LDQA_S8_128_XP: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l
   let Inst{0} = 1;
 }
 
+let Defs = []<Register> , isCodeGenOnly = 1 in
+def ESP_LDQA_S8_128_XP: ESP_LDQA_S8_128_XP_Base<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1),
+                   []> {
+  let Constraints = "$rs1r = $rs1";
+}
+
+def ESP_LDQA_S8_128_XP_MC: ESP_LDQA_S8_128_XP_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_LDQA_S8_128_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1),
 				"!esp_ldqa_s8_128_xp_p $rs1, $rs2",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_ldqa_s8_128_xp GPRPIE:$rs2, GPRPIE:$rs1))]>;
 
-let Defs = []<Register> in
-def ESP_LDQA_U16_128_IP: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
-                   "esp.ldqa.u16.128.ip\t $rs1, $off25616", 
-                   []> 
-{
+class ESP_LDQA_U16_128_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.ldqa.u16.128.ip\t $rs1, $off25616", pat> {
   bits<5> rs1;
   bits<8> off25616;
   bits<5> rs1r;
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  let Constraints = "$rs1r = $rs1";
-  
   let Inst{31} = 1;
   let Inst{30} = 0;
   let Inst{29} = 1;
@@ -13469,6 +13666,18 @@ def ESP_LDQA_U16_128_IP: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let Defs = []<Register> , isCodeGenOnly = 1 in
+def ESP_LDQA_U16_128_IP: ESP_LDQA_U16_128_IP_Base<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
+                   []> {
+  let Constraints = "$rs1r = $rs1";
+}
+
+def ESP_LDQA_U16_128_IP_MC: ESP_LDQA_U16_128_IP_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_LDQA_U16_128_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
@@ -13476,20 +13685,14 @@ def ESP_LDQA_U16_128_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, off
 			[(set GPRPIE:$rs1r, (int_riscv_esp_ldqa_u16_128_ip GPRPIE:$rs1, timm:$off25616))]>;
 
 let Defs = [QACC_H_REG, QACC_L_REG] in
-let Defs = []<Register> in
-def ESP_LDQA_U16_128_XP: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1),
-                   "esp.ldqa.u16.128.xp\t $rs1, $rs2", 
-                   []> 
-{
+class ESP_LDQA_U16_128_XP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.ldqa.u16.128.xp\t $rs1, $rs2", pat> {
   bits<5> rs2;
   bits<5> rs1;
   bits<5> rs1r;
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  let Constraints = "$rs1r = $rs1";
-  
   let Inst{31} = 0;
   let Inst{30} = 0;
   let Inst{29} = 0;
@@ -13520,26 +13723,32 @@ def ESP_LDQA_U16_128_XP: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_
   let Inst{0} = 1;
 }
 
+let Defs = []<Register> , isCodeGenOnly = 1 in
+def ESP_LDQA_U16_128_XP: ESP_LDQA_U16_128_XP_Base<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1),
+                   []> {
+  let Constraints = "$rs1r = $rs1";
+}
+
+def ESP_LDQA_U16_128_XP_MC: ESP_LDQA_U16_128_XP_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_LDQA_U16_128_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1),
 				"!esp_ldqa_u16_128_xp_p $rs1, $rs2",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_ldqa_u16_128_xp GPRPIE:$rs2, GPRPIE:$rs1))]>;
 
 let Defs = [QACC_H_REG, QACC_L_REG] in
-let Defs = []<Register> in
-def ESP_LDQA_U8_128_IP: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
-                   "esp.ldqa.u8.128.ip\t $rs1, $off25616", 
-                   []> 
-{
+class ESP_LDQA_U8_128_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.ldqa.u8.128.ip\t $rs1, $off25616", pat> {
   bits<5> rs1;
   bits<8> off25616;
   bits<5> rs1r;
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  let Constraints = "$rs1r = $rs1";
-  
   let Inst{31} = 0;
   let Inst{30} = 0;
   let Inst{29} = 1;
@@ -13566,25 +13775,31 @@ def ESP_LDQA_U8_128_IP: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l
   let Inst{0} = 1;
 }
 
+let Defs = []<Register> , isCodeGenOnly = 1 in
+def ESP_LDQA_U8_128_IP: ESP_LDQA_U8_128_IP_Base<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
+                   []> {
+  let Constraints = "$rs1r = $rs1";
+}
+
+def ESP_LDQA_U8_128_IP_MC: ESP_LDQA_U8_128_IP_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_LDQA_U8_128_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
 				"!esp_ldqa_u8_128_ip_p $rs1, $off25616",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_ldqa_u8_128_ip GPRPIE:$rs1, timm:$off25616))]>;
 
-let Defs = []<Register> in
-def ESP_LDQA_U8_128_XP: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1),
-                   "esp.ldqa.u8.128.xp\t $rs1, $rs2", 
-                   []> 
-{
+class ESP_LDQA_U8_128_XP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.ldqa.u8.128.xp\t $rs1, $rs2", pat> {
   bits<5> rs2;
   bits<5> rs1;
   bits<5> rs1r;
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  let Constraints = "$rs1r = $rs1";
-  
   let Inst{31} = 0;
   let Inst{30} = 0;
   let Inst{29} = 0;
@@ -13614,6 +13829,18 @@ def ESP_LDQA_U8_128_XP: EspVInst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let Defs = []<Register> , isCodeGenOnly = 1 in
+def ESP_LDQA_U8_128_XP: ESP_LDQA_U8_128_XP_Base<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1),
+                   []> {
+  let Constraints = "$rs1r = $rs1";
+}
+
+def ESP_LDQA_U8_128_XP_MC: ESP_LDQA_U8_128_XP_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_LDQA_U8_128_XP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1),
@@ -14307,19 +14534,14 @@ def ESP_VLDHBC_16_INCP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, imm8
 // ESP_LD_QACC_H_H_128_IP: Load QACC_H[255:128] with subregister model
 // Subregister model: uses QACC_H_HIGH (128-bit subregister) matching hardware behavior
 // Instruction loads 128-bit data to QACC_H[255:128], QACC_H[127:0] remains unchanged
-def ESP_LD_QACC_H_H_128_IP: EspVInst<(outs QACC_H_HIGH:$qacc_h_out, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
-                   "esp.ld.qacc.h.h.128.ip\t $rs1, $off25616", 
-                   [(set QACC_H_HIGH:$qacc_h_out, GPRPIE:$rs1r, (riscv_esp_ld_qacc_h_h_128_ip_m GPRPIE:$rs1, offset_256_16:$off25616))]> 
-{
+class ESP_LD_QACC_H_H_128_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.ld.qacc.h.h.128.ip\t $rs1, $off25616", pat> {
   bits<5> rs1;
   bits<8> off25616;
   bits<5> rs1r;
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  let Constraints = "$rs1r = $rs1";
-  
   let Inst{31} = 0;
   let Inst{30} = 1;
   let Inst{29} = 0;
@@ -14345,6 +14567,18 @@ def ESP_LD_QACC_H_H_128_IP: EspVInst<(outs QACC_H_HIGH:$qacc_h_out, GPRPIE:$rs1r
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let isCodeGenOnly = 1 in
+def ESP_LD_QACC_H_H_128_IP: ESP_LD_QACC_H_H_128_IP_Base<(outs QACC_H_HIGH:$qacc_h_out, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
+                   [(set QACC_H_HIGH:$qacc_h_out, GPRPIE:$rs1r, (riscv_esp_ld_qacc_h_h_128_ip_m GPRPIE:$rs1, offset_256_16:$off25616))]> {
+  let Constraints = "$rs1r = $rs1";
+}
+
+def ESP_LD_QACC_H_H_128_IP_MC: ESP_LD_QACC_H_H_128_IP_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_LD_QACC_H_H_128_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
@@ -14354,19 +14588,14 @@ def ESP_LD_QACC_H_H_128_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, 
 // ESP_LD_QACC_H_L_128_IP: Load QACC_H[127:0] with subregister model
 // Subregister model: uses QACC_H_LOW (128-bit subregister) matching hardware behavior
 // Instruction loads 128-bit data to QACC_H[127:0], QACC_H[255:128] remains unchanged
-def ESP_LD_QACC_H_L_128_IP: EspVInst<(outs QACC_H_LOW:$qacc_h_out, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
-                   "esp.ld.qacc.h.l.128.ip\t $rs1, $off25616", 
-                   [(set QACC_H_LOW:$qacc_h_out, GPRPIE:$rs1r, (riscv_esp_ld_qacc_h_l_128_ip_m GPRPIE:$rs1, offset_256_16:$off25616))]> 
-{
+class ESP_LD_QACC_H_L_128_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.ld.qacc.h.l.128.ip\t $rs1, $off25616", pat> {
   bits<5> rs1;
   bits<8> off25616;
   bits<5> rs1r;
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  let Constraints = "$rs1r = $rs1";
-  
   let Inst{31} = 0;
   let Inst{30} = 1;
   let Inst{29} = 1;
@@ -14393,6 +14622,18 @@ def ESP_LD_QACC_H_L_128_IP: EspVInst<(outs QACC_H_LOW:$qacc_h_out, GPRPIE:$rs1r)
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_LD_QACC_H_L_128_IP: ESP_LD_QACC_H_L_128_IP_Base<(outs QACC_H_LOW:$qacc_h_out, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
+                   [(set QACC_H_LOW:$qacc_h_out, GPRPIE:$rs1r, (riscv_esp_ld_qacc_h_l_128_ip_m GPRPIE:$rs1, offset_256_16:$off25616))]> {
+  let Constraints = "$rs1r = $rs1";
+}
+
+def ESP_LD_QACC_H_L_128_IP_MC: ESP_LD_QACC_H_L_128_IP_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_LD_QACC_H_L_128_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
 				"!esp_ld_qacc_h_l_128_ip_p $rs1, $off25616",
@@ -14401,19 +14642,14 @@ def ESP_LD_QACC_H_L_128_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, 
 // ESP_LD_QACC_L_H_128_IP: Load QACC_L[255:128] with subregister model
 // Subregister model: uses QACC_L_HIGH (128-bit subregister) matching hardware behavior
 // Instruction loads 128-bit data to QACC_L[255:128], QACC_L[127:0] remains unchanged
-def ESP_LD_QACC_L_H_128_IP: EspVInst<(outs QACC_L_HIGH:$qacc_l_out, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
-                   "esp.ld.qacc.l.h.128.ip\t $rs1, $off25616", 
-                   [(set QACC_L_HIGH:$qacc_l_out, GPRPIE:$rs1r, (riscv_esp_ld_qacc_l_h_128_ip_m GPRPIE:$rs1, offset_256_16:$off25616))]> 
-{
+class ESP_LD_QACC_L_H_128_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.ld.qacc.l.h.128.ip\t $rs1, $off25616", pat> {
   bits<5> rs1;
   bits<8> off25616;
   bits<5> rs1r;
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  let Constraints = "$rs1r = $rs1";
-  
   let Inst{31} = 0;
   let Inst{30} = 0;
   let Inst{29} = 0;
@@ -14440,6 +14676,18 @@ def ESP_LD_QACC_L_H_128_IP: EspVInst<(outs QACC_L_HIGH:$qacc_l_out, GPRPIE:$rs1r
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_LD_QACC_L_H_128_IP: ESP_LD_QACC_L_H_128_IP_Base<(outs QACC_L_HIGH:$qacc_l_out, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
+                   [(set QACC_L_HIGH:$qacc_l_out, GPRPIE:$rs1r, (riscv_esp_ld_qacc_l_h_128_ip_m GPRPIE:$rs1, offset_256_16:$off25616))]> {
+  let Constraints = "$rs1r = $rs1";
+}
+
+def ESP_LD_QACC_L_H_128_IP_MC: ESP_LD_QACC_L_H_128_IP_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_LD_QACC_L_H_128_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
 				"!esp_ld_qacc_l_h_128_ip_p $rs1, $off25616",
@@ -14448,19 +14696,14 @@ def ESP_LD_QACC_L_H_128_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, 
 // ESP_LD_QACC_L_L_128_IP: Load QACC_L[127:0] with subregister model
 // Subregister model: uses QACC_L_LOW (128-bit subregister) matching hardware behavior
 // Instruction loads 128-bit data to QACC_L[127:0], QACC_L[255:128] remains unchanged
-def ESP_LD_QACC_L_L_128_IP: EspVInst<(outs QACC_L_LOW:$qacc_l_out, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
-                   "esp.ld.qacc.l.l.128.ip\t $rs1, $off25616", 
-                   [(set QACC_L_LOW:$qacc_l_out, GPRPIE:$rs1r, (riscv_esp_ld_qacc_l_l_128_ip_m GPRPIE:$rs1, offset_256_16:$off25616))]> 
-{
+class ESP_LD_QACC_L_L_128_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.ld.qacc.l.l.128.ip\t $rs1, $off25616", pat> {
   bits<5> rs1;
   bits<8> off25616;
   bits<5> rs1r;
   let mayStore = 0;
   let mayLoad = 1;
   let hasSideEffects = 0;
-  
-  let Constraints = "$rs1r = $rs1";
-  
   let Inst{31} = 0;
   let Inst{30} = 0;
   let Inst{29} = 1;
@@ -14486,6 +14729,18 @@ def ESP_LD_QACC_L_L_128_IP: EspVInst<(outs QACC_L_LOW:$qacc_l_out, GPRPIE:$rs1r)
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let isCodeGenOnly = 1 in
+def ESP_LD_QACC_L_L_128_IP: ESP_LD_QACC_L_L_128_IP_Base<(outs QACC_L_LOW:$qacc_l_out, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
+                   [(set QACC_L_LOW:$qacc_l_out, GPRPIE:$rs1r, (riscv_esp_ld_qacc_l_l_128_ip_m GPRPIE:$rs1, offset_256_16:$off25616))]> {
+  let Constraints = "$rs1r = $rs1";
+}
+
+def ESP_LD_QACC_L_L_128_IP_MC: ESP_LD_QACC_L_L_128_IP_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_LD_QACC_L_L_128_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
@@ -14602,20 +14857,14 @@ def ESP_LDXQ_32_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, imm8:$qw, select_4:$sel4
 // Subregister modeling: Uses QACC_H_HIGH (128-bit subregister) to enable parallel scheduling.
 // CRITICAL: Uses = []<Register> to eliminate implicit Uses and prevent "undefined physical register" error.
 // The explicit QACC_H_HIGH:$src virtual register input is sufficient for register allocation.
-let Uses = []<Register> in
-def ESP_ST_QACC_H_H_128_IP: EspVInst<(outs GPRPIE:$rs1r), (ins QACC_H_HIGH:$src, GPRPIE:$rs1, offset_256_16:$off25616),
-                   "esp.st.qacc.h.h.128.ip\t $rs1, $off25616", 
-                   [(set GPRPIE:$rs1r, (riscv_esp_st_qacc_h_h_128_ip_m QACC_H_HIGH:$src, GPRPIE:$rs1, offset_256_16:$off25616))]> 
-{
+class ESP_ST_QACC_H_H_128_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.st.qacc.h.h.128.ip\t $rs1, $off25616", pat> {
   bits<5> rs1;
   bits<8> off25616;
   bits<5> rs1r;
   let mayStore = 1;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
-  let Constraints = "$rs1r = $rs1";
-  
   let Inst{31} = 1;
   let Inst{30} = 1;
   let Inst{29} = 0;
@@ -14642,6 +14891,18 @@ def ESP_ST_QACC_H_H_128_IP: EspVInst<(outs GPRPIE:$rs1r), (ins QACC_H_HIGH:$src,
   let Inst{0} = 1;
 }
 
+let Uses = []<Register> , isCodeGenOnly = 1 in
+def ESP_ST_QACC_H_H_128_IP: ESP_ST_QACC_H_H_128_IP_Base<(outs GPRPIE:$rs1r), (ins QACC_H_HIGH:$src, GPRPIE:$rs1, offset_256_16:$off25616),
+                   [(set GPRPIE:$rs1r, (riscv_esp_st_qacc_h_h_128_ip_m QACC_H_HIGH:$src, GPRPIE:$rs1, offset_256_16:$off25616))]> {
+  let Constraints = "$rs1r = $rs1";
+}
+
+def ESP_ST_QACC_H_H_128_IP_MC: ESP_ST_QACC_H_H_128_IP_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_ST_QACC_H_H_128_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
 				"!esp_st_qacc_h_h_128_ip_p $rs1, $off25616",
@@ -14650,20 +14911,14 @@ def ESP_ST_QACC_H_H_128_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, 
 // ESP_ST_QACC_H_L_128_IP: Store QACC_H[127:0] to memory
 // CRITICAL: Uses = []<Register> to eliminate implicit Uses and prevent "undefined physical register" error.
 // The explicit QACC_H_LOW:$src virtual register input is sufficient for register allocation.
-let Uses = []<Register> in
-def ESP_ST_QACC_H_L_128_IP: EspVInst<(outs GPRPIE:$rs1r), (ins QACC_H_LOW:$src, GPRPIE:$rs1, offset_256_16:$off25616),
-                   "esp.st.qacc.h.l.128.ip\t $rs1, $off25616", 
-                   [(set GPRPIE:$rs1r, (riscv_esp_st_qacc_h_l_128_ip_m QACC_H_LOW:$src, GPRPIE:$rs1, offset_256_16:$off25616))]> 
-{
+class ESP_ST_QACC_H_L_128_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.st.qacc.h.l.128.ip\t $rs1, $off25616", pat> {
   bits<5> rs1;
   bits<8> off25616;
   bits<5> rs1r;
   let mayStore = 1;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
-  let Constraints = "$rs1r = $rs1";
-  
   let Inst{31} = 1;
   let Inst{30} = 1;
   let Inst{29} = 1;
@@ -14689,6 +14944,18 @@ def ESP_ST_QACC_H_L_128_IP: EspVInst<(outs GPRPIE:$rs1r), (ins QACC_H_LOW:$src, 
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let Uses = []<Register> , isCodeGenOnly = 1 in
+def ESP_ST_QACC_H_L_128_IP: ESP_ST_QACC_H_L_128_IP_Base<(outs GPRPIE:$rs1r), (ins QACC_H_LOW:$src, GPRPIE:$rs1, offset_256_16:$off25616),
+                   [(set GPRPIE:$rs1r, (riscv_esp_st_qacc_h_l_128_ip_m QACC_H_LOW:$src, GPRPIE:$rs1, offset_256_16:$off25616))]> {
+  let Constraints = "$rs1r = $rs1";
+}
+
+def ESP_ST_QACC_H_L_128_IP_MC: ESP_ST_QACC_H_L_128_IP_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_ST_QACC_H_L_128_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
@@ -14699,20 +14966,14 @@ def ESP_ST_QACC_H_L_128_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, 
 // Subregister modeling: Uses QACC_L_HIGH (128-bit subregister) to enable parallel scheduling.
 // CRITICAL: Uses = []<Register> to eliminate implicit Uses and prevent "undefined physical register" error.
 // The explicit QACC_L_HIGH:$src virtual register input is sufficient for register allocation.
-let Uses = []<Register> in
-def ESP_ST_QACC_L_H_128_IP: EspVInst<(outs GPRPIE:$rs1r), (ins QACC_L_HIGH:$src, GPRPIE:$rs1, offset_256_16:$off25616),
-                   "esp.st.qacc.l.h.128.ip\t $rs1, $off25616", 
-                   [(set GPRPIE:$rs1r, (riscv_esp_st_qacc_l_h_128_ip_m QACC_L_HIGH:$src, GPRPIE:$rs1, offset_256_16:$off25616))]> 
-{
+class ESP_ST_QACC_L_H_128_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.st.qacc.l.h.128.ip\t $rs1, $off25616", pat> {
   bits<5> rs1;
   bits<8> off25616;
   bits<5> rs1r;
   let mayStore = 1;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
-  let Constraints = "$rs1r = $rs1";
-  
   let Inst{31} = 1;
   let Inst{30} = 0;
   let Inst{29} = 0;
@@ -14739,6 +15000,18 @@ def ESP_ST_QACC_L_H_128_IP: EspVInst<(outs GPRPIE:$rs1r), (ins QACC_L_HIGH:$src,
   let Inst{0} = 1;
 }
 
+let Uses = []<Register> , isCodeGenOnly = 1 in
+def ESP_ST_QACC_L_H_128_IP: ESP_ST_QACC_L_H_128_IP_Base<(outs GPRPIE:$rs1r), (ins QACC_L_HIGH:$src, GPRPIE:$rs1, offset_256_16:$off25616),
+                   [(set GPRPIE:$rs1r, (riscv_esp_st_qacc_l_h_128_ip_m QACC_L_HIGH:$src, GPRPIE:$rs1, offset_256_16:$off25616))]> {
+  let Constraints = "$rs1r = $rs1";
+}
+
+def ESP_ST_QACC_L_H_128_IP_MC: ESP_ST_QACC_L_H_128_IP_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_ST_QACC_L_H_128_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
 				"!esp_st_qacc_l_h_128_ip_p $rs1, $off25616",
@@ -14748,20 +15021,14 @@ def ESP_ST_QACC_L_H_128_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, 
 // Subregister modeling: Uses QACC_L_LOW (128-bit subregister) to enable parallel scheduling.
 // CRITICAL: Uses = []<Register> to eliminate implicit Uses and prevent "undefined physical register" error.
 // The explicit QACC_L_LOW:$src virtual register input is sufficient for register allocation.
-let Uses = []<Register> in
-def ESP_ST_QACC_L_L_128_IP: EspVInst<(outs GPRPIE:$rs1r), (ins QACC_L_LOW:$src, GPRPIE:$rs1, offset_256_16:$off25616),
-                   "esp.st.qacc.l.l.128.ip\t $rs1, $off25616", 
-                   [(set GPRPIE:$rs1r, (riscv_esp_st_qacc_l_l_128_ip_m QACC_L_LOW:$src, GPRPIE:$rs1, offset_256_16:$off25616))]> 
-{
+class ESP_ST_QACC_L_L_128_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.st.qacc.l.l.128.ip\t $rs1, $off25616", pat> {
   bits<5> rs1;
   bits<8> off25616;
   bits<5> rs1r;
   let mayStore = 1;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
-  let Constraints = "$rs1r = $rs1";
-  
   let Inst{31} = 1;
   let Inst{30} = 0;
   let Inst{29} = 1;
@@ -14787,6 +15054,18 @@ def ESP_ST_QACC_L_L_128_IP: EspVInst<(outs GPRPIE:$rs1r), (ins QACC_L_LOW:$src, 
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let Uses = []<Register> , isCodeGenOnly = 1 in
+def ESP_ST_QACC_L_L_128_IP: ESP_ST_QACC_L_L_128_IP_Base<(outs GPRPIE:$rs1r), (ins QACC_L_LOW:$src, GPRPIE:$rs1, offset_256_16:$off25616),
+                   [(set GPRPIE:$rs1r, (riscv_esp_st_qacc_l_l_128_ip_m QACC_L_LOW:$src, GPRPIE:$rs1, offset_256_16:$off25616))]> {
+  let Constraints = "$rs1r = $rs1";
+}
+
+def ESP_ST_QACC_L_L_128_IP_MC: ESP_ST_QACC_L_L_128_IP_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_ST_QACC_L_L_128_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
@@ -16108,19 +16387,15 @@ def ESP_SRCI_2Q_P : PseudoEsp<(outs), (ins imm8:$qy, imm8:$qw, select_16:$sel16)
 // Input and output registers are the same due to constraints
 // Pattern is empty - custom inserter handles everything including register mapping
 
-def ESP_SRCMB_S16_Q_QACC: EspVInst<(outs QR:$qu), (ins QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, QR:$qw, select_2:$sel2),
-                   "esp.srcmb.s16.q.qacc\t $qu, $qw, $sel2", 
-                   [(set QR:$qu, (riscv_esp_srcmb_s16_q_qacc_m QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, QR:$qw, select_2:$sel2))]> 
-{
+class ESP_SRCMB_S16_Q_QACC_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.srcmb.s16.q.qacc\t $qu, $qw, $sel2", pat> {
   bits<3> qw;
   bits<1> sel2;
   bits<3> qu;
   let isPseudo = 0;
-  let isCodeGenOnly = 0;
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
   let Inst{31} = 1;
   let Inst{30} = 0;
   let Inst{29} = 0;
@@ -16151,23 +16426,29 @@ def ESP_SRCMB_S16_Q_QACC: EspVInst<(outs QR:$qu), (ins QACC_L_LOW:$qacc_l_l, QAC
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let isCodeGenOnly = 1 in
+def ESP_SRCMB_S16_Q_QACC: ESP_SRCMB_S16_Q_QACC_Base<(outs QR:$qu), (ins QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, QR:$qw, select_2:$sel2),
+                   [(set QR:$qu, (riscv_esp_srcmb_s16_q_qacc_m QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, QR:$qw, select_2:$sel2))]>;
+
+def ESP_SRCMB_S16_Q_QACC_MC: ESP_SRCMB_S16_Q_QACC_Base<(outs QR:$qu), (ins QR:$qw, select_2:$sel2), []> {
+  let hasSideEffects = 1;
+}
+
 
 let usesCustomInserter = 1 in 
 def ESP_SRCMB_S16_Q_QACC_P : PseudoEsp<(outs), (ins imm8:$qw, select_2:$sel2, imm8:$qu),
 				"!esp_srcmb_s16_q_qacc_p $qu, $qw, $sel2",
 			[(int_riscv_esp_srcmb_s16_q_qacc timm:$qw, timm:$sel2, timm:$qu)]>;
 
-def ESP_SRCMB_S16_QACC: EspVInst<(outs QR:$qu), (ins QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, GPRPIE:$rs1, select_2:$sel2),
-                   "esp.srcmb.s16.qacc\t $qu, $rs1, $sel2",
-                   [(set QR:$qu, (riscv_esp_srcmb_s16_qacc_m QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, GPRPIE:$rs1, select_2:$sel2))]>
-{
+class ESP_SRCMB_S16_QACC_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.srcmb.s16.qacc\t $qu, $rs1, $sel2", pat> {
   bits<5> rs1;
   bits<1> sel2;
   bits<3> qu;
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 1;
-  
   let Inst{31} = 1;
   let Inst{30} = 1;
   let Inst{29} = sel2{0};
@@ -16197,25 +16478,30 @@ def ESP_SRCMB_S16_QACC: EspVInst<(outs QR:$qu), (ins QACC_L_LOW:$qacc_l_l, QACC_
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let isCodeGenOnly = 1 in
+def ESP_SRCMB_S16_QACC: ESP_SRCMB_S16_QACC_Base<(outs QR:$qu), (ins QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, GPRPIE:$rs1, select_2:$sel2),
+                   [(set QR:$qu, (riscv_esp_srcmb_s16_qacc_m QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, GPRPIE:$rs1, select_2:$sel2))]>;
+
+def ESP_SRCMB_S16_QACC_MC: ESP_SRCMB_S16_QACC_Base<(outs QR:$qu), (ins GPRPIE:$rs1, select_2:$sel2), []> {
+  let hasSideEffects = 1;
+}
+
 
 let usesCustomInserter = 1 in 
 def ESP_SRCMB_S16_QACC_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, select_2:$sel2, imm8:$qu),
 				"!esp_srcmb_s16_qacc_p $qu, $rs1, $sel2",
 			[(int_riscv_esp_srcmb_s16_qacc GPRPIE:$rs1, timm:$sel2, timm:$qu)]>;
 
-def ESP_SRCMB_S8_Q_QACC: EspVInst<(outs QR:$qu), (ins QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, QR:$qw, select_2:$sel2),
-                   "esp.srcmb.s8.q.qacc\t $qu, $qw, $sel2", 
-                   [(set QR:$qu, (riscv_esp_srcmb_s8_q_qacc_m QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, QR:$qw, select_2:$sel2))]> 
-{
+class ESP_SRCMB_S8_Q_QACC_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.srcmb.s8.q.qacc\t $qu, $qw, $sel2", pat> {
   bits<3> qw;
   bits<1> sel2;
   bits<3> qu;
   let isPseudo = 0;
-  let isCodeGenOnly = 0;
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
   let Inst{31} = 1;
   let Inst{30} = 0;
   let Inst{29} = 0;
@@ -16247,24 +16533,29 @@ def ESP_SRCMB_S8_Q_QACC: EspVInst<(outs QR:$qu), (ins QACC_L_LOW:$qacc_l_l, QACC
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_SRCMB_S8_Q_QACC: ESP_SRCMB_S8_Q_QACC_Base<(outs QR:$qu), (ins QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, QR:$qw, select_2:$sel2),
+                   [(set QR:$qu, (riscv_esp_srcmb_s8_q_qacc_m QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, QR:$qw, select_2:$sel2))]>;
+
+def ESP_SRCMB_S8_Q_QACC_MC: ESP_SRCMB_S8_Q_QACC_Base<(outs QR:$qu), (ins QR:$qw, select_2:$sel2), []> {
+  let hasSideEffects = 1;
+}
+
+
 let usesCustomInserter = 1 in 
 def ESP_SRCMB_S8_Q_QACC_P : PseudoEsp<(outs), (ins imm8:$qw, select_2:$sel2, imm8:$qu),
 				"!esp_srcmb_s8_q_qacc_p $qu, $qw, $sel2",
 			[(int_riscv_esp_srcmb_s8_q_qacc timm:$qw, timm:$sel2, timm:$qu)]>;
 
-def ESP_SRCMB_S8_QACC: EspVInst<(outs QR:$qu), (ins QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, GPRPIE:$rs1, select_2:$sel2),
-                   "esp.srcmb.s8.qacc\t $qu, $rs1, $sel2", 
-                   []> 
-{
+class ESP_SRCMB_S8_QACC_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.srcmb.s8.qacc\t $qu, $rs1, $sel2", pat> {
   bits<5> rs1;
   bits<1> sel2;
   bits<3> qu;
   let isPseudo = 0;
-  let isCodeGenOnly = 0;
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
   let Inst{31} = 0;
   let Inst{30} = 1;
   let Inst{29} = sel2{0};
@@ -16295,27 +16586,29 @@ def ESP_SRCMB_S8_QACC: EspVInst<(outs QR:$qu), (ins QACC_L_LOW:$qacc_l_l, QACC_L
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_SRCMB_S8_QACC: ESP_SRCMB_S8_QACC_Base<(outs QR:$qu), (ins QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, GPRPIE:$rs1, select_2:$sel2),
+                   []>;
+
+def ESP_SRCMB_S8_QACC_MC: ESP_SRCMB_S8_QACC_Base<(outs QR:$qu), (ins GPRPIE:$rs1, select_2:$sel2), []> {
+  let hasSideEffects = 1;
+}
+
+
 let usesCustomInserter = 1 in 
 def ESP_SRCMB_S8_QACC_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, select_2:$sel2, imm8:$qu),
 				"!esp_srcmb_s8_qacc_p $qu, $rs1, $sel2",
 			[(int_riscv_esp_srcmb_s8_qacc GPRPIE:$rs1, timm:$sel2, timm:$qu)]>;
 
-def ESP_SRCMB_U16_Q_QACC: EspVInst<(outs QR:$qu), (ins QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, QR:$qw, select_2:$sel2),
-                   "esp.srcmb.u16.q.qacc\t $qu, $qw, $sel2", 
-                   [(set QR:$qu, (int_riscv_esp_srcmb_u16_q_qacc_m
-                       QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h,
-                       QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h,
-                       QR:$qw, select_2:$sel2))]> 
-{
+class ESP_SRCMB_U16_Q_QACC_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.srcmb.u16.q.qacc\t $qu, $qw, $sel2", pat> {
   bits<3> qw;
   bits<1> sel2;
   bits<3> qu;
   let isPseudo = 0;
-  let isCodeGenOnly = 0;
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
   let Inst{31} = 1;
   let Inst{30} = 0;
   let Inst{29} = 0;
@@ -16347,22 +16640,31 @@ def ESP_SRCMB_U16_Q_QACC: EspVInst<(outs QR:$qu), (ins QACC_L_LOW:$qacc_l_l, QAC
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_SRCMB_U16_Q_QACC: ESP_SRCMB_U16_Q_QACC_Base<(outs QR:$qu), (ins QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, QR:$qw, select_2:$sel2),
+                   [(set QR:$qu, (int_riscv_esp_srcmb_u16_q_qacc_m
+                       QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h,
+                       QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h,
+                       QR:$qw, select_2:$sel2))]>;
+
+def ESP_SRCMB_U16_Q_QACC_MC: ESP_SRCMB_U16_Q_QACC_Base<(outs QR:$qu), (ins QR:$qw, select_2:$sel2), []> {
+  let hasSideEffects = 1;
+}
+
+
 let usesCustomInserter = 1 in 
 def ESP_SRCMB_U16_Q_QACC_P : PseudoEsp<(outs), (ins imm8:$qw, select_2:$sel2, imm8:$qu),
 				"!esp_srcmb_u16_q_qacc_p $qu, $qw, $sel2",
 			[(int_riscv_esp_srcmb_u16_q_qacc timm:$qw, timm:$sel2, timm:$qu)]>;
 
-def ESP_SRCMB_U16_QACC: EspVInst<(outs QR:$qu), (ins QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, GPRPIE:$rs1, select_2:$sel2),
-                   "esp.srcmb.u16.qacc\t $qu, $rs1, $sel2",
-                   []>
-{
+class ESP_SRCMB_U16_QACC_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.srcmb.u16.qacc\t $qu, $rs1, $sel2", pat> {
   bits<5> rs1;
   bits<1> sel2;
   bits<3> qu;
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 1;
-  
   let Inst{31} = 1;
   let Inst{30} = 0;
   let Inst{29} = sel2{0};
@@ -16393,25 +16695,28 @@ def ESP_SRCMB_U16_QACC: EspVInst<(outs QR:$qu), (ins QACC_L_LOW:$qacc_l_l, QACC_
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_SRCMB_U16_QACC: ESP_SRCMB_U16_QACC_Base<(outs QR:$qu), (ins QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, GPRPIE:$rs1, select_2:$sel2),
+                   []>;
+
+def ESP_SRCMB_U16_QACC_MC: ESP_SRCMB_U16_QACC_Base<(outs QR:$qu), (ins GPRPIE:$rs1, select_2:$sel2), []> {
+  let hasSideEffects = 1;
+}
+
+
 let usesCustomInserter = 1 in 
 def ESP_SRCMB_U16_QACC_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, select_2:$sel2, imm8:$qu),
 				"!esp_srcmb_u16_qacc_p $qu, $rs1, $sel2",
 			[(int_riscv_esp_srcmb_u16_qacc GPRPIE:$rs1, timm:$sel2, timm:$qu)]>;
 
-def ESP_SRCMB_U8_Q_QACC: EspVInst<(outs QR:$qu), (ins QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, QR:$qw, select_2:$sel2),
-                   "esp.srcmb.u8.q.qacc\t $qu, $qw, $sel2", 
-                   [(set QR:$qu, (int_riscv_esp_srcmb_u8_q_qacc_m
-                       QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h,
-                       QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h,
-                       QR:$qw, select_2:$sel2))]> 
-{
+class ESP_SRCMB_U8_Q_QACC_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.srcmb.u8.q.qacc\t $qu, $qw, $sel2", pat> {
   bits<3> qw;
   bits<1> sel2;
   bits<3> qu;
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
   let Inst{31} = 1;
   let Inst{30} = 0;
   let Inst{29} = 0;
@@ -16443,22 +16748,31 @@ def ESP_SRCMB_U8_Q_QACC: EspVInst<(outs QR:$qu), (ins QACC_L_LOW:$qacc_l_l, QACC
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_SRCMB_U8_Q_QACC: ESP_SRCMB_U8_Q_QACC_Base<(outs QR:$qu), (ins QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, QR:$qw, select_2:$sel2),
+                   [(set QR:$qu, (int_riscv_esp_srcmb_u8_q_qacc_m
+                       QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h,
+                       QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h,
+                       QR:$qw, select_2:$sel2))]>;
+
+def ESP_SRCMB_U8_Q_QACC_MC: ESP_SRCMB_U8_Q_QACC_Base<(outs QR:$qu), (ins QR:$qw, select_2:$sel2), []> {
+  let hasSideEffects = 1;
+}
+
+
 let usesCustomInserter = 1 in 
 def ESP_SRCMB_U8_Q_QACC_P : PseudoEsp<(outs), (ins imm8:$qw, select_2:$sel2, imm8:$qu),
 				"!esp_srcmb_u8_q_qacc_p $qu, $qw, $sel2",
 			[(int_riscv_esp_srcmb_u8_q_qacc timm:$qw, timm:$sel2, timm:$qu)]>;
 
-def ESP_SRCMB_U8_QACC: EspVInst<(outs QR:$qu), (ins QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, GPRPIE:$rs1, select_2:$sel2),
-                   "esp.srcmb.u8.qacc\t $qu, $rs1, $sel2",
-                   []>
-{
+class ESP_SRCMB_U8_QACC_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.srcmb.u8.qacc\t $qu, $rs1, $sel2", pat> {
   bits<5> rs1;
   bits<1> sel2;
   bits<3> qu;
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 1;
-  
   let Inst{31} = 0;
   let Inst{30} = 0;
   let Inst{29} = sel2{0};
@@ -16488,6 +16802,15 @@ def ESP_SRCMB_U8_QACC: EspVInst<(outs QR:$qu), (ins QACC_L_LOW:$qacc_l_l, QACC_L
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let isCodeGenOnly = 1 in
+def ESP_SRCMB_U8_QACC: ESP_SRCMB_U8_QACC_Base<(outs QR:$qu), (ins QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h, GPRPIE:$rs1, select_2:$sel2),
+                   []>;
+
+def ESP_SRCMB_U8_QACC_MC: ESP_SRCMB_U8_QACC_Base<(outs QR:$qu), (ins GPRPIE:$rs1, select_2:$sel2), []> {
+  let hasSideEffects = 1;
+}
+
 
 let usesCustomInserter = 1 in 
 def ESP_SRCMB_U8_QACC_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, select_2:$sel2, imm8:$qu),
@@ -16599,21 +16922,13 @@ def ESP_SRCXXP_2Q_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, GPRPIE:$rs2, imm8:$qy,
 // ESP.SRS.S.XACC (_m version) - Shift Right and Saturate Signed with explicit state passing
 // XACC is explicit input and output operand for chaining
 // Intrinsic returns {i32 saturated_value, i64 new_xacc}
-def ESP_SRS_S_XACC: EspVInst<(outs GPRPIE:$rd, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs1),
-                   "esp.srs.s.xacc\t $rd, $rs1", 
-                   // Mixed model: XACC as {i32 low, i32 high}
-                   // XACC is explicit in intrinsic (takes XACC as {i32 low, i32 high} input, returns new XACC as {i32 low, i32 high})
-                   // Instruction performs arithmetic right shift on XACC, saturates to 32-bit signed, writes back to XACC
-                   // Return value: saturated 32-bit signed value + new XACC {i32 low, i32 high}
-                   // Pattern matches SDNode which returns {i32, i32, i32} to instruction outputs {GPRPIE:$rd, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out}
-                   []> 
-{
+class ESP_SRS_S_XACC_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.srs.s.xacc\t $rd, $rs1", pat> {
   bits<5> rs1;
   bits<5> rd;
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
   let Inst{31} = 1;
   let Inst{30} = 0;
   let Inst{29} = 0;
@@ -16644,6 +16959,20 @@ def ESP_SRS_S_XACC: EspVInst<(outs GPRPIE:$rd, XACC_LOW:$xacc_low_out, XACC_HIGH
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_SRS_S_XACC: ESP_SRS_S_XACC_Base<(outs GPRPIE:$rd, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs1),
+                   // Mixed model: XACC as {i32 low, i32 high}
+                   // XACC is explicit in intrinsic (takes XACC as {i32 low, i32 high} input, returns new XACC as {i32 low, i32 high})
+                   // Instruction performs arithmetic right shift on XACC, saturates to 32-bit signed, writes back to XACC
+                   // Return value: saturated 32-bit signed value + new XACC {i32 low, i32 high}
+                   // Pattern matches SDNode which returns {i32, i32, i32} to instruction outputs {GPRPIE:$rd, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out}
+                   []>;
+
+def ESP_SRS_S_XACC_MC: ESP_SRS_S_XACC_Base<(outs GPRPIE:$rd), (ins GPRPIE:$rs1), []> {
+  let hasSideEffects = 1;
+}
+
+
 let usesCustomInserter = 1 in 
 def ESP_SRS_S_XACC_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, GPRPIE:$rd),
 				"!esp_srs_s_xacc_p $rd, $rs1",
@@ -16652,21 +16981,13 @@ def ESP_SRS_S_XACC_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, GPRPIE:$rd),
 // ESP.SRS.U.XACC (_m version) - Shift Right and Saturate Unsigned with explicit state passing
 // XACC is explicit input and output operand for chaining
 // Intrinsic returns {i32 saturated_value, i64 new_xacc}
-def ESP_SRS_U_XACC: EspVInst<(outs GPRPIE:$rd, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs1),
-                   "esp.srs.u.xacc\t $rd, $rs1", 
-                   // Mixed model: XACC as {i32 low, i32 high}
-                   // XACC is explicit in intrinsic (takes XACC as {i32 low, i32 high} input, returns new XACC as {i32 low, i32 high})
-                   // Instruction performs arithmetic right shift on XACC, saturates to 32-bit unsigned, writes back to XACC
-                   // Return value: saturated 32-bit unsigned value + new XACC {i32 low, i32 high}
-                   // Pattern matches SDNode which returns {i32, i32, i32} to instruction outputs {GPRPIE:$rd, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out}
-                   []>
-{
+class ESP_SRS_U_XACC_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.srs.u.xacc\t $rd, $rs1", pat> {
   bits<5> rs1;
   bits<5> rd;
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
   let Inst{31} = 1;
   let Inst{30} = 0;
   let Inst{29} = 0;
@@ -16696,6 +17017,20 @@ def ESP_SRS_U_XACC: EspVInst<(outs GPRPIE:$rd, XACC_LOW:$xacc_low_out, XACC_HIGH
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let isCodeGenOnly = 1 in
+def ESP_SRS_U_XACC: ESP_SRS_U_XACC_Base<(outs GPRPIE:$rd, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs1),
+                   // Mixed model: XACC as {i32 low, i32 high}
+                   // XACC is explicit in intrinsic (takes XACC as {i32 low, i32 high} input, returns new XACC as {i32 low, i32 high})
+                   // Instruction performs arithmetic right shift on XACC, saturates to 32-bit unsigned, writes back to XACC
+                   // Return value: saturated 32-bit unsigned value + new XACC {i32 low, i32 high}
+                   // Pattern matches SDNode which returns {i32, i32, i32} to instruction outputs {GPRPIE:$rd, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out}
+                   []>;
+
+def ESP_SRS_U_XACC_MC: ESP_SRS_U_XACC_Base<(outs GPRPIE:$rd), (ins GPRPIE:$rs1), []> {
+  let hasSideEffects = 1;
+}
+
 
 let usesCustomInserter = 1 in 
 def ESP_SRS_U_XACC_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, GPRPIE:$rd),
@@ -17129,22 +17464,14 @@ def ESP_VSRD_8_P : PseudoEsp<(outs), (ins imm8:$qy, imm8:$qw, imm8:$qu),
 // Hardware instruction operates on implicit XACC register, but inputs are explicit for data flow
 // Pattern matching: SDNode takes {i32, i32} inputs, instruction takes XACC_LOW and XACC_HIGH as phantom operands
 // This prevents esp.zero.xacc from being optimized away while keeping assembly clean
-def ESP_ST_S_XACC_IP: EspVInst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs1, offset_256_8:$off2568),
-                   "esp.st.s.xacc.ip\t $rs1, $off2568", 
-                   []> 
-{
+class ESP_ST_S_XACC_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.st.s.xacc.ip\t $rs1, $off2568", pat> {
   bits<5> rs1;
   bits<8> off2568;
   bits<5> rs1r;
   let mayStore = 1;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // XACC tied constraints: Output equals input (passthru), must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
-  
   let Inst{31} = 1;
   let Inst{30} = off2568{7};
   let Inst{29} = 1;
@@ -17172,6 +17499,18 @@ def ESP_ST_S_XACC_IP: EspVInst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_
   let Inst{0} = 1;
 }
 
+let isCodeGenOnly = 1 in
+def ESP_ST_S_XACC_IP: ESP_ST_S_XACC_IP_Base<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs1, offset_256_8:$off2568),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
+}
+
+def ESP_ST_S_XACC_IP_MC: ESP_ST_S_XACC_IP_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_8:$off2568), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
+
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_ST_S_XACC_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_8:$off2568),
 				"!esp_st_s_xacc_ip_p $rs1, $off2568",
@@ -17185,22 +17524,14 @@ def ESP_ST_S_XACC_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset
 // Hardware instruction operates on implicit XACC register, but inputs are explicit for data flow
 // Pattern matching: SDNode takes {i32, i32} inputs, instruction takes XACC_LOW and XACC_HIGH as phantom operands
 // This prevents esp.zero.xacc from being optimized away while keeping assembly clean
-def ESP_ST_U_XACC_IP: EspVInst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs1, offset_256_8:$off2568),
-                   "esp.st.u.xacc.ip\t $rs1, $off2568", 
-                   []>
-{
+class ESP_ST_U_XACC_IP_Base<dag outs, dag ins, list<dag> pat>
+    : EspVInst<outs, ins, "esp.st.u.xacc.ip\t $rs1, $off2568", pat> {
   bits<5> rs1;
   bits<8> off2568;
   bits<5> rs1r;
   let mayStore = 1;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
-  // Tied constraints: rs1r = rs1 (pointer update)
-  // XACC tied constraints: Output equals input (passthru), must use same physical register
-  // This is critical for singleton register classes (only one physical register)
-  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
-  
   let Inst{31} = 0;
   let Inst{30} = off2568{7};
   let Inst{29} = 1;
@@ -17227,6 +17558,18 @@ def ESP_ST_U_XACC_IP: EspVInst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let isCodeGenOnly = 1 in
+def ESP_ST_U_XACC_IP: ESP_ST_U_XACC_IP_Base<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs1, offset_256_8:$off2568),
+                   []> {
+  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
+}
+
+def ESP_ST_U_XACC_IP_MC: ESP_ST_U_XACC_IP_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_8:$off2568), []> {
+  let hasSideEffects = 1;
+  let Constraints = "$rs1r = $rs1";
+}
+
 
 let usesCustomInserter = 1, Constraints = "$rs1r = $rs1" in 
 def ESP_ST_U_XACC_IP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_8:$off2568),
