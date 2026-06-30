@@ -203,11 +203,14 @@ public:
     default: {
       // Clear the state of all defined registers for instructions that we don't
       // explicitly support.
-      auto NumDefs = Info->get(Inst.getOpcode()).getNumDefs();
-      for (unsigned I = 0; I < NumDefs; ++I) {
-        auto DefReg = Inst.getOperand(I).getReg();
-        if (isGPR(DefReg))
-          setGPRState(DefReg, std::nullopt);
+      unsigned NumDefs = Info->get(Inst.getOpcode()).getNumDefs();
+      unsigned NumOps = Inst.getNumOperands();
+      for (unsigned I = 0, E = std::min(NumDefs, NumOps); I < E; ++I) {
+        const MCOperand &Op = Inst.getOperand(I);
+        if (!Op.isReg())
+          continue;
+        if (isGPR(Op.getReg()))
+          setGPRState(Op.getReg(), std::nullopt);
       }
       break;
     }
