@@ -356,12 +356,12 @@ define void @test(){
 ; CHECK-NEXT:    li s10, 13
 ; CHECK-NEXT:    esp.vsub.u8.st.incp q7, a2, q6, q6, q0
 ; CHECK-NEXT:    li s11, 5
-; CHECK-NEXT:    esp.addx2 a2, s0, t5
-; CHECK-NEXT:    esp.addx4 a2, t5, t4
-; CHECK-NEXT:    esp.sat s10, a1, a0
+; CHECK-NEXT:    esp.addx2 zero, s0, t5
+; CHECK-NEXT:    esp.addx4 zero, t5, t4
+; CHECK-NEXT:    esp.sat s10, a1, zero
 ; CHECK-NEXT:    li s10, 2
-; CHECK-NEXT:    esp.subx2 a2, s10, t3
-; CHECK-NEXT:    esp.subx4 a2, s9, t6
+; CHECK-NEXT:    esp.subx2 zero, s10, t3
+; CHECK-NEXT:    esp.subx4 zero, s9, t6
 ; CHECK-NEXT:    esp.vcmp.eq.s16 q5, q5, q2
 ; CHECK-NEXT:    esp.vcmp.eq.s32 q3, q0, q1
 ; CHECK-NEXT:    esp.vcmp.eq.s8 q7, q3, q2
