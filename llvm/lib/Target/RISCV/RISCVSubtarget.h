@@ -224,6 +224,11 @@ public:
     }
   }
 
+  /// esp.sat is shared between the ESP-DSP and ESPV 2.1 extensions.
+  bool hasVendorEspSAT() const {
+    return hasVendorXespdsp() || hasVendorXespv2p1();
+  }
+
   LLVM_DEPRECATED("Now Equivalent to hasStdExtZca", "hasStdExtZca")
   bool hasStdExtCOrZca() const { return HasStdExtZca; }
   bool hasStdExtCOrZcd() const { return HasStdExtC || HasStdExtZcd; }

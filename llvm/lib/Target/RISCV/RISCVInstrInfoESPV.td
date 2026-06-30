@@ -9634,7 +9634,7 @@ def ESP_VSUB_U8_ST_INCP_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, imm8:$
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vsub_u8_st_incp timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$qv))]>;
 
 
-def ESP_ADDX2: EspVInst<(outs GPRPIE:$rd), (ins GPRPIE:$rs1, GPRPIE:$rs2),
+def ESP_ADDX2: EspVInst<(outs GPR:$rd), (ins GPR:$rs1, GPR:$rs2),
                    "esp.addx2\t $rd, $rs1, $rs2", []>
 {
   bits<5> rs1;
@@ -9666,7 +9666,7 @@ def ESP_ADDX2: EspVInst<(outs GPRPIE:$rd), (ins GPRPIE:$rs1, GPRPIE:$rs2),
   let Inst{0} = 1;
 }
 
-def ESP_ADDX4: EspVInst<(outs GPRPIE:$rd), (ins GPRPIE:$rs1, GPRPIE:$rs2),
+def ESP_ADDX4: EspVInst<(outs GPR:$rd), (ins GPR:$rs1, GPR:$rs2),
                    "esp.addx4\t $rd, $rs1, $rs2", []>
 {
   bits<5> rs1;
@@ -9698,7 +9698,7 @@ def ESP_ADDX4: EspVInst<(outs GPRPIE:$rd), (ins GPRPIE:$rs1, GPRPIE:$rs2),
   let Inst{0} = 1;
 }
 
-def ESP_SAT: EspVInst<(outs GPRPIE:$rsdr), (ins GPRPIE:$rs0, GPRPIE:$rs1, GPRPIE:$rsd),
+def ESP_SAT: EspVInst<(outs GPR:$rsdr), (ins GPR:$rs0, GPR:$rs1, GPR:$rsd),
                    "esp.sat\t $rsd, $rs0, $rs1", []>
 {
   bits<5> rs0;
@@ -9708,7 +9708,10 @@ def ESP_SAT: EspVInst<(outs GPRPIE:$rsdr), (ins GPRPIE:$rs0, GPRPIE:$rs1, GPRPIE
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 0;
-  
+  // esp.sat belongs to ESP-DSP as well as ESPV 2.1; make it assemble under
+  // either extension (overrides the EspVInst default of xespv2p1-only).
+  let Predicates = [HasVendorEspSAT];
+
   let Constraints = "$rsdr = $rsd";
   
   let Inst{31} = 0;
@@ -9733,7 +9736,7 @@ def ESP_SAT: EspVInst<(outs GPRPIE:$rsdr), (ins GPRPIE:$rs0, GPRPIE:$rs1, GPRPIE
   let Inst{0} = 1;
 }
 
-def ESP_SUBX2: EspVInst<(outs GPRPIE:$rd), (ins GPRPIE:$rs1, GPRPIE:$rs2),
+def ESP_SUBX2: EspVInst<(outs GPR:$rd), (ins GPR:$rs1, GPR:$rs2),
                    "esp.subx2\t $rd, $rs1, $rs2", []>
 {
   bits<5> rs1;
@@ -9765,7 +9768,7 @@ def ESP_SUBX2: EspVInst<(outs GPRPIE:$rd), (ins GPRPIE:$rs1, GPRPIE:$rs2),
   let Inst{0} = 1;
 }
 
-def ESP_SUBX4: EspVInst<(outs GPRPIE:$rd), (ins GPRPIE:$rs1, GPRPIE:$rs2),
+def ESP_SUBX4: EspVInst<(outs GPR:$rd), (ins GPR:$rs1, GPR:$rs2),
                    "esp.subx4\t $rd, $rs1, $rs2", []>
 {
   bits<5> rs1;
@@ -26262,7 +26265,7 @@ def ESP_VSUB_U8_ST_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins imm8:$qx, im
 				"!esp_vsub_u8_st_incp_2p2_p $qu, $rs1, $qv, $qx, $qy$sat",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vsub_u8_st_incp_2p2 timm:$qx, timm:$qy, timm:$qu, GPRPIE:$rs1, timm:$sat, timm:$qv))]>;
 
-def ESP_ADDX2_2P2: Esp32V2P2Inst<(outs GPRPIE:$rd), (ins GPRPIE:$rs1, GPRPIE:$rs2),
+def ESP_ADDX2_2P2: Esp32V2P2Inst<(outs GPR:$rd), (ins GPR:$rs1, GPR:$rs2),
                    "esp.addx2\t $rd, $rs1, $rs2", []> 
 {
   bits<5> rs1;
@@ -26299,7 +26302,7 @@ def ESP_ADDX2_2P2_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, GPRPIE:$rs2, GPRPIE:$r
 				"!esp_addx2_2p2_p $rd, $rs1, $rs2",
 			[(int_riscv_esp_addx2_2p2 GPRPIE:$rs1, GPRPIE:$rs2, GPRPIE:$rd)]>;
 
-def ESP_ADDX4_2P2: Esp32V2P2Inst<(outs GPRPIE:$rd), (ins GPRPIE:$rs1, GPRPIE:$rs2),
+def ESP_ADDX4_2P2: Esp32V2P2Inst<(outs GPR:$rd), (ins GPR:$rs1, GPR:$rs2),
                    "esp.addx4\t $rd, $rs1, $rs2", []> 
 {
   bits<5> rs1;
@@ -26336,7 +26339,7 @@ def ESP_ADDX4_2P2_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, GPRPIE:$rs2, GPRPIE:$r
 				"!esp_addx4_2p2_p $rd, $rs1, $rs2",
 			[(int_riscv_esp_addx4_2p2 GPRPIE:$rs1, GPRPIE:$rs2, GPRPIE:$rd)]>;
 
-def ESP_SAT_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs2r), (ins GPRPIE:$rd, GPRPIE:$rs1, GPRPIE:$rs2),
+def ESP_SAT_2P2: Esp32V2P2Inst<(outs GPR:$rs2r), (ins GPR:$rd, GPR:$rs1, GPR:$rs2),
                    "esp.sat\t $rs2, $rd, $rs1", []> 
 {
   bits<5> rd;
@@ -26376,7 +26379,7 @@ def ESP_SAT_2P2_P : PseudoEsp<(outs GPRPIE:$rs2r), (ins GPRPIE:$rd, GPRPIE:$rs1,
 				"!esp_sat_2p2_p $rs2, $rd, $rs1",
 			[(set GPRPIE:$rs2r, (int_riscv_esp_sat_2p2 GPRPIE:$rd, GPRPIE:$rs1, GPRPIE:$rs2))]>;
 
-def ESP_SUBX2_2P2: Esp32V2P2Inst<(outs GPRPIE:$rd), (ins GPRPIE:$rs1, GPRPIE:$rs2),
+def ESP_SUBX2_2P2: Esp32V2P2Inst<(outs GPR:$rd), (ins GPR:$rs1, GPR:$rs2),
                    "esp.subx2\t $rd, $rs1, $rs2", []> 
 {
   bits<5> rs1;
@@ -26413,7 +26416,7 @@ def ESP_SUBX2_2P2_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, GPRPIE:$rs2, GPRPIE:$r
 				"!esp_subx2_2p2_p $rd, $rs1, $rs2",
 			[(int_riscv_esp_subx2_2p2 GPRPIE:$rs1, GPRPIE:$rs2, GPRPIE:$rd)]>;
 
-def ESP_SUBX4_2P2: Esp32V2P2Inst<(outs GPRPIE:$rd), (ins GPRPIE:$rs1, GPRPIE:$rs2),
+def ESP_SUBX4_2P2: Esp32V2P2Inst<(outs GPR:$rd), (ins GPR:$rs1, GPR:$rs2),
                    "esp.subx4\t $rd, $rs1, $rs2", []> 
 {
   bits<5> rs1;
