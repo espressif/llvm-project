@@ -193,6 +193,8 @@ static void addFixup(SmallVectorImpl<MCFixup> &Fixups, uint32_t Offset,
   case RISCV::fixup_riscv_qc_e_branch:
   case RISCV::fixup_riscv_qc_e_call_plt:
   case RISCV::fixup_riscv_nds_branch_10:
+  case RISCV::fixup_riscv_esp_lp_offset_9:
+  case RISCV::fixup_riscv_esp_lp_offset_12:
     PCRel = true;
   }
   Fixups.push_back(MCFixup::create(Offset, Value, Kind, PCRel));
@@ -961,7 +963,11 @@ RISCVMCCodeEmitter::getUImm10_Step4Operand(const MCInst &MI, unsigned OpNo,
     assert((isUInt<10>(Res) && ((Res & 0x1) == 0)) && "Unexpected operand value!");
     return Res / 2;
   }
-  return getImmOpValue(MI, OpNo, Fixups, STI);
+  // A symbolic loop-body offset needs the ESP loop fixup, not the generic
+  // branch fixup (whose B-type bit layout corrupts esp.lp.setupi).
+  addFixup(Fixups, 0, MO.getExpr(), RISCV::fixup_riscv_esp_lp_offset_9);
+  ++MCNumFixups;
+  return 0;
 }
 
 uint16_t
@@ -974,7 +980,11 @@ RISCVMCCodeEmitter::getUImm13_Step4Operand(const MCInst &MI, unsigned OpNo,
     assert((isUInt<13>(Res) && ((Res & 0x1) == 0)) && "Unexpected operand value!");
     return Res / 2;
   }
-  return getImmOpValue(MI, OpNo, Fixups, STI);
+  // A symbolic loop-body offset needs the ESP loop fixup, not the generic
+  // branch fixup (whose B-type bit layout corrupts esp.lp.setup/starti/endi).
+  addFixup(Fixups, 0, MO.getExpr(), RISCV::fixup_riscv_esp_lp_offset_12);
+  ++MCNumFixups;
+  return 0;
 }
 
 #include "RISCVGenMCCodeEmitter.inc"

@@ -63,6 +63,14 @@ enum Fixups {
   // 10-bit fixup for symbol references in the xandesperf branch instruction
   fixup_riscv_nds_branch_10,
 
+  // Espressif specific fixups
+  // PC-relative fixup for the loop-body offset in esp.lp.setupi
+  // (offset[9:1] split across Inst{19-15} and Inst{11-8}).
+  fixup_riscv_esp_lp_offset_9,
+  // PC-relative fixup for the loop-body offset in esp.lp.setup/starti/endi
+  // (offset[12:1] in Inst{31-20}).
+  fixup_riscv_esp_lp_offset_12,
+
   // Used as a sentinel, must be the last
   fixup_riscv_invalid,
   NumTargetFixupKinds = fixup_riscv_invalid - FirstTargetFixupKind

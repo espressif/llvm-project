@@ -748,7 +748,8 @@ static DecodeStatus decodeUImm13_Step4Operand(MCInst &Inst, int64_t Imm,
                                               int64_t Address,
                                               const void *Decoder) {
   assert(isUInt<13>(Imm) && "Invalid immediate");
-  Inst.addOperand(MCOperand::createImm((Imm * 2) * 2));
+  // The encoded field holds the loop offset / 2; recover the byte offset.
+  Inst.addOperand(MCOperand::createImm(Imm * 2));
   return MCDisassembler::Success;
 }
 
@@ -756,6 +757,7 @@ static DecodeStatus decodeUImm10_Step4Operand(MCInst &Inst, int64_t Imm,
                                               int64_t Address,
                                               const void *Decoder) {
   assert(isUInt<10>(Imm) && "Invalid immediate");
+  // The encoded field holds the loop offset / 2; recover the byte offset.
   Inst.addOperand(MCOperand::createImm(Imm * 2));
   return MCDisassembler::Success;
 }
@@ -861,6 +863,9 @@ static constexpr DecoderListEntry DecoderList32[]{
     {DecoderTableESPV2P232,
      {RISCV::FeatureXespvVersion2p2},
      "XESPV 2.2 Instruction opcode table"},
+    {DecoderTableESPLOOP32,
+     {RISCV::FeatureVendorXesploop},
+     "ESP hardware-loop extension"},
 };
 
 namespace {
