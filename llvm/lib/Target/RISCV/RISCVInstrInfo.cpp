@@ -22,6 +22,7 @@
 #include "llvm/Analysis/MemoryLocation.h"
 #include "llvm/Analysis/ValueTracking.h"
 #include "llvm/CodeGen/LiveIntervals.h"
+#include "llvm/CodeGen/LiveRegUnits.h"
 #include "llvm/CodeGen/LiveVariables.h"
 #include "llvm/CodeGen/MachineCombinerPattern.h"
 #include "llvm/CodeGen/MachineInstrBuilder.h"
@@ -816,12 +817,85 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
     }
   }
 
-  // Handle QR_64 unified subregister copies (ESP32P4)
-  // QR_64 contains both low and high 64-bit subregisters (D0 and D1)
-  if (RISCV::QR_64RegClass.contains(DstReg) && RISCV::QR_64RegClass.contains(SrcReg)) {
-    // For 64-bit subregister copies, use COPY directly
-    BuildMI(MBB, MBBI, DL, get(RISCV::COPY), DstReg)
-        .addReg(SrcReg, KillFlag | getRenamableRegState(RenamableSrc));
+  // Handle QR_64 -> QR copies (ESP32P4). Mirror EXTRACT_SUBREG above.
+  if (RISCV::QR_64RegClass.contains(SrcReg) &&
+      RISCV::QRRegClass.contains(DstReg)) {
+    MCRegister SrcRegNum = SrcReg;
+    unsigned SubIdx = 0;
+    if (SrcRegNum >= RISCV::Q0_D0 && SrcRegNum <= RISCV::Q7_D0)
+      SubIdx = RISCV::sub_qr_64;
+    else if (SrcRegNum >= RISCV::Q0_D1 && SrcRegNum <= RISCV::Q7_D1)
+      SubIdx = RISCV::sub_qr_64_hi;
+    else
+      llvm_unreachable("Unexpected QR_64 source register");
+
+    // Super-register already contains this sub-register (e.g. COPY $q0,
+    // $q0_d0).
+    if (TRI->getSubReg(DstReg, SubIdx) == SrcRegNum)
+      return;
+
+    BuildMI(MBB, MBBI, DL, get(TargetOpcode::INSERT_SUBREG), DstReg)
+        .addReg(DstReg)
+        .addReg(SrcReg, KillFlag | getRenamableRegState(RenamableSrc))
+        .addImm(SubIdx);
+    return;
+  }
+
+  // Handle QR_64 unified subregister copies (ESP32P4). There is no printable
+  // target COPY for QR_64 halves, so copy the two 32-bit lanes through GPRPIE.
+  if (RISCV::QR_64RegClass.contains(DstReg) &&
+      RISCV::QR_64RegClass.contains(SrcReg)) {
+    if (DstReg == SrcReg)
+      return;
+
+    auto getQRSuperAndBaseLane = [&](Register Reg, Register &SuperReg,
+                                     unsigned &BaseLane) -> bool {
+      if ((SuperReg = TRI->getMatchingSuperReg(Reg, RISCV::sub_qr_64,
+                                               &RISCV::QRRegClass))) {
+        BaseLane = 0;
+        return true;
+      }
+      if ((SuperReg = TRI->getMatchingSuperReg(Reg, RISCV::sub_qr_64_hi,
+                                               &RISCV::QRRegClass))) {
+        BaseLane = 2;
+        return true;
+      }
+      return false;
+    };
+
+    Register DstSuper, SrcSuper;
+    unsigned DstBaseLane, SrcBaseLane;
+    if (!getQRSuperAndBaseLane(DstReg, DstSuper, DstBaseLane) ||
+        !getQRSuperAndBaseLane(SrcReg, SrcSuper, SrcBaseLane))
+      llvm_unreachable("Unexpected QR_64 register without QR super-register");
+
+    auto getScratchGPRPIE = [&]() -> Register {
+      LiveRegUnits UsedRegs(*TRI);
+      UsedRegs.addLiveOuts(MBB);
+      auto I = MBB.end();
+      while (I != MBBI)
+        UsedRegs.stepBackward(*--I);
+
+      for (Register Scratch : {RISCV::X24, RISCV::X25, RISCV::X26, RISCV::X27,
+                               RISCV::X28, RISCV::X29, RISCV::X30, RISCV::X31,
+                               RISCV::X8, RISCV::X9, RISCV::X10, RISCV::X11,
+                               RISCV::X12, RISCV::X13, RISCV::X14, RISCV::X15})
+        if (UsedRegs.available(Scratch))
+          return Scratch;
+
+      report_fatal_error("No free GPRPIE scratch register for ESPV QR_64 copy");
+    };
+
+    Register Scratch = getScratchGPRPIE();
+    for (unsigned Lane = 0; Lane != 2; ++Lane) {
+      BuildMI(MBB, MBBI, DL, get(RISCV::ESP_MOVI_32_A), Scratch)
+          .addReg(SrcSuper)
+          .addImm(SrcBaseLane + Lane);
+      BuildMI(MBB, MBBI, DL, get(RISCV::ESP_MOVI_32_Q), DstSuper)
+          .addReg(DstSuper)
+          .addReg(Scratch, RegState::Kill)
+          .addImm(DstBaseLane + Lane);
+    }
     return;
   }
 
@@ -908,6 +982,12 @@ void RISCVInstrInfo::storeRegToStackSlot(MachineBasicBlock &MBB,
     Opcode = RISCV::FSW;
   } else if (RISCV::FPR64RegClass.hasSubClassEq(RC)) {
     Opcode = RISCV::FSD;
+  } else if (RISCV::QRRegClass.hasSubClassEq(RC)) {
+    Opcode = RISCV::PseudoESP_VSPILL_128;
+  } else if (RISCV::QR_64RegClass.hasSubClassEq(RC) &&
+             STI.hasESPVTargetLowering()) {
+    Opcode = STI.hasVendorXespv() ? RISCV::ESP_VST_L_64_IP_2P2
+                                  : RISCV::ESP_VST_L_64_IP;
   } else if (RISCV::VRRegClass.hasSubClassEq(RC)) {
     Opcode = RISCV::VS1R_V;
   } else if (RISCV::VRM2RegClass.hasSubClassEq(RC)) {
@@ -966,6 +1046,20 @@ void RISCVInstrInfo::storeRegToStackSlot(MachineBasicBlock &MBB,
         .addMemOperand(MMO)
         .setMIFlag(Flags);
     NumVRegSpilled += RegInfo.getRegSizeInBits(*RC) / RISCV::RVVBitsPerBlock;
+  } else if (Opcode == RISCV::ESP_VST_128_IP ||
+             Opcode == RISCV::ESP_VST_128_IP_2P2 ||
+             Opcode == RISCV::ESP_VST_L_64_IP ||
+             Opcode == RISCV::ESP_VST_L_64_IP_2P2) {
+    MachineMemOperand *MMO = MF->getMachineMemOperand(
+        MachinePointerInfo::getFixedStack(*MF, FI), MachineMemOperand::MOStore,
+        MFI.getObjectSize(FI), MFI.getObjectAlign(FI));
+    BuildMI(MBB, I, DebugLoc(), get(Opcode))
+        .addReg(RISCV::X5, RegState::Define | RegState::Dead)
+        .addReg(SrcReg, getKillRegState(IsKill))
+        .addFrameIndex(FI)
+        .addImm(0)
+        .addMemOperand(MMO)
+        .setMIFlag(Flags);
   } else {
     MachineMemOperand *MMO = MF->getMachineMemOperand(
         MachinePointerInfo::getFixedStack(*MF, FI), MachineMemOperand::MOStore,
@@ -1013,6 +1107,12 @@ void RISCVInstrInfo::loadRegFromStackSlot(MachineBasicBlock &MBB,
     Opcode = RISCV::FLW;
   } else if (RISCV::FPR64RegClass.hasSubClassEq(RC)) {
     Opcode = RISCV::FLD;
+  } else if (RISCV::QRRegClass.hasSubClassEq(RC)) {
+    Opcode = RISCV::PseudoESP_VRELOAD_128;
+  } else if (RISCV::QR_64RegClass.hasSubClassEq(RC) &&
+             STI.hasESPVTargetLowering()) {
+    Opcode = STI.hasVendorXespv() ? RISCV::ESP_VLD_L_64_IP_2P2
+                                  : RISCV::ESP_VLD_L_64_IP;
   } else if (RISCV::VRRegClass.hasSubClassEq(RC)) {
     Opcode = RISCV::VL1RE8_V;
   } else if (RISCV::VRM2RegClass.hasSubClassEq(RC)) {
@@ -1071,6 +1171,19 @@ void RISCVInstrInfo::loadRegFromStackSlot(MachineBasicBlock &MBB,
         .addMemOperand(MMO)
         .setMIFlag(Flags);
     NumVRegReloaded += RegInfo.getRegSizeInBits(*RC) / RISCV::RVVBitsPerBlock;
+  } else if (Opcode == RISCV::ESP_VLD_128_IP ||
+             Opcode == RISCV::ESP_VLD_128_IP_2P2 ||
+             Opcode == RISCV::ESP_VLD_L_64_IP ||
+             Opcode == RISCV::ESP_VLD_L_64_IP_2P2) {
+    MachineMemOperand *MMO = MF->getMachineMemOperand(
+        MachinePointerInfo::getFixedStack(*MF, FI), MachineMemOperand::MOLoad,
+        MFI.getObjectSize(FI), MFI.getObjectAlign(FI));
+    BuildMI(MBB, I, DL, get(Opcode), DstReg)
+        .addReg(RISCV::X5, RegState::Define | RegState::Dead)
+        .addFrameIndex(FI)
+        .addImm(0)
+        .addMemOperand(MMO)
+        .setMIFlag(Flags);
   } else {
     MachineMemOperand *MMO = MF->getMachineMemOperand(
         MachinePointerInfo::getFixedStack(*MF, FI), MachineMemOperand::MOLoad,

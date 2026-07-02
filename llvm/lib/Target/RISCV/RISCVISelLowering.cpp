@@ -27046,6 +27046,9 @@ void RISCVTargetLowering::initializeESPVTargetLowering(
   setOperationAction(ISD::BUILD_VECTOR, MVT::v16i8, Expand);
   setOperationAction(ISD::BUILD_VECTOR, MVT::v8i16, Expand);
   setOperationAction(ISD::BUILD_VECTOR, MVT::v4i32, Expand);
+  setOperationAction(ISD::BUILD_VECTOR, MVT::v2i32, Expand);
+  setOperationAction(ISD::BUILD_VECTOR, MVT::v4i16, Expand);
+  setOperationAction(ISD::BUILD_VECTOR, MVT::v8i8, Expand);
 
   setOperationAction(ISD::EXTRACT_VECTOR_ELT, MVT::v8i8, Expand);
   setOperationAction(ISD::EXTRACT_VECTOR_ELT, MVT::v4i16, Expand);
