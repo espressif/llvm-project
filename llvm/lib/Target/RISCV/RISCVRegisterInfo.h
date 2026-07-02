@@ -123,6 +123,9 @@ struct RISCVRegisterInfo : public RISCVGenRegisterInfo {
   void lowerSegmentSpillReload(MachineBasicBlock::iterator II,
                                bool IsSpill) const;
 
+  void lowerESPVSPILL(MachineBasicBlock::iterator II) const;
+  void lowerESPVRELOAD(MachineBasicBlock::iterator II) const;
+
   Register getFrameRegister(const MachineFunction &MF) const override;
 
   bool isArgumentRegister(const MachineFunction &MF,
