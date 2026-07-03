@@ -1748,6 +1748,8 @@ static unsigned getScavSlotsNumForESPV(const MachineFunction &MF) {
         break;
       case RISCV::PseudoESP_VSPILL_128:
       case RISCV::PseudoESP_VRELOAD_128:
+      case RISCV::PseudoESP_VSPILL_64:
+      case RISCV::PseudoESP_VRELOAD_64:
       case RISCV::ESP_VST_128_IP:
       case RISCV::ESP_VLD_128_IP:
       case RISCV::ESP_VST_128_IP_2P2:

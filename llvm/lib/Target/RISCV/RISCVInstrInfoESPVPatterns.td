@@ -291,10 +291,12 @@ class EspVectorStRegOffsetPat64<PatFrag StoreOp, RegisterClass StTy, ValueType v
 
 let hasSideEffects = 0, mayLoad = 0, mayStore = 1, isCodeGenOnly = 1 in {
 def PseudoESP_VSPILL_128 : Pseudo<(outs), (ins QR:$qu, GPR:$rs1, simm12_lo:$imm12), []>;
+def PseudoESP_VSPILL_64 : Pseudo<(outs), (ins QR_64:$qu, GPR:$rs1, simm12_lo:$imm12), []>;
 }
 
 let hasSideEffects = 0, mayLoad = 1, mayStore = 0, isCodeGenOnly = 1 in {
 def PseudoESP_VRELOAD_128 : Pseudo<(outs QR:$qu), (ins GPR:$rs1, simm12_lo:$imm12), []>;
+def PseudoESP_VRELOAD_64 : Pseudo<(outs QR_64:$qu), (ins GPR:$rs1, simm12_lo:$imm12), []>;
 }
 
 def riscv_esp_vunzip_16_uzp1 : SDNode<"RISCVISD::ESP_VUNZIP_16_UZP1", 

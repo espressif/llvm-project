@@ -986,8 +986,7 @@ void RISCVInstrInfo::storeRegToStackSlot(MachineBasicBlock &MBB,
     Opcode = RISCV::PseudoESP_VSPILL_128;
   } else if (RISCV::QR_64RegClass.hasSubClassEq(RC) &&
              STI.hasESPVTargetLowering()) {
-    Opcode = STI.hasVendorXespv() ? RISCV::ESP_VST_L_64_IP_2P2
-                                  : RISCV::ESP_VST_L_64_IP;
+    Opcode = RISCV::PseudoESP_VSPILL_64;
   } else if (RISCV::VRRegClass.hasSubClassEq(RC)) {
     Opcode = RISCV::VS1R_V;
   } else if (RISCV::VRM2RegClass.hasSubClassEq(RC)) {
@@ -1046,20 +1045,6 @@ void RISCVInstrInfo::storeRegToStackSlot(MachineBasicBlock &MBB,
         .addMemOperand(MMO)
         .setMIFlag(Flags);
     NumVRegSpilled += RegInfo.getRegSizeInBits(*RC) / RISCV::RVVBitsPerBlock;
-  } else if (Opcode == RISCV::ESP_VST_128_IP ||
-             Opcode == RISCV::ESP_VST_128_IP_2P2 ||
-             Opcode == RISCV::ESP_VST_L_64_IP ||
-             Opcode == RISCV::ESP_VST_L_64_IP_2P2) {
-    MachineMemOperand *MMO = MF->getMachineMemOperand(
-        MachinePointerInfo::getFixedStack(*MF, FI), MachineMemOperand::MOStore,
-        MFI.getObjectSize(FI), MFI.getObjectAlign(FI));
-    BuildMI(MBB, I, DebugLoc(), get(Opcode))
-        .addReg(RISCV::X5, RegState::Define | RegState::Dead)
-        .addReg(SrcReg, getKillRegState(IsKill))
-        .addFrameIndex(FI)
-        .addImm(0)
-        .addMemOperand(MMO)
-        .setMIFlag(Flags);
   } else {
     MachineMemOperand *MMO = MF->getMachineMemOperand(
         MachinePointerInfo::getFixedStack(*MF, FI), MachineMemOperand::MOStore,
@@ -1111,8 +1096,7 @@ void RISCVInstrInfo::loadRegFromStackSlot(MachineBasicBlock &MBB,
     Opcode = RISCV::PseudoESP_VRELOAD_128;
   } else if (RISCV::QR_64RegClass.hasSubClassEq(RC) &&
              STI.hasESPVTargetLowering()) {
-    Opcode = STI.hasVendorXespv() ? RISCV::ESP_VLD_L_64_IP_2P2
-                                  : RISCV::ESP_VLD_L_64_IP;
+    Opcode = RISCV::PseudoESP_VRELOAD_64;
   } else if (RISCV::VRRegClass.hasSubClassEq(RC)) {
     Opcode = RISCV::VL1RE8_V;
   } else if (RISCV::VRM2RegClass.hasSubClassEq(RC)) {
@@ -1171,19 +1155,6 @@ void RISCVInstrInfo::loadRegFromStackSlot(MachineBasicBlock &MBB,
         .addMemOperand(MMO)
         .setMIFlag(Flags);
     NumVRegReloaded += RegInfo.getRegSizeInBits(*RC) / RISCV::RVVBitsPerBlock;
-  } else if (Opcode == RISCV::ESP_VLD_128_IP ||
-             Opcode == RISCV::ESP_VLD_128_IP_2P2 ||
-             Opcode == RISCV::ESP_VLD_L_64_IP ||
-             Opcode == RISCV::ESP_VLD_L_64_IP_2P2) {
-    MachineMemOperand *MMO = MF->getMachineMemOperand(
-        MachinePointerInfo::getFixedStack(*MF, FI), MachineMemOperand::MOLoad,
-        MFI.getObjectSize(FI), MFI.getObjectAlign(FI));
-    BuildMI(MBB, I, DL, get(Opcode), DstReg)
-        .addReg(RISCV::X5, RegState::Define | RegState::Dead)
-        .addFrameIndex(FI)
-        .addImm(0)
-        .addMemOperand(MMO)
-        .setMIFlag(Flags);
   } else {
     MachineMemOperand *MMO = MF->getMachineMemOperand(
         MachinePointerInfo::getFixedStack(*MF, FI), MachineMemOperand::MOLoad,

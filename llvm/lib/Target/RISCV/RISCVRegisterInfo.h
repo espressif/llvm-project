@@ -119,6 +119,8 @@ struct RISCVRegisterInfo : public RISCVGenRegisterInfo {
 
   void lowerESPVSPILL(MachineBasicBlock::iterator II) const;
   void lowerESPVRELOAD(MachineBasicBlock::iterator II) const;
+  void lowerESPVSPILL_64(MachineBasicBlock::iterator II) const;
+  void lowerESPVRELOAD_64(MachineBasicBlock::iterator II) const;
 
   Register getFrameRegister(const MachineFunction &MF) const override;
 

@@ -561,6 +561,66 @@ void RISCVRegisterInfo::lowerESPVRELOAD(MachineBasicBlock::iterator II) const {
   II->eraseFromParent();
 }
 
+void RISCVRegisterInfo::lowerESPVSPILL_64(
+    MachineBasicBlock::iterator II) const {
+  DebugLoc DL = II->getDebugLoc();
+  MachineBasicBlock &MBB = *II->getParent();
+  MachineFunction &MF = *MBB.getParent();
+  MachineRegisterInfo &MRI = MF.getRegInfo();
+  const RISCVSubtarget &STI = MF.getSubtarget<RISCVSubtarget>();
+  const TargetInstrInfo *TII = STI.getInstrInfo();
+
+  Register SrcReg = II->getOperand(0).getReg();
+  Register Base = II->getOperand(1).getReg();
+  int64_t Offset = II->getOperand(2).getImm();
+
+  Register TempReg = MRI.createVirtualRegister(&RISCV::GPRPIERegClass);
+  BuildMI(MBB, II, DL, TII->get(RISCV::ADDI), TempReg)
+      .addReg(Base)
+      .addImm(Offset);
+
+  unsigned OpcVst = STI.hasVendorXespv() ? RISCV::ESP_VST_L_64_IP_2P2
+                                         : RISCV::ESP_VST_L_64_IP;
+  BuildMI(MBB, II, DL, TII->get(OpcVst))
+      .addReg(TempReg, RegState::Define | RegState::Dead)
+      .addReg(SrcReg, getKillRegState(II->getOperand(0).isKill()))
+      .addReg(TempReg)
+      .addImm(0)
+      .addMemOperand(*(II->memoperands_begin()));
+
+  II->eraseFromParent();
+}
+
+void RISCVRegisterInfo::lowerESPVRELOAD_64(
+    MachineBasicBlock::iterator II) const {
+  DebugLoc DL = II->getDebugLoc();
+  MachineBasicBlock &MBB = *II->getParent();
+  MachineFunction &MF = *MBB.getParent();
+  MachineRegisterInfo &MRI = MF.getRegInfo();
+  const RISCVSubtarget &STI = MF.getSubtarget<RISCVSubtarget>();
+  const TargetInstrInfo *TII = STI.getInstrInfo();
+
+  Register DstReg = II->getOperand(0).getReg();
+  Register Base = II->getOperand(1).getReg();
+  int64_t Offset = II->getOperand(2).getImm();
+
+  Register TempReg = MRI.createVirtualRegister(&RISCV::GPRPIERegClass);
+  BuildMI(MBB, II, DL, TII->get(RISCV::ADDI), TempReg)
+      .addReg(Base)
+      .addImm(Offset);
+
+  unsigned OpcVld = STI.hasVendorXespv() ? RISCV::ESP_VLD_L_64_IP_2P2
+                                         : RISCV::ESP_VLD_L_64_IP;
+  BuildMI(MBB, II, DL, TII->get(OpcVld))
+      .addReg(DstReg, RegState::Define)
+      .addReg(TempReg, RegState::Define | RegState::Dead)
+      .addReg(TempReg)
+      .addImm(0)
+      .addMemOperand(*(II->memoperands_begin()));
+
+  II->eraseFromParent();
+}
+
 bool RISCVRegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator II,
                                             int SPAdj, unsigned FIOperandNum,
                                             RegScavenger *RS) const {
@@ -704,6 +764,12 @@ bool RISCVRegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator II,
     return true;
   case RISCV::PseudoESP_VRELOAD_128:
     lowerESPVRELOAD(II);
+    return true;
+  case RISCV::PseudoESP_VSPILL_64:
+    lowerESPVSPILL_64(II);
+    return true;
+  case RISCV::PseudoESP_VRELOAD_64:
+    lowerESPVRELOAD_64(II);
     return true;
   }
 
