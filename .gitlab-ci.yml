@@ -32,6 +32,8 @@ variables:
   CCACHE_DIR: ${CI_PROJECT_DIR}/.ccache
   CCACHE_MAXSIZE: 10G
   CCACHE_SLOPPINESS: "time_macros,file_macro,include_file_mtime,include_file_ctime"
+  ESP_LLVM_PARALLEL_TABLEGEN_JOBS: 4
+  MAX_NINJA_JOBS: 16
 
 workflow:
   rules:
@@ -69,6 +71,18 @@ workflow:
 
 .if-esp-main-workflow: &if-esp-main-workflow
   if: '$CI_COMMIT_REF_NAME == $ESP_MAIN_BRANCH || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $ESP_MAIN_BRANCH'
+
+.configure-build-jobs: &configure-build-jobs |
+  ccache --zero-stats || true
+  ccache --show-stats || true
+  if [ -n "${CI_MERGE_REQUEST_LABELS:-}" ] && echo "${CI_MERGE_REQUEST_LABELS:-}" | grep -q "ccache::recache"; then
+    export CCACHE_RECACHE="1"
+    echo "INFO: ccache recache enabled"
+  fi
+  if [ -n "${CI_MERGE_REQUEST_LABELS:-}" ] && echo "${CI_MERGE_REQUEST_LABELS:-}" | grep -q "limit_ninja_jobs"; then
+    export MAX_NINJA_JOBS="12"
+    echo "INFO: limit ninja jobs to ${MAX_NINJA_JOBS}"
+  fi
 
 before_script:
   - *use_ci_tools
@@ -210,7 +224,8 @@ check_commit_message:
   artifacts:
     paths:
       - ${DIST_DIR}/
-      - ${BUILD_DIR}/build/*.log
+      - ${BUILD_DIR}/*.log
+      - ${BUILD_DIR}/CMakeCache.txt
     when: always
     expire_in: 3 days
   dependencies: []
@@ -228,19 +243,12 @@ check_commit_message:
     PACK_STANDALONE_LIBS: "OFF"
     PACK_TARGET_LIBS: "OFF"
     PACK_EXTRA_TOOLS: "OFF"
-  rules:
-    - <<: *if-esp-main-workflow
-      when: never
-    - <<: *if-scheduled-sync
-      when: never
-    - when: on_success
   cache:
     key: ccache-$CI_JOB_NAME
     paths:
       - $CCACHE_DIR
   before_script:
-    - ccache --zero-stats || true
-    - ccache --show-stats || true
+    - *configure-build-jobs
     - git config --global --add safe.directory $CI_PROJECT_DIR
   after_script:
     # help to identify that build failed due to OOM
@@ -254,10 +262,11 @@ check_commit_message:
       fi
     - ccache --show-stats
   script:
+    - echo "MAX_NINJA_JOBS=${MAX_NINJA_JOBS}"
     - *get_toolchain_build_scripts
     - LLVM_PROJECT_PATH=$PWD
-    - BUILD_PATH=$PWD/${BUILD_DIR}/build
-    - INSTALL_PATH=$PWD/${BUILD_DIR}/install
+    - BUILD_PATH=$PWD/${BUILD_DIR}
+    - INSTALL_PATH=$PWD/${BUILD_DIR}/_install
     - mkdir -p ${BUILD_PATH}
     - mkdir -p ${INSTALL_PATH}
     - BUILD_HOST=$(gcc -dumpmachine)
@@ -289,6 +298,7 @@ check_commit_message:
       if [ "${ESP_LLVM_PARALLEL_COMPILE_JOBS:-}" != "" ]; then
         AUX_BUILD_ARGS="${AUX_BUILD_ARGS} -DLLVM_PARALLEL_COMPILE_JOBS=${ESP_LLVM_PARALLEL_COMPILE_JOBS}";
       fi
+    - echo "AUX_BUILD_ARGS=${AUX_BUILD_ARGS}"
     # build toolchain core w/o any libs and GNU components
     - time cmake $PWD/esp-llvm-embedded-toolchain -GNinja
       -DFETCHCONTENT_SOURCE_DIR_LLVMPROJECT=${LLVM_PROJECT_PATH}
@@ -307,7 +317,9 @@ check_commit_message:
       -DLLVM_TOOLCHAIN_ENABLED_TARGETS="${TARGET}"
       -DLLVM_TOOLCHAIN_PACKAGE_NAME="esp-clang"
       -DLLVM_USE_LINKER=${USE_LINKER}
+      -DLLVM_PARALLEL_COMPILE_JOBS=${ESP_LLVM_PARALLEL_COMPILE_JOBS}
       -DLLVM_PARALLEL_LINK_JOBS=${ESP_LLVM_PARALLEL_LINK_JOBS}
+      -DLLVM_PARALLEL_TABLEGEN_JOBS=${ESP_LLVM_PARALLEL_TABLEGEN_JOBS}
       -DCLANG_REPOSITORY_STRING="${GH_REPO_HTTPS}"
       -DCPACK_ARCHIVE_THREADS=0
       --install-prefix=${INSTALL_PATH}
@@ -328,20 +340,20 @@ check_commit_message:
           echo "Run LLVM/Clang unit tests";
           touch ${BUILD_PATH}/tests.log;
           chmod o+w ${BUILD_PATH}/tests.log;
-          runuser -u test_runner -- ninja -C ${BUILD_PATH} check-all 2>&1 > ${BUILD_PATH}/tests.log;
+          runuser -u test_runner -- ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} check-all 2>&1 > ${BUILD_PATH}/tests.log;
           echo "Run LLD unit tests";
           touch ${BUILD_PATH}/lld-tests.log;
           chmod o+w ${BUILD_PATH}/lld-tests.log;
-          runuser -u test_runner -- ninja -C ${BUILD_PATH} check-lld 2>&1 > ${BUILD_PATH}/lld-tests.log;
+          runuser -u test_runner -- ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} check-lld 2>&1 > ${BUILD_PATH}/lld-tests.log;
         fi
         if [[ "${RUN_TOOLCHAIN_TESTS}" == "ON" ]]; then
           touch ${BUILD_PATH}/toolchain-tests.log;
           chmod o+w ${BUILD_PATH}/toolchain-tests.log;
           echo "Run toolchain unit tests";
-          time runuser -u test_runner -- ninja -C ${BUILD_PATH} check-llvm-toolchain 2>&1 > ${BUILD_PATH}/toolchain-tests.log;
+          time runuser -u test_runner -- ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} check-llvm-toolchain 2>&1 > ${BUILD_PATH}/toolchain-tests.log;
           echo "Toolchain unit tests finished";
           echo "Run toolchain runtimes unit tests";
-          time runuser -u test_runner -- ninja -C ${BUILD_PATH} check-llvm-toolchain-runtimes 2>&1 >> ${BUILD_PATH}/toolchain-tests.log;
+          time runuser -u test_runner -- ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} check-llvm-toolchain-runtimes 2>&1 >> ${BUILD_PATH}/toolchain-tests.log;
           echo "Toolchain runtimes unit tests finished";
         fi
         if [[ "${RUN_PKG_TESTS}" == "ON" ]]; then
@@ -349,7 +361,7 @@ check_commit_message:
           # to avoid test failure "fatal: detected dubious ownership in repository at '/builds/llvm-project'"
           touch ${BUILD_PATH}/pkg-tests.log;
           chmod o+w ${BUILD_PATH}/pkg-tests.log;
-          time runuser -u test_runner -- ninja -C ${BUILD_PATH} check-package-llvm-toolchain 2>&1 > ${BUILD_PATH}/pkg-tests.log;
+          time runuser -u test_runner -- ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} check-package-llvm-toolchain 2>&1 > ${BUILD_PATH}/pkg-tests.log;
           echo "Toolchain package tests finished";
         fi
         chown -R ${CUR_USER} $PWD/esp-llvm-embedded-toolchain;
@@ -361,9 +373,9 @@ check_commit_message:
     - >
       if [[ "${PACK_TOOLCHAIN}" == "ON" ]]; then
         echo "Pack toolchain";
-        time ninja -C ${BUILD_PATH} package-llvm-toolchain 2>&1  >> ${BUILD_PATH}/build.log
+        time ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} package-llvm-toolchain 2>&1  >> ${BUILD_PATH}/build.log
         echo "Pack toolchain finished";
-        DISTRO_PACK_PATH=$(ninja -C ${BUILD_PATH} print-llvm-toolchain-package-path | tail -n 1)
+        DISTRO_PACK_PATH=$(ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} print-llvm-toolchain-package-path | tail -n 1)
         echo "DISTRO_PACK_PATH=${DISTRO_PACK_PATH}"
         mv ${DISTRO_PACK_PATH} ${PWD}/${DIST_DIR}/
         ARCHIVE_NAME=$(basename ${DISTRO_PACK_PATH})
@@ -372,20 +384,20 @@ check_commit_message:
     - >
       if [[ "${PACK_EXTRA_TOOLS}" == "ON" ]]; then
         echo "Unpack toolchain";
-        time ninja -C ${BUILD_PATH} unpack-llvm-toolchain 2>&1  >> ${BUILD_PATH}/build.log
+        time ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} unpack-llvm-toolchain 2>&1  >> ${BUILD_PATH}/build.log
         echo "Unpack toolchain finished";
         # pack clangd
         echo "Pack clangd";
-        time ninja -C ${BUILD_PATH} package-clangd 2>&1  >> ${BUILD_PATH}/build.log
+        time ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} package-clangd 2>&1  >> ${BUILD_PATH}/build.log
         echo "Pack clangd finished";
-        DISTRO_PACK_PATH=$(ninja -C ${BUILD_PATH} print-clangd-package-path | tail -n 1)
+        DISTRO_PACK_PATH=$(ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} print-clangd-package-path | tail -n 1)
         echo "DISTRO_PACK_PATH=${DISTRO_PACK_PATH}"
         mv ${DISTRO_PACK_PATH} ${PWD}/${DIST_DIR}/
         ARCHIVE_NAME=$(basename ${DISTRO_PACK_PATH})
         echo "${ARCHIVE_NAME}" > ${PWD}/${DIST_DIR}/clangd_dist_name_${CONF_HOST}
         # re-pack toolchain w/o clangd
         echo "Re-pack toolchain";
-        time ninja -C ${BUILD_PATH} repack-llvm-toolchain 2>&1  >> ${BUILD_PATH}/build.log
+        time ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} repack-llvm-toolchain 2>&1  >> ${BUILD_PATH}/build.log
         echo "Re-pack toolchain finished";
       fi
     # pack distro with standalone libs
@@ -394,9 +406,9 @@ check_commit_message:
         echo "Clean install dir ${INSTALL_PATH}"
         rm -rf ${INSTALL_PATH}
         echo "Pack standalone libs";
-        time ninja -C ${BUILD_PATH} package-llvm-standalone-libs 2>&1  >> ${BUILD_PATH}/build.log
+        time ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} package-llvm-standalone-libs 2>&1  >> ${BUILD_PATH}/build.log
         echo "Pack standalone libs finished";
-        DISTRO_PACK_PATH=$(ninja -C ${BUILD_PATH} print-llvm-standalone-libs-package-path | tail -n 1)
+        DISTRO_PACK_PATH=$(ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} print-llvm-standalone-libs-package-path | tail -n 1)
         echo "DISTRO_PACK_PATH=${DISTRO_PACK_PATH}"
         mv ${DISTRO_PACK_PATH} ${PWD}/${DIST_DIR}/
         ARCHIVE_NAME=$(basename ${DISTRO_PACK_PATH})
@@ -408,9 +420,9 @@ check_commit_message:
         echo "Clean install dir ${INSTALL_PATH}"
         rm -rf ${INSTALL_PATH}
         echo "Pack target libs";
-        time ninja -C ${BUILD_PATH} package-llvm-toolchain-target-libs 2>&1  >> ${BUILD_PATH}/build.log
+        time ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} package-llvm-toolchain-target-libs 2>&1  >> ${BUILD_PATH}/build.log
         echo "Pack target libs finished";
-        DISTRO_PACK_PATH=$(ninja -C ${BUILD_PATH} print-llvm-toolchain-target-libs-package-path | tail -n 1)
+        DISTRO_PACK_PATH=$(ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} print-llvm-toolchain-target-libs-package-path | tail -n 1)
         echo "DISTRO_PACK_PATH=${DISTRO_PACK_PATH}"
         mv ${DISTRO_PACK_PATH} ${PWD}/${DIST_DIR}/
         ARCHIVE_NAME=$(basename ${DISTRO_PACK_PATH})
@@ -429,6 +441,7 @@ build_and_test:
     paths:
       - ${DIST_DIR}/
       - ${BUILD_DIR}/*.log
+      - ${BUILD_DIR}/CMakeCache.txt
     when: always
     expire_in: 3 days
   retry: 1
@@ -441,14 +454,13 @@ build_and_test:
     - if: '$CI_COMMIT_REF_NAME == $ESP_MAIN_BRANCH || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $ESP_MAIN_BRANCH'
       variables:
         CACHE_KEY: ccache-esp_main-$CI_JOB_NAME
-    - when: always
+    - when: on_success
   cache:
     key: $CACHE_KEY
     paths:
       - $CCACHE_DIR
   before_script:
-    - ccache --zero-stats || true
-    - ccache --show-stats || true
+    - *configure-build-jobs
     - git config --global --add safe.directory $CI_PROJECT_DIR
   after_script:
     # help to identify that build failed due to OOM
@@ -460,6 +472,7 @@ build_and_test:
       fi
     - ccache --show-stats
   script:
+    - echo "MAX_NINJA_JOBS=${MAX_NINJA_JOBS}"
     - BUILD_PATH=$PWD/${BUILD_DIR}
     - LLVM_PROJECT_PATH=$PWD
     - mkdir -p ${BUILD_PATH}
@@ -468,6 +481,7 @@ build_and_test:
       if [ "${ESP_LLVM_PARALLEL_COMPILE_JOBS:-}" != "" ]; then
         AUX_BUILD_ARGS="${AUX_BUILD_ARGS} -DLLVM_PARALLEL_COMPILE_JOBS=${ESP_LLVM_PARALLEL_COMPILE_JOBS}";
       fi
+    - echo "AUX_BUILD_ARGS=${AUX_BUILD_ARGS}"
     - time cmake -G Ninja
       -S llvm
       -DLLVM_ENABLE_PROJECTS="clang;lld;clang-tools-extra"
@@ -480,7 +494,9 @@ build_and_test:
       -DCMAKE_C_COMPILER_LAUNCHER=ccache
       -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
       -DLLVM_USE_LINKER=lld
+      -DLLVM_PARALLEL_COMPILE_JOBS=8
       -DLLVM_PARALLEL_LINK_JOBS=${ESP_LLVM_PARALLEL_LINK_JOBS}
+      -DLLVM_PARALLEL_TABLEGEN_JOBS=${ESP_LLVM_PARALLEL_TABLEGEN_JOBS}
       -DLLVM_FORCE_VC_REPOSITORY="${GH_REPO_HTTPS}"
       ${AUX_BUILD_ARGS}
       -B ${BUILD_PATH} 2>&1 > ${BUILD_PATH}/build.log
@@ -492,12 +508,12 @@ build_and_test:
     - echo "Run LLVM/Clang unit tests";
     - touch ${BUILD_PATH}/tests.log;
     - chmod o+w ${BUILD_PATH}/tests.log;
-    - time runuser -u test_runner -- ninja -C ${BUILD_PATH} check-all 2>&1 > ${BUILD_PATH}/tests.log;
+    - time runuser -u test_runner -- ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} check-all 2>&1 > ${BUILD_PATH}/tests.log;
     - echo "LLVM/Clang unit tests finished";
     - echo "Run LLD unit tests";
     - touch ${BUILD_PATH}/lld-tests.log;
     - chmod o+w ${BUILD_PATH}/lld-tests.log;
-    - time runuser -u test_runner -- ninja -C ${BUILD_PATH} check-lld 2>&1 > ${BUILD_PATH}/lld-tests.log;
+    - time runuser -u test_runner -- ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} check-lld 2>&1 > ${BUILD_PATH}/lld-tests.log;
     - echo "LLD unit tests finished";
     - chown -R ${CUR_USER} ${BUILD_PATH};
     - chown -R ${CUR_USER} ${CCACHE_DIR};
@@ -528,6 +544,10 @@ build_x86_64-linux-gnu:
     CONF_HOST: "x86_64-linux-gnu"
     USE_LINKER: "lld"
   rules:
+    - <<: *if-esp-main-workflow
+      when: never
+    - <<: *if-scheduled-sync
+      when: never
     # Build complete distro and run all tests on default branch
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_MERGE_REQUEST_LABELS =~ /(^|,)toolchain_tests(,|$)/'
       variables:
@@ -544,7 +564,7 @@ build_x86_64-linux-gnu:
         RUN_PKG_TESTS: "ON"
         PACK_STANDALONE_LIBS: "ON"
         PACK_EXTRA_TOOLS: "ON"
-    - when: always
+    - when: on_success
 
 # Target libs are built in build_x86_64-linux-gnu, but due to artifacts
 # size limit we have to produce target libs archive in this job too.
@@ -559,6 +579,10 @@ build_target_libs:
     PACK_TARGET_LIBS: "ON"
     PACK_TOOLCHAIN: "OFF"
   rules:
+    - <<: *if-esp-main-workflow
+      when: never
+    - <<: *if-scheduled-sync
+      when: never
     # Build target libs only on default branch or tag
     - if: '$CI_COMMIT_TAG || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
       when: on_success
@@ -572,6 +596,10 @@ build_x86_64-w64-mingw32:
     CONF_HOST: "x86_64-w64-mingw32"
     CROSS_BUILD_MINGW: "ON"
   rules:
+    - <<: *if-esp-main-workflow
+      when: never
+    - <<: *if-scheduled-sync
+      when: never
     - if: '$CI_COMMIT_TAG || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
       variables:
         BUILD_GNU_BINUTILS: "ON"
@@ -584,6 +612,10 @@ build_arm-linux-gnueabihf:
   variables:
     CONF_HOST: "arm-linux-gnueabihf"
   rules:
+    - <<: *if-esp-main-workflow
+      when: never
+    - <<: *if-scheduled-sync
+      when: never
     - if: '$CI_COMMIT_TAG || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
       variables:
         BUILD_GNU_BINUTILS: "ON"
@@ -596,6 +628,10 @@ build_aarch64-linux-gnu:
   variables:
     CONF_HOST: "aarch64-linux-gnu"
   rules:
+    - <<: *if-esp-main-workflow
+      when: never
+    - <<: *if-scheduled-sync
+      when: never
     - if: '$CI_COMMIT_TAG || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
       variables:
         BUILD_GNU_BINUTILS: "ON"
@@ -608,6 +644,10 @@ build_x86_64-apple-darwin:
   variables:
     CONF_HOST: "x86_64-apple-darwin21.1"
   rules:
+    - <<: *if-esp-main-workflow
+      when: never
+    - <<: *if-scheduled-sync
+      when: never
     - if: '$CI_COMMIT_TAG || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
       variables:
         BUILD_GNU_BINUTILS: "ON"
@@ -620,6 +660,10 @@ build_aarch64-apple-darwin:
   variables:
     CONF_HOST: "aarch64-apple-darwin21.1"
   rules:
+    - <<: *if-esp-main-workflow
+      when: never
+    - <<: *if-scheduled-sync
+      when: never
     - if: '$CI_COMMIT_TAG || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
       variables:
         BUILD_GNU_BINUTILS: "ON"
