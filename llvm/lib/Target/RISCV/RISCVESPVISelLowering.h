@@ -32,12 +32,20 @@ bool getESPVTgtMemIntrinsic(TargetLowering::IntrinsicInfo &Info,
 SDValue lowerESPVIntrinsicWOChain(SDValue Op, SelectionDAG &DAG,
                                   const RISCVSubtarget &Subtarget);
 SDValue lowerESPVIntrinsicWChain(SDValue Op, SelectionDAG &DAG,
-                                  const RISCVSubtarget &Subtarget);
+                                 const RISCVSubtarget &Subtarget);
 SDValue lowerESPVectorShuffle(SDValue Op, SelectionDAG &DAG,
+                              const RISCVSubtarget &Subtarget);
+SDValue lowerESPVVectorMaskExt(SDValue Op, SelectionDAG &DAG,
+                               const RISCVSubtarget &Subtarget,
+                               int64_t ExtTrueVal);
+SDValue lowerESPVVectorMaskTrunc(SDValue Op, SelectionDAG &DAG,
+                                 const RISCVSubtarget &Subtarget);
+SDValue lowerESPVConcatVectors(SDValue Op, SelectionDAG &DAG,
                                const RISCVSubtarget &Subtarget);
+SDValue lowerESPVExtractSubvector(SDValue Op, SelectionDAG &DAG,
+                                  const RISCVSubtarget &Subtarget);
 
 } // namespace RISCV
 } // namespace llvm
 
 #endif // LLVM_LIB_TARGET_RISCV_RISCVESPVISELLOWERING_H
-

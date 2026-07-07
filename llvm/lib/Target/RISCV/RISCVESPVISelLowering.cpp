@@ -13,6 +13,7 @@
 #include "RISCVESPVISelLowering.h"
 #include "RISCV.h"
 #include "RISCVISelLowering.h"
+#include "RISCVRegisterInfo.h"
 #include "RISCVSelectionDAGInfo.h"
 #include "RISCVSubtarget.h"
 #include "llvm/CodeGen/SelectionDAG.h"
@@ -4539,10 +4540,130 @@ static SDValue LowerVMULASQACCLDBCINCP(SDValue Op, SelectionDAG &DAG,
   return DAG.getMergeValues({Qu, PtrOut, V0, V1, V2, V3, Chain}, DL);
 }
 
+// Combine two 64-bit QR halves into one 128-bit QR via INSERT_SUBREG.
+static SDValue combineQR64Halves(SDLoc DL, MVT VT, SDValue Lo, SDValue Hi,
+                                 SelectionDAG &DAG) {
+  SDValue Undef = DAG.getUNDEF(VT);
+  SDValue Vec = DAG.getTargetInsertSubreg(RISCV::sub_qr_64, DL, VT, Undef, Lo);
+  return DAG.getTargetInsertSubreg(RISCV::sub_qr_64_hi, DL, VT, Vec, Hi);
+}
+
+static bool isQR64ConcatShuffleMask(ArrayRef<int> Mask, unsigned HalfSize,
+                                    unsigned V1Size) {
+  for (unsigned I = 0; I < HalfSize; ++I) {
+    if (Mask[I] != (int)I && Mask[I] != -1)
+      return false;
+  }
+  for (unsigned I = HalfSize; I < HalfSize * 2; ++I) {
+    int MaskIdx = Mask[I];
+    if (MaskIdx == -1)
+      continue;
+    if (MaskIdx != (int)(V1Size + (I - HalfSize)))
+      return false;
+  }
+  return true;
+}
+
+SDValue lowerESPVConcatVectors(SDValue Op, SelectionDAG &DAG,
+                               const RISCVSubtarget &Subtarget) {
+  if (!Subtarget.hasESPVTargetLowering())
+    return SDValue();
+  if (!Op.getSimpleValueType().isFixedLengthVector() ||
+      Op.getNumOperands() != 2)
+    return SDValue();
+
+  MVT VT = Op.getSimpleValueType();
+  SDValue Lo = Op.getOperand(0);
+  SDValue Hi = Op.getOperand(1);
+  MVT LoVT = Lo.getSimpleValueType();
+  MVT HiVT = Hi.getSimpleValueType();
+  if (LoVT != HiVT)
+    return SDValue();
+  if (VT != MVT::getVectorVT(LoVT.getVectorElementType(),
+                             LoVT.getVectorNumElements() * 2))
+    return SDValue();
+
+  SDLoc DL(Op);
+  return combineQR64Halves(DL, VT, Lo, Hi, DAG);
+}
+
+SDValue lowerESPVExtractSubvector(SDValue Op, SelectionDAG &DAG,
+                                  const RISCVSubtarget &Subtarget) {
+  if (!Subtarget.hasESPVTargetLowering())
+    return SDValue();
+
+  SDValue Vec = Op.getOperand(0);
+  MVT SubVecVT = Op.getSimpleValueType();
+  MVT VecVT = Vec.getSimpleValueType();
+  if (!VecVT.isFixedLengthVector() || !SubVecVT.isFixedLengthVector())
+    return SDValue();
+
+  unsigned OrigIdx = Op.getConstantOperandVal(1);
+  SDLoc DL(Op);
+
+  // Defer wide QACC extractions to type legalizer + instruction selection.
+  if ((VecVT == MVT::v64i8 && SubVecVT == MVT::v32i8) ||
+      (VecVT == MVT::v32i8 && SubVecVT == MVT::v16i8))
+    return Op;
+
+  if (VecVT.getVectorElementType() == SubVecVT.getVectorElementType() &&
+      VecVT.getVectorNumElements() == SubVecVT.getVectorNumElements() * 2) {
+    if (auto SubIdx = getQR64SubRegIdxForExtractIndex(
+            OrigIdx, VecVT.getVectorNumElements()))
+      return DAG.getTargetExtractSubreg(*SubIdx, DL, SubVecVT, Vec);
+  }
+  return SDValue();
+}
+
+// ESPV: scalarize mask ext/trunc lane-wise (no RVV vector length).
+SDValue lowerESPVVectorMaskExt(SDValue Op, SelectionDAG &DAG,
+                               const RISCVSubtarget &Subtarget,
+                               int64_t ExtTrueVal) {
+  SDLoc DL(Op);
+  MVT VecVT = Op.getSimpleValueType();
+  SDValue Src = Op.getOperand(0);
+  assert(Subtarget.hasESPVTargetLowering() && VecVT.isFixedLengthVector() &&
+         "Unexpected scalable mask ext on ESPV");
+  MVT DstEltVT = VecVT.getVectorElementType();
+  unsigned NumElts = VecVT.getVectorNumElements();
+  SmallVector<SDValue, 16> Elts;
+  Elts.reserve(NumElts);
+  SDValue TrueVal = DAG.getSignedConstant(ExtTrueVal, DL, DstEltVT);
+  SDValue ZeroVal = DAG.getConstant(0, DL, DstEltVT);
+  for (unsigned I = 0; I != NumElts; ++I) {
+    SDValue EltI1 = DAG.getExtractVectorElt(DL, MVT::i1, Src, I);
+    SDValue Elt = DAG.getSelect(DL, DstEltVT, EltI1, TrueVal, ZeroVal);
+    Elts.push_back(Elt);
+  }
+  return DAG.getBuildVector(VecVT, DL, Elts);
+}
+
+SDValue lowerESPVVectorMaskTrunc(SDValue Op, SelectionDAG &DAG,
+                                 const RISCVSubtarget &Subtarget) {
+  SDLoc DL(Op);
+  EVT MaskVT = Op.getValueType();
+  SDValue Src = Op.getOperand(0);
+  MVT VecVT = Src.getSimpleValueType();
+  assert(Subtarget.hasESPVTargetLowering() &&
+         Op.getOpcode() != ISD::VP_TRUNCATE &&
+         "Unexpected VP truncate for ESPV mask lowering");
+  MVT SrcEltVT = VecVT.getVectorElementType();
+  unsigned NumElts = MaskVT.getVectorNumElements();
+  SmallVector<SDValue, 16> Elts;
+  Elts.reserve(NumElts);
+  for (unsigned I = 0; I != NumElts; ++I) {
+    SDValue Elt = DAG.getExtractVectorElt(DL, SrcEltVT, Src, I);
+    Elt = DAG.getNode(ISD::AND, DL, SrcEltVT, Elt,
+                      DAG.getConstant(1, DL, SrcEltVT));
+    Elts.push_back(DAG.getNode(ISD::TRUNCATE, DL, MVT::i1, Elt));
+  }
+  return DAG.getBuildVector(MaskVT.getSimpleVT(), DL, Elts);
+}
+
 // Main ESP vector shuffle lowering function
 SDValue lowerESPVectorShuffle(SDValue Op, SelectionDAG &DAG,
                               const RISCVSubtarget &Subtarget) {
-  if (!Subtarget.hasVendorXespv())
+  if (!Subtarget.hasESPVTargetLowering())
     return SDValue();
 
   SDValue V1 = Op.getOperand(0);
@@ -4552,51 +4673,14 @@ SDValue lowerESPVectorShuffle(SDValue Op, SelectionDAG &DAG,
   ShuffleVectorSDNode *SVN = cast<ShuffleVectorSDNode>(Op.getNode());
   ArrayRef<int> Mask = SVN->getMask();
 
-  // Handle direct concatenation pattern: combine two 64-bit vectors (v8i8) into
-  // 128-bit (v16i8) Pattern: shufflevector <8 x i8> %lo, <8 x i8> %hi, <i32 0,
-  // 1, ..., 7, 8, 9, ..., 15> This means: first 8 elements from %lo[0:7], last
-  // 8 elements from %hi[0:7] Since QR_L and QR_H are parts of the same QR
-  // register, we can directly combine them
-  if (VT == MVT::v16i8 && V1.getValueType() == MVT::v8i8 &&
-      V2.getValueType() == MVT::v8i8) {
-    unsigned NumElts = VT.getVectorNumElements();
-    unsigned HalfSize = 8;
-    unsigned V1Size = V1.getValueType().getVectorNumElements();
-    bool IsConcatPattern = true;
-
-    // Check if first half comes from V1[0:7]
-    for (unsigned I = 0; I < HalfSize; ++I) {
-      if (Mask[I] != (int)I && Mask[I] != -1) {
-        IsConcatPattern = false;
-        break;
-      }
-    }
-
-    // Check if second half comes from V2[0:7]
-    // Mask indices 8-15 correspond to V2[0-7] (mask value 8 = V2[0], 9 = V2[1],
-    // etc.)
-    if (IsConcatPattern) {
-      for (unsigned I = HalfSize; I < NumElts; ++I) {
-        int MaskIdx = Mask[I];
-        if (MaskIdx == -1)
-          continue;
-        // Mask value should be V1Size + (I - HalfSize) to select V2[I -
-        // HalfSize]
-        int ExpectedMaskIdx = V1Size + (I - HalfSize);
-        if (MaskIdx != ExpectedMaskIdx) {
-          IsConcatPattern = false;
-          break;
-        }
-      }
-    }
-
-    if (IsConcatPattern) {
-      // Directly combine two v8i8 vectors into v16i8 using CONCAT_VECTORS
-      // This will be lowered to INSERT_SUBREG operations that combine QR_L and
-      // QR_H Since QR_L and QR_H are subregisters of the same QR register, this
-      // avoids unnecessary stack spilling/reloading
-      return DAG.getNode(ISD::CONCAT_VECTORS, DL, VT, V1, V2);
-    }
+  // Handle direct concatenation: two 64-bit QR halves -> 128-bit QR.
+  MVT V1VT = V1.getSimpleValueType();
+  MVT V2VT = V2.getSimpleValueType();
+  if (V1VT == V2VT && VT == MVT::getVectorVT(V1VT.getVectorElementType(),
+                                             V1VT.getVectorNumElements() * 2)) {
+    unsigned HalfSize = V1VT.getVectorNumElements();
+    if (isQR64ConcatShuffleMask(Mask, HalfSize, HalfSize))
+      return combineQR64Halves(DL, VT, V1, V2, DAG);
   }
 
   // Handle simple extract patterns: extract contiguous elements from a vector
