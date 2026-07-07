@@ -16,6 +16,7 @@
 #include "MCTargetDesc/RISCVMatInt.h"
 #include "RISCVISelLowering.h"
 #include "RISCVInstrInfo.h"
+#include "RISCVRegisterInfo.h"
 #include "RISCVSelectionDAGInfo.h"
 #include "llvm/CodeGen/MachineFrameInfo.h"
 #include "llvm/CodeGen/SDPatternMatch.h"
@@ -1173,36 +1174,20 @@ void RISCVDAGToDAGISel::selectESPVExtractSubvector(SDNode *Node, SDValue V,
   }
 
   // ESP32P4: Handle QR (v16i8) extract_subvector specially
-  // Extract 64-bit subregisters (index 0 for QR_L, index 8 for QR_H) from v16i8
   if (InVT == MVT::v16i8 && VT == MVT::v8i8) {
-    // First, ensure V is selected (it might be an SDNode that needs selection)
     if (!V.getNode()->isMachineOpcode()) {
       Select(V.getNode());
       V = SDValue(V.getNode(), V.getResNo());
     }
 
-    // Use appropriate subregister index based on extraction index
-    unsigned SubIdx;
-    if (Idx == 0) {
-      // Extract low 64-bit (QR_L)
-      SubIdx = RISCV::sub_qr_64;
-    } else if (Idx == 8) {
-      // Extract high 64-bit (QR_H)
-      SubIdx = RISCV::sub_qr_64_hi;
-    } else {
-      // Fall through to default handling for other indices
+    auto SubIdx =
+        getQR64SubRegIdxForExtractIndex(Idx, InVT.getVectorNumElements());
+    if (!SubIdx) {
       SelectCode(Node);
       return;
     }
 
-    SDValue SubIdxVal = CurDAG->getTargetConstant(SubIdx, DL, XLenVT);
-    // Create EXTRACT_SUBREG instruction
-    // The register class for the result is automatically determined by
-    // RISCVRegisterInfo::getSubClassWithSubReg, which returns QR_64RegClass for
-    // both sub_qr_64 (low 64-bit) and sub_qr_64_hi (high 64-bit). No need for
-    // explicit COPY_TO_REGCLASS. Note: V must be in QR register class, because
-    // we're extracting from a full 128-bit QR register. The result will be in
-    // QR_64RegClass (unified 64-bit register class, similar to AArch64 FPR64).
+    SDValue SubIdxVal = CurDAG->getTargetConstant(*SubIdx, DL, XLenVT);
     SDNode *ExtractNode = CurDAG->getMachineNode(TargetOpcode::EXTRACT_SUBREG,
                                                  DL, VT, V, SubIdxVal);
     ReplaceNode(Node, ExtractNode);
@@ -1211,6 +1196,51 @@ void RISCVDAGToDAGISel::selectESPVExtractSubvector(SDNode *Node, SDValue V,
 
   // If no ESPV special handling, fall back to default
   SelectCode(Node);
+}
+
+SDValue RISCVDAGToDAGISel::selectESPQR64HalfVec(SDValue Vec, unsigned SubIdx,
+                                                unsigned ExtractSubVecIdx,
+                                                const SDLoc &DL) {
+  MVT XLenVT = Subtarget->getXLenVT();
+
+  if (Vec.getValueType() == MVT::v8i8 &&
+      Vec.getOpcode() != ISD::EXTRACT_SUBVECTOR)
+    return Vec;
+
+  if (Vec.getOpcode() == ISD::EXTRACT_SUBVECTOR &&
+      Vec.getValueType() == MVT::v8i8 &&
+      Vec.getOperand(0).getValueType() == MVT::v16i8) {
+    unsigned Idx = cast<ConstantSDNode>(Vec.getOperand(1))->getZExtValue();
+    if (Idx == ExtractSubVecIdx) {
+      SDValue SrcVec = Vec.getOperand(0);
+      if (!SrcVec.getNode()->isMachineOpcode()) {
+        Select(SrcVec.getNode());
+        SrcVec = SDValue(SrcVec.getNode(), SrcVec.getResNo());
+      } else {
+        SrcVec = SDValue(SrcVec.getNode(), SrcVec.getResNo());
+      }
+      SDValue SubIdxVal = CurDAG->getTargetConstant(SubIdx, DL, XLenVT);
+      SDNode *ExtractNode = CurDAG->getMachineNode(
+          TargetOpcode::EXTRACT_SUBREG, DL, MVT::v8i8, SrcVec, SubIdxVal);
+      return SDValue(ExtractNode, 0);
+    }
+    Select(Vec.getNode());
+    return SDValue(Vec.getNode(), Vec.getResNo());
+  }
+
+  if (!Vec.getNode()->isMachineOpcode()) {
+    Select(Vec.getNode());
+    Vec = SDValue(Vec.getNode(), Vec.getResNo());
+  }
+
+  if (Vec.getValueType() == MVT::v16i8) {
+    SDValue SubIdxVal = CurDAG->getTargetConstant(SubIdx, DL, XLenVT);
+    SDNode *ExtractNode = CurDAG->getMachineNode(TargetOpcode::EXTRACT_SUBREG,
+                                                 DL, MVT::v8i8, Vec, SubIdxVal);
+    return SDValue(ExtractNode, 0);
+  }
+
+  return Vec;
 }
 
 void RISCVDAGToDAGISel::Select(SDNode *Node) {
@@ -3768,67 +3798,11 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
           ImmOp = Imm;
         }
       }
-  
-      // Handle Vec operand: similar to ESP_VST_128_IP_M, but need to handle subregister extraction
-      // Vec can be:
-      // 1. v8i8 from ESP_VLD_H_64_IP_M (already correct, use directly)
-      // 2. EXTRACT_SUBVECTOR from v16i8 (need to convert to EXTRACT_SUBREG)
-      // 3. v16i8 (need to extract sub_qr_64_hi)
-      SDValue ConstrainedVec = Vec;
-      
-      // If Vec is already v8i8 and not EXTRACT_SUBVECTOR, use it directly
-      // This handles the case where Vec comes from ESP_VLD_H_64_IP_M (first return value)
-      if (Vec.getValueType() == MVT::v8i8 && 
-          Vec.getOpcode() != ISD::EXTRACT_SUBVECTOR) {
-        // Already correct type, use directly (will be selected when used as operand)
-        ConstrainedVec = Vec;
-      }
-      // Check if Vec is an EXTRACT_SUBVECTOR node that needs to be processed
-      else if (Vec.getOpcode() == ISD::EXTRACT_SUBVECTOR && 
-               Vec.getValueType() == MVT::v8i8 &&
-               Vec.getOperand(0).getValueType() == MVT::v16i8) {
-        // Check the extraction index: 8 for high 64-bit, 0 for low 64-bit
-        unsigned Idx = cast<ConstantSDNode>(Vec.getOperand(1))->getZExtValue();
-        if (Idx == 8) {
-          // This is extracting high 64-bit from v16i8, which should be converted to EXTRACT_SUBREG
-          // Select the source vector first (it should be a QR register)
-          SDValue SrcVec = Vec.getOperand(0);
-          if (!SrcVec.getNode()->isMachineOpcode()) {
-            Select(SrcVec.getNode());
-            // After Select, the node may have been replaced, so get the new value
-            // Preserve the ResNo from original SrcVec to handle multi-value nodes correctly
-            SrcVec = SDValue(SrcVec.getNode(), SrcVec.getResNo());
-          } else {
-            // Already a machine node, preserve ResNo
-            SrcVec = SDValue(SrcVec.getNode(), SrcVec.getResNo());
-          }
-          // Extract high 64-bit subregister
-          SDValue SubIdx = CurDAG->getTargetConstant(RISCV::sub_qr_64_hi, DL, XLenVT);
-          SDNode *ExtractNode = CurDAG->getMachineNode(TargetOpcode::EXTRACT_SUBREG, DL, MVT::v8i8, SrcVec, SubIdx);
-          ConstrainedVec = SDValue(ExtractNode, 0);
-        } else {
-          // For other indices, select the EXTRACT_SUBVECTOR node normally
-          Select(Vec.getNode());
-          // Preserve the ResNo from original Vec to handle multi-value nodes correctly
-          ConstrainedVec = SDValue(Vec.getNode(), Vec.getResNo());
-        }
-      } else if (!Vec.getNode()->isMachineOpcode()) {
-        // If Vec is not a machine node yet, select it first
-        Select(Vec.getNode());
-        // Preserve the ResNo from original Vec to handle multi-value nodes correctly
-        ConstrainedVec = SDValue(Vec.getNode(), Vec.getResNo());
-      }
-      
-      // If Vec is still v16i8 (full 128-bit QR register), extract sub_qr_64_hi first
-      if (ConstrainedVec.getValueType() == MVT::v16i8) {
-        // Extract high 64-bit subregister from full QR register
-        SDValue SubIdx = CurDAG->getTargetConstant(RISCV::sub_qr_64_hi, DL, XLenVT);
-        SDNode *ExtractNode = CurDAG->getMachineNode(TargetOpcode::EXTRACT_SUBREG, DL, MVT::v8i8, ConstrainedVec, SubIdx);
-        ConstrainedVec = SDValue(ExtractNode, 0);
-      }
-      // If Vec is already v8i8, it should already be in QR_64RegClass from EXTRACT_SUBVECTOR processing.
-      // No need for COPY_TO_REGCLASS.
-  
+
+      SDValue ConstrainedVec = selectESPQR64HalfVec(
+          Vec, RISCV::sub_qr_64_hi,
+          getQR64HiExtractIndex(MVT::v16i8.getVectorNumElements()), DL);
+
       // Instruction outputs: (rs1r, chain) - chain is needed for mayStore instructions
       // Even though instruction definition only has 1 output, MachineNode needs chain for memory ordering
       SDVTList VTs = CurDAG->getVTList(XLenVT, MVT::Other);
@@ -3836,13 +3810,13 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       // Order: [instruction operands..., chain]
       SDValue Ops[] = {ConstrainedVec, Ptr, ImmOp, Chain};
       SDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_VST_H_64_IP, DL, VTs, Ops);
-  
+
       // Copy MMO from MemSDNode if present
       if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
         MachineMemOperand *MMO = MemNode->getMemOperand();
         CurDAG->setNodeMemRefs(cast<MachineSDNode>(NewNode), {MMO});
       }
-  
+
       // ReplaceNode automatically handles all return values: Node(0)->NewNode(0), Node(1)->NewNode(1)
       ReplaceNode(Node, NewNode);
       return true;
@@ -3856,67 +3830,11 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       SDValue Vec = Node->getOperand(1);
       SDValue Ptr = Node->getOperand(2);
       SDValue Reg = Node->getOperand(3);
-  
-      // Handle Vec operand: similar to ESP_VST_128_IP_M, but need to handle subregister extraction
-      // Vec can be:
-      // 1. v8i8 from ESP_VLD_H_64_XP_M (already correct, use directly)
-      // 2. EXTRACT_SUBVECTOR from v16i8 (need to convert to EXTRACT_SUBREG)
-      // 3. v16i8 (need to extract sub_qr_64_hi)
-      SDValue ConstrainedVec = Vec;
-      
-      // If Vec is already v8i8 and not EXTRACT_SUBVECTOR, use it directly
-      // This handles the case where Vec comes from ESP_VLD_H_64_XP_M (first return value)
-      if (Vec.getValueType() == MVT::v8i8 && 
-          Vec.getOpcode() != ISD::EXTRACT_SUBVECTOR) {
-        // Already correct type, use directly (will be selected when used as operand)
-        ConstrainedVec = Vec;
-      }
-      // Check if Vec is an EXTRACT_SUBVECTOR node that needs to be processed
-      else if (Vec.getOpcode() == ISD::EXTRACT_SUBVECTOR && 
-               Vec.getValueType() == MVT::v8i8 &&
-               Vec.getOperand(0).getValueType() == MVT::v16i8) {
-        // Check the extraction index: 8 for high 64-bit, 0 for low 64-bit
-        unsigned Idx = cast<ConstantSDNode>(Vec.getOperand(1))->getZExtValue();
-        if (Idx == 8) {
-          // This is extracting high 64-bit from v16i8, which should be converted to EXTRACT_SUBREG
-          // Select the source vector first (it should be a QR register)
-          SDValue SrcVec = Vec.getOperand(0);
-          if (!SrcVec.getNode()->isMachineOpcode()) {
-            Select(SrcVec.getNode());
-            // After Select, the node may have been replaced, so get the new value
-            // Preserve the ResNo from original SrcVec to handle multi-value nodes correctly
-            SrcVec = SDValue(SrcVec.getNode(), SrcVec.getResNo());
-          } else {
-            // Already a machine node, preserve ResNo
-            SrcVec = SDValue(SrcVec.getNode(), SrcVec.getResNo());
-          }
-          // Extract high 64-bit subregister
-          SDValue SubIdx = CurDAG->getTargetConstant(RISCV::sub_qr_64_hi, DL, XLenVT);
-          SDNode *ExtractNode = CurDAG->getMachineNode(TargetOpcode::EXTRACT_SUBREG, DL, MVT::v8i8, SrcVec, SubIdx);
-          ConstrainedVec = SDValue(ExtractNode, 0);
-        } else {
-          // For other indices, select the EXTRACT_SUBVECTOR node normally
-          Select(Vec.getNode());
-          // Preserve the ResNo from original Vec to handle multi-value nodes correctly
-          ConstrainedVec = SDValue(Vec.getNode(), Vec.getResNo());
-        }
-      } else if (!Vec.getNode()->isMachineOpcode()) {
-        // If Vec is not a machine node yet, select it first
-        Select(Vec.getNode());
-        // Preserve the ResNo from original Vec to handle multi-value nodes correctly
-        ConstrainedVec = SDValue(Vec.getNode(), Vec.getResNo());
-      }
-      
-      // If Vec is still v16i8 (full 128-bit QR register), extract sub_qr_64_hi first
-      if (ConstrainedVec.getValueType() == MVT::v16i8) {
-        // Extract high 64-bit subregister from full QR register
-        SDValue SubIdx = CurDAG->getTargetConstant(RISCV::sub_qr_64_hi, DL, XLenVT);
-        SDNode *ExtractNode = CurDAG->getMachineNode(TargetOpcode::EXTRACT_SUBREG, DL, MVT::v8i8, ConstrainedVec, SubIdx);
-        ConstrainedVec = SDValue(ExtractNode, 0);
-      }
-      // If Vec is already v8i8, it should already be in QR_64RegClass from EXTRACT_SUBVECTOR processing.
-      // No need for COPY_TO_REGCLASS.
-  
+
+      SDValue ConstrainedVec = selectESPQR64HalfVec(
+          Vec, RISCV::sub_qr_64_hi,
+          getQR64HiExtractIndex(MVT::v16i8.getVectorNumElements()), DL);
+
       // getMachineNode will automatically select operands if needed
       // Instruction outputs: (rs1r, chain) - chain is needed for mayStore instructions
       // Even though instruction definition only has 1 output, MachineNode needs chain for memory ordering
@@ -3925,13 +3843,13 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       // Order: [instruction operands..., chain]
       SDValue Ops[] = {Reg, ConstrainedVec, Ptr, Chain};
       SDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_VST_H_64_XP, DL, VTs, Ops);
-  
+
       // Copy MMO from MemSDNode if present
       if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
         MachineMemOperand *MMO = MemNode->getMemOperand();
         CurDAG->setNodeMemRefs(cast<MachineSDNode>(NewNode), {MMO});
       }
-  
+
       // ReplaceNode automatically handles all return values: Node(0)->NewNode(0), Node(1)->NewNode(1)
       ReplaceNode(Node, NewNode);
       return true;
@@ -4009,67 +3927,10 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
           ImmOp = Imm;
         }
       }
-  
-      // Handle Vec operand: similar to ESP_VST_128_IP_M, but need to handle subregister extraction
-      // Vec can be:
-      // 1. v8i8 from ESP_VLD_L_64_IP_M (already correct, use directly)
-      // 2. EXTRACT_SUBVECTOR from v16i8 (need to convert to EXTRACT_SUBREG)
-      // 3. v16i8 (need to extract sub_qr_64)
-      SDValue ConstrainedVec = Vec;
-      
-      // If Vec is already v8i8 and not EXTRACT_SUBVECTOR, use it directly
-      // This handles the case where Vec comes from ESP_VLD_L_64_IP_M (first return value)
-      if (Vec.getValueType() == MVT::v8i8 && 
-          Vec.getOpcode() != ISD::EXTRACT_SUBVECTOR) {
-        // Already correct type, use directly (will be selected when used as operand)
-        ConstrainedVec = Vec;
-      }
-      // Check if Vec is an EXTRACT_SUBVECTOR node that needs to be processed
-      else if (Vec.getOpcode() == ISD::EXTRACT_SUBVECTOR && 
-               Vec.getValueType() == MVT::v8i8 &&
-               Vec.getOperand(0).getValueType() == MVT::v16i8) {
-        // Check the extraction index: 8 for high 64-bit, 0 for low 64-bit
-        unsigned Idx = cast<ConstantSDNode>(Vec.getOperand(1))->getZExtValue();
-        if (Idx == 0) {
-          // This is extracting low 64-bit from v16i8, which should be converted to EXTRACT_SUBREG
-          // Select the source vector first (it should be a QR register)
-          SDValue SrcVec = Vec.getOperand(0);
-          if (!SrcVec.getNode()->isMachineOpcode()) {
-            Select(SrcVec.getNode());
-            // After Select, the node may have been replaced, so get the new value
-            // Preserve the ResNo from original SrcVec to handle multi-value nodes correctly
-            SrcVec = SDValue(SrcVec.getNode(), SrcVec.getResNo());
-          } else {
-            // Already a machine node, preserve ResNo
-            SrcVec = SDValue(SrcVec.getNode(), SrcVec.getResNo());
-          }
-          // Extract low 64-bit subregister
-          SDValue SubIdx = CurDAG->getTargetConstant(RISCV::sub_qr_64, DL, XLenVT);
-          SDNode *ExtractNode = CurDAG->getMachineNode(TargetOpcode::EXTRACT_SUBREG, DL, MVT::v8i8, SrcVec, SubIdx);
-          ConstrainedVec = SDValue(ExtractNode, 0);
-        } else {
-          // For other indices, select the EXTRACT_SUBVECTOR node normally
-          Select(Vec.getNode());
-          // Preserve the ResNo from original Vec to handle multi-value nodes correctly
-          ConstrainedVec = SDValue(Vec.getNode(), Vec.getResNo());
-        }
-      } else if (!Vec.getNode()->isMachineOpcode()) {
-        // If Vec is not a machine node yet, select it first
-        Select(Vec.getNode());
-        // Preserve the ResNo from original Vec to handle multi-value nodes correctly
-        ConstrainedVec = SDValue(Vec.getNode(), Vec.getResNo());
-      }
-      
-      // If Vec is still v16i8 (full 128-bit QR register), extract sub_qr_64 first
-      if (ConstrainedVec.getValueType() == MVT::v16i8) {
-        // Extract low 64-bit subregister from full QR register
-        SDValue SubIdx = CurDAG->getTargetConstant(RISCV::sub_qr_64, DL, XLenVT);
-        SDNode *ExtractNode = CurDAG->getMachineNode(TargetOpcode::EXTRACT_SUBREG, DL, MVT::v8i8, ConstrainedVec, SubIdx);
-        ConstrainedVec = SDValue(ExtractNode, 0);
-      }
-      // If Vec is already v8i8, it should already be in QR_64RegClass from EXTRACT_SUBVECTOR processing.
-      // No need for COPY_TO_REGCLASS.
-  
+
+      SDValue ConstrainedVec =
+          selectESPQR64HalfVec(Vec, RISCV::sub_qr_64, 0, DL);
+
       // Instruction outputs: (rs1r, chain) - chain is needed for mayStore instructions
       // Even though instruction definition only has 1 output, MachineNode needs chain for memory ordering
       SDVTList VTs = CurDAG->getVTList(XLenVT, MVT::Other);
@@ -4077,13 +3938,13 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       // Order: [instruction operands..., chain]
       SDValue Ops[] = {ConstrainedVec, Ptr, ImmOp, Chain};
       SDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_VST_L_64_IP, DL, VTs, Ops);
-  
+
       // Copy MMO from MemSDNode if present
       if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
         MachineMemOperand *MMO = MemNode->getMemOperand();
         CurDAG->setNodeMemRefs(cast<MachineSDNode>(NewNode), {MMO});
       }
-  
+
       // ReplaceNode automatically handles all return values: Node(0)->NewNode(0), Node(1)->NewNode(1)
       ReplaceNode(Node, NewNode);
       return true;
@@ -4097,67 +3958,10 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       SDValue Vec = Node->getOperand(1);
       SDValue Ptr = Node->getOperand(2);
       SDValue Reg = Node->getOperand(3);
-  
-      // Handle Vec operand: similar to ESP_VST_128_IP_M, but need to handle subregister extraction
-      // Vec can be:
-      // 1. v8i8 from ESP_VLD_L_64_XP_M (already correct, use directly)
-      // 2. EXTRACT_SUBVECTOR from v16i8 (need to convert to EXTRACT_SUBREG)
-      // 3. v16i8 (need to extract sub_qr_64)
-      SDValue ConstrainedVec = Vec;
-      
-      // If Vec is already v8i8 and not EXTRACT_SUBVECTOR, use it directly
-      // This handles the case where Vec comes from ESP_VLD_L_64_XP_M (first return value)
-      if (Vec.getValueType() == MVT::v8i8 && 
-          Vec.getOpcode() != ISD::EXTRACT_SUBVECTOR) {
-        // Already correct type, use directly (will be selected when used as operand)
-        ConstrainedVec = Vec;
-      }
-      // Check if Vec is an EXTRACT_SUBVECTOR node that needs to be processed
-      else if (Vec.getOpcode() == ISD::EXTRACT_SUBVECTOR && 
-               Vec.getValueType() == MVT::v8i8 &&
-               Vec.getOperand(0).getValueType() == MVT::v16i8) {
-        // Check the extraction index: 8 for high 64-bit, 0 for low 64-bit
-        unsigned Idx = cast<ConstantSDNode>(Vec.getOperand(1))->getZExtValue();
-        if (Idx == 0) {
-          // This is extracting low 64-bit from v16i8, which should be converted to EXTRACT_SUBREG
-          // Select the source vector first (it should be a QR register)
-          SDValue SrcVec = Vec.getOperand(0);
-          if (!SrcVec.getNode()->isMachineOpcode()) {
-            Select(SrcVec.getNode());
-            // After Select, the node may have been replaced, so get the new value
-            // Preserve the ResNo from original SrcVec to handle multi-value nodes correctly
-            SrcVec = SDValue(SrcVec.getNode(), SrcVec.getResNo());
-          } else {
-            // Already a machine node, preserve ResNo
-            SrcVec = SDValue(SrcVec.getNode(), SrcVec.getResNo());
-          }
-          // Extract low 64-bit subregister
-          SDValue SubIdx = CurDAG->getTargetConstant(RISCV::sub_qr_64, DL, XLenVT);
-          SDNode *ExtractNode = CurDAG->getMachineNode(TargetOpcode::EXTRACT_SUBREG, DL, MVT::v8i8, SrcVec, SubIdx);
-          ConstrainedVec = SDValue(ExtractNode, 0);
-        } else {
-          // For other indices, select the EXTRACT_SUBVECTOR node normally
-          Select(Vec.getNode());
-          // Preserve the ResNo from original Vec to handle multi-value nodes correctly
-          ConstrainedVec = SDValue(Vec.getNode(), Vec.getResNo());
-        }
-      } else if (!Vec.getNode()->isMachineOpcode()) {
-        // If Vec is not a machine node yet, select it first
-        Select(Vec.getNode());
-        // Preserve the ResNo from original Vec to handle multi-value nodes correctly
-        ConstrainedVec = SDValue(Vec.getNode(), Vec.getResNo());
-      }
-      
-      // If Vec is still v16i8 (full 128-bit QR register), extract sub_qr_64 first
-      if (ConstrainedVec.getValueType() == MVT::v16i8) {
-        // Extract low 64-bit subregister from full QR register
-        SDValue SubIdx = CurDAG->getTargetConstant(RISCV::sub_qr_64, DL, XLenVT);
-        SDNode *ExtractNode = CurDAG->getMachineNode(TargetOpcode::EXTRACT_SUBREG, DL, MVT::v8i8, ConstrainedVec, SubIdx);
-        ConstrainedVec = SDValue(ExtractNode, 0);
-      }
-      // If Vec is already v8i8, it should already be in QR_64RegClass from EXTRACT_SUBVECTOR processing.
-      // No need for COPY_TO_REGCLASS.
-  
+
+      SDValue ConstrainedVec =
+          selectESPQR64HalfVec(Vec, RISCV::sub_qr_64, 0, DL);
+
       // getMachineNode will automatically select operands if needed
       // Instruction outputs: (rs1r, chain) - chain is needed for mayStore instructions
       // Even though instruction definition only has 1 output, MachineNode needs chain for memory ordering

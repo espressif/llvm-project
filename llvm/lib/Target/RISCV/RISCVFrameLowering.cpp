@@ -1742,31 +1742,13 @@ static unsigned getScavSlotsNumForESPV(const MachineFunction &MF) {
     return 0;
 
   for (const MachineBasicBlock &MBB : MF)
-    for (const MachineInstr &MI : MBB)
-      switch (MI.getOpcode()) {
-      default:
-        break;
-      case RISCV::PseudoESP_VSPILL_128:
-      case RISCV::PseudoESP_VRELOAD_128:
-      case RISCV::PseudoESP_VSPILL_64:
-      case RISCV::PseudoESP_VRELOAD_64:
-      case RISCV::ESP_VST_128_IP:
-      case RISCV::ESP_VLD_128_IP:
-      case RISCV::ESP_VST_128_IP_2P2:
-      case RISCV::ESP_VLD_128_IP_2P2:
-      case RISCV::ESP_VST_H_64_IP:
-      case RISCV::ESP_VLD_H_64_IP:
-      case RISCV::ESP_VST_H_64_IP_2P2:
-      case RISCV::ESP_VLD_H_64_IP_2P2:
-      case RISCV::ESP_VST_L_64_IP:
-      case RISCV::ESP_VLD_L_64_IP:
-      case RISCV::ESP_VST_L_64_IP_2P2:
-      case RISCV::ESP_VLD_L_64_IP_2P2:
-        for (const MachineOperand &MO : MI.operands())
-          if (MO.isFI())
-            return 1;
-        break;
-      }
+    for (const MachineInstr &MI : MBB) {
+      if (!RISCVSubtarget::isESPVFrameIndexSpillOpcode(MI.getOpcode()))
+        continue;
+      for (const MachineOperand &MO : MI.operands())
+        if (MO.isFI())
+          return 1;
+    }
 
   return 0;
 }

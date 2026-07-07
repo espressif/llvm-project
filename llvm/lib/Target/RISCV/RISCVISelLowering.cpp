@@ -97,23 +97,6 @@ static const unsigned ZvfbfaOps[] = {
     ISD::FSUB,        ISD::FMUL,        ISD::FMINNUM,   ISD::FMAXNUM,
     ISD::FMINIMUMNUM, ISD::FMAXIMUMNUM, ISD::FMINIMUM,  ISD::FMAXIMUM,
     ISD::FMA};
-/// Extract WordIndex-th 32-bit lane from a scalar integer (power-of-2 bits).
-/// Uses SRL+TRUNCATE so RV32 never materializes an illegal i64 via
-/// EXTRACT_ELEMENT(i128 -> i64).
-static SDValue extractScalarI32Word(SelectionDAG &DAG, SDValue Val, EVT ValVT,
-                                    unsigned WordIndex, const SDLoc &DL) {
-  assert(ValVT.isInteger() && !ValVT.isVector() && "Expected scalar integer");
-  unsigned Bits = ValVT.getFixedSizeInBits();
-  assert(WordIndex * 32 < Bits && (Bits % 32) == 0 && isPowerOf2_32(Bits) &&
-         "Expected i32-aligned power-of-2 scalar");
-  if (Bits == 32)
-    return Val;
-  const TargetLowering &TLI = DAG.getTargetLoweringInfo();
-  EVT ShiftTy = TLI.getShiftAmountTy(ValVT, DAG.getDataLayout());
-  SDValue ShAmt = DAG.getConstant(WordIndex * 32, DL, ShiftTy);
-  SDValue Shifted = DAG.getNode(ISD::SRL, DL, ValVT, Val, ShAmt);
-  return DAG.getNode(ISD::TRUNCATE, DL, MVT::i32, Shifted);
-}
 
 RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
                                          const RISCVSubtarget &STI)
@@ -8927,39 +8910,9 @@ SDValue RISCVTargetLowering::LowerOperation(SDValue Op,
   case ISD::VECTOR_SHUFFLE:
     return lowerVECTOR_SHUFFLE(Op, DAG, Subtarget);
   case ISD::CONCAT_VECTORS: {
-    // ESP32P4 PIE: Handle CONCAT_VECTORS for fixed-length vectors
-    // Convert CONCAT_VECTORS directly to INSERT_SUBREG for QR registers
-    if (Subtarget.hasVendorXespv() && Op.getSimpleValueType().isFixedLengthVector()) {
-      MVT VT = Op.getSimpleValueType();
-      SDLoc DL(Op);
-      
-      // Handle CONCAT_VECTORS of two 64-bit vectors into 128-bit QR register
-      if (Op.getNumOperands() == 2) {
-        SDValue Lo = Op.getOperand(0);
-        SDValue Hi = Op.getOperand(1);
-        MVT LoVT = Lo.getSimpleValueType();
-        MVT HiVT = Hi.getSimpleValueType();
-        
-        // Check if both operands are 64-bit vectors and result is 128-bit
-        if (LoVT == MVT::v8i8 && HiVT == MVT::v8i8 && VT == MVT::v16i8) {
-          // Use INSERT_SUBREG to combine QR_L and QR_H into QR
-          SDValue Undef = DAG.getUNDEF(VT);
-          SDValue Vec = DAG.getTargetInsertSubreg(RISCV::sub_qr_64, DL, VT, Undef, Lo);
-          return DAG.getTargetInsertSubreg(RISCV::sub_qr_64_hi, DL, VT, Vec, Hi);
-        }
-        if (LoVT == MVT::v4i16 && HiVT == MVT::v4i16 && VT == MVT::v8i16) {
-          SDValue Undef = DAG.getUNDEF(VT);
-          SDValue Vec = DAG.getTargetInsertSubreg(RISCV::sub_qr_64, DL, VT, Undef, Lo);
-          return DAG.getTargetInsertSubreg(RISCV::sub_qr_64_hi, DL, VT, Vec, Hi);
-        }
-        if (LoVT == MVT::v2i32 && HiVT == MVT::v2i32 && VT == MVT::v4i32) {
-          SDValue Undef = DAG.getUNDEF(VT);
-          SDValue Vec = DAG.getTargetInsertSubreg(RISCV::sub_qr_64, DL, VT, Undef, Lo);
-          return DAG.getTargetInsertSubreg(RISCV::sub_qr_64_hi, DL, VT, Vec, Hi);
-        }
-      }
-    }
-  
+    if (SDValue V = RISCV::lowerESPVConcatVectors(Op, DAG, Subtarget))
+      return V;
+
     // Split CONCAT_VECTORS into a series of INSERT_SUBVECTOR nodes. This is
     // better than going through the stack, as the default expansion does.
     SDLoc DL(Op);
@@ -10828,23 +10781,8 @@ SDValue RISCVTargetLowering::lowerVectorMaskExt(SDValue Op, SelectionDAG &DAG,
   assert(Src.getValueType().isVector() &&
          Src.getValueType().getVectorElementType() == MVT::i1);
 
-  // ESPV: scalarize lane-wise (no RVV vector length).
-  if (Subtarget.hasESPVTargetLowering()) {
-    assert(VecVT.isFixedLengthVector() &&
-           "Unexpected scalable mask ext on ESPV");
-    MVT DstEltVT = VecVT.getVectorElementType();
-    unsigned NumElts = VecVT.getVectorNumElements();
-    SmallVector<SDValue, 16> Elts;
-    Elts.reserve(NumElts);
-    SDValue TrueVal = DAG.getSignedConstant(ExtTrueVal, DL, DstEltVT);
-    SDValue ZeroVal = DAG.getConstant(0, DL, DstEltVT);
-    for (unsigned I = 0; I != NumElts; ++I) {
-      SDValue EltI1 = DAG.getExtractVectorElt(DL, MVT::i1, Src, I);
-      SDValue Elt = DAG.getSelect(DL, DstEltVT, EltI1, TrueVal, ZeroVal);
-      Elts.push_back(Elt);
-    }
-    return DAG.getBuildVector(VecVT, DL, Elts);
-  }
+  if (Subtarget.hasESPVTargetLowering())
+    return RISCV::lowerESPVVectorMaskExt(Op, DAG, Subtarget, ExtTrueVal);
 
   if (VecVT.isScalableVector()) {
     SDValue SplatZero = DAG.getConstant(0, DL, VecVT);
@@ -10907,21 +10845,8 @@ SDValue RISCVTargetLowering::lowerVectorMaskTruncLike(SDValue Op,
   SDValue Src = Op.getOperand(0);
   MVT VecVT = Src.getSimpleValueType();
 
-  // ESPV: scalarize lane-wise (matches packed-bool trunc-store).
-  if (Subtarget.hasESPVTargetLowering()) {
-    assert(!IsVPTrunc && "Unexpected VP truncate for ESPV mask lowering");
-    MVT SrcEltVT = VecVT.getVectorElementType();
-    unsigned NumElts = MaskVT.getVectorNumElements();
-    SmallVector<SDValue, 16> Elts;
-    Elts.reserve(NumElts);
-    for (unsigned I = 0; I != NumElts; ++I) {
-      SDValue Elt = DAG.getExtractVectorElt(DL, SrcEltVT, Src, I);
-      Elt = DAG.getNode(ISD::AND, DL, SrcEltVT, Elt,
-                        DAG.getConstant(1, DL, SrcEltVT));
-      Elts.push_back(DAG.getNode(ISD::TRUNCATE, DL, MVT::i1, Elt));
-    }
-    return DAG.getBuildVector(MaskVT.getSimpleVT(), DL, Elts);
-  }
+  if (Subtarget.hasESPVTargetLowering())
+    return RISCV::lowerESPVVectorMaskTrunc(Op, DAG, Subtarget);
 
   SDValue Mask, VL;
   if (IsVPTrunc) {
@@ -13013,53 +12938,9 @@ SDValue RISCVTargetLowering::lowerEXTRACT_SUBVECTOR(SDValue Op,
   SDLoc DL(Op);
   MVT XLenVT = Subtarget.getXLenVT();
   unsigned OrigIdx = Op.getConstantOperandVal(1);
-  const RISCVRegisterInfo *TRI = Subtarget.getRegisterInfo();
 
-  // ESP32P4 PIE: Handle extract_subvector for fixed-length vectors
-  // This includes QR registers (128-bit) and QACC pairs (512-bit)
-  if (Subtarget.hasVendorXespv() && VecVT.isFixedLengthVector() &&
-      SubVecVT.isFixedLengthVector()) {
-    // ESPV: Handle v64i8 -> v32i8 (QACC extraction)
-    // Extract QACC_L (index 0) or QACC_H (index 32) from v64i8
-    if (VecVT == MVT::v64i8 && SubVecVT == MVT::v32i8) {
-      // Return EXTRACT_SUBVECTOR node - let type legalizer handle v64i8 splitting
-      // The instruction selector will match it to EXTRACT_SUBREG based on register class
-      return Op;
-    }
-    // Extract low 64-bit: v4i32 -> v2i32 (index 0)
-    if (OrigIdx == 0 && VecVT == MVT::v4i32 && SubVecVT == MVT::v2i32) {
-      return DAG.getTargetExtractSubreg(RISCV::sub_qr_64, DL, SubVecVT, Vec);
-    }
-    // Extract high 64-bit: v4i32 -> v2i32 (index 2)
-    if (OrigIdx == 2 && VecVT == MVT::v4i32 && SubVecVT == MVT::v2i32) {
-      return DAG.getTargetExtractSubreg(RISCV::sub_qr_64_hi, DL, SubVecVT, Vec);
-    }
-    // Extract low 64-bit: v8i16 -> v4i16 (index 0)
-    if (OrigIdx == 0 && VecVT == MVT::v8i16 && SubVecVT == MVT::v4i16) {
-      return DAG.getTargetExtractSubreg(RISCV::sub_qr_64, DL, SubVecVT, Vec);
-    }
-    // Extract high 64-bit: v8i16 -> v4i16 (index 4)
-    if (OrigIdx == 4 && VecVT == MVT::v8i16 && SubVecVT == MVT::v4i16) {
-      return DAG.getTargetExtractSubreg(RISCV::sub_qr_64_hi, DL, SubVecVT, Vec);
-    }
-    // Extract low 64-bit: v16i8 -> v8i8 (index 0)
-    if (OrigIdx == 0 && VecVT == MVT::v16i8 && SubVecVT == MVT::v8i8) {
-      return DAG.getTargetExtractSubreg(RISCV::sub_qr_64, DL, SubVecVT, Vec);
-    }
-    // Extract high 64-bit: v16i8 -> v8i8 (index 8)
-    if (OrigIdx == 8 && VecVT == MVT::v16i8 && SubVecVT == MVT::v8i8) {
-      return DAG.getTargetExtractSubreg(RISCV::sub_qr_64_hi, DL, SubVecVT, Vec);
-    }
-    // ESPV: Handle v32i8 -> v16i8 (QACC_L/QACC_H subregister extraction)
-    // Extract QACC_L[127:0] (low 128 bits, index 0) or QACC_L[255:128] (high 128 bits, index 16)
-    // Note: We return the EXTRACT_SUBVECTOR node directly here. The type legalizer will handle
-    // the v32i8 -> v16i8 extraction by splitting v32i8 into two v16i8 parts, and the instruction
-    // selector will match it to the appropriate subregister operation based on the register class.
-    if (VecVT == MVT::v32i8 && SubVecVT == MVT::v16i8) {
-      // Return EXTRACT_SUBVECTOR node - let type legalizer handle v32i8 splitting
-      return Op;
-    }
-  }
+  if (SDValue V = RISCV::lowerESPVExtractSubvector(Op, DAG, Subtarget))
+    return V;
 
   // With an index of 0 this is a cast-like subvector, which can be performed
   // with subregister operations.
@@ -13148,6 +13029,7 @@ SDValue RISCVTargetLowering::lowerEXTRACT_SUBVECTOR(SDValue Op,
   if (SubVecVT.isFixedLengthVector())
     ContainerSubVecVT = getContainerForFixedLengthVector(SubVecVT);
 
+  const RISCVRegisterInfo *TRI = Subtarget.getRegisterInfo();
   unsigned SubRegIdx;
   ElementCount RemIdx;
   // extract_subvector scales the index by vscale if the subvector is scalable,

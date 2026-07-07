@@ -520,8 +520,7 @@ void RISCVRegisterInfo::lowerESPVSPILL(MachineBasicBlock::iterator II) const {
       .addReg(Base)
       .addImm(Offset);
 
-  unsigned OpcVst =
-      STI.hasVendorXespv() ? RISCV::ESP_VST_128_IP_2P2 : RISCV::ESP_VST_128_IP;
+  unsigned OpcVst = STI.getESPSpill128Opcode();
   BuildMI(MBB, II, DL, TII->get(OpcVst))
       .addReg(TempReg, RegState::Define | RegState::Dead)
       .addReg(SrcReg, getKillRegState(II->getOperand(0).isKill()))
@@ -549,8 +548,7 @@ void RISCVRegisterInfo::lowerESPVRELOAD(MachineBasicBlock::iterator II) const {
       .addReg(Base)
       .addImm(Offset);
 
-  unsigned OpcVld =
-      STI.hasVendorXespv() ? RISCV::ESP_VLD_128_IP_2P2 : RISCV::ESP_VLD_128_IP;
+  unsigned OpcVld = STI.getESPReload128Opcode();
   BuildMI(MBB, II, DL, TII->get(OpcVld))
       .addReg(DstReg, RegState::Define)
       .addReg(TempReg, RegState::Define | RegState::Dead)
@@ -579,8 +577,7 @@ void RISCVRegisterInfo::lowerESPVSPILL_64(
       .addReg(Base)
       .addImm(Offset);
 
-  unsigned OpcVst = STI.hasVendorXespv() ? RISCV::ESP_VST_L_64_IP_2P2
-                                         : RISCV::ESP_VST_L_64_IP;
+  unsigned OpcVst = STI.getESPSpillL64Opcode();
   BuildMI(MBB, II, DL, TII->get(OpcVst))
       .addReg(TempReg, RegState::Define | RegState::Dead)
       .addReg(SrcReg, getKillRegState(II->getOperand(0).isKill()))
@@ -609,8 +606,7 @@ void RISCVRegisterInfo::lowerESPVRELOAD_64(
       .addReg(Base)
       .addImm(Offset);
 
-  unsigned OpcVld = STI.hasVendorXespv() ? RISCV::ESP_VLD_L_64_IP_2P2
-                                         : RISCV::ESP_VLD_L_64_IP;
+  unsigned OpcVld = STI.getESPReloadL64Opcode();
   BuildMI(MBB, II, DL, TII->get(OpcVld))
       .addReg(DstReg, RegState::Define)
       .addReg(TempReg, RegState::Define | RegState::Dead)

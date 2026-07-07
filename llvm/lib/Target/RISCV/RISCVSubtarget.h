@@ -177,6 +177,44 @@ public:
     return hasVendorXespv1v() && hasVendorXespvLowering();
   }
 
+  unsigned getESPSpill128Opcode() const {
+    return hasVendorXespv() ? RISCV::ESP_VST_128_IP_2P2 : RISCV::ESP_VST_128_IP;
+  }
+  unsigned getESPReload128Opcode() const {
+    return hasVendorXespv() ? RISCV::ESP_VLD_128_IP_2P2 : RISCV::ESP_VLD_128_IP;
+  }
+  unsigned getESPSpillL64Opcode() const {
+    return hasVendorXespv() ? RISCV::ESP_VST_L_64_IP_2P2
+                            : RISCV::ESP_VST_L_64_IP;
+  }
+  unsigned getESPReloadL64Opcode() const {
+    return hasVendorXespv() ? RISCV::ESP_VLD_L_64_IP_2P2
+                            : RISCV::ESP_VLD_L_64_IP;
+  }
+  static bool isESPVFrameIndexSpillOpcode(unsigned Opc) {
+    switch (Opc) {
+    case RISCV::PseudoESP_VSPILL_128:
+    case RISCV::PseudoESP_VRELOAD_128:
+    case RISCV::PseudoESP_VSPILL_64:
+    case RISCV::PseudoESP_VRELOAD_64:
+    case RISCV::ESP_VST_128_IP:
+    case RISCV::ESP_VLD_128_IP:
+    case RISCV::ESP_VST_128_IP_2P2:
+    case RISCV::ESP_VLD_128_IP_2P2:
+    case RISCV::ESP_VST_H_64_IP:
+    case RISCV::ESP_VLD_H_64_IP:
+    case RISCV::ESP_VST_H_64_IP_2P2:
+    case RISCV::ESP_VLD_H_64_IP_2P2:
+    case RISCV::ESP_VST_L_64_IP:
+    case RISCV::ESP_VLD_L_64_IP:
+    case RISCV::ESP_VST_L_64_IP_2P2:
+    case RISCV::ESP_VLD_L_64_IP_2P2:
+      return true;
+    default:
+      return false;
+    }
+  }
+
   LLVM_DEPRECATED("Now Equivalent to hasStdExtZca", "hasStdExtZca")
   bool hasStdExtCOrZca() const { return HasStdExtZca; }
   bool hasStdExtCOrZcd() const { return HasStdExtC || HasStdExtZcd; }

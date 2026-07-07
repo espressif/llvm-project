@@ -204,7 +204,9 @@ private:
   bool selectImm64IfCheaper(int64_t Imm, int64_t OrigImm, SDValue N,
                             SDValue &Val);
   void selectESPVExtractSubvector(SDNode *Node, SDValue V, uint64_t Idx,
-    MVT InVT, MVT VT, SDLoc DL);
+                                  MVT InVT, MVT VT, SDLoc DL);
+  SDValue selectESPQR64HalfVec(SDValue Vec, unsigned SubIdx,
+                               unsigned ExtractSubVecIdx, const SDLoc &DL);
 };
 
 class RISCVDAGToDAGISelLegacy : public SelectionDAGISelLegacy {

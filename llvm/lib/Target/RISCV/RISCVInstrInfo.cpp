@@ -715,7 +715,7 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
   // XACC is a special 40-bit accumulator register, split into:
   // - XACC_LOW: XACC[31:0] (32-bit)
   // - XACC_HIGH: XACC[39:32] (8-bit, modeled as i32)
-  
+
   // Check if source or destination is XACC subregister
   bool DstIsXACC = RISCV::XACCRegRegClass.contains(DstReg) ||
                    RISCV::XACC_LOWRegClass.contains(DstReg) ||
@@ -725,7 +725,7 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
                    RISCV::XACC_HIGHRegClass.contains(SrcReg);
   bool DstIsGPR = RISCV::GPRRegClass.contains(DstReg);
   bool SrcIsGPR = RISCV::GPRRegClass.contains(SrcReg);
-  
+
   // XACC subregister -> GPR: Use MOVX.R instruction
   if (DstIsGPR && SrcIsXACC) {
     if (RISCV::XACC_HIGHRegClass.contains(SrcReg)) {
@@ -741,7 +741,7 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
       return;
     }
   }
-  
+
   // GPR -> XACC subregister: Use MOVX.W instruction
   if (DstIsXACC && SrcIsGPR) {
     if (RISCV::XACC_HIGHRegClass.contains(DstReg)) {
@@ -756,7 +756,7 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
       return;
     }
   }
-  
+
   // XACCReg -> XACCReg: Use COPY directly (same register class)
   if (RISCV::XACCRegRegClass.contains(DstReg, SrcReg)) {
     BuildMI(MBB, MBBI, DL, get(RISCV::COPY), DstReg)
@@ -779,40 +779,20 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
   // Handle QR register copies (ESP32P4)
   // QR registers are 128-bit, split into two 64-bit subregisters
   if (RISCV::QRRegClass.contains(DstReg, SrcReg)) {
-    // Copy low 64-bit subregister
-    MCRegister SrcLow = TRI->getSubReg(SrcReg, RISCV::sub_qr_64);
-    MCRegister DstLow = TRI->getSubReg(DstReg, RISCV::sub_qr_64);
-    BuildMI(MBB, MBBI, DL, get(RISCV::COPY), DstLow)
-        .addReg(SrcLow, KillFlag);
-    
-    // Copy high 64-bit subregister
-    MCRegister SrcHigh = TRI->getSubReg(SrcReg, RISCV::sub_qr_64_hi);
-    MCRegister DstHigh = TRI->getSubReg(DstReg, RISCV::sub_qr_64_hi);
-    BuildMI(MBB, MBBI, DL, get(RISCV::COPY), DstHigh)
-        .addReg(SrcHigh, KillFlag);
+    for (unsigned SubIdx : {RISCV::sub_qr_64, RISCV::sub_qr_64_hi}) {
+      BuildMI(MBB, MBBI, DL, get(RISCV::COPY), TRI->getSubReg(DstReg, SubIdx))
+          .addReg(TRI->getSubReg(SrcReg, SubIdx), KillFlag);
+    }
     return;
   }
 
   // Handle QR -> QR_64 copies (ESP32P4)
-  // When copying from QR to QR_64, use EXTRACT_SUBREG instead of COPY
-  // Determine which subregister index to use based on the destination register
-  if (RISCV::QRRegClass.contains(SrcReg) && RISCV::QR_64RegClass.contains(DstReg)) {
-    // Determine subregister index by checking if DstReg is D0 (low) or D1 (high)
-    // D0 registers: Q0_D0-Q7_D0 (encoding 0-7)
-    // D1 registers: Q0_D1-Q7_D1 (encoding 8-15)
-    MCRegister DstRegNum = DstReg;
-    if (DstRegNum >= RISCV::Q0_D0 && DstRegNum <= RISCV::Q7_D0) {
-      // Low 64-bit subregister
+  if (RISCV::QRRegClass.contains(SrcReg) &&
+      RISCV::QR_64RegClass.contains(DstReg)) {
+    if (auto SubIdx = getQR64LaneSubIdx(DstReg)) {
       BuildMI(MBB, MBBI, DL, get(TargetOpcode::EXTRACT_SUBREG), DstReg)
           .addReg(SrcReg, KillFlag | getRenamableRegState(RenamableSrc))
-          .addImm(RISCV::sub_qr_64);
-      return;
-    } 
-    if (DstRegNum >= RISCV::Q0_D1 && DstRegNum <= RISCV::Q7_D1) {
-      // High 64-bit subregister
-      BuildMI(MBB, MBBI, DL, get(TargetOpcode::EXTRACT_SUBREG), DstReg)
-          .addReg(SrcReg, KillFlag | getRenamableRegState(RenamableSrc))
-          .addImm(RISCV::sub_qr_64_hi);
+          .addImm(*SubIdx);
       return;
     }
   }
@@ -820,24 +800,19 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
   // Handle QR_64 -> QR copies (ESP32P4). Mirror EXTRACT_SUBREG above.
   if (RISCV::QR_64RegClass.contains(SrcReg) &&
       RISCV::QRRegClass.contains(DstReg)) {
-    MCRegister SrcRegNum = SrcReg;
-    unsigned SubIdx = 0;
-    if (SrcRegNum >= RISCV::Q0_D0 && SrcRegNum <= RISCV::Q7_D0)
-      SubIdx = RISCV::sub_qr_64;
-    else if (SrcRegNum >= RISCV::Q0_D1 && SrcRegNum <= RISCV::Q7_D1)
-      SubIdx = RISCV::sub_qr_64_hi;
-    else
+    auto SubIdx = getQR64LaneSubIdx(SrcReg);
+    if (!SubIdx)
       llvm_unreachable("Unexpected QR_64 source register");
 
     // Super-register already contains this sub-register (e.g. COPY $q0,
     // $q0_d0).
-    if (TRI->getSubReg(DstReg, SubIdx) == SrcRegNum)
+    if (TRI->getSubReg(DstReg, *SubIdx) == MCRegister(SrcReg))
       return;
 
     BuildMI(MBB, MBBI, DL, get(TargetOpcode::INSERT_SUBREG), DstReg)
         .addReg(DstReg)
         .addReg(SrcReg, KillFlag | getRenamableRegState(RenamableSrc))
-        .addImm(SubIdx);
+        .addImm(*SubIdx);
     return;
   }
 
@@ -850,17 +825,14 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
 
     auto getQRSuperAndBaseLane = [&](Register Reg, Register &SuperReg,
                                      unsigned &BaseLane) -> bool {
-      if ((SuperReg = TRI->getMatchingSuperReg(Reg, RISCV::sub_qr_64,
-                                               &RISCV::QRRegClass))) {
-        BaseLane = 0;
-        return true;
-      }
-      if ((SuperReg = TRI->getMatchingSuperReg(Reg, RISCV::sub_qr_64_hi,
-                                               &RISCV::QRRegClass))) {
-        BaseLane = 2;
-        return true;
-      }
-      return false;
+      auto SubIdx = getQR64LaneSubIdx(Reg);
+      if (!SubIdx)
+        return false;
+      SuperReg = TRI->getMatchingSuperReg(Reg, *SubIdx, &RISCV::QRRegClass);
+      if (!SuperReg)
+        return false;
+      BaseLane = (*SubIdx == RISCV::sub_qr_64) ? 0u : 2u;
+      return true;
     };
 
     Register DstSuper, SrcSuper;
