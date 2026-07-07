@@ -24,6 +24,24 @@ using namespace llvm::PatternMatch;
 
 #define DEBUG_TYPE "riscvtti"
 
+static bool shouldUseNonRVVFixedVectorCost(const RISCVSubtarget *ST, Type *Ty) {
+  if (!isa<FixedVectorType>(Ty))
+    return false;
+  return ST->enablePExtSIMDCodeGen() || ST->hasESPVTargetLowering();
+}
+
+static bool shouldUseNonRVVFixedVectorCost(const RISCVSubtarget *ST, MVT VT) {
+  if (!VT.isFixedLengthVector())
+    return false;
+  return ST->enablePExtSIMDCodeGen() || ST->hasESPVTargetLowering();
+}
+
+static InstructionCost getScalarizedFixedVectorCost(Type *Ty,
+                                                    unsigned CostPerElement) {
+  auto *FixedVTy = cast<FixedVectorType>(Ty);
+  return FixedVTy->getNumElements() * CostPerElement;
+}
+
 static cl::opt<unsigned> RVVRegisterWidthLMUL(
     "riscv-v-register-bit-width-lmul",
     cl::desc(
@@ -44,14 +62,6 @@ static cl::opt<unsigned>
                              "vectorization while tail-folding."),
                     cl::init(5), cl::Hidden);
 
-// Fixed vectors without RVV (P-ext SIMD or ESPV QR types) must not reach RVV
-// cost helpers that call getMinRVVVectorSizeInBits().
-static bool skipFixedVectorTTICostWithoutRVV(const RISCVSubtarget &ST,
-                                             bool IsFixedVector) {
-  return IsFixedVector && !ST.hasVInstructions() &&
-         (ST.enablePExtSIMDCodeGen() || ST.hasVendorXespv());
-}
-
 InstructionCost
 RISCVTTIImpl::getRISCVInstructionCost(ArrayRef<unsigned> OpCodes, MVT VT,
                                       TTI::TargetCostKind CostKind) const {
@@ -60,6 +70,8 @@ RISCVTTIImpl::getRISCVInstructionCost(ArrayRef<unsigned> OpCodes, MVT VT,
     return InstructionCost::getInvalid();
   size_t NumInstr = OpCodes.size();
   if (CostKind == TTI::TCK_CodeSize)
+    return NumInstr;
+  if (shouldUseNonRVVFixedVectorCost(ST, VT))
     return NumInstr;
   InstructionCost LMULCost = TLI->getLMULCost(VT);
   if ((CostKind != TTI::TCK_RecipThroughput) && (CostKind != TTI::TCK_Latency))
@@ -683,18 +695,20 @@ RISCVTTIImpl::getShuffleCost(TTI::ShuffleKind Kind, VectorType *DstTy,
   assert(SrcTy->getScalarType() == DstTy->getScalarType() &&
          "Expected the same scalar types");
 
-  if (skipFixedVectorTTICostWithoutRVV(*ST, isa<FixedVectorType>(SrcTy)))
-    return BaseT::getShuffleCost(Kind, DstTy, SrcTy, Mask, CostKind, Index,
-                                 SubTp, Args, CxtI);
-
   Kind = improveShuffleKindFromMask(Kind, Mask, SrcTy, Index, SubTp);
   std::pair<InstructionCost, MVT> LT = getTypeLegalizationCost(SrcTy);
+
+  // P/ESPV fixed vectors are not RVV vectors. Avoid
+  // getContainerForFixedLengthVector.
+  if (shouldUseNonRVVFixedVectorCost(ST, SrcTy))
+    return getScalarizedFixedVectorCost(SrcTy, 1);
 
   // First, handle cases where having a fixed length vector enables us to
   // give a more accurate cost than falling back to generic scalable codegen.
   // TODO: Each of these cases hints at a modeling gap around scalable vectors.
   if (auto *FVTp = dyn_cast<FixedVectorType>(SrcTy);
-      FVTp && ST->hasVInstructions() && LT.second.isFixedLengthVector()) {
+      FVTp && ST->useRVVForFixedLengthVectors() &&
+      LT.second.isFixedLengthVector()) {
     InstructionCost VRegSplittingCost = costShuffleViaVRegSplitting(
         *this, LT.second, ST->getRealVLen(),
         Kind == TTI::SK_InsertSubvector ? DstTy : SrcTy, Mask, CostKind);
@@ -1001,11 +1015,10 @@ InstructionCost RISCVTTIImpl::getScalarizationOverhead(
   if (isa<ScalableVectorType>(Ty))
     return InstructionCost::getInvalid();
 
-  // TODO: Add proper cost model for P-ext / ESPV fixed vectors (e.g., v4i16)
-  // For now, skip fixed vector cost analysis without RVV to avoid crashes in
-  // getMinRVVVectorSizeInBits().
-  if (skipFixedVectorTTICostWithoutRVV(*ST, isa<FixedVectorType>(Ty)))
-    return 1; // Treat as single instruction cost for now
+  // P/ESPV fixed vectors are not RVV vectors. Use a conservative scalarized
+  // estimate until the target has a dedicated cost model for these types.
+  if (shouldUseNonRVVFixedVectorCost(ST, Ty))
+    return getScalarizedFixedVectorCost(Ty, Insert + Extract);
 
   // A build_vector (which is m1 sized or smaller) can be done in no
   // worse than one vslide1down.vx per element in the type.  We could
@@ -1722,12 +1735,17 @@ InstructionCost RISCVTTIImpl::getCastInstrCost(unsigned Opcode, Type *Dst,
   if (!IsVectorType)
     return BaseT::getCastInstrCost(Opcode, Dst, Src, CCH, CostKind, I);
 
-  // TODO: Add proper cost model for P-ext / ESPV fixed vectors (e.g., v4i16)
-  // For now, skip fixed vector cost analysis without RVV to avoid crashes in
-  // getMinRVVVectorSizeInBits().
-  if (skipFixedVectorTTICostWithoutRVV(*ST, isa<FixedVectorType>(Dst) ||
-                                                isa<FixedVectorType>(Src)))
-    return 1; // Treat as single instruction cost for now
+  // P/ESPV fixed vectors are not RVV vectors. Avoid RVV LMUL-based costs.
+  if (shouldUseNonRVVFixedVectorCost(ST, Dst) ||
+      shouldUseNonRVVFixedVectorCost(ST, Src)) {
+    unsigned DstElements = isa<FixedVectorType>(Dst)
+                               ? cast<FixedVectorType>(Dst)->getNumElements()
+                               : 1;
+    unsigned SrcElements = isa<FixedVectorType>(Src)
+                               ? cast<FixedVectorType>(Src)->getNumElements()
+                               : 1;
+    return std::max(DstElements, SrcElements);
+  }
 
   // FIXME: Need to compute legalizing cost for illegal types.  The current
   // code handles only legal types and those which can be trivially
@@ -2221,6 +2239,9 @@ InstructionCost RISCVTTIImpl::getMemoryOpCost(unsigned Opcode, Type *Src,
   if (Opcode == Instruction::Store && OpInfo.isConstant())
     Cost += getStoreImmCost(Src, OpInfo, CostKind);
 
+  if (shouldUseNonRVVFixedVectorCost(ST, Src))
+    return Cost + getScalarizedFixedVectorCost(Src, 1);
+
   std::pair<InstructionCost, MVT> LT = getTypeLegalizationCost(Src);
 
   InstructionCost BaseCost = [&]() {
@@ -2427,11 +2448,10 @@ InstructionCost RISCVTTIImpl::getVectorInstrCost(unsigned Opcode, Type *Val,
                                                  const Value *Op1) const {
   assert(Val->isVectorTy() && "This must be a vector type");
 
-  // TODO: Add proper cost model for P-ext / ESPV fixed vectors (e.g., v4i16)
-  // For now, skip fixed vector cost analysis without RVV to avoid crashes in
-  // getMinRVVVectorSizeInBits().
-  if (skipFixedVectorTTICostWithoutRVV(*ST, isa<FixedVectorType>(Val)))
-    return 1; // Treat as single instruction cost for now
+  // P/ESPV fixed vectors are not RVV vectors. Use a scalarized estimate until
+  // the target has a dedicated cost model.
+  if (shouldUseNonRVVFixedVectorCost(ST, Val))
+    return Index == 0 ? 1 : getScalarizedFixedVectorCost(Val, 1);
 
   if (Opcode != Instruction::ExtractElement &&
       Opcode != Instruction::InsertElement)
@@ -3168,8 +3188,11 @@ unsigned RISCVTTIImpl::getRegUsageForType(Type *Ty) const {
     if (Size.isScalable() && ST->hasVInstructions())
       return divideCeil(Size.getKnownMinValue(), RISCV::RVVBitsPerBlock);
 
-    if (ST->useRVVForFixedLengthVectors())
-      return divideCeil(Size, ST->getRealMinVLen());
+    if (ST->useRVVForFixedLengthVectors()) {
+      unsigned MinVLen = ST->getRealMinVLen();
+      if (MinVLen != 0)
+        return divideCeil(Size, MinVLen);
+    }
   }
 
   return BaseT::getRegUsageForType(Ty);

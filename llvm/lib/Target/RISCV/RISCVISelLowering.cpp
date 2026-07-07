@@ -2761,15 +2761,9 @@ bool RISCVTargetLowering::isExtractSubvectorCheap(EVT ResVT, EVT SrcVT,
 MVT RISCVTargetLowering::getRegisterTypeForCallingConv(LLVMContext &Context,
                                                       CallingConv::ID CC,
                                                       EVT VT) const {
-  if (Subtarget.hasESPVTargetLowering() && !Subtarget.hasVInstructions() &&
-      VT.isFixedLengthVector()) {
-    EVT IntermediateVT;
-    MVT RegisterVT;
-    unsigned NumIntermediates;
-    getVectorTypeBreakdownForCallingConv(Context, CC, VT, IntermediateVT,
-                                         NumIntermediates, RegisterVT);
-    return RegisterVT;
-  }
+  if (Subtarget.hasESPVTargetLowering() && VT.isFixedLengthVector())
+    return getRegisterTypeForCallingConv(Context, CC,
+                                         VT.getVectorElementType());
 
   // Use f32 to pass f16 if it is legal and Zfh/Zfhmin is not enabled.
   // We might still end up using a GPR but that will be decided based on ABI.
@@ -2794,14 +2788,10 @@ RISCVTargetLowering::getNumRegisters(LLVMContext &Context, EVT VT,
 unsigned RISCVTargetLowering::getNumRegistersForCallingConv(LLVMContext &Context,
                                                            CallingConv::ID CC,
                                                            EVT VT) const {
-  if (Subtarget.hasESPVTargetLowering() && !Subtarget.hasVInstructions() &&
-      VT.isFixedLengthVector()) {
-    EVT IntermediateVT;
-    MVT RegisterVT;
-    unsigned NumIntermediates;
-    return getVectorTypeBreakdownForCallingConv(Context, CC, VT, IntermediateVT,
-                                                NumIntermediates, RegisterVT);
-  }
+  if (Subtarget.hasESPVTargetLowering() && VT.isFixedLengthVector())
+    return VT.getVectorNumElements() *
+           getNumRegistersForCallingConv(Context, CC,
+                                         VT.getVectorElementType());
 
   // Use f32 to pass f16 if it is legal and Zfh/Zfhmin is not enabled.
   // We might still end up using a GPR but that will be decided based on ABI.
@@ -2815,10 +2805,9 @@ unsigned RISCVTargetLowering::getNumRegistersForCallingConv(LLVMContext &Context
 unsigned RISCVTargetLowering::getVectorTypeBreakdownForCallingConv(
     LLVMContext &Context, CallingConv::ID CC, EVT VT, EVT &IntermediateVT,
     unsigned &NumIntermediates, MVT &RegisterVT) const {
-  if (Subtarget.hasESPVTargetLowering() && !Subtarget.hasVInstructions() &&
-      VT.isFixedLengthVector()) {
-    // ESPV without RVV has no vector ABI. Scalarize ABI-visible fixed vectors
-    // so stress-generated IR is lowered through normal scalar GPR locations.
+  if (Subtarget.hasESPVTargetLowering() && VT.isFixedLengthVector()) {
+    // ESPV has no vector ABI. Scalarize ABI-visible fixed vectors so
+    // stress-generated IR is lowered through normal scalar GPR locations.
     IntermediateVT = VT.getVectorElementType();
     NumIntermediates = VT.getVectorNumElements();
     RegisterVT = getRegisterTypeForCallingConv(Context, CC, IntermediateVT);
@@ -10839,6 +10828,24 @@ SDValue RISCVTargetLowering::lowerVectorMaskExt(SDValue Op, SelectionDAG &DAG,
   assert(Src.getValueType().isVector() &&
          Src.getValueType().getVectorElementType() == MVT::i1);
 
+  // ESPV: scalarize lane-wise (no RVV vector length).
+  if (Subtarget.hasESPVTargetLowering()) {
+    assert(VecVT.isFixedLengthVector() &&
+           "Unexpected scalable mask ext on ESPV");
+    MVT DstEltVT = VecVT.getVectorElementType();
+    unsigned NumElts = VecVT.getVectorNumElements();
+    SmallVector<SDValue, 16> Elts;
+    Elts.reserve(NumElts);
+    SDValue TrueVal = DAG.getSignedConstant(ExtTrueVal, DL, DstEltVT);
+    SDValue ZeroVal = DAG.getConstant(0, DL, DstEltVT);
+    for (unsigned I = 0; I != NumElts; ++I) {
+      SDValue EltI1 = DAG.getExtractVectorElt(DL, MVT::i1, Src, I);
+      SDValue Elt = DAG.getSelect(DL, DstEltVT, EltI1, TrueVal, ZeroVal);
+      Elts.push_back(Elt);
+    }
+    return DAG.getBuildVector(VecVT, DL, Elts);
+  }
+
   if (VecVT.isScalableVector()) {
     SDValue SplatZero = DAG.getConstant(0, DL, VecVT);
     SDValue SplatTrueVal = DAG.getSignedConstant(ExtTrueVal, DL, VecVT);
@@ -10899,6 +10906,23 @@ SDValue RISCVTargetLowering::lowerVectorMaskTruncLike(SDValue Op,
          "Unexpected type for vector mask lowering");
   SDValue Src = Op.getOperand(0);
   MVT VecVT = Src.getSimpleValueType();
+
+  // ESPV: scalarize lane-wise (matches packed-bool trunc-store).
+  if (Subtarget.hasESPVTargetLowering()) {
+    assert(!IsVPTrunc && "Unexpected VP truncate for ESPV mask lowering");
+    MVT SrcEltVT = VecVT.getVectorElementType();
+    unsigned NumElts = MaskVT.getVectorNumElements();
+    SmallVector<SDValue, 16> Elts;
+    Elts.reserve(NumElts);
+    for (unsigned I = 0; I != NumElts; ++I) {
+      SDValue Elt = DAG.getExtractVectorElt(DL, SrcEltVT, Src, I);
+      Elt = DAG.getNode(ISD::AND, DL, SrcEltVT, Elt,
+                        DAG.getConstant(1, DL, SrcEltVT));
+      Elts.push_back(DAG.getNode(ISD::TRUNCATE, DL, MVT::i1, Elt));
+    }
+    return DAG.getBuildVector(MaskVT.getSimpleVT(), DL, Elts);
+  }
+
   SDValue Mask, VL;
   if (IsVPTrunc) {
     Mask = Op.getOperand(1);
