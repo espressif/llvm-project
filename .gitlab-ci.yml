@@ -910,7 +910,6 @@ test_xesppie:
 
 upload_to_http:
   stage: private_deploy
-  when: manual
   allow_failure: true
   tags: [ "deploy", "shiny" ]
   variables:
@@ -921,7 +920,7 @@ upload_to_http:
       when: never
     - <<: *if-scheduled-sync
       when: never
-    - when: on_success
+    - when: manual
   needs:
     - job: build_x86_64-linux-gnu
   script:
