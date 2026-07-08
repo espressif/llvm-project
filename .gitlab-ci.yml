@@ -350,10 +350,10 @@ check_commit_message:
           touch ${BUILD_PATH}/toolchain-tests.log;
           chmod o+w ${BUILD_PATH}/toolchain-tests.log;
           echo "Run toolchain unit tests";
-          time runuser -u test_runner -- ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} check-llvm-toolchain 2>&1 > ${BUILD_PATH}/toolchain-tests.log;
+          time runuser -u test_runner -- ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} check-llvm-toolchain 2>&1 | tee ${BUILD_PATH}/toolchain-tests.log;
           echo "Toolchain unit tests finished";
           echo "Run toolchain runtimes unit tests";
-          time runuser -u test_runner -- ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} check-llvm-toolchain-runtimes 2>&1 >> ${BUILD_PATH}/toolchain-tests.log;
+          time runuser -u test_runner -- ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} check-llvm-toolchain-runtimes 2>&1 | tee ${BUILD_PATH}/toolchain-tests.log;
           echo "Toolchain runtimes unit tests finished";
         fi
         if [[ "${RUN_PKG_TESTS}" == "ON" ]]; then
@@ -954,7 +954,6 @@ test_xesppie:
 
 upload_to_http:
   stage: private_deploy
-  when: manual
   allow_failure: true
   tags: [ "deploy", "shiny" ]
   variables:
@@ -965,7 +964,7 @@ upload_to_http:
       when: never
     - <<: *if-scheduled-sync
       when: never
-    - when: on_success
+    - when: manual
   needs:
     - job: build_x86_64-linux-gnu
   script:
