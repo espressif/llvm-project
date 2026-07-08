@@ -24,27 +24,13 @@
 namespace llvm {
 
 /// QR_64 physical encoding: Q0_D0..Q7_D0 = low lane, Q0_D1..Q7_D1 = high.
-inline std::optional<unsigned> getQR64LaneSubIdx(MCRegister Reg) {
-  if (Reg >= RISCV::Q0_D0 && Reg <= RISCV::Q7_D0)
-    return RISCV::sub_qr_64;
-  if (Reg >= RISCV::Q0_D1 && Reg <= RISCV::Q7_D1)
-    return RISCV::sub_qr_64_hi;
-  return std::nullopt;
-}
+std::optional<unsigned> getQR64LaneSubIdx(MCRegister Reg);
 
 /// Map EXTRACT_SUBVECTOR index on a QR (v16i8) to subregister index.
-inline std::optional<unsigned>
-getQR64SubRegIdxForExtractIndex(unsigned OrigIdx, unsigned VecNumElts) {
-  if (OrigIdx == 0)
-    return RISCV::sub_qr_64;
-  if (OrigIdx == VecNumElts / 2)
-    return RISCV::sub_qr_64_hi;
-  return std::nullopt;
-}
+std::optional<unsigned> getQR64SubRegIdxForExtractIndex(unsigned OrigIdx,
+                                                        unsigned VecNumElts);
 
-inline unsigned getQR64HiExtractIndex(unsigned VecNumElts) {
-  return VecNumElts / 2;
-}
+unsigned getQR64HiExtractIndex(unsigned VecNumElts);
 
 namespace RISCVRI {
 enum : uint8_t {

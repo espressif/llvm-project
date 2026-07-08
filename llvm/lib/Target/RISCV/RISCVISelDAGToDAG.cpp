@@ -3800,8 +3800,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       }
 
       SDValue ConstrainedVec = selectESPQR64HalfVec(
-          Vec, RISCV::sub_qr_64_hi,
-          getQR64HiExtractIndex(MVT::v16i8.getVectorNumElements()), DL);
+          Vec, RISCV::sub_qr_64_hi, getQR64HiExtractIndex(16), DL);
 
       // Instruction outputs: (rs1r, chain) - chain is needed for mayStore instructions
       // Even though instruction definition only has 1 output, MachineNode needs chain for memory ordering
@@ -3832,8 +3831,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       SDValue Reg = Node->getOperand(3);
 
       SDValue ConstrainedVec = selectESPQR64HalfVec(
-          Vec, RISCV::sub_qr_64_hi,
-          getQR64HiExtractIndex(MVT::v16i8.getVectorNumElements()), DL);
+          Vec, RISCV::sub_qr_64_hi, getQR64HiExtractIndex(16), DL);
 
       // getMachineNode will automatically select operands if needed
       // Instruction outputs: (rs1r, chain) - chain is needed for mayStore instructions
