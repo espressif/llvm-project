@@ -29,6 +29,27 @@
 
 using namespace llvm;
 
+std::optional<unsigned> llvm::getQR64LaneSubIdx(MCRegister Reg) {
+  if (Reg >= RISCV::Q0_D0 && Reg <= RISCV::Q7_D0)
+    return RISCV::sub_qr_64;
+  if (Reg >= RISCV::Q0_D1 && Reg <= RISCV::Q7_D1)
+    return RISCV::sub_qr_64_hi;
+  return std::nullopt;
+}
+
+std::optional<unsigned>
+llvm::getQR64SubRegIdxForExtractIndex(unsigned OrigIdx, unsigned VecNumElts) {
+  if (OrigIdx == 0)
+    return RISCV::sub_qr_64;
+  if (OrigIdx == VecNumElts / 2)
+    return RISCV::sub_qr_64_hi;
+  return std::nullopt;
+}
+
+unsigned llvm::getQR64HiExtractIndex(unsigned VecNumElts) {
+  return VecNumElts / 2;
+}
+
 static cl::opt<bool> DisableCostPerUse("riscv-disable-cost-per-use",
                                        cl::init(false), cl::Hidden);
 static cl::opt<bool>
