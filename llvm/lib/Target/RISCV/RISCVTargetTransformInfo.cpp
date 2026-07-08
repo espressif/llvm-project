@@ -28,13 +28,17 @@ using namespace llvm::PatternMatch;
 static bool shouldUseNonRVVFixedVectorCost(const RISCVSubtarget *ST, Type *Ty) {
   if (!isa<FixedVectorType>(Ty))
     return false;
-  return ST->hasStdExtP() || ST->hasESPVTargetLowering();
+  if (ST->hasVInstructions())
+    return false;
+  return ST->hasStdExtP() || ST->hasVendorXespv();
 }
 
 static bool shouldUseNonRVVFixedVectorCost(const RISCVSubtarget *ST, MVT VT) {
   if (!VT.isFixedLengthVector())
     return false;
-  return ST->hasStdExtP() || ST->hasESPVTargetLowering();
+  if (ST->hasVInstructions())
+    return false;
+  return ST->hasStdExtP() || ST->hasVendorXespv();
 }
 
 static InstructionCost getScalarizedFixedVectorCost(Type *Ty,
@@ -707,12 +711,13 @@ RISCVTTIImpl::getShuffleCost(TTI::ShuffleKind Kind, VectorType *DstTy,
 
   Kind = improveShuffleKindFromMask(Kind, Mask, SrcTy, Index, SubTp);
 
-  std::pair<InstructionCost, MVT> LT = getTypeLegalizationCost(SrcTy);
-
-  // P/ESPV fixed vectors are not RVV vectors. Avoid
-  // getContainerForFixedLengthVector.
+  // P/ESPV fixed vectors are not RVV vectors. Avoid getTypeLegalizationCost and
+  // getContainerForFixedLengthVector paths that call
+  // getMinRVVVectorSizeInBits().
   if (shouldUseNonRVVFixedVectorCost(ST, SrcTy))
     return getScalarizedFixedVectorCost(SrcTy, 1);
+
+  std::pair<InstructionCost, MVT> LT = getTypeLegalizationCost(SrcTy);
 
   // First, handle cases where having a fixed length vector enables us to
   // give a more accurate cost than falling back to generic scalable codegen.
@@ -3416,7 +3421,7 @@ bool RISCVTTIImpl::isLegalMaskedExpandLoad(Type *DataTy,
   // FIXME: If it is an i8 vector and the element count exceeds 256, we should
   // scalarize these types with LMUL >= maximum fixed-length LMUL.
   if (VTy->getElementType()->isIntegerTy(8))
-    if (VTy->getElementCount().getFixedValue() > 256)
+    if (VTy->getElementCount().getFixedValue() > 256 && ST->hasVInstructions())
       return VTy->getPrimitiveSizeInBits() / ST->getRealMinVLen() <
              ST->getMaxLMULForFixedLengthVectors();
   return true;
