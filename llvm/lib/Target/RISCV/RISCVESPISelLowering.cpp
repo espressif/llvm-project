@@ -13520,6 +13520,7 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
     Register DstReg = MI.getOperand(0).getReg();
     Register SrcReg = MI.getOperand(1).getReg();
     BuildMI(*MBB, MI, DL, TII.get(Opc)).addReg(SrcReg);
+    // $rd = $rs1 tie: regalloc may coalesce; COPY only if vregs differ here.
     if (DstReg != SrcReg)
       BuildMI(*MBB, MI, DL, TII.get(RISCV::COPY), DstReg).addReg(SrcReg);
     MI.eraseFromParent();
