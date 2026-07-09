@@ -208,6 +208,17 @@ bool RISCVExpandPseudo::expandMI(MachineBasicBlock &MBB,
     MI.eraseFromParent();
     return true;
   }
+  case RISCV::ESP_MOVX_R_FFT_BIT_WIDTH_M_2P2_P: {
+    MachineInstr &MI = *MBBI;
+    DebugLoc DL = MI.getDebugLoc();
+    Register DstReg = MI.getOperand(0).getReg();
+    Register TokenReg = MI.getOperand(1).getReg();
+    BuildMI(MBB, MBBI, DL, TII->get(TargetOpcode::KILL)).addReg(TokenReg);
+    BuildMI(MBB, MBBI, DL, TII->get(RISCV::ESP_MOVX_R_FFT_BIT_WIDTH_2P2))
+        .addReg(DstReg, RegState::Define);
+    MI.eraseFromParent();
+    return true;
+  }
   }
 
   return false;

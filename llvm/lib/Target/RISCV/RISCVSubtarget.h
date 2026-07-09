@@ -173,8 +173,7 @@ public:
   /// ESPV target lowering when +espv-lowering is on and the function has ESPV
   /// 2.1 (+xespv1v) and/or 2.2 (+xespv).
   bool hasESPVTargetLowering() const {
-    return hasVendorXespvLowering() &&
-           (hasVendorXespv1v() || hasVendorXespv());
+    return hasVendorXespvLowering() && (hasVendorXespv1v() || hasVendorXespv());
   }
 
   /// Shared .m intrinsics select 2.2 MC instructions only on pure ESPV 2.2.

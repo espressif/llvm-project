@@ -3302,7 +3302,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
                          ? RISCV::ESP_VST_128_IP_2P2
                          : RISCV::ESP_VST_128_IP;
       SDNode *NewNode = CurDAG->getMachineNode(Opc, DL, VTs, Ops);
-      
+
       // Copy MMO from MemSDNode if present
       if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
         MachineMemOperand *MMO = MemNode->getMemOperand();

@@ -40,6 +40,30 @@ declare i32 @llvm.riscv.esp.movx.w.fft.bit.width.m(i32) #1
 
 declare i32 @llvm.riscv.esp.movx.r.fft.bit.width.m(i32) #1
 
+define dso_local i32 @test_movx_fft_bit_width_write_read_2p2(i32 noundef %rs1_val) local_unnamed_addr #2 {
+; ASM2P2-LABEL: test_movx_fft_bit_width_write_read_2p2:
+; ASM2P2:       # %bb.0: # %entry
+; ASM2P2-NEXT:    esp.movx.w.fft.bit.width a0
+; ASM2P2-NEXT:    # kill: killed $x10
+; ASM2P2-NEXT:    esp.movx.r.fft.bit.width a0
+; ASM2P2-NEXT:    ret
+;
+; MIR-LABEL: name: test_movx_fft_bit_width_write_read_2p2
+; MIR: bb.0.entry:
+; MIR-NEXT:   liveins: $x10
+; MIR-NEXT: {{  $}}
+; MIR-NEXT:   [[COPY:%[0-9]+]]:gprpie = COPY $x10
+; MIR-NEXT:   ESP_MOVX_W_FFT_BIT_WIDTH_2P2 [[COPY]]
+; MIR-NEXT:   [[TOKEN:%[0-9]+]]:gprpie = COPY [[COPY]]
+; MIR-NEXT:   [[RD:%[0-9]+]]:gprpie = ESP_MOVX_R_FFT_BIT_WIDTH_M_2P2_P killed [[TOKEN]]
+; MIR-NEXT:   $x10 = COPY [[RD]]
+; MIR-NEXT:   PseudoRET implicit $x10
+entry:
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.fft.bit.width.m(i32 %rs1_val)
+  %v2 = tail call i32 @llvm.riscv.esp.movx.r.fft.bit.width.m(i32 %v1)
+  ret i32 %v2
+}
+
 define dso_local ptr @test_bitrev_with_fft_bit_width(ptr noundef %Rs1, ptr noundef %dst, i32 noundef %bit_width) local_unnamed_addr #2 {
 ; ASM-LABEL: test_bitrev_with_fft_bit_width:
 ; ASM:       # %bb.0: # %entry
