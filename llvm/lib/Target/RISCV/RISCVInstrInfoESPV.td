@@ -27605,7 +27605,8 @@ def ESP_MOVX_R_FFT_BIT_WIDTH_2P2_P : PseudoEsp<(outs), (ins GPRPIE:$rd),
 let Predicates = [HasESPV2P2Instructions] in
 def ESP_MOVX_R_FFT_BIT_WIDTH_M_2P2_P : PseudoEsp<(outs GPRPIE:$rd), (ins GPRPIE:$token),
 				"!esp_movx_r_fft_bit_width_m_2p2_p $rd, $token",
-			[(set GPRPIE:$rd, (int_riscv_esp_movx_r_fft_bit_width_m GPRPIE:$token))]> {
+			[(set GPRPIE:$rd, (int_riscv_esp_movx_r_fft_bit_width_m GPRPIE:$token))]>
+{
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 1;
@@ -27926,10 +27927,12 @@ def ESP_MOVX_W_FFT_BIT_WIDTH_2P2_P : PseudoEsp<(outs), (ins GPRPIE:$rs1),
 			[(int_riscv_esp_movx_w_fft_bit_width_2p2 GPRPIE:$rs1)]>;
 
 // Shared llvm.riscv.esp.movx.w.fft.bit.width.m on ESPV 2.2: side-effect movx + rs1 return.
-let Predicates = [HasESPV2P2Instructions], usesCustomInserter = 1 in
+let Predicates = [HasESPV2P2Instructions], usesCustomInserter = 1,
+    Constraints = "$rd = $rs1" in
 def ESP_MOVX_W_FFT_BIT_WIDTH_M_2P2_P : PseudoEsp<(outs GPRPIE:$rd), (ins GPRPIE:$rs1),
 				"!esp_movx_w_fft_bit_width_m_2p2_p $rd, $rs1",
-			[(set GPRPIE:$rd, (int_riscv_esp_movx_w_fft_bit_width_m GPRPIE:$rs1))]> {
+			[(set GPRPIE:$rd, (int_riscv_esp_movx_w_fft_bit_width_m GPRPIE:$rs1))]>
+{
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 1;
@@ -29189,10 +29192,11 @@ def ESP_FFT_BITREV_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, imm8
 // Shared riscv_esp_fft_bitrev_m on ESPV 2.2: phantom bit_width orders after movx.w.m.
 let Predicates = [HasESPV2P2Instructions] in
 def ESP_FFT_BITREV_2P2_M_P : PseudoEsp<(outs GPRPIE:$rs1r, QR:$qvr),
-                                         (ins GPRPIE:$rs1, GPRPIE:$bit_width),
+				(ins GPRPIE:$rs1, GPRPIE:$bit_width),
 				"!esp_fft_bitrev_2p2_m_p $rs1, $bit_width",
 			[(set GPRPIE:$rs1r, QR:$qvr,
-			  (riscv_esp_fft_bitrev_m GPRPIE:$rs1, i32:$bit_width))]> {
+			  (riscv_esp_fft_bitrev_m GPRPIE:$rs1, i32:$bit_width))]>
+{
   let mayStore = 0;
   let mayLoad = 0;
   let hasSideEffects = 1;
