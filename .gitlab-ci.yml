@@ -33,7 +33,7 @@ variables:
   CCACHE_MAXSIZE: 10G
   CCACHE_SLOPPINESS: "time_macros,file_macro,include_file_mtime,include_file_ctime"
   ESP_LLVM_PARALLEL_TABLEGEN_JOBS: 4
-  MAX_NINJA_JOBS: 16
+  MAX_NINJA_JOBS: 8
 
 workflow:
   rules:
