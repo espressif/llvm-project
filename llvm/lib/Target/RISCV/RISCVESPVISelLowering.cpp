@@ -3547,16 +3547,6 @@ SDValue lowerESPVIntrinsicWOChain(SDValue Op, SelectionDAG &DAG,
     // though hardware doesn't use it
     return Result32;
   }
-  case Intrinsic::riscv_esp_movx_w_fft_bit_width_m: {
-    // Shared .m intrinsic: 2.2 side-effect movx + rs1 return; 2.1 via TableGen.
-    if (!Subtarget.useESPV2P2Instructions())
-      return SDValue();
-    SDValue RS1 = Op.getOperand(1);
-    SDVTList VTs = DAG.getVTList(MVT::i32);
-    MachineSDNode *Inst = DAG.getMachineNode(
-        RISCV::ESP_MOVX_W_FFT_BIT_WIDTH_M_2P2_P, DL, VTs, RS1);
-    return SDValue(Inst, 0);
-  }
   case Intrinsic::riscv_esp_movx_w_xacc_h_m: {
     // ESP.MOVX.W.XACC.H - Write XACC[39:32] (high 8 bits)
     // Intrinsic: (i32 value) -> i32 (input is i32 to avoid type promotion
@@ -4003,12 +3993,7 @@ SDValue lowerESPVIntrinsicWOChain(SDValue Op, SelectionDAG &DAG,
     return DAG.getMergeValues({Node.getValue(0), Node.getValue(1)}, DL);
   }
   case Intrinsic::riscv_esp_fft_bitrev_m: {
-    // Lower FFT BITREV intrinsic to custom SDNode with explicit FFT_BIT_WIDTH
-    // state passing Intrinsic: (int_id, rs1, fft_bit_width) - IntrNoMem, so no
-    // Chain Returns: {ptr, qv} SDNode: (rs1, fft_bit_width) -> (rs1r, qv) Note:
-    // FFT_BIT_WIDTH is passed explicitly as i32 for explicit state passing
-    // Note: No Chain because this is a computation-only instruction that
-    // doesn't access memory
+    // Lower to SDNode; TableGen Pat on ESP_FFT_BITREV / ESP_FFT_BITREV_2P2_M_P selects MC.
     SDLoc DL(Op);
     SDValue RS1 =
         Op.getOperand(1); // WO_CHAIN: operand 0 is int_id, operand 1 is rs1
