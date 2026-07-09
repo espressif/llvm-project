@@ -3298,7 +3298,10 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       // Operand order must match instruction definition: (ins QR:$qu, GPRPIE:$rs1, offset_256_16:$off25616)
       // Order: [instruction operands..., chain]
       SDValue Ops[] = {Vec, Ptr, ImmOp, Chain};
-      SDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_VST_128_IP, DL, VTs, Ops);
+      unsigned Opc = Subtarget->useESPV2P2Instructions()
+                         ? RISCV::ESP_VST_128_IP_2P2
+                         : RISCV::ESP_VST_128_IP;
+      SDNode *NewNode = CurDAG->getMachineNode(Opc, DL, VTs, Ops);
       
       // Copy MMO from MemSDNode if present
       if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
@@ -4992,17 +4995,20 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
     SDValue FftBitWidth =
         Node->getOperand(1); // FFT_BIT_WIDTH (i32, phantom operand)
 
-    unsigned Opc = Subtarget->hasVendorXespv() ? RISCV::ESP_FFT_BITREV_2P2
-                                               : RISCV::ESP_FFT_BITREV;
-
     // Instruction outputs: GPRPIE:$rs1r, QR:$qvr
     // 2.1 inputs: GPRPIE:$rs1, FFT_BIT_WIDTHReg:$fft_bit_width_in
-    // 2.2 inputs: GPRPIE:$rs1, QR:$qv (FFT bit width via movx; qv tied to qvr)
+    // 2.2 inputs: GPRPIE:$rs1, QR:$qv (FFT bit width from prior movx.w.m)
     EVT PtrVT = RS1.getValueType();
     SDVTList VTList = CurDAG->getVTList(PtrVT, MVT::v8i16);
-    SDValue QVIn = CurDAG->getTargetConstant(0, DL, MVT::i32);
-    SDValue Ops[] = {RS1, Subtarget->hasVendorXespv() ? QVIn : FftBitWidth};
-    MachineSDNode *Res = CurDAG->getMachineNode(Opc, DL, VTList, Ops);
+    MachineSDNode *Res = nullptr;
+    if (Subtarget->useESPV2P2Instructions()) {
+      // Phantom bit_width keeps movx.w.m ordered before bitrev; no re-movx.
+      SDValue Ops[] = {RS1, FftBitWidth};
+      Res = CurDAG->getMachineNode(RISCV::ESP_FFT_BITREV_2P2_M_P, DL, VTList, Ops);
+    } else {
+      SDValue Ops[] = {RS1, FftBitWidth};
+      Res = CurDAG->getMachineNode(RISCV::ESP_FFT_BITREV, DL, VTList, Ops);
+    }
 
     // Extract outputs from instruction
     SDValue RS1R = SDValue(Res, 0); // rs1r output (Result 0)

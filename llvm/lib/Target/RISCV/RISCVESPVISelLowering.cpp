@@ -3547,6 +3547,16 @@ SDValue lowerESPVIntrinsicWOChain(SDValue Op, SelectionDAG &DAG,
     // though hardware doesn't use it
     return Result32;
   }
+  case Intrinsic::riscv_esp_movx_w_fft_bit_width_m: {
+    // Shared .m intrinsic: 2.2 side-effect movx + rs1 return; 2.1 via TableGen.
+    if (!Subtarget.useESPV2P2Instructions())
+      return SDValue();
+    SDValue RS1 = Op.getOperand(1);
+    SDVTList VTs = DAG.getVTList(MVT::i32);
+    MachineSDNode *Inst = DAG.getMachineNode(
+        RISCV::ESP_MOVX_W_FFT_BIT_WIDTH_M_2P2_P, DL, VTs, RS1);
+    return SDValue(Inst, 0);
+  }
   case Intrinsic::riscv_esp_movx_w_xacc_h_m: {
     // ESP.MOVX.W.XACC.H - Write XACC[39:32] (high 8 bits)
     // Intrinsic: (i32 value) -> i32 (input is i32 to avoid type promotion

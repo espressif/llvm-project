@@ -192,6 +192,22 @@ bool RISCVExpandPseudo::expandMI(MachineBasicBlock &MBB,
     return expandVMSET_VMCLR(MBB, MBBI, RISCV::VMXNOR_MM);
   case RISCV::PseudoReadVLENBViaVSETVLIX0:
     return expandPseudoReadVLENBViaVSETVLIX0(MBB, MBBI);
+  case RISCV::ESP_FFT_BITREV_2P2_M_P: {
+    MachineInstr &MI = *MBBI;
+    DebugLoc DL = MI.getDebugLoc();
+    Register RS1r = MI.getOperand(0).getReg();
+    Register QVr = MI.getOperand(1).getReg();
+    Register RS1 = MI.getOperand(2).getReg();
+    Register BitWidth = MI.getOperand(3).getReg();
+    BuildMI(MBB, MBBI, DL, TII->get(TargetOpcode::KILL)).addReg(BitWidth);
+    BuildMI(MBB, MBBI, DL, TII->get(RISCV::ESP_FFT_BITREV_2P2))
+        .addReg(RS1r, RegState::Define)
+        .addReg(QVr, RegState::Define)
+        .addReg(RS1)
+        .addReg(QVr);
+    MI.eraseFromParent();
+    return true;
+  }
   }
 
   return false;

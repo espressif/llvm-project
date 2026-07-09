@@ -2,10 +2,11 @@
 ; ModuleID = './riscv-esp32p4-movx-r-w-fft-bit-width.c'
 ; Test ASM generation (Intrinsic -> ASM)
 ; llvm.riscv.esp.fft.bitrev.m is shared across 2.1 (+xespv1v) and 2.2 (+xespv); each RUN
-; uses one ISA only (esp32p4eco4 vs esp32p4). Do not combine +xespv with +xespv1v.
+; uses one ISA only. test_movx_* keeps +xespv1v; test_bitrev_* uses +xespv for 2.2 RUNs.
 ; RUN: llc -O2 -mattr=+xespv1v,+espv-lowering -mtriple=riscv32 %s -o - | FileCheck %s --check-prefix=ASM
+; RUN: llc -O2 -mattr=+xespv,+espv-lowering -mtriple=riscv32 %s -o - | FileCheck %s --check-prefix=ASM-MOVX
 ; RUN: llc -O2 -mattr=+xespv,+espv-lowering -mtriple=riscv32 %s -o - | FileCheck %s --check-prefix=ASM2P2
-; RUN: llc -O2 -mattr=+xespv,+espv-lowering -mtriple=riscv32 -stop-after=finalize-isel %s -o - | FileCheck %s --check-prefix=MIR2P2
+; RUN: llc -O2 -mattr=+xespv,+espv-lowering -mtriple=riscv32 -stop-after=finalize-isel %s -o - | FileCheck %s --check-prefix=MIR
 
 define dso_local i32 @test_movx_fft_bit_width_write_read(i32 noundef %rs1_val) local_unnamed_addr #0 {
 ; ASM-LABEL: test_movx_fft_bit_width_write_read:
@@ -14,20 +15,21 @@ define dso_local i32 @test_movx_fft_bit_width_write_read(i32 noundef %rs1_val) l
 ; ASM-NEXT:    esp.movx.r.fft.bit.width a0
 ; ASM-NEXT:    ret
 ;
-; ASM2P2-LABEL: test_movx_fft_bit_width_write_read:
-; ASM2P2:       # %bb.0: # %entry
-; ASM2P2-NEXT:    esp.movx.w.fft.bit.width a0
-; ASM2P2-NEXT:    esp.movx.r.fft.bit.width a0
-; ASM2P2-NEXT:    ret
-; MIR2P2-LABEL: name: test_movx_fft_bit_width_write_read
-; MIR2P2: bb.0.entry:
-; MIR2P2-NEXT:   liveins: $x10
-; MIR2P2-NEXT: {{  $}}
-; MIR2P2-NEXT:   [[COPY:%[0-9]+]]:gprpie = COPY $x10
-; MIR2P2-NEXT:   [[ESP_MOVX_W_FFT_BIT_WIDTH:%[0-9]+]]:fft_bit_widthreg = ESP_MOVX_W_FFT_BIT_WIDTH [[COPY]]
-; MIR2P2-NEXT:   [[ESP_MOVX_R_FFT_BIT_WIDTH:%[0-9]+]]:gprpie = ESP_MOVX_R_FFT_BIT_WIDTH killed [[ESP_MOVX_W_FFT_BIT_WIDTH]]
-; MIR2P2-NEXT:   $x10 = COPY [[ESP_MOVX_R_FFT_BIT_WIDTH]]
-; MIR2P2-NEXT:   PseudoRET implicit $x10
+; ASM-MOVX-LABEL: test_movx_fft_bit_width_write_read:
+; ASM-MOVX:       # %bb.0: # %entry
+; ASM-MOVX-NEXT:    esp.movx.w.fft.bit.width a0
+; ASM-MOVX-NEXT:    esp.movx.r.fft.bit.width a0
+; ASM-MOVX-NEXT:    ret
+;
+; MIR-LABEL: name: test_movx_fft_bit_width_write_read
+; MIR: bb.0.entry:
+; MIR-NEXT:   liveins: $x10
+; MIR-NEXT: {{  $}}
+; MIR-NEXT:   [[COPY:%[0-9]+]]:gprpie = COPY $x10
+; MIR-NEXT:   [[ESP_MOVX_W_FFT_BIT_WIDTH:%[0-9]+]]:fft_bit_widthreg = ESP_MOVX_W_FFT_BIT_WIDTH [[COPY]]
+; MIR-NEXT:   [[ESP_MOVX_R_FFT_BIT_WIDTH:%[0-9]+]]:gprpie = ESP_MOVX_R_FFT_BIT_WIDTH killed [[ESP_MOVX_W_FFT_BIT_WIDTH]]
+; MIR-NEXT:   $x10 = COPY [[ESP_MOVX_R_FFT_BIT_WIDTH]]
+; MIR-NEXT:   PseudoRET implicit $x10
 entry:
   %v1 = tail call i32 @llvm.riscv.esp.movx.w.fft.bit.width.m(i32 %rs1_val)
   %v2 = tail call i32 @llvm.riscv.esp.movx.r.fft.bit.width.m(i32 %v1)
@@ -49,20 +51,25 @@ define dso_local ptr @test_bitrev_with_fft_bit_width(ptr noundef %Rs1, ptr nound
 ;
 ; ASM2P2-LABEL: test_bitrev_with_fft_bit_width:
 ; ASM2P2:       # %bb.0: # %entry
-; ASM2P2-NEXT:    esp.fft.bitrev 0, a0
+; ASM2P2-NEXT:    esp.movx.w.fft.bit.width a2
+; ASM2P2-NEXT:    # kill: killed $x12
+; ASM2P2-NEXT:    esp.fft.bitrev q0, a0
 ; ASM2P2-NEXT:    mv a0, a1
 ; ASM2P2-NEXT:    esp.vst.128.ip q0, a0, 16
 ; ASM2P2-NEXT:    ret
-; MIR2P2-LABEL: name: test_bitrev_with_fft_bit_width
-; MIR2P2: bb.0.entry:
-; MIR2P2-NEXT:   liveins: $x10, $x11
-; MIR2P2-NEXT: {{  $}}
-; MIR2P2-NEXT:   [[COPY:%[0-9]+]]:gprpie = COPY $x11
-; MIR2P2-NEXT:   [[COPY1:%[0-9]+]]:gprpie = COPY $x10
-; MIR2P2-NEXT:   [[ESP_FFT_BITREV_2P2_:%[0-9]+]]:gprpie, [[ESP_FFT_BITREV_2P2_1:%[0-9]+]]:qr = ESP_FFT_BITREV_2P2 [[COPY1]], 0
-; MIR2P2-NEXT:   [[ESP_VST_128_IP:%[0-9]+]]:gprpie = ESP_VST_128_IP killed [[ESP_FFT_BITREV_2P2_1]], [[COPY]], 16 :: (store (s128) into %ir.dst)
-; MIR2P2-NEXT:   $x10 = COPY [[ESP_VST_128_IP]]
-; MIR2P2-NEXT:   PseudoRET implicit $x10
+; MIR-LABEL: name: test_bitrev_with_fft_bit_width
+; MIR: bb.0.entry:
+; MIR-NEXT:   liveins: $x10, $x11, $x12
+; MIR-NEXT: {{  $}}
+; MIR-NEXT:   [[BW:%[0-9]+]]:gprpie = COPY $x12
+; MIR-NEXT:   [[DST:%[0-9]+]]:gprpie = COPY $x11
+; MIR-NEXT:   [[RS1:%[0-9]+]]:gprpie = COPY $x10
+; MIR-NEXT:   ESP_MOVX_W_FFT_BIT_WIDTH_2P2 [[BW]]
+; MIR-NEXT:   [[MOVX_OUT:%[0-9]+]]:gprpie = COPY [[BW]]
+; MIR-NEXT:   [[RS1R:%[0-9]+]]:gprpie, [[QV:%[0-9]+]]:qr = ESP_FFT_BITREV_2P2_M_P [[RS1]], killed [[MOVX_OUT]]
+; MIR-NEXT:   [[VST:%[0-9]+]]:gprpie = ESP_VST_128_IP_2P2 killed [[QV]], [[DST]], 16 :: (store (s128) into %ir.dst)
+; MIR-NEXT:   $x10 = COPY [[VST]]
+; MIR-NEXT:   PseudoRET implicit $x10
 entry:
   %v1 = tail call i32 @llvm.riscv.esp.movx.w.fft.bit.width.m(i32 %bit_width)
   %v2 = tail call { ptr, <8 x i16> } @llvm.riscv.esp.fft.bitrev.m(ptr %Rs1, i32 %v1)
@@ -79,5 +86,5 @@ declare ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8>, ptr, i32) #3
 
 attributes #0 = { "target-features"="+32bit,+xespv1v" }
 attributes #1 = { nounwind }
-attributes #2 = { "target-features"="+32bit,+xespv1v" }
+attributes #2 = { "target-features"="+32bit,+xespv" }
 attributes #3 = { nounwind }

@@ -156,7 +156,7 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
     else
       addRegisterClass(MVT::f64, &RISCV::GPRPairRegClass);
   }
-  // ESPV register classes: +xespv (2.2), or +xespv1v with +espv-lowering.
+  // ESPV register classes when +espv-lowering and (+xespv1v or +xespv).
   if (Subtarget.hasESPVTargetLowering()) {
     initializeESPVTargetLowering(Subtarget);
     // Packed boolean vectors occupy one or two bytes in memory; lower them

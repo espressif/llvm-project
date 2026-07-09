@@ -170,11 +170,16 @@ public:
   bool GETTER() const { return ATTRIBUTE; }
 #include "RISCVGenSubtargetInfo.inc"
 
-  /// ESPV target lowering is enabled only when both the ESPV ISA (xespv1v) and
-  /// the opt-in flag (espv-lowering) are set. Default off; use -mattr=+espv-lowering
-  /// for tests and IDF builds until well tested.
+  /// ESPV target lowering when +espv-lowering is on and the function has ESPV
+  /// 2.1 (+xespv1v) and/or 2.2 (+xespv).
   bool hasESPVTargetLowering() const {
-    return hasVendorXespv1v() && hasVendorXespvLowering();
+    return hasVendorXespvLowering() &&
+           (hasVendorXespv1v() || hasVendorXespv());
+  }
+
+  /// Shared .m intrinsics select 2.2 MC instructions only on pure ESPV 2.2.
+  bool useESPV2P2Instructions() const {
+    return hasVendorXespv() && !hasVendorXespv1v();
   }
 
   unsigned getESPSpill128Opcode() const {

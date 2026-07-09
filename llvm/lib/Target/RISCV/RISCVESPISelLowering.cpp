@@ -13514,6 +13514,17 @@ MachineBasicBlock *RISCVTargetLowering::emitDSPInstrWithCustomInserter(
     MI.eraseFromParent();
     return MBB;
   }
+  case RISCV::ESP_MOVX_W_FFT_BIT_WIDTH_M_2P2_P: {
+    unsigned Opc = RISCV::ESP_MOVX_W_FFT_BIT_WIDTH_2P2;
+    MachineBasicBlock *MBB = MI.getParent();
+    Register DstReg = MI.getOperand(0).getReg();
+    Register SrcReg = MI.getOperand(1).getReg();
+    BuildMI(*MBB, MI, DL, TII.get(Opc)).addReg(SrcReg);
+    if (DstReg != SrcReg)
+      BuildMI(*MBB, MI, DL, TII.get(RISCV::COPY), DstReg).addReg(SrcReg);
+    MI.eraseFromParent();
+    return MBB;
+  }
   case RISCV::ESP_MOVX_W_PERF_2P2_P:{
     unsigned Opc = RISCV::ESP_MOVX_W_PERF_2P2;
     MachineBasicBlock *MBB = MI.getParent();
