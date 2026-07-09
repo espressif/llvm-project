@@ -27601,6 +27601,16 @@ def ESP_MOVX_R_FFT_BIT_WIDTH_2P2_P : PseudoEsp<(outs), (ins GPRPIE:$rd),
 				"!esp_movx_r_fft_bit_width_2p2_p $rd",
 			[(int_riscv_esp_movx_r_fft_bit_width_2p2 GPRPIE:$rd)]>;
 
+// Shared llvm.riscv.esp.movx.r.fft.bit.width.m on ESPV 2.2: phantom token orders after movx.w.m.
+let Predicates = [HasESPV2P2Instructions] in
+def ESP_MOVX_R_FFT_BIT_WIDTH_M_2P2_P : PseudoEsp<(outs GPRPIE:$rd), (ins GPRPIE:$token),
+				"!esp_movx_r_fft_bit_width_m_2p2_p $rd, $token",
+			[(set GPRPIE:$rd, (int_riscv_esp_movx_r_fft_bit_width_m GPRPIE:$token))]> {
+  let mayStore = 0;
+  let mayLoad = 0;
+  let hasSideEffects = 1;
+}
+
 def ESP_MOVX_R_PERF_2P2: Esp32V2P2Inst<(outs GPRPIE:$rd), (ins GPRPIE:$rs1),
                    "esp.movx.r.perf\t $rd, $rs1", []> 
 {
