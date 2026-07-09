@@ -4987,38 +4987,6 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
     CurDAG->RemoveDeadNode(Node);
     return true;
   }
-  case RISCVISD::ESP_FFT_BITREV_M: {
-    // Handle ESP_FFT_BITREV_M node with explicit FFT_BIT_WIDTH state passing
-    // SDNode returns: (rs1r, qv) - 2 outputs
-    // SDNode operands: (rs1, fft_bit_width) - 2 operands
-    SDValue RS1 = Node->getOperand(0); // rs1 pointer
-    SDValue FftBitWidth =
-        Node->getOperand(1); // FFT_BIT_WIDTH (i32, phantom operand)
-
-    // Instruction outputs: GPRPIE:$rs1r, QR:$qvr
-    // 2.1 inputs: GPRPIE:$rs1, FFT_BIT_WIDTHReg:$fft_bit_width_in
-    // 2.2 inputs: GPRPIE:$rs1, QR:$qv (FFT bit width from prior movx.w.m)
-    EVT PtrVT = RS1.getValueType();
-    SDVTList VTList = CurDAG->getVTList(PtrVT, MVT::v8i16);
-    MachineSDNode *Res = nullptr;
-    if (Subtarget->useESPV2P2Instructions()) {
-      // Phantom bit_width keeps movx.w.m ordered before bitrev; no re-movx.
-      SDValue Ops[] = {RS1, FftBitWidth};
-      Res = CurDAG->getMachineNode(RISCV::ESP_FFT_BITREV_2P2_M_P, DL, VTList, Ops);
-    } else {
-      SDValue Ops[] = {RS1, FftBitWidth};
-      Res = CurDAG->getMachineNode(RISCV::ESP_FFT_BITREV, DL, VTList, Ops);
-    }
-
-    // Extract outputs from instruction
-    SDValue RS1R = SDValue(Res, 0); // rs1r output (Result 0)
-    SDValue QV = SDValue(Res, 1);   // qv output (Result 1)
-
-    ReplaceUses(SDValue(Node, 0), RS1R); // rs1r -> Node output 0
-    ReplaceUses(SDValue(Node, 1), QV);   // qv -> Node output 1
-    CurDAG->RemoveDeadNode(Node);
-    return true;
-  }
   case RISCVISD::ESP_VCMULAS_S8_QACC_H_M:
   case RISCVISD::ESP_VCMULAS_S8_QACC_L_M:
   case RISCVISD::ESP_VCMULAS_S16_QACC_H_M:

@@ -54,8 +54,8 @@ define dso_local ptr @test_bitrev_with_fft_bit_width(ptr noundef %Rs1, ptr nound
 ; ASM2P2-NEXT:    esp.movx.w.fft.bit.width a2
 ; ASM2P2-NEXT:    # kill: killed $x12
 ; ASM2P2-NEXT:    esp.fft.bitrev q0, a0
+; ASM2P2-NEXT:    esp.vst.128.ip q0, a1, 16
 ; ASM2P2-NEXT:    mv a0, a1
-; ASM2P2-NEXT:    esp.vst.128.ip q0, a0, 16
 ; ASM2P2-NEXT:    ret
 ; MIR-LABEL: name: test_bitrev_with_fft_bit_width
 ; MIR: bb.0.entry:
