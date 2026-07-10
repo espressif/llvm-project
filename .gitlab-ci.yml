@@ -32,8 +32,10 @@ variables:
   CCACHE_DIR: ${CI_PROJECT_DIR}/.ccache
   CCACHE_MAXSIZE: 10G
   CCACHE_SLOPPINESS: "time_macros,file_macro,include_file_mtime,include_file_ctime"
-  ESP_LLVM_PARALLEL_TABLEGEN_JOBS: 4
-  MAX_NINJA_JOBS: 8
+  ESP_LLVM_PARALLEL_COMPILE_JOBS_FORCED: 32
+  ESP_LLVM_PARALLEL_LINK_JOBS_FORCED: 4
+  ESP_LLVM_PARALLEL_TABLEGEN_JOBS_FORCED: 16
+  MAX_NINJA_JOBS: 32
 
 workflow:
   rules:
@@ -294,10 +296,10 @@ check_commit_message:
         fi
       fi
     - AUX_BUILD_ARGS="";
-    - >
-      if [ "${ESP_LLVM_PARALLEL_COMPILE_JOBS:-}" != "" ]; then
-        AUX_BUILD_ARGS="${AUX_BUILD_ARGS} -DLLVM_PARALLEL_COMPILE_JOBS=${ESP_LLVM_PARALLEL_COMPILE_JOBS}";
-      fi
+    # - >
+    #   if [ "${ESP_LLVM_PARALLEL_COMPILE_JOBS:-}" != "" ]; then
+    #     AUX_BUILD_ARGS="${AUX_BUILD_ARGS} -DLLVM_PARALLEL_COMPILE_JOBS=${ESP_LLVM_PARALLEL_COMPILE_JOBS}";
+    #   fi
     - echo "AUX_BUILD_ARGS=${AUX_BUILD_ARGS}"
     # build toolchain core w/o any libs and GNU components
     - time cmake $PWD/esp-llvm-embedded-toolchain -GNinja
@@ -317,9 +319,9 @@ check_commit_message:
       -DLLVM_TOOLCHAIN_ENABLED_TARGETS="${TARGET}"
       -DLLVM_TOOLCHAIN_PACKAGE_NAME="esp-clang"
       -DLLVM_USE_LINKER=${USE_LINKER}
-      -DLLVM_PARALLEL_COMPILE_JOBS=${ESP_LLVM_PARALLEL_COMPILE_JOBS}
-      -DLLVM_PARALLEL_LINK_JOBS=${ESP_LLVM_PARALLEL_LINK_JOBS}
-      -DLLVM_PARALLEL_TABLEGEN_JOBS=${ESP_LLVM_PARALLEL_TABLEGEN_JOBS}
+      -DLLVM_PARALLEL_COMPILE_JOBS=${ESP_LLVM_PARALLEL_COMPILE_JOBS_FORCED}
+      -DLLVM_PARALLEL_LINK_JOBS=${ESP_LLVM_PARALLEL_LINK_JOBS_FORCED}
+      -DLLVM_PARALLEL_TABLEGEN_JOBS=${ESP_LLVM_PARALLEL_TABLEGEN_JOBS_FORCED}
       -DCLANG_REPOSITORY_STRING="${GH_REPO_HTTPS}"
       -DCPACK_ARCHIVE_THREADS=0
       --install-prefix=${INSTALL_PATH}
@@ -477,10 +479,10 @@ build_and_test:
     - LLVM_PROJECT_PATH=$PWD
     - mkdir -p ${BUILD_PATH}
     - AUX_BUILD_ARGS="";
-    - >
-      if [ "${ESP_LLVM_PARALLEL_COMPILE_JOBS:-}" != "" ]; then
-        AUX_BUILD_ARGS="${AUX_BUILD_ARGS} -DLLVM_PARALLEL_COMPILE_JOBS=${ESP_LLVM_PARALLEL_COMPILE_JOBS}";
-      fi
+    # - >
+    #   if [ "${ESP_LLVM_PARALLEL_COMPILE_JOBS:-}" != "" ]; then
+    #     AUX_BUILD_ARGS="${AUX_BUILD_ARGS} -DLLVM_PARALLEL_COMPILE_JOBS=${ESP_LLVM_PARALLEL_COMPILE_JOBS}";
+    #   fi
     - echo "AUX_BUILD_ARGS=${AUX_BUILD_ARGS}"
     - time cmake -G Ninja
       -S llvm
@@ -494,9 +496,9 @@ build_and_test:
       -DCMAKE_C_COMPILER_LAUNCHER=ccache
       -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
       -DLLVM_USE_LINKER=lld
-      -DLLVM_PARALLEL_COMPILE_JOBS=8
-      -DLLVM_PARALLEL_LINK_JOBS=${ESP_LLVM_PARALLEL_LINK_JOBS}
-      -DLLVM_PARALLEL_TABLEGEN_JOBS=${ESP_LLVM_PARALLEL_TABLEGEN_JOBS}
+      -DLLVM_PARALLEL_COMPILE_JOBS=${ESP_LLVM_PARALLEL_COMPILE_JOBS_FORCED}
+      -DLLVM_PARALLEL_LINK_JOBS=${ESP_LLVM_PARALLEL_LINK_JOBS_FORCED}
+      -DLLVM_PARALLEL_TABLEGEN_JOBS=${ESP_LLVM_PARALLEL_TABLEGEN_JOBS_FORCED}
       -DLLVM_FORCE_VC_REPOSITORY="${GH_REPO_HTTPS}"
       ${AUX_BUILD_ARGS}
       -B ${BUILD_PATH} 2>&1 > ${BUILD_PATH}/build.log
@@ -548,14 +550,14 @@ build_x86_64-linux-gnu:
       when: never
     - <<: *if-scheduled-sync
       when: never
-    # Build complete distro and run all tests on default branch
+    # Build complete distro + archive with target libs and run all tests
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_MERGE_REQUEST_LABELS =~ /(^|,)toolchain_tests(,|$)/'
       variables:
         BUILD_TARGET_LIBS: "ON"
         BUILD_GNU_BINUTILS: "ON"
         RUN_TOOLCHAIN_TESTS: "ON"
         RUN_PKG_TESTS: "ON"
-    # Build all distros and run all tests on tag
+    # Build all distros and run all tests
     - if: '$CI_COMMIT_TAG'
       variables:
         BUILD_TARGET_LIBS: "ON"
