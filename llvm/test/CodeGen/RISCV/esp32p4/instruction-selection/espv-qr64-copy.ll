@@ -1,4 +1,3 @@
-; RUN: llc -O2 -mtriple=riscv32-esp-unknown-elf -mattr=+xespv1v,+espv-lowering %s -o /dev/null
 ; RUN: llc -O2 -mtriple=riscv32-esp-unknown-elf -mattr=+xespv1v,+espv-lowering %s -o - | FileCheck %s
 
 ; Stress-style IR that previously crashed when QR_64 physreg copies were
