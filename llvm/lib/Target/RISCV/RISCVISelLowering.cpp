@@ -2707,6 +2707,11 @@ bool RISCVTargetLowering::isExtractSubvectorCheap(EVT ResVT, EVT SrcVT,
   if (Index == 0)
     return true;
 
+  // The remaining heuristics are RVV-specific and query minimum VLEN. Avoid
+  // that for targets without V/Zve (e.g. ESPV +espv-lowering).
+  if (!Subtarget.hasVInstructions())
+    return false;
+
   // Only support extracting a fixed from a fixed vector for now.
   if (ResVT.isScalableVector() || SrcVT.isScalableVector())
     return false;
