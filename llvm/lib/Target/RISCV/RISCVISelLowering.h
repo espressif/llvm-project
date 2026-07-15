@@ -184,7 +184,11 @@ public:
   MachineMemOperand::Flags
   getTargetMMOFlags(const MemSDNode &Node) const override;
 
-  LegalizeAction getTruncStoreAction(EVT ValVT, EVT MemVT) const;
+  LegalizeAction getTruncStoreActionForLegalization(EVT ValVT,
+                                                    EVT MemVT) const override;
+
+  SDValue legalizeTruncStoreBeforePromotion(StoreSDNode *ST,
+                                            SelectionDAG &DAG) const override;
 
   bool
   areTwoSDNodeTargetMMOFlagsMergeable(const MemSDNode &NodeX,
@@ -350,6 +354,12 @@ public:
       unsigned AddrSpace = 0, Align Alignment = Align(1),
       MachineMemOperand::Flags Flags = MachineMemOperand::MONone,
       unsigned *Fast = nullptr) const;
+
+  bool
+  allowsMemoryAccess(LLVMContext &Context, const DataLayout &DL, EVT VT,
+                     unsigned AddrSpace = 0, Align Alignment = Align(1),
+                     MachineMemOperand::Flags Flags = MachineMemOperand::MONone,
+                     unsigned *Fast = nullptr) const override;
 
   /// Returns true if the target allows unaligned memory accesses of the
   /// specified type.
