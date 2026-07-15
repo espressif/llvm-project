@@ -136,7 +136,8 @@ void validate(const Triple &TT, const FeatureBitset &FeatureBits) {
       FeatureBits[RISCV::Feature64Bit])
     reportFatalUsageError("RV32 and RV64 can't be combined");
   if ((FeatureBits[RISCV::FeatureVendorXespv1v] ||
-       FeatureBits[RISCV::FeatureVendorXespv]) &&
+       FeatureBits[RISCV::FeatureVendorXespv] ||
+       FeatureBits[RISCV::FeatureVendorXespvLowering]) &&
       FeatureBits[RISCV::FeatureStdExtZve32x])
     reportFatalUsageError("ESPV does not support RVV/Zve extensions");
 }

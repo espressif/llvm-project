@@ -170,8 +170,8 @@ public:
   bool GETTER() const { return ATTRIBUTE; }
 #include "RISCVGenSubtargetInfo.inc"
 
-  /// ESPV target lowering when +espv-lowering is on and the function has ESPV
-  /// 2.1 (+xespv1v) and/or 2.2 (+xespv).
+  /// ESPV opt-in DAG lowering: +espv-lowering with either +xespv (2.2) or
+  /// +xespv1v (2.1). Default off; use -mattr=+espv-lowering for tests/IDF.
   bool hasESPVTargetLowering() const {
     return hasVendorXespvLowering() && (hasVendorXespv1v() || hasVendorXespv());
   }

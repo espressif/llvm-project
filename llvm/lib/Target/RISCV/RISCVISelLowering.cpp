@@ -8335,6 +8335,262 @@ static SDValue lowerPackedBoolVectorExtLoad(LoadSDNode *Load,
   return DAG.getMergeValues({Vec, Chain}, DL);
 }
 
+static bool isESPVI32ChunkTileVectorType(MVT VT) {
+  switch (VT.SimpleTy) {
+  case MVT::v16i8:
+  case MVT::v8i16:
+  case MVT::v4i32:
+  case MVT::v8i32:
+  case MVT::v16i32:
+  case MVT::v8i8:
+  case MVT::v4i16:
+  case MVT::v2i32:
+  case MVT::v32i8:
+    return true;
+  default:
+    return false;
+  }
+}
+
+static bool needESPVI32ChunkMemLowering(const RISCVSubtarget &Subtarget) {
+  return Subtarget.hasVendorXespv() || Subtarget.hasESPVTargetLowering();
+}
+
+static SDValue concatESPVQRVectorBlocks(SelectionDAG &DAG, const SDLoc &DL,
+                                        MVT EltVT, ArrayRef<SDValue> Parts) {
+  if (Parts.size() == 1)
+    return Parts[0];
+  assert((Parts.size() % 2) == 0 && "Expected an even number of sub-vectors");
+  SmallVector<SDValue, 8> Paired;
+  Paired.reserve(Parts.size() / 2);
+  for (unsigned I = 0; I < Parts.size(); I += 2) {
+    assert(Parts[I].getSimpleValueType() == Parts[I + 1].getSimpleValueType());
+    unsigned NPer = Parts[I].getSimpleValueType().getVectorNumElements();
+    MVT PairVT = MVT::getVectorVT(EltVT, NPer * 2);
+    Paired.push_back(
+        DAG.getNode(ISD::CONCAT_VECTORS, DL, PairVT, Parts[I], Parts[I + 1]));
+  }
+  return concatESPVQRVectorBlocks(DAG, DL, EltVT, Paired);
+}
+
+static SDValue spillLaneValuesToTileQRVector(SelectionDAG &DAG, const SDLoc &DL,
+                                             MVT VecMVT,
+                                             ArrayRef<SDValue> LaneVals,
+                                             SDValue Chain) {
+  assert(VecMVT.getVectorNumElements() == LaneVals.size());
+  MachineFunction &MF = DAG.getMachineFunction();
+  SDValue SpillPtr = DAG.CreateStackTemporary(VecMVT);
+  int FI = cast<FrameIndexSDNode>(SpillPtr.getNode())->getIndex();
+  MachinePointerInfo PtrInfo = MachinePointerInfo::getFixedStack(MF, FI);
+  MVT EltVT = VecMVT.getVectorElementType();
+  unsigned EltBytes = EltVT.getStoreSize().getFixedValue();
+  Align StackAlign = DAG.getEVTAlign(VecMVT);
+
+  for (unsigned I = 0, E = LaneVals.size(); I < E; ++I) {
+    SDValue Addr = DAG.getMemBasePlusOffset(
+        SpillPtr, TypeSize::getFixed(I * EltBytes), DL);
+    Chain = DAG.getStore(Chain, DL, LaneVals[I], Addr,
+                         PtrInfo.getWithOffset(I * EltBytes),
+                         commonAlignment(StackAlign, EltBytes));
+  }
+  SDValue Ld = DAG.getLoad(VecMVT, DL, Chain, SpillPtr, PtrInfo, StackAlign);
+  return DAG.getMergeValues({Ld.getValue(0), Ld.getValue(1)}, DL);
+}
+
+static SDValue lowerESPVI32ChunkVectorLoad(LoadSDNode *Load, SelectionDAG &DAG,
+                                           const RISCVSubtarget &Subtarget) {
+  if (!needESPVI32ChunkMemLowering(Subtarget))
+    return SDValue();
+  MVT VT = Load->getSimpleValueType(0);
+  if (!isESPVI32ChunkTileVectorType(VT))
+    return SDValue();
+  if (Load->getExtensionType() != ISD::NON_EXTLOAD)
+    return SDValue();
+
+  SDLoc DL(Load);
+  unsigned TotalBits = VT.getFixedSizeInBits();
+  SDValue Chain = Load->getChain();
+  SDValue Ptr = Load->getBasePtr();
+  EVT PtrVT = Ptr.getValueType();
+  MachineMemOperand *MMO = Load->getMemOperand();
+
+  if (TotalBits == 128) {
+    SDVTList VTs = DAG.getVTList(MVT::v16i8, PtrVT, MVT::Other);
+    SDValue Imm0 = DAG.getConstant(0, DL, MVT::i32);
+    SDValue Ops[] = {Chain, Ptr, Imm0};
+    SDValue Node = DAG.getMemIntrinsicNode(RISCVISD::ESP_VLD_128_IP_M, DL, VTs,
+                                           Ops, MVT::v16i8, MMO);
+    SDValue Vec8 = Node.getValue(0);
+    Chain = Node.getValue(2);
+    SDValue Result = DAG.getNode(ISD::BITCAST, DL, VT, Vec8);
+    return DAG.getMergeValues({Result, Chain}, DL);
+  }
+
+  if (TotalBits == 64) {
+    SDVTList VTs = DAG.getVTList(MVT::v8i8, PtrVT, MVT::Other);
+    SDValue Imm0 = DAG.getConstant(0, DL, MVT::i32);
+    SDValue Ops[] = {Chain, Ptr, Imm0};
+    SDValue Node = DAG.getMemIntrinsicNode(RISCVISD::ESP_VLD_L_64_IP_M, DL, VTs,
+                                           Ops, MVT::v8i8, MMO);
+    SDValue Vec8 = Node.getValue(0);
+    Chain = Node.getValue(2);
+    SDValue Result = DAG.getNode(ISD::BITCAST, DL, VT, Vec8);
+    return DAG.getMergeValues({Result, Chain}, DL);
+  }
+
+  // Pairwise CONCAT requires a power-of-two block count; otherwise fall back.
+  if (TotalBits > 128 && (TotalBits % 128) == 0 &&
+      isPowerOf2_32(TotalBits / 128)) {
+    unsigned NumBlocks = TotalBits / 128;
+    SDVTList VTs = DAG.getVTList(MVT::v16i8, PtrVT, MVT::Other);
+    SDValue Imm16 = DAG.getConstant(16, DL, MVT::i32);
+    SDValue PtrCur = Ptr;
+    SDValue ChainCur = Chain;
+    SmallVector<SDValue, 8> BlockVals;
+    BlockVals.reserve(NumBlocks);
+    for (unsigned Rem = NumBlocks; Rem != 0; --Rem) {
+      SDValue Ops[] = {ChainCur, PtrCur, Imm16};
+      SDValue N = DAG.getMemIntrinsicNode(RISCVISD::ESP_VLD_128_IP_M, DL, VTs,
+                                          Ops, MVT::v16i8, MMO);
+      BlockVals.push_back(N.getValue(0));
+      PtrCur = N.getValue(1);
+      ChainCur = N.getValue(2);
+    }
+    MVT BlockVecVT = MVT::getVectorVT(VT.getVectorElementType(),
+                                      VT.getVectorNumElements() / NumBlocks);
+    SmallVector<SDValue, 8> Parts;
+    for (SDValue Bv : BlockVals)
+      Parts.push_back(DAG.getNode(ISD::BITCAST, DL, BlockVecVT, Bv));
+    SDValue Res =
+        concatESPVQRVectorBlocks(DAG, DL, VT.getVectorElementType(), Parts);
+    assert(Res.getSimpleValueType() == VT && "Wide tile load concat mismatch");
+    return DAG.getMergeValues({Res, ChainCur}, DL);
+  }
+
+  // Fallback: i32 lane loads + BUILD_VECTOR (unexpected tile bit-width).
+  unsigned NumChunks = TotalBits / 32;
+  assert(TotalBits % 32 == 0 && "ESPV chunk types are 32-bit aligned");
+  auto MMOFlags = MMO->getFlags();
+  AAMDNodes AAInfo = Load->getAAInfo();
+  Align BaseAlign = Load->getBaseAlign();
+
+  MVT VecI32VT = MVT::getVectorVT(MVT::i32, NumChunks);
+  SmallVector<SDValue, 16> Elts;
+  Elts.reserve(NumChunks);
+  for (unsigned I = 0; I < NumChunks; ++I) {
+    SDValue EltPtr =
+        DAG.getMemBasePlusOffset(Ptr, TypeSize::getFixed(I * 4), DL);
+    SDValue Ld = DAG.getLoad(MVT::i32, DL, Chain, EltPtr,
+                             Load->getPointerInfo().getWithOffset(I * 4),
+                             commonAlignment(BaseAlign, 4), MMOFlags, AAInfo);
+    Chain = Ld.getValue(1);
+    Elts.push_back(Ld.getValue(0));
+  }
+  SDValue VecI32 = DAG.getBuildVector(VecI32VT, DL, Elts);
+  SDValue Result = DAG.getNode(ISD::BITCAST, DL, VT, VecI32);
+  return DAG.getMergeValues({Result, Chain}, DL);
+}
+
+static SDValue lowerESPVI32ChunkVectorStore(StoreSDNode *Store,
+                                            SelectionDAG &DAG,
+                                            const RISCVSubtarget &Subtarget) {
+  if (!needESPVI32ChunkMemLowering(Subtarget))
+    return SDValue();
+  if (Store->isTruncatingStore())
+    return SDValue();
+
+  SDValue StoredVal = Store->getValue();
+  MVT VT = StoredVal.getSimpleValueType();
+  if (!isESPVI32ChunkTileVectorType(VT))
+    return SDValue();
+
+  SDLoc DL(Store);
+  unsigned TotalBits = VT.getFixedSizeInBits();
+  SDValue Chain = Store->getChain();
+  SDValue Ptr = Store->getBasePtr();
+  EVT PtrVT = Ptr.getValueType();
+  MachineMemOperand *MMO = Store->getMemOperand();
+
+  auto isConstIntegerBuildVector = [](SDValue V) -> bool {
+    while (V.getOpcode() == ISD::BITCAST)
+      V = V.getOperand(0);
+    auto *BV = dyn_cast<BuildVectorSDNode>(V.getNode());
+    if (!BV)
+      return false;
+    for (unsigned I = 0, E = BV->getNumOperands(); I != E; ++I) {
+      if (!isa<ConstantSDNode>(BV->getOperand(I).getNode()))
+        return false;
+    }
+    return true;
+  };
+
+  SDValue Imm0 = DAG.getConstant(0, DL, MVT::i32);
+  if (TotalBits == 128) {
+    if (!isConstIntegerBuildVector(StoredVal)) {
+      EVT MemVT = MVT::v16i8;
+      SDValue Vec = DAG.getNode(ISD::BITCAST, DL, MemVT, StoredVal);
+      SDVTList VTs = DAG.getVTList(PtrVT, MVT::Other);
+      SDValue Ops[] = {Chain, Vec, Ptr, Imm0};
+      SDValue Node = DAG.getMemIntrinsicNode(RISCVISD::ESP_VST_128_IP_M, DL,
+                                             VTs, Ops, MemVT, MMO);
+      return Node.getValue(1);
+    }
+  }
+
+  if (TotalBits == 64) {
+    if (!isConstIntegerBuildVector(StoredVal)) {
+      EVT MemVT = MVT::v8i8;
+      SDValue Vec = DAG.getNode(ISD::BITCAST, DL, MemVT, StoredVal);
+      SDVTList VTs = DAG.getVTList(PtrVT, MVT::Other);
+      SDValue Ops[] = {Chain, Vec, Ptr, Imm0};
+      SDValue Node = DAG.getMemIntrinsicNode(RISCVISD::ESP_VST_L_64_IP_M, DL,
+                                             VTs, Ops, MemVT, MMO);
+      return Node.getValue(1);
+    }
+  }
+
+  // Wider tile vectors: 128-bit QR stores in 16-byte steps so store-merge
+  // combine does not recreate the wide store and re-enter custom lowering.
+  if (TotalBits % 128 == 0) {
+    unsigned NumBlocks = TotalBits / 128;
+    MVT VecBytesVT = MVT::getVectorVT(MVT::i8, TotalBits / 8);
+    SDValue VecBytes = DAG.getNode(ISD::BITCAST, DL, VecBytesVT, StoredVal);
+    SDVTList VTs = DAG.getVTList(PtrVT, MVT::Other);
+    SDValue PtrCur = Ptr;
+    SDValue ChainCur = Chain;
+    SDValue Imm16 = DAG.getConstant(16, DL, MVT::i32);
+    for (unsigned B = 0; B < NumBlocks; ++B) {
+      SDValue Idx = DAG.getConstant(B * 16, DL, MVT::i32);
+      SDValue Block =
+          DAG.getNode(ISD::EXTRACT_SUBVECTOR, DL, MVT::v16i8, VecBytes, Idx);
+      SDValue Ops[] = {ChainCur, Block, PtrCur, Imm16};
+      SDValue Node = DAG.getMemIntrinsicNode(RISCVISD::ESP_VST_128_IP_M, DL,
+                                             VTs, Ops, MVT::v16i8, MMO);
+      PtrCur = Node.getValue(0);
+      ChainCur = Node.getValue(1);
+    }
+    return ChainCur;
+  }
+
+  // Fallback: scalarize into i32 chunk stores for unhandled widths.
+  unsigned NumChunks = TotalBits / 32;
+  auto MMOFlags = MMO->getFlags();
+  AAMDNodes AAInfo = Store->getAAInfo();
+  Align BaseAlign = Store->getBaseAlign();
+
+  MVT VecI32VT = MVT::getVectorVT(MVT::i32, NumChunks);
+  SDValue VecI32 = DAG.getNode(ISD::BITCAST, DL, VecI32VT, StoredVal);
+  for (unsigned I = 0; I < NumChunks; ++I) {
+    SDValue Elt = DAG.getExtractVectorElt(DL, MVT::i32, VecI32, I);
+    SDValue EltPtr =
+        DAG.getMemBasePlusOffset(Ptr, TypeSize::getFixed(I * 4), DL);
+    Chain = DAG.getStore(Chain, DL, Elt, EltPtr,
+                         Store->getPointerInfo().getWithOffset(I * 4),
+                         commonAlignment(BaseAlign, 4), MMOFlags, AAInfo);
+  }
+  return Chain;
+}
+
 static SDValue lowerPackedBoolVectorTruncStore(StoreSDNode *Store,
                                                SelectionDAG &DAG) {
   EVT MemVT = Store->getMemoryVT();
