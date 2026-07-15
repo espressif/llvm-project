@@ -8575,13 +8575,25 @@ static SDValue lowerESPVI32ChunkVectorStore(StoreSDNode *Store,
   AAMDNodes AAInfo = Store->getAAInfo();
   Align BaseAlign = Store->getBaseAlign();
 
-  MVT VecI32VT = MVT::getVectorVT(MVT::i32, NumChunks);
-  SDValue VecI32 = DAG.getNode(ISD::BITCAST, DL, VecI32VT, StoredVal);
+  SmallVector<SDValue, 4> Chunks;
+  Chunks.reserve(NumChunks);
+  if (TotalBits == 64) {
+    // Avoid EXTRACT_VECTOR_ELT (Expand): under-aligned QR_64 Custom STORE
+    // would re-enter this fallback and hang.
+    SDValue AsI64 = DAG.getBitcast(MVT::i64, StoredVal);
+    auto [Lo, Hi] = DAG.SplitScalar(AsI64, DL, MVT::i32, MVT::i32);
+    Chunks.push_back(Lo);
+    Chunks.push_back(Hi);
+  } else {
+    MVT VecI32VT = MVT::getVectorVT(MVT::i32, NumChunks);
+    SDValue VecI32 = DAG.getNode(ISD::BITCAST, DL, VecI32VT, StoredVal);
+    for (unsigned I = 0; I < NumChunks; ++I)
+      Chunks.push_back(DAG.getExtractVectorElt(DL, MVT::i32, VecI32, I));
+  }
   for (unsigned I = 0; I < NumChunks; ++I) {
-    SDValue Elt = DAG.getExtractVectorElt(DL, MVT::i32, VecI32, I);
     SDValue EltPtr =
         DAG.getMemBasePlusOffset(Ptr, TypeSize::getFixed(I * 4), DL);
-    Chain = DAG.getStore(Chain, DL, Elt, EltPtr,
+    Chain = DAG.getStore(Chain, DL, Chunks[I], EltPtr,
                          Store->getPointerInfo().getWithOffset(I * 4),
                          commonAlignment(BaseAlign, 4), MMOFlags, AAInfo);
   }
@@ -26724,15 +26736,22 @@ bool RISCVTargetLowering::isMulAddWithConstProfitable(SDValue AddNode,
 bool RISCVTargetLowering::allowsMemoryAccessForAlignment(
     LLVMContext &Context, const DataLayout &DL, EVT VT, unsigned AddrSpace,
     Align Alignment, MachineMemOperand::Flags Flags, unsigned *Fast) const {
-  // ESPV 128-bit memory instructions require 16-byte alignment. The data
-  // layout may still treat <4 x i32> as 8-byte aligned on RV32, which lets
-  // the vectorizer emit v4i32 loads/stores that cannot be selected.
+  // ESPV vector memory opcodes have hard alignment floors. Prefer mismatched
+  // accesses go through scalar i32 chunk legalization
+  // (preferESPVScalarChunkMemOps) instead of claiming they are "fast".
+  //
+  // Do not treat non-128b fixed vectors as universally illegal: QR_64
+  // (v2i32/v4i16/v8i8) uses ESP_VLD/VST_L_64_*, and wider tiles use the
+  // 128-bit block sequence. Forcing ScalarMem for those types re-enters
+  // Expand EXTRACT_VECTOR_ELT -> Custom tile STORE and hangs.
   if (Subtarget.hasESPVTargetLowering() && VT.isSimple() && VT.isVector()) {
     MVT SVT = VT.getSimpleVT();
-    // ESPV supports only 128-bit fixed vectors in memory ops. Treat any other
-    // fixed-length vector memory access as illegal so it gets scalarized.
-    if (SVT.isFixedLengthVector() && SVT != MVT::v4i32 && SVT != MVT::v8i16 &&
-        SVT != MVT::v16i8) {
+    if (SVT == MVT::v2i32 || SVT == MVT::v4i16 || SVT == MVT::v8i8) {
+      if (Alignment >= Align(8)) {
+        if (Fast)
+          *Fast = 1;
+        return true;
+      }
       if (Fast)
         *Fast = 0;
       return false;
