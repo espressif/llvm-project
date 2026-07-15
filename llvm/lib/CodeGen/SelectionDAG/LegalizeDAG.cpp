@@ -509,7 +509,8 @@ void SelectionDAGLegalize::LegalizeStoreOps(SDNode *Node) {
     default: llvm_unreachable("This action is not supported yet!");
     case TargetLowering::Legal: {
       // If this is an unaligned store and the target doesn't support it,
-      // expand it.
+      // expand it. Alignment-only: allowsMemoryAccess also rejects feature
+      // gaps (e.g. X86 AVX1 256-bit nontemporal) handled by target combines.
       EVT MemVT = ST->getMemoryVT();
       const DataLayout &DL = DAG.getDataLayout();
       if (!TLI.allowsMemoryAccessForAlignment(*DAG.getContext(), DL, MemVT,
@@ -545,6 +546,12 @@ void SelectionDAGLegalize::LegalizeStoreOps(SDNode *Node) {
   LLVM_DEBUG(dbgs() << "Legalizing truncating store operations\n");
   SDValue Value = ST->getValue();
   EVT StVT = ST->getMemoryVT();
+
+  if (SDValue Res = TLI.legalizeTruncStoreBeforePromotion(ST, DAG)) {
+    ReplaceNode(SDValue(Node, 0), Res);
+    return;
+  }
+
   TypeSize StWidth = StVT.getSizeInBits();
   TypeSize StSize = StVT.getStoreSizeInBits();
   auto &DL = DAG.getDataLayout();
@@ -616,7 +623,8 @@ void SelectionDAGLegalize::LegalizeStoreOps(SDNode *Node) {
     SDValue Result = DAG.getNode(ISD::TokenFactor, dl, MVT::Other, Lo, Hi);
     ReplaceNode(SDValue(Node, 0), Result);
   } else {
-    switch (TLI.getTruncStoreAction(ST->getValue().getValueType(), StVT)) {
+    switch (TLI.getTruncStoreActionForLegalization(
+        ST->getValue().getValueType(), StVT)) {
     default: llvm_unreachable("This action is not supported yet!");
     case TargetLowering::Legal: {
       EVT MemVT = ST->getMemoryVT();
@@ -734,7 +742,16 @@ void SelectionDAGLegalize::LegalizeLoadOps(SDNode *Node) {
   MachineMemOperand::Flags MMOFlags = LD->getMemOperand()->getFlags();
   AAMDNodes AAInfo = LD->getAAInfo();
 
+  // Custom packed bool vector extloads must not be promoted to byte-sized
+  // integer loads; the target needs to lower the original memory type.
+  bool HasCustomPackedBoolVectorExtLoad =
+      SrcVT.isSimple() && SrcVT.isFixedLengthVector() &&
+      SrcVT.getVectorElementType() == MVT::i1 &&
+      Node->getValueType(0).isSimple() && Node->getValueType(0).isVector() &&
+      TLI.getLoadExtAction(ExtType, Node->getValueType(0), SrcVT) ==
+          TargetLowering::Custom;
   if (SrcWidth != SrcVT.getStoreSizeInBits() &&
+      !HasCustomPackedBoolVectorExtLoad &&
       // Some targets pretend to have an i1 loading operation, and actually
       // load an i8.  This trick is correct for ZEXTLOAD because the top 7
       // bits are guaranteed to be zero; it helps the optimizers understand
@@ -744,7 +761,7 @@ void SelectionDAGLegalize::LegalizeLoadOps(SDNode *Node) {
       // Until such a way is found, don't insist on promoting i1 here.
       (SrcVT != MVT::i1 ||
        TLI.getLoadExtAction(ExtType, Node->getValueType(0), MVT::i1) ==
-         TargetLowering::Promote)) {
+           TargetLowering::Promote)) {
     // Promote to a byte-sized load if not loading an integral number of
     // bytes.  For example, promote EXTLOAD:i20 -> EXTLOAD:i24.
     unsigned NewWidth = SrcVT.getStoreSizeInBits();
@@ -874,8 +891,8 @@ void SelectionDAGLegalize::LegalizeLoadOps(SDNode *Node) {
         // expand it.
         EVT MemVT = LD->getMemoryVT();
         const DataLayout &DL = DAG.getDataLayout();
-        if (!TLI.allowsMemoryAccess(*DAG.getContext(), DL, MemVT,
-                                    *LD->getMemOperand())) {
+        if (!TLI.allowsMemoryAccessForAlignment(*DAG.getContext(), DL, MemVT,
+                                                *LD->getMemOperand())) {
           std::tie(Value, Chain) = TLI.expandUnalignedLoad(LD, DAG);
         }
       }

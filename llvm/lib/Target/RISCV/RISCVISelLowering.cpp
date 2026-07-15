@@ -165,6 +165,12 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
     setTruncStoreAction(MVT::v16i8, MVT::v16i1, Custom);
     setLoadExtAction({ISD::EXTLOAD, ISD::SEXTLOAD, ISD::ZEXTLOAD}, MVT::v16i8,
                      MVT::v16i1, Custom);
+    setTruncStoreAction(MVT::v16i16, MVT::v16i1, Custom);
+    setLoadExtAction({ISD::EXTLOAD, ISD::SEXTLOAD, ISD::ZEXTLOAD}, MVT::v16i16,
+                     MVT::v16i1, Custom);
+    setTruncStoreAction(MVT::v16i32, MVT::v16i1, Custom);
+    setLoadExtAction({ISD::EXTLOAD, ISD::SEXTLOAD, ISD::ZEXTLOAD}, MVT::v16i32,
+                     MVT::v16i1, Custom);
     setTruncStoreAction(MVT::v2i32, MVT::v2i1, Custom);
     setLoadExtAction({ISD::EXTLOAD, ISD::SEXTLOAD, ISD::ZEXTLOAD}, MVT::v2i32,
                      MVT::v2i1, Custom);
@@ -183,9 +189,6 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
     setTruncStoreAction(MVT::v4i8, MVT::v4i1, Custom);
     setLoadExtAction({ISD::EXTLOAD, ISD::SEXTLOAD, ISD::ZEXTLOAD}, MVT::v4i8,
                      MVT::v4i1, Custom);
-    setTruncStoreAction(MVT::v8i16, MVT::v8i8, Custom);
-    setLoadExtAction({ISD::EXTLOAD, ISD::SEXTLOAD, ISD::ZEXTLOAD}, MVT::v8i16,
-                     MVT::v8i8, Custom);
     setTruncStoreAction(MVT::v8i16, MVT::v8i1, Custom);
     setLoadExtAction({ISD::EXTLOAD, ISD::SEXTLOAD, ISD::ZEXTLOAD}, MVT::v8i16,
                      MVT::v8i1, Custom);
@@ -8264,6 +8267,160 @@ RISCVTargetLowering::lowerXAndesBfHCvtBFloat16Store(SDValue Op,
       ST->getMemOperand());
 }
 
+static bool isPackedBoolVectorMemVT(EVT VT) {
+  return VT.isFixedLengthVector() && VT.getVectorElementType() == MVT::i1 &&
+         VT.getFixedSizeInBits() <= 16;
+}
+
+/// Truncating store that packs 0/1 lanes (e.g. v4i32 SETCC masks) into a scalar
+/// i8/i16 stack slot, or into a packed i1 vector in memory.
+static bool isESPVPackedMaskTruncStore(EVT ValVT, EVT MemVT) {
+  if (!ValVT.isFixedLengthVector())
+    return false;
+  MVT ValEltVT = ValVT.getVectorElementType().getSimpleVT();
+  if (isPackedBoolVectorMemVT(MemVT))
+    return MemVT.getVectorElementCount() == ValVT.getVectorElementCount() &&
+           MemVT.getScalarSizeInBits() < ValVT.getScalarSizeInBits();
+  if (ValEltVT != MVT::i1 && ValEltVT != MVT::i16 && ValEltVT != MVT::i32)
+    return false;
+  if (MemVT.isVector() || !MemVT.isInteger())
+    return false;
+  unsigned NumElts = ValVT.getVectorNumElements();
+  if (NumElts == 0)
+    return false;
+  unsigned MemBits = MemVT.getSizeInBits();
+  // i1/i2/i4 stack slots use a full byte in memory; pack up to 8 lanes.
+  if (MemBits < 8)
+    return NumElts <= 8;
+  return NumElts <= MemBits;
+}
+
+static SDValue lowerPackedBoolVectorExtLoad(LoadSDNode *Load,
+                                            SelectionDAG &DAG) {
+  EVT MemVT = Load->getMemoryVT();
+  EVT DstVT = Load->getValueType(0);
+  if (!isPackedBoolVectorMemVT(MemVT) || !DstVT.isFixedLengthVector() ||
+      MemVT.getVectorElementCount() != DstVT.getVectorElementCount() ||
+      MemVT.getScalarSizeInBits() >= DstVT.getScalarSizeInBits())
+    return SDValue();
+
+  SDLoc DL(Load);
+  MVT PackedVT = MemVT.getFixedSizeInBits() <= 8 ? MVT::i8 : MVT::i16;
+  SDValue Packed =
+      DAG.getLoad(PackedVT, DL, Load->getChain(), Load->getBasePtr(),
+                  Load->getPointerInfo(), Load->getBaseAlign(),
+                  Load->getMemOperand()->getFlags(), Load->getAAInfo());
+  SDValue Bits = DAG.getZExtOrTrunc(Packed, DL, MVT::i32);
+  SDValue Chain = Packed.getValue(1);
+  MVT DstEltVT = DstVT.getVectorElementType().getSimpleVT();
+  SmallVector<SDValue, 8> Elts;
+  unsigned NumElts = MemVT.getVectorNumElements();
+  Elts.reserve(NumElts);
+
+  for (unsigned I = 0; I != NumElts; ++I) {
+    SDValue Bit = Bits;
+    if (I != 0)
+      Bit = DAG.getNode(ISD::SRL, DL, MVT::i32, Bit,
+                        DAG.getConstant(I, DL, MVT::i32));
+    Bit = DAG.getNode(ISD::AND, DL, MVT::i32, Bit,
+                      DAG.getConstant(1, DL, MVT::i32));
+    SDValue Elt = DAG.getZExtOrTrunc(Bit, DL, DstEltVT);
+    if (Load->getExtensionType() == ISD::SEXTLOAD)
+      Elt = DAG.getNode(ISD::SUB, DL, DstEltVT,
+                        DAG.getConstant(0, DL, DstEltVT), Elt);
+    Elts.push_back(Elt);
+  }
+
+  SDValue Vec = DAG.getBuildVector(DstVT.getSimpleVT(), DL, Elts);
+  return DAG.getMergeValues({Vec, Chain}, DL);
+}
+
+static SDValue lowerPackedBoolVectorTruncStore(StoreSDNode *Store,
+                                               SelectionDAG &DAG) {
+  EVT MemVT = Store->getMemoryVT();
+  SDValue Val = Store->getValue();
+  EVT ValVT = Val.getValueType();
+  if (!Store->isTruncatingStore() || !isESPVPackedMaskTruncStore(ValVT, MemVT))
+    return SDValue();
+
+  SDLoc DL(Store);
+  SDValue Packed = DAG.getConstant(0, DL, MVT::i32);
+  MVT ValEltVT = ValVT.getVectorElementType().getSimpleVT();
+  unsigned NumElts = ValVT.getVectorNumElements();
+  SDValue Chain = Store->getChain();
+  SmallVector<SDValue, 8> LaneVals;
+  LaneVals.reserve(NumElts);
+
+  if (auto *Load = dyn_cast<LoadSDNode>(Val);
+      Load && ISD::isNormalLoad(Load) && Load->isSimple() &&
+      Load->getMemoryVT() == ValVT && Store->getChain() == SDValue(Load, 1)) {
+    unsigned EltBytes = ValEltVT.getStoreSize().getFixedValue();
+    Chain = Load->getChain();
+    for (unsigned I = 0; I != NumElts; ++I) {
+      SDValue EltPtr = DAG.getMemBasePlusOffset(
+          Load->getBasePtr(), TypeSize::getFixed(I * EltBytes), DL);
+      SDValue Elt =
+          DAG.getLoad(ValEltVT, DL, Chain, EltPtr,
+                      Load->getPointerInfo().getWithOffset(I * EltBytes),
+                      commonAlignment(Load->getBaseAlign(), EltBytes),
+                      Load->getMemOperand()->getFlags(), Load->getAAInfo());
+      Chain = Elt.getValue(1);
+      LaneVals.push_back(Elt);
+    }
+  }
+
+  for (unsigned I = 0; I != NumElts; ++I) {
+    SDValue Elt = LaneVals.empty()
+                      ? DAG.getExtractVectorElt(DL, ValEltVT, Val, I)
+                      : LaneVals[I];
+    SDValue Bit = DAG.getNode(ISD::AND, DL, ValEltVT, Elt,
+                              DAG.getConstant(1, DL, ValEltVT));
+    Bit = DAG.getZExtOrTrunc(Bit, DL, MVT::i32);
+    if (I != 0)
+      Bit = DAG.getNode(ISD::SHL, DL, MVT::i32, Bit,
+                        DAG.getConstant(I, DL, MVT::i32));
+    Packed = DAG.getNode(ISD::OR, DL, MVT::i32, Packed, Bit);
+  }
+
+  MVT PackedVT =
+      MemVT.getStoreSizeInBits().getFixedValue() >= 16 ? MVT::i16 : MVT::i8;
+  Packed = DAG.getNode(ISD::TRUNCATE, DL, PackedVT, Packed);
+  return DAG.getStore(Chain, DL, Packed, Store->getBasePtr(),
+                      Store->getPointerInfo(), Store->getBaseAlign(),
+                      Store->getMemOperand()->getFlags(), Store->getAAInfo());
+}
+
+TargetLowering::LegalizeAction
+RISCVTargetLowering::getTruncStoreActionForLegalization(EVT ValVT,
+                                                        EVT MemVT) const {
+  // Base TargetLowering returns Expand for extended EVTs before consulting
+  // TruncStoreActions; generic expansion then builds invalid trunc-stores
+  // between vector and scalar types of the same bit width. ESPV custom STORE
+  // lowering handles same-width vector/scalar reinterpret stores (including
+  // extended EVTs and integer/float mixes, e.g. v4f32 vs i128).
+  if (Subtarget.hasESPVTargetLowering()) {
+    if (ValVT.isSimple() && MemVT.isSimple() &&
+        ValVT.getSimpleVT() == MVT::v8i8 && MemVT.getSimpleVT() == MVT::v8i1)
+      return Expand;
+    if (isESPVPackedMaskTruncStore(ValVT, MemVT))
+      return Custom;
+  }
+  return TargetLowering::getTruncStoreAction(ValVT, MemVT);
+}
+
+SDValue RISCVTargetLowering::legalizeTruncStoreBeforePromotion(
+    StoreSDNode *ST, SelectionDAG &DAG) const {
+  if (!Subtarget.hasESPVTargetLowering())
+    return SDValue();
+  if (getTruncStoreActionForLegalization(ST->getValue().getValueType(),
+                                         ST->getMemoryVT()) != Custom)
+    return SDValue();
+  SDValue Res = LowerOperation(SDValue(ST, 0), DAG);
+  if (Res && Res != SDValue(ST, 0))
+    return Res;
+  return SDValue();
+}
+
 SDValue RISCVTargetLowering::LowerOperation(SDValue Op,
                                             SelectionDAG &DAG) const {
   switch (Op.getOpcode()) {
@@ -8960,6 +9117,11 @@ SDValue RISCVTargetLowering::LowerOperation(SDValue Op,
   }
   case ISD::LOAD: {
     auto *Load = cast<LoadSDNode>(Op);
+    if (Subtarget.hasESPVTargetLowering() &&
+        Load->getExtensionType() != ISD::NON_EXTLOAD) {
+      if (SDValue V = lowerPackedBoolVectorExtLoad(Load, DAG))
+        return V;
+    }
     EVT VT = Load->getValueType(0);
     if (VT == MVT::f64) {
       assert(Subtarget.hasStdExtZdinx() && !Subtarget.hasStdExtZilsd() &&
@@ -9032,6 +9194,9 @@ SDValue RISCVTargetLowering::LowerOperation(SDValue Op,
   }
   case ISD::STORE: {
     auto *Store = cast<StoreSDNode>(Op);
+    if (Subtarget.hasESPVTargetLowering())
+      if (SDValue V = lowerPackedBoolVectorTruncStore(Store, DAG))
+        return V;
     SDValue StoredVal = Store->getValue();
     EVT VT = StoredVal.getValueType();
     if (Subtarget.enablePExtSIMDCodeGen()) {
@@ -22197,6 +22362,11 @@ SDValue RISCVTargetLowering::PerformDAGCombine(SDNode *N,
       break;
 
     auto *Store = cast<StoreSDNode>(N);
+    if (Subtarget.hasESPVTargetLowering() && Store->isTruncatingStore() &&
+        DCI.isBeforeLegalize()) {
+      if (SDValue V = lowerPackedBoolVectorTruncStore(Store, DAG))
+        return V;
+    }
     SDValue Chain = Store->getChain();
     EVT MemVT = Store->getMemoryVT();
     SDValue Val = Store->getValue();
@@ -26014,6 +26184,13 @@ bool RISCVTargetLowering::allowsMemoryAccessForAlignment(
   }
   return TargetLoweringBase::allowsMemoryAccessForAlignment(
       Context, DL, VT, AddrSpace, Alignment, Flags, Fast);
+}
+
+bool RISCVTargetLowering::allowsMemoryAccess(
+    LLVMContext &Context, const DataLayout &DL, EVT VT, unsigned AddrSpace,
+    Align Alignment, MachineMemOperand::Flags Flags, unsigned *Fast) const {
+  return allowsMemoryAccessForAlignment(Context, DL, VT, AddrSpace, Alignment,
+                                        Flags, Fast);
 }
 
 bool RISCVTargetLowering::allowsMisalignedMemoryAccesses(

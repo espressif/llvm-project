@@ -1566,6 +1566,21 @@ public:
     return TruncStoreActions[ValI][MemI];
   }
 
+  /// Hook for SelectionDAG legalization. Targets may override to adjust trunc
+  /// store legality for extended EVTs or other cases not captured by the table.
+  virtual LegalizeAction getTruncStoreActionForLegalization(EVT ValVT,
+                                                            EVT MemVT) const {
+    return getTruncStoreAction(ValVT, MemVT);
+  }
+
+  /// Optional hook to lower truncating stores before generic sub-byte store
+  /// promotion in SelectionDAG legalize (which assumes scalar values). Return
+  /// the replacement chain SDValue, or null to use the default paths.
+  virtual SDValue legalizeTruncStoreBeforePromotion(StoreSDNode *ST,
+                                                    SelectionDAG &DAG) const {
+    return SDValue();
+  }
+
   /// Return true if the specified store with truncation is legal on this
   /// target.
   bool isTruncStoreLegal(EVT ValVT, EVT MemVT) const {
