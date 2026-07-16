@@ -11265,8 +11265,12 @@ define void @test_srcunalign_dst8_constant_size_16(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst8_constant_size_16(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = load i64, ptr [[B]], align 1
-; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[TMP0:%.*]] = load i32, ptr [[B]], align 1
+; CHECK-NEXT:    store i32 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[SRC_4_I:%.*]] = getelementptr i8, ptr [[B]], i32 4
+; CHECK-NEXT:    [[DST_4_I:%.*]] = getelementptr i8, ptr [[A]], i32 4
+; CHECK-NEXT:    [[TMP2:%.*]] = load i32, ptr [[SRC_4_I]], align 1
+; CHECK-NEXT:    store i32 [[TMP2]], ptr [[DST_4_I]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    [[TMP1:%.*]] = load i64, ptr [[ADD_PTR_I]], align 1
@@ -11283,8 +11287,12 @@ define void @test_srcunalign_dst8_constant_size_17(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst8_constant_size_17(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = load i64, ptr [[B]], align 1
-; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[TMP0:%.*]] = load i32, ptr [[B]], align 1
+; CHECK-NEXT:    store i32 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[SRC_4_I:%.*]] = getelementptr i8, ptr [[B]], i32 4
+; CHECK-NEXT:    [[DST_4_I:%.*]] = getelementptr i8, ptr [[A]], i32 4
+; CHECK-NEXT:    [[TMP2:%.*]] = load i32, ptr [[SRC_4_I]], align 1
+; CHECK-NEXT:    store i32 [[TMP2]], ptr [[DST_4_I]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    [[TMP1:%.*]] = load i64, ptr [[ADD_PTR_I]], align 1
@@ -11305,8 +11313,12 @@ define void @test_srcunalign_dst8_constant_size_31(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst8_constant_size_31(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = load i64, ptr [[B]], align 1
-; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[TMP0:%.*]] = load i32, ptr [[B]], align 1
+; CHECK-NEXT:    store i32 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[SRC_4_I:%.*]] = getelementptr i8, ptr [[B]], i32 4
+; CHECK-NEXT:    [[DST_4_I:%.*]] = getelementptr i8, ptr [[A]], i32 4
+; CHECK-NEXT:    [[TMP5:%.*]] = load i32, ptr [[SRC_4_I]], align 1
+; CHECK-NEXT:    store i32 [[TMP5]], ptr [[DST_4_I]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    [[TMP1:%.*]] = load i64, ptr [[ADD_PTR_I]], align 1
@@ -11339,8 +11351,12 @@ define void @test_srcunalign_dst8_constant_size_32(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst8_constant_size_32(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = load i64, ptr [[B]], align 1
-; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[TMP0:%.*]] = load i32, ptr [[B]], align 1
+; CHECK-NEXT:    store i32 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[SRC_4_I:%.*]] = getelementptr i8, ptr [[B]], i32 4
+; CHECK-NEXT:    [[DST_4_I:%.*]] = getelementptr i8, ptr [[A]], i32 4
+; CHECK-NEXT:    [[TMP1:%.*]] = load i32, ptr [[SRC_4_I]], align 1
+; CHECK-NEXT:    store i32 [[TMP1]], ptr [[DST_4_I]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    call void @esp32p4MemCpySrcunalignedDst16From16to31Index3(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
@@ -11360,8 +11376,12 @@ define void @test_srcunalign_dst8_constant_size_33(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst8_constant_size_33(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = load i64, ptr [[B]], align 1
-; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[TMP0:%.*]] = load i32, ptr [[B]], align 1
+; CHECK-NEXT:    store i32 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[SRC_4_I:%.*]] = getelementptr i8, ptr [[B]], i32 4
+; CHECK-NEXT:    [[DST_4_I:%.*]] = getelementptr i8, ptr [[A]], i32 4
+; CHECK-NEXT:    [[TMP1:%.*]] = load i32, ptr [[SRC_4_I]], align 1
+; CHECK-NEXT:    store i32 [[TMP1]], ptr [[DST_4_I]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    call void @esp32p4MemCpySrcunalignedDst16From16to31Index4(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
@@ -11385,8 +11405,12 @@ define void @test_srcunalign_dst8_constant_size_47(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst8_constant_size_47(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = load i64, ptr [[B]], align 1
-; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[TMP0:%.*]] = load i32, ptr [[B]], align 1
+; CHECK-NEXT:    store i32 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[SRC_4_I:%.*]] = getelementptr i8, ptr [[B]], i32 4
+; CHECK-NEXT:    [[DST_4_I:%.*]] = getelementptr i8, ptr [[A]], i32 4
+; CHECK-NEXT:    [[TMP1:%.*]] = load i32, ptr [[SRC_4_I]], align 1
+; CHECK-NEXT:    store i32 [[TMP1]], ptr [[DST_4_I]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    call void @esp32p4MemCpySrcunalignedDst16From16to31Index5(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
@@ -11422,8 +11446,12 @@ define void @test_srcunalign_dst8_constant_size_48(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst8_constant_size_48(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = load i64, ptr [[B]], align 1
-; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[TMP0:%.*]] = load i32, ptr [[B]], align 1
+; CHECK-NEXT:    store i32 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[SRC_4_I:%.*]] = getelementptr i8, ptr [[B]], i32 4
+; CHECK-NEXT:    [[DST_4_I:%.*]] = getelementptr i8, ptr [[A]], i32 4
+; CHECK-NEXT:    [[TMP1:%.*]] = load i32, ptr [[SRC_4_I]], align 1
+; CHECK-NEXT:    store i32 [[TMP1]], ptr [[DST_4_I]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    call void @esp32p4MemCpySrcunalignedDst16From32To47(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
@@ -11443,8 +11471,12 @@ define void @test_srcunalign_dst8_constant_size_49(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst8_constant_size_49(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = load i64, ptr [[B]], align 1
-; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[TMP0:%.*]] = load i32, ptr [[B]], align 1
+; CHECK-NEXT:    store i32 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[SRC_4_I:%.*]] = getelementptr i8, ptr [[B]], i32 4
+; CHECK-NEXT:    [[DST_4_I:%.*]] = getelementptr i8, ptr [[A]], i32 4
+; CHECK-NEXT:    [[TMP1:%.*]] = load i32, ptr [[SRC_4_I]], align 1
+; CHECK-NEXT:    store i32 [[TMP1]], ptr [[DST_4_I]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    call void @esp32p4MemCpySrcunalignedDst16From32To47(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
@@ -11468,8 +11500,12 @@ define void @test_srcunalign_dst8_constant_size_63(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst8_constant_size_63(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = load i64, ptr [[B]], align 1
-; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[TMP0:%.*]] = load i32, ptr [[B]], align 1
+; CHECK-NEXT:    store i32 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[SRC_4_I:%.*]] = getelementptr i8, ptr [[B]], i32 4
+; CHECK-NEXT:    [[DST_4_I:%.*]] = getelementptr i8, ptr [[A]], i32 4
+; CHECK-NEXT:    [[TMP1:%.*]] = load i32, ptr [[SRC_4_I]], align 1
+; CHECK-NEXT:    store i32 [[TMP1]], ptr [[DST_4_I]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    call void @esp32p4MemCpySrcunalignedDst16From32To47(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
@@ -11505,8 +11541,12 @@ define void @test_srcunalign_dst8_constant_size_64(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst8_constant_size_64(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = load i64, ptr [[B]], align 1
-; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[TMP0:%.*]] = load i32, ptr [[B]], align 1
+; CHECK-NEXT:    store i32 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[SRC_4_I:%.*]] = getelementptr i8, ptr [[B]], i32 4
+; CHECK-NEXT:    [[DST_4_I:%.*]] = getelementptr i8, ptr [[A]], i32 4
+; CHECK-NEXT:    [[TMP1:%.*]] = load i32, ptr [[SRC_4_I]], align 1
+; CHECK-NEXT:    store i32 [[TMP1]], ptr [[DST_4_I]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index6(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
@@ -11526,8 +11566,12 @@ define void @test_srcunalign_dst8_constant_size_65(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst8_constant_size_65(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = load i64, ptr [[B]], align 1
-; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[TMP0:%.*]] = load i32, ptr [[B]], align 1
+; CHECK-NEXT:    store i32 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[SRC_4_I:%.*]] = getelementptr i8, ptr [[B]], i32 4
+; CHECK-NEXT:    [[DST_4_I:%.*]] = getelementptr i8, ptr [[A]], i32 4
+; CHECK-NEXT:    [[TMP1:%.*]] = load i32, ptr [[SRC_4_I]], align 1
+; CHECK-NEXT:    store i32 [[TMP1]], ptr [[DST_4_I]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index7(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
@@ -11551,8 +11595,12 @@ define void @test_srcunalign_dst8_constant_size_80(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst8_constant_size_80(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = load i64, ptr [[B]], align 1
-; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[TMP0:%.*]] = load i32, ptr [[B]], align 1
+; CHECK-NEXT:    store i32 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[SRC_4_I:%.*]] = getelementptr i8, ptr [[B]], i32 4
+; CHECK-NEXT:    [[DST_4_I:%.*]] = getelementptr i8, ptr [[A]], i32 4
+; CHECK-NEXT:    [[TMP1:%.*]] = load i32, ptr [[SRC_4_I]], align 1
+; CHECK-NEXT:    store i32 [[TMP1]], ptr [[DST_4_I]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.7(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
@@ -11572,8 +11620,12 @@ define void @test_srcunalign_dst8_constant_size_81(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst8_constant_size_81(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = load i64, ptr [[B]], align 1
-; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[TMP0:%.*]] = load i32, ptr [[B]], align 1
+; CHECK-NEXT:    store i32 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[SRC_4_I:%.*]] = getelementptr i8, ptr [[B]], i32 4
+; CHECK-NEXT:    [[DST_4_I:%.*]] = getelementptr i8, ptr [[A]], i32 4
+; CHECK-NEXT:    [[TMP1:%.*]] = load i32, ptr [[SRC_4_I]], align 1
+; CHECK-NEXT:    store i32 [[TMP1]], ptr [[DST_4_I]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.8(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
@@ -11614,8 +11666,12 @@ define void @test_srcunalign_dst8_constant_size_96(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst8_constant_size_96(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = load i64, ptr [[B]], align 1
-; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[TMP0:%.*]] = load i32, ptr [[B]], align 1
+; CHECK-NEXT:    store i32 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[SRC_4_I:%.*]] = getelementptr i8, ptr [[B]], i32 4
+; CHECK-NEXT:    [[DST_4_I:%.*]] = getelementptr i8, ptr [[A]], i32 4
+; CHECK-NEXT:    [[TMP1:%.*]] = load i32, ptr [[SRC_4_I]], align 1
+; CHECK-NEXT:    store i32 [[TMP1]], ptr [[DST_4_I]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index6(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
@@ -11635,8 +11691,12 @@ define void @test_srcunalign_dst8_constant_size_112(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst8_constant_size_112(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = load i64, ptr [[B]], align 1
-; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[TMP0:%.*]] = load i32, ptr [[B]], align 1
+; CHECK-NEXT:    store i32 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[SRC_4_I:%.*]] = getelementptr i8, ptr [[B]], i32 4
+; CHECK-NEXT:    [[DST_4_I:%.*]] = getelementptr i8, ptr [[A]], i32 4
+; CHECK-NEXT:    [[TMP1:%.*]] = load i32, ptr [[SRC_4_I]], align 1
+; CHECK-NEXT:    store i32 [[TMP1]], ptr [[DST_4_I]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index8(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
@@ -11656,8 +11716,12 @@ define void @test_srcunalign_dst8_constant_size_124(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst8_constant_size_124(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = load i64, ptr [[B]], align 1
-; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[TMP0:%.*]] = load i32, ptr [[B]], align 1
+; CHECK-NEXT:    store i32 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[SRC_4_I:%.*]] = getelementptr i8, ptr [[B]], i32 4
+; CHECK-NEXT:    [[DST_4_I:%.*]] = getelementptr i8, ptr [[A]], i32 4
+; CHECK-NEXT:    [[TMP1:%.*]] = load i32, ptr [[SRC_4_I]], align 1
+; CHECK-NEXT:    store i32 [[TMP1]], ptr [[DST_4_I]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index9(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
@@ -11685,8 +11749,12 @@ define void @test_srcunalign_dst8_constant_size_127(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst8_constant_size_127(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = load i64, ptr [[B]], align 1
-; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[TMP0:%.*]] = load i32, ptr [[B]], align 1
+; CHECK-NEXT:    store i32 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[SRC_4_I:%.*]] = getelementptr i8, ptr [[B]], i32 4
+; CHECK-NEXT:    [[DST_4_I:%.*]] = getelementptr i8, ptr [[A]], i32 4
+; CHECK-NEXT:    [[TMP1:%.*]] = load i32, ptr [[SRC_4_I]], align 1
+; CHECK-NEXT:    store i32 [[TMP1]], ptr [[DST_4_I]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index10(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
@@ -11722,8 +11790,12 @@ define void @test_srcunalign_dst8_constant_size_128(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst8_constant_size_128(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = load i64, ptr [[B]], align 1
-; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[TMP0:%.*]] = load i32, ptr [[B]], align 1
+; CHECK-NEXT:    store i32 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[SRC_4_I:%.*]] = getelementptr i8, ptr [[B]], i32 4
+; CHECK-NEXT:    [[DST_4_I:%.*]] = getelementptr i8, ptr [[A]], i32 4
+; CHECK-NEXT:    [[TMP1:%.*]] = load i32, ptr [[SRC_4_I]], align 1
+; CHECK-NEXT:    store i32 [[TMP1]], ptr [[DST_4_I]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.9(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
@@ -11743,8 +11815,12 @@ define void @test_srcunalign_dst8_constant_size_129(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst8_constant_size_129(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = load i64, ptr [[B]], align 1
-; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[TMP0:%.*]] = load i32, ptr [[B]], align 1
+; CHECK-NEXT:    store i32 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[SRC_4_I:%.*]] = getelementptr i8, ptr [[B]], i32 4
+; CHECK-NEXT:    [[DST_4_I:%.*]] = getelementptr i8, ptr [[A]], i32 4
+; CHECK-NEXT:    [[TMP1:%.*]] = load i32, ptr [[SRC_4_I]], align 1
+; CHECK-NEXT:    store i32 [[TMP1]], ptr [[DST_4_I]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.10(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
@@ -11768,8 +11844,12 @@ define void @test_srcunalign_dst8_constant_size_255(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst8_constant_size_255(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = load i64, ptr [[B]], align 1
-; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[TMP0:%.*]] = load i32, ptr [[B]], align 1
+; CHECK-NEXT:    store i32 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[SRC_4_I:%.*]] = getelementptr i8, ptr [[B]], i32 4
+; CHECK-NEXT:    [[DST_4_I:%.*]] = getelementptr i8, ptr [[A]], i32 4
+; CHECK-NEXT:    [[TMP1:%.*]] = load i32, ptr [[SRC_4_I]], align 1
+; CHECK-NEXT:    store i32 [[TMP1]], ptr [[DST_4_I]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index7(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
@@ -11805,8 +11885,12 @@ define void @test_srcunalign_dst8_constant_size_256(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst8_constant_size_256(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = load i64, ptr [[B]], align 1
-; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[TMP0:%.*]] = load i32, ptr [[B]], align 1
+; CHECK-NEXT:    store i32 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[SRC_4_I:%.*]] = getelementptr i8, ptr [[B]], i32 4
+; CHECK-NEXT:    [[DST_4_I:%.*]] = getelementptr i8, ptr [[A]], i32 4
+; CHECK-NEXT:    [[TMP1:%.*]] = load i32, ptr [[SRC_4_I]], align 1
+; CHECK-NEXT:    store i32 [[TMP1]], ptr [[DST_4_I]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index11(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
@@ -11826,8 +11910,12 @@ define void @test_srcunalign_dst8_constant_size_1023(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst8_constant_size_1023(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = load i64, ptr [[B]], align 1
-; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[TMP0:%.*]] = load i32, ptr [[B]], align 1
+; CHECK-NEXT:    store i32 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[SRC_4_I:%.*]] = getelementptr i8, ptr [[B]], i32 4
+; CHECK-NEXT:    [[DST_4_I:%.*]] = getelementptr i8, ptr [[A]], i32 4
+; CHECK-NEXT:    [[TMP1:%.*]] = load i32, ptr [[SRC_4_I]], align 1
+; CHECK-NEXT:    store i32 [[TMP1]], ptr [[DST_4_I]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index8(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
@@ -11863,8 +11951,12 @@ define void @test_srcunalign_dst8_constant_size_1024(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst8_constant_size_1024(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = load i64, ptr [[B]], align 1
-; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[TMP0:%.*]] = load i32, ptr [[B]], align 1
+; CHECK-NEXT:    store i32 [[TMP0]], ptr [[A]], align 1
+; CHECK-NEXT:    [[SRC_4_I:%.*]] = getelementptr i8, ptr [[B]], i32 4
+; CHECK-NEXT:    [[DST_4_I:%.*]] = getelementptr i8, ptr [[A]], i32 4
+; CHECK-NEXT:    [[TMP1:%.*]] = load i32, ptr [[SRC_4_I]], align 1
+; CHECK-NEXT:    store i32 [[TMP1]], ptr [[DST_4_I]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index12(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
