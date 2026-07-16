@@ -316,9 +316,14 @@ RISCVEsp32P4MemIntrin::createEspVld128Ip(IRBuilder<> &Builder, Value *Src) {
 // Legacy interface for backward compatibility during migration
 Value *RISCVEsp32P4MemIntrin::createEspVld128Ip(IRBuilder<> &Builder,
                                                 Value *Src, int Index) {
-  // Call new interface and discard vector data, return only pointer
-  auto [VectorData, UpdatedPtr] = createEspVld128Ip(Builder, Src);
-  return UpdatedPtr;
+  assert(Index >= 0 && Index <= 7 && "Index must be between 0 and 7");
+  Type *i32Ty = Builder.getInt32Ty();
+  Function *IntrinsicFunc = Intrinsic::getDeclarationIfExists(
+      TheModule, Intrinsic::riscv_esp_vld_128_ip, {});
+  return Builder.CreateCall(
+      IntrinsicFunc,
+      {Src, ConstantInt::get(i32Ty, 16), ConstantInt::get(i32Ty, Index)},
+      "vld128ip");
 }
 
 // Migrated to use intrinsic esp.vld.h.64.ip_m
@@ -341,8 +346,14 @@ RISCVEsp32P4MemIntrin::createEspVldH64Ip(IRBuilder<> &Builder, Value *Src) {
 // Legacy interface for backward compatibility during migration
 Value *RISCVEsp32P4MemIntrin::createEspVldH64Ip(IRBuilder<> &Builder,
                                                 Value *Src, int Index) {
-  auto [VectorData, UpdatedPtr] = createEspVldH64Ip(Builder, Src);
-  return UpdatedPtr;
+  assert(Index >= 0 && Index <= 7 && "Index must be between 0 and 7");
+  Type *i32Ty = Builder.getInt32Ty();
+  Function *IntrinsicFunc = Intrinsic::getDeclarationIfExists(
+      TheModule, Intrinsic::riscv_esp_vld_h_64_ip, {});
+  return Builder.CreateCall(
+      IntrinsicFunc,
+      {Src, ConstantInt::get(i32Ty, 8), ConstantInt::get(i32Ty, Index)},
+      "vldh64ip");
 }
 
 // Migrated to use intrinsic esp.vld.l.64.ip_m
@@ -365,8 +376,14 @@ RISCVEsp32P4MemIntrin::createEspVldL64Ip(IRBuilder<> &Builder, Value *Src) {
 // Legacy interface for backward compatibility during migration
 Value *RISCVEsp32P4MemIntrin::createEspVldL64Ip(IRBuilder<> &Builder,
                                                 Value *Src, int Index) {
-  auto [VectorData, UpdatedPtr] = createEspVldL64Ip(Builder, Src);
-  return UpdatedPtr;
+  assert(Index >= 0 && Index <= 7 && "Index must be between 0 and 7");
+  Type *i32Ty = Builder.getInt32Ty();
+  Function *IntrinsicFunc = Intrinsic::getDeclarationIfExists(
+      TheModule, Intrinsic::riscv_esp_vld_l_64_ip, {});
+  return Builder.CreateCall(
+      IntrinsicFunc,
+      {Src, ConstantInt::get(i32Ty, 8), ConstantInt::get(i32Ty, Index)},
+      "vldl64ip");
 }
 
 // Rename and modify: use intrinsic esp.vst.128.ip
@@ -387,11 +404,14 @@ Value *RISCVEsp32P4MemIntrin::createEspVst128Ip(IRBuilder<> &Builder,
 // Legacy interface for backward compatibility during migration
 Value *RISCVEsp32P4MemIntrin::createEspVst128Ip(IRBuilder<> &Builder,
                                                 Value *Dst, int Index) {
-  // For legacy interface, we need to create dummy vector data
-  // This is a temporary solution during migration
-  Type *VectorTy = VectorType::get(Builder.getInt8Ty(), 16, false);
-  Value *DummyVector = PoisonValue::get(VectorTy);
-  return createEspVst128Ip(Builder, DummyVector, Dst);
+  assert(Index >= 0 && Index <= 7 && "Index must be between 0 and 7");
+  Type *i32Ty = Builder.getInt32Ty();
+  Function *IntrinsicFunc = Intrinsic::getDeclarationIfExists(
+      TheModule, Intrinsic::riscv_esp_vst_128_ip, {});
+  return Builder.CreateCall(
+      IntrinsicFunc,
+      {ConstantInt::get(i32Ty, Index), Dst, ConstantInt::get(i32Ty, 16)},
+      "vst128ip");
 }
 
 // Migrated to use intrinsic esp.vst.h.64.ip_m
@@ -412,9 +432,14 @@ Value *RISCVEsp32P4MemIntrin::createEspVstH64Ip(IRBuilder<> &Builder,
 // Legacy interface for backward compatibility during migration
 Value *RISCVEsp32P4MemIntrin::createEspVstH64Ip(IRBuilder<> &Builder,
                                                 Value *Dst, int Index) {
-  Type *VectorTy = VectorType::get(Builder.getInt8Ty(), 8, false);
-  Value *DummyVector = PoisonValue::get(VectorTy);
-  return createEspVstH64Ip(Builder, DummyVector, Dst);
+  assert(Index >= 0 && Index <= 7 && "Index must be between 0 and 7");
+  Type *i32Ty = Builder.getInt32Ty();
+  Function *IntrinsicFunc = Intrinsic::getDeclarationIfExists(
+      TheModule, Intrinsic::riscv_esp_vst_h_64_ip, {});
+  return Builder.CreateCall(
+      IntrinsicFunc,
+      {ConstantInt::get(i32Ty, Index), Dst, ConstantInt::get(i32Ty, 8)},
+      "vsth64ip");
 }
 
 // Migrated to use intrinsic esp.vst.l.64.ip_m
@@ -435,9 +460,14 @@ Value *RISCVEsp32P4MemIntrin::createEspVstL64Ip(IRBuilder<> &Builder,
 // Legacy interface for backward compatibility during migration
 Value *RISCVEsp32P4MemIntrin::createEspVstL64Ip(IRBuilder<> &Builder,
                                                 Value *Dst, int Index) {
-  Type *VectorTy = VectorType::get(Builder.getInt8Ty(), 8, false);
-  Value *DummyVector = PoisonValue::get(VectorTy);
-  return createEspVstL64Ip(Builder, DummyVector, Dst);
+  assert(Index >= 0 && Index <= 7 && "Index must be between 0 and 7");
+  Type *i32Ty = Builder.getInt32Ty();
+  Function *IntrinsicFunc = Intrinsic::getDeclarationIfExists(
+      TheModule, Intrinsic::riscv_esp_vst_l_64_ip, {});
+  return Builder.CreateCall(
+      IntrinsicFunc,
+      {ConstantInt::get(i32Ty, Index), Dst, ConstantInt::get(i32Ty, 8)},
+      "vstl64ip");
 }
 
 enum MemCpyType RISCVEsp32P4MemIntrinBase::getMemCpyType(MemCpyInst *M) {
@@ -1625,8 +1655,14 @@ RISCVEsp32P4MemIntrin::createEspLd128UsarIp(IRBuilder<> &Builder, Value *Src) {
 // Legacy interface for backward compatibility during migration
 Value *RISCVEsp32P4MemIntrin::createEspLd128UsarIp(IRBuilder<> &Builder,
                                                    Value *Src, int Index) {
-  auto [VectorData, UpdatedPtr, SarBytes] = createEspLd128UsarIp(Builder, Src);
-  return UpdatedPtr;
+  assert(Index >= 0 && Index <= 7 && "Index must be between 0 and 7");
+  Type *i32Ty = Builder.getInt32Ty();
+  Function *IntrinsicFunc = Intrinsic::getDeclarationIfExists(
+      TheModule, Intrinsic::riscv_esp_ld_128_usar_ip, {});
+  return Builder.CreateCall(
+      IntrinsicFunc,
+      {Src, ConstantInt::get(i32Ty, 16), ConstantInt::get(i32Ty, Index)},
+      "ld128usarip");
 }
 
 // Return the updated src pointer (i32)
