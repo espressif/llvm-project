@@ -335,10 +335,11 @@ public:
                            int index2, int index3, int index4);
   void inline createEspSrcQ(IRBuilder<> &Builder, int index0, int index1,
                             int index2);
-  Value *generateLoadInstructions(IRBuilder<> &Builder, Value *SrcAddr,
-                                  MemCpyType Type, int index);
-  Value *generateStoreInstructions(IRBuilder<> &Builder, Value *DstAddr,
-                                   MemCpyType Type, int index);
+  std::pair<Value *, Value *> generateLoadInstructions(IRBuilder<> &Builder,
+                                                       Value *SrcAddr,
+                                                       MemCpyType Type);
+  Value *generateStoreInstructions(IRBuilder<> &Builder, Value *VectorData,
+                                   Value *DstAddr, MemCpyType Type);
   void processDataBlock(
       IRBuilder<> &Builder, Value *&SrcAddr, Value *&DstAddr, MemCpyType Type,
       int blockSize); // will store the srcaddr and dstaddr after the loop
