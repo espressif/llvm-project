@@ -331,8 +331,14 @@ public:
   std::tuple<Value *, Value *, Value *>
   createEspLd128UsarIp(IRBuilder<> &Builder, Value *Src);
   Value *createEspLd128UsarIp(IRBuilder<> &Builder, Value *Src, int Index);
-  Value *createEspSrcQLdIp(IRBuilder<> &Builder, Value *Src, int index0,
-                           int index2, int index3, int index4);
+  // _m version: (SarBytes, Qy, Qw, SrcPtr, Imm) -> (QwNew, QuNew, UpdatedPtr).
+  // SrcPtr can be ptr or i32; returns UpdatedPtr as ptr.
+  std::tuple<Value *, Value *, Value *>
+  createEspSrcQLdIp(IRBuilder<> &Builder, Value *SarBytes, Value *Qy, Value *Qw,
+                    Value *SrcPtr, int Imm);
+  /// _m version: (SarBytes, Qy, Qw) -> Qz (shift result). For tail processing.
+  Value *createEspSrcQM(IRBuilder<> &Builder, Value *SarBytes, Value *Qy,
+                        Value *Qw);
   void inline createEspSrcQ(IRBuilder<> &Builder, int index0, int index1,
                             int index2);
   std::pair<Value *, Value *> generateLoadInstructions(IRBuilder<> &Builder,
