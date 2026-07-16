@@ -33,8 +33,8 @@
 //
 //===----------------------------------------------------------------------===//
 #include "RISCVEsp32P4MemIntrin.h"
-#include "llvm/IR/IntrinsicsRISCV.h"
 #include "llvm/IR/Constants.h"
+#include "llvm/IR/IntrinsicsRISCV.h"
 #include "llvm/IR/Verifier.h"
 
 using namespace llvm;
@@ -171,7 +171,7 @@ Function *RISCVEsp32P4MemIntrinBase::createMemCpyHelperFunctionPtr(
                                            Size, isInline, true);
 }
 
-Function *RISCVEsp32P4MemIntrinBase::createMemCpyHelperFunctionPtr(
+Function *RISCVEsp32P4MemIntrinBase::createMemCpyHelperFunctionPtrNoSize(
     IRBuilder<> &Builder, const std::string &FuncName, Value *Dst, Value *Src,
     bool isInline) {
   Type *PtrTy = Builder.getPtrTy();
@@ -2498,7 +2498,7 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst8Const16(
   }
 
   Function *MemCpyFunc = createMemCpyHelperFunctionPtr(
-      Builder, FuncName, Dst, Src, Builder.getInt32(Len));
+      Builder, FuncName, Dst, Src, Builder.getInt32(Len), true);
   // Create entry block
   BasicBlock *EntryBB =
       BasicBlock::Create(M->getContext(), "entry", MemCpyFunc);
@@ -2574,7 +2574,7 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst8Var(
   }
 
   Function *MemCpyFunc =
-      createMemCpyHelperFunctionPtr(Builder, FuncName, Dst, Src, Size);
+      createMemCpyHelperFunctionPtr(Builder, FuncName, Dst, Src, Size, true);
   // Create entry block
   BasicBlock *EntryBB =
       BasicBlock::Create(M->getContext(), "entry", MemCpyFunc);
