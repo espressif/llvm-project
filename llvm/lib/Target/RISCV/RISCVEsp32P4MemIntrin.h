@@ -270,10 +270,10 @@ protected:
                                           Value *DstAddr, Value *SrcAddr,
                                           Value *Size, bool isInline = true);
   /// (ptr, ptr) -> void, no Size. For const-size helpers.
-  Function *createMemCpyHelperFunctionPtr(IRBuilder<> &Builder,
-                                          const std::string &FuncName,
-                                          Value *Dst, Value *Src,
-                                          bool isInline = true);
+  Function *createMemCpyHelperFunctionPtrNoSize(IRBuilder<> &Builder,
+                                                const std::string &FuncName,
+                                                Value *Dst, Value *Src,
+                                                bool isInline = true);
 
   Function *createMemCpyHelperFunctionGeneric(IRBuilder<> &Builder,
                                               const std::string &FuncName,
