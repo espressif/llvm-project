@@ -131,6 +131,8 @@
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
 #include "llvm/Transforms/Utils/Cloning.h"
 #include "llvm/Transforms/Utils/Local.h"
+#include <tuple>
+#include <utility>
 
 #include <algorithm>
 #include <cassert>
@@ -267,6 +269,11 @@ protected:
                                           const std::string &FuncName,
                                           Value *DstAddr, Value *SrcAddr,
                                           Value *Size, bool isInline = true);
+  /// (ptr, ptr) -> void, no Size. For const-size helpers.
+  Function *createMemCpyHelperFunctionPtr(IRBuilder<> &Builder,
+                                          const std::string &FuncName,
+                                          Value *Dst, Value *Src,
+                                          bool isInline = true);
 
   Function *createMemCpyHelperFunctionGeneric(IRBuilder<> &Builder,
                                               const std::string &FuncName,
@@ -302,13 +309,28 @@ protected:
 
 class RISCVEsp32P4MemIntrin : public RISCVEsp32P4MemIntrinBase {
 public:
-  Value *createEspVld128Ip(IRBuilder<> &Builder, Value *Src, int index);
-  Value *createEspVst128Ip(IRBuilder<> &Builder, Value *Dst, int index);
-  Value *createEspVldH64Ip(IRBuilder<> &Builder, Value *Src, int index);
-  Value *createEspVldL64Ip(IRBuilder<> &Builder, Value *Src, int index);
-  Value *createEspVstH64Ip(IRBuilder<> &Builder, Value *Dst, int index);
-  Value *createEspVstL64Ip(IRBuilder<> &Builder, Value *Dst, int index);
-  Value *createEspLd128UsarIp(IRBuilder<> &Builder, Value *Src, int index);
+  // New interface - explicit vector data passing
+  std::pair<Value *, Value *> createEspVld128Ip(IRBuilder<> &Builder,
+                                                Value *Src);
+  Value *createEspVst128Ip(IRBuilder<> &Builder, Value *VectorData, Value *Dst);
+  std::pair<Value *, Value *> createEspVldH64Ip(IRBuilder<> &Builder,
+                                                Value *Src);
+  std::pair<Value *, Value *> createEspVldL64Ip(IRBuilder<> &Builder,
+                                                Value *Src);
+  Value *createEspVstH64Ip(IRBuilder<> &Builder, Value *VectorData, Value *Dst);
+  Value *createEspVstL64Ip(IRBuilder<> &Builder, Value *VectorData, Value *Dst);
+
+  // Legacy interface - implicit vector register state (deprecated, for
+  // migration)
+  Value *createEspVld128Ip(IRBuilder<> &Builder, Value *Src, int Index);
+  Value *createEspVst128Ip(IRBuilder<> &Builder, Value *Dst, int Index);
+  Value *createEspVldH64Ip(IRBuilder<> &Builder, Value *Src, int Index);
+  Value *createEspVldL64Ip(IRBuilder<> &Builder, Value *Src, int Index);
+  Value *createEspVstH64Ip(IRBuilder<> &Builder, Value *Dst, int Index);
+  Value *createEspVstL64Ip(IRBuilder<> &Builder, Value *Dst, int Index);
+  std::tuple<Value *, Value *, Value *>
+  createEspLd128UsarIp(IRBuilder<> &Builder, Value *Src);
+  Value *createEspLd128UsarIp(IRBuilder<> &Builder, Value *Src, int Index);
   Value *createEspSrcQLdIp(IRBuilder<> &Builder, Value *Src, int index0,
                            int index2, int index3, int index4);
   void inline createEspSrcQ(IRBuilder<> &Builder, int index0, int index1,
