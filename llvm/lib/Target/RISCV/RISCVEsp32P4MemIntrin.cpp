@@ -1770,7 +1770,7 @@ void RISCVEsp32P4MemIntrin::createEspSrcQ(IRBuilder<> &Builder, int Index0,
   assert(Index1 >= 0 && Index1 <= 7 && "Index must be between 0 and 7");
   assert(Index2 >= 0 && Index2 <= 7 && "Index must be between 0 and 7");
   Function *IntrinsicFunc =
-      Intrinsic::getDeclarationIfExists(TheModule, Intrinsic::riscv_esp_src_q);
+      Intrinsic::getOrInsertDeclaration(TheModule, Intrinsic::riscv_esp_src_q);
   Type *i32Ty = Builder.getInt32Ty();
   // Intrinsic arguments: q_idx1, q_idx2, q_idx_dst
   Builder.CreateCall(IntrinsicFunc, {ConstantInt::get(i32Ty, Index2),
@@ -2626,6 +2626,10 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst16Common(
       true, MemCpyType::SrcUnalign_Dst16_Var);
   FuncBuilder.CreateBr(ReturnBB);
 
+  if (verifyFunction(*MemCpyFunc, &errs()))
+    report_fatal_error(
+        "RISCVEsp32P4MemIntrin: created invalid helper function");
+
   M->eraseFromParent();
   return true;
 }
@@ -2665,10 +2669,17 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst8Const16(
   Value *SizeArg = MemCpyFunc->arg_begin() + 2;
   SizeArg->setName("size");
 
-  // Load and store the first 8 bytes in the entry block
-  Value *LoadVal =
-      FuncBuilder.CreateAlignedLoad(FuncBuilder.getInt64Ty(), SrcArg, Align(1));
-  FuncBuilder.CreateAlignedStore(LoadVal, DstArg, Align(1));
+  // Load and store the first 8 bytes as two i32 pairs (RV32-friendly, no i64).
+  Value *Load0 =
+      FuncBuilder.CreateAlignedLoad(FuncBuilder.getInt32Ty(), SrcArg, Align(1));
+  FuncBuilder.CreateAlignedStore(Load0, DstArg, Align(1));
+  Value *Src4 = FuncBuilder.CreateGEP(FuncBuilder.getInt8Ty(), SrcArg,
+                                      FuncBuilder.getInt32(4), "src.4");
+  Value *Dst4 = FuncBuilder.CreateGEP(FuncBuilder.getInt8Ty(), DstArg,
+                                      FuncBuilder.getInt32(4), "dst.4");
+  Value *Load1 =
+      FuncBuilder.CreateAlignedLoad(FuncBuilder.getInt32Ty(), Src4, Align(1));
+  FuncBuilder.CreateAlignedStore(Load1, Dst4, Align(1));
 
   // Calculate the remaining size after processing first 8 bytes
   Value *RemainingSizeAfterFirst8Bytes = FuncBuilder.CreateSub(
@@ -2765,10 +2776,17 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst8Var(
   // if.then9 block
   FuncBuilder.SetInsertPoint(IfEndBB);
 
-  // Load and store the first 8 bytes in the entry block
-  Value *LoadVal =
-      FuncBuilder.CreateAlignedLoad(FuncBuilder.getInt64Ty(), SrcArg, Align(1));
-  FuncBuilder.CreateAlignedStore(LoadVal, DstArg, Align(1));
+  // Load and store the first 8 bytes as two i32 pairs (RV32-friendly, no i64).
+  Value *Load0 =
+      FuncBuilder.CreateAlignedLoad(FuncBuilder.getInt32Ty(), SrcArg, Align(1));
+  FuncBuilder.CreateAlignedStore(Load0, DstArg, Align(1));
+  Value *Src4 = FuncBuilder.CreateGEP(FuncBuilder.getInt8Ty(), SrcArg,
+                                      FuncBuilder.getInt32(4), "src.4");
+  Value *Dst4 = FuncBuilder.CreateGEP(FuncBuilder.getInt8Ty(), DstArg,
+                                      FuncBuilder.getInt32(4), "dst.4");
+  Value *Load1 =
+      FuncBuilder.CreateAlignedLoad(FuncBuilder.getInt32Ty(), Src4, Align(1));
+  FuncBuilder.CreateAlignedStore(Load1, Dst4, Align(1));
 
   Value *RemainingSizeAfter8Bytes = FuncBuilder.CreateSub(
       SizeArg, FuncBuilder.getInt32(8), "remaining.size.after.8bytes");
