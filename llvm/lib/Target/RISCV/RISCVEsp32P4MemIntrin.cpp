@@ -1789,7 +1789,7 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst16ConstDiv48(
                          std::to_string(FuncCounter++);
 
   Function *MemCpyFunc =
-      createMemCpyHelperFunctionPtr(Builder, FuncName, Dst, Src, false);
+      createMemCpyHelperFunctionPtrNoSize(Builder, FuncName, Dst, Src, false);
 
   Value *DstArg = MemCpyFunc->arg_begin();
   DstArg->setName("dst");
@@ -1882,7 +1882,7 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst16ConstMod48From32To47(
                          std::to_string(FuncCounter++);
 
   Function *MemCpyFunc =
-      createMemCpyHelperFunctionPtr(Builder, FuncName, Dst, Src, false);
+      createMemCpyHelperFunctionPtrNoSize(Builder, FuncName, Dst, Src, false);
   Value *DstArg = MemCpyFunc->arg_begin();
   DstArg->setName("dst");
   Value *SrcArg = MemCpyFunc->arg_begin() + 1;
@@ -2033,7 +2033,7 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst16ConstMod48From16To31(
                          std::to_string(FuncCounter++);
 
   Function *MemCpyFunc =
-      createMemCpyHelperFunctionPtr(Builder, FuncName, Dst, Src, false);
+      createMemCpyHelperFunctionPtrNoSize(Builder, FuncName, Dst, Src, false);
   Value *DstArg = MemCpyFunc->arg_begin();
   DstArg->setName("dst");
   Value *SrcArg = MemCpyFunc->arg_begin() + 1;
@@ -2171,7 +2171,7 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst16ConstMod48From1To15(
                          std::to_string(FuncCounter++);
 
   Function *MemCpyFunc =
-      createMemCpyHelperFunctionPtr(Builder, FuncName, Dst, Src);
+      createMemCpyHelperFunctionPtrNoSize(Builder, FuncName, Dst, Src);
   Value *DstArg = MemCpyFunc->arg_begin();
   DstArg->setName("dst");
   Value *SrcArg = MemCpyFunc->arg_begin() + 1;
@@ -2279,7 +2279,7 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst16Const16(
                              std::to_string(FuncCounter++);
 
       Function *MemCpyFunc =
-          createMemCpyHelperFunctionPtr(Builder, FuncName, Dst, Src);
+          createMemCpyHelperFunctionPtrNoSize(Builder, FuncName, Dst, Src);
 
       Value *DstArg = MemCpyFunc->arg_begin();
       DstArg->setName("dst");
@@ -2318,7 +2318,7 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst16Const16(
       }
 
       Function *MemCpyFunc =
-          createMemCpyHelperFunctionPtr(Builder, FuncName, Dst, Src);
+          createMemCpyHelperFunctionPtrNoSize(Builder, FuncName, Dst, Src);
       Value *DstArg = MemCpyFunc->arg_begin();
       DstArg->setName("dst");
       Value *SrcArg = MemCpyFunc->arg_begin() + 1;
