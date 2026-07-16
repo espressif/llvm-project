@@ -10699,7 +10699,7 @@ define void @test_srcunalign_dst16_constant_size_48(ptr %a, ptr %b) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
 ; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index0.1(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index0(i32 [[TMP1]], i32 [[TMP0]])
 ; CHECK-NEXT:    ret void
 ;
 
@@ -10714,7 +10714,7 @@ define void @test_srcunalign_dst16_constant_size_49(ptr %a, ptr %b) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
 ; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index1.2(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index1(i32 [[TMP1]], i32 [[TMP0]])
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[B]], i32 48
 ; CHECK-NEXT:    [[TMP5:%.*]] = getelementptr i8, ptr [[A]], i32 48
 ; CHECK-NEXT:    [[TMP6:%.*]] = load i8, ptr [[TMP4]], align 1
@@ -10733,7 +10733,7 @@ define void @test_srcunalign_dst16_constant_size_63(ptr %a, ptr %b) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
 ; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index2.3(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index2(i32 [[TMP1]], i32 [[TMP0]])
 ; CHECK-NEXT:    [[TMP2:%.*]] = getelementptr i8, ptr [[B]], i32 48
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[A]], i32 48
 ; CHECK-NEXT:    [[TMP4:%.*]] = load i64, ptr [[TMP2]], align 8
@@ -10764,7 +10764,7 @@ define void @test_srcunalign_dst16_constant_size_64(ptr %a, ptr %b) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
 ; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.0.4(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.0(i32 [[TMP1]], i32 [[TMP0]])
 ; CHECK-NEXT:    ret void
 ;
 
@@ -10779,7 +10779,7 @@ define void @test_srcunalign_dst16_constant_size_65(ptr %a, ptr %b) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
 ; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.1.5(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.1(i32 [[TMP1]], i32 [[TMP0]])
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[B]], i32 64
 ; CHECK-NEXT:    [[TMP5:%.*]] = getelementptr i8, ptr [[A]], i32 64
 ; CHECK-NEXT:    [[TMP6:%.*]] = load i8, ptr [[TMP4]], align 1
@@ -10798,7 +10798,7 @@ define void @test_srcunalign_dst16_constant_size_80(ptr %a, ptr %b) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
 ; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index0.6(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index0(i32 [[TMP1]], i32 [[TMP0]])
 ; CHECK-NEXT:    ret void
 ;
 
@@ -10813,7 +10813,7 @@ define void @test_srcunalign_dst16_constant_size_81(ptr %a, ptr %b) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
 ; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index1.7(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index1(i32 [[TMP1]], i32 [[TMP0]])
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[B]], i32 80
 ; CHECK-NEXT:    [[TMP5:%.*]] = getelementptr i8, ptr [[A]], i32 80
 ; CHECK-NEXT:    [[TMP6:%.*]] = load i8, ptr [[TMP4]], align 1
@@ -10832,7 +10832,7 @@ define void @test_srcunalign_dst16_constant_size_88(ptr %a, ptr %b) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
 ; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index2.8(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index2(i32 [[TMP1]], i32 [[TMP0]])
 ; CHECK-NEXT:    [[TMP2:%.*]] = getelementptr i8, ptr [[B]], i32 80
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[A]], i32 80
 ; CHECK-NEXT:    [[TMP4:%.*]] = load i64, ptr [[TMP2]], align 1
@@ -10851,7 +10851,7 @@ define void @test_srcunalign_dst16_constant_size_96(ptr %a, ptr %b) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
 ; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index3.9(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index3(i32 [[TMP1]], i32 [[TMP0]])
 ; CHECK-NEXT:    ret void
 ;
 
@@ -10866,7 +10866,7 @@ define void @test_srcunalign_dst16_constant_size_112(ptr %a, ptr %b) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
 ; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.2.10(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.2(i32 [[TMP1]], i32 [[TMP0]])
 ; CHECK-NEXT:    ret void
 ;
 
@@ -10881,7 +10881,7 @@ define void @test_srcunalign_dst16_constant_size_124(ptr %a, ptr %b) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
 ; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.3.11(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.3(i32 [[TMP1]], i32 [[TMP0]])
 ; CHECK-NEXT:    [[TMP2:%.*]] = getelementptr i8, ptr [[B]], i32 112
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[A]], i32 112
 ; CHECK-NEXT:    [[TMP4:%.*]] = load i64, ptr [[TMP2]], align 8
@@ -10904,7 +10904,7 @@ define void @test_srcunalign_dst16_constant_size_127(ptr %a, ptr %b) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
 ; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.4.12(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.4(i32 [[TMP1]], i32 [[TMP0]])
 ; CHECK-NEXT:    [[TMP2:%.*]] = getelementptr i8, ptr [[B]], i32 112
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[A]], i32 112
 ; CHECK-NEXT:    [[TMP4:%.*]] = load i64, ptr [[TMP2]], align 8
@@ -10935,7 +10935,7 @@ define void @test_srcunalign_dst16_constant_size_128(ptr %a, ptr %b) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
 ; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index3.13(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index3(i32 [[TMP1]], i32 [[TMP0]])
 ; CHECK-NEXT:    ret void
 ;
 
@@ -10950,7 +10950,7 @@ define void @test_srcunalign_dst16_constant_size_129(ptr %a, ptr %b) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
 ; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index4.14(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index4(i32 [[TMP1]], i32 [[TMP0]])
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[B]], i32 128
 ; CHECK-NEXT:    [[TMP5:%.*]] = getelementptr i8, ptr [[A]], i32 128
 ; CHECK-NEXT:    [[TMP6:%.*]] = load i8, ptr [[TMP4]], align 1
@@ -10969,7 +10969,7 @@ define void @test_srcunalign_dst16_constant_size_255(ptr %a, ptr %b) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
 ; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index4.15(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index4(i32 [[TMP1]], i32 [[TMP0]])
 ; CHECK-NEXT:    [[TMP2:%.*]] = getelementptr i8, ptr [[B]], i32 240
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[A]], i32 240
 ; CHECK-NEXT:    [[TMP4:%.*]] = load i64, ptr [[TMP2]], align 8
@@ -11000,7 +11000,7 @@ define void @test_srcunalign_dst16_constant_size_256(ptr %a, ptr %b) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
 ; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.5.16(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.5(i32 [[TMP1]], i32 [[TMP0]])
 ; CHECK-NEXT:    ret void
 ;
 
@@ -11015,7 +11015,7 @@ define void @test_srcunalign_dst16_constant_size_1023(ptr %a, ptr %b) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
 ; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index5.17(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index5(i32 [[TMP1]], i32 [[TMP0]])
 ; CHECK-NEXT:    [[TMP2:%.*]] = getelementptr i8, ptr [[B]], i32 1008
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[A]], i32 1008
 ; CHECK-NEXT:    [[TMP4:%.*]] = load i64, ptr [[TMP2]], align 8
@@ -11046,7 +11046,7 @@ define void @test_srcunalign_dst16_constant_size_1024(ptr %a, ptr %b) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
 ; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.6.18(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.6(i32 [[TMP1]], i32 [[TMP0]])
 ; CHECK-NEXT:    ret void
 ;
 
@@ -11619,7 +11619,7 @@ define void @test_srcunalign_dst8_constant_size_64(ptr %a, ptr %b) {
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
 ; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index6.19(i32 [[TMP2]], i32 [[TMP1]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index6(i32 [[TMP2]], i32 [[TMP1]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 56
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 56
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -11642,7 +11642,7 @@ define void @test_srcunalign_dst8_constant_size_65(ptr %a, ptr %b) {
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
 ; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index7.20(i32 [[TMP2]], i32 [[TMP1]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index7(i32 [[TMP2]], i32 [[TMP1]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 56
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 56
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -11669,7 +11669,7 @@ define void @test_srcunalign_dst8_constant_size_80(ptr %a, ptr %b) {
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
 ; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.7.21(i32 [[TMP2]], i32 [[TMP1]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.7(i32 [[TMP2]], i32 [[TMP1]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 72
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 72
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -11692,7 +11692,7 @@ define void @test_srcunalign_dst8_constant_size_81(ptr %a, ptr %b) {
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
 ; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.8.22(i32 [[TMP2]], i32 [[TMP1]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.8(i32 [[TMP2]], i32 [[TMP1]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 72
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 72
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -11719,7 +11719,7 @@ define void @test_srcunalign_dst8_constant_size_88(ptr %a, ptr %b) {
 ; CHECK-NEXT:    [[TMP7:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[TMP8:%.*]] = ptrtoint ptr [[TMP6]] to i32
 ; CHECK-NEXT:    [[TMP9:%.*]] = ptrtoint ptr [[TMP7]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index5.23(i32 [[TMP9]], i32 [[TMP8]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index5(i32 [[TMP9]], i32 [[TMP8]])
 ; CHECK-NEXT:    ret void
 ;
 
@@ -11738,7 +11738,7 @@ define void @test_srcunalign_dst8_constant_size_96(ptr %a, ptr %b) {
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
 ; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index6.24(i32 [[TMP2]], i32 [[TMP1]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index6(i32 [[TMP2]], i32 [[TMP1]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 88
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 88
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -11761,7 +11761,7 @@ define void @test_srcunalign_dst8_constant_size_112(ptr %a, ptr %b) {
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
 ; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index8.25(i32 [[TMP2]], i32 [[TMP1]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index8(i32 [[TMP2]], i32 [[TMP1]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 104
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 104
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -11784,7 +11784,7 @@ define void @test_srcunalign_dst8_constant_size_124(ptr %a, ptr %b) {
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
 ; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index9.26(i32 [[TMP2]], i32 [[TMP1]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index9(i32 [[TMP2]], i32 [[TMP1]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 104
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 104
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -11815,7 +11815,7 @@ define void @test_srcunalign_dst8_constant_size_127(ptr %a, ptr %b) {
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
 ; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index10.27(i32 [[TMP2]], i32 [[TMP1]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index10(i32 [[TMP2]], i32 [[TMP1]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 104
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 104
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -11854,7 +11854,7 @@ define void @test_srcunalign_dst8_constant_size_128(ptr %a, ptr %b) {
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
 ; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.9.28(i32 [[TMP2]], i32 [[TMP1]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.9(i32 [[TMP2]], i32 [[TMP1]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 120
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 120
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -11877,7 +11877,7 @@ define void @test_srcunalign_dst8_constant_size_129(ptr %a, ptr %b) {
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
 ; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.10.29(i32 [[TMP2]], i32 [[TMP1]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.10(i32 [[TMP2]], i32 [[TMP1]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 120
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 120
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -11904,7 +11904,7 @@ define void @test_srcunalign_dst8_constant_size_255(ptr %a, ptr %b) {
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
 ; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index7.30(i32 [[TMP2]], i32 [[TMP1]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index7(i32 [[TMP2]], i32 [[TMP1]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 232
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 232
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -11943,7 +11943,7 @@ define void @test_srcunalign_dst8_constant_size_256(ptr %a, ptr %b) {
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
 ; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index11.31(i32 [[TMP2]], i32 [[TMP1]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index11(i32 [[TMP2]], i32 [[TMP1]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 248
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 248
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -11966,7 +11966,7 @@ define void @test_srcunalign_dst8_constant_size_1023(ptr %a, ptr %b) {
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
 ; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index8.32(i32 [[TMP2]], i32 [[TMP1]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index8(i32 [[TMP2]], i32 [[TMP1]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 1000
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 1000
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -12005,7 +12005,7 @@ define void @test_srcunalign_dst8_constant_size_1024(ptr %a, ptr %b) {
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
 ; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index12.33(i32 [[TMP2]], i32 [[TMP1]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index12(i32 [[TMP2]], i32 [[TMP1]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 1016
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 1016
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -14377,1795 +14377,3 @@ declare i32 @llvm.riscv.esp.src.q.ld.ip(i32 immarg, i32, i32 immarg, i32 immarg,
 ; Function Attrs: nounwind
 declare void @llvm.riscv.esp.src.q(i32 immarg, i32 immarg, i32 immarg) #10
 
-define internal void @esp32p4MemCpySrcunalignedDst16Div48Index0(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16Div48Index0(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_08:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_08]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], 1
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.08 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.08, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 1
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  ret void
-}
-
-; Function Attrs: nounwind
-define internal void @esp32p4MemCpySrcunalignedDst16mod48From16to31.0(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16mod48From16to31.0(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_013:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_013]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[I_013]], 0
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-; CHECK-NEXT:    [[VST128IP6:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[VST128IP5]], i32 16)
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.013 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.013, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 1
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-  %vst128ip6 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %vst128ip5, i32 16)
-  %adjusted_src_ptr = add i32 %srcqldip4, -32
-  %0 = inttoptr i32 %vst128ip6 to ptr
-  %1 = inttoptr i32 %adjusted_src_ptr to ptr
-  call void @llvm.memcpy.p0.p0.i32(ptr align 1 %0, ptr align 1 %1, i32 0, i1 false)
-  ret void
-}
-
-; Function Attrs: noinline nounwind
-define internal void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index0(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index0(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_013:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_013]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[I_013]], 0
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    [[SRCQLDIP6:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRCQLDIP4]], i32 0, i32 0, i32 2)
-; CHECK-NEXT:    [[VST128IP7:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[VST128IP5]], i32 16)
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
-; CHECK-NEXT:    [[VST128IP8:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP7]], i32 16)
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.013 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.013, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 1
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  %srcqldip6 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %srcqldip4, i32 0, i32 0, i32 2)
-  %vst128ip7 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %vst128ip5, i32 16)
-  call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
-  %vst128ip8 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip7, i32 16)
-  %adjusted_src_ptr = add i32 %srcqldip6, -32
-  %0 = inttoptr i32 %vst128ip8 to ptr
-  %1 = inttoptr i32 %adjusted_src_ptr to ptr
-  call void @llvm.memcpy.p0.p0.i32(ptr align 1 %0, ptr align 1 %1, i32 0, i1 false)
-  ret void
-}
-
-define internal void @esp32p4MemCpySrcunalignedDst16Div48Index1(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16Div48Index1(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_08:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_08]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], 2
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.08 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.08, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 2
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  ret void
-}
-
-; Function Attrs: nounwind
-define internal void @esp32p4MemCpySrcunalignedDst16mod48From16to31.1(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16mod48From16to31.1(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_013:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_013]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], 2
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-; CHECK-NEXT:    [[VST128IP6:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[VST128IP5]], i32 16)
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.013 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.013, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 2
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-  %vst128ip6 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %vst128ip5, i32 16)
-  %adjusted_src_ptr = add i32 %srcqldip4, -32
-  %0 = inttoptr i32 %vst128ip6 to ptr
-  %1 = inttoptr i32 %adjusted_src_ptr to ptr
-  call void @llvm.memcpy.p0.p0.i32(ptr align 1 %0, ptr align 1 %1, i32 0, i1 false)
-  ret void
-}
-
-; Function Attrs: noinline nounwind
-define internal void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index1(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index1(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_013:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_013]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], 2
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    [[SRCQLDIP6:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRCQLDIP4]], i32 0, i32 0, i32 2)
-; CHECK-NEXT:    [[VST128IP7:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[VST128IP5]], i32 16)
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
-; CHECK-NEXT:    [[VST128IP8:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP7]], i32 16)
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.013 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.013, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 2
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  %srcqldip6 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %srcqldip4, i32 0, i32 0, i32 2)
-  %vst128ip7 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %vst128ip5, i32 16)
-  call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
-  %vst128ip8 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip7, i32 16)
-  %adjusted_src_ptr = add i32 %srcqldip6, -32
-  %0 = inttoptr i32 %vst128ip8 to ptr
-  %1 = inttoptr i32 %adjusted_src_ptr to ptr
-  call void @llvm.memcpy.p0.p0.i32(ptr align 1 %0, ptr align 1 %1, i32 0, i1 false)
-  ret void
-}
-
-; Function Attrs: nounwind
-define internal void @esp32p4MemCpySrcunalignedDst16mod48From16to31.2(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16mod48From16to31.2(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_013:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_013]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], 5
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-; CHECK-NEXT:    [[VST128IP6:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[VST128IP5]], i32 16)
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.013 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.013, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 5
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-  %vst128ip6 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %vst128ip5, i32 16)
-  %adjusted_src_ptr = add i32 %srcqldip4, -32
-  %0 = inttoptr i32 %vst128ip6 to ptr
-  %1 = inttoptr i32 %adjusted_src_ptr to ptr
-  call void @llvm.memcpy.p0.p0.i32(ptr align 1 %0, ptr align 1 %1, i32 0, i1 false)
-  ret void
-}
-
-; Function Attrs: nounwind
-define internal void @esp32p4MemCpySrcunalignedDst16mod48From16to31.3(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16mod48From16to31.3(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_013:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_013]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], 21
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-; CHECK-NEXT:    [[VST128IP6:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[VST128IP5]], i32 16)
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.013 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.013, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 21
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-  %vst128ip6 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %vst128ip5, i32 16)
-  %adjusted_src_ptr = add i32 %srcqldip4, -32
-  %0 = inttoptr i32 %vst128ip6 to ptr
-  %1 = inttoptr i32 %adjusted_src_ptr to ptr
-  call void @llvm.memcpy.p0.p0.i32(ptr align 1 %0, ptr align 1 %1, i32 0, i1 false)
-  ret void
-}
-
-; Function Attrs: noinline nounwind
-define internal void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index2(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index2(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_013:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_013]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], 416
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    [[SRCQLDIP6:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRCQLDIP4]], i32 0, i32 0, i32 2)
-; CHECK-NEXT:    [[VST128IP7:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[VST128IP5]], i32 16)
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
-; CHECK-NEXT:    [[VST128IP8:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP7]], i32 16)
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.013 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.013, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 416
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  %srcqldip6 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %srcqldip4, i32 0, i32 0, i32 2)
-  %vst128ip7 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %vst128ip5, i32 16)
-  call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
-  %vst128ip8 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip7, i32 16)
-  %adjusted_src_ptr = add i32 %srcqldip6, -32
-  %0 = inttoptr i32 %vst128ip8 to ptr
-  %1 = inttoptr i32 %adjusted_src_ptr to ptr
-  call void @llvm.memcpy.p0.p0.i32(ptr align 1 %0, ptr align 1 %1, i32 0, i1 false)
-  ret void
-}
-
-define internal void @esp32p4MemCpySrcunalignedDst16Div48Index2(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16Div48Index2(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_08:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_08]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], 1
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.08 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.08, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 1
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  ret void
-}
-
-define internal void @esp32p4MemCpySrcunalignedDst16Div48Index3(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16Div48Index3(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_08:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_08]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], 1
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.08 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.08, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 1
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  ret void
-}
-
-; Function Attrs: nounwind
-define internal void @esp32p4MemCpySrcunalignedDst16mod48From16to31.4(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16mod48From16to31.4(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_013:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_013]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[I_013]], 0
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-; CHECK-NEXT:    [[VST128IP6:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[VST128IP5]], i32 16)
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.013 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.013, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 1
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-  %vst128ip6 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %vst128ip5, i32 16)
-  %adjusted_src_ptr = add i32 %srcqldip4, -32
-  %0 = inttoptr i32 %vst128ip6 to ptr
-  %1 = inttoptr i32 %adjusted_src_ptr to ptr
-  call void @llvm.memcpy.p0.p0.i32(ptr align 1 %0, ptr align 1 %1, i32 0, i1 false)
-  ret void
-}
-
-; Function Attrs: noinline nounwind
-define internal void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index3(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index3(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_013:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_013]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[I_013]], 0
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    [[SRCQLDIP6:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRCQLDIP4]], i32 0, i32 0, i32 2)
-; CHECK-NEXT:    [[VST128IP7:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[VST128IP5]], i32 16)
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
-; CHECK-NEXT:    [[VST128IP8:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP7]], i32 16)
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.013 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.013, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 1
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  %srcqldip6 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %srcqldip4, i32 0, i32 0, i32 2)
-  %vst128ip7 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %vst128ip5, i32 16)
-  call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
-  %vst128ip8 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip7, i32 16)
-  %adjusted_src_ptr = add i32 %srcqldip6, -32
-  %0 = inttoptr i32 %vst128ip8 to ptr
-  %1 = inttoptr i32 %adjusted_src_ptr to ptr
-  call void @llvm.memcpy.p0.p0.i32(ptr align 1 %0, ptr align 1 %1, i32 0, i1 false)
-  ret void
-}
-
-; Function Attrs: noinline nounwind
-define internal void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index4(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index4(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_013:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_013]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[I_013]], 0
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    [[SRCQLDIP6:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRCQLDIP4]], i32 0, i32 0, i32 2)
-; CHECK-NEXT:    [[VST128IP7:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[VST128IP5]], i32 16)
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
-; CHECK-NEXT:    [[VST128IP8:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP7]], i32 16)
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.013 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.013, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 1
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  %srcqldip6 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %srcqldip4, i32 0, i32 0, i32 2)
-  %vst128ip7 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %vst128ip5, i32 16)
-  call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
-  %vst128ip8 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip7, i32 16)
-  %adjusted_src_ptr = add i32 %srcqldip6, -32
-  %0 = inttoptr i32 %vst128ip8 to ptr
-  %1 = inttoptr i32 %adjusted_src_ptr to ptr
-  call void @llvm.memcpy.p0.p0.i32(ptr align 1 %0, ptr align 1 %1, i32 0, i1 false)
-  ret void
-}
-
-; Function Attrs: nounwind
-define internal void @esp32p4MemCpySrcunalignedDst16mod48From16to31.5(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16mod48From16to31.5(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_013:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_013]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], 2
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-; CHECK-NEXT:    [[VST128IP6:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[VST128IP5]], i32 16)
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.013 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.013, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 2
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-  %vst128ip6 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %vst128ip5, i32 16)
-  %adjusted_src_ptr = add i32 %srcqldip4, -32
-  %0 = inttoptr i32 %vst128ip6 to ptr
-  %1 = inttoptr i32 %adjusted_src_ptr to ptr
-  call void @llvm.memcpy.p0.p0.i32(ptr align 1 %0, ptr align 1 %1, i32 0, i1 false)
-  ret void
-}
-
-; Function Attrs: nounwind
-define internal void @esp32p4MemCpySrcunalignedDst16mod48From16to31.6(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16mod48From16to31.6(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_013:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_013]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], 2
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-; CHECK-NEXT:    [[VST128IP6:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[VST128IP5]], i32 16)
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.013 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.013, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 2
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-  %vst128ip6 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %vst128ip5, i32 16)
-  %adjusted_src_ptr = add i32 %srcqldip4, -32
-  %0 = inttoptr i32 %vst128ip6 to ptr
-  %1 = inttoptr i32 %adjusted_src_ptr to ptr
-  call void @llvm.memcpy.p0.p0.i32(ptr align 1 %0, ptr align 1 %1, i32 0, i1 false)
-  ret void
-}
-
-; Function Attrs: noinline nounwind
-define internal void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index5(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index5(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_013:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_013]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], 2
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    [[SRCQLDIP6:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRCQLDIP4]], i32 0, i32 0, i32 2)
-; CHECK-NEXT:    [[VST128IP7:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[VST128IP5]], i32 16)
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
-; CHECK-NEXT:    [[VST128IP8:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP7]], i32 16)
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.013 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.013, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 2
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  %srcqldip6 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %srcqldip4, i32 0, i32 0, i32 2)
-  %vst128ip7 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %vst128ip5, i32 16)
-  call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
-  %vst128ip8 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip7, i32 16)
-  %adjusted_src_ptr = add i32 %srcqldip6, -32
-  %0 = inttoptr i32 %vst128ip8 to ptr
-  %1 = inttoptr i32 %adjusted_src_ptr to ptr
-  call void @llvm.memcpy.p0.p0.i32(ptr align 1 %0, ptr align 1 %1, i32 0, i1 false)
-  ret void
-}
-
-define internal void @esp32p4MemCpySrcunalignedDst16Div48Index4(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16Div48Index4(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_08:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_08]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], 5
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.08 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.08, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 5
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  ret void
-}
-
-define internal void @esp32p4MemCpySrcunalignedDst16Div48Index5(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16Div48Index5(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_08:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_08]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], 21
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.08 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.08, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 21
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  ret void
-}
-
-; Function Attrs: noinline nounwind
-define internal void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index6(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index6(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_013:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_013]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[I_013]], 0
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    [[SRCQLDIP6:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRCQLDIP4]], i32 0, i32 0, i32 2)
-; CHECK-NEXT:    [[VST128IP7:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[VST128IP5]], i32 16)
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
-; CHECK-NEXT:    [[VST128IP8:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP7]], i32 16)
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.013 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.013, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 1
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  %srcqldip6 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %srcqldip4, i32 0, i32 0, i32 2)
-  %vst128ip7 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %vst128ip5, i32 16)
-  call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
-  %vst128ip8 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip7, i32 16)
-  %adjusted_src_ptr = add i32 %srcqldip6, -32
-  %0 = inttoptr i32 %vst128ip8 to ptr
-  %1 = inttoptr i32 %adjusted_src_ptr to ptr
-  call void @llvm.memcpy.p0.p0.i32(ptr align 1 %0, ptr align 1 %1, i32 0, i1 false)
-  ret void
-}
-
-define internal void @esp32p4MemCpySrcunalignedDst16Div48Index6(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16Div48Index6(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_08:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_08]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], 1
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.08 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.08, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 1
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  ret void
-}
-
-; Function Attrs: nounwind
-define internal void @esp32p4MemCpySrcunalignedDst16mod48From16to31.7(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16mod48From16to31.7(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_013:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_013]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[I_013]], 0
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-; CHECK-NEXT:    [[VST128IP6:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[VST128IP5]], i32 16)
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.013 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.013, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 1
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-  %vst128ip6 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %vst128ip5, i32 16)
-  %adjusted_src_ptr = add i32 %srcqldip4, -32
-  %0 = inttoptr i32 %vst128ip6 to ptr
-  %1 = inttoptr i32 %adjusted_src_ptr to ptr
-  call void @llvm.memcpy.p0.p0.i32(ptr align 1 %0, ptr align 1 %1, i32 0, i1 false)
-  ret void
-}
-
-; Function Attrs: noinline nounwind
-define internal void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index7(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index7(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_013:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_013]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[I_013]], 0
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    [[SRCQLDIP6:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRCQLDIP4]], i32 0, i32 0, i32 2)
-; CHECK-NEXT:    [[VST128IP7:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[VST128IP5]], i32 16)
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
-; CHECK-NEXT:    [[VST128IP8:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP7]], i32 16)
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.013 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.013, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 1
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  %srcqldip6 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %srcqldip4, i32 0, i32 0, i32 2)
-  %vst128ip7 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %vst128ip5, i32 16)
-  call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
-  %vst128ip8 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip7, i32 16)
-  %adjusted_src_ptr = add i32 %srcqldip6, -32
-  %0 = inttoptr i32 %vst128ip8 to ptr
-  %1 = inttoptr i32 %adjusted_src_ptr to ptr
-  call void @llvm.memcpy.p0.p0.i32(ptr align 1 %0, ptr align 1 %1, i32 0, i1 false)
-  ret void
-}
-
-define internal void @esp32p4MemCpySrcunalignedDst16Div48Index7(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16Div48Index7(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_08:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_08]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], 2
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.08 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.08, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 2
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  ret void
-}
-
-; Function Attrs: nounwind
-define internal void @esp32p4MemCpySrcunalignedDst16mod48From16to31.8(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16mod48From16to31.8(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_013:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_013]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], 2
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-; CHECK-NEXT:    [[VST128IP6:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[VST128IP5]], i32 16)
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.013 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.013, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 2
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-  %vst128ip6 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %vst128ip5, i32 16)
-  %adjusted_src_ptr = add i32 %srcqldip4, -32
-  %0 = inttoptr i32 %vst128ip6 to ptr
-  %1 = inttoptr i32 %adjusted_src_ptr to ptr
-  call void @llvm.memcpy.p0.p0.i32(ptr align 1 %0, ptr align 1 %1, i32 0, i1 false)
-  ret void
-}
-
-define internal void @esp32p4MemCpySrcunalignedDst16Div48Index8(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16Div48Index8(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_08:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_08]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], 5
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.08 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.08, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 5
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  ret void
-}
-
-define internal void @esp32p4MemCpySrcunalignedDst16Div48Index9(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16Div48Index9(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_08:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_08]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], 21
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.08 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.08, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 21
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  ret void
-}
-
-define internal void @esp32p4MemCpySrcunalignedDst16Div48Index10(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16Div48Index10(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_08:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_08]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], 1
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.08 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.08, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 1
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  ret void
-}
-
-; Function Attrs: nounwind
-define internal void @esp32p4MemCpySrcunalignedDst16mod48From16to31.9(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16mod48From16to31.9(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_013:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_013]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[I_013]], 0
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-; CHECK-NEXT:    [[VST128IP6:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[VST128IP5]], i32 16)
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.013 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.013, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 1
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-  %vst128ip6 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %vst128ip5, i32 16)
-  %adjusted_src_ptr = add i32 %srcqldip4, -32
-  %0 = inttoptr i32 %vst128ip6 to ptr
-  %1 = inttoptr i32 %adjusted_src_ptr to ptr
-  call void @llvm.memcpy.p0.p0.i32(ptr align 1 %0, ptr align 1 %1, i32 0, i1 false)
-  ret void
-}
-
-define internal void @esp32p4MemCpySrcunalignedDst16Div48Index11(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16Div48Index11(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_08:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_08]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], 2
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.08 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.08, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 2
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  ret void
-}
-
-define internal void @esp32p4MemCpySrcunalignedDst16Div48Index12(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16Div48Index12(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_08:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_08]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], 2
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.08 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.08, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 2
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  ret void
-}
-
-; Function Attrs: nounwind
-define internal void @esp32p4MemCpySrcunalignedDst16mod48From16to31.10(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16mod48From16to31.10(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_013:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_013]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], 2
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-; CHECK-NEXT:    [[VST128IP6:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[VST128IP5]], i32 16)
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.013 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.013, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 2
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-  %vst128ip6 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %vst128ip5, i32 16)
-  %adjusted_src_ptr = add i32 %srcqldip4, -32
-  %0 = inttoptr i32 %vst128ip6 to ptr
-  %1 = inttoptr i32 %adjusted_src_ptr to ptr
-  call void @llvm.memcpy.p0.p0.i32(ptr align 1 %0, ptr align 1 %1, i32 0, i1 false)
-  ret void
-}
-
-; Function Attrs: noinline nounwind
-define internal void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index8(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index8(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_013:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_013]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], 4
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    [[SRCQLDIP6:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRCQLDIP4]], i32 0, i32 0, i32 2)
-; CHECK-NEXT:    [[VST128IP7:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[VST128IP5]], i32 16)
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
-; CHECK-NEXT:    [[VST128IP8:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP7]], i32 16)
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.013 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.013, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 4
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  %srcqldip6 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %srcqldip4, i32 0, i32 0, i32 2)
-  %vst128ip7 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %vst128ip5, i32 16)
-  call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
-  %vst128ip8 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip7, i32 16)
-  %adjusted_src_ptr = add i32 %srcqldip6, -32
-  %0 = inttoptr i32 %vst128ip8 to ptr
-  %1 = inttoptr i32 %adjusted_src_ptr to ptr
-  call void @llvm.memcpy.p0.p0.i32(ptr align 1 %0, ptr align 1 %1, i32 0, i1 false)
-  ret void
-}
-
-; Function Attrs: noinline nounwind
-define internal void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index9(i32 %dst, i32 %src) {
-; CHECK-LABEL: define internal void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index9(
-; CHECK-SAME: i32 [[DST:%.*]], i32 [[SRC:%.*]]) {
-; CHECK-NEXT:  [[ENTRY:.*]]:
-; CHECK-NEXT:    [[LD128USARIP:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[SRC]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP]], i32 16, i32 1)
-; CHECK-NEXT:    br label %[[FOR_BODY:.*]]
-; CHECK:       [[FOR_BODY]]:
-; CHECK-NEXT:    [[I_013:%.*]] = phi i32 [ 0, %[[ENTRY]] ], [ [[INC:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi i32 [ [[LD128USARIP1]], %[[ENTRY]] ], [ [[SRCQLDIP4:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi i32 [ [[DST]], %[[ENTRY]] ], [ [[VST128IP5:%.*]], %[[FOR_BODY]] ]
-; CHECK-NEXT:    [[INC]] = add nuw nsw i32 [[I_013]], 1
-; CHECK-NEXT:    [[SRCQLDIP:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_LOOP]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3]], i32 16)
-; CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i32 [[INC]], 20
-; CHECK-NEXT:    br i1 [[EXITCOND_NOT]], label %[[FOR_COND_CLEANUP:.*]], label %[[FOR_BODY]]
-; CHECK:       [[FOR_COND_CLEANUP]]:
-; CHECK-NEXT:    [[SRCQLDIP6:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRCQLDIP4]], i32 0, i32 0, i32 2)
-; CHECK-NEXT:    [[VST128IP7:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[VST128IP5]], i32 16)
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
-; CHECK-NEXT:    [[VST128IP8:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP7]], i32 16)
-; CHECK-NEXT:    ret void
-;
-entry:
-  %ld128usarip = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %src, i32 16, i32 0)
-  %ld128usarip1 = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip, i32 16, i32 1)
-  br label %for.body
-
-for.body:                                         ; preds = %for.body, %entry
-  %i.013 = phi i32 [ 0, %entry ], [ %inc, %for.body ]
-  %src.ptr.loop = phi i32 [ %ld128usarip1, %entry ], [ %srcqldip4, %for.body ]
-  %dst.ptr.loop = phi i32 [ %dst, %entry ], [ %vst128ip5, %for.body ]
-  %inc = add nuw nsw i32 %i.013, 1
-  %srcqldip = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.loop, i32 0, i32 16, i32 2)
-  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.loop, i32 16)
-  %srcqldip2 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip, i32 1, i32 16, i32 0)
-  %vst128ip3 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip, i32 16)
-  %srcqldip4 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2, i32 2, i32 16, i32 1)
-  %vst128ip5 = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3, i32 16)
-  %exitcond.not = icmp eq i32 %inc, 20
-  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body
-
-for.cond.cleanup:                                 ; preds = %for.body
-  %srcqldip6 = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %srcqldip4, i32 0, i32 0, i32 2)
-  %vst128ip7 = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %vst128ip5, i32 16)
-  call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
-  %vst128ip8 = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip7, i32 16)
-  %adjusted_src_ptr = add i32 %srcqldip6, -32
-  %0 = inttoptr i32 %vst128ip8 to ptr
-  %1 = inttoptr i32 %adjusted_src_ptr to ptr
-  call void @llvm.memcpy.p0.p0.i32(ptr align 1 %0, ptr align 1 %1, i32 0, i1 false)
-  ret void
-}
