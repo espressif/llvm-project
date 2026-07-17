@@ -1049,28 +1049,28 @@ def int_riscv_esp_vmul_u16_m : Intrinsic<[llvm_v8i16_ty],
 // ANDQ - Vector bitwise AND
 // Returns: v16i8 (bitwise AND results)
 // Parameters: [ v16i8 vector qx, v16i8 vector qy ]
-def int_riscv_esp_andq_m : Intrinsic<[llvm_v16i8_ty], 
+def int_riscv_esp_andq : Intrinsic<[llvm_v16i8_ty], 
                                       [llvm_v16i8_ty, llvm_v16i8_ty], 
                                       [IntrNoMem]>;
 
 // ORQ - Vector bitwise OR
 // Returns: v16i8 (bitwise OR results)
 // Parameters: [ v16i8 vector qx, v16i8 vector qy ]
-def int_riscv_esp_orq_m : Intrinsic<[llvm_v16i8_ty], 
+def int_riscv_esp_orq : Intrinsic<[llvm_v16i8_ty], 
                                      [llvm_v16i8_ty, llvm_v16i8_ty], 
                                      [IntrNoMem]>;
 
 // XORQ - Vector bitwise XOR
 // Returns: v16i8 (bitwise XOR results)
 // Parameters: [ v16i8 vector qx, v16i8 vector qy ]
-def int_riscv_esp_xorq_m : Intrinsic<[llvm_v16i8_ty], 
+def int_riscv_esp_xorq : Intrinsic<[llvm_v16i8_ty], 
                                       [llvm_v16i8_ty, llvm_v16i8_ty], 
                                       [IntrNoMem]>;
 
 // NOTQ - Vector bitwise NOT
 // Returns: v16i8 (bitwise NOT results)
 // Parameters: [ v16i8 vector qx ]
-def int_riscv_esp_notq_m : Intrinsic<[llvm_v16i8_ty], 
+def int_riscv_esp_notq : Intrinsic<[llvm_v16i8_ty], 
                                       [llvm_v16i8_ty], 
                                       [IntrNoMem]>;
 

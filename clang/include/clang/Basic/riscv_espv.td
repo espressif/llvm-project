@@ -594,33 +594,33 @@ def esp_vssubs_u8_m : ESPVBuiltin<"vssubs_u8_m", "riscv_esp_vssubs_u8_m", [{
   }]>;
 
 // ESP.ANDQ.M
-def esp_andq_m : ESPVBuiltin<"andq_m", "riscv_esp_andq_m", [{
+def esp_andq : ESPVBuiltin<"andq", "riscv_esp_andq", [{
       Value *QX = EmitScalarExpr(E->getArg(0));
       Value *QY = EmitScalarExpr(E->getArg(1));
-      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_andq_m);
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_andq);
       Value *Result = Builder.CreateCall(F, {QX, QY});
       return Result;
   }]>;
 // ESP.NOTQ.M
-def esp_notq_m : ESPVBuiltin<"notq_m", "riscv_esp_notq_m", [{
+def esp_notq : ESPVBuiltin<"notq", "riscv_esp_notq", [{
       Value *QX = EmitScalarExpr(E->getArg(0));
-      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_notq_m);
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_notq);
       Value *Result = Builder.CreateCall(F, {QX});
       return Result;
   }]>;
 // ESP.ORQ.M
-def esp_orq_m : ESPVBuiltin<"orq_m", "riscv_esp_orq_m", [{
+def esp_orq : ESPVBuiltin<"orq", "riscv_esp_orq", [{
       Value *QX = EmitScalarExpr(E->getArg(0));
       Value *QY = EmitScalarExpr(E->getArg(1));
-      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_orq_m);
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_orq);
       Value *Result = Builder.CreateCall(F, {QX, QY});
       return Result;
   }]>;
 // ESP.XORQ.M
-def esp_xorq_m : ESPVBuiltin<"xorq_m", "riscv_esp_xorq_m", [{
+def esp_xorq : ESPVBuiltin<"xorq", "riscv_esp_xorq", [{
       Value *QX = EmitScalarExpr(E->getArg(0));
       Value *QY = EmitScalarExpr(E->getArg(1));
-      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_xorq_m);
+      Function *F = CGM.getIntrinsic(Intrinsic::riscv_esp_xorq);
       Value *Result = Builder.CreateCall(F, {QX, QY});
       return Result;
   }]>;

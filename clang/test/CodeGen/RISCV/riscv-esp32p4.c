@@ -394,10 +394,6 @@
 // CHECK-NEXT:    [[TMP296:%.*]] = load i32, ptr [[DATA]], align 4
 // CHECK-NEXT:    [[TMP297:%.*]] = load i32, ptr [[DATA]], align 4
 // CHECK-NEXT:    call void @llvm.riscv.esp.subx4(i32 [[TMP295]], i32 [[TMP296]], i32 [[TMP297]])
-// CHECK-NEXT:    call void @llvm.riscv.esp.andq(i32 0, i32 1, i32 4)
-// CHECK-NEXT:    call void @llvm.riscv.esp.notq(i32 0, i32 1)
-// CHECK-NEXT:    call void @llvm.riscv.esp.orq(i32 0, i32 6, i32 3)
-// CHECK-NEXT:    call void @llvm.riscv.esp.xorq(i32 7, i32 4, i32 7)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vcmp.eq.s16(i32 6, i32 6, i32 3)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vcmp.eq.s32(i32 6, i32 2, i32 1)
 // CHECK-NEXT:    call void @llvm.riscv.esp.vcmp.eq.s8(i32 7, i32 6, i32 0)
@@ -870,10 +866,6 @@ __builtin_riscv_esp_addx4(data, data, data);
 __builtin_riscv_esp_sat(data, data, data);
 __builtin_riscv_esp_subx2(data, data, data);
 __builtin_riscv_esp_subx4(data, data, data);
-__builtin_riscv_esp_andq(0, 1, 4);
-__builtin_riscv_esp_notq(0, 1);
-__builtin_riscv_esp_orq(0, 6, 3);
-__builtin_riscv_esp_xorq(7, 4, 7);
 __builtin_riscv_esp_vcmp_eq_s16(6, 6, 3);
 __builtin_riscv_esp_vcmp_eq_s32(6, 2, 1);
 __builtin_riscv_esp_vcmp_eq_s8(7, 6, 0);

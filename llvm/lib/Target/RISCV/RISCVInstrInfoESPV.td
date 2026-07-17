@@ -9678,7 +9678,7 @@ def ESP_SUBX4: EspVInst<(outs GPRPIE:$rd), (ins GPRPIE:$rs1, GPRPIE:$rs2),
 
 def ESP_ANDQ: EspVInst<(outs QR:$qz), (ins QR:$qx, QR:$qy),
                    "esp.andq\t $qz, $qx, $qy", 
-                   [(set QR:$qz, (int_riscv_esp_andq_m QR:$qx, QR:$qy))]> 
+                   [(set QR:$qz, (int_riscv_esp_andq QR:$qx, QR:$qy))]> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -9718,11 +9718,11 @@ def ESP_ANDQ: EspVInst<(outs QR:$qz), (ins QR:$qx, QR:$qy),
 let usesCustomInserter = 1 in 
 def ESP_ANDQ_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, imm8:$qz),
 				"!esp_andq_p $qz, $qx, $qy",
-			[(int_riscv_esp_andq timm:$qx, timm:$qy, timm:$qz)]>;
+			[]>;
 
 def ESP_NOTQ: EspVInst<(outs QR:$qz), (ins QR:$qx),
                    "esp.notq\t $qz, $qx", 
-                   [(set QR:$qz, (int_riscv_esp_notq_m QR:$qx))]> 
+                   [(set QR:$qz, (int_riscv_esp_notq QR:$qx))]> 
 {
   bits<3> qx;
   bits<3> qz;
@@ -9763,11 +9763,11 @@ def ESP_NOTQ: EspVInst<(outs QR:$qz), (ins QR:$qx),
 let usesCustomInserter = 1 in 
 def ESP_NOTQ_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qz),
 				"!esp_notq_p $qz, $qx",
-			[(int_riscv_esp_notq timm:$qx, timm:$qz)]>;
+			[]>;
 
 def ESP_ORQ: EspVInst<(outs QR:$qz), (ins QR:$qx, QR:$qy),
                    "esp.orq\t $qz, $qx, $qy", 
-                   [(set QR:$qz, (int_riscv_esp_orq_m QR:$qx, QR:$qy))]> 
+                   [(set QR:$qz, (int_riscv_esp_orq QR:$qx, QR:$qy))]> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -9807,11 +9807,11 @@ def ESP_ORQ: EspVInst<(outs QR:$qz), (ins QR:$qx, QR:$qy),
 let usesCustomInserter = 1 in 
 def ESP_ORQ_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, imm8:$qz),
 				"!esp_orq_p $qz, $qx, $qy",
-			[(int_riscv_esp_orq timm:$qx, timm:$qy, timm:$qz)]>;
+			[]>;
 
 def ESP_XORQ: EspVInst<(outs QR:$qz), (ins QR:$qx, QR:$qy),
                    "esp.xorq\t $qz, $qx, $qy", 
-                   [(set QR:$qz, (int_riscv_esp_xorq_m QR:$qx, QR:$qy))]> 
+                   [(set QR:$qz, (int_riscv_esp_xorq QR:$qx, QR:$qy))]> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -9851,7 +9851,7 @@ def ESP_XORQ: EspVInst<(outs QR:$qz), (ins QR:$qx, QR:$qy),
 let usesCustomInserter = 1 in 
 def ESP_XORQ_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, imm8:$qz),
 				"!esp_xorq_p $qz, $qx, $qy",
-			[(int_riscv_esp_xorq timm:$qx, timm:$qy, timm:$qz)]>;
+			[]>;
 
 def ESP_VCMP_EQ_S16: EspVInst<(outs QR:$qz), (ins QR:$qx, QR:$qy),
                    "esp.vcmp.eq.s16\t $qz, $qx, $qy", 
@@ -26168,7 +26168,7 @@ def ESP_ANDQ_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy),
 let usesCustomInserter = 1 in 
 def ESP_ANDQ_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, imm8:$qz),
 				"!esp_andq_2p2_p $qz, $qx, $qy",
-			[(int_riscv_esp_andq_2p2 timm:$qx, timm:$qy, timm:$qz)]>;
+			[]>;
 
 def ESP_NOTQ_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx),
                    "esp.notq\t $qz, $qx", []> 
@@ -26212,7 +26212,7 @@ def ESP_NOTQ_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx),
 let usesCustomInserter = 1 in 
 def ESP_NOTQ_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qz),
 				"!esp_notq_2p2_p $qz, $qx",
-			[(int_riscv_esp_notq_2p2 timm:$qx, timm:$qz)]>;
+			[]>;
 
 def ESP_ORQ_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy),
                    "esp.orq\t $qz, $qx, $qy", []> 
@@ -26255,7 +26255,7 @@ def ESP_ORQ_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy),
 let usesCustomInserter = 1 in 
 def ESP_ORQ_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, imm8:$qz),
 				"!esp_orq_2p2_p $qz, $qx, $qy",
-			[(int_riscv_esp_orq_2p2 timm:$qx, timm:$qy, timm:$qz)]>;
+			[]>;
 
 def ESP_XORQ_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy),
                    "esp.xorq\t $qz, $qx, $qy", []> 
@@ -26298,7 +26298,7 @@ def ESP_XORQ_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy),
 let usesCustomInserter = 1 in 
 def ESP_XORQ_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, imm8:$qz),
 				"!esp_xorq_2p2_p $qz, $qx, $qy",
-			[(int_riscv_esp_xorq_2p2 timm:$qx, timm:$qy, timm:$qz)]>;
+			[]>;
 
 def ESP_VCMP_EQ_S16_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy),
                    "esp.vcmp.eq.s16\t $qz, $qx, $qy", []> 
