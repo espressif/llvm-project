@@ -16,12 +16,12 @@ entry:
   %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
   %vld2 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src2, i32 16)
   %ev2 = extractvalue { <16 x i8>, ptr } %vld2, 0
-  %v1 = tail call <16 x i8> @llvm.riscv.esp.andq.m(<16 x i8> %ev1, <16 x i8> %ev2)
+  %v1 = tail call <16 x i8> @llvm.riscv.esp.andq(<16 x i8> %ev1, <16 x i8> %ev2)
   %vst_ptr = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> %v1, ptr %dst, i32 16)
   ret void
 }
 
-declare <16 x i8> @llvm.riscv.esp.andq.m(<16 x i8>, <16 x i8>) #1
+declare <16 x i8> @llvm.riscv.esp.andq(<16 x i8>, <16 x i8>) #1
 
 define dso_local void @test_orq(ptr noundef %src1, ptr noundef %src2, ptr noundef %dst) local_unnamed_addr #0 {
 ; ASM-LABEL: test_orq:
@@ -36,12 +36,12 @@ entry:
   %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
   %vld2 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src2, i32 16)
   %ev2 = extractvalue { <16 x i8>, ptr } %vld2, 0
-  %v1 = tail call <16 x i8> @llvm.riscv.esp.orq.m(<16 x i8> %ev1, <16 x i8> %ev2)
+  %v1 = tail call <16 x i8> @llvm.riscv.esp.orq(<16 x i8> %ev1, <16 x i8> %ev2)
   %vst_ptr = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> %v1, ptr %dst, i32 16)
   ret void
 }
 
-declare <16 x i8> @llvm.riscv.esp.orq.m(<16 x i8>, <16 x i8>) #1
+declare <16 x i8> @llvm.riscv.esp.orq(<16 x i8>, <16 x i8>) #1
 
 define dso_local void @test_xorq(ptr noundef %src1, ptr noundef %src2, ptr noundef %dst) local_unnamed_addr #0 {
 ; ASM-LABEL: test_xorq:
@@ -56,12 +56,12 @@ entry:
   %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
   %vld2 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src2, i32 16)
   %ev2 = extractvalue { <16 x i8>, ptr } %vld2, 0
-  %v1 = tail call <16 x i8> @llvm.riscv.esp.xorq.m(<16 x i8> %ev1, <16 x i8> %ev2)
+  %v1 = tail call <16 x i8> @llvm.riscv.esp.xorq(<16 x i8> %ev1, <16 x i8> %ev2)
   %vst_ptr = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> %v1, ptr %dst, i32 16)
   ret void
 }
 
-declare <16 x i8> @llvm.riscv.esp.xorq.m(<16 x i8>, <16 x i8>) #1
+declare <16 x i8> @llvm.riscv.esp.xorq(<16 x i8>, <16 x i8>) #1
 
 define dso_local void @test_notq(ptr noundef %src, ptr noundef %dst) local_unnamed_addr #0 {
 ; ASM-LABEL: test_notq:
@@ -73,12 +73,12 @@ define dso_local void @test_notq(ptr noundef %src, ptr noundef %dst) local_unnam
 entry:
   %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
   %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
-  %v1 = tail call <16 x i8> @llvm.riscv.esp.notq.m(<16 x i8> %ev1)
+  %v1 = tail call <16 x i8> @llvm.riscv.esp.notq(<16 x i8> %ev1)
   %vst_ptr = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> %v1, ptr %dst, i32 16)
   ret void
 }
 
-declare <16 x i8> @llvm.riscv.esp.notq.m(<16 x i8>) #1
+declare <16 x i8> @llvm.riscv.esp.notq(<16 x i8>) #1
 
 define dso_local void @test_zero_q(ptr noundef %dst) local_unnamed_addr #2 {
 ; ASM-LABEL: test_zero_q:

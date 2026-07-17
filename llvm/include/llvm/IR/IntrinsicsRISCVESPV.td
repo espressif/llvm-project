@@ -602,18 +602,6 @@ def int_riscv_esp_subx2: ClangBuiltin<"__builtin_riscv_esp_subx2">,
 def int_riscv_esp_subx4: ClangBuiltin<"__builtin_riscv_esp_subx4">,
 	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], []>;
 
-def int_riscv_esp_andq: ClangBuiltin<"__builtin_riscv_esp_andq">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_notq: ClangBuiltin<"__builtin_riscv_esp_notq">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_orq: ClangBuiltin<"__builtin_riscv_esp_orq">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_xorq: ClangBuiltin<"__builtin_riscv_esp_xorq">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
 def int_riscv_esp_vcmp_eq_s16: ClangBuiltin<"__builtin_riscv_esp_vcmp_eq_s16">,
 	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
@@ -1691,18 +1679,6 @@ def int_riscv_esp_subx2_2p2: ClangBuiltin<"__builtin_riscv_esp_subx2_2p2">,
 
 def int_riscv_esp_subx4_2p2: ClangBuiltin<"__builtin_riscv_esp_subx4_2p2">,
 	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], []>;
-
-def int_riscv_esp_andq_2p2: ClangBuiltin<"__builtin_riscv_esp_andq_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_notq_2p2: ClangBuiltin<"__builtin_riscv_esp_notq_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_orq_2p2: ClangBuiltin<"__builtin_riscv_esp_orq_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_xorq_2p2: ClangBuiltin<"__builtin_riscv_esp_xorq_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
 def int_riscv_esp_vcmp_eq_s16_2p2: ClangBuiltin<"__builtin_riscv_esp_vcmp_eq_s16_2p2">,
 	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
