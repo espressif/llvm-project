@@ -360,10 +360,6 @@ define void @test(){
 ; CHECK-NEXT:    li s10, 2
 ; CHECK-NEXT:    esp.subx2 a2, s10, t3
 ; CHECK-NEXT:    esp.subx4 a2, s9, t6
-; CHECK-NEXT:    esp.andq q2, q3, q7
-; CHECK-NEXT:    esp.notq q1, q5
-; CHECK-NEXT:    esp.orq q5, q1, q2
-; CHECK-NEXT:    esp.xorq q6, q7, q5
 ; CHECK-NEXT:    esp.vcmp.eq.s16 q5, q5, q2
 ; CHECK-NEXT:    esp.vcmp.eq.s32 q3, q0, q1
 ; CHECK-NEXT:    esp.vcmp.eq.s8 q7, q3, q2
@@ -798,10 +794,6 @@ define void @test(){
 	%121 = tail call i32 @llvm.riscv.esp.sat.2p2(i32 11, i32 0, i32 13)
 	tail call void @llvm.riscv.esp.subx2.2p2(i32 2, i32 3, i32 13)
 	tail call void @llvm.riscv.esp.subx4.2p2(i32 5, i32 6, i32 14)
-	tail call void @llvm.riscv.esp.andq.2p2(i32 3, i32 7, i32 2)
-	tail call void @llvm.riscv.esp.notq.2p2(i32 5, i32 1)
-	tail call void @llvm.riscv.esp.orq.2p2(i32 1, i32 2, i32 5)
-	tail call void @llvm.riscv.esp.xorq.2p2(i32 7, i32 5, i32 6)
 	tail call void @llvm.riscv.esp.vcmp.eq.s16.2p2(i32 5, i32 2, i32 5)
 	tail call void @llvm.riscv.esp.vcmp.eq.s32.2p2(i32 0, i32 1, i32 3)
 	tail call void @llvm.riscv.esp.vcmp.eq.s8.2p2(i32 3, i32 2, i32 7)
@@ -1156,10 +1148,6 @@ declare void @llvm.riscv.esp.addx4.2p2(i32, i32, i32) nounwind
 declare i32 @llvm.riscv.esp.sat.2p2(i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.subx2.2p2(i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.subx4.2p2(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.andq.2p2(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.notq.2p2(i32, i32) nounwind
-declare void @llvm.riscv.esp.orq.2p2(i32, i32, i32) nounwind
-declare void @llvm.riscv.esp.xorq.2p2(i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vcmp.eq.s16.2p2(i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vcmp.eq.s32.2p2(i32, i32, i32) nounwind
 declare void @llvm.riscv.esp.vcmp.eq.s8.2p2(i32, i32, i32) nounwind

@@ -26128,7 +26128,8 @@ def ESP_SUBX4_2P2_P : PseudoEsp<(outs), (ins GPRPIE:$rs1, GPRPIE:$rs2, GPRPIE:$r
 			[(int_riscv_esp_subx4_2p2 GPRPIE:$rs1, GPRPIE:$rs2, GPRPIE:$rd)]>;
 
 def ESP_ANDQ_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy),
-                   "esp.andq\t $qz, $qx, $qy", []> 
+                   "esp.andq\t $qz, $qx, $qy",
+                   [(set QR:$qz, (int_riscv_esp_andq QR:$qx, QR:$qy))]> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -26171,7 +26172,8 @@ def ESP_ANDQ_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, imm8:$qz),
 			[]>;
 
 def ESP_NOTQ_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx),
-                   "esp.notq\t $qz, $qx", []> 
+                   "esp.notq\t $qz, $qx",
+                   [(set QR:$qz, (int_riscv_esp_notq QR:$qx))]> 
 {
   bits<3> qx;
   bits<3> qz;
@@ -26215,7 +26217,8 @@ def ESP_NOTQ_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qz),
 			[]>;
 
 def ESP_ORQ_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy),
-                   "esp.orq\t $qz, $qx, $qy", []> 
+                   "esp.orq\t $qz, $qx, $qy",
+                   [(set QR:$qz, (int_riscv_esp_orq QR:$qx, QR:$qy))]> 
 {
   bits<3> qx;
   bits<3> qy;
@@ -26258,7 +26261,8 @@ def ESP_ORQ_2P2_P : PseudoEsp<(outs), (ins imm8:$qx, imm8:$qy, imm8:$qz),
 			[]>;
 
 def ESP_XORQ_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy),
-                   "esp.xorq\t $qz, $qx, $qy", []> 
+                   "esp.xorq\t $qz, $qx, $qy",
+                   [(set QR:$qz, (int_riscv_esp_xorq QR:$qx, QR:$qy))]> 
 {
   bits<3> qx;
   bits<3> qy;
