@@ -5,10 +5,6 @@
 
 
 #include <riscv_esp32p4.h>
-esp_vec128_t __builtin_riscv_esp_andq(esp_vec128_t, esp_vec128_t);
-esp_vec128_t __builtin_riscv_esp_orq(esp_vec128_t, esp_vec128_t);
-esp_vec128_t __builtin_riscv_esp_xorq(esp_vec128_t, esp_vec128_t);
-esp_vec128_t __builtin_riscv_esp_notq(esp_vec128_t);
 esp_vec128_t __builtin_riscv_esp_zero_q_m(void);
 void __builtin_riscv_esp_zero_qacc_m(void *, void *, void *, void *);
 void __builtin_riscv_esp_zero_xacc(void);
