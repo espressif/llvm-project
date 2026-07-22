@@ -283,6 +283,8 @@ check_commit_message:
         export USE_LIBC="newlib";
         export USE_LIBCXX="libstdcxx;libcxx";
         export USE_RTLIB="compiler-rt;libgcc";
+        # TODO: remove this once we do not need GNU binutils for target libraries build
+        export BUILD_GNU_BINUTILS="ON";
       else
         echo "Disable target libraries"
         export USE_LIBC=none;
@@ -554,14 +556,12 @@ build_x86_64-linux-gnu:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_MERGE_REQUEST_LABELS =~ /(^|,)toolchain_tests(,|$)/'
       variables:
         BUILD_TARGET_LIBS: "ON"
-        BUILD_GNU_BINUTILS: "ON"
         RUN_TOOLCHAIN_TESTS: "ON"
         RUN_PKG_TESTS: "ON"
     # Build all distros and run all tests
     - if: '$CI_COMMIT_TAG'
       variables:
         BUILD_TARGET_LIBS: "ON"
-        BUILD_GNU_BINUTILS: "ON"
         RUN_TOOLCHAIN_TESTS: "ON"
         RUN_PKG_TESTS: "ON"
         PACK_STANDALONE_LIBS: "ON"
