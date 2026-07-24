@@ -2401,19 +2401,13 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst16Common(
   Value *Dst = M->getDest();
   Value *Size = M->getLength();
 
-  Value *SrcAddr = Builder.CreatePtrToInt(Src, Builder.getInt32Ty());
-  Value *DstAddr = Builder.CreatePtrToInt(Dst, Builder.getInt32Ty());
-
   std::string FuncName = "esp32p4MemCpySrcunalignedDst16Var";
 
-  // Check if the function already exists in the current TheModule
-  if (useExistingHelperFunction(M, Builder, FuncName, DstAddr, SrcAddr, Size)) {
+  if (useExistingHelperFunction(M, Builder, FuncName, Dst, Src, Size)) {
     return true;
   }
-  // Create new function type
-  Function *MemCpyFunc = createMemCpyHelperFunction(Builder, FuncName, DstAddr,
-                                                    SrcAddr, Size, isInline);
-  // Extract function arguments
+  Function *MemCpyFunc = createMemCpyHelperFunctionPtr(Builder, FuncName, Dst,
+                                                       Src, Size, isInline);
   Value *DstArg = MemCpyFunc->arg_begin();
   DstArg->setName("dst");
   Value *DstArgOriginal = DstArg;
@@ -2422,14 +2416,15 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst16Common(
   Value *SrcArgOriginal = SrcArg;
   Value *SizeArg = MemCpyFunc->arg_begin() + 2;
   SizeArg->setName("size");
-  // Create entry block
+
   BasicBlock *EntryBB =
       BasicBlock::Create(M->getContext(), "entry", MemCpyFunc);
   IRBuilder<> FuncBuilder(EntryBB);
+  Type *PtrTy = FuncBuilder.getPtrTy();
+  Type *V16I8 = VectorType::get(FuncBuilder.getInt8Ty(), 16, false);
 
   BasicBlock *ProcessMainLoopBB =
       BasicBlock::Create(M->getContext(), "process.main.loop", MemCpyFunc);
-  // Create basic blocks - rename to meaningful names
   BasicBlock *HandleRemainderBB =
       BasicBlock::Create(M->getContext(), "handle.Remainder", MemCpyFunc);
   BasicBlock *MainLoopBodyBB =
@@ -2444,86 +2439,84 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst16Common(
       BasicBlock::Create(M->getContext(), "skip.tail.processing", MemCpyFunc);
   BasicBlock *FinalCleanupBB =
       BasicBlock::Create(M->getContext(), "final.cleanup", MemCpyFunc);
-
   BasicBlock *CallSmallSizeCleanupBB = BasicBlock::Create(
       M->getContext(), "call.small.size.cleanup", MemCpyFunc);
-
   BasicBlock *ReturnBB =
       BasicBlock::Create(M->getContext(), "return", MemCpyFunc);
 
-  // Check if size is less than minimum SIMD processing size (16 bytes)
   Value *SizeIsSmall = FuncBuilder.CreateICmpULT(
       SizeArg, FuncBuilder.getInt32(16), "size.is.small");
-
   FuncBuilder.CreateCondBr(SizeIsSmall, FinalCleanupBB, ProcessMainLoopBB);
 
   FuncBuilder.SetInsertPoint(ProcessMainLoopBB);
-
-  // Calculate the number of 48-byte blocks and Remainder
   Value *Blocks48Count = FuncBuilder.CreateUDiv(
       SizeArg, FuncBuilder.getInt32(48), "blocks.48.count");
   Value *Blocks48TotalBytes =
       FuncBuilder.CreateMul(Blocks48Count, FuncBuilder.getInt32(48));
   Value *RemainderAfter48Blocks = FuncBuilder.CreateSub(
       SizeArg, Blocks48TotalBytes, "Remainder.after.48blocks");
-  // Generate the complete SIMD instruction sequence
-  SrcArg = createEspLd128UsarIp(FuncBuilder, SrcArg, 0);
-  SrcArg = createEspLd128UsarIp(FuncBuilder, SrcArg, 1);
 
-  // Check if we have any 48-byte blocks to process
+  Value *SrcPtr = SrcArg;
+  Value *DstPtr = DstArg;
+  auto [VecData1, Ptr1, Sar1] = createEspLd128UsarIp(FuncBuilder, SrcPtr);
+  SrcPtr = Ptr1;
+  auto [VecData2, Ptr2, Sar2] = createEspLd128UsarIp(FuncBuilder, SrcPtr);
+  SrcPtr = Ptr2;
+
   Value *Has48ByteBlocks = FuncBuilder.CreateICmpULT(
       SizeArg, FuncBuilder.getInt32(48), "no.48byte.blocks");
   FuncBuilder.CreateCondBr(Has48ByteBlocks, HandleRemainderBB, MainLoopBodyBB);
 
-  // Remainder processing logic
   FuncBuilder.SetInsertPoint(HandleRemainderBB);
-  // Create PHI nodes to track the source pointer, destination pointer, and
-  // remaining bytes after the loop
-  PHINode *SrcPtrAfterMainLoop = FuncBuilder.CreatePHI(
-      FuncBuilder.getInt32Ty(), 2, "src.ptr.after.main.loop");
-  SrcPtrAfterMainLoop->addIncoming(SrcArg, ProcessMainLoopBB);
+  PHINode *SrcPtrAfterMainLoop =
+      FuncBuilder.CreatePHI(PtrTy, 2, "src.ptr.after.main.loop");
+  SrcPtrAfterMainLoop->addIncoming(SrcPtr, ProcessMainLoopBB);
+  PHINode *DstPtrAfterMainLoop =
+      FuncBuilder.CreatePHI(PtrTy, 2, "dst.ptr.after.main.loop");
+  DstPtrAfterMainLoop->addIncoming(DstPtr, ProcessMainLoopBB);
+  PHINode *V0AfterMainLoop =
+      FuncBuilder.CreatePHI(V16I8, 2, "v0.after.main.loop");
+  V0AfterMainLoop->addIncoming(VecData1, ProcessMainLoopBB);
+  PHINode *V1AfterMainLoop =
+      FuncBuilder.CreatePHI(V16I8, 2, "v1.after.main.loop");
+  V1AfterMainLoop->addIncoming(VecData2, ProcessMainLoopBB);
 
-  PHINode *DstPtrAfterMainLoop = FuncBuilder.CreatePHI(
-      FuncBuilder.getInt32Ty(), 2, "dst.ptr.after.main.loop");
-  DstPtrAfterMainLoop->addIncoming(DstArg, ProcessMainLoopBB);
-
-  // Check if Remainder is >= 32 bytes
   Value *RemainderHas32Bytes = FuncBuilder.CreateICmpULT(
       RemainderAfter48Blocks, FuncBuilder.getInt32(32),
       "Remainder.has.no.32bytes");
   FuncBuilder.CreateCondBr(RemainderHas32Bytes, Check16ByteTailBB,
                            Process32ByteTailBB);
 
-  // Main loop body - process 48-byte blocks
   FuncBuilder.SetInsertPoint(MainLoopBodyBB);
   PHINode *LoopIndex =
       FuncBuilder.CreatePHI(FuncBuilder.getInt32Ty(), 2, "loop.index");
   LoopIndex->addIncoming(FuncBuilder.getInt32(0), ProcessMainLoopBB);
 
-  PHINode *SrcPtrInLoop =
-      FuncBuilder.CreatePHI(FuncBuilder.getInt32Ty(), 2, "src.ptr.in.loop");
-  SrcPtrInLoop->addIncoming(SrcArg, ProcessMainLoopBB);
+  PHINode *SrcPtrInLoop = FuncBuilder.CreatePHI(PtrTy, 2, "src.ptr.in.loop");
+  SrcPtrInLoop->addIncoming(SrcPtr, ProcessMainLoopBB);
+  PHINode *DstPtrInLoop = FuncBuilder.CreatePHI(PtrTy, 2, "dst.ptr.in.loop");
+  DstPtrInLoop->addIncoming(DstPtr, ProcessMainLoopBB);
+  PHINode *V0 = FuncBuilder.CreatePHI(V16I8, 2, "v0");
+  V0->addIncoming(VecData1, ProcessMainLoopBB);
+  PHINode *V1 = FuncBuilder.CreatePHI(V16I8, 2, "v1");
+  V1->addIncoming(VecData2, ProcessMainLoopBB);
 
-  PHINode *DstPtrInLoop =
-      FuncBuilder.CreatePHI(FuncBuilder.getInt32Ty(), 2, "dst.ptr.in.loop");
-  DstPtrInLoop->addIncoming(DstArg, ProcessMainLoopBB);
+  Value *DstPtrVar = DstPtrInLoop;
+  auto [V2New, V1New, SrcArg1] =
+      createEspSrcQLdIp(FuncBuilder, Sar2, V1, V0, SrcPtrInLoop, 16);
+  DstPtrVar = createEspVst128Ip(FuncBuilder, V2New, DstPtrVar);
+  auto [V0New, V2New2, SrcArg2] =
+      createEspSrcQLdIp(FuncBuilder, Sar2, V1New, V1, SrcArg1, 16);
+  DstPtrVar = createEspVst128Ip(FuncBuilder, V0New, DstPtrVar);
+  auto [V1New2, V0New2, SrcArg3] =
+      createEspSrcQLdIp(FuncBuilder, Sar2, V2New2, V1New, SrcArg2, 16);
+  DstPtrVar = createEspVst128Ip(FuncBuilder, V1New2, DstPtrVar);
 
-  // First group of operations
-  SrcArg = createEspSrcQLdIp(FuncBuilder, SrcPtrInLoop, 2, 16, 0, 1);
-  DstArg = createEspVst128Ip(FuncBuilder, DstPtrInLoop, 0);
+  SrcPtrInLoop->addIncoming(SrcArg3, MainLoopBodyBB);
+  DstPtrInLoop->addIncoming(DstPtrVar, MainLoopBodyBB);
+  V0->addIncoming(V2New2, MainLoopBodyBB);
+  V1->addIncoming(V0New2, MainLoopBodyBB);
 
-  // Second group of operations
-  SrcArg = createEspSrcQLdIp(FuncBuilder, SrcArg, 0, 16, 1, 2);
-  DstArg = createEspVst128Ip(FuncBuilder, DstArg, 1);
-
-  // Third group of operations
-  SrcArg = createEspSrcQLdIp(FuncBuilder, SrcArg, 1, 16, 2, 0);
-  SrcArg->setName(SrcArg->getName() + ".after.block");
-  SrcPtrInLoop->addIncoming(SrcArg, MainLoopBodyBB);
-  DstArg = createEspVst128Ip(FuncBuilder, DstArg, 2);
-  DstArg->setName(DstArg->getName() + ".after.block");
-  DstPtrInLoop->addIncoming(DstArg, MainLoopBodyBB);
-  // Loop control
   Value *LoopIndexIncremented = FuncBuilder.CreateAdd(
       LoopIndex, FuncBuilder.getInt32(1), "loop.index.incremented", true, true);
   LoopIndex->addIncoming(LoopIndexIncremented, MainLoopBodyBB);
@@ -2531,22 +2524,26 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst16Common(
       LoopIndexIncremented, Blocks48Count, "loop.completed");
   FuncBuilder.CreateCondBr(LoopCompleted, HandleRemainderBB, MainLoopBodyBB);
 
-  SrcPtrAfterMainLoop->addIncoming(SrcArg, MainLoopBodyBB);
-  DstPtrAfterMainLoop->addIncoming(DstArg, MainLoopBodyBB);
+  SrcPtrAfterMainLoop->addIncoming(SrcArg3, MainLoopBodyBB);
+  DstPtrAfterMainLoop->addIncoming(DstPtrVar, MainLoopBodyBB);
+  V0AfterMainLoop->addIncoming(V2New2, MainLoopBodyBB);
+  V1AfterMainLoop->addIncoming(V0New2, MainLoopBodyBB);
 
-  // Process 32-byte Remainder
   FuncBuilder.SetInsertPoint(Process32ByteTailBB);
-  SrcArg = createEspSrcQLdIp(FuncBuilder, SrcPtrAfterMainLoop, 2, 0, 0, 1);
-  DstArg = createEspVst128Ip(FuncBuilder, DstPtrAfterMainLoop, 0);
-  createEspSrcQ(FuncBuilder, 1, 1, 2);
-  Value *DstAfter32ByteProcessing = DstArg =
-      createEspVst128Ip(FuncBuilder, DstArg, 1);
+  auto [V2Tail, V1Tail, SrcAfter32ByteProcessing] =
+      createEspSrcQLdIp(FuncBuilder, Sar2, V1AfterMainLoop, V0AfterMainLoop,
+                        SrcPtrAfterMainLoop, 0);
+  Value *DstAfter32 =
+      createEspVst128Ip(FuncBuilder, V2Tail, DstPtrAfterMainLoop);
+  Value *Second32ByteBlock =
+      createEspSrcQM(FuncBuilder, Sar2, V1Tail, V1AfterMainLoop);
+  Value *DstAfter32ByteProcessing =
+      createEspVst128Ip(FuncBuilder, Second32ByteBlock, DstAfter32);
   Value *RemainderAfter32ByteProcessing =
       FuncBuilder.CreateAdd(RemainderAfter48Blocks, FuncBuilder.getInt32(-32),
                             "Remainder.after.32byte.processing", false, true);
   FuncBuilder.CreateBr(FinalCleanupBB);
 
-  // Check if Remainder has 16 bytes
   FuncBuilder.SetInsertPoint(Check16ByteTailBB);
   Value *RemainderHas16Bytes = FuncBuilder.CreateICmpULT(
       RemainderAfter48Blocks, FuncBuilder.getInt32(16),
@@ -2555,98 +2552,84 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst16Common(
                            Process16ByteTailBB);
 
   FuncBuilder.SetInsertPoint(Process16ByteTailBB);
-  createEspSrcQ(FuncBuilder, 0, 0, 1);
-  DstArg = createEspVst128Ip(FuncBuilder, DstPtrAfterMainLoop, 0);
-  Value *SrcAfter16ByteProcessing =
-      FuncBuilder.CreateAdd(SrcPtrAfterMainLoop, FuncBuilder.getInt32(-16),
-                            "src.after.16byte.processing");
+  Value *Combined16ByteBlock =
+      createEspSrcQM(FuncBuilder, Sar2, V1AfterMainLoop, V0AfterMainLoop);
+  Value *DstAfter16ByteProcessing =
+      createEspVst128Ip(FuncBuilder, Combined16ByteBlock, DstPtrAfterMainLoop);
+  Value *SrcAfter16ByteProcessing = FuncBuilder.CreateGEP(
+      FuncBuilder.getInt8Ty(), SrcPtrAfterMainLoop, FuncBuilder.getInt32(-16),
+      "src.after.16byte.processing");
   Value *RemainderAfter16ByteProcessing =
       FuncBuilder.CreateAdd(RemainderAfter48Blocks, FuncBuilder.getInt32(-16),
                             "Remainder.after.16byte.processing", false, true);
   FuncBuilder.CreateBr(FinalCleanupBB);
 
   FuncBuilder.SetInsertPoint(SkipTailProcessingBB);
-
-  PHINode *SrcForNoTailProcessing = FuncBuilder.CreatePHI(
-      FuncBuilder.getInt32Ty(), 1, "src.for.no.tail.processing");
-  // Create the initial value for no tail processing
+  PHINode *SrcForNoTailProcessing =
+      FuncBuilder.CreatePHI(PtrTy, 1, "src.for.no.tail.processing");
   SrcForNoTailProcessing->addIncoming(SrcPtrAfterMainLoop, Check16ByteTailBB);
-
-  PHINode *DstForNoTailProcessing = FuncBuilder.CreatePHI(
-      FuncBuilder.getInt32Ty(), 1, "dst.for.no.tail.processing");
+  PHINode *DstForNoTailProcessing =
+      FuncBuilder.CreatePHI(PtrTy, 1, "dst.for.no.tail.processing");
   DstForNoTailProcessing->addIncoming(DstPtrAfterMainLoop, Check16ByteTailBB);
-
   PHINode *RemainderForNoTailProcessing = FuncBuilder.CreatePHI(
       FuncBuilder.getInt32Ty(), 1, "Remainder.for.no.tail.processing");
   RemainderForNoTailProcessing->addIncoming(RemainderAfter48Blocks,
                                             Check16ByteTailBB);
-  // Adjust src pointer for unaligned access
-  Value *SrcAdjustedForUnaligned =
-      FuncBuilder.CreateAdd(SrcForNoTailProcessing, FuncBuilder.getInt32(-32),
-                            "src.adjusted.for.unaligned");
+  Value *SrcAdjustedForUnaligned = FuncBuilder.CreateGEP(
+      FuncBuilder.getInt8Ty(), SrcForNoTailProcessing,
+      FuncBuilder.getInt32(-32), "src.adjusted.for.unaligned");
   FuncBuilder.CreateBr(FinalCleanupBB);
 
-  // Final memcpy processing remaining bytes
   FuncBuilder.SetInsertPoint(FinalCleanupBB);
-  Value *SrcForFinalProcessing = PHINode::Create(
-      FuncBuilder.getInt32Ty(), 4, "src.for.final.processing", FinalCleanupBB);
-  cast<PHINode>(SrcForFinalProcessing)
-      ->addIncoming(SrcArg, Process32ByteTailBB);
-  cast<PHINode>(SrcForFinalProcessing)
-      ->addIncoming(SrcAfter16ByteProcessing, Process16ByteTailBB);
-  cast<PHINode>(SrcForFinalProcessing)->addIncoming(SrcArgOriginal, EntryBB);
-  cast<PHINode>(SrcForFinalProcessing)
-      ->addIncoming(SrcAdjustedForUnaligned, SkipTailProcessingBB);
-  Value *DstForFinalProcessing = PHINode::Create(
-      FuncBuilder.getInt32Ty(), 4, "dst.for.final.processing", FinalCleanupBB);
-  cast<PHINode>(DstForFinalProcessing)
-      ->addIncoming(DstAfter32ByteProcessing, Process32ByteTailBB);
-  cast<PHINode>(DstForFinalProcessing)
-      ->addIncoming(DstArg, Process16ByteTailBB);
-  cast<PHINode>(DstForFinalProcessing)->addIncoming(DstArgOriginal, EntryBB);
-  cast<PHINode>(DstForFinalProcessing)
-      ->addIncoming(DstForNoTailProcessing, SkipTailProcessingBB);
-  Value *RemainderForFinalProcessing =
-      PHINode::Create(FuncBuilder.getInt32Ty(), 4,
-                      "Remainder.for.final.processing", FinalCleanupBB);
-  cast<PHINode>(RemainderForFinalProcessing)->addIncoming(SizeArg, EntryBB);
-  cast<PHINode>(RemainderForFinalProcessing)
-      ->addIncoming(RemainderAfter32ByteProcessing, Process32ByteTailBB);
-  cast<PHINode>(RemainderForFinalProcessing)
-      ->addIncoming(RemainderAfter16ByteProcessing, Process16ByteTailBB);
-  cast<PHINode>(RemainderForFinalProcessing)
-      ->addIncoming(RemainderForNoTailProcessing, SkipTailProcessingBB);
-  // Check if there are any remaining bytes to process
+  PHINode *SrcForFinalProcessing =
+      FuncBuilder.CreatePHI(PtrTy, 4, "src.for.final.processing");
+  SrcForFinalProcessing->addIncoming(SrcAfter32ByteProcessing,
+                                     Process32ByteTailBB);
+  SrcForFinalProcessing->addIncoming(SrcAfter16ByteProcessing,
+                                     Process16ByteTailBB);
+  SrcForFinalProcessing->addIncoming(SrcArgOriginal, EntryBB);
+  SrcForFinalProcessing->addIncoming(SrcAdjustedForUnaligned,
+                                     SkipTailProcessingBB);
+  PHINode *DstForFinalProcessing =
+      FuncBuilder.CreatePHI(PtrTy, 4, "dst.for.final.processing");
+  DstForFinalProcessing->addIncoming(DstAfter32ByteProcessing,
+                                     Process32ByteTailBB);
+  DstForFinalProcessing->addIncoming(DstAfter16ByteProcessing,
+                                     Process16ByteTailBB);
+  DstForFinalProcessing->addIncoming(DstArgOriginal, EntryBB);
+  DstForFinalProcessing->addIncoming(DstForNoTailProcessing,
+                                     SkipTailProcessingBB);
+  PHINode *RemainderForFinalProcessing = FuncBuilder.CreatePHI(
+      FuncBuilder.getInt32Ty(), 4, "Remainder.for.final.processing");
+  RemainderForFinalProcessing->addIncoming(SizeArg, EntryBB);
+  RemainderForFinalProcessing->addIncoming(RemainderAfter32ByteProcessing,
+                                           Process32ByteTailBB);
+  RemainderForFinalProcessing->addIncoming(RemainderAfter16ByteProcessing,
+                                           Process16ByteTailBB);
+  RemainderForFinalProcessing->addIncoming(RemainderForNoTailProcessing,
+                                           SkipTailProcessingBB);
+
   Value *HasRemainingBytes = FuncBuilder.CreateICmpEQ(
       RemainderForFinalProcessing, FuncBuilder.getInt32(0),
       "has.no.remaining.bytes");
-
-  // Condition branch based on comparison result
   FuncBuilder.CreateCondBr(HasRemainingBytes, ReturnBB, CallSmallSizeCleanupBB);
 
-  // Set the return block
   FuncBuilder.SetInsertPoint(ReturnBB);
   FuncBuilder.CreateRetVoid();
 
-  // Set the cleanup block, for processing the remaining bytes
   FuncBuilder.SetInsertPoint(CallSmallSizeCleanupBB);
-  Value *DstPtrFinal =
-      FuncBuilder.CreateIntToPtr(DstForFinalProcessing, FuncBuilder.getPtrTy(),
-                                 "dst.ptr.for.small.size.cleanup");
-  Value *SrcPtrFinal =
-      FuncBuilder.CreateIntToPtr(SrcForFinalProcessing, FuncBuilder.getPtrTy(),
-                                 "src.ptr.for.small.size.cleanup");
   processMemCpyVarFrom1To15(
-      FuncBuilder, "esp32p4MemCpySrcUnalignDst16From1To15Opt", DstPtrFinal,
-      SrcPtrFinal, RemainderForFinalProcessing, true,
-      MemCpyType::SrcUnalign_Dst16_Var);
+      FuncBuilder, "esp32p4MemCpySrcUnalignDst16From1To15Opt",
+      DstForFinalProcessing, SrcForFinalProcessing, RemainderForFinalProcessing,
+      true, MemCpyType::SrcUnalign_Dst16_Var);
   FuncBuilder.CreateBr(ReturnBB);
 
   M->eraseFromParent();
   return true;
 }
 
-// src unaligned, dst 16-byte aligned, size is variable
+
+
 bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst16Var(
     MemCpyInst *M, BasicBlock::iterator &BBI) {
   return processSrcUnalignDst16Common(M, BBI, true);
