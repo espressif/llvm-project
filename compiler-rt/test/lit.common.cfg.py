@@ -974,7 +974,12 @@ else:
 
 
 def target_page_size():
-    if config.target_arch in ("amdgcn", "nvptx64"):
+    if config.target_arch in ("amdgcn", "nvptx64") or (
+        emulator
+        and "qemu" in emulator
+        and config.target_triple
+        in ["xtensa-esp-unknown-elf", "riscv32-esp-unknown-elf"]
+    ):
         return 4096
     try:
         proc = subprocess.Popen(
