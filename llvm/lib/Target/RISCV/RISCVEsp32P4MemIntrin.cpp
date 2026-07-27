@@ -61,6 +61,24 @@ static bool helperCallTypesMatch(Function *F, Value *DstAddr, Value *SrcAddr,
          FTy->getParamType(2) == Size->getType();
 }
 
+// RV32: copy 8 unaligned bytes as two i32 loads/stores (no i64).
+static void emitUnaligned8ByteCopy(IRBuilder<> &B, Value *Src, Value *Dst) {
+  Value *Load0 = B.CreateAlignedLoad(B.getInt32Ty(), Src, Align(1));
+  B.CreateAlignedStore(Load0, Dst, Align(1));
+  Value *Src4 = B.CreateGEP(B.getInt8Ty(), Src, B.getInt32(4), "src.4");
+  Value *Dst4 = B.CreateGEP(B.getInt8Ty(), Dst, B.getInt32(4), "dst.4");
+  Value *Load1 = B.CreateAlignedLoad(B.getInt32Ty(), Src4, Align(1));
+  B.CreateAlignedStore(Load1, Dst4, Align(1));
+}
+
+#ifndef NDEBUG
+static void verifyMemCpyHelper(Function *F) {
+  if (verifyFunction(*F, &errs()))
+    report_fatal_error(
+        "RISCVEsp32P4MemIntrin: created invalid helper function");
+}
+#endif
+
 bool RISCVEsp32P4MemIntrinBase::useExistingHelperFunction(
     MemCpyInst *M, IRBuilder<> &Builder, const std::string &FuncName,
     Value *DstAddr, Value *SrcAddr, Value *Size) {
@@ -2626,9 +2644,9 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst16Common(
       true, MemCpyType::SrcUnalign_Dst16_Var);
   FuncBuilder.CreateBr(ReturnBB);
 
-  if (verifyFunction(*MemCpyFunc, &errs()))
-    report_fatal_error(
-        "RISCVEsp32P4MemIntrin: created invalid helper function");
+#ifndef NDEBUG
+  verifyMemCpyHelper(MemCpyFunc);
+#endif
 
   M->eraseFromParent();
   return true;
@@ -2669,17 +2687,7 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst8Const16(
   Value *SizeArg = MemCpyFunc->arg_begin() + 2;
   SizeArg->setName("size");
 
-  // Load and store the first 8 bytes as two i32 pairs (RV32-friendly, no i64).
-  Value *Load0 =
-      FuncBuilder.CreateAlignedLoad(FuncBuilder.getInt32Ty(), SrcArg, Align(1));
-  FuncBuilder.CreateAlignedStore(Load0, DstArg, Align(1));
-  Value *Src4 = FuncBuilder.CreateGEP(FuncBuilder.getInt8Ty(), SrcArg,
-                                      FuncBuilder.getInt32(4), "src.4");
-  Value *Dst4 = FuncBuilder.CreateGEP(FuncBuilder.getInt8Ty(), DstArg,
-                                      FuncBuilder.getInt32(4), "dst.4");
-  Value *Load1 =
-      FuncBuilder.CreateAlignedLoad(FuncBuilder.getInt32Ty(), Src4, Align(1));
-  FuncBuilder.CreateAlignedStore(Load1, Dst4, Align(1));
+  emitUnaligned8ByteCopy(FuncBuilder, SrcArg, DstArg);
 
   // Calculate the remaining size after processing first 8 bytes
   Value *RemainingSizeAfterFirst8Bytes = FuncBuilder.CreateSub(
@@ -2696,6 +2704,10 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst8Const16(
                            Align(1), RemainingSizeAfterFirst8Bytes);
 
   FuncBuilder.CreateRetVoid();
+
+#ifndef NDEBUG
+  verifyMemCpyHelper(MemCpyFunc);
+#endif
 
   M->eraseFromParent();
   return true;
@@ -2776,17 +2788,7 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst8Var(
   // if.then9 block
   FuncBuilder.SetInsertPoint(IfEndBB);
 
-  // Load and store the first 8 bytes as two i32 pairs (RV32-friendly, no i64).
-  Value *Load0 =
-      FuncBuilder.CreateAlignedLoad(FuncBuilder.getInt32Ty(), SrcArg, Align(1));
-  FuncBuilder.CreateAlignedStore(Load0, DstArg, Align(1));
-  Value *Src4 = FuncBuilder.CreateGEP(FuncBuilder.getInt8Ty(), SrcArg,
-                                      FuncBuilder.getInt32(4), "src.4");
-  Value *Dst4 = FuncBuilder.CreateGEP(FuncBuilder.getInt8Ty(), DstArg,
-                                      FuncBuilder.getInt32(4), "dst.4");
-  Value *Load1 =
-      FuncBuilder.CreateAlignedLoad(FuncBuilder.getInt32Ty(), Src4, Align(1));
-  FuncBuilder.CreateAlignedStore(Load1, Dst4, Align(1));
+  emitUnaligned8ByteCopy(FuncBuilder, SrcArg, DstArg);
 
   Value *RemainingSizeAfter8Bytes = FuncBuilder.CreateSub(
       SizeArg, FuncBuilder.getInt32(8), "remaining.size.after.8bytes");
@@ -2804,6 +2806,10 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst8Var(
 
   FuncBuilder.SetInsertPoint(ReturnBB);
   FuncBuilder.CreateRetVoid();
+
+#ifndef NDEBUG
+  verifyMemCpyHelper(MemCpyFunc);
+#endif
 
   M->eraseFromParent();
 
