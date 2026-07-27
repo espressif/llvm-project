@@ -2628,8 +2628,6 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst16Common(
   return true;
 }
 
-
-
 bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst16Var(
     MemCpyInst *M, BasicBlock::iterator &BBI) {
   return processSrcUnalignDst16Common(M, BBI, true);
