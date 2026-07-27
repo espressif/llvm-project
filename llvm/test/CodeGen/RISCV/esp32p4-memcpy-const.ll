@@ -10543,12 +10543,7 @@ define void @test_srcunalign_dst16_constant_size_16(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst16_constant_size_16(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP1]], i32 16)
+; CHECK-NEXT:    call void @esp32p4MemCpySrcunalignedDst16From16to31Index0(ptr [[A]], ptr [[B]])
 ; CHECK-NEXT:    ret void
 ;
 
@@ -10561,12 +10556,7 @@ define void @test_srcunalign_dst16_constant_size_17(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst16_constant_size_17(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP1]], i32 16)
+; CHECK-NEXT:    call void @esp32p4MemCpySrcunalignedDst16From16to31Index1(ptr [[A]], ptr [[B]])
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[B]], i32 16
 ; CHECK-NEXT:    [[TMP5:%.*]] = getelementptr i8, ptr [[A]], i32 16
 ; CHECK-NEXT:    [[TMP6:%.*]] = load i8, ptr [[TMP4]], align 1
@@ -10583,12 +10573,7 @@ define void @test_srcunalign_dst16_constant_size_31(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst16_constant_size_31(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP1]], i32 16)
+; CHECK-NEXT:    call void @esp32p4MemCpySrcunalignedDst16From16to31Index2(ptr [[A]], ptr [[B]])
 ; CHECK-NEXT:    [[TMP2:%.*]] = getelementptr i8, ptr [[B]], i32 16
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[A]], i32 16
 ; CHECK-NEXT:    [[TMP4:%.*]] = load i64, ptr [[TMP2]], align 8
@@ -10617,14 +10602,7 @@ define void @test_srcunalign_dst16_constant_size_32(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst16_constant_size_32(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
-; CHECK-NEXT:    [[SRCQLDIP_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[LD128USARIP1_I]], i32 0, i32 0, i32 2)
-; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP1]], i32 16)
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
-; CHECK-NEXT:    [[VST128IP2_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP_I]], i32 16)
+; CHECK-NEXT:    call void @esp32p4MemCpySrcunalignedDst16From32To47(ptr [[A]], ptr [[B]])
 ; CHECK-NEXT:    ret void
 ;
 
@@ -10637,14 +10615,7 @@ define void @test_srcunalign_dst16_constant_size_33(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst16_constant_size_33(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
-; CHECK-NEXT:    [[SRCQLDIP_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[LD128USARIP1_I]], i32 0, i32 0, i32 2)
-; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP1]], i32 16)
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
-; CHECK-NEXT:    [[VST128IP2_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP_I]], i32 16)
+; CHECK-NEXT:    call void @esp32p4MemCpySrcunalignedDst16From32To47(ptr [[A]], ptr [[B]])
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[B]], i32 32
 ; CHECK-NEXT:    [[TMP5:%.*]] = getelementptr i8, ptr [[A]], i32 32
 ; CHECK-NEXT:    [[TMP6:%.*]] = load i8, ptr [[TMP4]], align 1
@@ -10661,14 +10632,7 @@ define void @test_srcunalign_dst16_constant_size_47(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst16_constant_size_47(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
-; CHECK-NEXT:    [[SRCQLDIP_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[LD128USARIP1_I]], i32 0, i32 0, i32 2)
-; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP1]], i32 16)
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
-; CHECK-NEXT:    [[VST128IP2_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP_I]], i32 16)
+; CHECK-NEXT:    call void @esp32p4MemCpySrcunalignedDst16From32To47(ptr [[A]], ptr [[B]])
 ; CHECK-NEXT:    [[TMP2:%.*]] = getelementptr i8, ptr [[B]], i32 32
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[A]], i32 32
 ; CHECK-NEXT:    [[TMP4:%.*]] = load i64, ptr [[TMP2]], align 8
@@ -10697,9 +10661,7 @@ define void @test_srcunalign_dst16_constant_size_48(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst16_constant_size_48(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index0(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index0(ptr [[A]], ptr [[B]])
 ; CHECK-NEXT:    ret void
 ;
 
@@ -10712,9 +10674,7 @@ define void @test_srcunalign_dst16_constant_size_49(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst16_constant_size_49(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index1(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index1(ptr [[A]], ptr [[B]])
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[B]], i32 48
 ; CHECK-NEXT:    [[TMP5:%.*]] = getelementptr i8, ptr [[A]], i32 48
 ; CHECK-NEXT:    [[TMP6:%.*]] = load i8, ptr [[TMP4]], align 1
@@ -10731,9 +10691,7 @@ define void @test_srcunalign_dst16_constant_size_63(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst16_constant_size_63(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index2(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index2(ptr [[A]], ptr [[B]])
 ; CHECK-NEXT:    [[TMP2:%.*]] = getelementptr i8, ptr [[B]], i32 48
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[A]], i32 48
 ; CHECK-NEXT:    [[TMP4:%.*]] = load i64, ptr [[TMP2]], align 8
@@ -10762,9 +10720,7 @@ define void @test_srcunalign_dst16_constant_size_64(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst16_constant_size_64(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.0(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.0(ptr [[A]], ptr [[B]])
 ; CHECK-NEXT:    ret void
 ;
 
@@ -10777,9 +10733,7 @@ define void @test_srcunalign_dst16_constant_size_65(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst16_constant_size_65(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.1(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.1(ptr [[A]], ptr [[B]])
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[B]], i32 64
 ; CHECK-NEXT:    [[TMP5:%.*]] = getelementptr i8, ptr [[A]], i32 64
 ; CHECK-NEXT:    [[TMP6:%.*]] = load i8, ptr [[TMP4]], align 1
@@ -10796,9 +10750,7 @@ define void @test_srcunalign_dst16_constant_size_80(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst16_constant_size_80(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index0(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index0(ptr [[A]], ptr [[B]])
 ; CHECK-NEXT:    ret void
 ;
 
@@ -10811,9 +10763,7 @@ define void @test_srcunalign_dst16_constant_size_81(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst16_constant_size_81(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index1(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index1(ptr [[A]], ptr [[B]])
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[B]], i32 80
 ; CHECK-NEXT:    [[TMP5:%.*]] = getelementptr i8, ptr [[A]], i32 80
 ; CHECK-NEXT:    [[TMP6:%.*]] = load i8, ptr [[TMP4]], align 1
@@ -10830,9 +10780,7 @@ define void @test_srcunalign_dst16_constant_size_88(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst16_constant_size_88(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index2(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index2(ptr [[A]], ptr [[B]])
 ; CHECK-NEXT:    [[TMP2:%.*]] = getelementptr i8, ptr [[B]], i32 80
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[A]], i32 80
 ; CHECK-NEXT:    [[TMP4:%.*]] = load i64, ptr [[TMP2]], align 1
@@ -10849,9 +10797,7 @@ define void @test_srcunalign_dst16_constant_size_96(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst16_constant_size_96(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index3(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index3(ptr [[A]], ptr [[B]])
 ; CHECK-NEXT:    ret void
 ;
 
@@ -10864,9 +10810,7 @@ define void @test_srcunalign_dst16_constant_size_112(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst16_constant_size_112(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.2(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.2(ptr [[A]], ptr [[B]])
 ; CHECK-NEXT:    ret void
 ;
 
@@ -10879,9 +10823,7 @@ define void @test_srcunalign_dst16_constant_size_124(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst16_constant_size_124(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.3(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.3(ptr [[A]], ptr [[B]])
 ; CHECK-NEXT:    [[TMP2:%.*]] = getelementptr i8, ptr [[B]], i32 112
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[A]], i32 112
 ; CHECK-NEXT:    [[TMP4:%.*]] = load i64, ptr [[TMP2]], align 8
@@ -10902,9 +10844,7 @@ define void @test_srcunalign_dst16_constant_size_127(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst16_constant_size_127(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.4(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.4(ptr [[A]], ptr [[B]])
 ; CHECK-NEXT:    [[TMP2:%.*]] = getelementptr i8, ptr [[B]], i32 112
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[A]], i32 112
 ; CHECK-NEXT:    [[TMP4:%.*]] = load i64, ptr [[TMP2]], align 8
@@ -10933,9 +10873,7 @@ define void @test_srcunalign_dst16_constant_size_128(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst16_constant_size_128(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index3(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index3(ptr [[A]], ptr [[B]])
 ; CHECK-NEXT:    ret void
 ;
 
@@ -10948,9 +10886,7 @@ define void @test_srcunalign_dst16_constant_size_129(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst16_constant_size_129(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index4(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index4(ptr [[A]], ptr [[B]])
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[B]], i32 128
 ; CHECK-NEXT:    [[TMP5:%.*]] = getelementptr i8, ptr [[A]], i32 128
 ; CHECK-NEXT:    [[TMP6:%.*]] = load i8, ptr [[TMP4]], align 1
@@ -10967,9 +10903,7 @@ define void @test_srcunalign_dst16_constant_size_255(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst16_constant_size_255(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index4(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index4(ptr [[A]], ptr [[B]])
 ; CHECK-NEXT:    [[TMP2:%.*]] = getelementptr i8, ptr [[B]], i32 240
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[A]], i32 240
 ; CHECK-NEXT:    [[TMP4:%.*]] = load i64, ptr [[TMP2]], align 8
@@ -10998,9 +10932,7 @@ define void @test_srcunalign_dst16_constant_size_256(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst16_constant_size_256(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.5(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.5(ptr [[A]], ptr [[B]])
 ; CHECK-NEXT:    ret void
 ;
 
@@ -11013,9 +10945,7 @@ define void @test_srcunalign_dst16_constant_size_1023(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst16_constant_size_1023(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index5(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index5(ptr [[A]], ptr [[B]])
 ; CHECK-NEXT:    [[TMP2:%.*]] = getelementptr i8, ptr [[B]], i32 1008
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[A]], i32 1008
 ; CHECK-NEXT:    [[TMP4:%.*]] = load i64, ptr [[TMP2]], align 8
@@ -11044,9 +10974,7 @@ define void @test_srcunalign_dst16_constant_size_1024(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dst16_constant_size_1024(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.6(i32 [[TMP1]], i32 [[TMP0]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.6(ptr [[A]], ptr [[B]])
 ; CHECK-NEXT:    ret void
 ;
 
@@ -11415,12 +11343,7 @@ define void @test_srcunalign_dst8_constant_size_32(ptr %a, ptr %b) {
 ; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
-; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP1]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP2]], i32 16)
+; CHECK-NEXT:    call void @esp32p4MemCpySrcunalignedDst16From16to31Index3(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 24
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 24
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -11441,12 +11364,7 @@ define void @test_srcunalign_dst8_constant_size_33(ptr %a, ptr %b) {
 ; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
-; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP1]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP2]], i32 16)
+; CHECK-NEXT:    call void @esp32p4MemCpySrcunalignedDst16From16to31Index4(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 24
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 24
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -11471,12 +11389,7 @@ define void @test_srcunalign_dst8_constant_size_47(ptr %a, ptr %b) {
 ; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
-; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP1]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP2]], i32 16)
+; CHECK-NEXT:    call void @esp32p4MemCpySrcunalignedDst16From16to31Index5(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 24
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 24
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -11513,14 +11426,7 @@ define void @test_srcunalign_dst8_constant_size_48(ptr %a, ptr %b) {
 ; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
-; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP1]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
-; CHECK-NEXT:    [[SRCQLDIP_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[LD128USARIP1_I]], i32 0, i32 0, i32 2)
-; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP2]], i32 16)
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
-; CHECK-NEXT:    [[VST128IP2_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP_I]], i32 16)
+; CHECK-NEXT:    call void @esp32p4MemCpySrcunalignedDst16From32To47(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 40
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 40
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -11541,14 +11447,7 @@ define void @test_srcunalign_dst8_constant_size_49(ptr %a, ptr %b) {
 ; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
-; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP1]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
-; CHECK-NEXT:    [[SRCQLDIP_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[LD128USARIP1_I]], i32 0, i32 0, i32 2)
-; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP2]], i32 16)
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
-; CHECK-NEXT:    [[VST128IP2_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP_I]], i32 16)
+; CHECK-NEXT:    call void @esp32p4MemCpySrcunalignedDst16From32To47(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 40
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 40
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -11573,14 +11472,7 @@ define void @test_srcunalign_dst8_constant_size_63(ptr %a, ptr %b) {
 ; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
-; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP1]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
-; CHECK-NEXT:    [[SRCQLDIP_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[LD128USARIP1_I]], i32 0, i32 0, i32 2)
-; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP2]], i32 16)
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
-; CHECK-NEXT:    [[VST128IP2_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP_I]], i32 16)
+; CHECK-NEXT:    call void @esp32p4MemCpySrcunalignedDst16From32To47(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 40
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 40
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -11617,9 +11509,7 @@ define void @test_srcunalign_dst8_constant_size_64(ptr %a, ptr %b) {
 ; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
-; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index6(i32 [[TMP2]], i32 [[TMP1]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index6(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 56
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 56
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -11640,9 +11530,7 @@ define void @test_srcunalign_dst8_constant_size_65(ptr %a, ptr %b) {
 ; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
-; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index7(i32 [[TMP2]], i32 [[TMP1]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index7(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 56
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 56
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -11667,9 +11555,7 @@ define void @test_srcunalign_dst8_constant_size_80(ptr %a, ptr %b) {
 ; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
-; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.7(i32 [[TMP2]], i32 [[TMP1]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.7(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 72
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 72
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -11690,9 +11576,7 @@ define void @test_srcunalign_dst8_constant_size_81(ptr %a, ptr %b) {
 ; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
-; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.8(i32 [[TMP2]], i32 [[TMP1]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.8(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 72
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 72
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -11717,9 +11601,7 @@ define void @test_srcunalign_dst8_constant_size_88(ptr %a, ptr %b) {
 ; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 8
 ; CHECK-NEXT:    [[TMP6:%.*]] = getelementptr i8, ptr [[B]], i32 8
 ; CHECK-NEXT:    [[TMP7:%.*]] = getelementptr i8, ptr [[A]], i32 8
-; CHECK-NEXT:    [[TMP8:%.*]] = ptrtoint ptr [[TMP6]] to i32
-; CHECK-NEXT:    [[TMP9:%.*]] = ptrtoint ptr [[TMP7]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index5(i32 [[TMP9]], i32 [[TMP8]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index5(ptr [[TMP7]], ptr [[TMP6]])
 ; CHECK-NEXT:    ret void
 ;
 
@@ -11736,9 +11618,7 @@ define void @test_srcunalign_dst8_constant_size_96(ptr %a, ptr %b) {
 ; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
-; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index6(i32 [[TMP2]], i32 [[TMP1]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index6(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 88
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 88
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -11759,9 +11639,7 @@ define void @test_srcunalign_dst8_constant_size_112(ptr %a, ptr %b) {
 ; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
-; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index8(i32 [[TMP2]], i32 [[TMP1]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index8(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 104
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 104
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -11782,9 +11660,7 @@ define void @test_srcunalign_dst8_constant_size_124(ptr %a, ptr %b) {
 ; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
-; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index9(i32 [[TMP2]], i32 [[TMP1]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index9(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 104
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 104
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -11813,9 +11689,7 @@ define void @test_srcunalign_dst8_constant_size_127(ptr %a, ptr %b) {
 ; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
-; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index10(i32 [[TMP2]], i32 [[TMP1]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index10(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 104
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 104
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -11852,9 +11726,7 @@ define void @test_srcunalign_dst8_constant_size_128(ptr %a, ptr %b) {
 ; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
-; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.9(i32 [[TMP2]], i32 [[TMP1]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.9(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 120
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 120
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -11875,9 +11747,7 @@ define void @test_srcunalign_dst8_constant_size_129(ptr %a, ptr %b) {
 ; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
-; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.10(i32 [[TMP2]], i32 [[TMP1]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From16to31.10(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 120
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 120
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -11902,9 +11772,7 @@ define void @test_srcunalign_dst8_constant_size_255(ptr %a, ptr %b) {
 ; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
-; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index7(i32 [[TMP2]], i32 [[TMP1]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index7(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 232
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 232
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -11941,9 +11809,7 @@ define void @test_srcunalign_dst8_constant_size_256(ptr %a, ptr %b) {
 ; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
-; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index11(i32 [[TMP2]], i32 [[TMP1]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index11(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 248
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 248
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -11964,9 +11830,7 @@ define void @test_srcunalign_dst8_constant_size_1023(ptr %a, ptr %b) {
 ; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
-; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index8(i32 [[TMP2]], i32 [[TMP1]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16mod48From32To47Index8(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 1000
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 1000
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -12003,9 +11867,7 @@ define void @test_srcunalign_dst8_constant_size_1024(ptr %a, ptr %b) {
 ; CHECK-NEXT:    store i64 [[TMP0]], ptr [[A]], align 1
 ; CHECK-NEXT:    [[ADD_PTR1_I:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[ADD_PTR_I:%.*]] = getelementptr i8, ptr [[B]], i32 8
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[ADD_PTR_I]] to i32
-; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[ADD_PTR1_I]] to i32
-; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index12(i32 [[TMP2]], i32 [[TMP1]])
+; CHECK-NEXT:    tail call void @esp32p4MemCpySrcunalignedDst16Div48Index12(ptr [[ADD_PTR1_I]], ptr [[ADD_PTR_I]])
 ; CHECK-NEXT:    [[TMP3:%.*]] = getelementptr i8, ptr [[B]], i32 1016
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr i8, ptr [[A]], i32 1016
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i64, ptr [[TMP3]], align 1
@@ -12301,12 +12163,14 @@ define void @test_srcunalign_dstunalign_constant_size_16(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dstunalign_constant_size_16(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-; CHECK-NEXT:    [[VST128IP9_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP1]], i32 16)
+; CHECK-NEXT:    [[LD128USARIP_M_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[B]], i32 16)
+; CHECK-NEXT:    [[TMP0:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 0
+; CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 1
+; CHECK-NEXT:    [[LD128USARIP_M1_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[TMP1]], i32 16)
+; CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 0
+; CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 2
+; CHECK-NEXT:    [[SRCQ_M9_I:%.*]] = call <16 x i8> @llvm.riscv.esp.src.q.m(i32 [[TMP3]], <16 x i8> [[TMP2]], <16 x i8> [[TMP0]])
+; CHECK-NEXT:    [[VST128IP_M10_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[SRCQ_M9_I]], ptr [[A]], i32 16)
 ; CHECK-NEXT:    ret void
 ;
 
@@ -12319,15 +12183,16 @@ define void @test_srcunalign_dstunalign_constant_size_17(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dstunalign_constant_size_17(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-; CHECK-NEXT:    [[VST128IP9_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP1]], i32 16)
-; CHECK-NEXT:    [[SUB_SRC_I:%.*]] = add i32 [[LD128USARIP1_I]], -16
-; CHECK-NEXT:    [[DST_PTR_FINAL_I:%.*]] = inttoptr i32 [[VST128IP9_I]] to ptr
-; CHECK-NEXT:    [[SRC_PTR_FINAL_I:%.*]] = inttoptr i32 [[SUB_SRC_I]] to ptr
+; CHECK-NEXT:    [[LD128USARIP_M_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[B]], i32 16)
+; CHECK-NEXT:    [[TMP0:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 0
+; CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 1
+; CHECK-NEXT:    [[LD128USARIP_M1_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[TMP1]], i32 16)
+; CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 0
+; CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 1
+; CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 2
+; CHECK-NEXT:    [[SRCQ_M9_I:%.*]] = call <16 x i8> @llvm.riscv.esp.src.q.m(i32 [[TMP4]], <16 x i8> [[TMP5]], <16 x i8> [[TMP0]])
+; CHECK-NEXT:    [[DST_PTR_FINAL_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[SRCQ_M9_I]], ptr [[A]], i32 16)
+; CHECK-NEXT:    [[SRC_PTR_FINAL_I:%.*]] = getelementptr i8, ptr [[TMP3]], i32 -16
 ; CHECK-NEXT:    [[TMP2:%.*]] = load i8, ptr [[SRC_PTR_FINAL_I]], align 1
 ; CHECK-NEXT:    store i8 [[TMP2]], ptr [[DST_PTR_FINAL_I]], align 1
 ; CHECK-NEXT:    ret void
@@ -12342,30 +12207,31 @@ define void @test_srcunalign_dstunalign_constant_size_31(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dstunalign_constant_size_31(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-; CHECK-NEXT:    [[VST128IP9_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP1]], i32 16)
-; CHECK-NEXT:    [[SUB_SRC_I:%.*]] = add i32 [[LD128USARIP1_I]], -16
-; CHECK-NEXT:    [[DST_PTR_FINAL_I:%.*]] = inttoptr i32 [[VST128IP9_I]] to ptr
-; CHECK-NEXT:    [[SRC_PTR_FINAL_I:%.*]] = inttoptr i32 [[SUB_SRC_I]] to ptr
+; CHECK-NEXT:    [[LD128USARIP_M_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[B]], i32 16)
+; CHECK-NEXT:    [[TMP0:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 0
+; CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 1
+; CHECK-NEXT:    [[LD128USARIP_M1_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[TMP1]], i32 16)
+; CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 0
+; CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 1
+; CHECK-NEXT:    [[TMP9:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 2
+; CHECK-NEXT:    [[SRCQ_M9_I:%.*]] = call <16 x i8> @llvm.riscv.esp.src.q.m(i32 [[TMP9]], <16 x i8> [[TMP7]], <16 x i8> [[TMP0]])
+; CHECK-NEXT:    [[DST_PTR_FINAL_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[SRCQ_M9_I]], ptr [[A]], i32 16)
+; CHECK-NEXT:    [[SRC_PTR_FINAL_I:%.*]] = getelementptr i8, ptr [[TMP8]], i32 -16
 ; CHECK-NEXT:    [[TMP2:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
 ; CHECK-NEXT:    store i32 [[TMP2]], ptr [[DST_PTR_FINAL_I]], align 4
-; CHECK-NEXT:    [[SRC_GEP_I3267_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
+; CHECK-NEXT:    [[SRC_GEP_I3267_I:%.*]] = getelementptr i8, ptr [[TMP8]], i32 -12
 ; CHECK-NEXT:    [[DST_GEP_I3268_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 4
 ; CHECK-NEXT:    [[TMP3:%.*]] = load i32, ptr [[SRC_GEP_I3267_I]], align 4
 ; CHECK-NEXT:    store i32 [[TMP3]], ptr [[DST_GEP_I3268_I]], align 4
-; CHECK-NEXT:    [[SRC_GEP_I3269_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 8
+; CHECK-NEXT:    [[SRC_GEP_I3269_I:%.*]] = getelementptr i8, ptr [[TMP8]], i32 -8
 ; CHECK-NEXT:    [[DST_GEP_I3270_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 8
 ; CHECK-NEXT:    [[TMP4:%.*]] = load i32, ptr [[SRC_GEP_I3269_I]], align 4
 ; CHECK-NEXT:    store i32 [[TMP4]], ptr [[DST_GEP_I3270_I]], align 4
-; CHECK-NEXT:    [[SRC_GEP_I1671_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 12
+; CHECK-NEXT:    [[SRC_GEP_I1671_I:%.*]] = getelementptr i8, ptr [[TMP8]], i32 -4
 ; CHECK-NEXT:    [[DST_GEP_I1672_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 12
 ; CHECK-NEXT:    [[TMP5:%.*]] = load i16, ptr [[SRC_GEP_I1671_I]], align 2
 ; CHECK-NEXT:    store i16 [[TMP5]], ptr [[DST_GEP_I1672_I]], align 2
-; CHECK-NEXT:    [[SRC_GEP_I873_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 14
+; CHECK-NEXT:    [[SRC_GEP_I873_I:%.*]] = getelementptr i8, ptr [[TMP8]], i32 -2
 ; CHECK-NEXT:    [[DST_GEP_I874_I:%.*]] = getelementptr i8, ptr [[DST_PTR_FINAL_I]], i32 14
 ; CHECK-NEXT:    [[TMP6:%.*]] = load i8, ptr [[SRC_GEP_I873_I]], align 1
 ; CHECK-NEXT:    store i8 [[TMP6]], ptr [[DST_GEP_I874_I]], align 1
@@ -12381,14 +12247,19 @@ define void @test_srcunalign_dstunalign_constant_size_32(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dstunalign_constant_size_32(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
-; CHECK-NEXT:    [[SRCQLDIP6_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[LD128USARIP1_I]], i32 0, i32 0, i32 2)
-; CHECK-NEXT:    [[VST128IP7_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP1]], i32 16)
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
-; CHECK-NEXT:    [[VST128IP8_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP7_I]], i32 16)
+; CHECK-NEXT:    [[LD128USARIP_M_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[B]], i32 16)
+; CHECK-NEXT:    [[TMP0:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 0
+; CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 1
+; CHECK-NEXT:    [[LD128USARIP_M1_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[TMP1]], i32 16)
+; CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 0
+; CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 1
+; CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 2
+; CHECK-NEXT:    [[SRCQLDIP_M6_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP2]], <16 x i8> [[TMP0]], ptr [[TMP3]], i32 0)
+; CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M6_I]], 0
+; CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M6_I]], 1
+; CHECK-NEXT:    [[VST128IP_M7_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP5]], ptr [[A]], i32 16)
+; CHECK-NEXT:    [[SRCQ_M_I:%.*]] = call <16 x i8> @llvm.riscv.esp.src.q.m(i32 [[TMP4]], <16 x i8> [[TMP6]], <16 x i8> [[TMP2]])
+; CHECK-NEXT:    [[VST128IP_M8_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[SRCQ_M_I]], ptr [[VST128IP_M7_I]], i32 16)
 ; CHECK-NEXT:    ret void
 ;
 
@@ -12401,16 +12272,20 @@ define void @test_srcunalign_dstunalign_constant_size_33(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dstunalign_constant_size_33(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
-; CHECK-NEXT:    [[SRCQLDIP6_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[LD128USARIP1_I]], i32 0, i32 0, i32 2)
-; CHECK-NEXT:    [[VST128IP7_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP1]], i32 16)
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
-; CHECK-NEXT:    [[VST128IP8_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP7_I]], i32 16)
-; CHECK-NEXT:    [[DST_PTR_FINAL_I:%.*]] = inttoptr i32 [[VST128IP8_I]] to ptr
-; CHECK-NEXT:    [[SRC_PTR_FINAL_I:%.*]] = inttoptr i32 [[SRCQLDIP6_I]] to ptr
+; CHECK-NEXT:    [[LD128USARIP_M_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[B]], i32 16)
+; CHECK-NEXT:    [[TMP0:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 0
+; CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 1
+; CHECK-NEXT:    [[LD128USARIP_M1_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[TMP1]], i32 16)
+; CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 0
+; CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 1
+; CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 2
+; CHECK-NEXT:    [[SRCQLDIP_M6_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP7]], <16 x i8> [[TMP0]], ptr [[TMP3]], i32 0)
+; CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M6_I]], 0
+; CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M6_I]], 1
+; CHECK-NEXT:    [[SRC_PTR_FINAL_I:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M6_I]], 2
+; CHECK-NEXT:    [[VST128IP_M7_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP5]], ptr [[A]], i32 16)
+; CHECK-NEXT:    [[SRCQ_M_I:%.*]] = call <16 x i8> @llvm.riscv.esp.src.q.m(i32 [[TMP4]], <16 x i8> [[TMP6]], <16 x i8> [[TMP7]])
+; CHECK-NEXT:    [[DST_PTR_FINAL_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[SRCQ_M_I]], ptr [[VST128IP_M7_I]], i32 16)
 ; CHECK-NEXT:    [[TMP2:%.*]] = load i8, ptr [[SRC_PTR_FINAL_I]], align 1
 ; CHECK-NEXT:    store i8 [[TMP2]], ptr [[DST_PTR_FINAL_I]], align 1
 ; CHECK-NEXT:    ret void
@@ -12425,16 +12300,20 @@ define void @test_srcunalign_dstunalign_constant_size_47(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dstunalign_constant_size_47(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
-; CHECK-NEXT:    [[SRCQLDIP6_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[LD128USARIP1_I]], i32 0, i32 0, i32 2)
-; CHECK-NEXT:    [[VST128IP7_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP1]], i32 16)
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
-; CHECK-NEXT:    [[VST128IP8_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP7_I]], i32 16)
-; CHECK-NEXT:    [[DST_PTR_FINAL_I:%.*]] = inttoptr i32 [[VST128IP8_I]] to ptr
-; CHECK-NEXT:    [[SRC_PTR_FINAL_I:%.*]] = inttoptr i32 [[SRCQLDIP6_I]] to ptr
+; CHECK-NEXT:    [[LD128USARIP_M_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[B]], i32 16)
+; CHECK-NEXT:    [[TMP0:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 0
+; CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 1
+; CHECK-NEXT:    [[LD128USARIP_M1_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[TMP1]], i32 16)
+; CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 0
+; CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 1
+; CHECK-NEXT:    [[TMP9:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 2
+; CHECK-NEXT:    [[SRCQLDIP_M6_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP9]], <16 x i8> [[TMP7]], <16 x i8> [[TMP0]], ptr [[TMP8]], i32 0)
+; CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M6_I]], 0
+; CHECK-NEXT:    [[TMP11:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M6_I]], 1
+; CHECK-NEXT:    [[SRC_PTR_FINAL_I:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M6_I]], 2
+; CHECK-NEXT:    [[VST128IP_M7_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP10]], ptr [[A]], i32 16)
+; CHECK-NEXT:    [[SRCQ_M_I:%.*]] = call <16 x i8> @llvm.riscv.esp.src.q.m(i32 [[TMP9]], <16 x i8> [[TMP11]], <16 x i8> [[TMP7]])
+; CHECK-NEXT:    [[DST_PTR_FINAL_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[SRCQ_M_I]], ptr [[VST128IP_M7_I]], i32 16)
 ; CHECK-NEXT:    [[TMP2:%.*]] = load i32, ptr [[SRC_PTR_FINAL_I]], align 4
 ; CHECK-NEXT:    store i32 [[TMP2]], ptr [[DST_PTR_FINAL_I]], align 4
 ; CHECK-NEXT:    [[SRC_GEP_I3267_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_FINAL_I]], i32 4
@@ -12465,18 +12344,28 @@ define void @test_srcunalign_dstunalign_constant_size_48(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dstunalign_constant_size_48(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
+; CHECK-NEXT:    [[LD128USARIP_M_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[B]], i32 16)
+; CHECK-NEXT:    [[TMP0:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 0
+; CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 1
+; CHECK-NEXT:    [[LD128USARIP_M1_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[TMP1]], i32 16)
+; CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 0
+; CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 1
+; CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 2
 ; CHECK-NEXT:    br label %[[MAIN_LOOP_BODY_I:.*]]
 ; CHECK:       [[MAIN_LOOP_BODY_I]]:
-; CHECK-NEXT:    [[SRCQLDIP_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[LD128USARIP1_I]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP1]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP_I]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP_I]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2_I]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP2]], <16 x i8> [[TMP0]], ptr [[TMP3]], i32 16)
+; CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 0
+; CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 1
+; CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 2
+; CHECK-NEXT:    [[VST128IP_M_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP5]], ptr [[A]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M2_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP6]], <16 x i8> [[TMP2]], ptr [[TMP7]], i32 16)
+; CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 0
+; CHECK-NEXT:    [[TMP9:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 1
+; CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 2
+; CHECK-NEXT:    [[VST128IP_M3_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP8]], ptr [[VST128IP_M_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M4_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP9]], <16 x i8> [[TMP6]], ptr [[TMP10]], i32 16)
+; CHECK-NEXT:    [[TMP11:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M4_I]], 0
+; CHECK-NEXT:    [[VST128IP_M5_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP11]], ptr [[VST128IP_M3_I]], i32 16)
 ; CHECK-NEXT:    br i1 true, label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT:.*]], label %[[MAIN_LOOP_BODY_I]]
 ; CHECK:       [[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]:
 ; CHECK-NEXT:    ret void
@@ -12491,18 +12380,28 @@ define void @test_srcunalign_dstunalign_constant_size_49(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dstunalign_constant_size_49(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
+; CHECK-NEXT:    [[LD128USARIP_M_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[B]], i32 16)
+; CHECK-NEXT:    [[TMP0:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 0
+; CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 1
+; CHECK-NEXT:    [[LD128USARIP_M1_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[TMP1]], i32 16)
+; CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 0
+; CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 1
+; CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 2
 ; CHECK-NEXT:    br label %[[MAIN_LOOP_BODY_I:.*]]
 ; CHECK:       [[MAIN_LOOP_BODY_I]]:
-; CHECK-NEXT:    [[SRCQLDIP_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[LD128USARIP1_I]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP1]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP_I]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP_I]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2_I]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP2]], <16 x i8> [[TMP0]], ptr [[TMP3]], i32 16)
+; CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 0
+; CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 1
+; CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 2
+; CHECK-NEXT:    [[VST128IP_M_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP5]], ptr [[A]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M2_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP6]], <16 x i8> [[TMP2]], ptr [[TMP7]], i32 16)
+; CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 0
+; CHECK-NEXT:    [[TMP9:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 1
+; CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 2
+; CHECK-NEXT:    [[VST128IP_M3_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP8]], ptr [[VST128IP_M_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M4_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP9]], <16 x i8> [[TMP6]], ptr [[TMP10]], i32 16)
+; CHECK-NEXT:    [[TMP11:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M4_I]], 0
+; CHECK-NEXT:    [[VST128IP_M5_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP11]], ptr [[VST128IP_M3_I]], i32 16)
 ; CHECK-NEXT:    br i1 true, label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT:.*]], label %[[MAIN_LOOP_BODY_I]]
 ; CHECK:       [[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]:
 ; CHECK-NEXT:    ret void
@@ -12517,18 +12416,28 @@ define void @test_srcunalign_dstunalign_constant_size_63(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dstunalign_constant_size_63(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
+; CHECK-NEXT:    [[LD128USARIP_M_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[B]], i32 16)
+; CHECK-NEXT:    [[TMP0:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 0
+; CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 1
+; CHECK-NEXT:    [[LD128USARIP_M1_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[TMP1]], i32 16)
+; CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 0
+; CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 1
+; CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 2
 ; CHECK-NEXT:    br label %[[MAIN_LOOP_BODY_I:.*]]
 ; CHECK:       [[MAIN_LOOP_BODY_I]]:
-; CHECK-NEXT:    [[SRCQLDIP_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[LD128USARIP1_I]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP1]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP_I]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP_I]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2_I]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP2]], <16 x i8> [[TMP0]], ptr [[TMP3]], i32 16)
+; CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 0
+; CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 1
+; CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 2
+; CHECK-NEXT:    [[VST128IP_M_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP5]], ptr [[A]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M2_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP6]], <16 x i8> [[TMP2]], ptr [[TMP7]], i32 16)
+; CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 0
+; CHECK-NEXT:    [[TMP9:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 1
+; CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 2
+; CHECK-NEXT:    [[VST128IP_M3_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP8]], ptr [[VST128IP_M_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M4_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP9]], <16 x i8> [[TMP6]], ptr [[TMP10]], i32 16)
+; CHECK-NEXT:    [[TMP11:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M4_I]], 0
+; CHECK-NEXT:    [[VST128IP_M5_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP11]], ptr [[VST128IP_M3_I]], i32 16)
 ; CHECK-NEXT:    br i1 true, label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT:.*]], label %[[MAIN_LOOP_BODY_I]]
 ; CHECK:       [[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]:
 ; CHECK-NEXT:    ret void
@@ -12543,18 +12452,28 @@ define void @test_srcunalign_dstunalign_constant_size_64(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dstunalign_constant_size_64(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
+; CHECK-NEXT:    [[LD128USARIP_M_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[B]], i32 16)
+; CHECK-NEXT:    [[TMP0:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 0
+; CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 1
+; CHECK-NEXT:    [[LD128USARIP_M1_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[TMP1]], i32 16)
+; CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 0
+; CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 1
+; CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 2
 ; CHECK-NEXT:    br label %[[MAIN_LOOP_BODY_I:.*]]
 ; CHECK:       [[MAIN_LOOP_BODY_I]]:
-; CHECK-NEXT:    [[SRCQLDIP_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[LD128USARIP1_I]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP1]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP_I]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP_I]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2_I]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP2]], <16 x i8> [[TMP0]], ptr [[TMP3]], i32 16)
+; CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 0
+; CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 1
+; CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 2
+; CHECK-NEXT:    [[VST128IP_M_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP5]], ptr [[A]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M2_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP6]], <16 x i8> [[TMP2]], ptr [[TMP7]], i32 16)
+; CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 0
+; CHECK-NEXT:    [[TMP9:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 1
+; CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 2
+; CHECK-NEXT:    [[VST128IP_M3_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP8]], ptr [[VST128IP_M_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M4_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP9]], <16 x i8> [[TMP6]], ptr [[TMP10]], i32 16)
+; CHECK-NEXT:    [[TMP11:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M4_I]], 0
+; CHECK-NEXT:    [[VST128IP_M5_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP11]], ptr [[VST128IP_M3_I]], i32 16)
 ; CHECK-NEXT:    br i1 true, label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT:.*]], label %[[MAIN_LOOP_BODY_I]]
 ; CHECK:       [[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]:
 ; CHECK-NEXT:    ret void
@@ -12569,18 +12488,28 @@ define void @test_srcunalign_dstunalign_constant_size_65(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dstunalign_constant_size_65(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
+; CHECK-NEXT:    [[LD128USARIP_M_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[B]], i32 16)
+; CHECK-NEXT:    [[TMP0:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 0
+; CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 1
+; CHECK-NEXT:    [[LD128USARIP_M1_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[TMP1]], i32 16)
+; CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 0
+; CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 1
+; CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 2
 ; CHECK-NEXT:    br label %[[MAIN_LOOP_BODY_I:.*]]
 ; CHECK:       [[MAIN_LOOP_BODY_I]]:
-; CHECK-NEXT:    [[SRCQLDIP_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[LD128USARIP1_I]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP1]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP_I]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP_I]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2_I]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP2]], <16 x i8> [[TMP0]], ptr [[TMP3]], i32 16)
+; CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 0
+; CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 1
+; CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 2
+; CHECK-NEXT:    [[VST128IP_M_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP5]], ptr [[A]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M2_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP6]], <16 x i8> [[TMP2]], ptr [[TMP7]], i32 16)
+; CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 0
+; CHECK-NEXT:    [[TMP9:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 1
+; CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 2
+; CHECK-NEXT:    [[VST128IP_M3_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP8]], ptr [[VST128IP_M_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M4_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP9]], <16 x i8> [[TMP6]], ptr [[TMP10]], i32 16)
+; CHECK-NEXT:    [[TMP11:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M4_I]], 0
+; CHECK-NEXT:    [[VST128IP_M5_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP11]], ptr [[VST128IP_M3_I]], i32 16)
 ; CHECK-NEXT:    br i1 true, label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT:.*]], label %[[MAIN_LOOP_BODY_I]]
 ; CHECK:       [[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]:
 ; CHECK-NEXT:    ret void
@@ -12595,18 +12524,28 @@ define void @test_srcunalign_dstunalign_constant_size_80(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dstunalign_constant_size_80(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
+; CHECK-NEXT:    [[LD128USARIP_M_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[B]], i32 16)
+; CHECK-NEXT:    [[TMP0:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 0
+; CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 1
+; CHECK-NEXT:    [[LD128USARIP_M1_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[TMP1]], i32 16)
+; CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 0
+; CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 1
+; CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 2
 ; CHECK-NEXT:    br label %[[MAIN_LOOP_BODY_I:.*]]
 ; CHECK:       [[MAIN_LOOP_BODY_I]]:
-; CHECK-NEXT:    [[SRCQLDIP_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[LD128USARIP1_I]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP1]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP_I]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP_I]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2_I]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP2]], <16 x i8> [[TMP0]], ptr [[TMP3]], i32 16)
+; CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 0
+; CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 1
+; CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 2
+; CHECK-NEXT:    [[VST128IP_M_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP5]], ptr [[A]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M2_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP6]], <16 x i8> [[TMP2]], ptr [[TMP7]], i32 16)
+; CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 0
+; CHECK-NEXT:    [[TMP9:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 1
+; CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 2
+; CHECK-NEXT:    [[VST128IP_M3_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP8]], ptr [[VST128IP_M_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M4_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP9]], <16 x i8> [[TMP6]], ptr [[TMP10]], i32 16)
+; CHECK-NEXT:    [[TMP11:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M4_I]], 0
+; CHECK-NEXT:    [[VST128IP_M5_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP11]], ptr [[VST128IP_M3_I]], i32 16)
 ; CHECK-NEXT:    br i1 true, label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT:.*]], label %[[MAIN_LOOP_BODY_I]]
 ; CHECK:       [[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]:
 ; CHECK-NEXT:    ret void
@@ -12621,18 +12560,28 @@ define void @test_srcunalign_dstunalign_constant_size_81(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dstunalign_constant_size_81(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
+; CHECK-NEXT:    [[LD128USARIP_M_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[B]], i32 16)
+; CHECK-NEXT:    [[TMP0:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 0
+; CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 1
+; CHECK-NEXT:    [[LD128USARIP_M1_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[TMP1]], i32 16)
+; CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 0
+; CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 1
+; CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 2
 ; CHECK-NEXT:    br label %[[MAIN_LOOP_BODY_I:.*]]
 ; CHECK:       [[MAIN_LOOP_BODY_I]]:
-; CHECK-NEXT:    [[SRCQLDIP_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[LD128USARIP1_I]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP1]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP_I]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP_I]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2_I]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP2]], <16 x i8> [[TMP0]], ptr [[TMP3]], i32 16)
+; CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 0
+; CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 1
+; CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 2
+; CHECK-NEXT:    [[VST128IP_M_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP5]], ptr [[A]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M2_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP6]], <16 x i8> [[TMP2]], ptr [[TMP7]], i32 16)
+; CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 0
+; CHECK-NEXT:    [[TMP9:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 1
+; CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 2
+; CHECK-NEXT:    [[VST128IP_M3_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP8]], ptr [[VST128IP_M_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M4_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP9]], <16 x i8> [[TMP6]], ptr [[TMP10]], i32 16)
+; CHECK-NEXT:    [[TMP11:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M4_I]], 0
+; CHECK-NEXT:    [[VST128IP_M5_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP11]], ptr [[VST128IP_M3_I]], i32 16)
 ; CHECK-NEXT:    br i1 true, label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT:.*]], label %[[MAIN_LOOP_BODY_I]]
 ; CHECK:       [[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]:
 ; CHECK-NEXT:    ret void
@@ -12647,18 +12596,28 @@ define void @test_srcunalign_dstunalign_constant_size_88(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dstunalign_constant_size_88(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
+; CHECK-NEXT:    [[LD128USARIP_M_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[B]], i32 16)
+; CHECK-NEXT:    [[TMP0:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 0
+; CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 1
+; CHECK-NEXT:    [[LD128USARIP_M1_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[TMP1]], i32 16)
+; CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 0
+; CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 1
+; CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 2
 ; CHECK-NEXT:    br label %[[MAIN_LOOP_BODY_I:.*]]
 ; CHECK:       [[MAIN_LOOP_BODY_I]]:
-; CHECK-NEXT:    [[SRCQLDIP_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[LD128USARIP1_I]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP1]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP_I]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP_I]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2_I]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP2]], <16 x i8> [[TMP0]], ptr [[TMP3]], i32 16)
+; CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 0
+; CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 1
+; CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 2
+; CHECK-NEXT:    [[VST128IP_M_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP5]], ptr [[A]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M2_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP6]], <16 x i8> [[TMP2]], ptr [[TMP7]], i32 16)
+; CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 0
+; CHECK-NEXT:    [[TMP9:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 1
+; CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 2
+; CHECK-NEXT:    [[VST128IP_M3_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP8]], ptr [[VST128IP_M_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M4_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP9]], <16 x i8> [[TMP6]], ptr [[TMP10]], i32 16)
+; CHECK-NEXT:    [[TMP11:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M4_I]], 0
+; CHECK-NEXT:    [[VST128IP_M5_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP11]], ptr [[VST128IP_M3_I]], i32 16)
 ; CHECK-NEXT:    br i1 true, label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT:.*]], label %[[MAIN_LOOP_BODY_I]]
 ; CHECK:       [[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]:
 ; CHECK-NEXT:    ret void
@@ -12673,18 +12632,28 @@ define void @test_srcunalign_dstunalign_constant_size_96(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dstunalign_constant_size_96(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
+; CHECK-NEXT:    [[LD128USARIP_M_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[B]], i32 16)
+; CHECK-NEXT:    [[TMP0:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 0
+; CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 1
+; CHECK-NEXT:    [[LD128USARIP_M1_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[TMP1]], i32 16)
+; CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 0
+; CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 1
+; CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 2
 ; CHECK-NEXT:    br label %[[MAIN_LOOP_BODY_I:.*]]
 ; CHECK:       [[MAIN_LOOP_BODY_I]]:
-; CHECK-NEXT:    [[SRCQLDIP_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[LD128USARIP1_I]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP1]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP_I]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP_I]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2_I]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP2]], <16 x i8> [[TMP0]], ptr [[TMP3]], i32 16)
+; CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 0
+; CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 1
+; CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 2
+; CHECK-NEXT:    [[VST128IP_M_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP5]], ptr [[A]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M2_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP6]], <16 x i8> [[TMP2]], ptr [[TMP7]], i32 16)
+; CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 0
+; CHECK-NEXT:    [[TMP9:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 1
+; CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 2
+; CHECK-NEXT:    [[VST128IP_M3_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP8]], ptr [[VST128IP_M_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M4_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP9]], <16 x i8> [[TMP6]], ptr [[TMP10]], i32 16)
+; CHECK-NEXT:    [[TMP11:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M4_I]], 0
+; CHECK-NEXT:    [[VST128IP_M5_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP11]], ptr [[VST128IP_M3_I]], i32 16)
 ; CHECK-NEXT:    br i1 true, label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT:.*]], label %[[MAIN_LOOP_BODY_I]]
 ; CHECK:       [[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]:
 ; CHECK-NEXT:    ret void
@@ -12699,18 +12668,28 @@ define void @test_srcunalign_dstunalign_constant_size_112(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dstunalign_constant_size_112(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
+; CHECK-NEXT:    [[LD128USARIP_M_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[B]], i32 16)
+; CHECK-NEXT:    [[TMP0:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 0
+; CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 1
+; CHECK-NEXT:    [[LD128USARIP_M1_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[TMP1]], i32 16)
+; CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 0
+; CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 1
+; CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 2
 ; CHECK-NEXT:    br label %[[MAIN_LOOP_BODY_I:.*]]
 ; CHECK:       [[MAIN_LOOP_BODY_I]]:
-; CHECK-NEXT:    [[SRCQLDIP_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[LD128USARIP1_I]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP1]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP_I]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP_I]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2_I]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP2]], <16 x i8> [[TMP0]], ptr [[TMP3]], i32 16)
+; CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 0
+; CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 1
+; CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 2
+; CHECK-NEXT:    [[VST128IP_M_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP5]], ptr [[A]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M2_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP6]], <16 x i8> [[TMP2]], ptr [[TMP7]], i32 16)
+; CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 0
+; CHECK-NEXT:    [[TMP9:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 1
+; CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 2
+; CHECK-NEXT:    [[VST128IP_M3_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP8]], ptr [[VST128IP_M_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M4_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP9]], <16 x i8> [[TMP6]], ptr [[TMP10]], i32 16)
+; CHECK-NEXT:    [[TMP11:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M4_I]], 0
+; CHECK-NEXT:    [[VST128IP_M5_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP11]], ptr [[VST128IP_M3_I]], i32 16)
 ; CHECK-NEXT:    br i1 true, label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT:.*]], label %[[MAIN_LOOP_BODY_I]]
 ; CHECK:       [[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]:
 ; CHECK-NEXT:    ret void
@@ -12725,18 +12704,28 @@ define void @test_srcunalign_dstunalign_constant_size_124(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dstunalign_constant_size_124(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
+; CHECK-NEXT:    [[LD128USARIP_M_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[B]], i32 16)
+; CHECK-NEXT:    [[TMP0:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 0
+; CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 1
+; CHECK-NEXT:    [[LD128USARIP_M1_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[TMP1]], i32 16)
+; CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 0
+; CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 1
+; CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 2
 ; CHECK-NEXT:    br label %[[MAIN_LOOP_BODY_I:.*]]
 ; CHECK:       [[MAIN_LOOP_BODY_I]]:
-; CHECK-NEXT:    [[SRCQLDIP_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[LD128USARIP1_I]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP1]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP_I]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP_I]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2_I]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP2]], <16 x i8> [[TMP0]], ptr [[TMP3]], i32 16)
+; CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 0
+; CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 1
+; CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 2
+; CHECK-NEXT:    [[VST128IP_M_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP5]], ptr [[A]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M2_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP6]], <16 x i8> [[TMP2]], ptr [[TMP7]], i32 16)
+; CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 0
+; CHECK-NEXT:    [[TMP9:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 1
+; CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 2
+; CHECK-NEXT:    [[VST128IP_M3_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP8]], ptr [[VST128IP_M_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M4_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP9]], <16 x i8> [[TMP6]], ptr [[TMP10]], i32 16)
+; CHECK-NEXT:    [[TMP11:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M4_I]], 0
+; CHECK-NEXT:    [[VST128IP_M5_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP11]], ptr [[VST128IP_M3_I]], i32 16)
 ; CHECK-NEXT:    br i1 true, label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT:.*]], label %[[MAIN_LOOP_BODY_I]]
 ; CHECK:       [[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]:
 ; CHECK-NEXT:    ret void
@@ -12751,18 +12740,28 @@ define void @test_srcunalign_dstunalign_constant_size_127(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dstunalign_constant_size_127(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
+; CHECK-NEXT:    [[LD128USARIP_M_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[B]], i32 16)
+; CHECK-NEXT:    [[TMP0:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 0
+; CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 1
+; CHECK-NEXT:    [[LD128USARIP_M1_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[TMP1]], i32 16)
+; CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 0
+; CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 1
+; CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 2
 ; CHECK-NEXT:    br label %[[MAIN_LOOP_BODY_I:.*]]
 ; CHECK:       [[MAIN_LOOP_BODY_I]]:
-; CHECK-NEXT:    [[SRCQLDIP_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[LD128USARIP1_I]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP1]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP_I]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP_I]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2_I]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP2]], <16 x i8> [[TMP0]], ptr [[TMP3]], i32 16)
+; CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 0
+; CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 1
+; CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 2
+; CHECK-NEXT:    [[VST128IP_M_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP5]], ptr [[A]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M2_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP6]], <16 x i8> [[TMP2]], ptr [[TMP7]], i32 16)
+; CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 0
+; CHECK-NEXT:    [[TMP9:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 1
+; CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 2
+; CHECK-NEXT:    [[VST128IP_M3_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP8]], ptr [[VST128IP_M_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M4_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP9]], <16 x i8> [[TMP6]], ptr [[TMP10]], i32 16)
+; CHECK-NEXT:    [[TMP11:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M4_I]], 0
+; CHECK-NEXT:    [[VST128IP_M5_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP11]], ptr [[VST128IP_M3_I]], i32 16)
 ; CHECK-NEXT:    br i1 true, label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT:.*]], label %[[MAIN_LOOP_BODY_I]]
 ; CHECK:       [[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]:
 ; CHECK-NEXT:    ret void
@@ -12777,18 +12776,28 @@ define void @test_srcunalign_dstunalign_constant_size_128(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dstunalign_constant_size_128(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
+; CHECK-NEXT:    [[LD128USARIP_M_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[B]], i32 16)
+; CHECK-NEXT:    [[TMP0:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 0
+; CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 1
+; CHECK-NEXT:    [[LD128USARIP_M1_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[TMP1]], i32 16)
+; CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 0
+; CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 1
+; CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 2
 ; CHECK-NEXT:    br label %[[MAIN_LOOP_BODY_I:.*]]
 ; CHECK:       [[MAIN_LOOP_BODY_I]]:
-; CHECK-NEXT:    [[SRCQLDIP_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[LD128USARIP1_I]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP1]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP_I]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP_I]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2_I]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP2]], <16 x i8> [[TMP0]], ptr [[TMP3]], i32 16)
+; CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 0
+; CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 1
+; CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 2
+; CHECK-NEXT:    [[VST128IP_M_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP5]], ptr [[A]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M2_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP6]], <16 x i8> [[TMP2]], ptr [[TMP7]], i32 16)
+; CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 0
+; CHECK-NEXT:    [[TMP9:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 1
+; CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 2
+; CHECK-NEXT:    [[VST128IP_M3_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP8]], ptr [[VST128IP_M_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M4_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP9]], <16 x i8> [[TMP6]], ptr [[TMP10]], i32 16)
+; CHECK-NEXT:    [[TMP11:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M4_I]], 0
+; CHECK-NEXT:    [[VST128IP_M5_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP11]], ptr [[VST128IP_M3_I]], i32 16)
 ; CHECK-NEXT:    br i1 true, label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT:.*]], label %[[MAIN_LOOP_BODY_I]]
 ; CHECK:       [[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]:
 ; CHECK-NEXT:    ret void
@@ -12803,18 +12812,28 @@ define void @test_srcunalign_dstunalign_constant_size_129(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dstunalign_constant_size_129(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
+; CHECK-NEXT:    [[LD128USARIP_M_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[B]], i32 16)
+; CHECK-NEXT:    [[TMP0:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 0
+; CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 1
+; CHECK-NEXT:    [[LD128USARIP_M1_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[TMP1]], i32 16)
+; CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 0
+; CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 1
+; CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 2
 ; CHECK-NEXT:    br label %[[MAIN_LOOP_BODY_I:.*]]
 ; CHECK:       [[MAIN_LOOP_BODY_I]]:
-; CHECK-NEXT:    [[SRCQLDIP_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[LD128USARIP1_I]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP1]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP_I]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP_I]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2_I]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP2]], <16 x i8> [[TMP0]], ptr [[TMP3]], i32 16)
+; CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 0
+; CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 1
+; CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 2
+; CHECK-NEXT:    [[VST128IP_M_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP5]], ptr [[A]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M2_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP6]], <16 x i8> [[TMP2]], ptr [[TMP7]], i32 16)
+; CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 0
+; CHECK-NEXT:    [[TMP9:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 1
+; CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 2
+; CHECK-NEXT:    [[VST128IP_M3_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP8]], ptr [[VST128IP_M_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M4_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP9]], <16 x i8> [[TMP6]], ptr [[TMP10]], i32 16)
+; CHECK-NEXT:    [[TMP11:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M4_I]], 0
+; CHECK-NEXT:    [[VST128IP_M5_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP11]], ptr [[VST128IP_M3_I]], i32 16)
 ; CHECK-NEXT:    br i1 true, label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT:.*]], label %[[MAIN_LOOP_BODY_I]]
 ; CHECK:       [[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]:
 ; CHECK-NEXT:    ret void
@@ -12829,18 +12848,28 @@ define void @test_srcunalign_dstunalign_constant_size_255(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dstunalign_constant_size_255(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
+; CHECK-NEXT:    [[LD128USARIP_M_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[B]], i32 16)
+; CHECK-NEXT:    [[TMP0:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 0
+; CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 1
+; CHECK-NEXT:    [[LD128USARIP_M1_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[TMP1]], i32 16)
+; CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 0
+; CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 1
+; CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 2
 ; CHECK-NEXT:    br label %[[MAIN_LOOP_BODY_I:.*]]
 ; CHECK:       [[MAIN_LOOP_BODY_I]]:
-; CHECK-NEXT:    [[SRCQLDIP_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[LD128USARIP1_I]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP1]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP_I]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP_I]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2_I]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP2]], <16 x i8> [[TMP0]], ptr [[TMP3]], i32 16)
+; CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 0
+; CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 1
+; CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 2
+; CHECK-NEXT:    [[VST128IP_M_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP5]], ptr [[A]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M2_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP6]], <16 x i8> [[TMP2]], ptr [[TMP7]], i32 16)
+; CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 0
+; CHECK-NEXT:    [[TMP9:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 1
+; CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 2
+; CHECK-NEXT:    [[VST128IP_M3_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP8]], ptr [[VST128IP_M_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M4_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP9]], <16 x i8> [[TMP6]], ptr [[TMP10]], i32 16)
+; CHECK-NEXT:    [[TMP11:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M4_I]], 0
+; CHECK-NEXT:    [[VST128IP_M5_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP11]], ptr [[VST128IP_M3_I]], i32 16)
 ; CHECK-NEXT:    br i1 true, label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT:.*]], label %[[MAIN_LOOP_BODY_I]]
 ; CHECK:       [[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]:
 ; CHECK-NEXT:    ret void
@@ -12855,18 +12884,28 @@ define void @test_srcunalign_dstunalign_constant_size_256(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dstunalign_constant_size_256(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
+; CHECK-NEXT:    [[LD128USARIP_M_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[B]], i32 16)
+; CHECK-NEXT:    [[TMP0:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 0
+; CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 1
+; CHECK-NEXT:    [[LD128USARIP_M1_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[TMP1]], i32 16)
+; CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 0
+; CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 1
+; CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 2
 ; CHECK-NEXT:    br label %[[MAIN_LOOP_BODY_I:.*]]
 ; CHECK:       [[MAIN_LOOP_BODY_I]]:
-; CHECK-NEXT:    [[SRCQLDIP_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[LD128USARIP1_I]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP1]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP_I]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP_I]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2_I]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP2]], <16 x i8> [[TMP0]], ptr [[TMP3]], i32 16)
+; CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 0
+; CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 1
+; CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 2
+; CHECK-NEXT:    [[VST128IP_M_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP5]], ptr [[A]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M2_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP6]], <16 x i8> [[TMP2]], ptr [[TMP7]], i32 16)
+; CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 0
+; CHECK-NEXT:    [[TMP9:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 1
+; CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 2
+; CHECK-NEXT:    [[VST128IP_M3_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP8]], ptr [[VST128IP_M_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M4_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP9]], <16 x i8> [[TMP6]], ptr [[TMP10]], i32 16)
+; CHECK-NEXT:    [[TMP11:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M4_I]], 0
+; CHECK-NEXT:    [[VST128IP_M5_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP11]], ptr [[VST128IP_M3_I]], i32 16)
 ; CHECK-NEXT:    br i1 true, label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT:.*]], label %[[MAIN_LOOP_BODY_I]]
 ; CHECK:       [[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]:
 ; CHECK-NEXT:    ret void
@@ -12881,18 +12920,28 @@ define void @test_srcunalign_dstunalign_constant_size_1023(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dstunalign_constant_size_1023(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
+; CHECK-NEXT:    [[LD128USARIP_M_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[B]], i32 16)
+; CHECK-NEXT:    [[TMP0:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 0
+; CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 1
+; CHECK-NEXT:    [[LD128USARIP_M1_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[TMP1]], i32 16)
+; CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 0
+; CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 1
+; CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 2
 ; CHECK-NEXT:    br label %[[MAIN_LOOP_BODY_I:.*]]
 ; CHECK:       [[MAIN_LOOP_BODY_I]]:
-; CHECK-NEXT:    [[SRCQLDIP_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[LD128USARIP1_I]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP1]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP_I]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP_I]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2_I]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP2]], <16 x i8> [[TMP0]], ptr [[TMP3]], i32 16)
+; CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 0
+; CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 1
+; CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 2
+; CHECK-NEXT:    [[VST128IP_M_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP5]], ptr [[A]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M2_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP6]], <16 x i8> [[TMP2]], ptr [[TMP7]], i32 16)
+; CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 0
+; CHECK-NEXT:    [[TMP9:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 1
+; CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 2
+; CHECK-NEXT:    [[VST128IP_M3_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP8]], ptr [[VST128IP_M_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M4_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP9]], <16 x i8> [[TMP6]], ptr [[TMP10]], i32 16)
+; CHECK-NEXT:    [[TMP11:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M4_I]], 0
+; CHECK-NEXT:    [[VST128IP_M5_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP11]], ptr [[VST128IP_M3_I]], i32 16)
 ; CHECK-NEXT:    br i1 true, label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT:.*]], label %[[MAIN_LOOP_BODY_I]]
 ; CHECK:       [[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]:
 ; CHECK-NEXT:    ret void
@@ -12907,18 +12956,28 @@ define void @test_srcunalign_dstunalign_constant_size_1024(ptr %a, ptr %b) {
 ; CHECK-LABEL: define void @test_srcunalign_dstunalign_constant_size_1024(
 ; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
 ; CHECK-NEXT:  [[ENTRY:.*:]]
-; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[B]] to i32
-; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[A]] to i32
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP0]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
+; CHECK-NEXT:    [[LD128USARIP_M_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[B]], i32 16)
+; CHECK-NEXT:    [[TMP0:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 0
+; CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 1
+; CHECK-NEXT:    [[LD128USARIP_M1_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[TMP1]], i32 16)
+; CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 0
+; CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 1
+; CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 2
 ; CHECK-NEXT:    br label %[[MAIN_LOOP_BODY_I:.*]]
 ; CHECK:       [[MAIN_LOOP_BODY_I]]:
-; CHECK-NEXT:    [[SRCQLDIP_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[LD128USARIP1_I]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[TMP1]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP_I]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP_I]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2_I]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5_FINAL_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP2]], <16 x i8> [[TMP0]], ptr [[TMP3]], i32 16)
+; CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 0
+; CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 1
+; CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 2
+; CHECK-NEXT:    [[VST128IP_M_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP5]], ptr [[A]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M2_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP6]], <16 x i8> [[TMP2]], ptr [[TMP7]], i32 16)
+; CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 0
+; CHECK-NEXT:    [[TMP9:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 1
+; CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 2
+; CHECK-NEXT:    [[VST128IP_M3_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP8]], ptr [[VST128IP_M_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M4_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP4]], <16 x i8> [[TMP9]], <16 x i8> [[TMP6]], ptr [[TMP10]], i32 16)
+; CHECK-NEXT:    [[TMP11:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M4_I]], 0
+; CHECK-NEXT:    [[VST128IP_M5_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP11]], ptr [[VST128IP_M3_I]], i32 16)
 ; CHECK-NEXT:    br i1 true, label %[[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT:.*]], label %[[MAIN_LOOP_BODY_I]]
 ; CHECK:       [[ESP32P4MEMCPYSRCUNALIGNEDDST16VAR_EXIT]]:
 ; CHECK-NEXT:    ret void
