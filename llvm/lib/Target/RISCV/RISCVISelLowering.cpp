@@ -156,7 +156,9 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
     else
       addRegisterClass(MVT::f64, &RISCV::GPRPairRegClass);
   }
-  // ESPV QR lowering: +espv-lowering with +xespv (2.2) or +xespv1v (2.1).
+  // QR types only under +espv-lowering (initializeESPVTargetLowering). Do not
+  // legalize from hasVendorXespv alone: that enables unaligned tile memops
+  // without ESPV custom lowering and fails selection.
   if (Subtarget.hasESPVTargetLowering()) {
     initializeESPVTargetLowering(Subtarget);
     // Packed boolean vectors occupy one or two bytes in memory; lower them
@@ -205,11 +207,6 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
     // No custom action needed - let the default split logic handle it
   }
 
-  // QR register classes + Custom LOAD/STORE live only under +espv-lowering
-  // (initializeESPVTargetLowering). Do not legalize v4i32/v8i16/v16i8 from
-  // hasVendorXespv alone: IDF bootloader builds -mcpu=esp32p4 without
-  // +espv-lowering and would Cannot select unaligned tile stores
-  // (pmu_sleep.c struct assign). Match 22-clang-option-stress-bugfix.
   static const MVT::SimpleValueType BoolVecVTs[] = {
       MVT::nxv1i1,  MVT::nxv2i1,  MVT::nxv4i1, MVT::nxv8i1,
       MVT::nxv16i1, MVT::nxv32i1, MVT::nxv64i1};
