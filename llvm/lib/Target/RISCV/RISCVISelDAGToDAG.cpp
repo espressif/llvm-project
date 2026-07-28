@@ -3391,8 +3391,11 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       // Operand order must match instruction definition: (ins GPRPIE:$rs1, offset_256_16:$off25616)
       // Order: [instruction operands..., chain]
       SDValue Ops[] = {Ptr, ImmOp, Chain};
-      SDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_VLD_128_IP, DL, VTs, Ops);
-      
+      unsigned Opc = Subtarget->useESPV2P2Instructions()
+                         ? RISCV::ESP_VLD_128_IP_2P2
+                         : RISCV::ESP_VLD_128_IP;
+      SDNode *NewNode = CurDAG->getMachineNode(Opc, DL, VTs, Ops);
+
       // Copy MMO from MemSDNode if present
       if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
         MachineMemOperand *MMO = MemNode->getMemOperand();
