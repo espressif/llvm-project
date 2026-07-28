@@ -1929,7 +1929,7 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst16ConstMod48From32To47(
     if (Remainder > 32) {
       Value *SrcPtrAfter = FuncBuilder.CreateGEP(
           FuncBuilder.getInt8Ty(), SrcArg3L, FuncBuilder.getInt32(-32),
-          "src.ptr.after.block48");
+          "src.ptr.after.chunk3x16");
       FuncBuilder.CreateMemCpy(DstPtr, Align(1), SrcPtrAfter, Align(1),
                                FuncBuilder.getInt32(Remainder - 32));
     }
@@ -1951,67 +1951,68 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst16ConstMod48From32To47(
   FuncBuilder.CreateBr(ForBodyBB);
 
   FuncBuilder.SetInsertPoint(ForBodyBB);
-  PHINode *Block48LoopCounter = FuncBuilder.CreatePHI(
-      FuncBuilder.getInt32Ty(), 2, "block48.loop.counter");
-  Block48LoopCounter->addIncoming(FuncBuilder.getInt32(0), EntryBB);
+  // Each loop trip: 3x vld/vst of 16B => 48B chunk (name chunk3x16, not array index).
+  PHINode *Chunk3x16LoopCounter = FuncBuilder.CreatePHI(
+      FuncBuilder.getInt32Ty(), 2, "chunk3x16.loop.counter");
+  Chunk3x16LoopCounter->addIncoming(FuncBuilder.getInt32(0), EntryBB);
 
-  PHINode *SrcPtrInBlock48Loop =
-      FuncBuilder.CreatePHI(PtrTy, 2, "src.ptr.in.block48.loop");
-  SrcPtrInBlock48Loop->addIncoming(SrcPtr, EntryBB);
+  PHINode *SrcPtrInChunk3x16Loop =
+      FuncBuilder.CreatePHI(PtrTy, 2, "src.ptr.in.chunk3x16.loop");
+  SrcPtrInChunk3x16Loop->addIncoming(SrcPtr, EntryBB);
 
-  PHINode *DstPtrInBlock48Loop =
-      FuncBuilder.CreatePHI(PtrTy, 2, "dst.ptr.in.block48.loop");
-  DstPtrInBlock48Loop->addIncoming(DstPtr, EntryBB);
+  PHINode *DstPtrInChunk3x16Loop =
+      FuncBuilder.CreatePHI(PtrTy, 2, "dst.ptr.in.chunk3x16.loop");
+  DstPtrInChunk3x16Loop->addIncoming(DstPtr, EntryBB);
 
   Type *V16I8 = VectorType::get(FuncBuilder.getInt8Ty(), 16, false);
-  PHINode *V0Block48 = FuncBuilder.CreatePHI(V16I8, 2, "v0.block48");
-  V0Block48->addIncoming(VecData1, EntryBB);
-  PHINode *V1Block48 = FuncBuilder.CreatePHI(V16I8, 2, "v1.block48");
-  V1Block48->addIncoming(VecData2, EntryBB);
+  PHINode *V0Chunk3x16 = FuncBuilder.CreatePHI(V16I8, 2, "v0.chunk3x16");
+  V0Chunk3x16->addIncoming(VecData1, EntryBB);
+  PHINode *V1Chunk3x16 = FuncBuilder.CreatePHI(V16I8, 2, "v1.chunk3x16");
+  V1Chunk3x16->addIncoming(VecData2, EntryBB);
 
-  Value *Block48LoopCounterIncremented =
-      FuncBuilder.CreateAdd(Block48LoopCounter, FuncBuilder.getInt32(1),
-                            "block48.loop.counter.incremented", true, true);
-  Block48LoopCounter->addIncoming(Block48LoopCounterIncremented, ForBodyBB);
+  Value *Chunk3x16LoopCounterIncremented =
+      FuncBuilder.CreateAdd(Chunk3x16LoopCounter, FuncBuilder.getInt32(1),
+                            "chunk3x16.loop.counter.incremented", true, true);
+  Chunk3x16LoopCounter->addIncoming(Chunk3x16LoopCounterIncremented, ForBodyBB);
 
   // Two PHIs only (v0, v1); third srcqldip uses (V2N2B4, V1NB4); back edge
   // v0<-V2N2B4, v1<-V0N2B4 so cleanup can use loop-body SSA only (no esp.orq).
-  Value *DstPtrBlock48 = DstPtrInBlock48Loop;
+  Value *DstPtrChunk3x16 = DstPtrInChunk3x16Loop;
   auto [V2NB4, V1NB4, SrcArg1B] = createEspSrcQLdIp(
-      FuncBuilder, Sar2, V1Block48, V0Block48, SrcPtrInBlock48Loop, 16);
-  DstPtrBlock48 = createEspVst128Ip(FuncBuilder, V2NB4, DstPtrBlock48);
+      FuncBuilder, Sar2, V1Chunk3x16, V0Chunk3x16, SrcPtrInChunk3x16Loop, 16);
+  DstPtrChunk3x16 = createEspVst128Ip(FuncBuilder, V2NB4, DstPtrChunk3x16);
   auto [V0NB4, V2N2B4, SrcArg2B] =
-      createEspSrcQLdIp(FuncBuilder, Sar2, V1NB4, V1Block48, SrcArg1B, 16);
-  DstPtrBlock48 = createEspVst128Ip(FuncBuilder, V0NB4, DstPtrBlock48);
+      createEspSrcQLdIp(FuncBuilder, Sar2, V1NB4, V1Chunk3x16, SrcArg1B, 16);
+  DstPtrChunk3x16 = createEspVst128Ip(FuncBuilder, V0NB4, DstPtrChunk3x16);
   auto [V1N2B4, V0N2B4, SrcArg3B] =
       createEspSrcQLdIp(FuncBuilder, Sar2, V2N2B4, V1NB4, SrcArg2B, 16);
-  DstPtrBlock48 = createEspVst128Ip(FuncBuilder, V1N2B4, DstPtrBlock48);
+  DstPtrChunk3x16 = createEspVst128Ip(FuncBuilder, V1N2B4, DstPtrChunk3x16);
 
-  SrcPtrInBlock48Loop->addIncoming(SrcArg3B, ForBodyBB);
-  DstPtrInBlock48Loop->addIncoming(DstPtrBlock48, ForBodyBB);
-  V0Block48->addIncoming(V2N2B4, ForBodyBB);
-  V1Block48->addIncoming(V0N2B4, ForBodyBB);
+  SrcPtrInChunk3x16Loop->addIncoming(SrcArg3B, ForBodyBB);
+  DstPtrInChunk3x16Loop->addIncoming(DstPtrChunk3x16, ForBodyBB);
+  V0Chunk3x16->addIncoming(V2N2B4, ForBodyBB);
+  V1Chunk3x16->addIncoming(V0N2B4, ForBodyBB);
 
   Value *LoopCompleted = FuncBuilder.CreateICmpEQ(
-      Block48LoopCounterIncremented, FuncBuilder.getInt32(Quotient),
+      Chunk3x16LoopCounterIncremented, FuncBuilder.getInt32(Quotient),
       "loop.completed");
   FuncBuilder.CreateCondBr(LoopCompleted, ForCondCleanupBB, ForBodyBB);
 
   FuncBuilder.SetInsertPoint(ForCondCleanupBB);
-  // Use loop-body SSA only (V0N2B4, V2N2B4, SrcArg3B, DstPtrBlock48) so cleanup
+  // Use loop-body SSA only (V0N2B4, V2N2B4, SrcArg3B, DstPtrChunk3x16) so cleanup
   // does not use vector/ptr PHIs; reduces back-edge copies (esp.orq).
   // Cleanup: (qy,qw)=(V0N2B4,V2N2B4); then src.q.m(V1Tail,V0N2B4).
   auto [V2Tail, V1Tail, SrcArgTail] =
       createEspSrcQLdIp(FuncBuilder, Sar2, V0N2B4, V2N2B4, SrcArg3B, 0);
-  Value *DstPtrTail = createEspVst128Ip(FuncBuilder, V2Tail, DstPtrBlock48);
+  Value *DstPtrTail = createEspVst128Ip(FuncBuilder, V2Tail, DstPtrChunk3x16);
   Value *TailCombined = createEspSrcQM(FuncBuilder, Sar2, V1Tail, V0N2B4);
   DstPtrTail = createEspVst128Ip(FuncBuilder, TailCombined, DstPtrTail);
 
   if (Remainder > 32) {
-    Value *SrcPtrAfterBlock48Loop = FuncBuilder.CreateGEP(
+    Value *SrcPtrAfterChunk3x16Loop = FuncBuilder.CreateGEP(
         FuncBuilder.getInt8Ty(), SrcArg3B, FuncBuilder.getInt32(-32),
-        "src.ptr.after.block48.loop");
-    FuncBuilder.CreateMemCpy(DstPtrTail, Align(1), SrcPtrAfterBlock48Loop,
+        "src.ptr.after.chunk3x16.loop");
+    FuncBuilder.CreateMemCpy(DstPtrTail, Align(1), SrcPtrAfterChunk3x16Loop,
                              Align(1), FuncBuilder.getInt32(Remainder - 32));
   }
 
@@ -2068,10 +2069,10 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst16ConstMod48From16To31(
     // (V0N2B3), arg2=qw from index-1 src.q.ld.ip.m res (V2N2B3).
     Value *TailBlock = createEspSrcQM(FuncBuilder, Sar2, V0N2B3, V2N2B3);
     Value *DstPtrTail3 = createEspVst128Ip(FuncBuilder, TailBlock, DstPtr);
-    Value *SrcPtrAfterBlock48Loop = FuncBuilder.CreateGEP(
+    Value *SrcPtrAfterChunk3x16Loop = FuncBuilder.CreateGEP(
         FuncBuilder.getInt8Ty(), SrcArg3B3, FuncBuilder.getInt32(-32),
-        "src.ptr.after.block48.loop");
-    FuncBuilder.CreateMemCpy(DstPtrTail3, Align(1), SrcPtrAfterBlock48Loop,
+        "src.ptr.after.chunk3x16.loop");
+    FuncBuilder.CreateMemCpy(DstPtrTail3, Align(1), SrcPtrAfterChunk3x16Loop,
                              Align(1), FuncBuilder.getInt32(Remainder - 16));
     FuncBuilder.CreateRetVoid();
 
@@ -2095,32 +2096,32 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst16ConstMod48From16To31(
   FuncBuilder.CreateBr(ForBodyBB);
 
   FuncBuilder.SetInsertPoint(ForBodyBB);
-  PHINode *Block48LoopCounter = FuncBuilder.CreatePHI(
-      FuncBuilder.getInt32Ty(), 2, "block48.loop.counter");
-  Block48LoopCounter->addIncoming(FuncBuilder.getInt32(0), EntryBB);
+  PHINode *Chunk3x16LoopCounter = FuncBuilder.CreatePHI(
+      FuncBuilder.getInt32Ty(), 2, "chunk3x16.loop.counter");
+  Chunk3x16LoopCounter->addIncoming(FuncBuilder.getInt32(0), EntryBB);
 
-  PHINode *SrcPtrInBlock48Loop =
-      FuncBuilder.CreatePHI(PtrTy, 2, "src.ptr.in.block48.loop");
-  SrcPtrInBlock48Loop->addIncoming(SrcPtr, EntryBB);
+  PHINode *SrcPtrInChunk3x16Loop =
+      FuncBuilder.CreatePHI(PtrTy, 2, "src.ptr.in.chunk3x16.loop");
+  SrcPtrInChunk3x16Loop->addIncoming(SrcPtr, EntryBB);
 
-  PHINode *DstPtrInBlock48Loop =
-      FuncBuilder.CreatePHI(PtrTy, 2, "dst.ptr.in.block48.loop");
-  DstPtrInBlock48Loop->addIncoming(DstPtr, EntryBB);
+  PHINode *DstPtrInChunk3x16Loop =
+      FuncBuilder.CreatePHI(PtrTy, 2, "dst.ptr.in.chunk3x16.loop");
+  DstPtrInChunk3x16Loop->addIncoming(DstPtr, EntryBB);
 
   Type *V16I8_3 = VectorType::get(FuncBuilder.getInt8Ty(), 16, false);
-  PHINode *V0B3 = FuncBuilder.CreatePHI(V16I8_3, 2, "v0.b48.3");
+  PHINode *V0B3 = FuncBuilder.CreatePHI(V16I8_3, 2, "v0.chunk3x16.3");
   V0B3->addIncoming(VecData1, EntryBB);
-  PHINode *V1B3 = FuncBuilder.CreatePHI(V16I8_3, 2, "v1.b48.3");
+  PHINode *V1B3 = FuncBuilder.CreatePHI(V16I8_3, 2, "v1.chunk3x16.3");
   V1B3->addIncoming(VecData2, EntryBB);
 
-  Value *Block48LoopCounterIncremented =
-      FuncBuilder.CreateAdd(Block48LoopCounter, FuncBuilder.getInt32(1),
-                            "block48.loop.counter.incremented", true, true);
-  Block48LoopCounter->addIncoming(Block48LoopCounterIncremented, ForBodyBB);
+  Value *Chunk3x16LoopCounterIncremented =
+      FuncBuilder.CreateAdd(Chunk3x16LoopCounter, FuncBuilder.getInt32(1),
+                            "chunk3x16.loop.counter.incremented", true, true);
+  Chunk3x16LoopCounter->addIncoming(Chunk3x16LoopCounterIncremented, ForBodyBB);
 
-  Value *DstPtrB3 = DstPtrInBlock48Loop;
+  Value *DstPtrB3 = DstPtrInChunk3x16Loop;
   auto [V2NB3, V1NB3, SrcArg1B3] =
-      createEspSrcQLdIp(FuncBuilder, Sar2, V1B3, V0B3, SrcPtrInBlock48Loop, 16);
+      createEspSrcQLdIp(FuncBuilder, Sar2, V1B3, V0B3, SrcPtrInChunk3x16Loop, 16);
   DstPtrB3 = createEspVst128Ip(FuncBuilder, V2NB3, DstPtrB3);
   auto [V0NB3, V2N2B3, SrcArg2B3] =
       createEspSrcQLdIp(FuncBuilder, Sar2, V1NB3, V1B3, SrcArg1B3, 16);
@@ -2129,15 +2130,15 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst16ConstMod48From16To31(
       createEspSrcQLdIp(FuncBuilder, Sar2, V2N2B3, V1NB3, SrcArg2B3, 16);
   DstPtrB3 = createEspVst128Ip(FuncBuilder, V1N2B3, DstPtrB3);
 
-  SrcPtrInBlock48Loop->addIncoming(SrcArg3B3, ForBodyBB);
-  DstPtrInBlock48Loop->addIncoming(DstPtrB3, ForBodyBB);
+  SrcPtrInChunk3x16Loop->addIncoming(SrcArg3B3, ForBodyBB);
+  DstPtrInChunk3x16Loop->addIncoming(DstPtrB3, ForBodyBB);
   // PHI back-edge: feed last two loads' index-1 results (second srcqldip -> v0,
   // third srcqldip -> v1).
   V0B3->addIncoming(V2N2B3, ForBodyBB);
   V1B3->addIncoming(V0N2B3, ForBodyBB);
 
   Value *LoopCompleted = FuncBuilder.CreateICmpEQ(
-      Block48LoopCounterIncremented, FuncBuilder.getInt32(Quotient),
+      Chunk3x16LoopCounterIncremented, FuncBuilder.getInt32(Quotient),
       "loop.completed");
   FuncBuilder.CreateCondBr(LoopCompleted, ForCondCleanupBB, ForBodyBB);
 
@@ -2146,11 +2147,11 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst16ConstMod48From16To31(
   // so cleanup does not use vector PHIs; reduces pressure for back-edge copies.
   Value *TailBlock = createEspSrcQM(FuncBuilder, Sar2, V0N2B3, V2N2B3);
   Value *DstPtrTail3 = createEspVst128Ip(FuncBuilder, TailBlock, DstPtrB3);
-  Value *SrcPtrAfterBlock48Loop = FuncBuilder.CreateGEP(
+  Value *SrcPtrAfterChunk3x16Loop = FuncBuilder.CreateGEP(
       FuncBuilder.getInt8Ty(), SrcArg3B3, FuncBuilder.getInt32(-32),
-      "src.ptr.after.block48.loop");
+      "src.ptr.after.chunk3x16.loop");
 
-  FuncBuilder.CreateMemCpy(DstPtrTail3, Align(1), SrcPtrAfterBlock48Loop,
+  FuncBuilder.CreateMemCpy(DstPtrTail3, Align(1), SrcPtrAfterChunk3x16Loop,
                            Align(1), FuncBuilder.getInt32(Remainder - 16));
 
   FuncBuilder.CreateRetVoid();
@@ -2193,34 +2194,34 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst16ConstMod48From1To15(
   FuncBuilder.CreateBr(ForBodyBB);
 
   FuncBuilder.SetInsertPoint(ForBodyBB);
-  PHINode *Block48LoopCounter = FuncBuilder.CreatePHI(
-      FuncBuilder.getInt32Ty(), 2, "block48.loop.counter");
-  Block48LoopCounter->addIncoming(FuncBuilder.getInt32(0), EntryBB);
+  PHINode *Chunk3x16LoopCounter = FuncBuilder.CreatePHI(
+      FuncBuilder.getInt32Ty(), 2, "chunk3x16.loop.counter");
+  Chunk3x16LoopCounter->addIncoming(FuncBuilder.getInt32(0), EntryBB);
 
-  PHINode *SrcPtrInBlock48Loop =
-      FuncBuilder.CreatePHI(PtrTy, 2, "src.ptr.in.block48.loop");
-  SrcPtrInBlock48Loop->addIncoming(SrcPtr, EntryBB);
+  PHINode *SrcPtrInChunk3x16Loop =
+      FuncBuilder.CreatePHI(PtrTy, 2, "src.ptr.in.chunk3x16.loop");
+  SrcPtrInChunk3x16Loop->addIncoming(SrcPtr, EntryBB);
 
-  PHINode *DstPtrInBlock48Loop =
-      FuncBuilder.CreatePHI(PtrTy, 2, "dst.ptr.in.block48.loop");
-  DstPtrInBlock48Loop->addIncoming(DstPtr, EntryBB);
+  PHINode *DstPtrInChunk3x16Loop =
+      FuncBuilder.CreatePHI(PtrTy, 2, "dst.ptr.in.chunk3x16.loop");
+  DstPtrInChunk3x16Loop->addIncoming(DstPtr, EntryBB);
 
   Type *V16I8_4 = VectorType::get(FuncBuilder.getInt8Ty(), 16, false);
-  PHINode *V0B4 = FuncBuilder.CreatePHI(V16I8_4, 2, "v0.b48.4");
+  PHINode *V0B4 = FuncBuilder.CreatePHI(V16I8_4, 2, "v0.chunk3x16.4");
   V0B4->addIncoming(VecData1, EntryBB);
-  PHINode *V1B4 = FuncBuilder.CreatePHI(V16I8_4, 2, "v1.b48.4");
+  PHINode *V1B4 = FuncBuilder.CreatePHI(V16I8_4, 2, "v1.chunk3x16.4");
   V1B4->addIncoming(VecData2, EntryBB);
-  PHINode *V2B4 = FuncBuilder.CreatePHI(V16I8_4, 2, "v2.b48.4");
+  PHINode *V2B4 = FuncBuilder.CreatePHI(V16I8_4, 2, "v2.chunk3x16.4");
   V2B4->addIncoming(PoisonValue::get(V16I8_4), EntryBB);
 
-  Value *Block48LoopCounterIncremented =
-      FuncBuilder.CreateAdd(Block48LoopCounter, FuncBuilder.getInt32(1),
-                            "block48.loop.counter.incremented", true, true);
-  Block48LoopCounter->addIncoming(Block48LoopCounterIncremented, ForBodyBB);
+  Value *Chunk3x16LoopCounterIncremented =
+      FuncBuilder.CreateAdd(Chunk3x16LoopCounter, FuncBuilder.getInt32(1),
+                            "chunk3x16.loop.counter.incremented", true, true);
+  Chunk3x16LoopCounter->addIncoming(Chunk3x16LoopCounterIncremented, ForBodyBB);
 
-  Value *DstPtrB4 = DstPtrInBlock48Loop;
+  Value *DstPtrB4 = DstPtrInChunk3x16Loop;
   auto [V2NB4, V1NB4, SrcArg1B4] =
-      createEspSrcQLdIp(FuncBuilder, Sar2, V0B4, V1B4, SrcPtrInBlock48Loop, 16);
+      createEspSrcQLdIp(FuncBuilder, Sar2, V0B4, V1B4, SrcPtrInChunk3x16Loop, 16);
   DstPtrB4 = createEspVst128Ip(FuncBuilder, V0B4, DstPtrB4);
   auto [V0NB4, V2N2B4, SrcArg2B4] =
       createEspSrcQLdIp(FuncBuilder, Sar2, V1NB4, V2NB4, SrcArg1B4, 16);
@@ -2229,25 +2230,25 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst16ConstMod48From1To15(
       createEspSrcQLdIp(FuncBuilder, Sar2, V2N2B4, V0NB4, SrcArg2B4, 16);
   DstPtrB4 = createEspVst128Ip(FuncBuilder, V2N2B4, DstPtrB4);
 
-  SrcPtrInBlock48Loop->addIncoming(SrcArg3B4, ForBodyBB);
-  DstPtrInBlock48Loop->addIncoming(DstPtrB4, ForBodyBB);
+  SrcPtrInChunk3x16Loop->addIncoming(SrcArg3B4, ForBodyBB);
+  DstPtrInChunk3x16Loop->addIncoming(DstPtrB4, ForBodyBB);
   V0B4->addIncoming(V0N2B4, ForBodyBB);
   V1B4->addIncoming(V1N2B4, ForBodyBB);
   V2B4->addIncoming(V2N2B4, ForBodyBB);
 
   Value *LoopCompleted = FuncBuilder.CreateICmpEQ(
-      Block48LoopCounterIncremented, FuncBuilder.getInt32(Quotient),
+      Chunk3x16LoopCounterIncremented, FuncBuilder.getInt32(Quotient),
       "loop.completed");
   FuncBuilder.CreateCondBr(LoopCompleted, ForCondCleanupBB, ForBodyBB);
 
   FuncBuilder.SetInsertPoint(ForCondCleanupBB);
   // Use loop-body SSA (SrcArg3B4, DstPtrB4) in cleanup so cleanup does not use
   // pointer PHIs; reduces pressure for back-edge copies (esp.orq).
-  Value *SrcPtrAfterBlock48Loop = FuncBuilder.CreateGEP(
+  Value *SrcPtrAfterChunk3x16Loop = FuncBuilder.CreateGEP(
       FuncBuilder.getInt8Ty(), SrcArg3B4, FuncBuilder.getInt32(-32),
-      "src.ptr.after.block48.loop");
+      "src.ptr.after.chunk3x16.loop");
 
-  FuncBuilder.CreateMemCpy(DstPtrB4, Align(1), SrcPtrAfterBlock48Loop, Align(1),
+  FuncBuilder.CreateMemCpy(DstPtrB4, Align(1), SrcPtrAfterChunk3x16Loop, Align(1),
                            FuncBuilder.getInt32(Remainder - 32));
 
   FuncBuilder.CreateRetVoid();
