@@ -317,7 +317,7 @@ void RISCVEsp32P4MemIntrin::processDataBlock(IRBuilder<> &Builder,
   Value *CurrentDst = DstAddr;
 
   // Vector to store loaded data for each block
-  std::vector<Value *> LoadedVectors;
+  SmallVector<Value *, 8> LoadedVectors;
 
   // Load loop: collect vector data and update source pointer
   for (int J = 0; J < BlockSize; J++) {
@@ -1369,7 +1369,7 @@ bool RISCVEsp32P4MemIntrinPass::processMemCpyWithAlignmentVar(
   Value *CurrentSrc = SrcPtrInLoop;
   Value *CurrentDst = DstPtrInLoop;
   for (int BatchStart = 0; BatchStart < 8; BatchStart += 4) {
-    std::vector<std::pair<Value *, Value *>> LoadedVectorPairs;
+    SmallVector<std::pair<Value *, Value *>, 4> LoadedVectorPairs;
     for (int I = 0; I < 4; I++) {
       if (SrcAlign == 16 && DstAlign == 16) {
         auto [Data, UpdatedPtr] = createEspVld128Ip(FuncBuilder, CurrentSrc);
@@ -1459,7 +1459,7 @@ bool RISCVEsp32P4MemIntrinPass::processMemCpyWithAlignmentVar(
       if (BatchSize > 4)
         BatchSize = 4;
 
-      std::vector<std::pair<Value *, Value *>> TailVectorPairs;
+      SmallVector<std::pair<Value *, Value *>, 4> TailVectorPairs;
       for (int J = 0; J < BatchSize; J++) {
         if (SrcAlign == 16) {
           auto [Data, UpdatedPtr] = createEspVld128Ip(FuncBuilder, CurrentSrc);
