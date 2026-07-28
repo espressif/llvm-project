@@ -205,24 +205,11 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
     // No custom action needed - let the default split logic handle it
   }
 
-  if (Subtarget.hasVendorXespv()) {
-    addRegisterClass(MVT::v16i8, &RISCV::QRRegClass);
-    addRegisterClass(MVT::v8i16, &RISCV::QRRegClass);
-    addRegisterClass(MVT::v4i32, &RISCV::QRRegClass);
-    addRegisterClass(MVT::v2i32, &RISCV::QRRegClass);
-    addRegisterClass(MVT::v4i16, &RISCV::QRRegClass);
-    addRegisterClass(MVT::v8i8, &RISCV::QRRegClass);
-    setOperationAction(ISD::VECTOR_SHUFFLE, MVT::v2i32, Expand);
-    setOperationAction(ISD::VECTOR_SHUFFLE, MVT::v4i16, Expand);
-    setOperationAction(ISD::VECTOR_SHUFFLE, MVT::v8i8, Expand);
-    setOperationAction(ISD::SIGN_EXTEND, MVT::v8i32, Expand);
-    setOperationAction(ISD::SIGN_EXTEND, MVT::v16i16, Expand);
-    setOperationAction(ISD::ZERO_EXTEND, MVT::v8i32, Expand);
-    setOperationAction(ISD::ZERO_EXTEND, MVT::v16i16, Expand);
-    setOperationAction(ISD::VECTOR_SHUFFLE, MVT::v8i16, Expand);
-    setOperationAction(ISD::VECTOR_SHUFFLE, MVT::v4i32, Expand);
-    setOperationAction(ISD::VECTOR_SHUFFLE, MVT::v16i8, Expand);
-  }
+  // QR register classes + Custom LOAD/STORE live only under +espv-lowering
+  // (initializeESPVTargetLowering). Do not legalize v4i32/v8i16/v16i8 from
+  // hasVendorXespv alone: IDF bootloader builds -mcpu=esp32p4 without
+  // +espv-lowering and would Cannot select unaligned tile stores
+  // (pmu_sleep.c struct assign). Match 22-clang-option-stress-bugfix.
   static const MVT::SimpleValueType BoolVecVTs[] = {
       MVT::nxv1i1,  MVT::nxv2i1,  MVT::nxv4i1, MVT::nxv8i1,
       MVT::nxv16i1, MVT::nxv32i1, MVT::nxv64i1};
