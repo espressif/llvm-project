@@ -9604,11 +9604,6 @@ SDValue RISCVTargetLowering::LowerOperation(SDValue Op,
           return Chain;
         }
       }
-    }
-    if (Subtarget.hasESPVTargetLowering() && Store->isTruncatingStore()) {
-      EVT MemVT = Store->getMemoryVT();
-      SDValue Val = Store->getValue();
-      EVT ValVT = Val.getValueType();
       if (MemVT.isFixedLengthVector() && ValVT.isFixedLengthVector() &&
           MemVT.getVectorElementCount() == ValVT.getVectorElementCount() &&
           MemVT.getScalarSizeInBits() < ValVT.getScalarSizeInBits()) {
