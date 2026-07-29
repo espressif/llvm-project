@@ -8468,8 +8468,8 @@ static SDValue lowerESPVI32ChunkVectorLoad(LoadSDNode *Load, SelectionDAG &DAG,
   }
 
   // Fallback: i32 lane loads + BUILD_VECTOR (unexpected tile bit-width).
-  unsigned NumChunks = TotalBits / 32;
   assert(TotalBits % 32 == 0 && "ESPV chunk types are 32-bit aligned");
+  unsigned NumChunks = TotalBits / 32;
   auto MMOFlags = MMO->getFlags();
   AAMDNodes AAInfo = Load->getAAInfo();
   Align BaseAlign = Load->getBaseAlign();
@@ -8573,6 +8573,7 @@ static SDValue lowerESPVI32ChunkVectorStore(StoreSDNode *Store,
   }
 
   // Fallback: scalarize into i32 chunk stores for unhandled widths.
+  assert(TotalBits % 32 == 0 && "ESPV chunk types are 32-bit aligned");
   unsigned NumChunks = TotalBits / 32;
   auto MMOFlags = MMO->getFlags();
   AAMDNodes AAInfo = Store->getAAInfo();
