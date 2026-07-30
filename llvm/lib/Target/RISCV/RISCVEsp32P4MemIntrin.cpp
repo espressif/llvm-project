@@ -107,6 +107,9 @@ Function *RISCVEsp32P4MemIntrinBase::createMemCpyHelperFunction(
   // Create new function
   Function *MCFunc = Function::Create(FuncTy, GlobalValue::InternalLinkage,
                                       FuncName, TheModule);
+  auto ArgIt = MCFunc->arg_begin();
+  ArgIt->setName("dst");
+  (++ArgIt)->setName("src");
 
   // Create function call
   CallInst *Call = Builder.CreateCall(MCFunc, {DstAddr, SrcAddr});
@@ -154,6 +157,11 @@ Function *RISCVEsp32P4MemIntrinBase::createMemCpyHelperFunctionGeneric(
   // Create new function
   Function *MCFunc = Function::Create(FuncTy, GlobalValue::InternalLinkage,
                                       FuncName, TheModule);
+  // Name args at create — callers that also setName are redundant but OK.
+  auto ArgIt = MCFunc->arg_begin();
+  ArgIt->setName("dst");
+  (++ArgIt)->setName("src");
+  (++ArgIt)->setName("size");
 
   // Create function call
   CallInst *Call = Builder.CreateCall(MCFunc, {DstAddr, SrcAddr, Size});
@@ -198,6 +206,9 @@ Function *RISCVEsp32P4MemIntrinBase::createMemCpyHelperFunctionPtrNoSize(
       FunctionType::get(Builder.getVoidTy(), {PtrTy, PtrTy}, false);
   Function *MCFunc = Function::Create(FuncTy, GlobalValue::InternalLinkage,
                                       FuncName, TheModule);
+  auto ArgIt = MCFunc->arg_begin();
+  ArgIt->setName("dst");
+  (++ArgIt)->setName("src");
   CallInst *Call = Builder.CreateCall(MCFunc, {Dst, Src});
   if (!isInline)
     Call->setTailCallKind(CallInst::TCK_Tail);
