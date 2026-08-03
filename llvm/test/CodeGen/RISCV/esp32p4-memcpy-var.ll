@@ -1445,8 +1445,12 @@ sw.bb7:                                           ; preds = %entry
 ; CHECK-NEXT:    store i8 [[TMP12]], ptr [[DST_GEP_I818_I]], align 1
 ; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDST8VAR_EXIT]]
 ; CHECK:       [[IF_END_I]]:
-; CHECK-NEXT:    [[TMP13:%.*]] = load i64, ptr [[B]], align 1
-; CHECK-NEXT:    store i64 [[TMP13]], ptr [[A]], align 1
+; CHECK-NEXT:    [[TMP13:%.*]] = load i32, ptr [[B]], align 1
+; CHECK-NEXT:    store i32 [[TMP13]], ptr [[A]], align 1
+; CHECK-NEXT:    [[SRC_4_I:%.*]] = getelementptr i8, ptr [[B]], i32 4
+; CHECK-NEXT:    [[DST_4_I:%.*]] = getelementptr i8, ptr [[A]], i32 4
+; CHECK-NEXT:    [[TMP74:%.*]] = load i32, ptr [[SRC_4_I]], align 1
+; CHECK-NEXT:    store i32 [[TMP74]], ptr [[DST_4_I]], align 1
 ; CHECK-NEXT:    [[TMP14:%.*]] = add i32 [[SIZE]], -8
 ; CHECK-NEXT:    [[TMP15:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[TMP16:%.*]] = getelementptr i8, ptr [[B]], i32 8
