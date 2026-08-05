@@ -3,7 +3,7 @@
 ; skipped for BOOTLOADER_BUILD). QR types must not be legal in that mode otherwise
 ; align-4 const <4 x i32> stores Cannot select (pmu_sleep.c).
 ; RUN: llc -O2 -mtriple=riscv32-esp-unknown-elf -mcpu=esp32p4 %s -o - | FileCheck %s --check-prefix=NOLOWER
-; PIE 2.1 only (esp32p4eco4 implies +xespv1v). With +espv-lowering, align-4 v4i32
+; PIE 2.1 only (esp32p4eco4 implies +xespv2p1). With +espv-lowering, align-4 v4i32
 ; must not use native 16B ESPV mem; const store scalarizes, copy goes via QR spill.
 ; RUN: llc -O2 -mtriple=riscv32-esp-unknown-elf -mcpu=esp32p4eco4 -mattr=+espv-lowering %s -o - | FileCheck %s --check-prefix=LOWER
 

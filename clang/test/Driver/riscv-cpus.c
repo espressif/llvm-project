@@ -878,7 +878,7 @@
 // MCPU-ESP32P4ECO4-SAME: "-target-feature" "+zcb"
 // MCPU-ESP32P4ECO4-SAME: "-target-feature" "+zcmt"
 // MCPU-ESP32P4ECO4-SAME: "-target-feature" "+xesploop"
-// MCPU-ESP32P4ECO4-SAME: "-target-feature" "+xespv1v"
+// MCPU-ESP32P4ECO4-SAME: "-target-feature" "+xespv2p1"
 // MCPU-ESP32P4ECO4-SAME: "-target-abi" "ilp32f"
 
 // RUN: %clang --target=riscv32 -### -c %s 2>&1 -mcpu=esp32p4 | FileCheck -check-prefix=MCPU-ESP32P4 %s

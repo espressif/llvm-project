@@ -52,7 +52,7 @@ STATISTIC(RISCVNumInstrsCompressed,
           "Number of RISC-V Compressed instructions emitted");
 
 namespace llvm {
-extern const SubtargetFeatureKV RISCVFeatureKV[RISCV::NumSubtargetFeatures];
+extern const SubtargetFeatureKV RISCVFeatureKV[RISCV::NumSubtargetFeatureKVs];
 } // namespace llvm
 
 namespace {

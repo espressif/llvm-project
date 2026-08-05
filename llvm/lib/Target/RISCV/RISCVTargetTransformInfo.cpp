@@ -29,7 +29,7 @@ static bool shouldUseNonRVVFixedVectorCost(const RISCVSubtarget *ST, Type *Ty) {
     return false;
   if (ST->hasVInstructions())
     return false;
-  return ST->enablePExtSIMDCodeGen() || ST->hasVendorXespv();
+  return ST->enablePExtSIMDCodeGen() || ST->hasVendorXespv2p2();
 }
 
 static bool shouldUseNonRVVFixedVectorCost(const RISCVSubtarget *ST, MVT VT) {
@@ -37,7 +37,7 @@ static bool shouldUseNonRVVFixedVectorCost(const RISCVSubtarget *ST, MVT VT) {
     return false;
   if (ST->hasVInstructions())
     return false;
-  return ST->enablePExtSIMDCodeGen() || ST->hasVendorXespv();
+  return ST->enablePExtSIMDCodeGen() || ST->hasVendorXespv2p2();
 }
 
 static InstructionCost getScalarizedFixedVectorCost(Type *Ty,

@@ -20,6 +20,13 @@
 using namespace llvm;
 
 static StringRef getExtensionName(const Record *R) {
+  if (std::optional<StringRef> ExtName =
+          R->getValueAsOptionalString("ExtensionName"))
+    if (!ExtName->empty()) {
+      ExtName->consume_front("experimental-");
+      return *ExtName;
+    }
+
   StringRef Name = R->getValueAsString("Name");
   Name.consume_front("experimental-");
   return Name;
@@ -39,7 +46,8 @@ static void printExtensionTable(raw_ostream &OS,
 
     OS.indent(4) << "{\"" << getExtensionName(R) << "\", {"
                  << R->getValueAsInt("MajorVersion") << ", "
-                 << R->getValueAsInt("MinorVersion") << "}},\n";
+                 << R->getValueAsInt("MinorVersion") << "}, \""
+                 << R->getValueAsString("Desc") << "\"},\n";
   }
 
   OS << "};\n\n";
@@ -52,7 +60,17 @@ static void emitRISCVExtensions(const RecordKeeper &Records, raw_ostream &OS) {
   std::vector<const Record *> Extensions =
       Records.getAllDerivedDefinitionsIfDefined("RISCVExtension");
   llvm::sort(Extensions, [](const Record *Rec1, const Record *Rec2) {
-    return getExtensionName(Rec1) < getExtensionName(Rec2);
+    StringRef Name1 = getExtensionName(Rec1);
+    StringRef Name2 = getExtensionName(Rec2);
+    if (Name1 != Name2)
+      return Name1 < Name2;
+    // A multi-version extension registers the same name at several versions.
+    // Give them a deterministic, ascending-by-version order so consumers can
+    // rely on the last equal-name entry being the latest version.
+    return std::make_pair(Rec1->getValueAsInt("MajorVersion"),
+                          Rec1->getValueAsInt("MinorVersion")) <
+           std::make_pair(Rec2->getValueAsInt("MajorVersion"),
+                          Rec2->getValueAsInt("MinorVersion"));
   });
 
   if (!Extensions.empty()) {

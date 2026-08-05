@@ -2046,10 +2046,23 @@ void SubtargetEmitter::emitMcInstrAnalysisPredicateFunctions(raw_ostream &OS) {
     PE.expandSTIPredicate(OS, Fn);
 }
 
+static unsigned countSubtargetFeatureKVs(const RecordKeeper &Records) {
+  std::vector<const Record *> FeatureList =
+      Records.getAllDerivedDefinitions("SubtargetFeature");
+  llvm::erase_if(FeatureList, [](const Record *Rec) {
+    return Rec->getValueAsString("Name").empty();
+  });
+  return FeatureList.size();
+}
+
 FeatureMapTy SubtargetEmitter::emitEnums(raw_ostream &OS) {
   IfDefEmitter IfDef(OS, "GET_SUBTARGETINFO_ENUM");
   NamespaceEmitter NS(OS, "llvm");
-  return enumeration(OS);
+  FeatureMapTy FeatureMap = enumeration(OS);
+  NamespaceEmitter TargetNS(OS, Target);
+  OS << "constexpr unsigned NumSubtargetFeatureKVs = "
+     << countSubtargetFeatureKVs(Records) << ";\n";
+  return FeatureMap;
 }
 
 std::tuple<unsigned, unsigned, unsigned>

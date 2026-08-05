@@ -170,30 +170,35 @@ public:
   bool GETTER() const { return ATTRIBUTE; }
 #include "RISCVGenSubtargetInfo.inc"
 
-  /// ESPV opt-in DAG lowering: +espv-lowering with either +xespv (2.2) or
-  /// +xespv1v (2.1). Default off; use -mattr=+espv-lowering for tests/IDF.
+  /// ESPV target lowering is enabled when an ESPV version is enabled and the
+  /// opt-in flag (espv-lowering) is set. Default off; use -mattr=+espv-lowering
+  /// for tests and IDF builds until well tested.
   bool hasESPVTargetLowering() const {
-    return hasVendorXespvLowering() && (hasVendorXespv1v() || hasVendorXespv());
+    return hasVendorXespvLowering() &&
+           (hasVendorXespv2p1() || hasVendorXespv2p2());
   }
 
-  /// Shared .m intrinsics select 2.2 MC instructions only on pure ESPV 2.2.
+  /// Shared .m intrinsics select 2.2 MC instructions only on pure ESPV 2.2
+  /// (+xespv2p2 without +xespv2p1).
   bool useESPV2P2Instructions() const {
-    return hasVendorXespv() && !hasVendorXespv1v();
+    return hasVendorXespv2p2() && !hasVendorXespv2p1();
   }
 
   unsigned getESPSpill128Opcode() const {
-    return hasVendorXespv() ? RISCV::ESP_VST_128_IP_2P2 : RISCV::ESP_VST_128_IP;
+    return useESPV2P2Instructions() ? RISCV::ESP_VST_128_IP_2P2
+                                    : RISCV::ESP_VST_128_IP;
   }
   unsigned getESPReload128Opcode() const {
-    return hasVendorXespv() ? RISCV::ESP_VLD_128_IP_2P2 : RISCV::ESP_VLD_128_IP;
+    return useESPV2P2Instructions() ? RISCV::ESP_VLD_128_IP_2P2
+                                    : RISCV::ESP_VLD_128_IP;
   }
   unsigned getESPSpillL64Opcode() const {
-    return hasVendorXespv() ? RISCV::ESP_VST_L_64_IP_2P2
-                            : RISCV::ESP_VST_L_64_IP;
+    return useESPV2P2Instructions() ? RISCV::ESP_VST_L_64_IP_2P2
+                                    : RISCV::ESP_VST_L_64_IP;
   }
   unsigned getESPReloadL64Opcode() const {
-    return hasVendorXespv() ? RISCV::ESP_VLD_L_64_IP_2P2
-                            : RISCV::ESP_VLD_L_64_IP;
+    return useESPV2P2Instructions() ? RISCV::ESP_VLD_L_64_IP_2P2
+                                    : RISCV::ESP_VLD_L_64_IP;
   }
   static bool isESPVFrameIndexSpillOpcode(unsigned Opc) {
     switch (Opc) {

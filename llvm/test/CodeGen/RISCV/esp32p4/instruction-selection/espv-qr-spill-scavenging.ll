@@ -1,4 +1,4 @@
-; RUN: llc -O2 -mtriple=riscv32-esp-unknown-elf -mattr=+xespv1v,+espv-lowering -verify-machineinstrs < %s -o /dev/null
+; RUN: llc -O2 -mtriple=riscv32-esp-unknown-elf -mattr=+xespv2p1,+espv-lowering -verify-machineinstrs < %s -o /dev/null
 
 target datalayout = "e-m:e-p:32:32-i64:64-n32-S128"
 target triple = "riscv32-esp-unknown-elf"

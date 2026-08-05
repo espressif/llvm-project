@@ -55,7 +55,7 @@ static cl::opt<bool> AddBuildAttributes("riscv-add-build-attributes",
                                         cl::init(false));
 
 namespace llvm {
-extern const SubtargetFeatureKV RISCVFeatureKV[RISCV::NumSubtargetFeatures];
+extern const SubtargetFeatureKV RISCVFeatureKV[RISCV::NumSubtargetFeatureKVs];
 } // namespace llvm
 
 namespace {

@@ -156,9 +156,10 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
     else
       addRegisterClass(MVT::f64, &RISCV::GPRPairRegClass);
   }
-  // QR types only under +espv-lowering (initializeESPVTargetLowering). Do not
-  // legalize from hasVendorXespv alone: that enables unaligned tile memops
-  // without ESPV custom lowering and fails selection.
+  // ESPV register classes (QR types) only under +espv-lowering
+  // (initializeESPVTargetLowering), with an ESPV version enabled (+xespv2p1 or
+  // +xespv). Do not legalize from hasVendorXespv alone: that enables unaligned
+  // tile memops without ESPV custom lowering and fails selection.
   if (Subtarget.hasESPVTargetLowering()) {
     initializeESPVTargetLowering(Subtarget);
     // Packed boolean vectors occupy one or two bytes in memory; lower them
@@ -8293,7 +8294,7 @@ static bool isESPVI32ChunkTileVectorType(MVT VT) {
 }
 
 static bool needESPVI32ChunkMemLowering(const RISCVSubtarget &Subtarget) {
-  return Subtarget.hasVendorXespv() || Subtarget.hasESPVTargetLowering();
+  return Subtarget.hasVendorXespv2p2() || Subtarget.hasESPVTargetLowering();
 }
 
 /// ESPV 128-bit vector mem intrinsics require 16-byte alignment. Unaligned

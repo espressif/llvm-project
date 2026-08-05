@@ -126,14 +126,14 @@ def ROCKET : RISCVTuneProcessorModel<"rocket",
 // CHECK-NEXT: #undef GET_SUPPORTED_EXTENSIONS
 
 // CHECK:      static const RISCVSupportedExtension SupportedExtensions[] = {
-// CHECK-NEXT:     {"f", {2, 2}},
-// CHECK-NEXT:     {"i", {2, 1}},
-// CHECK-NEXT:     {"zicsr", {2, 0}},
-// CHECK-NEXT:     {"zifencei", {2, 0}},
+// CHECK-NEXT:     {"f", {2, 2}, "'F' (Single-Precision Floating-Point)"},
+// CHECK-NEXT:     {"i", {2, 1}, "'I' (Base Integer Instruction Set)"},
+// CHECK-NEXT:     {"zicsr", {2, 0}, "'zicsr' (CSRs)"},
+// CHECK-NEXT:     {"zifencei", {2, 0}, "'Zifencei' (fence.i)"},
 // CHECK-NEXT: };
 
 // CHECK:      static const RISCVSupportedExtension SupportedExperimentalExtensions[] = {
-// CHECK-NEXT:     {"zidummy", {0, 1}},
+// CHECK-NEXT:     {"zidummy", {0, 1}, "Dummy"},
 // CHECK-NEXT: };
 
 // CHECK:      #endif // GET_SUPPORTED_EXTENSIONS

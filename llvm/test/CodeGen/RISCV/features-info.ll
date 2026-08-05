@@ -193,7 +193,8 @@
 ; CHECK-NEXT:   xespdsp                          - 'Xespdsp' ('Espressif ESPDSP').
 ; CHECK-NEXT:   xesploop                         - 'Xesploop' ('Espressif ESPLOOP').
 ; CHECK-NEXT:   xespv                            - 'Xespv' ('Espressif ESPV 2.2').
-; CHECK-NEXT:   xespv1v                          - 'Xespv1v' ('Espressif ESPV 2.1').
+; CHECK-NEXT:   xespv2p1                         - 'Espressif ESPV 2.1'.
+; CHECK-NEXT:   xespv2p2                         - 'Espressif ESPV 2.2'.
 ; CHECK-NEXT:   xmipscbop                        - 'XMIPSCBOP' (MIPS Software Prefetch).
 ; CHECK-NEXT:   xmipscmov                        - 'XMIPSCMov' (MIPS conditional move instruction (mips.ccmov)).
 ; CHECK-NEXT:   mipsexectl                       - 'XMIPSEXECTL' (MIPS execution control).

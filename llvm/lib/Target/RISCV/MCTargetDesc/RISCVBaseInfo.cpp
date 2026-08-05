@@ -22,7 +22,7 @@
 
 namespace llvm {
 
-extern const SubtargetFeatureKV RISCVFeatureKV[RISCV::NumSubtargetFeatures];
+extern const SubtargetFeatureKV RISCVFeatureKV[RISCV::NumSubtargetFeatureKVs];
 
 namespace RISCVSysReg {
 #define GET_SysRegsList_IMPL
@@ -135,8 +135,8 @@ void validate(const Triple &TT, const FeatureBitset &FeatureBits) {
   if (FeatureBits[RISCV::Feature32Bit] &&
       FeatureBits[RISCV::Feature64Bit])
     reportFatalUsageError("RV32 and RV64 can't be combined");
-  if ((FeatureBits[RISCV::FeatureVendorXespv1v] ||
-       FeatureBits[RISCV::FeatureVendorXespv] ||
+  if ((FeatureBits[RISCV::FeatureXespvVersion2p1] ||
+       FeatureBits[RISCV::FeatureXespvVersion2p2] ||
        FeatureBits[RISCV::FeatureVendorXespvLowering]) &&
       FeatureBits[RISCV::FeatureStdExtZve32x])
     reportFatalUsageError("ESPV does not support RVV/Zve extensions");

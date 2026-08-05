@@ -10,6 +10,7 @@
 #include "llvm/ADT/StringMap.h"
 #include "llvm/Testing/Support/Error.h"
 #include "gtest/gtest.h"
+#include <algorithm>
 
 using ::testing::ElementsAre;
 
@@ -868,6 +869,22 @@ TEST(ToFeatures, AddAllExtensionsAddsNegativeExtensions) {
     EXPECT_TRUE(NegativeExt.substr(0, 1) == "-");
 }
 
+TEST(ToFeatures, MultiVersionXespvEmitsVersionFeature) {
+  auto MaybeISAInfo2p1 =
+      RISCVISAInfo::parseArchString("rv32i_xespv2p1", true, false);
+  ASSERT_THAT_EXPECTED(MaybeISAInfo2p1, Succeeded());
+  auto Features2p1 = (*MaybeISAInfo2p1)->toFeatures();
+  EXPECT_NE(std::find(Features2p1.begin(), Features2p1.end(), "+xespv2p1"),
+            Features2p1.end());
+
+  auto MaybeISAInfo2p2 =
+      RISCVISAInfo::parseArchString("rv32i_xespv2p2", true, false);
+  ASSERT_THAT_EXPECTED(MaybeISAInfo2p2, Succeeded());
+  auto Features2p2 = (*MaybeISAInfo2p2)->toFeatures();
+  EXPECT_NE(std::find(Features2p2.begin(), Features2p2.end(), "+xespv"),
+            Features2p2.end());
+}
+
 TEST(OrderedExtensionMap, ExtensionsAreCorrectlyOrdered) {
   RISCVISAUtils::OrderedExtensionMap Exts;
   for (auto ExtName : {"y", "l", "m", "c", "i", "xfoo", "xbar", "sfoo", "sbar",
@@ -1329,8 +1346,8 @@ R"(All available -march extensions for RISC-V
     xcvsimd              1.0
     xespdsp              2.1
     xesploop             1.0
+    xespv                2.1
     xespv                2.2
-    xespv1v              2.1
     xmipscbop            1.0
     xmipscmov            1.0
     xmipsexectl          1.0

@@ -29,12 +29,18 @@
 class RISCVExtension<int major, int minor, string desc,
                      list<SubtargetFeature> implies = [],
                      string fieldname = !subst("Feature", "Has", NAME),
-                     string value = "true", bit IsExperimental = false>
+                     string value = "true", bit IsExperimental = false,
+                     bit OmitFromMattr = false>
     : SubtargetFeature<"", fieldname, value, "", implies> {
   defvar extName = !subst("FeatureVendor", "", !subst("FeatureStdExt", "", NAME));
 
   // Name - Name of the extension in lower case.
-  let Name = !if(IsExperimental, "experimental-", "") # !tolower(extName);
+  let Name = !if(OmitFromMattr, "",
+                 !if(IsExperimental, "experimental-", "") # !tolower(extName));
+
+  // ExtensionName - Name used in ISA strings and the extension catalog.
+  string ExtensionName =
+      !if(IsExperimental, "experimental-", "") # !tolower(extName);
 
   // Desc - Description of extension with its name.
   let Desc = "'" # extName # "' (" # desc # ")";
@@ -1485,10 +1491,41 @@ def HasVendorXwchc
       AssemblerPredicate<(all_of FeatureVendorXwchc),
                          "'Xwchc' (WCH/QingKe additional compressed opcodes)">;
 
-def FeatureVendorXespv1v
-    : RISCVExtension<2, 1,
-                     "'Espressif ESPV 2.1'">;
-def HasVendorXespv1v : Predicate<"Subtarget->hasVendorXespv1v()">, AssemblerPredicate<(all_of FeatureVendorXespv1v), "'Espressif ESPV 2.1'">;
+def FeatureVendorXespvEnable
+    : SubtargetFeature<"", "HasVendorXespv", "true", "">;
+
+def FeatureXespvVersion2p1
+    : SubtargetFeature<"xespv2p1", "HasVendorXespv2p1", "true",
+                       "'Espressif ESPV 2.1'", [FeatureVendorXespvEnable]>;
+def FeatureXespvVersion2p2
+    : SubtargetFeature<"xespv2p2", "HasVendorXespv2p2", "true",
+                       "'Espressif ESPV 2.2'", [FeatureVendorXespvEnable]>;
+
+def FeatureVendorXespv2p1
+    : RISCVExtension<2, 1, "'Espressif ESPV 2.1'", [FeatureXespvVersion2p1],
+                     "HasVendorXespv2p1Catalog", "true", false, true> {
+  let ExtensionName = "xespv";
+  let Desc = "'Xespv' ('Espressif ESPV 2.1')";
+}
+
+def FeatureVendorXespv
+    : RISCVExtension<2, 2, "'Espressif ESPV 2.2'", [FeatureXespvVersion2p2],
+                     "HasVendorXespvCatalog"> {
+  let Name = "xespv";
+  let ExtensionName = "xespv";
+  let Desc = "'Xespv' ('Espressif ESPV 2.2')";
+}
+
+def HasVendorXespv2p1
+    : Predicate<"Subtarget->hasVendorXespv2p1()">,
+      AssemblerPredicate<(all_of FeatureXespvVersion2p1), "'Espressif ESPV 2.1'">;
+def HasVendorXespv2p2
+    : Predicate<"Subtarget->hasVendorXespv2p2()">,
+      AssemblerPredicate<(all_of FeatureXespvVersion2p2), "'Espressif ESPV 2.2'">;
+def HasVendorXespv
+    : Predicate<"Subtarget->hasVendorXespv()">,
+      AssemblerPredicate<(any_of FeatureXespvVersion2p1, FeatureXespvVersion2p2),
+                         "'Espressif ESPV'">;
 
 def FeatureVendorXesploop
     : RISCVExtension<1, 0,
@@ -1500,21 +1537,15 @@ def FeatureVendorXespdsp
                      "'Espressif ESPDSP'">;
 def HasVendorXespdsp : Predicate<"Subtarget->hasVendorXespdsp()">, AssemblerPredicate<(all_of FeatureVendorXespdsp), "'Espressif ESPDSP'">;
 
-def FeatureVendorXespv
-    : RISCVExtension<2, 2,
-                     "'Espressif ESPV 2.2'">;
-def HasVendorXespv : Predicate<"Subtarget->hasVendorXespv()">, AssemblerPredicate<(all_of FeatureVendorXespv), "'Espressif ESPV 2.2'">;
-
-// Shared .m intrinsics on pure ESPV 2.2 (+xespv without +xespv1v).
+// Shared .m intrinsics on pure ESPV 2.2 (+xespv2p2 without +xespv2p1).
 def HasESPV2P2Instructions : Predicate<"Subtarget->useESPV2P2Instructions()">;
-
 // Enable ESPV target lowering (DAG/instruction selection). Off by default; enable
 // for tests and IDF builds until well tested. When stable, enable by default for
 // ESPV-capable CPUs.
 def FeatureVendorXespvLowering : SubtargetFeature<"espv-lowering", "HasVendorXespvLowering", "true",
   "Enable Espressif ESPV target lowering (DAG/instruction selection)">;
 
-def HasVendorEspSAT : Predicate<"Subtarget->hasVendorEspSAT()">, AssemblerPredicate<(any_of FeatureVendorXespdsp, FeatureVendorXespv1v)>;
+def HasVendorEspSAT : Predicate<"Subtarget->hasVendorEspSAT()">, AssemblerPredicate<(any_of FeatureVendorXespdsp, FeatureXespvVersion2p1)>;
 
 
 // Qualcomm Extensions

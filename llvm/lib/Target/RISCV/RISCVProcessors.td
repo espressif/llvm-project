@@ -956,7 +956,8 @@ def ESPRESSIF_ESP32P4ECO4 : RISCVProcessorModel<"esp32p4eco4",
                                        NoSchedModel,
                                        !listconcat(FeatureEspL3.Features,
                                         [FeatureStdExtF,
-                                         FeatureVendorXespv1v,
+                                         FeatureVendorXespv2p1,
+                                         FeatureXespvVersion2p1,
                                          FeatureVendorXesploop])>;
 
 // CPU w/o "ecoX" suffixes stands for the latest version of the chip.

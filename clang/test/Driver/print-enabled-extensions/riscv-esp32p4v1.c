@@ -17,8 +17,8 @@
 // CHECK-NEXT:     zcf                  1.0       'Zcf' (Compressed Single-Precision Floating-Point Instructions)
 // CHECK-NEXT:     zcmt                 1.0       'Zcmt' (table jump instructions for code-size reduction)
 // CHECK-NEXT:     xesploop             1.0       'Xesploop' ('Espressif ESPLOOP')
-// CHECK-NEXT:     xespv1v              2.1       'Xespv1v' ('Espressif ESPV 2.1')
+// CHECK-NEXT:     xespv                2.1       'Xespv' ('Espressif ESPV 2.1')
 // CHECK-EMPTY:
 // CHECK-NEXT: Experimental extensions
 // CHECK-EMPTY:
-// CHECK-NEXT: ISA String: rv32i2p1_m2p0_a2p1_f2p2_c2p0_zicsr2p0_zifencei2p0_zmmul1p0_zaamo1p0_zalrsc1p0_zca1p0_zcb1p0_zcf1p0_zcmt1p0_xesploop1p0_xespv1v2p1
+// CHECK-NEXT: ISA String: rv32i2p1_m2p0_a2p1_f2p2_c2p0_zicsr2p0_zifencei2p0_zmmul1p0_zaamo1p0_zalrsc1p0_zca1p0_zcb1p0_zcf1p0_zcmt1p0_xesploop1p0_xespv2p1

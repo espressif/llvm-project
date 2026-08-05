@@ -33031,10 +33031,10 @@ def ESP_ST_U_XACC_IP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, of
 // Returns qz (shifted result)
 // Input: SAR_BYTES (explicit, 32-bit, only low 4 bits used, range 0-15), qy, qw
 def : Pat<(int_riscv_esp_src_q_m i32:$sar_bytes, v16i8:$qy, v16i8:$qw),
-          (ESP_SRC_Q SAR_BYTESReg:$sar_bytes, QR:$qy, QR:$qw)>, Requires<[HasVendorXespv]>;
+          (ESP_SRC_Q SAR_BYTESReg:$sar_bytes, QR:$qy, QR:$qw)>, Requires<[HasVendorXespv2p2]>;
 
 // SRC.Q.qup - Match intrinsic directly to instruction
 // Returns: qz (new), qw (updated)
 // Input: SAR_BYTES (explicit, 32-bit, only low 4 bits used, range 0-15), qy, qw
 def : Pat<(int_riscv_esp_src_q_qup_m i32:$sar_bytes, v16i8:$qy, v16i8:$qw),
-          (ESP_SRC_Q_QUP SAR_BYTESReg:$sar_bytes, QR:$qy, QR:$qw)>, Requires<[HasVendorXespv]>;
+          (ESP_SRC_Q_QUP SAR_BYTESReg:$sar_bytes, QR:$qy, QR:$qw)>, Requires<[HasVendorXespv2p2]>;

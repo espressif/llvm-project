@@ -1,4 +1,4 @@
-; RUN: llc -O2 -mtriple=riscv32-esp-unknown-elf -mattr=+xespv1v,+espv-lowering %s -o - | FileCheck %s
+; RUN: llc -O2 -mtriple=riscv32-esp-unknown-elf -mattr=+xespv2p1,+espv-lowering %s -o - | FileCheck %s
 
 ; Stress-style IR that previously crashed when QR_64 physreg copies were
 ; lowered through copyPhysReg. RA may not always emit esp.movi.32.{a,q} on
