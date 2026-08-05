@@ -21,7 +21,7 @@ class EspVectorStPatZeroGPR<PatFrag StoreOp, RegisterClass StTy, ValueType vt>
     : Pat<(StoreOp (vt StTy:$qu), GPR:$rs1),
           (ESP_VST_128_IP StTy:$qu, (COPY_TO_REGCLASS GPR:$rs1, GPRPIE), 0)>;
 
-let Predicates = [HasVendorXespv] in {
+let Predicates = [HasVendorXespv2p2] in {
   // Use patterns for GPRPIE addresses (preferred, no copy needed)
   def : EspVectorLdPatZero<load, v16i8>;
   def : EspVectorLdPatZero<load, v8i16>;

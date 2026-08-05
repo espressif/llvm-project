@@ -27,6 +27,10 @@ struct RISCVSupportedExtension {
   const char *Name;
   /// Supported version.
   RISCVISAUtils::ExtensionVersion Version;
+  /// Human-readable extension description (from the extension's catalog
+  /// record). Distinct per version, so multi-version extensions can be
+  /// listed with the correct per-version text.
+  const char *Desc;
 
   bool operator<(const RISCVSupportedExtension &RHS) const {
     return StringRef(Name) < StringRef(RHS.Name);
@@ -78,27 +82,68 @@ static void PrintExtension(StringRef Name, StringRef Version,
          << Description << "\n";
 }
 
+// Like RISCVISAUtils::OrderedExtensionMap (canonical extension order), but a
+// multimap so multi-version extensions keep one entry per version. The value
+// pairs each version with its per-version catalog description.
+using MultiVersionExtensionMap =
+    std::multimap<std::string,
+                  std::pair<RISCVISAUtils::ExtensionVersion, const char *>,
+                  RISCVISAUtils::ExtensionComparator>;
+
+static RISCVISAUtils::ExtensionVersion getLatestSupportedVersion(StringRef Ext);
+static std::string getExtensionVersionFeature(StringRef Ext, unsigned Major,
+                                              unsigned Minor);
+
+// Returns the description to show for one (Name, Version) row of the extension
+// listing. The caller's DescMap supplies the text for an extension's
+// latest/primary entry (looked up under KeyBase, e.g. the bare name). Other
+// versions of a multi-version extension instead use the per-version catalog
+// description (CatalogDesc), but only when the caller actually included that
+// version (its version feature is a DescMap key), so a sparse DescMap still
+// yields an empty description.
+static StringRef extensionRowDescription(
+    const StringMap<StringRef> &DescMap, StringRef Name, StringRef KeyBase,
+    RISCVISAUtils::ExtensionVersion Version, const char *CatalogDesc) {
+  if (DescMap.empty())
+    return StringRef();
+  RISCVISAUtils::ExtensionVersion Latest = getLatestSupportedVersion(Name);
+  if (Version.Major == Latest.Major && Version.Minor == Latest.Minor)
+    return DescMap.lookup(KeyBase);
+  if (DescMap.count(
+          getExtensionVersionFeature(Name, Version.Major, Version.Minor)))
+    return StringRef(CatalogDesc);
+  return StringRef();
+}
+
 void RISCVISAInfo::printSupportedExtensions(StringMap<StringRef> &DescMap) {
   outs() << "All available -march extensions for RISC-V\n\n";
   PrintExtension("Name", "Version", (DescMap.empty() ? "" : "Description"));
 
-  RISCVISAUtils::OrderedExtensionMap ExtMap;
+  // Multi-version extensions (e.g. xespv) share one name across several
+  // versions, so use a multimap to keep every (name, version) pair; the
+  // comparator preserves canonical extension order. The per-version
+  // description comes from the extension's catalog record (E.Desc).
+  MultiVersionExtensionMap ExtMap;
   for (const auto &E : SupportedExtensions)
-    ExtMap[E.Name] = {E.Version.Major, E.Version.Minor};
-  for (const auto &E : ExtMap) {
+    ExtMap.emplace(E.Name, std::make_pair(E.Version, E.Desc));
+  for (const auto &[Name, VD] : ExtMap) {
     std::string Version =
-        std::to_string(E.second.Major) + "." + std::to_string(E.second.Minor);
-    PrintExtension(E.first, Version, DescMap[E.first]);
+        std::to_string(VD.first.Major) + "." + std::to_string(VD.first.Minor);
+    PrintExtension(
+        Name, Version,
+        extensionRowDescription(DescMap, Name, Name, VD.first, VD.second));
   }
 
   outs() << "\nExperimental extensions\n";
   ExtMap.clear();
   for (const auto &E : SupportedExperimentalExtensions)
-    ExtMap[E.Name] = {E.Version.Major, E.Version.Minor};
-  for (const auto &E : ExtMap) {
+    ExtMap.emplace(E.Name, std::make_pair(E.Version, E.Desc));
+  for (const auto &[Name, VD] : ExtMap) {
     std::string Version =
-        std::to_string(E.second.Major) + "." + std::to_string(E.second.Minor);
-    PrintExtension(E.first, Version, DescMap["experimental-" + E.first]);
+        std::to_string(VD.first.Major) + "." + std::to_string(VD.first.Minor);
+    PrintExtension(Name, Version,
+                   DescMap.empty() ? StringRef()
+                                   : DescMap.lookup("experimental-" + Name));
   }
 
   outs() << "\nSupported Profiles\n";
@@ -120,16 +165,29 @@ void RISCVISAInfo::printEnabledExtensions(
   PrintExtension("Name", "Version", (DescMap.empty() ? "" : "Description"));
 
   RISCVISAUtils::OrderedExtensionMap FullExtMap;
-  RISCVISAUtils::OrderedExtensionMap ExtMap;
-  for (const auto &E : SupportedExtensions)
-    if (EnabledFeatureNames.count(E.Name) != 0) {
+  MultiVersionExtensionMap ExtMap;
+  for (const auto &E : SupportedExtensions) {
+    // For a multi-version extension only the enabled version is present in
+    // EnabledFeatureNames: the latest version under the bare extension name,
+    // any other version under its version feature (e.g. "xespv2p1").
+    RISCVISAUtils::ExtensionVersion Latest = getLatestSupportedVersion(E.Name);
+    bool IsLatest =
+        E.Version.Major == Latest.Major && E.Version.Minor == Latest.Minor;
+    std::string EnabledName =
+        IsLatest ? std::string(E.Name)
+                 : getExtensionVersionFeature(E.Name, E.Version.Major,
+                                              E.Version.Minor);
+    if (EnabledFeatureNames.count(EnabledName) != 0) {
       FullExtMap[E.Name] = {E.Version.Major, E.Version.Minor};
-      ExtMap[E.Name] = {E.Version.Major, E.Version.Minor};
+      ExtMap.emplace(E.Name, std::make_pair(E.Version, E.Desc));
     }
-  for (const auto &E : ExtMap) {
+  }
+  for (const auto &[Name, VD] : ExtMap) {
     std::string Version =
-        std::to_string(E.second.Major) + "." + std::to_string(E.second.Minor);
-    PrintExtension(E.first, Version, DescMap[E.first]);
+        std::to_string(VD.first.Major) + "." + std::to_string(VD.first.Minor);
+    PrintExtension(
+        Name, Version,
+        extensionRowDescription(DescMap, Name, Name, VD.first, VD.second));
   }
 
   outs() << "\nExperimental extensions\n";
@@ -138,13 +196,15 @@ void RISCVISAInfo::printEnabledExtensions(
     StringRef Name(E.Name);
     if (EnabledFeatureNames.count("experimental-" + Name.str()) != 0) {
       FullExtMap[E.Name] = {E.Version.Major, E.Version.Minor};
-      ExtMap[E.Name] = {E.Version.Major, E.Version.Minor};
+      ExtMap.emplace(E.Name, std::make_pair(E.Version, E.Desc));
     }
   }
-  for (const auto &E : ExtMap) {
+  for (const auto &[Name, VD] : ExtMap) {
     std::string Version =
-        std::to_string(E.second.Major) + "." + std::to_string(E.second.Minor);
-    PrintExtension(E.first, Version, DescMap["experimental-" + E.first]);
+        std::to_string(VD.first.Major) + "." + std::to_string(VD.first.Minor);
+    PrintExtension(Name, Version,
+                   DescMap.empty() ? StringRef()
+                                   : DescMap.lookup("experimental-" + Name));
   }
 
   unsigned XLen = IsRV64 ? 64 : 32;
@@ -195,12 +255,16 @@ findDefaultVersion(StringRef ExtName) {
   // TODO: We might set default version based on profile or ISA spec.
   for (auto &ExtInfo : {ArrayRef(SupportedExtensions),
                         ArrayRef(SupportedExperimentalExtensions)}) {
-    auto I = llvm::lower_bound(ExtInfo, ExtName, LessExtName());
-
-    if (I == ExtInfo.end() || I->Name != ExtName)
+    // An extension may be registered at several versions (e.g. a multi-version
+    // vendor extension like xespv). The table is sorted by name and ascending
+    // by version within a name, so default an unversioned request to the
+    // latest supported version (the last entry of the equal-name range).
+    auto [First, Last] = std::equal_range(ExtInfo.begin(), ExtInfo.end(),
+                                          ExtName, LessExtName());
+    if (First == Last)
       continue;
 
-    return I->Version;
+    return std::prev(Last)->Version;
   }
   return std::nullopt;
 }
@@ -282,15 +346,56 @@ bool RISCVISAInfo::hasExtension(StringRef Ext) const {
   return Exts.count(Ext.str()) != 0;
 }
 
+static bool isMultiVersionExtension(StringRef Ext) {
+  for (auto ExtInfo : {ArrayRef(SupportedExtensions),
+                       ArrayRef(SupportedExperimentalExtensions)}) {
+    auto Range =
+        std::equal_range(ExtInfo.begin(), ExtInfo.end(), Ext, LessExtName());
+    if (std::distance(Range.first, Range.second) > 1)
+      return true;
+  }
+  return false;
+}
+
+static RISCVISAUtils::ExtensionVersion
+getLatestSupportedVersion(StringRef Ext) {
+  RISCVISAUtils::ExtensionVersion Latest{0, 0};
+  for (auto ExtInfo : {ArrayRef(SupportedExtensions),
+                       ArrayRef(SupportedExperimentalExtensions)}) {
+    auto Range =
+        std::equal_range(ExtInfo.begin(), ExtInfo.end(), Ext, LessExtName());
+    for (auto I = Range.first, E = Range.second; I != E; ++I) {
+      if (I->Version.Major > Latest.Major ||
+          (I->Version.Major == Latest.Major && I->Version.Minor > Latest.Minor))
+        Latest = I->Version;
+    }
+  }
+  return Latest;
+}
+
+static std::string getExtensionVersionFeature(StringRef Ext, unsigned Major,
+                                              unsigned Minor) {
+  return (llvm::Twine(Ext) + llvm::Twine(Major) + "p" + llvm::Twine(Minor))
+      .str();
+}
+
 std::vector<std::string> RISCVISAInfo::toFeatures(bool AddAllExtensions,
                                                   bool IgnoreUnknown) const {
   std::vector<std::string> Features;
-  for (const auto &[ExtName, _] : Exts) {
+  for (const auto &[ExtName, Version] : Exts) {
     if (IgnoreUnknown && !isSupportedExtension(ExtName))
       continue;
 
     if (isExperimentalExtension(ExtName)) {
       Features.push_back((llvm::Twine("+experimental-") + ExtName).str());
+    } else if (isMultiVersionExtension(ExtName)) {
+      RISCVISAUtils::ExtensionVersion Latest =
+          getLatestSupportedVersion(ExtName);
+      if (Version.Major == Latest.Major && Version.Minor == Latest.Minor)
+        Features.push_back((llvm::Twine("+") + ExtName).str());
+      else
+        Features.push_back("+" + getExtensionVersionFeature(
+                                     ExtName, Version.Major, Version.Minor));
     } else {
       Features.push_back((llvm::Twine("+") + ExtName).str());
     }
@@ -460,9 +565,12 @@ RISCVISAInfo::parseFeatures(unsigned XLen,
         ExtensionInfoIterator->Name != ExtName)
       continue;
 
-    if (Add)
-      ISAInfo->Exts[ExtName.str()] = ExtensionInfoIterator->Version;
-    else
+    if (Add) {
+      if (isMultiVersionExtension(ExtName))
+        ISAInfo->Exts[ExtName.str()] = getLatestSupportedVersion(ExtName);
+      else
+        ISAInfo->Exts[ExtName.str()] = ExtensionInfoIterator->Version;
+    } else
       ISAInfo->Exts.erase(ExtName.str());
   }
 

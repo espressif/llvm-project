@@ -147,7 +147,7 @@ def RISCVESP_VCMP_LT_U32 : SDNode<"RISCVISD::ESP_VCMP_LT_U32", SDTIntBinOp>;
 // Explicit VCMP selection patterns (each SDNode is type-specific; multiclass
 // cannot map one SDNode to multiple types, so we add one Pat per (SDNode, Inst)).
 // Only enable for ESPV (esp32p4 etc.) so ESP_VCMP_* instructions exist.
-let Predicates = [HasVendorXespv1v] in {
+let Predicates = [HasVendorXespv2p1] in {
 def : Pat<(v16i8 (RISCVESP_VCMP_EQ_S8 v16i8:$qx, v16i8:$qy)), (ESP_VCMP_EQ_S8 QR:$qx, QR:$qy)>;
 def : Pat<(v8i16 (RISCVESP_VCMP_EQ_S16 v8i16:$qx, v8i16:$qy)), (ESP_VCMP_EQ_S16 QR:$qx, QR:$qy)>;
 def : Pat<(v4i32 (RISCVESP_VCMP_EQ_S32 v4i32:$qx, v4i32:$qy)), (ESP_VCMP_EQ_S32 QR:$qx, QR:$qy)>;
@@ -531,7 +531,7 @@ def : Pat<(riscv_esp_vzip_32_pair v4i32:$qx, v4i32:$qy),
 def : Pat<(riscv_esp_vzip_8_pair v16i8:$qx, v16i8:$qy),
           (ESP_VZIP_8 QR:$qx, QR:$qy)>;
 
-let Predicates = [HasVendorXespv1v] in {
+let Predicates = [HasVendorXespv2p1] in {
   // Use patterns for GPRPIE addresses (preferred, no copy needed)
   def : EspVectorLdPatZero<load, v16i8>;
   def : EspVectorLdPatZero<load, v8i16>;
@@ -565,7 +565,7 @@ let Predicates = [HasVendorXespv1v] in {
   def : EspVectorStPatZero64GPR<store, QR_64, v2i32>;
 }
 
-let Predicates = [HasVendorXespv1v] in {
+let Predicates = [HasVendorXespv2p1] in {
   // Support vector load patterns with stride - unified handling of add and getelementptr
   def : EspVectorLdStridePat<load, ESP_VLD_128_IP, v16i8>;
   def : EspVectorLdStridePat<load, ESP_VLD_128_IP, v8i16>;
