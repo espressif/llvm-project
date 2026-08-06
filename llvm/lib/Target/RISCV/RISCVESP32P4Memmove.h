@@ -81,7 +81,7 @@ struct RISCVESP32P4MemmovePass : PassInfoMixin<RISCVESP32P4MemmovePass> {
     DstUnalignSrcUnalign_Const,
     DstUnalignSrcUnalign_Var
   };
-enum class AlignmentCombo { Dst16Src16, Dst16Src8, ScalarUnalignedConst };
+  enum class AlignmentCombo { Dst16Src16, Dst16Src8, ScalarUnalignedConst };
 
   struct ProcessingConfig {
     uint64_t MinSize;
