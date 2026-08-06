@@ -14,20 +14,21 @@
 #include "MCTargetDesc/RISCVBaseInfo.h"
 #include "RISCV.h"
 #include "RISCVCustomLICM.h"
-#include "RISCVESP32P4LoopVersioning.h"
-#include "RISCVEsp32P4MemIntrin.h"
-#include "RISCVIntLoopUnrollAndRemainder.h"
+#include "RISCVDotprodSplitter.h"
 #include "RISCVESP32P4ConditionSplit.h"
 #include "RISCVESP32P4FunctionSpecialization.h"
 #include "RISCVESP32P4LoopPatternToIntrinsic.h"
 #include "RISCVESP32P4LoopVectorizeExtractor.h"
-#include "RISCVDotprodSplitter.h"
+#include "RISCVESP32P4LoopVersioning.h"
+#include "RISCVESP32P4Memmove.h"
+#include "RISCVEsp32P4MemIntrin.h"
+#include "RISCVIntLoopUnrollAndRemainder.h"
 #include "RISCVLoopUnrollAndRemainder.h"
 #include "RISCVMachineFunctionInfo.h"
 #include "RISCVMachineScheduler.h"
+#include "RISCVSplitLoopByLength.h"
 #include "RISCVTargetObjectFile.h"
 #include "RISCVTargetTransformInfo.h"
-#include "RISCVSplitLoopByLength.h"
 #include "TargetInfo/RISCVTargetInfo.h"
 #include "llvm/Analysis/TargetTransformInfo.h"
 #include "llvm/CodeGen/GlobalISel/CSEInfo.h"
@@ -689,6 +690,10 @@ void RISCVTargetMachine::registerPassBuilderCallbacks(PassBuilder &PB) {
           FPM.addPass(RISCVESP32P4FunctionSpecializationPass());
           return true;
         }
+        if (Name == "riscv-esp32-p4-memmove") {
+          FPM.addPass(RISCVESP32P4MemmovePass());
+          return true;
+        }
         if (Name == "riscv-esp32-p4-mem-intrin") {
           FPM.addPass(RISCVEsp32P4MemIntrinPass());
           return true;
@@ -742,10 +747,13 @@ void RISCVTargetMachine::registerPassBuilderCallbacks(PassBuilder &PB) {
       FPM.addPass(RISCVLoopUnrollAndRemainderPass());
       PM.addPass(createModuleToFunctionPassAdaptor(std::move(FPM)));
     }
-    if (EnableRISCVEsp32P4MemIntrin &&
+    if ((EnableRISCVESP32P4Memmove || EnableRISCVEsp32P4MemIntrin) &&
         (Level == OptimizationLevel::O3 || Level == OptimizationLevel::O2)) {
       FunctionPassManager FPM;
-      FPM.addPass(RISCVEsp32P4MemIntrinPass());
+      if (EnableRISCVESP32P4Memmove)
+        FPM.addPass(RISCVESP32P4MemmovePass());
+      if (EnableRISCVEsp32P4MemIntrin)
+        FPM.addPass(RISCVEsp32P4MemIntrinPass());
       PM.addPass(createModuleToFunctionPassAdaptor(std::move(FPM)));
     }
   });
