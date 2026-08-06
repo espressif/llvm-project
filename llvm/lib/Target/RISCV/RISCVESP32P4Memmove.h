@@ -81,7 +81,7 @@ struct RISCVESP32P4MemmovePass : PassInfoMixin<RISCVESP32P4MemmovePass> {
     DstUnalignSrcUnalign_Const,
     DstUnalignSrcUnalign_Var
   };
-  enum class AlignmentCombo { Dst16Src16, ScalarUnalignedConst };
+enum class AlignmentCombo { Dst16Src16, Dst16Src8, ScalarUnalignedConst };
 
   struct ProcessingConfig {
     uint64_t MinSize;
@@ -184,6 +184,46 @@ struct RISCVESP32P4MemmovePass : PassInfoMixin<RISCVESP32P4MemmovePass> {
   Function *getCurrentFunction(IRBuilder<> &Builder) const;
   Value *createPtrToIntAddr(IRBuilder<> &Builder, Value *Ptr,
                             const std::string &Name = "");
+
+  void generateOptimizedBackwardCopyDispatcher(
+      IRBuilder<> &Builder, Value *Dst, Value *Src, uint64_t Size,
+      uint64_t Alignment, // 8 or 16 byte alignment
+      std::function<void(IRBuilder<> &, Value *, Value *, uint64_t, uint64_t,
+                         uint64_t)>
+          UnrollGenerator,
+      std::function<void(IRBuilder<> &, Value *, Value *, uint64_t, uint64_t,
+                         uint64_t)>
+          LoopGenerator);
+  void generateUnrolledDispatcher(
+      IRBuilder<> &Builder, Value *Dst, Value *Src, uint64_t Size,
+      uint64_t Remainder, uint64_t NumBlocks, uint64_t BlockSize,
+      int SrcOffsetFromEnd, int DstOffsetFromEnd, const std::string &CopyName,
+      std::function<void(IRBuilder<> &, Value *&, Value *&, uint64_t)>
+          BlockGenerator);
+  bool processDst16Src8Const(MemMoveInst *M, BasicBlock::iterator &BBI);
+  void generateOptimizedBackwardCopyDst16Src8(IRBuilder<> &Builder, Value *Dst,
+                                              Value *Src, uint64_t Size);
+  void generateUnrolledBackwardCopyDst16Src8(IRBuilder<> &Builder, Value *Dst,
+                                             Value *Src, uint64_t Size,
+                                             uint64_t Remainder,
+                                             uint64_t Blocks16);
+  void generateLoopBackwardCopyDst16Src8(IRBuilder<> &Builder, Value *Dst,
+                                         Value *Src, uint64_t Size,
+                                         uint64_t Remainder, uint64_t Blocks16);
+  void generateLoop128ByteBackwardCopyDst16Src8(IRBuilder<> &Builder,
+                                                Value *Dst, Value *Src,
+                                                uint64_t Size,
+                                                uint64_t Remainder,
+                                                uint64_t Blocks128);
+  void generateRemaining16ByteBackwardCopyDst16Src8(
+      IRBuilder<> &Builder, Value *Dst, Value *Src, uint64_t Size,
+      uint64_t Remainder, uint64_t Blocks128, uint64_t Remaining16);
+  std::pair<Value *, Value *>
+  emitBackwardDst16Src8OneBlock_Ptr(IRBuilder<> &Builder, Value *SrcPtr,
+                                    Value *DstPtr);
+  std::pair<Value *, Value *>
+  emitBackwardDst16Src8OneBlock_I32(IRBuilder<> &Builder, Value *SrcAddrI32,
+                                    Value *DstAddrI32);
 
   bool handleInstructionDeletion(Instruction *I, BasicBlock::iterator &BBI);
 };
