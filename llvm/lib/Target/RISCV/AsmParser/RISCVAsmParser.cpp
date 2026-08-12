@@ -758,6 +758,31 @@ public:
       IsValid = isUInt<10>(Imm);
     return IsValid && VK == RISCV::S_None;
   }
+  // Espressif hardware-loop byte offsets: a bare symbol, or an even constant in
+  // range. esp.lp.setupi uses [0, 1022] (uimm10_step4);
+  // esp.lp.setup/starti/endi use [0, 8190] (uimm13_step4). The encoded field is
+  // offset/2. Dedicated from isUImm10/isUImm13 (which are shared with Xqci and
+  // allow odd values).
+  bool isUImm10Step2() const {
+    int64_t Imm;
+    if (!isExpr())
+      return false;
+    RISCV::Specifier VK = RISCV::S_None;
+    if (!evaluateConstantExpr(getExpr(), Imm))
+      return RISCVAsmParser::classifySymbolRef(getExpr(), VK) &&
+             VK == RISCV::S_None;
+    return isUInt<10>(Imm) && ((Imm & 1) == 0);
+  }
+  bool isUImm13Step2() const {
+    int64_t Imm;
+    if (!isExpr())
+      return false;
+    RISCV::Specifier VK = RISCV::S_None;
+    if (!evaluateConstantExpr(getExpr(), Imm))
+      return RISCVAsmParser::classifySymbolRef(getExpr(), VK) &&
+             VK == RISCV::S_None;
+    return isUInt<13>(Imm) && ((Imm & 1) == 0);
+  }
   bool isUImm11() const { return isUImm<11>(); }
   bool isUImm16() const { return isUImm<16>(); }
   bool isUImm20() const { return isUImm<20>(); }
@@ -1693,6 +1718,18 @@ bool RISCVAsmParser::matchAndEmitInstruction(SMLoc IDLoc, unsigned &Opcode,
         "immediate must be a multiple of 2 bytes in the range");
   case Match_InvalidUImm10:
     return generateImmOutOfRangeError(Operands, ErrorInfo, 0, (1 << 10) - 1);
+  case Match_InvalidUImm10Step2:
+    // esp.lp.setupi loop byte offset: even value in [0, 1022] (uimm10_step4).
+    return generateImmOutOfRangeError(
+        Operands, ErrorInfo, 0, (1 << 10) - 2,
+        "immediate must be a multiple of 2 bytes in the range");
+  case Match_InvalidUImm13Step2:
+    // esp.lp.setup/starti/endi loop byte offset: even value in [0, 8190]
+    // (uimm13_step4). Without a registered diagnostic an out-of-range constant
+    // reaches the llvm_unreachable fallback and crashes the assembler.
+    return generateImmOutOfRangeError(
+        Operands, ErrorInfo, 0, (1 << 13) - 2,
+        "immediate must be a multiple of 2 bytes in the range");
   case Match_InvalidUImm11:
     return generateImmOutOfRangeError(Operands, ErrorInfo, 0, (1 << 11) - 1);
   case Match_InvalidUImm14Lsb00:
