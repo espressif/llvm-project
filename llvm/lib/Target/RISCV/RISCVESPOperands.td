@@ -109,7 +109,9 @@ def uimm10_step4 : Operand<OtherVT> {
   let MCOperandPredicate = [{
     int64_t Imm;
     if (MCOp.evaluateAsConstantImm(Imm))
-      return isUInt<10>();
+      // esp.lp.setupi loop offset: even byte offset in [0, 1022]
+      // (must match fixup_riscv_esp_lp_offset_9 in RISCVAsmBackend.cpp).
+      return isUInt<10>(Imm) && ((Imm & 1) == 0);
     return MCOp.isBareSymbolRef();
   }];
   let OperandType = "OPERAND_PCREL";
@@ -123,7 +125,9 @@ def uimm13_step4 : Operand<OtherVT> {
   let MCOperandPredicate = [{
     int64_t Imm;
     if (MCOp.evaluateAsConstantImm(Imm))
-      return isUInt<10>();
+      // esp.lp.setup/starti/endi loop offset: even byte offset in [0, 8190]
+      // (must match fixup_riscv_esp_lp_offset_12 in RISCVAsmBackend.cpp).
+      return isUInt<13>(Imm) && ((Imm & 1) == 0);
     return MCOp.isBareSymbolRef();
   }];
   let OperandType = "OPERAND_PCREL";
