@@ -597,6 +597,7 @@ build_x86_64-w64-mingw32:
     - if: '$CI_COMMIT_TAG || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
       variables:
         BUILD_GNU_BINUTILS: "ON"
+        PACK_EXTRA_TOOLS: "ON"
     - when: on_success
 
 build_arm-linux-gnueabihf:
@@ -613,6 +614,7 @@ build_arm-linux-gnueabihf:
     - if: '$CI_COMMIT_TAG || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
       variables:
         BUILD_GNU_BINUTILS: "ON"
+        PACK_EXTRA_TOOLS: "ON"
     - when: on_success
 
 build_aarch64-linux-gnu:
@@ -629,6 +631,7 @@ build_aarch64-linux-gnu:
     - if: '$CI_COMMIT_TAG || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
       variables:
         BUILD_GNU_BINUTILS: "ON"
+        PACK_EXTRA_TOOLS: "ON"
     - when: on_success
 
 build_x86_64-apple-darwin:
@@ -645,6 +648,7 @@ build_x86_64-apple-darwin:
     - if: '$CI_COMMIT_TAG || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
       variables:
         BUILD_GNU_BINUTILS: "ON"
+        PACK_EXTRA_TOOLS: "ON"
     - when: on_success
 
 build_aarch64-apple-darwin:
@@ -661,6 +665,7 @@ build_aarch64-apple-darwin:
     - if: '$CI_COMMIT_TAG || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
       variables:
         BUILD_GNU_BINUTILS: "ON"
+        PACK_EXTRA_TOOLS: "ON"
     - when: on_success
 
 .unpack_distro: &unpack_distro |
