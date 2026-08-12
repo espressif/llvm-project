@@ -46,8 +46,13 @@ def run_git(cmd, cwd=None):
 
 
 def get_commits_in_range(revision_range):
-    """Return list of commit hashes in the given range (oldest first)."""
-    stdout = run_git(["rev-list", "--reverse", revision_range])
+    """Return list of commit hashes in the given range (oldest first).
+
+    Skip merge commits: GitLab merged-results pipelines check out
+    refs/merge-requests/*/merge, whose HEAD is a synthetic
+    "Merge branch '…' into '…'" commit that is not author-written.
+    """
+    stdout = run_git(["rev-list", "--reverse", "--no-merges", revision_range])
     if stdout is None:
         return None
     return [sha.strip() for sha in stdout.splitlines() if sha.strip()]
