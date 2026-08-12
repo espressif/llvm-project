@@ -21,3 +21,19 @@ dl_hwlp_test:
 # CHECK: addi	a0, a0, 1                       # encoding: [0x05,0x05]
     ret
 # CHECK: ret                                     # encoding: [0x82,0x80]
+
+# Large constant loop offsets: esp.lp.setup/starti/endi take uimm13_step4
+# ([0, 8190], even), so exercise offsets > 1022 (the setupi/uimm10_step4 max);
+# esp.lp.setupi takes uimm10_step4 ([0, 1022], even). See fixup_riscv_esp_lp_offset_12/_9.
+dl_hwlp_const_offsets:
+# CHECK: dl_hwlp_const_offsets:
+    esp.lp.setup 0, a1, 2048
+# CHECK: esp.lp.setup	 0, a1, 2048            # encoding: [0x2b,0xc0,0x05,0x40]
+    esp.lp.setup 0, a1, 8190
+# CHECK: esp.lp.setup	 0, a1, 8190            # encoding: [0x2b,0xc0,0xf5,0xff]
+    esp.lp.starti 1, 8190
+# CHECK: esp.lp.starti	 1, 8190                # encoding: [0xab,0x00,0xf0,0xff]
+    esp.lp.endi 0, 4094
+# CHECK: esp.lp.endi	 0, 4094                # encoding: [0x2b,0x10,0xf0,0x7f]
+    esp.lp.setupi 0, 100, 1022
+# CHECK: esp.lp.setupi	 0, 100, 1022           # encoding: [0x2b,0xdf,0x4f,0x06]
