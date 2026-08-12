@@ -100,9 +100,26 @@ def select_16: Immediate<i32, [{ return Imm >= 0 && Imm <= 15; }], "Select_16_As
   let DecoderMethod = "decodeSelect_16Operand";
 }
 
+// Espressif hardware-loop byte offsets: a bare symbol, or an even constant in
+// range (encoded field is offset/2). Dedicated classes so the parser enforces
+// the even/range constraint with a clean diagnostic instead of accepting odd
+// values (encoder assert) or crashing on out-of-range constants; kept separate
+// from the plain UImm10/UImm13 classes shared with Xqci.
+def UImm10Step2AsmOperand : AsmOperandClass {
+  let Name = "UImm10Step2";
+  let RenderMethod = "addImmOperands";
+  let DiagnosticType = "InvalidUImm10Step2";
+  let PredicateMethod = "isUImm10Step2";
+}
+def UImm13Step2AsmOperand : AsmOperandClass {
+  let Name = "UImm13Step2";
+  let RenderMethod = "addImmOperands";
+  let DiagnosticType = "InvalidUImm13Step2";
+  let PredicateMethod = "isUImm13Step2";
+}
+
 def uimm10_step4 : Operand<OtherVT> {
-  // let ParserMatchClass = Simm21Lsb0JALAsmOperand;
-  let ParserMatchClass = UImmAsmOperand<10>;
+  let ParserMatchClass = UImm10Step2AsmOperand;
   let PrintMethod = "printBranchOperand";
   let EncoderMethod = "getUImm10_Step4Operand";
   let DecoderMethod = "decodeUImm10_Step4Operand";
@@ -118,7 +135,7 @@ def uimm10_step4 : Operand<OtherVT> {
 }
 
 def uimm13_step4 : Operand<OtherVT> {
-  let ParserMatchClass = UImmAsmOperand<13>;
+  let ParserMatchClass = UImm13Step2AsmOperand;
   let PrintMethod = "printBranchOperand";
   let EncoderMethod = "getUImm13_Step4Operand";
   let DecoderMethod = "decodeUImm13_Step4Operand";
