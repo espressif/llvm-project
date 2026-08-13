@@ -18,6 +18,8 @@
 
 using namespace llvm;
 
+const MCAsmInfo::AtSpecifier atSpecifiers[] = {{Xtensa::S_TPOFF, "TPOFF"}};
+
 XtensaMCAsmInfo::XtensaMCAsmInfo(const Triple &TT) {
   CodePointerSize = 4;
   CalleeSaveStackSlotSize = 4;
@@ -32,6 +34,8 @@ XtensaMCAsmInfo::XtensaMCAsmInfo(const Triple &TT) {
   SupportsDebugInformation = true;
   AlignmentIsInBytes = true;
   ExceptionsType = ExceptionHandling::DwarfCFI;
+
+  initializeAtSpecifiers(atSpecifiers);
 }
 
 void XtensaMCAsmInfo::printSpecifierExpr(raw_ostream &OS,
