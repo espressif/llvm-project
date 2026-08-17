@@ -921,7 +921,15 @@ bool RISCVAsmBackend::addReloc(const MCFragment &F, const MCFixup &Fixup,
   // can re-scatter the offset if the loop body is relaxed.
   if (Fixup.getKind() == RISCV::fixup_riscv_esp_lp_offset_9 ||
       Fixup.getKind() == RISCV::fixup_riscv_esp_lp_offset_12) {
-    if (!IsResolved) {
+    // A fixup can also be unresolved when the target is in the same section,
+    // e.g. when the loop body contains an instruction that may be relaxed (a
+    // branch between the setup and its target). The final-layout offset is
+    // still known, so keep it in the instruction and emit the relocation
+    // (matching GNU as); only a genuinely cross-section target is an error.
+    const MCSymbol *SymA = Target.getAddSym();
+    if (!IsResolved && (!SymA || SymA->isUndefined() || SymA->isAbsolute() ||
+                        !SymA->getFragment() ||
+                        SymA->getFragment()->getParent() != F.getParent())) {
       Asm->getContext().reportError(
           Fixup.getLoc(),
           "hardware-loop offset target must be in the same section");
