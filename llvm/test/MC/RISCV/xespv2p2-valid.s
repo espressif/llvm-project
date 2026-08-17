@@ -691,6 +691,9 @@ esp.vsl.s32 q1, q6, 0
 // CHECK: esp.vsl.s32	 q1, q6, trunc          # encoding: [0x1b,0x24,0x04,0x9a]
 esp.vsl.u32 q0, q4, 1
 // CHECK: esp.vsl.u32	 q0, q4                 # encoding: [0x1b,0x20,0x04,0x91]
+// esp.vsl.32 is the ESPV 2.1 name for esp.vsl.u32; accepted as an alias in 2.2.
+esp.vsl.32 q0, q4, 1
+// CHECK: esp.vsl.u32	 q0, q4                 # encoding: [0x1b,0x20,0x04,0x91]
 esp.vsld.16 q1, q2, q3, 1, 2
 // CHECK: esp.vsld.16	 q1, q2, q3, raz        # encoding: [0x1b,0x65,0x64,0xcb]
 esp.vsld.32 q3, q3, q5, 0, 0
