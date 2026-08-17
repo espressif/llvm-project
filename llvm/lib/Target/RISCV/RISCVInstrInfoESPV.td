@@ -32921,6 +32921,12 @@ def ESP_VSL_U32_2P2_P : PseudoEsp<(outs), (ins imm8:$qy, sat:$sat, imm8:$qu),
 				"!esp_vsl_u32_2p2_p $qu, $qy$sat",
 			[(int_riscv_esp_vsl_u32_2p2 timm:$qy, timm:$sat, timm:$qu)]>;
 
+// esp.vsl.32 was renamed to esp.vsl.u32 in ESPV 2.2; keep the old mnemonic as
+// an alias. Gated on 2.2: under 2.1-only this is inactive, so the real 2.1
+// esp.vsl.32 instruction is used instead.
+def : MnemonicAlias<"esp.vsl.32", "esp.vsl.u32">,
+      Requires<[HasVendorXespv2p2]>;
+
 def ESP_VSLD_16_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins QR:$qy, QR:$qw, sat:$sat, rm:$rm),
                    "esp.vsld.16\t $qu, $qy, $qw$sat$rm", []> 
 {
