@@ -816,6 +816,10 @@ void RISCVAsmBackend::maybeAddVendorReloc(const MCFragment &F,
   case RISCV::fixup_riscv_nds_branch_10:
     VendorIdentifier = "ANDES";
     break;
+  case RISCV::fixup_riscv_esp_lp_offset_9:
+  case RISCV::fixup_riscv_esp_lp_offset_12:
+    VendorIdentifier = "esp";
+    break;
   }
 
   // Create a local symbol for the vendor relocation to reference. It's fine if
@@ -935,6 +939,10 @@ bool RISCVAsmBackend::addReloc(const MCFragment &F, const MCFixup &Fixup,
           "hardware-loop offset target must be in the same section");
       return true;
     }
+    // The Espressif binutils fork expects each R_RISCV_ESP_LP_OFFSET_* to be
+    // immediately preceded by an R_RISCV_VENDOR relocation against a local
+    // symbol named "esp".
+    maybeAddVendorReloc(F, Fixup);
     uint64_t PreFill = FixedValue;
     Asm->getWriter().recordRelocation(F, Fixup, Target, FixedValue);
     FixedValue = PreFill;

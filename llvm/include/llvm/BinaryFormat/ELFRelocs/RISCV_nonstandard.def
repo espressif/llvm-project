@@ -31,6 +31,12 @@ ELF_RISCV_NONSTANDARD_RELOC(QUALCOMM, R_RISCV_QC_E_CALL_PLT, 195)
 // Calculation: S + A - P (10-bit PC-relative branch offset)
 ELF_RISCV_NONSTANDARD_RELOC(ANDES, R_RISCV_NDS_BRANCH_10,    241)
 
+// Espressif Nonstandard Relocations
+// Calculation: S + A - P (PC-relative loop-body offset for esp.lp.setupi /
+// esp.lp.setup/starti/endi; offset/2 scattered across the instruction)
+ELF_RISCV_NONSTANDARD_RELOC(esp, R_RISCV_ESP_LP_OFFSET_9,    192)
+ELF_RISCV_NONSTANDARD_RELOC(esp, R_RISCV_ESP_LP_OFFSET_12,   193)
+
 // CHERIoT Nonstandard Relocations
 ELF_RISCV_NONSTANDARD_RELOC(CHERIOT1, R_RISCV_CHERIOT1_COMPARTMENT_HI, 220)
 ELF_RISCV_NONSTANDARD_RELOC(CHERIOT1, R_RISCV_CHERIOT1_COMPARTMENT_LO_I, 221)
