@@ -20,12 +20,14 @@ using namespace llvm;
 
 // Espressif vendor relocations for hardware-loop body offsets (esp.lp.setupi
 // and esp.lp.setup/starti/endi). These numbers are assigned by the Espressif
-// binutils fork; they overlap upstream's R_RISCV_TLSDESC_* at the same values,
-// so upstream-only tooling mislabels them, but the Espressif linker resolves
-// them correctly (scattering offset/2 into the instruction's split fields).
+// binutils fork: they live in the vendor-specific range (192..255) and, per
+// the RISC-V psABI extension, must be preceded by an R_RISCV_VENDOR (191)
+// relocation against a local symbol named "esp" (see maybeAddVendorReloc in
+// RISCVAsmBackend.cpp). The Espressif linker resolves them correctly by
+// scattering offset/2 into the instruction's split fields.
 enum {
-  R_RISCV_ESP_LP_OFFSET_9 = 62,
-  R_RISCV_ESP_LP_OFFSET_12 = 63,
+  R_RISCV_ESP_LP_OFFSET_9 = 192,
+  R_RISCV_ESP_LP_OFFSET_12 = 193,
 };
 
 namespace {
