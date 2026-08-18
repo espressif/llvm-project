@@ -45,6 +45,93 @@ entry:
   ret void
 }
 
+
+define void @test_src8_dst16_size_28(ptr %a, ptr %b) {
+; CHECK-LABEL: define void @test_src8_dst16_size_28(
+; CHECK-SAME: ptr [[A:%.*]], ptr [[B:%.*]]) {
+; CHECK-NEXT:  [[ENTRY:.*:]]
+; CHECK-NEXT:    [[TMP0:%.*]] = ptrtoint ptr [[A]] to i32
+; CHECK-NEXT:    [[TMP1:%.*]] = ptrtoint ptr [[B]] to i32
+; CHECK-NEXT:    [[DST_LEQ_SRC:%.*]] = icmp ule i32 [[TMP0]], [[TMP1]]
+; CHECK-NEXT:    br i1 [[DST_LEQ_SRC]], label %[[FORWARD_COPY:.*]], label %[[BACKWARD_COPY:.*]]
+; CHECK:       [[FORWARD_COPY]]:
+; CHECK-NEXT:    call void @llvm.memmove.p0.p0.i32(ptr align 16 [[A]], ptr align 8 [[B]], i32 28, i1 false), !riscv.esp32p4.memmove.no_reprocess [[META0]]
+; CHECK-NEXT:    br label %[[MEMMOVE_END:.*]]
+; CHECK:       [[BACKWARD_COPY]]:
+; CHECK-NEXT:    [[TAIL_SRC:%.*]] = getelementptr inbounds i8, ptr [[B]], i64 16
+; CHECK-NEXT:    [[TAIL_DST:%.*]] = getelementptr inbounds i8, ptr [[A]], i64 16
+; CHECK-NEXT:    [[TAIL_SRC_B:%.*]] = getelementptr inbounds i8, ptr [[TAIL_SRC]], i64 11
+; CHECK-NEXT:    [[TAIL_DST_B:%.*]] = getelementptr inbounds i8, ptr [[TAIL_DST]], i64 11
+; CHECK-NEXT:    [[TAIL_LD:%.*]] = load i8, ptr [[TAIL_SRC_B]], align 1
+; CHECK-NEXT:    store i8 [[TAIL_LD]], ptr [[TAIL_DST_B]], align 1
+; CHECK-NEXT:    [[TAIL_SRC_B1:%.*]] = getelementptr inbounds i8, ptr [[TAIL_SRC]], i64 10
+; CHECK-NEXT:    [[TAIL_DST_B2:%.*]] = getelementptr inbounds i8, ptr [[TAIL_DST]], i64 10
+; CHECK-NEXT:    [[TAIL_LD3:%.*]] = load i8, ptr [[TAIL_SRC_B1]], align 1
+; CHECK-NEXT:    store i8 [[TAIL_LD3]], ptr [[TAIL_DST_B2]], align 1
+; CHECK-NEXT:    [[TAIL_SRC_B4:%.*]] = getelementptr inbounds i8, ptr [[TAIL_SRC]], i64 9
+; CHECK-NEXT:    [[TAIL_DST_B5:%.*]] = getelementptr inbounds i8, ptr [[TAIL_DST]], i64 9
+; CHECK-NEXT:    [[TAIL_LD6:%.*]] = load i8, ptr [[TAIL_SRC_B4]], align 1
+; CHECK-NEXT:    store i8 [[TAIL_LD6]], ptr [[TAIL_DST_B5]], align 1
+; CHECK-NEXT:    [[TAIL_SRC_B7:%.*]] = getelementptr inbounds i8, ptr [[TAIL_SRC]], i64 8
+; CHECK-NEXT:    [[TAIL_DST_B8:%.*]] = getelementptr inbounds i8, ptr [[TAIL_DST]], i64 8
+; CHECK-NEXT:    [[TAIL_LD9:%.*]] = load i8, ptr [[TAIL_SRC_B7]], align 1
+; CHECK-NEXT:    store i8 [[TAIL_LD9]], ptr [[TAIL_DST_B8]], align 1
+; CHECK-NEXT:    [[TAIL_SRC_B10:%.*]] = getelementptr inbounds i8, ptr [[TAIL_SRC]], i64 7
+; CHECK-NEXT:    [[TAIL_DST_B11:%.*]] = getelementptr inbounds i8, ptr [[TAIL_DST]], i64 7
+; CHECK-NEXT:    [[TAIL_LD12:%.*]] = load i8, ptr [[TAIL_SRC_B10]], align 1
+; CHECK-NEXT:    store i8 [[TAIL_LD12]], ptr [[TAIL_DST_B11]], align 1
+; CHECK-NEXT:    [[TAIL_SRC_B13:%.*]] = getelementptr inbounds i8, ptr [[TAIL_SRC]], i64 6
+; CHECK-NEXT:    [[TAIL_DST_B14:%.*]] = getelementptr inbounds i8, ptr [[TAIL_DST]], i64 6
+; CHECK-NEXT:    [[TAIL_LD15:%.*]] = load i8, ptr [[TAIL_SRC_B13]], align 1
+; CHECK-NEXT:    store i8 [[TAIL_LD15]], ptr [[TAIL_DST_B14]], align 1
+; CHECK-NEXT:    [[TAIL_SRC_B16:%.*]] = getelementptr inbounds i8, ptr [[TAIL_SRC]], i64 5
+; CHECK-NEXT:    [[TAIL_DST_B17:%.*]] = getelementptr inbounds i8, ptr [[TAIL_DST]], i64 5
+; CHECK-NEXT:    [[TAIL_LD18:%.*]] = load i8, ptr [[TAIL_SRC_B16]], align 1
+; CHECK-NEXT:    store i8 [[TAIL_LD18]], ptr [[TAIL_DST_B17]], align 1
+; CHECK-NEXT:    [[TAIL_SRC_B19:%.*]] = getelementptr inbounds i8, ptr [[TAIL_SRC]], i64 4
+; CHECK-NEXT:    [[TAIL_DST_B20:%.*]] = getelementptr inbounds i8, ptr [[TAIL_DST]], i64 4
+; CHECK-NEXT:    [[TAIL_LD21:%.*]] = load i8, ptr [[TAIL_SRC_B19]], align 1
+; CHECK-NEXT:    store i8 [[TAIL_LD21]], ptr [[TAIL_DST_B20]], align 1
+; CHECK-NEXT:    [[TAIL_SRC_B22:%.*]] = getelementptr inbounds i8, ptr [[TAIL_SRC]], i64 3
+; CHECK-NEXT:    [[TAIL_DST_B23:%.*]] = getelementptr inbounds i8, ptr [[TAIL_DST]], i64 3
+; CHECK-NEXT:    [[TAIL_LD24:%.*]] = load i8, ptr [[TAIL_SRC_B22]], align 1
+; CHECK-NEXT:    store i8 [[TAIL_LD24]], ptr [[TAIL_DST_B23]], align 1
+; CHECK-NEXT:    [[TAIL_SRC_B25:%.*]] = getelementptr inbounds i8, ptr [[TAIL_SRC]], i64 2
+; CHECK-NEXT:    [[TAIL_DST_B26:%.*]] = getelementptr inbounds i8, ptr [[TAIL_DST]], i64 2
+; CHECK-NEXT:    [[TAIL_LD27:%.*]] = load i8, ptr [[TAIL_SRC_B25]], align 1
+; CHECK-NEXT:    store i8 [[TAIL_LD27]], ptr [[TAIL_DST_B26]], align 1
+; CHECK-NEXT:    [[TAIL_SRC_B28:%.*]] = getelementptr inbounds i8, ptr [[TAIL_SRC]], i64 1
+; CHECK-NEXT:    [[TAIL_DST_B29:%.*]] = getelementptr inbounds i8, ptr [[TAIL_DST]], i64 1
+; CHECK-NEXT:    [[TAIL_LD30:%.*]] = load i8, ptr [[TAIL_SRC_B28]], align 1
+; CHECK-NEXT:    store i8 [[TAIL_LD30]], ptr [[TAIL_DST_B29]], align 1
+; CHECK-NEXT:    [[TAIL_SRC_B31:%.*]] = getelementptr inbounds i8, ptr [[TAIL_SRC]], i64 0
+; CHECK-NEXT:    [[TAIL_DST_B32:%.*]] = getelementptr inbounds i8, ptr [[TAIL_DST]], i64 0
+; CHECK-NEXT:    [[TAIL_LD33:%.*]] = load i8, ptr [[TAIL_SRC_B31]], align 1
+; CHECK-NEXT:    store i8 [[TAIL_LD33]], ptr [[TAIL_DST_B32]], align 1
+; CHECK-NEXT:    [[SRC_START_ADDR:%.*]] = getelementptr inbounds i8, ptr [[B]], i64 8
+; CHECK-NEXT:    [[DST_START_ADDR:%.*]] = getelementptr inbounds i8, ptr [[A]], i64 0
+; CHECK-NEXT:    [[TMP2:%.*]] = ptrtoint ptr [[SRC_START_ADDR]] to i32
+; CHECK-NEXT:    [[TMP3:%.*]] = ptrtoint ptr [[DST_START_ADDR]] to i32
+; CHECK-NEXT:    [[TMP4:%.*]] = inttoptr i32 [[TMP2]] to ptr
+; CHECK-NEXT:    [[TMP5:%.*]] = inttoptr i32 [[TMP3]] to ptr
+; CHECK-NEXT:    [[VLDL64IP_M:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP4]], i32 -8) #[[ATTR3]]
+; CHECK-NEXT:    [[VLDL64IP_M_VEC:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M]], 0
+; CHECK-NEXT:    [[VLDL64IP_M_NEXTPTR:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M]], 1
+; CHECK-NEXT:    [[VLDL64IP_M34:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[VLDL64IP_M_NEXTPTR]], i32 -8) #[[ATTR3]]
+; CHECK-NEXT:    [[VLDL64IP_M_VEC35:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M34]], 0
+; CHECK-NEXT:    [[VLDL64IP_M_NEXTPTR36:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M34]], 1
+; CHECK-NEXT:    [[TMP6:%.*]] = shufflevector <8 x i8> [[VLDL64IP_M_VEC35]], <8 x i8> [[VLDL64IP_M_VEC]], <16 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7, i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
+; CHECK-NEXT:    [[VST128IP_M:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP6]], ptr [[TMP5]], i32 -16) #[[ATTR3]]
+; CHECK-NEXT:    [[TMP7:%.*]] = ptrtoint ptr [[VLDL64IP_M_NEXTPTR36]] to i32
+; CHECK-NEXT:    [[TMP8:%.*]] = ptrtoint ptr [[VST128IP_M]] to i32
+; CHECK-NEXT:    br label %[[MEMMOVE_END]]
+; CHECK:       [[MEMMOVE_END]]:
+; CHECK-NEXT:    ret void
+;
+entry:
+  tail call void @llvm.memmove.p0.p0.i32(ptr noundef nonnull align 16 dereferenceable(28) %a, ptr noundef nonnull align 8 dereferenceable(28) %b, i32 28, i1 false)
+  ret void
+}
 ;.
 ; CHECK: [[META0]] = !{}
 ;.
