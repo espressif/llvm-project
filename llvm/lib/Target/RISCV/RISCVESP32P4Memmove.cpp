@@ -916,16 +916,20 @@ void RISCVESP32P4MemmovePass::generateOptimizedBackwardCopyDispatcher(
     // select. Emit explicit i8 copies for that case (Remainder < 16).
     uint64_t TailAlign = (Alignment == 16) ? 1 : Alignment;
     if (TailAlign == 1) {
-      for (uint64_t I = 0; I < Remainder; ++I) {
+      // This is a backward copy (runtime dst > src): the tail is the highest
+      // addresses, so copy high-to-low within the tail. A forward loop would
+      // destroy source bytes when 0 < dst-src < Remainder (e.g. dst=src+8,
+      // Size=28 -> Remainder=12) before they are read.
+      for (int64_t I = (int64_t)Remainder - 1; I >= 0; --I) {
         Value *S = Builder.CreateConstInBoundsGEP1_64(
-            Builder.getInt8Ty(), TailSrc, (int64_t)I, "tail.src.b");
+            Builder.getInt8Ty(), TailSrc, I, "tail.src.b");
         Value *D = Builder.CreateConstInBoundsGEP1_64(
-            Builder.getInt8Ty(), TailDst, (int64_t)I, "tail.dst.b");
+            Builder.getInt8Ty(), TailDst, I, "tail.dst.b");
         Value *B = Builder.CreateLoad(Builder.getInt8Ty(), S, "tail.ld");
         Builder.CreateStore(B, D);
       }
       LLVM_DEBUG(dbgs() << "RISCVESP32P4: Processed " << Remainder
-                        << " tail bytes (scalar i8)\n");
+                        << " tail bytes (scalar i8, high-to-low)\n");
     } else {
       Builder.CreateMemCpy(TailDst, Align(TailAlign), TailSrc, Align(TailAlign),
                            Builder.getInt32(Remainder), false);
