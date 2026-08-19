@@ -23,11 +23,14 @@
 #include "llvm/IR/Dominators.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/IntrinsicInst.h"
+#include "llvm/IR/IntrinsicsRISCV.h"
 #include "llvm/IR/PassManager.h"
 #include "llvm/Support/CommandLine.h"
 
 #include <cstdint>
 #include <functional>
+#include <string>
+#include <utility>
 
 namespace llvm {
 
@@ -78,7 +81,7 @@ struct RISCVESP32P4MemmovePass : PassInfoMixin<RISCVESP32P4MemmovePass> {
     DstUnalignSrcUnalign_Const,
     DstUnalignSrcUnalign_Var
   };
-  enum class AlignmentCombo { ScalarUnalignedConst };
+  enum class AlignmentCombo { Dst16Src16, ScalarUnalignedConst };
 
   struct ProcessingConfig {
     uint64_t MinSize;
@@ -141,6 +144,47 @@ struct RISCVESP32P4MemmovePass : PassInfoMixin<RISCVESP32P4MemmovePass> {
                                    const MemMoveInst *OriginalInst,
                                    bool NoReprocess);
   bool convertMemmoveToMemcpy(MemMoveInst *M, BasicBlock::iterator &BBI);
+  bool processDst16Src16Const(MemMoveInst *M, BasicBlock::iterator &BBI,
+                              MemmoveKind Kind);
+  void generateOptimizedBackwardCopyDst16Src16(IRBuilder<> &Builder, Value *Dst,
+                                               Value *Src, uint64_t Size,
+                                               Value *DstInt, Value *SrcInt);
+  void generateLoopBased128BlockBackwardCopy(IRBuilder<> &Builder,
+                                             Value *EndSrc, Value *EndDst,
+                                             uint64_t NumBlocks);
+  void generateUnrolled128BlockBackwardCopy(IRBuilder<> &Builder, Value *EndSrc,
+                                            Value *EndDst, uint64_t NumBlocks);
+  void generateLoopDispatcher(
+      IRBuilder<> &Builder, Value *InitSrcAddr, Value *InitDstAddr,
+      uint64_t NumIterations, const std::string &LoopName,
+      std::function<void(IRBuilder<> &, Value *&, Value *&, Value *)>
+          BodyGenerator);
+  std::pair<Value *, Value *>
+  emitBackwardDst16Src16OneBlock_Ptr(IRBuilder<> &Builder, Value *SrcPtr,
+                                     Value *DstPtr);
+  std::pair<Value *, Value *> createEspVld128IpM(IRBuilder<> &Builder,
+                                                 Value *SrcPtr, int Step);
+  Value *createEspVst128IpM(IRBuilder<> &Builder, Value *Vec, Value *DstPtr,
+                            int Step);
+  std::pair<Value *, Value *>
+  createEspVld128IpMThenVst128IpM(IRBuilder<> &Builder, Value *SrcPtr,
+                                  Value *DstPtr, int Step);
+  std::pair<Value *, Value *> createEspVldH64IpM(IRBuilder<> &Builder,
+                                                 Value *SrcPtr, int Step);
+  std::pair<Value *, Value *> createEspVldL64IpM(IRBuilder<> &Builder,
+                                                 Value *SrcPtr, int Step);
+  Value *createEspVstH64IpM(IRBuilder<> &Builder, Value *Vec, Value *DstPtr,
+                            int Step);
+  Value *createEspVstL64IpM(IRBuilder<> &Builder, Value *Vec, Value *DstPtr,
+                            int Step);
+  CallInst *createOptimizedMemCpy(IRBuilder<> &Builder, Value *Dst, Value *Src,
+                                  Value *Size, MaybeAlign DstAlign,
+                                  MaybeAlign SrcAlign, bool IsVolatile = false,
+                                  const MemMoveInst *OriginalInst = nullptr);
+  Function *getCurrentFunction(IRBuilder<> &Builder) const;
+  Value *createPtrToIntAddr(IRBuilder<> &Builder, Value *Ptr,
+                            const std::string &Name = "");
+
   bool handleInstructionDeletion(Instruction *I, BasicBlock::iterator &BBI);
 };
 
