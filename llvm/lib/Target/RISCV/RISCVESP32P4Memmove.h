@@ -197,7 +197,8 @@ struct RISCVESP32P4MemmovePass : PassInfoMixin<RISCVESP32P4MemmovePass> {
   void generateUnrolledDispatcher(
       IRBuilder<> &Builder, Value *Dst, Value *Src, uint64_t Size,
       uint64_t Remainder, uint64_t NumBlocks, uint64_t BlockSize,
-      int SrcOffsetFromEnd, int DstOffsetFromEnd, const std::string &CopyName,
+      int64_t SrcOffsetFromEnd, int64_t DstOffsetFromEnd,
+      const std::string &CopyName,
       std::function<void(IRBuilder<> &, Value *&, Value *&, uint64_t)>
           BlockGenerator);
   bool processDst16Src8Const(MemMoveInst *M, BasicBlock::iterator &BBI);

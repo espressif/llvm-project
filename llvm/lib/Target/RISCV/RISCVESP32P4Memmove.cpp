@@ -970,7 +970,8 @@ void RISCVESP32P4MemmovePass::generateOptimizedBackwardCopyDispatcher(
 void RISCVESP32P4MemmovePass::generateUnrolledDispatcher(
     IRBuilder<> &Builder, Value *Dst, Value *Src, uint64_t Size,
     uint64_t Remainder, uint64_t NumBlocks, uint64_t BlockSize,
-    int SrcOffsetFromEnd, int DstOffsetFromEnd, const std::string &CopyName,
+    int64_t SrcOffsetFromEnd, int64_t DstOffsetFromEnd,
+    const std::string &CopyName,
     std::function<void(IRBuilder<> &, Value *&, Value *&, uint64_t)>
         BlockGenerator) {
   LLVM_DEBUG(dbgs() << "RISCVESP32P4: Unrolled " << CopyName << ", "
@@ -1027,8 +1028,7 @@ void RISCVESP32P4MemmovePass::generateUnrolledBackwardCopyDst16Src8(
   generateUnrolledDispatcher(
       Builder, Dst, Src, Size, Remainder, Blocks16, /*BlockSize=*/16,
       /*SrcOffsetFromEnd=*/-8, /*DstOffsetFromEnd=*/-16, "dst16src8.backward",
-      [this](IRBuilder<> &B, Value *&SrcAddr, Value *&DstAddr, uint64_t I) {
-        (void)I;
+      [this](IRBuilder<> &B, Value *&SrcAddr, Value *&DstAddr, uint64_t) {
         std::tie(SrcAddr, DstAddr) =
             emitBackwardDst16Src8OneBlock_I32(B, SrcAddr, DstAddr);
       });
@@ -1106,8 +1106,8 @@ void RISCVESP32P4MemmovePass::generateRemaining16ByteBackwardCopyDst16Src8(
 
   Value *SrcPtr = Remaining16SrcHigh;
   Value *DstPtr = Remaining16Dst;
-  for (uint64_t I = 0; I < Remaining16; ++I) {
-    (void)I;
+  // The block generator advances both pointers, so no loop index is needed.
+  while (Remaining16-- > 0) {
     std::tie(SrcPtr, DstPtr) =
         emitBackwardDst16Src8OneBlock_Ptr(Builder, SrcPtr, DstPtr);
   }
