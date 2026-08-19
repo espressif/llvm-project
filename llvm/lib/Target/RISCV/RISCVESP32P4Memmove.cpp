@@ -921,10 +921,10 @@ void RISCVESP32P4MemmovePass::generateOptimizedBackwardCopyDispatcher(
       // destroy source bytes when 0 < dst-src < Remainder (e.g. dst=src+8,
       // Size=28 -> Remainder=12) before they are read.
       for (int64_t I = (int64_t)Remainder - 1; I >= 0; --I) {
-        Value *S = Builder.CreateConstInBoundsGEP1_64(
-            Builder.getInt8Ty(), TailSrc, I, "tail.src.b");
-        Value *D = Builder.CreateConstInBoundsGEP1_64(
-            Builder.getInt8Ty(), TailDst, I, "tail.dst.b");
+        Value *S = Builder.CreateConstInBoundsGEP1_64(Builder.getInt8Ty(),
+                                                      TailSrc, I, "tail.src.b");
+        Value *D = Builder.CreateConstInBoundsGEP1_64(Builder.getInt8Ty(),
+                                                      TailDst, I, "tail.dst.b");
         Value *B = Builder.CreateLoad(Builder.getInt8Ty(), S, "tail.ld");
         Builder.CreateStore(B, D);
       }
