@@ -10,13 +10,13 @@
 // CHECK-LABEL: define dso_local void @test_64_to_128(
 // CHECK-SAME: ptr noundef [[SRC:%.*]], ptr noundef [[DST:%.*]]) local_unnamed_addr #[[ATTR0:[0-9]+]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[SRC]], i32 8)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[SRC]], i32 8)
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <8 x i8>, ptr } [[TMP0]], 0
 // CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <8 x i8>, ptr } [[TMP0]], 1
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP2]], i32 8)
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP2]], i32 8)
 // CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <8 x i8>, ptr } [[TMP3]], 0
 // CHECK-NEXT:    [[SHUFFLE:%.*]] = shufflevector <8 x i8> [[TMP4]], <8 x i8> [[TMP1]], <16 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7, i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[SHUFFLE]], ptr [[DST]], i32 16)
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[SHUFFLE]], ptr [[DST]], i32 16)
 // CHECK-NEXT:    ret void
 //
 void test_64_to_128(void *src, void *dst) {
@@ -25,9 +25,9 @@ esp_vld_64_res_t ResH;
   // Create temporary 128-bit vector for builtin storage
   // Builtin stores 64-bit Data to offset 8 (high 64 bits)
   esp_vec128_t TempVec;
-  ResH.Ptr = __builtin_riscv_esp_vld_h_64_ip_m(src, 8, &TempVec);
+  ResH.Ptr = __builtin_riscv_esp_vld_h_64_ip(src, 8, &TempVec);
   // Extract high 64 bits from offset 8 using union (similar to
-  // esp_vst_h_64_ip_m)
+  // esp_vst_h_64_ip)
   union {
     esp_vec128_t V128;
     struct {
@@ -39,7 +39,7 @@ esp_vld_64_res_t ResH;
   ResH.Val = U.Parts.High;
 esp_vld_64_res_t ResL;
   esp_vec128_t TempVecL;
-  ResL.Ptr = __builtin_riscv_esp_vld_l_64_ip_m(ResH.Ptr, 8, &TempVecL);
+  ResL.Ptr = __builtin_riscv_esp_vld_l_64_ip(ResH.Ptr, 8, &TempVecL);
   union {
     esp_vec128_t V128;
     struct {
@@ -58,24 +58,24 @@ esp_vld_64_res_t ResL;
         8, 9, 10, 11, 12, 13, 14, 15 // High 64 bits from ResH
     );
 
-    (void)__builtin_riscv_esp_vst_128_ip_m(combined, dst, 16);
+    (void)__builtin_riscv_esp_vst_128_ip(combined, dst, 16);
 }
 
 
 // CHECK-LABEL: define dso_local ptr @test_128_to_64(
 // CHECK-SAME: ptr noundef [[SRC:%.*]], ptr noundef [[DST:%.*]]) local_unnamed_addr #[[ATTR3:[0-9]+]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC]], i32 16)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC]], i32 16)
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP0]], 0
 // CHECK-NEXT:    [[U_SROA_0_8_VEC_EXTRACT8:%.*]] = shufflevector <16 x i8> [[TMP1]], <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-// CHECK-NEXT:    [[TMP2:%.*]] = tail call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[U_SROA_0_8_VEC_EXTRACT8]], ptr [[DST]], i32 8)
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[U_SROA_0_8_VEC_EXTRACT8]], ptr [[DST]], i32 8)
 // CHECK-NEXT:    [[U_SROA_0_0_VEC_EXTRACT6:%.*]] = shufflevector <16 x i8> [[TMP1]], <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[U_SROA_0_0_VEC_EXTRACT6]], ptr [[TMP2]], i32 8)
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[U_SROA_0_0_VEC_EXTRACT6]], ptr [[TMP2]], i32 8)
 // CHECK-NEXT:    ret ptr [[TMP3]]
 //
 void* test_128_to_64(void *src, void *dst) {
   esp_vld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vld_128_ip_m(src, 16, &Res.Val.V8);
+  Res.Ptr = __builtin_riscv_esp_vld_128_ip(src, 16, &Res.Val.V8);
 
   void *dst_1;
   union {
@@ -87,28 +87,28 @@ void* test_128_to_64(void *src, void *dst) {
   } U;
   U.V128 = Res.Val.V8;
 
-  dst_1 = __builtin_riscv_esp_vst_h_64_ip_m(U.Parts.High, dst, 8);
-  return __builtin_riscv_esp_vst_l_64_ip_m(U.Parts.Low, dst_1, 8);
+  dst_1 = __builtin_riscv_esp_vst_h_64_ip(U.Parts.High, dst, 8);
+  return __builtin_riscv_esp_vst_l_64_ip(U.Parts.Low, dst_1, 8);
 }
 
 
 // CHECK-LABEL: define dso_local void @test_64_to_128_xp(
 // CHECK-SAME: ptr noundef [[SRC:%.*]], ptr noundef [[DST:%.*]], i32 noundef [[STRIDE_REG:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.xp.m(ptr [[SRC]], i32 [[STRIDE_REG]])
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.xp(ptr [[SRC]], i32 [[STRIDE_REG]])
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <8 x i8>, ptr } [[TMP0]], 0
 // CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <8 x i8>, ptr } [[TMP0]], 1
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.xp.m(ptr [[TMP2]], i32 [[STRIDE_REG]])
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.xp(ptr [[TMP2]], i32 [[STRIDE_REG]])
 // CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <8 x i8>, ptr } [[TMP3]], 0
 // CHECK-NEXT:    [[SHUFFLE:%.*]] = shufflevector <8 x i8> [[TMP4]], <8 x i8> [[TMP1]], <16 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7, i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.xp.m(<16 x i8> [[SHUFFLE]], ptr [[DST]], i32 [[STRIDE_REG]])
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.xp(<16 x i8> [[SHUFFLE]], ptr [[DST]], i32 [[STRIDE_REG]])
 // CHECK-NEXT:    ret void
 //
 void test_64_to_128_xp(void *src, void *dst, int stride_reg) {
     // Load high 64-bit and low 64-bit using XP mode (register offset)
 esp_vld_64_res_t ResH;
   esp_vec128_t TempVec;
-  ResH.Ptr = __builtin_riscv_esp_vld_h_64_xp_m(src, stride_reg, &TempVec);
+  ResH.Ptr = __builtin_riscv_esp_vld_h_64_xp(src, stride_reg, &TempVec);
   union {
     esp_vec128_t V128;
     struct {
@@ -120,7 +120,7 @@ esp_vld_64_res_t ResH;
   ResH.Val = U.Parts.High;
 esp_vld_64_res_t ResL;
   esp_vec128_t TempVecL;
-  ResL.Ptr = __builtin_riscv_esp_vld_l_64_xp_m(ResH.Ptr, stride_reg, &TempVecL);
+  ResL.Ptr = __builtin_riscv_esp_vld_l_64_xp(ResH.Ptr, stride_reg, &TempVecL);
   union {
     esp_vec128_t V128;
     struct {
@@ -139,24 +139,24 @@ esp_vld_64_res_t ResL;
         8, 9, 10, 11, 12, 13, 14, 15 // High 64 bits from ResH
     );
 
-    (void)__builtin_riscv_esp_vst_128_xp_m(combined, dst, stride_reg);
+    (void)__builtin_riscv_esp_vst_128_xp(combined, dst, stride_reg);
 }
 
 
 // CHECK-LABEL: define dso_local ptr @test_128_to_64_xp(
 // CHECK-SAME: ptr noundef [[SRC:%.*]], ptr noundef [[DST:%.*]], i32 noundef [[STRIDE_REG:%.*]]) local_unnamed_addr #[[ATTR3]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.xp.m(ptr [[SRC]], i32 [[STRIDE_REG]])
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.xp(ptr [[SRC]], i32 [[STRIDE_REG]])
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP0]], 0
 // CHECK-NEXT:    [[U_SROA_0_8_VEC_EXTRACT8:%.*]] = shufflevector <16 x i8> [[TMP1]], <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-// CHECK-NEXT:    [[TMP2:%.*]] = tail call ptr @llvm.riscv.esp.vst.h.64.xp.m(<8 x i8> [[U_SROA_0_8_VEC_EXTRACT8]], ptr [[DST]], i32 [[STRIDE_REG]])
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call ptr @llvm.riscv.esp.vst.h.64.xp(<8 x i8> [[U_SROA_0_8_VEC_EXTRACT8]], ptr [[DST]], i32 [[STRIDE_REG]])
 // CHECK-NEXT:    [[U_SROA_0_0_VEC_EXTRACT6:%.*]] = shufflevector <16 x i8> [[TMP1]], <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call ptr @llvm.riscv.esp.vst.l.64.xp.m(<8 x i8> [[U_SROA_0_0_VEC_EXTRACT6]], ptr [[TMP2]], i32 [[STRIDE_REG]])
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call ptr @llvm.riscv.esp.vst.l.64.xp(<8 x i8> [[U_SROA_0_0_VEC_EXTRACT6]], ptr [[TMP2]], i32 [[STRIDE_REG]])
 // CHECK-NEXT:    ret ptr [[TMP3]]
 //
 void* test_128_to_64_xp(void *src, void *dst, int stride_reg) {
   esp_vld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vld_128_xp_m(src, stride_reg, &Res.Val.V8);
+  Res.Ptr = __builtin_riscv_esp_vld_128_xp(src, stride_reg, &Res.Val.V8);
 
   void *dst_1;
   union {
@@ -168,8 +168,8 @@ void* test_128_to_64_xp(void *src, void *dst, int stride_reg) {
   } U;
   U.V128 = Res.Val.V8;
 
-  dst_1 = __builtin_riscv_esp_vst_h_64_xp_m(U.Parts.High, dst, stride_reg);
-  return __builtin_riscv_esp_vst_l_64_xp_m(U.Parts.Low, dst_1, stride_reg);
+  dst_1 = __builtin_riscv_esp_vst_h_64_xp(U.Parts.High, dst, stride_reg);
+  return __builtin_riscv_esp_vst_l_64_xp(U.Parts.Low, dst_1, stride_reg);
 }
 
 
@@ -178,23 +178,23 @@ void* test_128_to_64_xp(void *src, void *dst, int stride_reg) {
 // CHECK-LABEL: define dso_local void @test_movi_8_a_subregister(
 // CHECK-SAME: ptr noundef [[SRC:%.*]], ptr noundef writeonly captures(none) initializes((0, 24)) [[DST:%.*]]) local_unnamed_addr #[[ATTR4:[0-9]+]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC]], i32 16)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC]], i32 16)
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP0]], 0
-// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> [[TMP1]], i32 0)
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movi.8.a(<16 x i8> [[TMP1]], i32 0)
 // CHECK-NEXT:    store i32 [[TMP2]], ptr [[DST]], align 4, !tbaa [[TBAA6:![0-9]+]]
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> [[TMP1]], i32 3)
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movi.8.a(<16 x i8> [[TMP1]], i32 3)
 // CHECK-NEXT:    [[ARRAYIDX3:%.*]] = getelementptr inbounds nuw i8, ptr [[DST]], i32 4
 // CHECK-NEXT:    store i32 [[TMP3]], ptr [[ARRAYIDX3]], align 4, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> [[TMP1]], i32 7)
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movi.8.a(<16 x i8> [[TMP1]], i32 7)
 // CHECK-NEXT:    [[ARRAYIDX4:%.*]] = getelementptr inbounds nuw i8, ptr [[DST]], i32 8
 // CHECK-NEXT:    store i32 [[TMP4]], ptr [[ARRAYIDX4]], align 4, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> [[TMP1]], i32 8)
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movi.8.a(<16 x i8> [[TMP1]], i32 8)
 // CHECK-NEXT:    [[ARRAYIDX5:%.*]] = getelementptr inbounds nuw i8, ptr [[DST]], i32 12
 // CHECK-NEXT:    store i32 [[TMP5]], ptr [[ARRAYIDX5]], align 4, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> [[TMP1]], i32 11)
+// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movi.8.a(<16 x i8> [[TMP1]], i32 11)
 // CHECK-NEXT:    [[ARRAYIDX6:%.*]] = getelementptr inbounds nuw i8, ptr [[DST]], i32 16
 // CHECK-NEXT:    store i32 [[TMP6]], ptr [[ARRAYIDX6]], align 4, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[TMP7:%.*]] = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> [[TMP1]], i32 15)
+// CHECK-NEXT:    [[TMP7:%.*]] = tail call i32 @llvm.riscv.esp.movi.8.a(<16 x i8> [[TMP1]], i32 15)
 // CHECK-NEXT:    [[ARRAYIDX7:%.*]] = getelementptr inbounds nuw i8, ptr [[DST]], i32 20
 // CHECK-NEXT:    store i32 [[TMP7]], ptr [[ARRAYIDX7]], align 4, !tbaa [[TBAA6]]
 // CHECK-NEXT:    ret void
@@ -202,7 +202,7 @@ void* test_128_to_64_xp(void *src, void *dst, int stride_reg) {
 void test_movi_8_a_subregister(void *src, int *dst) {
     // Load 128-bit vector
 esp_vld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vld_128_ip_m(src, 16, &Res.Val.V8);
+  Res.Ptr = __builtin_riscv_esp_vld_128_ip(src, 16, &Res.Val.V8);
     esp_vec128_t Qy = Res.Val.V8;
 
     // Extract from QR_L (low 64-bit subregister): sel16 = 0-7
@@ -214,9 +214,9 @@ esp_vld_res_t Res;
     // sel16=5: Qy[47:40] -> QR_L[47:40]
     // sel16=6: Qy[55:48] -> QR_L[55:48]
     // sel16=7: Qy[63:56] -> QR_L[63:56]
-    dst[0] = __builtin_riscv_esp_movi_8_a_m(Qy, 0);   // Extract from QR_L[7:0]
-    dst[1] = __builtin_riscv_esp_movi_8_a_m(Qy, 3);   // Extract from QR_L[31:24]
-    dst[2] = __builtin_riscv_esp_movi_8_a_m(Qy, 7);   // Extract from QR_L[63:56]
+    dst[0] = __builtin_riscv_esp_movi_8_a(Qy, 0);   // Extract from QR_L[7:0]
+    dst[1] = __builtin_riscv_esp_movi_8_a(Qy, 3);   // Extract from QR_L[31:24]
+    dst[2] = __builtin_riscv_esp_movi_8_a(Qy, 7);   // Extract from QR_L[63:56]
 
     // Extract from QR_H (high 64-bit subregister): sel16 = 8-15
     // sel16=8:  Qy[71:64]   -> QR_H[7:0]
@@ -227,9 +227,9 @@ esp_vld_res_t Res;
     // sel16=13: Qy[111:104] -> QR_H[47:40]
     // sel16=14: Qy[119:112] -> QR_H[55:48]
     // sel16=15: Qy[127:120] -> QR_H[63:56]
-    dst[3] = __builtin_riscv_esp_movi_8_a_m(Qy, 8);   // Extract from QR_H[7:0]
-    dst[4] = __builtin_riscv_esp_movi_8_a_m(Qy, 11);  // Extract from QR_H[31:24]
-    dst[5] = __builtin_riscv_esp_movi_8_a_m(Qy, 15);  // Extract from QR_H[63:56]
+    dst[3] = __builtin_riscv_esp_movi_8_a(Qy, 8);   // Extract from QR_H[7:0]
+    dst[4] = __builtin_riscv_esp_movi_8_a(Qy, 11);  // Extract from QR_H[31:24]
+    dst[5] = __builtin_riscv_esp_movi_8_a(Qy, 15);  // Extract from QR_H[63:56]
 }
 
 
@@ -238,24 +238,24 @@ esp_vld_res_t Res;
 // CHECK-LABEL: define dso_local void @test_movi_16_a_subregister(
 // CHECK-SAME: ptr noundef [[SRC:%.*]], ptr noundef writeonly captures(none) initializes((0, 24)) [[DST:%.*]]) local_unnamed_addr #[[ATTR4]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC]], i32 16)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC]], i32 16)
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP0]], 0
 // CHECK-NEXT:    [[TMP2:%.*]] = bitcast <16 x i8> [[TMP1]] to <8 x i16>
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> [[TMP2]], i32 0)
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movi.16.a(<8 x i16> [[TMP2]], i32 0)
 // CHECK-NEXT:    store i32 [[TMP3]], ptr [[DST]], align 4, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> [[TMP2]], i32 2)
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movi.16.a(<8 x i16> [[TMP2]], i32 2)
 // CHECK-NEXT:    [[ARRAYIDX3:%.*]] = getelementptr inbounds nuw i8, ptr [[DST]], i32 4
 // CHECK-NEXT:    store i32 [[TMP4]], ptr [[ARRAYIDX3]], align 4, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> [[TMP2]], i32 3)
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movi.16.a(<8 x i16> [[TMP2]], i32 3)
 // CHECK-NEXT:    [[ARRAYIDX4:%.*]] = getelementptr inbounds nuw i8, ptr [[DST]], i32 8
 // CHECK-NEXT:    store i32 [[TMP5]], ptr [[ARRAYIDX4]], align 4, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> [[TMP2]], i32 4)
+// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movi.16.a(<8 x i16> [[TMP2]], i32 4)
 // CHECK-NEXT:    [[ARRAYIDX5:%.*]] = getelementptr inbounds nuw i8, ptr [[DST]], i32 12
 // CHECK-NEXT:    store i32 [[TMP6]], ptr [[ARRAYIDX5]], align 4, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[TMP7:%.*]] = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> [[TMP2]], i32 6)
+// CHECK-NEXT:    [[TMP7:%.*]] = tail call i32 @llvm.riscv.esp.movi.16.a(<8 x i16> [[TMP2]], i32 6)
 // CHECK-NEXT:    [[ARRAYIDX6:%.*]] = getelementptr inbounds nuw i8, ptr [[DST]], i32 16
 // CHECK-NEXT:    store i32 [[TMP7]], ptr [[ARRAYIDX6]], align 4, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[TMP8:%.*]] = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> [[TMP2]], i32 7)
+// CHECK-NEXT:    [[TMP8:%.*]] = tail call i32 @llvm.riscv.esp.movi.16.a(<8 x i16> [[TMP2]], i32 7)
 // CHECK-NEXT:    [[ARRAYIDX7:%.*]] = getelementptr inbounds nuw i8, ptr [[DST]], i32 20
 // CHECK-NEXT:    store i32 [[TMP8]], ptr [[ARRAYIDX7]], align 4, !tbaa [[TBAA6]]
 // CHECK-NEXT:    ret void
@@ -263,7 +263,7 @@ esp_vld_res_t Res;
 void test_movi_16_a_subregister(void *src, int *dst) {
     // Load 128-bit vector
 esp_vld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vld_128_ip_m(src, 16, &Res.Val.V8);
+  Res.Ptr = __builtin_riscv_esp_vld_128_ip(src, 16, &Res.Val.V8);
     esp_vec128_16_t Qy = Res.Val.V16;
 
     // Extract from QR_L (low 64-bit subregister): sel16 = 0-3
@@ -271,18 +271,18 @@ esp_vld_res_t Res;
     // sel16=1: Qy[31:16]  -> QR_L[31:16]
     // sel16=2: Qy[47:32]  -> QR_L[47:32]
     // sel16=3: Qy[63:48]  -> QR_L[63:48]
-    dst[0] = __builtin_riscv_esp_movi_16_a_m(Qy, 0);  // Extract from QR_L[15:0]
-    dst[1] = __builtin_riscv_esp_movi_16_a_m(Qy, 2);  // Extract from QR_L[47:32]
-    dst[2] = __builtin_riscv_esp_movi_16_a_m(Qy, 3);  // Extract from QR_L[63:48]
+    dst[0] = __builtin_riscv_esp_movi_16_a(Qy, 0);  // Extract from QR_L[15:0]
+    dst[1] = __builtin_riscv_esp_movi_16_a(Qy, 2);  // Extract from QR_L[47:32]
+    dst[2] = __builtin_riscv_esp_movi_16_a(Qy, 3);  // Extract from QR_L[63:48]
 
     // Extract from QR_H (high 64-bit subregister): sel16 = 4-7
     // sel16=4: Qy[79:64]   -> QR_H[15:0]
     // sel16=5: Qy[95:80]   -> QR_H[31:16]
     // sel16=6: Qy[111:96]  -> QR_H[47:32]
     // sel16=7: Qy[127:112] -> QR_H[63:48]
-    dst[3] = __builtin_riscv_esp_movi_16_a_m(Qy, 4);  // Extract from QR_H[15:0]
-    dst[4] = __builtin_riscv_esp_movi_16_a_m(Qy, 6);  // Extract from QR_H[47:32]
-    dst[5] = __builtin_riscv_esp_movi_16_a_m(Qy, 7);  // Extract from QR_H[63:48]
+    dst[3] = __builtin_riscv_esp_movi_16_a(Qy, 4);  // Extract from QR_H[15:0]
+    dst[4] = __builtin_riscv_esp_movi_16_a(Qy, 6);  // Extract from QR_H[47:32]
+    dst[5] = __builtin_riscv_esp_movi_16_a(Qy, 7);  // Extract from QR_H[63:48]
 }
 
 
@@ -291,18 +291,18 @@ esp_vld_res_t Res;
 // CHECK-LABEL: define dso_local void @test_movi_32_a_subregister(
 // CHECK-SAME: ptr noundef [[SRC:%.*]], ptr noundef writeonly captures(none) initializes((0, 16)) [[DST:%.*]]) local_unnamed_addr #[[ATTR4]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC]], i32 16)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC]], i32 16)
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP0]], 0
 // CHECK-NEXT:    [[TMP2:%.*]] = bitcast <16 x i8> [[TMP1]] to <4 x i32>
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movi.32.a.m(<4 x i32> [[TMP2]], i32 0)
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movi.32.a(<4 x i32> [[TMP2]], i32 0)
 // CHECK-NEXT:    store i32 [[TMP3]], ptr [[DST]], align 4, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movi.32.a.m(<4 x i32> [[TMP2]], i32 1)
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movi.32.a(<4 x i32> [[TMP2]], i32 1)
 // CHECK-NEXT:    [[ARRAYIDX3:%.*]] = getelementptr inbounds nuw i8, ptr [[DST]], i32 4
 // CHECK-NEXT:    store i32 [[TMP4]], ptr [[ARRAYIDX3]], align 4, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movi.32.a.m(<4 x i32> [[TMP2]], i32 2)
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movi.32.a(<4 x i32> [[TMP2]], i32 2)
 // CHECK-NEXT:    [[ARRAYIDX4:%.*]] = getelementptr inbounds nuw i8, ptr [[DST]], i32 8
 // CHECK-NEXT:    store i32 [[TMP5]], ptr [[ARRAYIDX4]], align 4, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movi.32.a.m(<4 x i32> [[TMP2]], i32 3)
+// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movi.32.a(<4 x i32> [[TMP2]], i32 3)
 // CHECK-NEXT:    [[ARRAYIDX5:%.*]] = getelementptr inbounds nuw i8, ptr [[DST]], i32 12
 // CHECK-NEXT:    store i32 [[TMP6]], ptr [[ARRAYIDX5]], align 4, !tbaa [[TBAA6]]
 // CHECK-NEXT:    ret void
@@ -310,20 +310,20 @@ esp_vld_res_t Res;
 void test_movi_32_a_subregister(void *src, int *dst) {
     // Load 128-bit vector
 esp_vld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vld_128_ip_m(src, 16, &Res.Val.V8);
+  Res.Ptr = __builtin_riscv_esp_vld_128_ip(src, 16, &Res.Val.V8);
     esp_vec128_32_t Qy = Res.Val.V32;
 
     // Extract from QR_L (low 64-bit subregister): sel4 = 0-1
     // sel4=0: Qy[31:0]  -> QR_L[31:0]
     // sel4=1: Qy[63:32] -> QR_L[63:32]
-    dst[0] = __builtin_riscv_esp_movi_32_a_m(Qy, 0);  // Extract from QR_L[31:0]
-    dst[1] = __builtin_riscv_esp_movi_32_a_m(Qy, 1);  // Extract from QR_L[63:32]
+    dst[0] = __builtin_riscv_esp_movi_32_a(Qy, 0);  // Extract from QR_L[31:0]
+    dst[1] = __builtin_riscv_esp_movi_32_a(Qy, 1);  // Extract from QR_L[63:32]
 
     // Extract from QR_H (high 64-bit subregister): sel4 = 2-3
     // sel4=2: Qy[95:64]  -> QR_H[31:0]
     // sel4=3: Qy[127:96] -> QR_H[63:32]
-    dst[2] = __builtin_riscv_esp_movi_32_a_m(Qy, 2);  // Extract from QR_H[31:0]
-    dst[3] = __builtin_riscv_esp_movi_32_a_m(Qy, 3);  // Extract from QR_H[63:32]
+    dst[2] = __builtin_riscv_esp_movi_32_a(Qy, 2);  // Extract from QR_H[31:0]
+    dst[3] = __builtin_riscv_esp_movi_32_a(Qy, 3);  // Extract from QR_H[63:32]
 }
 
 
@@ -332,47 +332,47 @@ esp_vld_res_t Res;
 // CHECK-LABEL: define dso_local void @test_movi_from_64bit_subregister(
 // CHECK-SAME: ptr noundef [[SRC:%.*]], ptr noundef writeonly captures(none) initializes((0, 48)) [[DST:%.*]]) local_unnamed_addr #[[ATTR6:[0-9]+]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[SRC]], i32 8)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[SRC]], i32 8)
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <8 x i8>, ptr } [[TMP0]], 0
 // CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <8 x i8>, ptr } [[TMP0]], 1
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP2]], i32 8)
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP2]], i32 8)
 // CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <8 x i8>, ptr } [[TMP3]], 0
 // CHECK-NEXT:    [[SHUFFLE:%.*]] = shufflevector <8 x i8> [[TMP1]], <8 x i8> [[TMP4]], <16 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7, i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
 // CHECK-NEXT:    [[TMP5:%.*]] = bitcast <16 x i8> [[SHUFFLE]] to <4 x i32>
-// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> [[SHUFFLE]], i32 0)
+// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movi.8.a(<16 x i8> [[SHUFFLE]], i32 0)
 // CHECK-NEXT:    store i32 [[TMP6]], ptr [[DST]], align 4, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[TMP7:%.*]] = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> [[SHUFFLE]], i32 7)
+// CHECK-NEXT:    [[TMP7:%.*]] = tail call i32 @llvm.riscv.esp.movi.8.a(<16 x i8> [[SHUFFLE]], i32 7)
 // CHECK-NEXT:    [[ARRAYIDX7:%.*]] = getelementptr inbounds nuw i8, ptr [[DST]], i32 4
 // CHECK-NEXT:    store i32 [[TMP7]], ptr [[ARRAYIDX7]], align 4, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[TMP8:%.*]] = bitcast <16 x i8> [[SHUFFLE]] to <8 x i16>
-// CHECK-NEXT:    [[TMP9:%.*]] = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> [[TMP8]], i32 0)
+// CHECK-NEXT:    [[TMP9:%.*]] = tail call i32 @llvm.riscv.esp.movi.16.a(<8 x i16> [[TMP8]], i32 0)
 // CHECK-NEXT:    [[ARRAYIDX8:%.*]] = getelementptr inbounds nuw i8, ptr [[DST]], i32 8
 // CHECK-NEXT:    store i32 [[TMP9]], ptr [[ARRAYIDX8]], align 4, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[TMP10:%.*]] = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> [[TMP8]], i32 3)
+// CHECK-NEXT:    [[TMP10:%.*]] = tail call i32 @llvm.riscv.esp.movi.16.a(<8 x i16> [[TMP8]], i32 3)
 // CHECK-NEXT:    [[ARRAYIDX9:%.*]] = getelementptr inbounds nuw i8, ptr [[DST]], i32 12
 // CHECK-NEXT:    store i32 [[TMP10]], ptr [[ARRAYIDX9]], align 4, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[TMP11:%.*]] = tail call i32 @llvm.riscv.esp.movi.32.a.m(<4 x i32> [[TMP5]], i32 0)
+// CHECK-NEXT:    [[TMP11:%.*]] = tail call i32 @llvm.riscv.esp.movi.32.a(<4 x i32> [[TMP5]], i32 0)
 // CHECK-NEXT:    [[ARRAYIDX10:%.*]] = getelementptr inbounds nuw i8, ptr [[DST]], i32 16
 // CHECK-NEXT:    store i32 [[TMP11]], ptr [[ARRAYIDX10]], align 4, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[TMP12:%.*]] = tail call i32 @llvm.riscv.esp.movi.32.a.m(<4 x i32> [[TMP5]], i32 1)
+// CHECK-NEXT:    [[TMP12:%.*]] = tail call i32 @llvm.riscv.esp.movi.32.a(<4 x i32> [[TMP5]], i32 1)
 // CHECK-NEXT:    [[ARRAYIDX11:%.*]] = getelementptr inbounds nuw i8, ptr [[DST]], i32 20
 // CHECK-NEXT:    store i32 [[TMP12]], ptr [[ARRAYIDX11]], align 4, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[TMP13:%.*]] = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> [[SHUFFLE]], i32 8)
+// CHECK-NEXT:    [[TMP13:%.*]] = tail call i32 @llvm.riscv.esp.movi.8.a(<16 x i8> [[SHUFFLE]], i32 8)
 // CHECK-NEXT:    [[ARRAYIDX12:%.*]] = getelementptr inbounds nuw i8, ptr [[DST]], i32 24
 // CHECK-NEXT:    store i32 [[TMP13]], ptr [[ARRAYIDX12]], align 4, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[TMP14:%.*]] = tail call i32 @llvm.riscv.esp.movi.8.a.m(<16 x i8> [[SHUFFLE]], i32 15)
+// CHECK-NEXT:    [[TMP14:%.*]] = tail call i32 @llvm.riscv.esp.movi.8.a(<16 x i8> [[SHUFFLE]], i32 15)
 // CHECK-NEXT:    [[ARRAYIDX13:%.*]] = getelementptr inbounds nuw i8, ptr [[DST]], i32 28
 // CHECK-NEXT:    store i32 [[TMP14]], ptr [[ARRAYIDX13]], align 4, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[TMP15:%.*]] = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> [[TMP8]], i32 4)
+// CHECK-NEXT:    [[TMP15:%.*]] = tail call i32 @llvm.riscv.esp.movi.16.a(<8 x i16> [[TMP8]], i32 4)
 // CHECK-NEXT:    [[ARRAYIDX14:%.*]] = getelementptr inbounds nuw i8, ptr [[DST]], i32 32
 // CHECK-NEXT:    store i32 [[TMP15]], ptr [[ARRAYIDX14]], align 4, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[TMP16:%.*]] = tail call i32 @llvm.riscv.esp.movi.16.a.m(<8 x i16> [[TMP8]], i32 7)
+// CHECK-NEXT:    [[TMP16:%.*]] = tail call i32 @llvm.riscv.esp.movi.16.a(<8 x i16> [[TMP8]], i32 7)
 // CHECK-NEXT:    [[ARRAYIDX15:%.*]] = getelementptr inbounds nuw i8, ptr [[DST]], i32 36
 // CHECK-NEXT:    store i32 [[TMP16]], ptr [[ARRAYIDX15]], align 4, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[TMP17:%.*]] = tail call i32 @llvm.riscv.esp.movi.32.a.m(<4 x i32> [[TMP5]], i32 2)
+// CHECK-NEXT:    [[TMP17:%.*]] = tail call i32 @llvm.riscv.esp.movi.32.a(<4 x i32> [[TMP5]], i32 2)
 // CHECK-NEXT:    [[ARRAYIDX16:%.*]] = getelementptr inbounds nuw i8, ptr [[DST]], i32 40
 // CHECK-NEXT:    store i32 [[TMP17]], ptr [[ARRAYIDX16]], align 4, !tbaa [[TBAA6]]
-// CHECK-NEXT:    [[TMP18:%.*]] = tail call i32 @llvm.riscv.esp.movi.32.a.m(<4 x i32> [[TMP5]], i32 3)
+// CHECK-NEXT:    [[TMP18:%.*]] = tail call i32 @llvm.riscv.esp.movi.32.a(<4 x i32> [[TMP5]], i32 3)
 // CHECK-NEXT:    [[ARRAYIDX17:%.*]] = getelementptr inbounds nuw i8, ptr [[DST]], i32 44
 // CHECK-NEXT:    store i32 [[TMP18]], ptr [[ARRAYIDX17]], align 4, !tbaa [[TBAA6]]
 // CHECK-NEXT:    ret void
@@ -381,7 +381,7 @@ void test_movi_from_64bit_subregister(void *src, int *dst) {
     // Load low 64-bit subregister (QR_L) and high 64-bit subregister (QR_H)
 esp_vld_64_res_t ResL;
   esp_vec128_t TempVecL;
-  ResL.Ptr = __builtin_riscv_esp_vld_l_64_ip_m(src, 8, &TempVecL);
+  ResL.Ptr = __builtin_riscv_esp_vld_l_64_ip(src, 8, &TempVecL);
   union {
     esp_vec128_t V128;
     struct {
@@ -393,7 +393,7 @@ esp_vld_64_res_t ResL;
   ResL.Val = UL.Parts.Low;
 esp_vld_64_res_t ResH;
   esp_vec128_t TempVecH;
-  ResH.Ptr = __builtin_riscv_esp_vld_h_64_ip_m(ResL.Ptr, 8, &TempVecH);
+  ResH.Ptr = __builtin_riscv_esp_vld_h_64_ip(ResL.Ptr, 8, &TempVecH);
   union {
     esp_vec128_t V128;
     struct {
@@ -413,20 +413,20 @@ esp_vld_64_res_t ResH;
     );
 
     // Extract from QR_L (low 64-bit subregister): sel16 = 0-7 for 8-bit, sel16 = 0-3 for 16-bit, sel4 = 0-1 for 32-bit
-    dst[0] = __builtin_riscv_esp_movi_8_a_m(Qy, 0);    // Extract byte 0 from QR_L[7:0]
-    dst[1] = __builtin_riscv_esp_movi_8_a_m(Qy, 7);    // Extract byte 7 from QR_L[63:56]
-    dst[2] = __builtin_riscv_esp_movi_16_a_m(*(esp_vec128_16_t*)&Qy, 0);  // Extract halfword 0 from QR_L[15:0]
-    dst[3] = __builtin_riscv_esp_movi_16_a_m(*(esp_vec128_16_t*)&Qy, 3);  // Extract halfword 3 from QR_L[63:48]
-    dst[4] = __builtin_riscv_esp_movi_32_a_m(*(esp_vec128_32_t*)&Qy, 0); // Extract word 0 from QR_L[31:0]
-    dst[5] = __builtin_riscv_esp_movi_32_a_m(*(esp_vec128_32_t*)&Qy, 1); // Extract word 1 from QR_L[63:32]
+    dst[0] = __builtin_riscv_esp_movi_8_a(Qy, 0);    // Extract byte 0 from QR_L[7:0]
+    dst[1] = __builtin_riscv_esp_movi_8_a(Qy, 7);    // Extract byte 7 from QR_L[63:56]
+    dst[2] = __builtin_riscv_esp_movi_16_a(*(esp_vec128_16_t*)&Qy, 0);  // Extract halfword 0 from QR_L[15:0]
+    dst[3] = __builtin_riscv_esp_movi_16_a(*(esp_vec128_16_t*)&Qy, 3);  // Extract halfword 3 from QR_L[63:48]
+    dst[4] = __builtin_riscv_esp_movi_32_a(*(esp_vec128_32_t*)&Qy, 0); // Extract word 0 from QR_L[31:0]
+    dst[5] = __builtin_riscv_esp_movi_32_a(*(esp_vec128_32_t*)&Qy, 1); // Extract word 1 from QR_L[63:32]
 
     // Extract from QR_H (high 64-bit subregister): sel16 = 8-15 for 8-bit, sel16 = 4-7 for 16-bit, sel4 = 2-3 for 32-bit
-    dst[6] = __builtin_riscv_esp_movi_8_a_m(Qy, 8);    // Extract byte 8 from QR_H[7:0] (Qy[71:64])
-    dst[7] = __builtin_riscv_esp_movi_8_a_m(Qy, 15);   // Extract byte 15 from QR_H[63:56] (Qy[127:120])
-    dst[8] = __builtin_riscv_esp_movi_16_a_m(*(esp_vec128_16_t*)&Qy, 4);  // Extract halfword 4 from QR_H[15:0] (Qy[79:64])
-    dst[9] = __builtin_riscv_esp_movi_16_a_m(*(esp_vec128_16_t*)&Qy, 7);  // Extract halfword 7 from QR_H[63:48] (Qy[127:112])
-    dst[10] = __builtin_riscv_esp_movi_32_a_m(*(esp_vec128_32_t*)&Qy, 2); // Extract word 2 from QR_H[31:0] (Qy[95:64])
-    dst[11] = __builtin_riscv_esp_movi_32_a_m(*(esp_vec128_32_t*)&Qy, 3); // Extract word 3 from QR_H[63:32] (Qy[127:96])
+    dst[6] = __builtin_riscv_esp_movi_8_a(Qy, 8);    // Extract byte 8 from QR_H[7:0] (Qy[71:64])
+    dst[7] = __builtin_riscv_esp_movi_8_a(Qy, 15);   // Extract byte 15 from QR_H[63:56] (Qy[127:120])
+    dst[8] = __builtin_riscv_esp_movi_16_a(*(esp_vec128_16_t*)&Qy, 4);  // Extract halfword 4 from QR_H[15:0] (Qy[79:64])
+    dst[9] = __builtin_riscv_esp_movi_16_a(*(esp_vec128_16_t*)&Qy, 7);  // Extract halfword 7 from QR_H[63:48] (Qy[127:112])
+    dst[10] = __builtin_riscv_esp_movi_32_a(*(esp_vec128_32_t*)&Qy, 2); // Extract word 2 from QR_H[31:0] (Qy[95:64])
+    dst[11] = __builtin_riscv_esp_movi_32_a(*(esp_vec128_32_t*)&Qy, 3); // Extract word 3 from QR_H[63:32] (Qy[127:96])
 }
 
 //.

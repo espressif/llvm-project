@@ -759,7 +759,7 @@ RISCVESP32P4MemmovePass::createEspVld128IpM(IRBuilder<> &Builder, Value *SrcPtr,
                                             int Step) {
   Type *I32Ty = Builder.getInt32Ty();
   Function *F = Intrinsic::getOrInsertDeclaration(
-      TheModule, Intrinsic::riscv_esp_vld_128_ip_m, {});
+      TheModule, Intrinsic::riscv_esp_vld_128_ip, {});
   Value *Args[] = {SrcPtr, ConstantInt::getSigned(I32Ty, Step)};
   CallInst *Call = Builder.CreateCall(F, Args, "vld128ip.m");
   Call->addFnAttr(Attribute::AlwaysInline);
@@ -773,7 +773,7 @@ Value *RISCVESP32P4MemmovePass::createEspVst128IpM(IRBuilder<> &Builder,
                                                    int Step) {
   Type *I32Ty = Builder.getInt32Ty();
   Function *F = Intrinsic::getOrInsertDeclaration(
-      TheModule, Intrinsic::riscv_esp_vst_128_ip_m, {});
+      TheModule, Intrinsic::riscv_esp_vst_128_ip, {});
   Value *Args[] = {Vec, DstPtr, ConstantInt::getSigned(I32Ty, Step)};
   CallInst *Call = Builder.CreateCall(F, Args, "vst128ip.m");
   Call->addFnAttr(Attribute::AlwaysInline);
@@ -795,7 +795,7 @@ RISCVESP32P4MemmovePass::createEspVldH64IpM(IRBuilder<> &Builder, Value *SrcPtr,
                                             int Step) {
   Type *I32Ty = Builder.getInt32Ty();
   Function *F = Intrinsic::getOrInsertDeclaration(
-      TheModule, Intrinsic::riscv_esp_vld_h_64_ip_m, {});
+      TheModule, Intrinsic::riscv_esp_vld_h_64_ip, {});
   CallInst *Call = Builder.CreateCall(
       F, {SrcPtr, ConstantInt::getSigned(I32Ty, Step)}, "vldh64ip.m");
   Call->addFnAttr(Attribute::AlwaysInline);
@@ -809,7 +809,7 @@ RISCVESP32P4MemmovePass::createEspVldL64IpM(IRBuilder<> &Builder, Value *SrcPtr,
                                             int Step) {
   Type *I32Ty = Builder.getInt32Ty();
   Function *F = Intrinsic::getOrInsertDeclaration(
-      TheModule, Intrinsic::riscv_esp_vld_l_64_ip_m, {});
+      TheModule, Intrinsic::riscv_esp_vld_l_64_ip, {});
   CallInst *Call = Builder.CreateCall(
       F, {SrcPtr, ConstantInt::getSigned(I32Ty, Step)}, "vldl64ip.m");
   Call->addFnAttr(Attribute::AlwaysInline);
@@ -823,7 +823,7 @@ Value *RISCVESP32P4MemmovePass::createEspVstH64IpM(IRBuilder<> &Builder,
                                                    int Step) {
   Type *I32Ty = Builder.getInt32Ty();
   Function *F = Intrinsic::getOrInsertDeclaration(
-      TheModule, Intrinsic::riscv_esp_vst_h_64_ip_m, {});
+      TheModule, Intrinsic::riscv_esp_vst_h_64_ip, {});
   CallInst *Call = Builder.CreateCall(
       F, {Vec, DstPtr, ConstantInt::getSigned(I32Ty, Step)}, "vsth64ip.m");
   Call->addFnAttr(Attribute::AlwaysInline);
@@ -835,7 +835,7 @@ Value *RISCVESP32P4MemmovePass::createEspVstL64IpM(IRBuilder<> &Builder,
                                                    int Step) {
   Type *I32Ty = Builder.getInt32Ty();
   Function *F = Intrinsic::getOrInsertDeclaration(
-      TheModule, Intrinsic::riscv_esp_vst_l_64_ip_m, {});
+      TheModule, Intrinsic::riscv_esp_vst_l_64_ip, {});
   CallInst *Call = Builder.CreateCall(
       F, {Vec, DstPtr, ConstantInt::getSigned(I32Ty, Step)}, "vstl64ip.m");
   Call->addFnAttr(Attribute::AlwaysInline);

@@ -10,13 +10,13 @@ define dso_local i32 @test_max_s8(ptr noundef %src) local_unnamed_addr #0 {
 ; ASM-NEXT:    esp.max.s8.a q0, a0
 ; ASM-NEXT:    ret
 entry:
-  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src, i32 16)
   %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
-  %v1 = tail call i32 @llvm.riscv.esp.max.s8.a.m(<16 x i8> %ev1)
+  %v1 = tail call i32 @llvm.riscv.esp.max.s8.a(<16 x i8> %ev1)
   ret i32 %v1
 }
 
-declare i32 @llvm.riscv.esp.max.s8.a.m(<16 x i8>) #1
+declare i32 @llvm.riscv.esp.max.s8.a(<16 x i8>) #1
 
 define dso_local i32 @test_min_s8(ptr noundef %src) local_unnamed_addr #0 {
 ; ASM-LABEL: test_min_s8:
@@ -25,13 +25,13 @@ define dso_local i32 @test_min_s8(ptr noundef %src) local_unnamed_addr #0 {
 ; ASM-NEXT:    esp.min.s8.a q0, a0
 ; ASM-NEXT:    ret
 entry:
-  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src, i32 16)
   %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
-  %v1 = tail call i32 @llvm.riscv.esp.min.s8.a.m(<16 x i8> %ev1)
+  %v1 = tail call i32 @llvm.riscv.esp.min.s8.a(<16 x i8> %ev1)
   ret i32 %v1
 }
 
-declare i32 @llvm.riscv.esp.min.s8.a.m(<16 x i8>) #1
+declare i32 @llvm.riscv.esp.min.s8.a(<16 x i8>) #1
 
 define dso_local i32 @test_max_u8(ptr noundef %src) local_unnamed_addr #0 {
 ; ASM-LABEL: test_max_u8:
@@ -40,13 +40,13 @@ define dso_local i32 @test_max_u8(ptr noundef %src) local_unnamed_addr #0 {
 ; ASM-NEXT:    esp.max.u8.a q0, a0
 ; ASM-NEXT:    ret
 entry:
-  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src, i32 16)
   %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
-  %v1 = tail call i32 @llvm.riscv.esp.max.u8.a.m(<16 x i8> %ev1)
+  %v1 = tail call i32 @llvm.riscv.esp.max.u8.a(<16 x i8> %ev1)
   ret i32 %v1
 }
 
-declare i32 @llvm.riscv.esp.max.u8.a.m(<16 x i8>) #1
+declare i32 @llvm.riscv.esp.max.u8.a(<16 x i8>) #1
 
 define dso_local i32 @test_min_u8(ptr noundef %src) local_unnamed_addr #0 {
 ; ASM-LABEL: test_min_u8:
@@ -55,15 +55,15 @@ define dso_local i32 @test_min_u8(ptr noundef %src) local_unnamed_addr #0 {
 ; ASM-NEXT:    esp.min.u8.a q0, a0
 ; ASM-NEXT:    ret
 entry:
-  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src, i32 16)
   %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
-  %v1 = tail call i32 @llvm.riscv.esp.min.u8.a.m(<16 x i8> %ev1)
+  %v1 = tail call i32 @llvm.riscv.esp.min.u8.a(<16 x i8> %ev1)
   ret i32 %v1
 }
 
-declare i32 @llvm.riscv.esp.min.u8.a.m(<16 x i8>) #1
+declare i32 @llvm.riscv.esp.min.u8.a(<16 x i8>) #1
 
-declare { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr, i32) #2
+declare { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr, i32) #2
 
 attributes #0 = { "target-features"="+32bit,+xespv" }
 attributes #1 = { nounwind }

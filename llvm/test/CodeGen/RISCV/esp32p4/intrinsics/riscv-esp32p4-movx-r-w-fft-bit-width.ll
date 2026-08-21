@@ -31,14 +31,14 @@ define dso_local i32 @test_movx_fft_bit_width_write_read(i32 noundef %rs1_val) l
 ; MIR-NEXT:   $x10 = COPY [[ESP_MOVX_R_FFT_BIT_WIDTH]]
 ; MIR-NEXT:   PseudoRET implicit $x10
 entry:
-  %v1 = tail call i32 @llvm.riscv.esp.movx.w.fft.bit.width.m(i32 %rs1_val)
-  %v2 = tail call i32 @llvm.riscv.esp.movx.r.fft.bit.width.m(i32 %v1)
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.fft.bit.width(i32 %rs1_val)
+  %v2 = tail call i32 @llvm.riscv.esp.movx.r.fft.bit.width(i32 %v1)
   ret i32 %v2
 }
 
-declare i32 @llvm.riscv.esp.movx.w.fft.bit.width.m(i32) #1
+declare i32 @llvm.riscv.esp.movx.w.fft.bit.width(i32) #1
 
-declare i32 @llvm.riscv.esp.movx.r.fft.bit.width.m(i32) #1
+declare i32 @llvm.riscv.esp.movx.r.fft.bit.width(i32) #1
 
 define dso_local i32 @test_movx_fft_bit_width_write_read_2p2(i32 noundef %rs1_val) local_unnamed_addr #2 {
 ; ASM2P2-LABEL: test_movx_fft_bit_width_write_read_2p2:
@@ -59,8 +59,8 @@ define dso_local i32 @test_movx_fft_bit_width_write_read_2p2(i32 noundef %rs1_va
 ; MIR-NEXT:   $x10 = COPY [[RD]]
 ; MIR-NEXT:   PseudoRET implicit $x10
 entry:
-  %v1 = tail call i32 @llvm.riscv.esp.movx.w.fft.bit.width.m(i32 %rs1_val)
-  %v2 = tail call i32 @llvm.riscv.esp.movx.r.fft.bit.width.m(i32 %v1)
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.fft.bit.width(i32 %rs1_val)
+  %v2 = tail call i32 @llvm.riscv.esp.movx.r.fft.bit.width(i32 %v1)
   ret i32 %v2
 }
 
@@ -95,18 +95,18 @@ define dso_local ptr @test_bitrev_with_fft_bit_width(ptr noundef %Rs1, ptr nound
 ; MIR-NEXT:   $x10 = COPY [[VST]]
 ; MIR-NEXT:   PseudoRET implicit $x10
 entry:
-  %v1 = tail call i32 @llvm.riscv.esp.movx.w.fft.bit.width.m(i32 %bit_width)
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.fft.bit.width(i32 %bit_width)
   %v2 = tail call { ptr, <8 x i16> } @llvm.riscv.esp.fft.bitrev.m(ptr %Rs1, i32 %v1)
   %ev1 = extractvalue { ptr, <8 x i16> } %v2, 1
   %bc1 = bitcast <8 x i16> %ev1 to <16 x i8>
-  %vst_ptr = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> %bc1, ptr %dst, i32 16)
-  %v3 = tail call i32 @llvm.riscv.esp.movx.r.fft.bit.width.m(i32 %v1)
+  %vst_ptr = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> %bc1, ptr %dst, i32 16)
+  %v3 = tail call i32 @llvm.riscv.esp.movx.r.fft.bit.width(i32 %v1)
   ret ptr %vst_ptr
 }
 
 declare { ptr, <8 x i16> } @llvm.riscv.esp.fft.bitrev.m(ptr, i32) #1
 
-declare ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8>, ptr, i32) #3
+declare ptr @llvm.riscv.esp.vst.128.ip(<16 x i8>, ptr, i32) #3
 
 attributes #0 = { "target-features"="+32bit,+xespv2p1" }
 attributes #1 = { nounwind }

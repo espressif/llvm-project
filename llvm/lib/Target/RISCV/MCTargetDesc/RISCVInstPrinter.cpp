@@ -499,7 +499,8 @@ void RISCVInstPrinter::printSATOperand(const MCInst *MI, int OpNum,
                                        raw_ostream &O) {
   uint32_t Value = MI->getOperand(OpNum).getImm();
   assert(Value <= 1 && "Value must be either 0 or 1");
-  if (PrintAliases && !NoAliases && Value == 1)
+  // Hide default trunc (0) in alias printing; match defaultSATOp().
+  if (PrintAliases && !NoAliases && Value == 0)
     return;
   O << ", ";
   O << (Value == 1 ? "sat" : "trunc");

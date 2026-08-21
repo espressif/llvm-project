@@ -12,8 +12,8 @@
 // CHECK-SAME: i8 noundef zeroext [[RS1_VAL:%.*]]) local_unnamed_addr #[[ATTR0:[0-9]+]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[CONV1:%.*]] = zext i8 [[RS1_VAL]] to i32
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 [[CONV1]])
-// CHECK-NEXT:    [[TMP1:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.h.m(i32 [[TMP0]])
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 [[CONV1]])
+// CHECK-NEXT:    [[TMP1:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.h(i32 [[TMP0]])
 // CHECK-NEXT:    ret i32 [[TMP1]]
 //
 unsigned int test_movx_xacc_h_write_read(unsigned char rs1_val) {
@@ -21,14 +21,14 @@ unsigned int test_movx_xacc_h_write_read(unsigned char rs1_val) {
     // Subregister model: writes only high 8 bits, returns new XACC[39:32] as unsigned int (i32, zero-extended)
     // XACC[31:0] remains unchanged (hardware passthru)
     // Data flow: rs1_val -> MOVX.W -> xacc_h (return value, i32)
-    unsigned int xacc_h = __builtin_riscv_esp_movx_w_xacc_h_m(rs1_val);
+    unsigned int xacc_h = __builtin_riscv_esp_movx_w_xacc_h(rs1_val);
 
     // Read from XACC[39:32]: ESP.MOVX.R.XACC.H reads hardware register
     // Instruction: rd[31:0] = {24'b0, XACC[39:32]} - outputs to GPRPIE (i32)
     // Returns: unsigned int (i32) - zero-extended from 8-bit
     // Data flow: xacc_h (written value) -> MOVX.R(xacc_h) -> read_val (i32)
     // Note: xacc_h is passed as input for explicit state passing, hardware reads directly from XACC
-    unsigned int read_val = __builtin_riscv_esp_movx_r_xacc_h_m(xacc_h);
+    unsigned int read_val = __builtin_riscv_esp_movx_r_xacc_h(xacc_h);
 
     // Return read value to demonstrate complete Data flow: input -> write -> xacc_h -> MOVX.R(xacc_h) -> output
     return read_val;
@@ -38,8 +38,8 @@ unsigned int test_movx_xacc_h_write_read(unsigned char rs1_val) {
 // CHECK-LABEL: define dso_local i32 @test_movx_xacc_l_write_read(
 // CHECK-SAME: i32 noundef [[RS1_VAL:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[RS1_VAL]])
-// CHECK-NEXT:    [[TMP1:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 [[TMP0]])
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 [[RS1_VAL]])
+// CHECK-NEXT:    [[TMP1:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 [[TMP0]])
 // CHECK-NEXT:    ret i32 [[TMP1]]
 //
 unsigned int test_movx_xacc_l_write_read(unsigned int rs1_val) {
@@ -47,13 +47,13 @@ unsigned int test_movx_xacc_l_write_read(unsigned int rs1_val) {
     // Subregister model: writes only low 32 bits, returns new XACC[31:0] (unsigned int)
     // XACC[39:32] remains unchanged (hardware passthru)
     // Data flow: rs1_val -> MOVX.W -> xacc_l (return value)
-    unsigned int xacc_l = __builtin_riscv_esp_movx_w_xacc_l_m(rs1_val);
+    unsigned int xacc_l = __builtin_riscv_esp_movx_w_xacc_l(rs1_val);
 
     // Read from XACC[31:0]: ESP.MOVX.R.XACC.L reads hardware register
     // Instruction: rd[31:0] = XACC[31:0]
     // Data flow: xacc_l (written value) -> MOVX.R(xacc_l) -> read_val (i32)
     // Note: xacc_l is passed as input for explicit state passing, hardware reads directly from XACC
-    unsigned int read_val = __builtin_riscv_esp_movx_r_xacc_l_m(xacc_l);
+    unsigned int read_val = __builtin_riscv_esp_movx_r_xacc_l(xacc_l);
 
     // Return read value to demonstrate complete Data flow: input -> write -> xacc_l -> MOVX.R(xacc_l) -> output
     return read_val;
@@ -70,28 +70,28 @@ unsigned int test_movx_xacc_l_write_read(unsigned int rs1_val) {
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP0]], align 16, !tbaa [[TBAA10:![0-9]+]]
 // CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
-// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 [[INIT_VAL]])
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
 // CHECK-NEXT:    [[CONV2:%.*]] = and i32 [[TMP3]], 255
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.m(i32 [[TMP2]], i32 [[CONV2]], <8 x i16> [[QX]], <8 x i16> [[QY]])
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc(i32 [[TMP2]], i32 [[CONV2]], <8 x i16> [[QX]], <8 x i16> [[QY]], i32 0)
 // CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { i32, i32 } [[TMP4]], 0
-// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 [[TMP5]])
+// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 [[TMP5]])
 // CHECK-NEXT:    ret i32 [[TMP6]]
 //
 unsigned int test_vmulas_s16_xacc(unsigned int init_val, esp_vec128_16_t Qx, esp_vec128_16_t Qy) {
     // Initialize XACC: write low 32 bits and high 8 bits separately
-    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l_m(init_val);
-    unsigned char xacc_high = __builtin_riscv_esp_movx_w_xacc_h_m(0);
+    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l(init_val);
+    unsigned char xacc_high = __builtin_riscv_esp_movx_w_xacc_h(0);
 
     // VMULAS: Mixed model - XACC as struct {unsigned int low, unsigned char high}
     // Parameters: (xacc_low_in, xacc_high_in, Qx, Qy, xacc_low_out_ptr, xacc_high_out_ptr)
     // Returns: void (outputs via pointers)
     unsigned int xacc_low_out;
     unsigned int xacc_high_out;  // Changed from unsigned char to unsigned int (only low 8 bits valid)
-    __builtin_riscv_esp_vmulas_s16_xacc_m(xacc_low, xacc_high, Qx, Qy, &xacc_low_out, &xacc_high_out);
+    __builtin_riscv_esp_vmulas_s16_xacc(xacc_low, xacc_high, Qx, Qy, &xacc_low_out, &xacc_high_out);
 
     // Read Result from XACC[31:0] using VMULAS output value for explicit state passing
-    return __builtin_riscv_esp_movx_r_xacc_l_m(xacc_low_out);
+    return __builtin_riscv_esp_movx_r_xacc_l(xacc_low_out);
 }
 
 // Test ESP.VMULAS.S8.XACC with mixed model (struct for whole XACC)
@@ -100,28 +100,28 @@ unsigned int test_vmulas_s16_xacc(unsigned int init_val, esp_vec128_16_t Qx, esp
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
-// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 [[INIT_VAL]])
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
 // CHECK-NEXT:    [[CONV2:%.*]] = and i32 [[TMP3]], 255
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.m(i32 [[TMP2]], i32 [[CONV2]], <16 x i8> [[QX]], <16 x i8> [[QY]])
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc(i32 [[TMP2]], i32 [[CONV2]], <16 x i8> [[QX]], <16 x i8> [[QY]], i32 0)
 // CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { i32, i32 } [[TMP4]], 0
-// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 [[TMP5]])
+// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 [[TMP5]])
 // CHECK-NEXT:    ret i32 [[TMP6]]
 //
 unsigned int test_vmulas_s8_xacc(unsigned int init_val, esp_vec128_t Qx, esp_vec128_t Qy) {
     // Initialize XACC: write low 32 bits and high 8 bits separately
-    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l_m(init_val);
-    unsigned char xacc_high = __builtin_riscv_esp_movx_w_xacc_h_m(0);
+    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l(init_val);
+    unsigned char xacc_high = __builtin_riscv_esp_movx_w_xacc_h(0);
 
     // VMULAS: Mixed model - XACC as struct {unsigned int low, unsigned char high}
     // Parameters: (xacc_low_in, xacc_high_in, Qx, Qy, xacc_low_out_ptr, xacc_high_out_ptr)
     // Returns: void (outputs via pointers)
     unsigned int xacc_low_out;
     unsigned int xacc_high_out;  // Changed from unsigned char to unsigned int (only low 8 bits valid)
-    __builtin_riscv_esp_vmulas_s8_xacc_m(xacc_low, xacc_high, Qx, Qy, &xacc_low_out, &xacc_high_out);
+    __builtin_riscv_esp_vmulas_s8_xacc(xacc_low, xacc_high, Qx, Qy, &xacc_low_out, &xacc_high_out);
 
     // Read Result from XACC[31:0] using VMULAS output value for explicit state passing
-    return __builtin_riscv_esp_movx_r_xacc_l_m(xacc_low_out);
+    return __builtin_riscv_esp_movx_r_xacc_l(xacc_low_out);
 }
 
 // Test ESP.VMULAS.U16.XACC with mixed model (struct for whole XACC)
@@ -130,28 +130,28 @@ unsigned int test_vmulas_s8_xacc(unsigned int init_val, esp_vec128_t Qx, esp_vec
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
-// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 [[INIT_VAL]])
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
 // CHECK-NEXT:    [[CONV2:%.*]] = and i32 [[TMP3]], 255
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.m(i32 [[TMP2]], i32 [[CONV2]], <8 x i16> [[QX]], <8 x i16> [[QY]])
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc(i32 [[TMP2]], i32 [[CONV2]], <8 x i16> [[QX]], <8 x i16> [[QY]], i32 0)
 // CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { i32, i32 } [[TMP4]], 0
-// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 [[TMP5]])
+// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 [[TMP5]])
 // CHECK-NEXT:    ret i32 [[TMP6]]
 //
 unsigned int test_vmulas_u16_xacc(unsigned int init_val, esp_vec128_16_t Qx, esp_vec128_16_t Qy) {
     // Initialize XACC: write low 32 bits and high 8 bits separately
-    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l_m(init_val);
-    unsigned char xacc_high = __builtin_riscv_esp_movx_w_xacc_h_m(0);
+    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l(init_val);
+    unsigned char xacc_high = __builtin_riscv_esp_movx_w_xacc_h(0);
 
     // VMULAS: Mixed model - XACC as struct {unsigned int low, unsigned char high}
     // Parameters: (xacc_low_in, xacc_high_in, Qx, Qy, xacc_low_out_ptr, xacc_high_out_ptr)
     // Returns: void (outputs via pointers)
     unsigned int xacc_low_out;
     unsigned int xacc_high_out;  // Changed from unsigned char to unsigned int (only low 8 bits valid)
-    __builtin_riscv_esp_vmulas_u16_xacc_m(xacc_low, xacc_high, Qx, Qy, &xacc_low_out, &xacc_high_out);
+    __builtin_riscv_esp_vmulas_u16_xacc(xacc_low, xacc_high, Qx, Qy, &xacc_low_out, &xacc_high_out);
 
     // Read Result from XACC[31:0] using VMULAS output value for explicit state passing
-    return __builtin_riscv_esp_movx_r_xacc_l_m(xacc_low_out);
+    return __builtin_riscv_esp_movx_r_xacc_l(xacc_low_out);
 }
 
 // Test ESP.VMULAS.U8.XACC with mixed model (struct for whole XACC)
@@ -160,28 +160,28 @@ unsigned int test_vmulas_u16_xacc(unsigned int init_val, esp_vec128_16_t Qx, esp
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
-// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 [[INIT_VAL]])
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
 // CHECK-NEXT:    [[CONV2:%.*]] = and i32 [[TMP3]], 255
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.m(i32 [[TMP2]], i32 [[CONV2]], <16 x i8> [[QX]], <16 x i8> [[QY]])
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc(i32 [[TMP2]], i32 [[CONV2]], <16 x i8> [[QX]], <16 x i8> [[QY]], i32 0)
 // CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { i32, i32 } [[TMP4]], 0
-// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 [[TMP5]])
+// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 [[TMP5]])
 // CHECK-NEXT:    ret i32 [[TMP6]]
 //
 unsigned int test_vmulas_u8_xacc(unsigned int init_val, esp_vec128_t Qx, esp_vec128_t Qy) {
     // Initialize XACC: write low 32 bits and high 8 bits separately
-    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l_m(init_val);
-    unsigned char xacc_high = __builtin_riscv_esp_movx_w_xacc_h_m(0);
+    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l(init_val);
+    unsigned char xacc_high = __builtin_riscv_esp_movx_w_xacc_h(0);
 
     // VMULAS: Mixed model - XACC as struct {unsigned int low, unsigned char high}
     // Parameters: (xacc_low_in, xacc_high_in, Qx, Qy, xacc_low_out_ptr, xacc_high_out_ptr)
     // Returns: void (outputs via pointers)
     unsigned int xacc_low_out;
     unsigned int xacc_high_out;  // Changed from unsigned char to unsigned int (only low 8 bits valid)
-    __builtin_riscv_esp_vmulas_u8_xacc_m(xacc_low, xacc_high, Qx, Qy, &xacc_low_out, &xacc_high_out);
+    __builtin_riscv_esp_vmulas_u8_xacc(xacc_low, xacc_high, Qx, Qy, &xacc_low_out, &xacc_high_out);
 
     // Read Result from XACC[31:0] using VMULAS output value for explicit state passing
-    return __builtin_riscv_esp_movx_r_xacc_l_m(xacc_low_out);
+    return __builtin_riscv_esp_movx_r_xacc_l(xacc_low_out);
 }
 
 // Test ESP.SRS.S.XACC with explicit state passing (still uses i64 model)
@@ -189,29 +189,29 @@ unsigned int test_vmulas_u8_xacc(unsigned int init_val, esp_vec128_t Qx, esp_vec
 // CHECK-LABEL: define dso_local i32 @test_srs_s_xacc(
 // CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], i32 noundef [[SHIFT_AMOUNT:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
-// CHECK-NEXT:    [[TMP1:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 [[INIT_VAL]])
+// CHECK-NEXT:    [[TMP1:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
 // CHECK-NEXT:    [[CONV2:%.*]] = and i32 [[TMP1]], 255
-// CHECK-NEXT:    [[TMP2:%.*]] = tail call { i32, i32, i32 } @llvm.riscv.esp.srs.s.xacc.m(i32 [[CONV2]], i32 [[TMP0]], i32 [[SHIFT_AMOUNT]])
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call { i32, i32, i32 } @llvm.riscv.esp.srs.s.xacc(i32 [[CONV2]], i32 [[TMP0]], i32 [[SHIFT_AMOUNT]], i32 0, i32 7)
 // CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { i32, i32, i32 } [[TMP2]], 2
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 [[TMP3]])
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 [[TMP3]])
 // CHECK-NEXT:    ret i32 [[TMP4]]
 //
 unsigned int test_srs_s_xacc(unsigned int init_val, int32_t shift_amount) {
     // Initialize XACC low part
-    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l_m(init_val);
+    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l(init_val);
     // Initialize XACC high part (default to 0)
-    unsigned char xacc_high = __builtin_riscv_esp_movx_w_xacc_h_m(0);
+    unsigned char xacc_high = __builtin_riscv_esp_movx_w_xacc_h(0);
 
     // SRS: uses struct model (struct {unsigned char xacc_h; unsigned int xacc_l;})
     // XACC is represented as two parameters: xacc_h (unsigned char) and xacc_l (unsigned int)
     unsigned int xacc_h_out;  // Changed from unsigned char to unsigned int (only low 8 bits valid)
     unsigned int xacc_l_out;
-    int saturated_val = __builtin_riscv_esp_srs_s_xacc_m(xacc_high, xacc_low, shift_amount, &xacc_h_out, &xacc_l_out);
+    int saturated_val = __builtin_riscv_esp_srs_s_xacc(xacc_high, xacc_low, shift_amount, 0, 7, &xacc_h_out, &xacc_l_out);
 
     // Read from XACC[31:0] using the output value from SRS
     // Data flow: xacc_l_out (from SRS) -> MOVX.R(xacc_l_out) -> read_val
-    return __builtin_riscv_esp_movx_r_xacc_l_m(xacc_l_out);
+    return __builtin_riscv_esp_movx_r_xacc_l(xacc_l_out);
 }
 
 // Test ESP.SRS.U.XACC with explicit state passing (uses struct model)
@@ -219,29 +219,29 @@ unsigned int test_srs_s_xacc(unsigned int init_val, int32_t shift_amount) {
 // CHECK-LABEL: define dso_local i32 @test_srs_u_xacc(
 // CHECK-SAME: i32 noundef [[INIT_VAL:%.*]], i32 noundef [[SHIFT_AMOUNT:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
-// CHECK-NEXT:    [[TMP1:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 [[INIT_VAL]])
+// CHECK-NEXT:    [[TMP1:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
 // CHECK-NEXT:    [[CONV2:%.*]] = and i32 [[TMP1]], 255
-// CHECK-NEXT:    [[TMP2:%.*]] = tail call { i32, i32, i32 } @llvm.riscv.esp.srs.u.xacc.m(i32 [[CONV2]], i32 [[TMP0]], i32 [[SHIFT_AMOUNT]])
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call { i32, i32, i32 } @llvm.riscv.esp.srs.u.xacc(i32 [[CONV2]], i32 [[TMP0]], i32 [[SHIFT_AMOUNT]], i32 0, i32 7)
 // CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { i32, i32, i32 } [[TMP2]], 2
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 [[TMP3]])
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 [[TMP3]])
 // CHECK-NEXT:    ret i32 [[TMP4]]
 //
 unsigned int test_srs_u_xacc(unsigned int init_val, int32_t shift_amount) {
     // Initialize XACC low part
-    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l_m(init_val);
+    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l(init_val);
     // Initialize XACC high part (default to 0)
-    unsigned char xacc_high = __builtin_riscv_esp_movx_w_xacc_h_m(0);
+    unsigned char xacc_high = __builtin_riscv_esp_movx_w_xacc_h(0);
 
     // SRS: uses struct model (struct {unsigned char xacc_h; unsigned int xacc_l;})
     // XACC is represented as two parameters: xacc_h (unsigned char) and xacc_l (unsigned int)
     unsigned int xacc_h_out;  // Changed from unsigned char to unsigned int (only low 8 bits valid)
     unsigned int xacc_l_out;
-    unsigned int saturated_val = __builtin_riscv_esp_srs_u_xacc_m(xacc_high, xacc_low, shift_amount, &xacc_h_out, &xacc_l_out);
+    unsigned int saturated_val = __builtin_riscv_esp_srs_u_xacc(xacc_high, xacc_low, shift_amount, 0, 7, &xacc_h_out, &xacc_l_out);
 
     // Read from XACC[31:0] using the output value from SRS
     // Data flow: xacc_l_out (from SRS) -> MOVX.R(xacc_l_out) -> read_val
-    return __builtin_riscv_esp_movx_r_xacc_l_m(xacc_l_out);
+    return __builtin_riscv_esp_movx_r_xacc_l(xacc_l_out);
 }
 
 
@@ -259,16 +259,16 @@ unsigned int test_srs_u_xacc(unsigned int init_val, int32_t shift_amount) {
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
-// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.ld.ip.m(i32 [[TMP2]], i32 [[TMP3]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 16)
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 [[INIT_VAL]])
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.ld.ip(i32 [[TMP2]], i32 [[TMP3]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 16, i32 0)
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP5]]
 //
 unsigned int test_vmulas_s16_xacc_ld_ip(unsigned int init_val, esp_vec128_16_t Qx, esp_vec128_16_t Qy, void const *Ptr) {
     // Initialize XACC: write low 32 bits and high 8 bits separately
-    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l_m(init_val);
-    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h_m(0);  // XACC[39:32] = 0 (only low 8 bits valid)
+    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l(init_val);
+    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h(0);  // XACC[39:32] = 0 (only low 8 bits valid)
     // XACC is explicit input and output for chaining
     // Loads Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with Qu (128-bit Data), updated pointer, and new XACC
@@ -277,12 +277,12 @@ esp_vmulas_xacc_ld_res_t Res;
   // xacc_low, xacc_high: current XACC state (input)
   // &Res.xacc_low, &Res.xacc_high: pointers to store new XACC state (output)
   // This enables explicit state passing: xacc_old -> instruction -> xacc_new
-  Res.Ptr = __builtin_riscv_esp_vmulas_s16_xacc_ld_ip_m(
+  Res.Ptr = __builtin_riscv_esp_vmulas_s16_xacc_ld_ip(
       xacc_low, xacc_high, Qx, Qy, Ptr, 16, &Res.Qu.v8, &Res.xacc_low,
       &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
-    return __builtin_riscv_esp_movx_r_xacc_l_m(0);
+    return __builtin_riscv_esp_movx_r_xacc_l(0);
 }
 
 // Test ESP.VMULAS.S16.XACC.LD.XP with explicit state passing
@@ -291,27 +291,27 @@ esp_vmulas_xacc_ld_res_t Res;
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
-// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.ld.xp.m(i32 [[TMP2]], i32 [[TMP3]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 [[REG]])
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 [[INIT_VAL]])
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.ld.xp(i32 [[TMP2]], i32 [[TMP3]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 [[REG]], i32 0)
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP5]]
 //
 unsigned int test_vmulas_s16_xacc_ld_xp(unsigned int init_val, esp_vec128_16_t Qx, esp_vec128_16_t Qy, void const *Ptr, int Reg) {
     // Initialize XACC: write low 32 bits and high 8 bits separately
-    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l_m(init_val);
-    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h_m(0);  // XACC[39:32] = 0 (only low 8 bits valid)
+    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l(init_val);
+    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h(0);  // XACC[39:32] = 0 (only low 8 bits valid)
     // XACC is explicit input and output for chaining
     // Loads Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with Qu (128-bit Data), updated pointer, and new XACC
     // Mixed model: XACC as {unsigned int low, unsigned int high}
 esp_vmulas_xacc_ld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vmulas_s16_xacc_ld_xp_m(
+  Res.Ptr = __builtin_riscv_esp_vmulas_s16_xacc_ld_xp(
       xacc_low, xacc_high, Qx, Qy, Ptr, Reg, &Res.Qu.v8, &Res.xacc_low,
       &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
-    return __builtin_riscv_esp_movx_r_xacc_l_m(0);
+    return __builtin_riscv_esp_movx_r_xacc_l(0);
 }
 
 // Test ESP.VMULAS.S16.XACC.ST.IP with explicit state passing
@@ -321,16 +321,16 @@ esp_vmulas_xacc_ld_res_t Res;
 // CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP2]], align 16, !tbaa [[TBAA10]]
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.st.ip.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 16)
-// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 [[INIT_VAL]])
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.st.ip(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 16, i32 0)
+// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP6]]
 //
 unsigned int test_vmulas_s16_xacc_st_ip(unsigned int init_val, esp_vec128_t Qu, esp_vec128_16_t Qx, esp_vec128_16_t Qy, void *Ptr) {
     // Initialize XACC: write low 32 bits and high 8 bits separately
-    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l_m(init_val);
-    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h_m(0);  // XACC[39:32] = 0 (only low 8 bits valid)
+    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l(init_val);
+    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h(0);  // XACC[39:32] = 0 (only low 8 bits valid)
     // XACC is explicit input and output for chaining
     // Stores Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with updated pointer and new XACC
@@ -340,12 +340,12 @@ esp_vmulas_xacc_st_res_t Res;
   // &Res.xacc_low, &Res.xacc_high: pointers to store new XACC state (output,
   // after multiply-accumulate) This pattern enables explicit state passing for
   // instruction chaining
-  Res.Ptr = __builtin_riscv_esp_vmulas_s16_xacc_st_ip_m(
+  Res.Ptr = __builtin_riscv_esp_vmulas_s16_xacc_st_ip(
       xacc_low, xacc_high, Qu, Qx, Qy, Ptr, 16, &Res.xacc_low,
       &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
-    return __builtin_riscv_esp_movx_r_xacc_l_m(0);
+    return __builtin_riscv_esp_movx_r_xacc_l(0);
 }
 
 // Test ESP.VMULAS.S16.XACC.ST.XP with explicit state passing
@@ -355,27 +355,27 @@ esp_vmulas_xacc_st_res_t Res;
 // CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP2]], align 16, !tbaa [[TBAA10]]
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.st.xp.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 [[REG]])
-// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 [[INIT_VAL]])
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.st.xp(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 [[REG]], i32 0)
+// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP6]]
 //
 unsigned int test_vmulas_s16_xacc_st_xp(unsigned int init_val, esp_vec128_t Qu, esp_vec128_16_t Qx, esp_vec128_16_t Qy, void *Ptr, int Reg) {
     // Initialize XACC: write low 32 bits and high 8 bits separately
-    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l_m(init_val);
-    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h_m(0);  // XACC[39:32] = 0 (only low 8 bits valid)
+    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l(init_val);
+    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h(0);  // XACC[39:32] = 0 (only low 8 bits valid)
     // XACC is explicit input and output for chaining
     // Stores Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with updated pointer and new XACC
     // Mixed model: XACC as {unsigned int low, unsigned int high}
 esp_vmulas_xacc_st_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vmulas_s16_xacc_st_xp_m(
+  Res.Ptr = __builtin_riscv_esp_vmulas_s16_xacc_st_xp(
       xacc_low, xacc_high, Qu, Qx, Qy, Ptr, Reg, &Res.xacc_low,
       &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
-    return __builtin_riscv_esp_movx_r_xacc_l_m(0);
+    return __builtin_riscv_esp_movx_r_xacc_l(0);
 }
 
 // Test ESP.VMULAS.S8.XACC.LD.IP with explicit state passing
@@ -384,27 +384,27 @@ esp_vmulas_xacc_st_res_t Res;
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
-// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.ld.ip.m(i32 [[TMP2]], i32 [[TMP3]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 16)
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 [[INIT_VAL]])
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.ld.ip(i32 [[TMP2]], i32 [[TMP3]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 16, i32 0)
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP5]]
 //
 unsigned int test_vmulas_s8_xacc_ld_ip(unsigned int init_val, esp_vec128_t Qx, esp_vec128_t Qy, void const *Ptr) {
     // Initialize XACC: write low 32 bits and high 8 bits separately
-    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l_m(init_val);
-    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h_m(0);  // XACC[39:32] = 0 (only low 8 bits valid)
+    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l(init_val);
+    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h(0);  // XACC[39:32] = 0 (only low 8 bits valid)
     // XACC is explicit input and output for chaining
     // Loads Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with Qu (128-bit Data), updated pointer, and new XACC
     // Mixed model: XACC as {unsigned int low, unsigned int high}
 esp_vmulas_xacc_ld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vmulas_s8_xacc_ld_ip_m(
+  Res.Ptr = __builtin_riscv_esp_vmulas_s8_xacc_ld_ip(
       xacc_low, xacc_high, Qx, Qy, Ptr, 16, &Res.Qu.v8, &Res.xacc_low,
       &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
-    return __builtin_riscv_esp_movx_r_xacc_l_m(0);
+    return __builtin_riscv_esp_movx_r_xacc_l(0);
 }
 
 // Test ESP.VMULAS.S8.XACC.LD.XP with explicit state passing
@@ -413,27 +413,27 @@ esp_vmulas_xacc_ld_res_t Res;
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
-// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.ld.xp.m(i32 [[TMP2]], i32 [[TMP3]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 [[REG]])
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 [[INIT_VAL]])
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.ld.xp(i32 [[TMP2]], i32 [[TMP3]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 [[REG]], i32 0)
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP5]]
 //
 unsigned int test_vmulas_s8_xacc_ld_xp(unsigned int init_val, esp_vec128_t Qx, esp_vec128_t Qy, void const *Ptr, int Reg) {
     // Initialize XACC: write low 32 bits and high 8 bits separately
-    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l_m(init_val);
-    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h_m(0);  // XACC[39:32] = 0 (only low 8 bits valid)
+    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l(init_val);
+    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h(0);  // XACC[39:32] = 0 (only low 8 bits valid)
     // XACC is explicit input and output for chaining
     // Loads Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with Qu (128-bit Data), updated pointer, and new XACC
     // Mixed model: XACC as {unsigned int low, unsigned int high}
 esp_vmulas_xacc_ld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vmulas_s8_xacc_ld_xp_m(
+  Res.Ptr = __builtin_riscv_esp_vmulas_s8_xacc_ld_xp(
       xacc_low, xacc_high, Qx, Qy, Ptr, Reg, &Res.Qu.v8, &Res.xacc_low,
       &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
-    return __builtin_riscv_esp_movx_r_xacc_l_m(0);
+    return __builtin_riscv_esp_movx_r_xacc_l(0);
 }
 
 // Test ESP.VMULAS.S8.XACC.ST.IP with explicit state passing
@@ -443,27 +443,27 @@ esp_vmulas_xacc_ld_res_t Res;
 // CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP2]], align 16, !tbaa [[TBAA10]]
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.st.ip.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 16)
-// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 [[INIT_VAL]])
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.st.ip(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 16, i32 0)
+// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP6]]
 //
 unsigned int test_vmulas_s8_xacc_st_ip(unsigned int init_val, esp_vec128_t Qu, esp_vec128_t Qx, esp_vec128_t Qy, void *Ptr) {
     // Initialize XACC: write low 32 bits and high 8 bits separately
-    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l_m(init_val);
-    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h_m(0);  // XACC[39:32] = 0 (only low 8 bits valid)
+    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l(init_val);
+    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h(0);  // XACC[39:32] = 0 (only low 8 bits valid)
     // XACC is explicit input and output for chaining
     // Stores Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with updated pointer and new XACC
     // Mixed model: XACC as {unsigned int low, unsigned int high}
 esp_vmulas_xacc_st_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vmulas_s8_xacc_st_ip_m(
+  Res.Ptr = __builtin_riscv_esp_vmulas_s8_xacc_st_ip(
       xacc_low, xacc_high, Qu, Qx, Qy, Ptr, 16, &Res.xacc_low,
       &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
-    return __builtin_riscv_esp_movx_r_xacc_l_m(0);
+    return __builtin_riscv_esp_movx_r_xacc_l(0);
 }
 
 // Test ESP.VMULAS.S8.XACC.ST.XP with explicit state passing
@@ -473,27 +473,27 @@ esp_vmulas_xacc_st_res_t Res;
 // CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP2]], align 16, !tbaa [[TBAA10]]
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.st.xp.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 [[REG]])
-// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 [[INIT_VAL]])
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.st.xp(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 [[REG]], i32 0)
+// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP6]]
 //
 unsigned int test_vmulas_s8_xacc_st_xp(unsigned int init_val, esp_vec128_t Qu, esp_vec128_t Qx, esp_vec128_t Qy, void *Ptr, int Reg) {
     // Initialize XACC: write low 32 bits and high 8 bits separately
-    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l_m(init_val);
-    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h_m(0);  // XACC[39:32] = 0 (only low 8 bits valid)
+    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l(init_val);
+    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h(0);  // XACC[39:32] = 0 (only low 8 bits valid)
     // XACC is explicit input and output for chaining
     // Stores Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with updated pointer and new XACC
     // Mixed model: XACC as {unsigned int low, unsigned int high}
 esp_vmulas_xacc_st_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vmulas_s8_xacc_st_xp_m(
+  Res.Ptr = __builtin_riscv_esp_vmulas_s8_xacc_st_xp(
       xacc_low, xacc_high, Qu, Qx, Qy, Ptr, Reg, &Res.xacc_low,
       &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
-    return __builtin_riscv_esp_movx_r_xacc_l_m(0);
+    return __builtin_riscv_esp_movx_r_xacc_l(0);
 }
 
 // Test ESP.VMULAS.U16.XACC.LD.IP with explicit state passing
@@ -502,27 +502,27 @@ esp_vmulas_xacc_st_res_t Res;
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
-// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.ld.ip.m(i32 [[TMP2]], i32 [[TMP3]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 16)
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 [[INIT_VAL]])
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.ld.ip(i32 [[TMP2]], i32 [[TMP3]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 16, i32 0)
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP5]]
 //
 unsigned int test_vmulas_u16_xacc_ld_ip(unsigned int init_val, esp_vec128_16_t Qx, esp_vec128_16_t Qy, void const *Ptr) {
     // Initialize XACC: write low 32 bits and high 8 bits separately
-    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l_m(init_val);
-    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h_m(0);  // XACC[39:32] = 0 (only low 8 bits valid)
+    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l(init_val);
+    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h(0);  // XACC[39:32] = 0 (only low 8 bits valid)
     // XACC is explicit input and output for chaining
     // Loads Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with Qu (128-bit Data), updated pointer, and new XACC
     // Mixed model: XACC as {unsigned int low, unsigned int high}
 esp_vmulas_xacc_ld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vmulas_u16_xacc_ld_ip_m(
+  Res.Ptr = __builtin_riscv_esp_vmulas_u16_xacc_ld_ip(
       xacc_low, xacc_high, Qx, Qy, Ptr, 16, &Res.Qu.v8, &Res.xacc_low,
       &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
-    return __builtin_riscv_esp_movx_r_xacc_l_m(0);
+    return __builtin_riscv_esp_movx_r_xacc_l(0);
 }
 
 // Test ESP.VMULAS.U16.XACC.LD.XP with explicit state passing
@@ -531,27 +531,27 @@ esp_vmulas_xacc_ld_res_t Res;
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
-// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.ld.xp.m(i32 [[TMP2]], i32 [[TMP3]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 [[REG]])
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 [[INIT_VAL]])
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.ld.xp(i32 [[TMP2]], i32 [[TMP3]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 [[REG]], i32 0)
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP5]]
 //
 unsigned int test_vmulas_u16_xacc_ld_xp(unsigned int init_val, esp_vec128_16_t Qx, esp_vec128_16_t Qy, void const *Ptr, int Reg) {
     // Initialize XACC: write low 32 bits and high 8 bits separately
-    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l_m(init_val);
-    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h_m(0);  // XACC[39:32] = 0 (only low 8 bits valid)
+    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l(init_val);
+    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h(0);  // XACC[39:32] = 0 (only low 8 bits valid)
     // XACC is explicit input and output for chaining
     // Loads Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with Qu (128-bit Data), updated pointer, and new XACC
     // Mixed model: XACC as {unsigned int low, unsigned int high}
 esp_vmulas_xacc_ld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vmulas_u16_xacc_ld_xp_m(
+  Res.Ptr = __builtin_riscv_esp_vmulas_u16_xacc_ld_xp(
       xacc_low, xacc_high, Qx, Qy, Ptr, Reg, &Res.Qu.v8, &Res.xacc_low,
       &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
-    return __builtin_riscv_esp_movx_r_xacc_l_m(0);
+    return __builtin_riscv_esp_movx_r_xacc_l(0);
 }
 
 // Test ESP.VMULAS.U16.XACC.ST.IP with explicit state passing
@@ -561,27 +561,27 @@ esp_vmulas_xacc_ld_res_t Res;
 // CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP2]], align 16, !tbaa [[TBAA10]]
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.st.ip.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 16)
-// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 [[INIT_VAL]])
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.st.ip(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 16, i32 0)
+// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP6]]
 //
 unsigned int test_vmulas_u16_xacc_st_ip(unsigned int init_val, esp_vec128_t Qu, esp_vec128_16_t Qx, esp_vec128_16_t Qy, void *Ptr) {
     // Initialize XACC: write low 32 bits and high 8 bits separately
-    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l_m(init_val);
-    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h_m(0);  // XACC[39:32] = 0 (only low 8 bits valid)
+    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l(init_val);
+    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h(0);  // XACC[39:32] = 0 (only low 8 bits valid)
     // XACC is explicit input and output for chaining
     // Stores Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with updated pointer and new XACC
     // Mixed model: XACC as {unsigned int low, unsigned int high}
 esp_vmulas_xacc_st_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vmulas_u16_xacc_st_ip_m(
+  Res.Ptr = __builtin_riscv_esp_vmulas_u16_xacc_st_ip(
       xacc_low, xacc_high, Qu, Qx, Qy, Ptr, 16, &Res.xacc_low,
       &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
-    return __builtin_riscv_esp_movx_r_xacc_l_m(0);
+    return __builtin_riscv_esp_movx_r_xacc_l(0);
 }
 
 // Test ESP.VMULAS.U16.XACC.ST.XP with explicit state passing
@@ -591,27 +591,27 @@ esp_vmulas_xacc_st_res_t Res;
 // CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QX:%.*]] = load <8 x i16>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QY:%.*]] = load <8 x i16>, ptr [[TMP2]], align 16, !tbaa [[TBAA10]]
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.st.xp.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 [[REG]])
-// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 [[INIT_VAL]])
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.st.xp(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <8 x i16> [[QX]], <8 x i16> [[QY]], ptr [[PTR]], i32 [[REG]], i32 0)
+// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP6]]
 //
 unsigned int test_vmulas_u16_xacc_st_xp(unsigned int init_val, esp_vec128_t Qu, esp_vec128_16_t Qx, esp_vec128_16_t Qy, void *Ptr, int Reg) {
     // Initialize XACC: write low 32 bits and high 8 bits separately
-    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l_m(init_val);
-    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h_m(0);  // XACC[39:32] = 0 (only low 8 bits valid)
+    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l(init_val);
+    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h(0);  // XACC[39:32] = 0 (only low 8 bits valid)
     // XACC is explicit input and output for chaining
     // Stores Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with updated pointer and new XACC
     // Mixed model: XACC as {unsigned int low, unsigned int high}
 esp_vmulas_xacc_st_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vmulas_u16_xacc_st_xp_m(
+  Res.Ptr = __builtin_riscv_esp_vmulas_u16_xacc_st_xp(
       xacc_low, xacc_high, Qu, Qx, Qy, Ptr, Reg, &Res.xacc_low,
       &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
-    return __builtin_riscv_esp_movx_r_xacc_l_m(0);
+    return __builtin_riscv_esp_movx_r_xacc_l(0);
 }
 
 // Test ESP.VMULAS.U8.XACC.LD.IP with explicit state passing
@@ -620,27 +620,27 @@ esp_vmulas_xacc_st_res_t Res;
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
-// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.ld.ip.m(i32 [[TMP2]], i32 [[TMP3]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 16)
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 [[INIT_VAL]])
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.ld.ip(i32 [[TMP2]], i32 [[TMP3]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 16, i32 0)
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP5]]
 //
 unsigned int test_vmulas_u8_xacc_ld_ip(unsigned int init_val, esp_vec128_t Qx, esp_vec128_t Qy, void const *Ptr) {
     // Initialize XACC: write low 32 bits and high 8 bits separately
-    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l_m(init_val);
-    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h_m(0);  // XACC[39:32] = 0 (only low 8 bits valid)
+    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l(init_val);
+    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h(0);  // XACC[39:32] = 0 (only low 8 bits valid)
     // XACC is explicit input and output for chaining
     // Loads Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with Qu (128-bit Data), updated pointer, and new XACC
     // Mixed model: XACC as {unsigned int low, unsigned int high}
 esp_vmulas_xacc_ld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vmulas_u8_xacc_ld_ip_m(
+  Res.Ptr = __builtin_riscv_esp_vmulas_u8_xacc_ld_ip(
       xacc_low, xacc_high, Qx, Qy, Ptr, 16, &Res.Qu.v8, &Res.xacc_low,
       &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
-    return __builtin_riscv_esp_movx_r_xacc_l_m(0);
+    return __builtin_riscv_esp_movx_r_xacc_l(0);
 }
 
 // Test ESP.VMULAS.U8.XACC.LD.XP with explicit state passing
@@ -649,27 +649,27 @@ esp_vmulas_xacc_ld_res_t Res;
 // CHECK-NEXT:  [[ENTRY:.*:]]
 // CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
-// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.ld.xp.m(i32 [[TMP2]], i32 [[TMP3]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 [[REG]])
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 [[INIT_VAL]])
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.ld.xp(i32 [[TMP2]], i32 [[TMP3]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 [[REG]], i32 0)
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP5]]
 //
 unsigned int test_vmulas_u8_xacc_ld_xp(unsigned int init_val, esp_vec128_t Qx, esp_vec128_t Qy, void const *Ptr, int Reg) {
     // Initialize XACC: write low 32 bits and high 8 bits separately
-    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l_m(init_val);
-    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h_m(0);  // XACC[39:32] = 0 (only low 8 bits valid)
+    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l(init_val);
+    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h(0);  // XACC[39:32] = 0 (only low 8 bits valid)
     // XACC is explicit input and output for chaining
     // Loads Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with Qu (128-bit Data), updated pointer, and new XACC
     // Mixed model: XACC as {unsigned int low, unsigned int high}
 esp_vmulas_xacc_ld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vmulas_u8_xacc_ld_xp_m(
+  Res.Ptr = __builtin_riscv_esp_vmulas_u8_xacc_ld_xp(
       xacc_low, xacc_high, Qx, Qy, Ptr, Reg, &Res.Qu.v8, &Res.xacc_low,
       &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
-    return __builtin_riscv_esp_movx_r_xacc_l_m(0);
+    return __builtin_riscv_esp_movx_r_xacc_l(0);
 }
 
 // Test ESP.VMULAS.U8.XACC.ST.IP with explicit state passing
@@ -679,27 +679,27 @@ esp_vmulas_xacc_ld_res_t Res;
 // CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP2]], align 16, !tbaa [[TBAA10]]
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.st.ip.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 16)
-// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 [[INIT_VAL]])
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.st.ip(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 16, i32 0)
+// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP6]]
 //
 unsigned int test_vmulas_u8_xacc_st_ip(unsigned int init_val, esp_vec128_t Qu, esp_vec128_t Qx, esp_vec128_t Qy, void *Ptr) {
     // Initialize XACC: write low 32 bits and high 8 bits separately
-    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l_m(init_val);
-    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h_m(0);  // XACC[39:32] = 0 (only low 8 bits valid)
+    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l(init_val);
+    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h(0);  // XACC[39:32] = 0 (only low 8 bits valid)
     // XACC is explicit input and output for chaining
     // Stores Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with updated pointer and new XACC
     // Mixed model: XACC as {unsigned int low, unsigned int high}
 esp_vmulas_xacc_st_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vmulas_u8_xacc_st_ip_m(
+  Res.Ptr = __builtin_riscv_esp_vmulas_u8_xacc_st_ip(
       xacc_low, xacc_high, Qu, Qx, Qy, Ptr, 16, &Res.xacc_low,
       &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
-    return __builtin_riscv_esp_movx_r_xacc_l_m(0);
+    return __builtin_riscv_esp_movx_r_xacc_l(0);
 }
 
 // Test ESP.VMULAS.U8.XACC.ST.XP with explicit state passing
@@ -709,27 +709,27 @@ esp_vmulas_xacc_st_res_t Res;
 // CHECK-NEXT:    [[QU:%.*]] = load <16 x i8>, ptr [[TMP0]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QX:%.*]] = load <16 x i8>, ptr [[TMP1]], align 16, !tbaa [[TBAA10]]
 // CHECK-NEXT:    [[QY:%.*]] = load <16 x i8>, ptr [[TMP2]], align 16, !tbaa [[TBAA10]]
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 [[INIT_VAL]])
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.st.xp.m(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 [[REG]])
-// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 [[INIT_VAL]])
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.st.xp(i32 [[TMP3]], i32 [[TMP4]], <16 x i8> [[QU]], <16 x i8> [[QX]], <16 x i8> [[QY]], ptr [[PTR]], i32 [[REG]], i32 0)
+// CHECK-NEXT:    [[TMP6:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
 // CHECK-NEXT:    ret i32 [[TMP6]]
 //
 unsigned int test_vmulas_u8_xacc_st_xp(unsigned int init_val, esp_vec128_t Qu, esp_vec128_t Qx, esp_vec128_t Qy, void *Ptr, int Reg) {
     // Initialize XACC: write low 32 bits and high 8 bits separately
-    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l_m(init_val);
-    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h_m(0);  // XACC[39:32] = 0 (only low 8 bits valid)
+    unsigned int xacc_low = __builtin_riscv_esp_movx_w_xacc_l(init_val);
+    unsigned int xacc_high = __builtin_riscv_esp_movx_w_xacc_h(0);  // XACC[39:32] = 0 (only low 8 bits valid)
     // XACC is explicit input and output for chaining
     // Stores Data, performs multiply-accumulate: XACC = XACC + (Qx * Qy)
     // Returns structure with updated pointer and new XACC
     // Mixed model: XACC as {unsigned int low, unsigned int high}
 esp_vmulas_xacc_st_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vmulas_u8_xacc_st_xp_m(
+  Res.Ptr = __builtin_riscv_esp_vmulas_u8_xacc_st_xp(
       xacc_low, xacc_high, Qu, Qx, Qy, Ptr, Reg, &Res.xacc_low,
       &Res.xacc_high);
     // Read from XACC[31:0]: rd[31:0] = XACC[31:0]
     // Pass 0 as passthru (hardware reads directly from XACC register)
-    return __builtin_riscv_esp_movx_r_xacc_l_m(0);
+    return __builtin_riscv_esp_movx_r_xacc_l(0);
 }
 
 

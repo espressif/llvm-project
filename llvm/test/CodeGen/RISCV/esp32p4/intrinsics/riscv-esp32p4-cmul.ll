@@ -2,6 +2,9 @@
 ; ModuleID = './riscv-esp32p4-cmul.c'
 ; Test ASM generation (Intrinsic -> ASM)
 ; RUN: llc -O2 -mattr=+xespv2p1,+espv-lowering -mtriple=riscv32 %s -o - | FileCheck %s --check-prefix=ASM
+; RUN: llc -O2 -mattr=+xespv,+espv-lowering -mtriple=riscv32 %s -o - | FileCheck %s --check-prefix=ASM2P2
+; RUN: llc -O2 -mattr=+xespv,+espv-lowering -mtriple=riscv32 -stop-after=finalize-isel %s -o - | FileCheck %s --check-prefix=MIR2P2
+
 
 define dso_local void @test_cmul_u16_ld_incp_with_wrapper(ptr noundef %src1, ptr noundef %src2, ptr noundef readnone captures(none) %src3, ptr noundef readnone captures(none) %src4, ptr noundef %dst) local_unnamed_addr #0 {
 ; ASM-LABEL: test_cmul_u16_ld_incp_with_wrapper:
@@ -14,22 +17,48 @@ define dso_local void @test_cmul_u16_ld_incp_with_wrapper(ptr noundef %src1, ptr
 ; ASM-NEXT:    esp.cmul.u16.ld.incp q1, a0, q0, q0, q1, 3
 ; ASM-NEXT:    esp.vst.128.ip q0, a4, 16
 ; ASM-NEXT:    ret
+;
+; ASM2P2-LABEL: test_cmul_u16_ld_incp_with_wrapper:
+; ASM2P2:       # %bb.0: # %entry
+; ASM2P2-NEXT:    mv a2, a0
+; ASM2P2-NEXT:    esp.vld.128.ip q0, a2, 16
+; ASM2P2-NEXT:    esp.vld.128.ip q1, a1, 16
+; ASM2P2-NEXT:    li a1, 0
+; ASM2P2-NEXT:    esp.movx.w.sar a1
+; ASM2P2-NEXT:    esp.cmul.u16.ld.incp q1, a0, q0, q0, q1, 3
+; ASM2P2-NEXT:    esp.vst.128.ip q0, a4, 16
+; ASM2P2-NEXT:    ret
+; MIR2P2-LABEL: name: test_cmul_u16_ld_incp_with_wrapper
+; MIR2P2: bb.0.entry:
+; MIR2P2-NEXT:   liveins: $x10, $x11, $x14
+; MIR2P2-NEXT: {{  $}}
+; MIR2P2-NEXT:   [[COPY:%[0-9]+]]:gprpie = COPY $x14
+; MIR2P2-NEXT:   [[COPY1:%[0-9]+]]:gprpie = COPY $x11
+; MIR2P2-NEXT:   [[COPY2:%[0-9]+]]:gprpie = COPY $x10
+; MIR2P2-NEXT:   [[COPY3:%[0-9]+]]:gprpie = COPY $x0
+; MIR2P2-NEXT:   [[ESP_MOVX_W_SAR:%[0-9]+]]:sarreg = ESP_MOVX_W_SAR [[COPY3]]
+; MIR2P2-NEXT:   [[ESP_VLD_128_IP:%[0-9]+]]:qr, [[ESP_VLD_128_IP1:%[0-9]+]]:gprpie = ESP_VLD_128_IP [[COPY2]], 16 :: (load (s128) from %ir.src1)
+; MIR2P2-NEXT:   [[ESP_VLD_128_IP2:%[0-9]+]]:qr, [[ESP_VLD_128_IP3:%[0-9]+]]:gprpie = ESP_VLD_128_IP [[COPY1]], 16 :: (load (s128) from %ir.src2)
+; MIR2P2-NEXT:   [[DEF:%[0-9]+]]:qr = IMPLICIT_DEF
+; MIR2P2-NEXT:   [[ESP_CMUL_U16_LD_INCP:%[0-9]+]]:qr, [[ESP_CMUL_U16_LD_INCP1:%[0-9]+]]:qr, [[ESP_CMUL_U16_LD_INCP2:%[0-9]+]]:gprpie = ESP_CMUL_U16_LD_INCP [[DEF]], killed [[ESP_VLD_128_IP]], killed [[ESP_VLD_128_IP2]], [[COPY2]], 3, killed [[ESP_MOVX_W_SAR]] :: (load (s128) from %ir.src1)
+; MIR2P2-NEXT:   [[ESP_VST_128_IP:%[0-9]+]]:gprpie = ESP_VST_128_IP killed [[ESP_CMUL_U16_LD_INCP]], [[COPY]], 16 :: (store (s128) into %ir.dst)
+; MIR2P2-NEXT:   PseudoRET
 entry:
-  %sar = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 0)
-  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src1, i32 16)
+  %sar = tail call i32 @llvm.riscv.esp.movx.w.sar(i32 0)
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src1, i32 16)
   %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
   %bc1 = bitcast <16 x i8> %ev1 to <8 x i16>
-  %vld2 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src2, i32 16)
+  %vld2 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src2, i32 16)
   %ev2 = extractvalue { <16 x i8>, ptr } %vld2, 0
   %bc2 = bitcast <16 x i8> %ev2 to <8 x i16>
   %cmul_ld_res = tail call { <8 x i16>, <16 x i8>, ptr } @llvm.riscv.esp.cmul.u16.ld.incp.m(<8 x i16> undef, <8 x i16> %bc1, <8 x i16> %bc2, ptr %src1, i32 3, i32 %sar)
   %ev3 = extractvalue { <8 x i16>, <16 x i8>, ptr } %cmul_ld_res, 0
   %bc3 = bitcast <8 x i16> %ev3 to <16 x i8>
-  %vst_ptr = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> %bc3, ptr %dst, i32 16)
+  %vst_ptr = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> %bc3, ptr %dst, i32 16)
   ret void
 }
 
-declare i32 @llvm.riscv.esp.movx.w.sar.m(i32) #1
+declare i32 @llvm.riscv.esp.movx.w.sar(i32) #1
 
 declare { <8 x i16>, <16 x i8>, ptr } @llvm.riscv.esp.cmul.u16.ld.incp.m(<8 x i16>, <8 x i16>, <8 x i16>, ptr, i32, i32) #2
 
@@ -44,22 +73,48 @@ define dso_local void @test_cmul_s16_ld_incp_with_wrapper(ptr noundef %src1, ptr
 ; ASM-NEXT:    esp.cmul.s16.ld.incp q1, a0, q0, q0, q1, 3
 ; ASM-NEXT:    esp.vst.128.ip q0, a2, 16
 ; ASM-NEXT:    ret
+;
+; ASM2P2-LABEL: test_cmul_s16_ld_incp_with_wrapper:
+; ASM2P2:       # %bb.0: # %entry
+; ASM2P2-NEXT:    mv a3, a0
+; ASM2P2-NEXT:    esp.vld.128.ip q0, a3, 16
+; ASM2P2-NEXT:    esp.vld.128.ip q1, a1, 16
+; ASM2P2-NEXT:    li a1, 0
+; ASM2P2-NEXT:    esp.movx.w.sar a1
+; ASM2P2-NEXT:    esp.cmul.s16.ld.incp q1, a0, q0, q0, q1, 3
+; ASM2P2-NEXT:    esp.vst.128.ip q0, a2, 16
+; ASM2P2-NEXT:    ret
+; MIR2P2-LABEL: name: test_cmul_s16_ld_incp_with_wrapper
+; MIR2P2: bb.0.entry:
+; MIR2P2-NEXT:   liveins: $x10, $x11, $x12
+; MIR2P2-NEXT: {{  $}}
+; MIR2P2-NEXT:   [[COPY:%[0-9]+]]:gprpie = COPY $x12
+; MIR2P2-NEXT:   [[COPY1:%[0-9]+]]:gprpie = COPY $x11
+; MIR2P2-NEXT:   [[COPY2:%[0-9]+]]:gprpie = COPY $x10
+; MIR2P2-NEXT:   [[COPY3:%[0-9]+]]:gprpie = COPY $x0
+; MIR2P2-NEXT:   [[ESP_MOVX_W_SAR:%[0-9]+]]:sarreg = ESP_MOVX_W_SAR [[COPY3]]
+; MIR2P2-NEXT:   [[ESP_VLD_128_IP:%[0-9]+]]:qr, [[ESP_VLD_128_IP1:%[0-9]+]]:gprpie = ESP_VLD_128_IP [[COPY2]], 16 :: (load (s128) from %ir.src1)
+; MIR2P2-NEXT:   [[ESP_VLD_128_IP2:%[0-9]+]]:qr, [[ESP_VLD_128_IP3:%[0-9]+]]:gprpie = ESP_VLD_128_IP [[COPY1]], 16 :: (load (s128) from %ir.src2)
+; MIR2P2-NEXT:   [[DEF:%[0-9]+]]:qr = IMPLICIT_DEF
+; MIR2P2-NEXT:   [[ESP_CMUL_S16_LD_INCP:%[0-9]+]]:qr, [[ESP_CMUL_S16_LD_INCP1:%[0-9]+]]:qr, [[ESP_CMUL_S16_LD_INCP2:%[0-9]+]]:gprpie = ESP_CMUL_S16_LD_INCP [[DEF]], killed [[ESP_VLD_128_IP]], killed [[ESP_VLD_128_IP2]], [[COPY2]], 3, killed [[ESP_MOVX_W_SAR]]
+; MIR2P2-NEXT:   [[ESP_VST_128_IP:%[0-9]+]]:gprpie = ESP_VST_128_IP killed [[ESP_CMUL_S16_LD_INCP]], [[COPY]], 16 :: (store (s128) into %ir.dst)
+; MIR2P2-NEXT:   PseudoRET
 entry:
-  %sar = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 0)
-  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src1, i32 16)
+  %sar = tail call i32 @llvm.riscv.esp.movx.w.sar(i32 0)
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src1, i32 16)
   %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
   %bc1 = bitcast <16 x i8> %ev1 to <8 x i16>
-  %vld2 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src2, i32 16)
+  %vld2 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src2, i32 16)
   %ev2 = extractvalue { <16 x i8>, ptr } %vld2, 0
   %bc2 = bitcast <16 x i8> %ev2 to <8 x i16>
-  %cmul_ld_res = tail call { <8 x i16>, <16 x i8>, ptr } @llvm.riscv.esp.cmul.s16.ld.incp.m(<8 x i16> undef, <8 x i16> %bc1, <8 x i16> %bc2, ptr %src1, i32 3, i32 %sar)
+  %cmul_ld_res = tail call { <8 x i16>, <16 x i8>, ptr } @llvm.riscv.esp.cmul.s16.ld.incp(<8 x i16> undef, <8 x i16> %bc1, <8 x i16> %bc2, ptr %src1, i32 3, i32 0, i32 7, i32 %sar)
   %ev3 = extractvalue { <8 x i16>, <16 x i8>, ptr } %cmul_ld_res, 0
   %bc3 = bitcast <8 x i16> %ev3 to <16 x i8>
-  %vst_ptr = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> %bc3, ptr %dst, i32 16)
+  %vst_ptr = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> %bc3, ptr %dst, i32 16)
   ret void
 }
 
-declare { <8 x i16>, <16 x i8>, ptr } @llvm.riscv.esp.cmul.s16.ld.incp.m(<8 x i16>, <8 x i16>, <8 x i16>, ptr, i32, i32) #2
+declare { <8 x i16>, <16 x i8>, ptr } @llvm.riscv.esp.cmul.s16.ld.incp(<8 x i16>, <8 x i16>, <8 x i16>, ptr, i32, i32, i32, i32) #2
 
 define dso_local void @test_cmul_u8_ld_incp_with_wrapper(ptr noundef %src1, ptr noundef %src2, ptr noundef %dst) local_unnamed_addr #0 {
 ; ASM-LABEL: test_cmul_u8_ld_incp_with_wrapper:
@@ -72,15 +127,41 @@ define dso_local void @test_cmul_u8_ld_incp_with_wrapper(ptr noundef %src1, ptr 
 ; ASM-NEXT:    esp.cmul.u8.ld.incp q1, a0, q0, q0, q1, 3
 ; ASM-NEXT:    esp.vst.128.ip q0, a2, 16
 ; ASM-NEXT:    ret
+;
+; ASM2P2-LABEL: test_cmul_u8_ld_incp_with_wrapper:
+; ASM2P2:       # %bb.0: # %entry
+; ASM2P2-NEXT:    mv a3, a0
+; ASM2P2-NEXT:    esp.vld.128.ip q0, a3, 16
+; ASM2P2-NEXT:    esp.vld.128.ip q1, a1, 16
+; ASM2P2-NEXT:    li a1, 0
+; ASM2P2-NEXT:    esp.movx.w.sar a1
+; ASM2P2-NEXT:    esp.cmul.u8.ld.incp q1, a0, q0, q0, q1, 3
+; ASM2P2-NEXT:    esp.vst.128.ip q0, a2, 16
+; ASM2P2-NEXT:    ret
+; MIR2P2-LABEL: name: test_cmul_u8_ld_incp_with_wrapper
+; MIR2P2: bb.0.entry:
+; MIR2P2-NEXT:   liveins: $x10, $x11, $x12
+; MIR2P2-NEXT: {{  $}}
+; MIR2P2-NEXT:   [[COPY:%[0-9]+]]:gprpie = COPY $x12
+; MIR2P2-NEXT:   [[COPY1:%[0-9]+]]:gprpie = COPY $x11
+; MIR2P2-NEXT:   [[COPY2:%[0-9]+]]:gprpie = COPY $x10
+; MIR2P2-NEXT:   [[COPY3:%[0-9]+]]:gprpie = COPY $x0
+; MIR2P2-NEXT:   [[ESP_MOVX_W_SAR:%[0-9]+]]:sarreg = ESP_MOVX_W_SAR [[COPY3]]
+; MIR2P2-NEXT:   [[ESP_VLD_128_IP:%[0-9]+]]:qr, [[ESP_VLD_128_IP1:%[0-9]+]]:gprpie = ESP_VLD_128_IP [[COPY2]], 16 :: (load (s128) from %ir.src1)
+; MIR2P2-NEXT:   [[ESP_VLD_128_IP2:%[0-9]+]]:qr, [[ESP_VLD_128_IP3:%[0-9]+]]:gprpie = ESP_VLD_128_IP [[COPY1]], 16 :: (load (s128) from %ir.src2)
+; MIR2P2-NEXT:   [[DEF:%[0-9]+]]:qr = IMPLICIT_DEF
+; MIR2P2-NEXT:   [[ESP_CMUL_U8_LD_INCP:%[0-9]+]]:qr, [[ESP_CMUL_U8_LD_INCP1:%[0-9]+]]:qr, [[ESP_CMUL_U8_LD_INCP2:%[0-9]+]]:gprpie = ESP_CMUL_U8_LD_INCP [[DEF]], killed [[ESP_VLD_128_IP]], killed [[ESP_VLD_128_IP2]], [[COPY2]], 3, killed [[ESP_MOVX_W_SAR]] :: (load (s128) from %ir.src1)
+; MIR2P2-NEXT:   [[ESP_VST_128_IP:%[0-9]+]]:gprpie = ESP_VST_128_IP killed [[ESP_CMUL_U8_LD_INCP]], [[COPY]], 16 :: (store (s128) into %ir.dst)
+; MIR2P2-NEXT:   PseudoRET
 entry:
-  %sar = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 0)
-  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src1, i32 16)
+  %sar = tail call i32 @llvm.riscv.esp.movx.w.sar(i32 0)
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src1, i32 16)
   %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
-  %vld2 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src2, i32 16)
+  %vld2 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src2, i32 16)
   %ev2 = extractvalue { <16 x i8>, ptr } %vld2, 0
   %cmul_ld_res = tail call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.cmul.u8.ld.incp.m(<16 x i8> undef, <16 x i8> %ev1, <16 x i8> %ev2, ptr %src1, i32 3, i32 %sar)
   %ev3 = extractvalue { <16 x i8>, <16 x i8>, ptr } %cmul_ld_res, 0
-  %vst_ptr = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> %ev3, ptr %dst, i32 16)
+  %vst_ptr = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> %ev3, ptr %dst, i32 16)
   ret void
 }
 
@@ -97,19 +178,45 @@ define dso_local void @test_cmul_s8_ld_incp_with_wrapper(ptr noundef %src1, ptr 
 ; ASM-NEXT:    esp.cmul.s8.ld.incp q1, a0, q0, q0, q1, 3
 ; ASM-NEXT:    esp.vst.128.ip q0, a2, 16
 ; ASM-NEXT:    ret
+;
+; ASM2P2-LABEL: test_cmul_s8_ld_incp_with_wrapper:
+; ASM2P2:       # %bb.0: # %entry
+; ASM2P2-NEXT:    mv a3, a0
+; ASM2P2-NEXT:    esp.vld.128.ip q0, a3, 16
+; ASM2P2-NEXT:    esp.vld.128.ip q1, a1, 16
+; ASM2P2-NEXT:    li a1, 0
+; ASM2P2-NEXT:    esp.movx.w.sar a1
+; ASM2P2-NEXT:    esp.cmul.s8.ld.incp q1, a0, q0, q0, q1, 3
+; ASM2P2-NEXT:    esp.vst.128.ip q0, a2, 16
+; ASM2P2-NEXT:    ret
+; MIR2P2-LABEL: name: test_cmul_s8_ld_incp_with_wrapper
+; MIR2P2: bb.0.entry:
+; MIR2P2-NEXT:   liveins: $x10, $x11, $x12
+; MIR2P2-NEXT: {{  $}}
+; MIR2P2-NEXT:   [[COPY:%[0-9]+]]:gprpie = COPY $x12
+; MIR2P2-NEXT:   [[COPY1:%[0-9]+]]:gprpie = COPY $x11
+; MIR2P2-NEXT:   [[COPY2:%[0-9]+]]:gprpie = COPY $x10
+; MIR2P2-NEXT:   [[COPY3:%[0-9]+]]:gprpie = COPY $x0
+; MIR2P2-NEXT:   [[ESP_MOVX_W_SAR:%[0-9]+]]:sarreg = ESP_MOVX_W_SAR [[COPY3]]
+; MIR2P2-NEXT:   [[ESP_VLD_128_IP:%[0-9]+]]:qr, [[ESP_VLD_128_IP1:%[0-9]+]]:gprpie = ESP_VLD_128_IP [[COPY2]], 16 :: (load (s128) from %ir.src1)
+; MIR2P2-NEXT:   [[ESP_VLD_128_IP2:%[0-9]+]]:qr, [[ESP_VLD_128_IP3:%[0-9]+]]:gprpie = ESP_VLD_128_IP [[COPY1]], 16 :: (load (s128) from %ir.src2)
+; MIR2P2-NEXT:   [[DEF:%[0-9]+]]:qr = IMPLICIT_DEF
+; MIR2P2-NEXT:   [[ESP_CMUL_S8_LD_INCP:%[0-9]+]]:qr, [[ESP_CMUL_S8_LD_INCP1:%[0-9]+]]:qr, [[ESP_CMUL_S8_LD_INCP2:%[0-9]+]]:gprpie = ESP_CMUL_S8_LD_INCP [[DEF]], killed [[ESP_VLD_128_IP]], killed [[ESP_VLD_128_IP2]], [[COPY2]], 3, killed [[ESP_MOVX_W_SAR]]
+; MIR2P2-NEXT:   [[ESP_VST_128_IP:%[0-9]+]]:gprpie = ESP_VST_128_IP killed [[ESP_CMUL_S8_LD_INCP]], [[COPY]], 16 :: (store (s128) into %ir.dst)
+; MIR2P2-NEXT:   PseudoRET
 entry:
-  %sar = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 0)
-  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src1, i32 16)
+  %sar = tail call i32 @llvm.riscv.esp.movx.w.sar(i32 0)
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src1, i32 16)
   %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
-  %vld2 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src2, i32 16)
+  %vld2 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src2, i32 16)
   %ev2 = extractvalue { <16 x i8>, ptr } %vld2, 0
-  %cmul_ld_res = tail call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.cmul.s8.ld.incp.m(<16 x i8> undef, <16 x i8> %ev1, <16 x i8> %ev2, ptr %src1, i32 3, i32 %sar)
+  %cmul_ld_res = tail call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.cmul.s8.ld.incp(<16 x i8> undef, <16 x i8> %ev1, <16 x i8> %ev2, ptr %src1, i32 3, i32 0, i32 7, i32 %sar)
   %ev3 = extractvalue { <16 x i8>, <16 x i8>, ptr } %cmul_ld_res, 0
-  %vst_ptr = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> %ev3, ptr %dst, i32 16)
+  %vst_ptr = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> %ev3, ptr %dst, i32 16)
   ret void
 }
 
-declare { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.cmul.s8.ld.incp.m(<16 x i8>, <16 x i8>, <16 x i8>, ptr, i32, i32) #2
+declare { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.cmul.s8.ld.incp(<16 x i8>, <16 x i8>, <16 x i8>, ptr, i32, i32, i32, i32) #2
 
 define dso_local void @test_cmul_u16_st_incp(ptr noundef %src1, ptr noundef %src2, ptr noundef %src3, ptr noundef %dst) local_unnamed_addr #0 {
 ; ASM-LABEL: test_cmul_u16_st_incp:
@@ -123,17 +230,46 @@ define dso_local void @test_cmul_u16_st_incp(ptr noundef %src1, ptr noundef %src
 ; ASM-NEXT:    esp.vld.128.ip q2, a2, 16
 ; ASM-NEXT:    esp.cmul.u16.st.incp q2, a3, q3, q0, q1, 3
 ; ASM-NEXT:    ret
+;
+; ASM2P2-LABEL: test_cmul_u16_st_incp:
+; ASM2P2:       # %bb.0: # %entry
+; ASM2P2-NEXT:    li a4, 0
+; ASM2P2-NEXT:    mv a5, a0
+; ASM2P2-NEXT:    esp.vld.128.ip q0, a5, 16
+; ASM2P2-NEXT:    esp.vld.128.ip q1, a1, 16
+; ASM2P2-NEXT:    esp.movx.w.sar a4
+; ASM2P2-NEXT:    esp.cmul.u16.ld.incp q2, a0, q3, q0, q1, 3
+; ASM2P2-NEXT:    esp.vld.128.ip q2, a2, 16
+; ASM2P2-NEXT:    esp.cmul.u16.st.incp q2, a3, q3, q0, q1, 3
+; ASM2P2-NEXT:    ret
+; MIR2P2-LABEL: name: test_cmul_u16_st_incp
+; MIR2P2: bb.0.entry:
+; MIR2P2-NEXT:   liveins: $x10, $x11, $x12, $x13
+; MIR2P2-NEXT: {{  $}}
+; MIR2P2-NEXT:   [[COPY:%[0-9]+]]:gprpie = COPY $x13
+; MIR2P2-NEXT:   [[COPY1:%[0-9]+]]:gprpie = COPY $x12
+; MIR2P2-NEXT:   [[COPY2:%[0-9]+]]:gprpie = COPY $x11
+; MIR2P2-NEXT:   [[COPY3:%[0-9]+]]:gprpie = COPY $x10
+; MIR2P2-NEXT:   [[COPY4:%[0-9]+]]:gprpie = COPY $x0
+; MIR2P2-NEXT:   [[ESP_MOVX_W_SAR:%[0-9]+]]:sarreg = ESP_MOVX_W_SAR [[COPY4]]
+; MIR2P2-NEXT:   [[ESP_VLD_128_IP:%[0-9]+]]:qr, [[ESP_VLD_128_IP1:%[0-9]+]]:gprpie = ESP_VLD_128_IP [[COPY3]], 16 :: (load (s128) from %ir.src1)
+; MIR2P2-NEXT:   [[ESP_VLD_128_IP2:%[0-9]+]]:qr, [[ESP_VLD_128_IP3:%[0-9]+]]:gprpie = ESP_VLD_128_IP [[COPY2]], 16 :: (load (s128) from %ir.src2)
+; MIR2P2-NEXT:   [[DEF:%[0-9]+]]:qr = IMPLICIT_DEF
+; MIR2P2-NEXT:   [[ESP_CMUL_U16_LD_INCP:%[0-9]+]]:qr, [[ESP_CMUL_U16_LD_INCP1:%[0-9]+]]:qr, [[ESP_CMUL_U16_LD_INCP2:%[0-9]+]]:gprpie = ESP_CMUL_U16_LD_INCP [[DEF]], [[ESP_VLD_128_IP]], [[ESP_VLD_128_IP2]], [[COPY3]], 3, [[ESP_MOVX_W_SAR]] :: (load (s128) from %ir.src1)
+; MIR2P2-NEXT:   [[ESP_VLD_128_IP4:%[0-9]+]]:qr, [[ESP_VLD_128_IP5:%[0-9]+]]:gprpie = ESP_VLD_128_IP [[COPY1]], 16 :: (load (s128) from %ir.src3)
+; MIR2P2-NEXT:   [[ESP_CMUL_U16_ST_INCP:%[0-9]+]]:qr, [[ESP_CMUL_U16_ST_INCP1:%[0-9]+]]:gprpie = ESP_CMUL_U16_ST_INCP [[ESP_CMUL_U16_LD_INCP]], [[ESP_VLD_128_IP]], [[ESP_VLD_128_IP2]], killed [[ESP_VLD_128_IP4]], [[COPY]], 3, [[ESP_MOVX_W_SAR]] :: (store (s128) into %ir.dst)
+; MIR2P2-NEXT:   PseudoRET
 entry:
-  %sar = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 0)
-  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src1, i32 16)
+  %sar = tail call i32 @llvm.riscv.esp.movx.w.sar(i32 0)
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src1, i32 16)
   %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
   %bc1 = bitcast <16 x i8> %ev1 to <8 x i16>
-  %vld2 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src2, i32 16)
+  %vld2 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src2, i32 16)
   %ev2 = extractvalue { <16 x i8>, ptr } %vld2, 0
   %bc2 = bitcast <16 x i8> %ev2 to <8 x i16>
   %cmul_ld_res = tail call { <8 x i16>, <16 x i8>, ptr } @llvm.riscv.esp.cmul.u16.ld.incp.m(<8 x i16> undef, <8 x i16> %bc1, <8 x i16> %bc2, ptr %src1, i32 3, i32 %sar)
   %ev3 = extractvalue { <8 x i16>, <16 x i8>, ptr } %cmul_ld_res, 0
-  %vld3 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src3, i32 16)
+  %vld3 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src3, i32 16)
   %ev4 = extractvalue { <16 x i8>, ptr } %vld3, 0
   %cmul_st_res = tail call { <8 x i16>, ptr } @llvm.riscv.esp.cmul.u16.st.incp.m(<8 x i16> %ev3, <8 x i16> %bc1, <8 x i16> %bc2, <16 x i8> %ev4, ptr %dst, i32 3, i32 %sar)
   ret void
@@ -144,32 +280,61 @@ declare { <8 x i16>, ptr } @llvm.riscv.esp.cmul.u16.st.incp.m(<8 x i16>, <8 x i1
 define dso_local void @test_cmul_s16_st_incp(ptr noundef %src1, ptr noundef %src2, ptr noundef %src3, ptr noundef %dst) local_unnamed_addr #0 {
 ; ASM-LABEL: test_cmul_s16_st_incp:
 ; ASM:       # %bb.0: # %entry
-; ASM-NEXT:    li a4, 0
-; ASM-NEXT:    mv a5, a0
-; ASM-NEXT:    esp.vld.128.ip q0, a5, 16
+; ASM-NEXT:    mv a4, a0
+; ASM-NEXT:    esp.vld.128.ip q0, a4, 16
 ; ASM-NEXT:    esp.vld.128.ip q1, a1, 16
-; ASM-NEXT:    esp.movx.w.sar a4
+; ASM-NEXT:    li a1, 0
+; ASM-NEXT:    esp.movx.w.sar a1
 ; ASM-NEXT:    esp.cmul.s16.ld.incp q2, a0, q3, q0, q1, 3
 ; ASM-NEXT:    esp.vld.128.ip q2, a2, 16
 ; ASM-NEXT:    esp.cmul.s16.st.incp q2, a3, q3, q0, q1, 3
 ; ASM-NEXT:    ret
+;
+; ASM2P2-LABEL: test_cmul_s16_st_incp:
+; ASM2P2:       # %bb.0: # %entry
+; ASM2P2-NEXT:    mv a4, a0
+; ASM2P2-NEXT:    esp.vld.128.ip q0, a4, 16
+; ASM2P2-NEXT:    esp.vld.128.ip q1, a1, 16
+; ASM2P2-NEXT:    li a1, 0
+; ASM2P2-NEXT:    esp.movx.w.sar a1
+; ASM2P2-NEXT:    esp.cmul.s16.ld.incp q2, a0, q3, q0, q1, 3
+; ASM2P2-NEXT:    esp.vld.128.ip q2, a2, 16
+; ASM2P2-NEXT:    esp.cmul.s16.st.incp q2, a3, q3, q0, q1, 3
+; ASM2P2-NEXT:    ret
+; MIR2P2-LABEL: name: test_cmul_s16_st_incp
+; MIR2P2: bb.0.entry:
+; MIR2P2-NEXT:   liveins: $x10, $x11, $x12, $x13
+; MIR2P2-NEXT: {{  $}}
+; MIR2P2-NEXT:   [[COPY:%[0-9]+]]:gprpie = COPY $x13
+; MIR2P2-NEXT:   [[COPY1:%[0-9]+]]:gprpie = COPY $x12
+; MIR2P2-NEXT:   [[COPY2:%[0-9]+]]:gprpie = COPY $x11
+; MIR2P2-NEXT:   [[COPY3:%[0-9]+]]:gprpie = COPY $x10
+; MIR2P2-NEXT:   [[COPY4:%[0-9]+]]:gprpie = COPY $x0
+; MIR2P2-NEXT:   [[ESP_MOVX_W_SAR:%[0-9]+]]:sarreg = ESP_MOVX_W_SAR [[COPY4]]
+; MIR2P2-NEXT:   [[ESP_VLD_128_IP:%[0-9]+]]:qr, [[ESP_VLD_128_IP1:%[0-9]+]]:gprpie = ESP_VLD_128_IP [[COPY3]], 16 :: (load (s128) from %ir.src1)
+; MIR2P2-NEXT:   [[ESP_VLD_128_IP2:%[0-9]+]]:qr, [[ESP_VLD_128_IP3:%[0-9]+]]:gprpie = ESP_VLD_128_IP [[COPY2]], 16 :: (load (s128) from %ir.src2)
+; MIR2P2-NEXT:   [[DEF:%[0-9]+]]:qr = IMPLICIT_DEF
+; MIR2P2-NEXT:   [[ESP_CMUL_S16_LD_INCP:%[0-9]+]]:qr, [[ESP_CMUL_S16_LD_INCP1:%[0-9]+]]:qr, [[ESP_CMUL_S16_LD_INCP2:%[0-9]+]]:gprpie = ESP_CMUL_S16_LD_INCP [[DEF]], [[ESP_VLD_128_IP]], [[ESP_VLD_128_IP2]], [[COPY3]], 3, [[ESP_MOVX_W_SAR]]
+; MIR2P2-NEXT:   [[ESP_VLD_128_IP4:%[0-9]+]]:qr, [[ESP_VLD_128_IP5:%[0-9]+]]:gprpie = ESP_VLD_128_IP [[COPY1]], 16 :: (load (s128) from %ir.src3)
+; MIR2P2-NEXT:   [[ESP_CMUL_S16_ST_INCP:%[0-9]+]]:qr, [[ESP_CMUL_S16_ST_INCP1:%[0-9]+]]:gprpie = ESP_CMUL_S16_ST_INCP [[ESP_CMUL_S16_LD_INCP]], [[ESP_VLD_128_IP]], [[ESP_VLD_128_IP2]], killed [[ESP_VLD_128_IP4]], [[COPY]], 3, [[ESP_MOVX_W_SAR]]
+; MIR2P2-NEXT:   PseudoRET
 entry:
-  %sar = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 0)
-  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src1, i32 16)
+  %sar = tail call i32 @llvm.riscv.esp.movx.w.sar(i32 0)
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src1, i32 16)
   %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
   %bc1 = bitcast <16 x i8> %ev1 to <8 x i16>
-  %vld2 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src2, i32 16)
+  %vld2 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src2, i32 16)
   %ev2 = extractvalue { <16 x i8>, ptr } %vld2, 0
   %bc2 = bitcast <16 x i8> %ev2 to <8 x i16>
-  %cmul_ld_res = tail call { <8 x i16>, <16 x i8>, ptr } @llvm.riscv.esp.cmul.s16.ld.incp.m(<8 x i16> undef, <8 x i16> %bc1, <8 x i16> %bc2, ptr %src1, i32 3, i32 %sar)
+  %cmul_ld_res = tail call { <8 x i16>, <16 x i8>, ptr } @llvm.riscv.esp.cmul.s16.ld.incp(<8 x i16> undef, <8 x i16> %bc1, <8 x i16> %bc2, ptr %src1, i32 3, i32 0, i32 7, i32 %sar)
   %ev3 = extractvalue { <8 x i16>, <16 x i8>, ptr } %cmul_ld_res, 0
-  %vld3 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src3, i32 16)
+  %vld3 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src3, i32 16)
   %ev4 = extractvalue { <16 x i8>, ptr } %vld3, 0
-  %cmul_st_res = tail call { <8 x i16>, ptr } @llvm.riscv.esp.cmul.s16.st.incp.m(<8 x i16> %ev3, <8 x i16> %bc1, <8 x i16> %bc2, <16 x i8> %ev4, ptr %dst, i32 3, i32 %sar)
+  %cmul_st_res = tail call { <8 x i16>, ptr } @llvm.riscv.esp.cmul.s16.st.incp(<8 x i16> %ev3, <8 x i16> %bc1, <8 x i16> %bc2, <16 x i8> %ev4, ptr %dst, i32 3, i32 0, i32 7, i32 %sar)
   ret void
 }
 
-declare { <8 x i16>, ptr } @llvm.riscv.esp.cmul.s16.st.incp.m(<8 x i16>, <8 x i16>, <8 x i16>, <16 x i8>, ptr, i32, i32) #3
+declare { <8 x i16>, ptr } @llvm.riscv.esp.cmul.s16.st.incp(<8 x i16>, <8 x i16>, <8 x i16>, <16 x i8>, ptr, i32, i32, i32, i32) #3
 
 define dso_local void @test_cmul_u8_st_incp(ptr noundef %src1, ptr noundef %src2, ptr noundef %src3, ptr noundef %dst) local_unnamed_addr #0 {
 ; ASM-LABEL: test_cmul_u8_st_incp:
@@ -183,15 +348,44 @@ define dso_local void @test_cmul_u8_st_incp(ptr noundef %src1, ptr noundef %src2
 ; ASM-NEXT:    esp.vld.128.ip q2, a2, 16
 ; ASM-NEXT:    esp.cmul.u8.st.incp q2, a3, q3, q0, q1, 3
 ; ASM-NEXT:    ret
+;
+; ASM2P2-LABEL: test_cmul_u8_st_incp:
+; ASM2P2:       # %bb.0: # %entry
+; ASM2P2-NEXT:    li a4, 0
+; ASM2P2-NEXT:    mv a5, a0
+; ASM2P2-NEXT:    esp.vld.128.ip q0, a5, 16
+; ASM2P2-NEXT:    esp.vld.128.ip q1, a1, 16
+; ASM2P2-NEXT:    esp.movx.w.sar a4
+; ASM2P2-NEXT:    esp.cmul.u8.ld.incp q2, a0, q3, q0, q1, 3
+; ASM2P2-NEXT:    esp.vld.128.ip q2, a2, 16
+; ASM2P2-NEXT:    esp.cmul.u8.st.incp q2, a3, q3, q0, q1, 3
+; ASM2P2-NEXT:    ret
+; MIR2P2-LABEL: name: test_cmul_u8_st_incp
+; MIR2P2: bb.0.entry:
+; MIR2P2-NEXT:   liveins: $x10, $x11, $x12, $x13
+; MIR2P2-NEXT: {{  $}}
+; MIR2P2-NEXT:   [[COPY:%[0-9]+]]:gprpie = COPY $x13
+; MIR2P2-NEXT:   [[COPY1:%[0-9]+]]:gprpie = COPY $x12
+; MIR2P2-NEXT:   [[COPY2:%[0-9]+]]:gprpie = COPY $x11
+; MIR2P2-NEXT:   [[COPY3:%[0-9]+]]:gprpie = COPY $x10
+; MIR2P2-NEXT:   [[COPY4:%[0-9]+]]:gprpie = COPY $x0
+; MIR2P2-NEXT:   [[ESP_MOVX_W_SAR:%[0-9]+]]:sarreg = ESP_MOVX_W_SAR [[COPY4]]
+; MIR2P2-NEXT:   [[ESP_VLD_128_IP:%[0-9]+]]:qr, [[ESP_VLD_128_IP1:%[0-9]+]]:gprpie = ESP_VLD_128_IP [[COPY3]], 16 :: (load (s128) from %ir.src1)
+; MIR2P2-NEXT:   [[ESP_VLD_128_IP2:%[0-9]+]]:qr, [[ESP_VLD_128_IP3:%[0-9]+]]:gprpie = ESP_VLD_128_IP [[COPY2]], 16 :: (load (s128) from %ir.src2)
+; MIR2P2-NEXT:   [[DEF:%[0-9]+]]:qr = IMPLICIT_DEF
+; MIR2P2-NEXT:   [[ESP_CMUL_U8_LD_INCP:%[0-9]+]]:qr, [[ESP_CMUL_U8_LD_INCP1:%[0-9]+]]:qr, [[ESP_CMUL_U8_LD_INCP2:%[0-9]+]]:gprpie = ESP_CMUL_U8_LD_INCP [[DEF]], [[ESP_VLD_128_IP]], [[ESP_VLD_128_IP2]], [[COPY3]], 3, [[ESP_MOVX_W_SAR]] :: (load (s128) from %ir.src1)
+; MIR2P2-NEXT:   [[ESP_VLD_128_IP4:%[0-9]+]]:qr, [[ESP_VLD_128_IP5:%[0-9]+]]:gprpie = ESP_VLD_128_IP [[COPY1]], 16 :: (load (s128) from %ir.src3)
+; MIR2P2-NEXT:   [[ESP_CMUL_U8_ST_INCP:%[0-9]+]]:qr, [[ESP_CMUL_U8_ST_INCP1:%[0-9]+]]:gprpie = ESP_CMUL_U8_ST_INCP [[ESP_CMUL_U8_LD_INCP]], [[ESP_VLD_128_IP]], [[ESP_VLD_128_IP2]], killed [[ESP_VLD_128_IP4]], [[COPY]], 3, [[ESP_MOVX_W_SAR]] :: (store (s128) into %ir.dst)
+; MIR2P2-NEXT:   PseudoRET
 entry:
-  %sar = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 0)
-  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src1, i32 16)
+  %sar = tail call i32 @llvm.riscv.esp.movx.w.sar(i32 0)
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src1, i32 16)
   %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
-  %vld2 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src2, i32 16)
+  %vld2 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src2, i32 16)
   %ev2 = extractvalue { <16 x i8>, ptr } %vld2, 0
   %cmul_ld_res = tail call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.cmul.u8.ld.incp.m(<16 x i8> undef, <16 x i8> %ev1, <16 x i8> %ev2, ptr %src1, i32 3, i32 %sar)
   %ev3 = extractvalue { <16 x i8>, <16 x i8>, ptr } %cmul_ld_res, 0
-  %vld3 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src3, i32 16)
+  %vld3 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src3, i32 16)
   %ev4 = extractvalue { <16 x i8>, ptr } %vld3, 0
   %cmul_st_res = tail call { <16 x i8>, ptr } @llvm.riscv.esp.cmul.u8.st.incp.m(<16 x i8> %ev3, <16 x i8> %ev1, <16 x i8> %ev2, <16 x i8> %ev4, ptr %dst, i32 3, i32 %sar)
   ret void
@@ -202,30 +396,59 @@ declare { <16 x i8>, ptr } @llvm.riscv.esp.cmul.u8.st.incp.m(<16 x i8>, <16 x i8
 define dso_local void @test_cmul_s8_st_incp(ptr noundef %src1, ptr noundef %src2, ptr noundef %src3, ptr noundef %dst) local_unnamed_addr #0 {
 ; ASM-LABEL: test_cmul_s8_st_incp:
 ; ASM:       # %bb.0: # %entry
-; ASM-NEXT:    li a4, 0
-; ASM-NEXT:    mv a5, a0
-; ASM-NEXT:    esp.vld.128.ip q0, a5, 16
+; ASM-NEXT:    mv a4, a0
+; ASM-NEXT:    esp.vld.128.ip q0, a4, 16
 ; ASM-NEXT:    esp.vld.128.ip q1, a1, 16
-; ASM-NEXT:    esp.movx.w.sar a4
+; ASM-NEXT:    li a1, 0
+; ASM-NEXT:    esp.movx.w.sar a1
 ; ASM-NEXT:    esp.cmul.s8.ld.incp q2, a0, q3, q0, q1, 3
 ; ASM-NEXT:    esp.vld.128.ip q2, a2, 16
 ; ASM-NEXT:    esp.cmul.s8.st.incp q2, a3, q3, q0, q1, 3
 ; ASM-NEXT:    ret
+;
+; ASM2P2-LABEL: test_cmul_s8_st_incp:
+; ASM2P2:       # %bb.0: # %entry
+; ASM2P2-NEXT:    mv a4, a0
+; ASM2P2-NEXT:    esp.vld.128.ip q0, a4, 16
+; ASM2P2-NEXT:    esp.vld.128.ip q1, a1, 16
+; ASM2P2-NEXT:    li a1, 0
+; ASM2P2-NEXT:    esp.movx.w.sar a1
+; ASM2P2-NEXT:    esp.cmul.s8.ld.incp q2, a0, q3, q0, q1, 3
+; ASM2P2-NEXT:    esp.vld.128.ip q2, a2, 16
+; ASM2P2-NEXT:    esp.cmul.s8.st.incp q2, a3, q3, q0, q1, 3
+; ASM2P2-NEXT:    ret
+; MIR2P2-LABEL: name: test_cmul_s8_st_incp
+; MIR2P2: bb.0.entry:
+; MIR2P2-NEXT:   liveins: $x10, $x11, $x12, $x13
+; MIR2P2-NEXT: {{  $}}
+; MIR2P2-NEXT:   [[COPY:%[0-9]+]]:gprpie = COPY $x13
+; MIR2P2-NEXT:   [[COPY1:%[0-9]+]]:gprpie = COPY $x12
+; MIR2P2-NEXT:   [[COPY2:%[0-9]+]]:gprpie = COPY $x11
+; MIR2P2-NEXT:   [[COPY3:%[0-9]+]]:gprpie = COPY $x10
+; MIR2P2-NEXT:   [[COPY4:%[0-9]+]]:gprpie = COPY $x0
+; MIR2P2-NEXT:   [[ESP_MOVX_W_SAR:%[0-9]+]]:sarreg = ESP_MOVX_W_SAR [[COPY4]]
+; MIR2P2-NEXT:   [[ESP_VLD_128_IP:%[0-9]+]]:qr, [[ESP_VLD_128_IP1:%[0-9]+]]:gprpie = ESP_VLD_128_IP [[COPY3]], 16 :: (load (s128) from %ir.src1)
+; MIR2P2-NEXT:   [[ESP_VLD_128_IP2:%[0-9]+]]:qr, [[ESP_VLD_128_IP3:%[0-9]+]]:gprpie = ESP_VLD_128_IP [[COPY2]], 16 :: (load (s128) from %ir.src2)
+; MIR2P2-NEXT:   [[DEF:%[0-9]+]]:qr = IMPLICIT_DEF
+; MIR2P2-NEXT:   [[ESP_CMUL_S8_LD_INCP:%[0-9]+]]:qr, [[ESP_CMUL_S8_LD_INCP1:%[0-9]+]]:qr, [[ESP_CMUL_S8_LD_INCP2:%[0-9]+]]:gprpie = ESP_CMUL_S8_LD_INCP [[DEF]], [[ESP_VLD_128_IP]], [[ESP_VLD_128_IP2]], [[COPY3]], 3, [[ESP_MOVX_W_SAR]]
+; MIR2P2-NEXT:   [[ESP_VLD_128_IP4:%[0-9]+]]:qr, [[ESP_VLD_128_IP5:%[0-9]+]]:gprpie = ESP_VLD_128_IP [[COPY1]], 16 :: (load (s128) from %ir.src3)
+; MIR2P2-NEXT:   [[ESP_CMUL_S8_ST_INCP:%[0-9]+]]:qr, [[ESP_CMUL_S8_ST_INCP1:%[0-9]+]]:gprpie = ESP_CMUL_S8_ST_INCP [[ESP_CMUL_S8_LD_INCP]], [[ESP_VLD_128_IP]], [[ESP_VLD_128_IP2]], killed [[ESP_VLD_128_IP4]], [[COPY]], 3, [[ESP_MOVX_W_SAR]]
+; MIR2P2-NEXT:   PseudoRET
 entry:
-  %sar = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 0)
-  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src1, i32 16)
+  %sar = tail call i32 @llvm.riscv.esp.movx.w.sar(i32 0)
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src1, i32 16)
   %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
-  %vld2 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src2, i32 16)
+  %vld2 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src2, i32 16)
   %ev2 = extractvalue { <16 x i8>, ptr } %vld2, 0
-  %cmul_ld_res = tail call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.cmul.s8.ld.incp.m(<16 x i8> undef, <16 x i8> %ev1, <16 x i8> %ev2, ptr %src1, i32 3, i32 %sar)
+  %cmul_ld_res = tail call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.cmul.s8.ld.incp(<16 x i8> undef, <16 x i8> %ev1, <16 x i8> %ev2, ptr %src1, i32 3, i32 0, i32 7, i32 %sar)
   %ev3 = extractvalue { <16 x i8>, <16 x i8>, ptr } %cmul_ld_res, 0
-  %vld3 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src3, i32 16)
+  %vld3 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src3, i32 16)
   %ev4 = extractvalue { <16 x i8>, ptr } %vld3, 0
-  %cmul_st_res = tail call { <16 x i8>, ptr } @llvm.riscv.esp.cmul.s8.st.incp.m(<16 x i8> %ev3, <16 x i8> %ev1, <16 x i8> %ev2, <16 x i8> %ev4, ptr %dst, i32 3, i32 %sar)
+  %cmul_st_res = tail call { <16 x i8>, ptr } @llvm.riscv.esp.cmul.s8.st.incp(<16 x i8> %ev3, <16 x i8> %ev1, <16 x i8> %ev2, <16 x i8> %ev4, ptr %dst, i32 3, i32 0, i32 7, i32 %sar)
   ret void
 }
 
-declare { <16 x i8>, ptr } @llvm.riscv.esp.cmul.s8.st.incp.m(<16 x i8>, <16 x i8>, <16 x i8>, <16 x i8>, ptr, i32, i32) #3
+declare { <16 x i8>, ptr } @llvm.riscv.esp.cmul.s8.st.incp(<16 x i8>, <16 x i8>, <16 x i8>, <16 x i8>, ptr, i32, i32, i32, i32) #3
 
 define dso_local void @test_cmul_s16_basic(ptr noundef %src1, ptr noundef %src2, ptr noundef %src3, ptr noundef %dst) local_unnamed_addr #0 {
 ; ASM-LABEL: test_cmul_s16_basic:
@@ -238,24 +461,51 @@ define dso_local void @test_cmul_s16_basic(ptr noundef %src1, ptr noundef %src2,
 ; ASM-NEXT:    esp.cmul.s16 q2, q0, q1, 0
 ; ASM-NEXT:    esp.vst.128.ip q2, a3, 16
 ; ASM-NEXT:    ret
+;
+; ASM2P2-LABEL: test_cmul_s16_basic:
+; ASM2P2:       # %bb.0: # %entry
+; ASM2P2-NEXT:    esp.vld.128.ip q0, a0, 16
+; ASM2P2-NEXT:    esp.vld.128.ip q1, a1, 16
+; ASM2P2-NEXT:    esp.vld.128.ip q2, a2, 16
+; ASM2P2-NEXT:    li a0, 0
+; ASM2P2-NEXT:    esp.movx.w.sar a0
+; ASM2P2-NEXT:    esp.cmul.s16 q2, q0, q1, 0
+; ASM2P2-NEXT:    esp.vst.128.ip q2, a3, 16
+; ASM2P2-NEXT:    ret
+; MIR2P2-LABEL: name: test_cmul_s16_basic
+; MIR2P2: bb.0.entry:
+; MIR2P2-NEXT:   liveins: $x10, $x11, $x12, $x13
+; MIR2P2-NEXT: {{  $}}
+; MIR2P2-NEXT:   [[COPY:%[0-9]+]]:gprpie = COPY $x13
+; MIR2P2-NEXT:   [[COPY1:%[0-9]+]]:gprpie = COPY $x12
+; MIR2P2-NEXT:   [[COPY2:%[0-9]+]]:gprpie = COPY $x11
+; MIR2P2-NEXT:   [[COPY3:%[0-9]+]]:gprpie = COPY $x10
+; MIR2P2-NEXT:   [[COPY4:%[0-9]+]]:gprpie = COPY $x0
+; MIR2P2-NEXT:   [[ESP_MOVX_W_SAR:%[0-9]+]]:sarreg = ESP_MOVX_W_SAR [[COPY4]]
+; MIR2P2-NEXT:   [[ESP_VLD_128_IP:%[0-9]+]]:qr, [[ESP_VLD_128_IP1:%[0-9]+]]:gprpie = ESP_VLD_128_IP [[COPY3]], 16 :: (load (s128) from %ir.src1)
+; MIR2P2-NEXT:   [[ESP_VLD_128_IP2:%[0-9]+]]:qr, [[ESP_VLD_128_IP3:%[0-9]+]]:gprpie = ESP_VLD_128_IP [[COPY2]], 16 :: (load (s128) from %ir.src2)
+; MIR2P2-NEXT:   [[ESP_VLD_128_IP4:%[0-9]+]]:qr, [[ESP_VLD_128_IP5:%[0-9]+]]:gprpie = ESP_VLD_128_IP [[COPY1]], 16 :: (load (s128) from %ir.src3)
+; MIR2P2-NEXT:   [[ESP_CMUL_S16_:%[0-9]+]]:qr = ESP_CMUL_S16 [[ESP_VLD_128_IP4]], killed [[ESP_VLD_128_IP]], killed [[ESP_VLD_128_IP2]], 0, killed [[ESP_MOVX_W_SAR]]
+; MIR2P2-NEXT:   [[ESP_VST_128_IP:%[0-9]+]]:gprpie = ESP_VST_128_IP killed [[ESP_CMUL_S16_]], [[COPY]], 16 :: (store (s128) into %ir.dst)
+; MIR2P2-NEXT:   PseudoRET
 entry:
-  %sar = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 0)
-  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src1, i32 16)
+  %sar = tail call i32 @llvm.riscv.esp.movx.w.sar(i32 0)
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src1, i32 16)
   %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
   %bc1 = bitcast <16 x i8> %ev1 to <8 x i16>
-  %vld2 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src2, i32 16)
+  %vld2 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src2, i32 16)
   %ev2 = extractvalue { <16 x i8>, ptr } %vld2, 0
   %bc2 = bitcast <16 x i8> %ev2 to <8 x i16>
-  %vld3 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src3, i32 16)
+  %vld3 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src3, i32 16)
   %ev3 = extractvalue { <16 x i8>, ptr } %vld3, 0
   %bc3 = bitcast <16 x i8> %ev3 to <8 x i16>
-  %v1 = tail call <8 x i16> @llvm.riscv.esp.cmul.s16.m(<8 x i16> %bc3, <8 x i16> %bc1, <8 x i16> %bc2, i32 0, i32 %sar)
+  %v1 = tail call <8 x i16> @llvm.riscv.esp.cmul.s16(<8 x i16> %bc3, <8 x i16> %bc1, <8 x i16> %bc2, i32 0, i32 0, i32 7, i32 %sar)
   %bc4 = bitcast <8 x i16> %v1 to <16 x i8>
-  %vst_ptr = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> %bc4, ptr %dst, i32 16)
+  %vst_ptr = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> %bc4, ptr %dst, i32 16)
   ret void
 }
 
-declare <8 x i16> @llvm.riscv.esp.cmul.s16.m(<8 x i16>, <8 x i16>, <8 x i16>, i32 immarg, i32) #1
+declare <8 x i16> @llvm.riscv.esp.cmul.s16(<8 x i16>, <8 x i16>, <8 x i16>, i32 immarg, i32 immarg, i32 immarg, i32) #1
 
 define dso_local void @test_cmul_s16_rmw(ptr noundef %src1, ptr noundef %src2, ptr noundef %dst) local_unnamed_addr #0 {
 ; ASM-LABEL: test_cmul_s16_rmw:
@@ -268,18 +518,45 @@ define dso_local void @test_cmul_s16_rmw(ptr noundef %src1, ptr noundef %src2, p
 ; ASM-NEXT:    esp.cmul.s16 q2, q0, q1, 1
 ; ASM-NEXT:    esp.vst.128.ip q2, a2, 16
 ; ASM-NEXT:    ret
+;
+; ASM2P2-LABEL: test_cmul_s16_rmw:
+; ASM2P2:       # %bb.0: # %entry
+; ASM2P2-NEXT:    esp.vld.128.ip q0, a0, 16
+; ASM2P2-NEXT:    esp.vld.128.ip q1, a1, 16
+; ASM2P2-NEXT:    li a0, 0
+; ASM2P2-NEXT:    esp.movx.w.sar a0
+; ASM2P2-NEXT:    esp.cmul.s16 q2, q0, q1, 0
+; ASM2P2-NEXT:    esp.cmul.s16 q2, q0, q1, 1
+; ASM2P2-NEXT:    esp.vst.128.ip q2, a2, 16
+; ASM2P2-NEXT:    ret
+; MIR2P2-LABEL: name: test_cmul_s16_rmw
+; MIR2P2: bb.0.entry:
+; MIR2P2-NEXT:   liveins: $x10, $x11, $x12
+; MIR2P2-NEXT: {{  $}}
+; MIR2P2-NEXT:   [[COPY:%[0-9]+]]:gprpie = COPY $x12
+; MIR2P2-NEXT:   [[COPY1:%[0-9]+]]:gprpie = COPY $x11
+; MIR2P2-NEXT:   [[COPY2:%[0-9]+]]:gprpie = COPY $x10
+; MIR2P2-NEXT:   [[COPY3:%[0-9]+]]:gprpie = COPY $x0
+; MIR2P2-NEXT:   [[ESP_MOVX_W_SAR:%[0-9]+]]:sarreg = ESP_MOVX_W_SAR [[COPY3]]
+; MIR2P2-NEXT:   [[ESP_VLD_128_IP:%[0-9]+]]:qr, [[ESP_VLD_128_IP1:%[0-9]+]]:gprpie = ESP_VLD_128_IP [[COPY2]], 16 :: (load (s128) from %ir.src1)
+; MIR2P2-NEXT:   [[ESP_VLD_128_IP2:%[0-9]+]]:qr, [[ESP_VLD_128_IP3:%[0-9]+]]:gprpie = ESP_VLD_128_IP [[COPY1]], 16 :: (load (s128) from %ir.src2)
+; MIR2P2-NEXT:   [[DEF:%[0-9]+]]:qr = IMPLICIT_DEF
+; MIR2P2-NEXT:   [[ESP_CMUL_S16_:%[0-9]+]]:qr = ESP_CMUL_S16 [[DEF]], [[ESP_VLD_128_IP]], [[ESP_VLD_128_IP2]], 0, [[ESP_MOVX_W_SAR]]
+; MIR2P2-NEXT:   [[ESP_CMUL_S16_1:%[0-9]+]]:qr = ESP_CMUL_S16 [[ESP_CMUL_S16_]], [[ESP_VLD_128_IP]], [[ESP_VLD_128_IP2]], 1, [[ESP_MOVX_W_SAR]]
+; MIR2P2-NEXT:   [[ESP_VST_128_IP:%[0-9]+]]:gprpie = ESP_VST_128_IP killed [[ESP_CMUL_S16_1]], [[COPY]], 16 :: (store (s128) into %ir.dst)
+; MIR2P2-NEXT:   PseudoRET
 entry:
-  %sar = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 0)
-  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src1, i32 16)
+  %sar = tail call i32 @llvm.riscv.esp.movx.w.sar(i32 0)
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src1, i32 16)
   %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
   %bc1 = bitcast <16 x i8> %ev1 to <8 x i16>
-  %vld2 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src2, i32 16)
+  %vld2 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src2, i32 16)
   %ev2 = extractvalue { <16 x i8>, ptr } %vld2, 0
   %bc2 = bitcast <16 x i8> %ev2 to <8 x i16>
-  %v1 = tail call <8 x i16> @llvm.riscv.esp.cmul.s16.m(<8 x i16> undef, <8 x i16> %bc1, <8 x i16> %bc2, i32 0, i32 %sar)
-  %v2 = tail call <8 x i16> @llvm.riscv.esp.cmul.s16.m(<8 x i16> %v1, <8 x i16> %bc1, <8 x i16> %bc2, i32 1, i32 %sar)
+  %v1 = tail call <8 x i16> @llvm.riscv.esp.cmul.s16(<8 x i16> undef, <8 x i16> %bc1, <8 x i16> %bc2, i32 0, i32 0, i32 7, i32 %sar)
+  %v2 = tail call <8 x i16> @llvm.riscv.esp.cmul.s16(<8 x i16> %v1, <8 x i16> %bc1, <8 x i16> %bc2, i32 1, i32 0, i32 7, i32 %sar)
   %bc3 = bitcast <8 x i16> %v2 to <16 x i8>
-  %vst_ptr = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> %bc3, ptr %dst, i32 16)
+  %vst_ptr = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> %bc3, ptr %dst, i32 16)
   ret void
 }
 
@@ -291,14 +568,33 @@ define dso_local i32 @test_movx_r_sar(i32 noundef %rs1_val) local_unnamed_addr #
 ; ASM-NEXT:    esp.movx.w.sar a0
 ; ASM-NEXT:    esp.movx.r.sar a0
 ; ASM-NEXT:    ret
+;
+; ASM2P2-LABEL: test_movx_r_sar:
+; ASM2P2:       # %bb.0: # %entry
+; ASM2P2-NEXT:    esp.movx.w.sar a0
+; ASM2P2-NEXT:    esp.movx.r.sar a0
+; ASM2P2-NEXT:    esp.movx.w.sar a0
+; ASM2P2-NEXT:    esp.movx.r.sar a0
+; ASM2P2-NEXT:    ret
+; MIR2P2-LABEL: name: test_movx_r_sar
+; MIR2P2: bb.0.entry:
+; MIR2P2-NEXT:   liveins: $x10
+; MIR2P2-NEXT: {{  $}}
+; MIR2P2-NEXT:   [[COPY:%[0-9]+]]:gprpie = COPY $x10
+; MIR2P2-NEXT:   [[ESP_MOVX_W_SAR:%[0-9]+]]:sarreg = ESP_MOVX_W_SAR [[COPY]]
+; MIR2P2-NEXT:   [[ESP_MOVX_R_SAR:%[0-9]+]]:gprpie = ESP_MOVX_R_SAR killed [[ESP_MOVX_W_SAR]]
+; MIR2P2-NEXT:   [[COPY1:%[0-9]+]]:sarreg = COPY [[ESP_MOVX_R_SAR]]
+; MIR2P2-NEXT:   [[ESP_MOVX_R_SAR1:%[0-9]+]]:gprpie = ESP_MOVX_R_SAR killed [[COPY1]]
+; MIR2P2-NEXT:   $x10 = COPY [[ESP_MOVX_R_SAR1]]
+; MIR2P2-NEXT:   PseudoRET implicit $x10
 entry:
-  %sar = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 %rs1_val)
-  %v1 = tail call i32 @llvm.riscv.esp.movx.r.sar.m(i32 %sar)
-  %v2 = tail call i32 @llvm.riscv.esp.movx.r.sar.m(i32 %v1)
+  %sar = tail call i32 @llvm.riscv.esp.movx.w.sar(i32 %rs1_val)
+  %v1 = tail call i32 @llvm.riscv.esp.movx.r.sar(i32 %sar)
+  %v2 = tail call i32 @llvm.riscv.esp.movx.r.sar(i32 %v1)
   ret i32 %v2
 }
 
-declare i32 @llvm.riscv.esp.movx.r.sar.m(i32) #1
+declare i32 @llvm.riscv.esp.movx.r.sar(i32) #1
 
 define dso_local i32 @test_movx_sar_write_read(i32 noundef %rs1_val) local_unnamed_addr #4 {
 ; ASM-LABEL: test_movx_sar_write_read:
@@ -306,20 +602,35 @@ define dso_local i32 @test_movx_sar_write_read(i32 noundef %rs1_val) local_unnam
 ; ASM-NEXT:    esp.movx.w.sar a0
 ; ASM-NEXT:    esp.movx.r.sar a0
 ; ASM-NEXT:    ret
+;
+; ASM2P2-LABEL: test_movx_sar_write_read:
+; ASM2P2:       # %bb.0: # %entry
+; ASM2P2-NEXT:    esp.movx.w.sar a0
+; ASM2P2-NEXT:    esp.movx.r.sar a0
+; ASM2P2-NEXT:    ret
+; MIR2P2-LABEL: name: test_movx_sar_write_read
+; MIR2P2: bb.0.entry:
+; MIR2P2-NEXT:   liveins: $x10
+; MIR2P2-NEXT: {{  $}}
+; MIR2P2-NEXT:   [[COPY:%[0-9]+]]:gprpie = COPY $x10
+; MIR2P2-NEXT:   [[ESP_MOVX_W_SAR:%[0-9]+]]:sarreg = ESP_MOVX_W_SAR [[COPY]]
+; MIR2P2-NEXT:   [[ESP_MOVX_R_SAR:%[0-9]+]]:gprpie = ESP_MOVX_R_SAR killed [[ESP_MOVX_W_SAR]]
+; MIR2P2-NEXT:   $x10 = COPY [[ESP_MOVX_R_SAR]]
+; MIR2P2-NEXT:   PseudoRET implicit $x10
 entry:
-  %sar = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 %rs1_val)
-  %v1 = tail call i32 @llvm.riscv.esp.movx.r.sar.m(i32 %sar)
+  %sar = tail call i32 @llvm.riscv.esp.movx.w.sar(i32 %rs1_val)
+  %v1 = tail call i32 @llvm.riscv.esp.movx.r.sar(i32 %sar)
   ret i32 %v1
 }
 
-declare { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr, i32) #2
+declare { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr, i32) #2
 
-declare ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8>, ptr, i32) #3
+declare ptr @llvm.riscv.esp.vst.128.ip(<16 x i8>, ptr, i32) #3
 
-attributes #0 = { "target-features"="+32bit,+xespv" }
+attributes #0 = { "target-features"="+32bit,+xespv2p1" }
 attributes #1 = { nounwind }
 attributes #2 = { nounwind }
 attributes #3 = { nounwind }
-attributes #4 = { "target-features"="+32bit,+xespv" }
+attributes #4 = { "target-features"="+32bit,+xespv2p1" }
 
 

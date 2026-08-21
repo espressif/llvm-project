@@ -8,9 +8,9 @@
 #include <riscv_esp32p4.h>
 
 // Declarations for builtin functions
-void __builtin_riscv_esp_zero_xacc_m(void* xacc_low_out, void* xacc_high_out);
-void *__builtin_riscv_esp_st_s_xacc_ip_m(unsigned int xacc_low_in, unsigned int xacc_high_in, void *Ptr, int offset, void *ptr_out, unsigned int *xacc_low_out, unsigned int *xacc_high_out);
-void *__builtin_riscv_esp_st_u_xacc_ip_m(unsigned int xacc_low_in, unsigned int xacc_high_in, void *Ptr, int offset, void *ptr_out, unsigned int *xacc_low_out, unsigned int *xacc_high_out);
+void __builtin_riscv_esp_zero_xacc(void* xacc_low_out, void* xacc_high_out);
+void *__builtin_riscv_esp_st_s_xacc_ip(unsigned int xacc_low_in, unsigned int xacc_high_in, void *Ptr, int offset, void *ptr_out, unsigned int *xacc_low_out, unsigned int *xacc_high_out);
+void *__builtin_riscv_esp_st_u_xacc_ip(unsigned int xacc_low_in, unsigned int xacc_high_in, void *Ptr, int offset, void *ptr_out, unsigned int *xacc_low_out, unsigned int *xacc_high_out);
 
 // ESP.LD.XACC.IP + ESP.ST.S.XACC.IP - Load and store with sign extension (_m version)
 // Load: XACC[39:0] = load64(src)[39:0], src = src + (Imm << 3)
@@ -19,13 +19,13 @@ void *__builtin_riscv_esp_st_u_xacc_ip_m(unsigned int xacc_low_in, unsigned int 
 // CHECK-LABEL: define dso_local ptr @test_ld_st_s_xacc_ip_m(
 // CHECK-SAME: ptr noundef [[SRC:%.*]], ptr noundef [[DST:%.*]]) local_unnamed_addr #[[ATTR0:[0-9]+]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { i32, i32 } @llvm.riscv.esp.zero.xacc.m()
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { i32, i32 } @llvm.riscv.esp.zero.xacc()
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { i32, i32 } [[TMP0]], 0
 // CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { i32, i32 } [[TMP0]], 1
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.ld.xacc.ip.m(i32 [[TMP1]], i32 [[TMP2]], ptr [[SRC]], i32 8)
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.ld.xacc.ip(i32 [[TMP1]], i32 [[TMP2]], ptr [[SRC]], i32 8)
 // CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { ptr, i32, i32 } [[TMP3]], 1
 // CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { ptr, i32, i32 } [[TMP3]], 2
-// CHECK-NEXT:    [[TMP6:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.st.s.xacc.ip.m(i32 [[TMP4]], i32 [[TMP5]], ptr [[DST]], i32 8)
+// CHECK-NEXT:    [[TMP6:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.st.s.xacc.ip(i32 [[TMP4]], i32 [[TMP5]], ptr [[DST]], i32 8)
 // CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { ptr, i32, i32 } [[TMP6]], 0
 // CHECK-NEXT:    store ptr [[TMP7]], ptr @test_ld_st_s_xacc_ip_m.ptr_out, align 4
 // CHECK-NEXT:    ret ptr [[TMP7]]
@@ -36,7 +36,7 @@ void *test_ld_st_s_xacc_ip_m(void const *src, void *dst) {
 esp_xacc_zero_res_t xacc_zero;
   // Builtin signature: __P0__(unsigned int *XaccLowOut, unsigned int
   // *XaccHighOut) Intrinsic signature: [] -> [i32, i32] (both set to 0)
-  __builtin_riscv_esp_zero_xacc_m((unsigned int *)&xacc_zero.xacc_low,
+  __builtin_riscv_esp_zero_xacc((unsigned int *)&xacc_zero.xacc_low,
                                   (unsigned int *)&xacc_zero.xacc_high);
     // Load 64-bit Data from memory, store low 40 bits to XACC
     // Returns structure with XACC value and updated pointer
@@ -47,14 +47,14 @@ esp_xacc_res_t Res;
   // void *, unsigned int *, unsigned int *) xacc_zero.xacc_low, xacc_zero.xacc_high: current XACC
   // state (input, passthru) &Res.src: pointer to store updated pointer (output)
   // &Res.xacc_low, &Res.xacc_high: pointers to store new XACC state (output)
-  Res.Ptr = __builtin_riscv_esp_ld_xacc_ip_m(
+  Res.Ptr = __builtin_riscv_esp_ld_xacc_ip(
       xacc_zero.xacc_low, xacc_zero.xacc_high, src, 8, &Res.Ptr, &Res.xacc_low, &Res.xacc_high);
     // Store XACC sign-extended to 64-bit memory
     // Pass XACC value from load Result for explicit state passing Data flow
     // Use volatile static variables to avoid register pressure and prevent optimization
     static volatile void *ptr_out;
     static volatile unsigned int xacc_low_out, xacc_high_out;
-    return __builtin_riscv_esp_st_s_xacc_ip_m(Res.xacc_low, Res.xacc_high, dst, 8, (void*)&ptr_out, (unsigned int*)&xacc_low_out, (unsigned int*)&xacc_high_out);
+    return __builtin_riscv_esp_st_s_xacc_ip(Res.xacc_low, Res.xacc_high, dst, 8, (void*)&ptr_out, (unsigned int*)&xacc_low_out, (unsigned int*)&xacc_high_out);
 }
 
 // ESP.LD.XACC.IP + ESP.ST.U.XACC.IP - Load and store with zero extension (_m version)
@@ -64,13 +64,13 @@ esp_xacc_res_t Res;
 // CHECK-LABEL: define dso_local ptr @test_ld_st_u_xacc_ip_m(
 // CHECK-SAME: ptr noundef [[SRC:%.*]], ptr noundef [[DST:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { i32, i32 } @llvm.riscv.esp.zero.xacc.m()
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { i32, i32 } @llvm.riscv.esp.zero.xacc()
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { i32, i32 } [[TMP0]], 0
 // CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { i32, i32 } [[TMP0]], 1
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.ld.xacc.ip.m(i32 [[TMP1]], i32 [[TMP2]], ptr [[SRC]], i32 8)
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.ld.xacc.ip(i32 [[TMP1]], i32 [[TMP2]], ptr [[SRC]], i32 8)
 // CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { ptr, i32, i32 } [[TMP3]], 1
 // CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { ptr, i32, i32 } [[TMP3]], 2
-// CHECK-NEXT:    [[TMP6:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.st.u.xacc.ip.m(i32 [[TMP4]], i32 [[TMP5]], ptr [[DST]], i32 8)
+// CHECK-NEXT:    [[TMP6:%.*]] = tail call { ptr, i32, i32 } @llvm.riscv.esp.st.u.xacc.ip(i32 [[TMP4]], i32 [[TMP5]], ptr [[DST]], i32 8)
 // CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { ptr, i32, i32 } [[TMP6]], 0
 // CHECK-NEXT:    store ptr [[TMP7]], ptr @test_ld_st_u_xacc_ip_m.ptr_out, align 4
 // CHECK-NEXT:    ret ptr [[TMP7]]
@@ -81,7 +81,7 @@ void *test_ld_st_u_xacc_ip_m(void const *src, void *dst) {
 esp_xacc_zero_res_t xacc_zero;
   // Builtin signature: __P0__(unsigned int *XaccLowOut, unsigned int
   // *XaccHighOut) Intrinsic signature: [] -> [i32, i32] (both set to 0)
-  __builtin_riscv_esp_zero_xacc_m((unsigned int *)&xacc_zero.xacc_low,
+  __builtin_riscv_esp_zero_xacc((unsigned int *)&xacc_zero.xacc_low,
                                   (unsigned int *)&xacc_zero.xacc_high);
     // Load 64-bit Data from memory, store low 40 bits to XACC
     // Returns structure with XACC value and updated pointer
@@ -92,13 +92,13 @@ esp_xacc_res_t Res;
   // void *, unsigned int *, unsigned int *) xacc_zero.xacc_low, xacc_zero.xacc_high: current XACC
   // state (input, passthru) &Res.src: pointer to store updated pointer (output)
   // &Res.xacc_low, &Res.xacc_high: pointers to store new XACC state (output)
-  Res.Ptr = __builtin_riscv_esp_ld_xacc_ip_m(
+  Res.Ptr = __builtin_riscv_esp_ld_xacc_ip(
       xacc_zero.xacc_low, xacc_zero.xacc_high, src, 8, &Res.Ptr, &Res.xacc_low, &Res.xacc_high);
     // Store XACC zero-extended to 64-bit memory
     // Pass XACC value from load Result for explicit state passing Data flow
     // Use volatile static variables to avoid register pressure and prevent optimization
     static volatile void *ptr_out;
     static volatile unsigned int xacc_low_out, xacc_high_out;
-    return __builtin_riscv_esp_st_u_xacc_ip_m(Res.xacc_low, Res.xacc_high, dst, 8, (void*)&ptr_out, (unsigned int*)&xacc_low_out, (unsigned int*)&xacc_high_out);
+    return __builtin_riscv_esp_st_u_xacc_ip(Res.xacc_low, Res.xacc_high, dst, 8, (void*)&ptr_out, (unsigned int*)&xacc_low_out, (unsigned int*)&xacc_high_out);
 }
 

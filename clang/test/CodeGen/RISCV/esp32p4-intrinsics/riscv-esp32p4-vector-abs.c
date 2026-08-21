@@ -5,24 +5,24 @@
 
 #include <stdint.h>
 #include <riscv_esp32p4.h>
-esp_vec128_t __builtin_riscv_esp_vabs_8_m(esp_vec128_t);
+esp_vec128_t __builtin_riscv_esp_vabs_8(esp_vec128_t);
 
 
 // Vector absolute value (8-bit)
 // CHECK-LABEL: define dso_local void @test_vabs_8(
 // CHECK-SAME: ptr noundef [[SRC:%.*]], ptr noundef [[DST:%.*]]) local_unnamed_addr #[[ATTR0:[0-9]+]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC]], i32 16)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC]], i32 16)
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP0]], 0
-// CHECK-NEXT:    [[TMP2:%.*]] = tail call <16 x i8> @llvm.riscv.esp.vabs.8.m(<16 x i8> [[TMP1]])
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP2]], ptr [[DST]], i32 16)
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call <16 x i8> @llvm.riscv.esp.vabs.8(<16 x i8> [[TMP1]])
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP2]], ptr [[DST]], i32 16)
 // CHECK-NEXT:    ret void
 //
 void test_vabs_8(void *src, void *dst) {
 esp_vld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vld_128_ip_m(src, 16, &Res.Val.V8);
-    esp_vec128_t abs_val = __builtin_riscv_esp_vabs_8_m(Res.Val.V8);
-    (void)__builtin_riscv_esp_vst_128_ip_m(abs_val, dst, 16);
+  Res.Ptr = __builtin_riscv_esp_vld_128_ip(src, 16, &Res.Val.V8);
+    esp_vec128_t abs_val = __builtin_riscv_esp_vabs_8(Res.Val.V8);
+    (void)__builtin_riscv_esp_vst_128_ip(abs_val, dst, 16);
 }
 
 // Vector saturation (8-bit)

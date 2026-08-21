@@ -26,9 +26,9 @@
 // 2.2-only operand syntax must not assemble under xespv 2.1.
 // RUN: not %clang --target=riscv32-unknown-elf -march=rv32i_xespv2p1 -x assembler -c -o %t.o %S/Inputs/xespv-march-2p2.s 2>&1
 
-// The 2-operand form assembles under xespv 2.2 with a defaulted sat operand,
-// producing the 2.2 encoding (distinct from the 2.1 encoding in TEXT21).
+// The 2-operand form assembles under xespv 2.2 with a defaulted trunc (0)
+// sat operand, producing the 2.2 encoding (distinct from TEXT21).
 // RUN: %clang --target=riscv32-unknown-elf -march=rv32i_xespv2p2 -x assembler -c -o %t22b.o %S/Inputs/xespv-march-2p1.s
 // RUN: llvm-objdump -s --section=.text %t22b.o | FileCheck %s --check-prefix=TEXT22B
 
-// TEXT22B: 1ba0874a
+// TEXT22B: 1ba0864a

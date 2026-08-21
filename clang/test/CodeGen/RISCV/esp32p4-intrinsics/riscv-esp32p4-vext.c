@@ -8,112 +8,112 @@
 
 // Additional type definitions
 
-void __builtin_riscv_esp_vext_s8_m(esp_vec128_t Qx, void *qx_out, void *qy_out);
-void __builtin_riscv_esp_vext_s16_m(esp_vec128_16_t Qx, void *qx_out, void *qy_out);
-void __builtin_riscv_esp_vext_u8_m(esp_vec128_t Qx, void *qx_out, void *qy_out);
-void __builtin_riscv_esp_vext_u16_m(esp_vec128_16_t Qx, void *qx_out, void *qy_out);
+void __builtin_riscv_esp_vext_s8(esp_vec128_t Qx, void *qx_out, void *qy_out);
+void __builtin_riscv_esp_vext_s16(esp_vec128_16_t Qx, void *qx_out, void *qy_out);
+void __builtin_riscv_esp_vext_u8(esp_vec128_t Qx, void *qx_out, void *qy_out);
+void __builtin_riscv_esp_vext_u16(esp_vec128_16_t Qx, void *qx_out, void *qy_out);
 
 // VEXT S8 - Sign extend 8-bit to 16-bit
 // CHECK-LABEL: define dso_local void @test_vext_s8_a(
 // CHECK-SAME: ptr noundef [[SRC:%.*]], ptr noundef [[DST1:%.*]], ptr noundef [[DST2:%.*]]) local_unnamed_addr #[[ATTR0:[0-9]+]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC]], i32 16)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC]], i32 16)
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP0]], 0
-// CHECK-NEXT:    [[TMP2:%.*]] = tail call { <8 x i16>, <8 x i16> } @llvm.riscv.esp.vext.s8.m(<16 x i8> [[TMP1]])
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call { <8 x i16>, <8 x i16> } @llvm.riscv.esp.vext.s8(<16 x i8> [[TMP1]])
 // CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <8 x i16>, <8 x i16> } [[TMP2]], 0
 // CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <8 x i16>, <8 x i16> } [[TMP2]], 1
 // CHECK-NEXT:    [[TMP5:%.*]] = bitcast <8 x i16> [[TMP3]] to <16 x i8>
-// CHECK-NEXT:    [[TMP6:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP5]], ptr [[DST1]], i32 16)
+// CHECK-NEXT:    [[TMP6:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP5]], ptr [[DST1]], i32 16)
 // CHECK-NEXT:    [[TMP7:%.*]] = bitcast <8 x i16> [[TMP4]] to <16 x i8>
-// CHECK-NEXT:    [[TMP8:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP7]], ptr [[DST2]], i32 16)
+// CHECK-NEXT:    [[TMP8:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP7]], ptr [[DST2]], i32 16)
 // CHECK-NEXT:    ret void
 //
 void test_vext_s8_a(void *src, void *dst1, void *dst2) {
 esp_vld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vld_128_ip_m(src, 16, &Res.Val.V8);
+  Res.Ptr = __builtin_riscv_esp_vld_128_ip(src, 16, &Res.Val.V8);
     esp_vec128_16_t out1, out2;
-    __builtin_riscv_esp_vext_s8_m(Res.Val.V8, &out1, &out2);
+    __builtin_riscv_esp_vext_s8(Res.Val.V8, &out1, &out2);
     union { esp_vec128_t V8; esp_vec128_16_t V16; } u1, u2;
     u1.V16 = out1;
     u2.V16 = out2;
-    (void)__builtin_riscv_esp_vst_128_ip_m(u1.V8, dst1, 16);
-    (void)__builtin_riscv_esp_vst_128_ip_m(u2.V8, dst2, 16);
+    (void)__builtin_riscv_esp_vst_128_ip(u1.V8, dst1, 16);
+    (void)__builtin_riscv_esp_vst_128_ip(u2.V8, dst2, 16);
 }
 
 // VEXT S16 - Sign extend 16-bit to 32-bit
 // CHECK-LABEL: define dso_local void @test_vext_s16_a(
 // CHECK-SAME: ptr noundef [[SRC:%.*]], ptr noundef [[DST1:%.*]], ptr noundef [[DST2:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC]], i32 16)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC]], i32 16)
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP0]], 0
 // CHECK-NEXT:    [[TMP2:%.*]] = bitcast <16 x i8> [[TMP1]] to <8 x i16>
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <4 x i32>, <4 x i32> } @llvm.riscv.esp.vext.s16.m(<8 x i16> [[TMP2]])
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <4 x i32>, <4 x i32> } @llvm.riscv.esp.vext.s16(<8 x i16> [[TMP2]])
 // CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <4 x i32>, <4 x i32> } [[TMP3]], 0
 // CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <4 x i32>, <4 x i32> } [[TMP3]], 1
 // CHECK-NEXT:    [[TMP6:%.*]] = bitcast <4 x i32> [[TMP4]] to <16 x i8>
-// CHECK-NEXT:    [[TMP7:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP6]], ptr [[DST1]], i32 16)
+// CHECK-NEXT:    [[TMP7:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP6]], ptr [[DST1]], i32 16)
 // CHECK-NEXT:    [[TMP8:%.*]] = bitcast <4 x i32> [[TMP5]] to <16 x i8>
-// CHECK-NEXT:    [[TMP9:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP8]], ptr [[DST2]], i32 16)
+// CHECK-NEXT:    [[TMP9:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP8]], ptr [[DST2]], i32 16)
 // CHECK-NEXT:    ret void
 //
 void test_vext_s16_a(void *src, void *dst1, void *dst2) {
 esp_vld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vld_128_ip_m(src, 16, &Res.Val.V8);
+  Res.Ptr = __builtin_riscv_esp_vld_128_ip(src, 16, &Res.Val.V8);
     esp_vec128_t out1, out2;
-    __builtin_riscv_esp_vext_s16_m(Res.Val.V16, &out1, &out2);
-    (void)__builtin_riscv_esp_vst_128_ip_m(out1, dst1, 16);
-    (void)__builtin_riscv_esp_vst_128_ip_m(out2, dst2, 16);
+    __builtin_riscv_esp_vext_s16(Res.Val.V16, &out1, &out2);
+    (void)__builtin_riscv_esp_vst_128_ip(out1, dst1, 16);
+    (void)__builtin_riscv_esp_vst_128_ip(out2, dst2, 16);
 }
 
 // VEXT U8 - Zero extend 8-bit to 16-bit
 // CHECK-LABEL: define dso_local void @test_vext_u8_a(
 // CHECK-SAME: ptr noundef [[SRC:%.*]], ptr noundef [[DST1:%.*]], ptr noundef [[DST2:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC]], i32 16)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC]], i32 16)
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP0]], 0
-// CHECK-NEXT:    [[TMP2:%.*]] = tail call { <8 x i16>, <8 x i16> } @llvm.riscv.esp.vext.u8.m(<16 x i8> [[TMP1]])
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call { <8 x i16>, <8 x i16> } @llvm.riscv.esp.vext.u8(<16 x i8> [[TMP1]])
 // CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <8 x i16>, <8 x i16> } [[TMP2]], 0
 // CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <8 x i16>, <8 x i16> } [[TMP2]], 1
 // CHECK-NEXT:    [[TMP5:%.*]] = bitcast <8 x i16> [[TMP3]] to <16 x i8>
-// CHECK-NEXT:    [[TMP6:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP5]], ptr [[DST1]], i32 16)
+// CHECK-NEXT:    [[TMP6:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP5]], ptr [[DST1]], i32 16)
 // CHECK-NEXT:    [[TMP7:%.*]] = bitcast <8 x i16> [[TMP4]] to <16 x i8>
-// CHECK-NEXT:    [[TMP8:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP7]], ptr [[DST2]], i32 16)
+// CHECK-NEXT:    [[TMP8:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP7]], ptr [[DST2]], i32 16)
 // CHECK-NEXT:    ret void
 //
 void test_vext_u8_a(void *src, void *dst1, void *dst2) {
 esp_vld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vld_128_ip_m(src, 16, &Res.Val.V8);
+  Res.Ptr = __builtin_riscv_esp_vld_128_ip(src, 16, &Res.Val.V8);
     esp_vec128_16_t out1, out2;
-    __builtin_riscv_esp_vext_u8_m(Res.Val.V8, &out1, &out2);
+    __builtin_riscv_esp_vext_u8(Res.Val.V8, &out1, &out2);
     union { esp_vec128_t V8; esp_vec128_16_t V16; } u1, u2;
     u1.V16 = out1;
     u2.V16 = out2;
-    (void)__builtin_riscv_esp_vst_128_ip_m(u1.V8, dst1, 16);
-    (void)__builtin_riscv_esp_vst_128_ip_m(u2.V8, dst2, 16);
+    (void)__builtin_riscv_esp_vst_128_ip(u1.V8, dst1, 16);
+    (void)__builtin_riscv_esp_vst_128_ip(u2.V8, dst2, 16);
 }
 
 // VEXT U16 - Zero extend 16-bit to 32-bit
 // CHECK-LABEL: define dso_local void @test_vext_u16_a(
 // CHECK-SAME: ptr noundef [[SRC:%.*]], ptr noundef [[DST1:%.*]], ptr noundef [[DST2:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC]], i32 16)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC]], i32 16)
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP0]], 0
 // CHECK-NEXT:    [[TMP2:%.*]] = bitcast <16 x i8> [[TMP1]] to <8 x i16>
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <4 x i32>, <4 x i32> } @llvm.riscv.esp.vext.u16.m(<8 x i16> [[TMP2]])
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <4 x i32>, <4 x i32> } @llvm.riscv.esp.vext.u16(<8 x i16> [[TMP2]])
 // CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <4 x i32>, <4 x i32> } [[TMP3]], 0
 // CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <4 x i32>, <4 x i32> } [[TMP3]], 1
 // CHECK-NEXT:    [[TMP6:%.*]] = bitcast <4 x i32> [[TMP4]] to <16 x i8>
-// CHECK-NEXT:    [[TMP7:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP6]], ptr [[DST1]], i32 16)
+// CHECK-NEXT:    [[TMP7:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP6]], ptr [[DST1]], i32 16)
 // CHECK-NEXT:    [[TMP8:%.*]] = bitcast <4 x i32> [[TMP5]] to <16 x i8>
-// CHECK-NEXT:    [[TMP9:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP8]], ptr [[DST2]], i32 16)
+// CHECK-NEXT:    [[TMP9:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP8]], ptr [[DST2]], i32 16)
 // CHECK-NEXT:    ret void
 //
 void test_vext_u16_a(void *src, void *dst1, void *dst2) {
 esp_vld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vld_128_ip_m(src, 16, &Res.Val.V8);
+  Res.Ptr = __builtin_riscv_esp_vld_128_ip(src, 16, &Res.Val.V8);
     esp_vec128_t out1, out2;
-    __builtin_riscv_esp_vext_u16_m(Res.Val.V16, &out1, &out2);
-    (void)__builtin_riscv_esp_vst_128_ip_m(out1, dst1, 16);
-    (void)__builtin_riscv_esp_vst_128_ip_m(out2, dst2, 16);
+    __builtin_riscv_esp_vext_u16(Res.Val.V16, &out1, &out2);
+    (void)__builtin_riscv_esp_vst_128_ip(out1, dst1, 16);
+    (void)__builtin_riscv_esp_vst_128_ip(out2, dst2, 16);
 }
 

@@ -11,14 +11,14 @@ define dso_local i32 @test_movx_xacc_h_write_read(i8 noundef zeroext %rs1_val) l
 ; ASM-NEXT:    ret
 entry:
   %conv1 = zext i8 %rs1_val to i32
-  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 %conv1)
-  %v2 = tail call i32 @llvm.riscv.esp.movx.r.xacc.h.m(i32 %v1)
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 %conv1)
+  %v2 = tail call i32 @llvm.riscv.esp.movx.r.xacc.h(i32 %v1)
   ret i32 %v2
 }
 
-declare i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32) #1
+declare i32 @llvm.riscv.esp.movx.w.xacc.h(i32) #1
 
-declare i32 @llvm.riscv.esp.movx.r.xacc.h.m(i32) #1
+declare i32 @llvm.riscv.esp.movx.r.xacc.h(i32) #1
 
 define dso_local i32 @test_movx_xacc_l_write_read(i32 noundef %rs1_val) local_unnamed_addr #0 {
 ; ASM-LABEL: test_movx_xacc_l_write_read:
@@ -27,14 +27,14 @@ define dso_local i32 @test_movx_xacc_l_write_read(i32 noundef %rs1_val) local_un
 ; ASM-NEXT:    esp.movx.r.xacc.l a0
 ; ASM-NEXT:    ret
 entry:
-  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 %rs1_val)
-  %v2 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 %v1)
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 %rs1_val)
+  %v2 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 %v1)
   ret i32 %v2
 }
 
-declare i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32) #1
+declare i32 @llvm.riscv.esp.movx.w.xacc.l(i32) #1
 
-declare i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32) #1
+declare i32 @llvm.riscv.esp.movx.r.xacc.l(i32) #1
 
 define dso_local i32 @test_vmulas_s16_xacc(i32 noundef %init_val, ptr noundef readonly captures(none) %0, ptr noundef readonly captures(none) %1) local_unnamed_addr #2 {
 ; ASM-LABEL: test_vmulas_s16_xacc:
@@ -53,16 +53,16 @@ define dso_local i32 @test_vmulas_s16_xacc(i32 noundef %init_val, ptr noundef re
 entry:
   %Qx = load <8 x i16>, ptr %0, align 16, !tbaa !6
   %Qy = load <8 x i16>, ptr %1, align 16, !tbaa !6
-  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 %init_val)
-  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 %init_val)
+  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
   %conv2 = and i32 %v2, 255
-  %v3 = tail call { i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.m(i32 %v1, i32 %conv2, <8 x i16> %Qx, <8 x i16> %Qy)
+  %v3 = tail call { i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc(i32 %v1, i32 %conv2, <8 x i16> %Qx, <8 x i16> %Qy, i32 0)
   %ev1 = extractvalue { i32, i32 } %v3, 0
-  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 %ev1)
+  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 %ev1)
   ret i32 %v4
 }
 
-declare { i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.m(i32, i32, <8 x i16>, <8 x i16>) #1
+declare { i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc(i32, i32, <8 x i16>, <8 x i16>, i32) #1
 
 define dso_local i32 @test_vmulas_s8_xacc(i32 noundef %init_val, ptr noundef readonly captures(none) %0, ptr noundef readonly captures(none) %1) local_unnamed_addr #2 {
 ; ASM-LABEL: test_vmulas_s8_xacc:
@@ -81,16 +81,16 @@ define dso_local i32 @test_vmulas_s8_xacc(i32 noundef %init_val, ptr noundef rea
 entry:
   %Qx = load <16 x i8>, ptr %0, align 16, !tbaa !6
   %Qy = load <16 x i8>, ptr %1, align 16, !tbaa !6
-  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 %init_val)
-  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 %init_val)
+  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
   %conv2 = and i32 %v2, 255
-  %v3 = tail call { i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.m(i32 %v1, i32 %conv2, <16 x i8> %Qx, <16 x i8> %Qy)
+  %v3 = tail call { i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc(i32 %v1, i32 %conv2, <16 x i8> %Qx, <16 x i8> %Qy, i32 0)
   %ev1 = extractvalue { i32, i32 } %v3, 0
-  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 %ev1)
+  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 %ev1)
   ret i32 %v4
 }
 
-declare { i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.m(i32, i32, <16 x i8>, <16 x i8>) #1
+declare { i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc(i32, i32, <16 x i8>, <16 x i8>, i32) #1
 
 define dso_local i32 @test_vmulas_u16_xacc(i32 noundef %init_val, ptr noundef readonly captures(none) %0, ptr noundef readonly captures(none) %1) local_unnamed_addr #2 {
 ; ASM-LABEL: test_vmulas_u16_xacc:
@@ -109,16 +109,16 @@ define dso_local i32 @test_vmulas_u16_xacc(i32 noundef %init_val, ptr noundef re
 entry:
   %Qx = load <8 x i16>, ptr %0, align 16, !tbaa !6
   %Qy = load <8 x i16>, ptr %1, align 16, !tbaa !6
-  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 %init_val)
-  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 %init_val)
+  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
   %conv2 = and i32 %v2, 255
-  %v3 = tail call { i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.m(i32 %v1, i32 %conv2, <8 x i16> %Qx, <8 x i16> %Qy)
+  %v3 = tail call { i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc(i32 %v1, i32 %conv2, <8 x i16> %Qx, <8 x i16> %Qy, i32 0)
   %ev1 = extractvalue { i32, i32 } %v3, 0
-  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 %ev1)
+  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 %ev1)
   ret i32 %v4
 }
 
-declare { i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.m(i32, i32, <8 x i16>, <8 x i16>) #1
+declare { i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc(i32, i32, <8 x i16>, <8 x i16>, i32) #1
 
 define dso_local i32 @test_vmulas_u8_xacc(i32 noundef %init_val, ptr noundef readonly captures(none) %0, ptr noundef readonly captures(none) %1) local_unnamed_addr #2 {
 ; ASM-LABEL: test_vmulas_u8_xacc:
@@ -137,16 +137,16 @@ define dso_local i32 @test_vmulas_u8_xacc(i32 noundef %init_val, ptr noundef rea
 entry:
   %Qx = load <16 x i8>, ptr %0, align 16, !tbaa !6
   %Qy = load <16 x i8>, ptr %1, align 16, !tbaa !6
-  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 %init_val)
-  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 %init_val)
+  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
   %conv2 = and i32 %v2, 255
-  %v3 = tail call { i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.m(i32 %v1, i32 %conv2, <16 x i8> %Qx, <16 x i8> %Qy)
+  %v3 = tail call { i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc(i32 %v1, i32 %conv2, <16 x i8> %Qx, <16 x i8> %Qy, i32 0)
   %ev1 = extractvalue { i32, i32 } %v3, 0
-  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 %ev1)
+  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 %ev1)
   ret i32 %v4
 }
 
-declare { i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.m(i32, i32, <16 x i8>, <16 x i8>) #1
+declare { i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc(i32, i32, <16 x i8>, <16 x i8>, i32) #1
 
 define dso_local i32 @test_srs_s_xacc(i32 noundef %init_val, i32 noundef %shift_amount) local_unnamed_addr #0 {
 ; ASM-LABEL: test_srs_s_xacc:
@@ -161,16 +161,16 @@ define dso_local i32 @test_srs_s_xacc(i32 noundef %init_val, i32 noundef %shift_
 ; ASM-NEXT:    esp.movx.r.xacc.l a0
 ; ASM-NEXT:    ret
 entry:
-  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 %init_val)
-  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 %init_val)
+  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
   %conv2 = and i32 %v2, 255
-  %v3 = tail call { i32, i32, i32 } @llvm.riscv.esp.srs.s.xacc.m(i32 %conv2, i32 %v1, i32 %shift_amount)
+  %v3 = tail call { i32, i32, i32 } @llvm.riscv.esp.srs.s.xacc(i32 %conv2, i32 %v1, i32 %shift_amount, i32 0, i32 7)
   %ev1 = extractvalue { i32, i32, i32 } %v3, 2
-  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 %ev1)
+  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 %ev1)
   ret i32 %v4
 }
 
-declare { i32, i32, i32 } @llvm.riscv.esp.srs.s.xacc.m(i32, i32, i32) #1
+declare { i32, i32, i32 } @llvm.riscv.esp.srs.s.xacc(i32, i32, i32, i32 immarg, i32 immarg) #1
 
 define dso_local i32 @test_srs_u_xacc(i32 noundef %init_val, i32 noundef %shift_amount) local_unnamed_addr #0 {
 ; ASM-LABEL: test_srs_u_xacc:
@@ -185,16 +185,16 @@ define dso_local i32 @test_srs_u_xacc(i32 noundef %init_val, i32 noundef %shift_
 ; ASM-NEXT:    esp.movx.r.xacc.l a0
 ; ASM-NEXT:    ret
 entry:
-  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 %init_val)
-  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 %init_val)
+  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
   %conv2 = and i32 %v2, 255
-  %v3 = tail call { i32, i32, i32 } @llvm.riscv.esp.srs.u.xacc.m(i32 %conv2, i32 %v1, i32 %shift_amount)
+  %v3 = tail call { i32, i32, i32 } @llvm.riscv.esp.srs.u.xacc(i32 %conv2, i32 %v1, i32 %shift_amount, i32 0, i32 7)
   %ev1 = extractvalue { i32, i32, i32 } %v3, 2
-  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 %ev1)
+  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 %ev1)
   ret i32 %v4
 }
 
-declare { i32, i32, i32 } @llvm.riscv.esp.srs.u.xacc.m(i32, i32, i32) #1
+declare { i32, i32, i32 } @llvm.riscv.esp.srs.u.xacc(i32, i32, i32, i32 immarg, i32 immarg) #1
 
 define dso_local i32 @test_vmulas_s16_xacc_ld_ip(i32 noundef %init_val, ptr noundef readonly captures(none) %0, ptr noundef readonly captures(none) %1, ptr noundef readonly %Ptr) local_unnamed_addr #3 {
 ; ASM-LABEL: test_vmulas_s16_xacc_ld_ip:
@@ -206,10 +206,10 @@ define dso_local i32 @test_vmulas_s16_xacc_ld_ip(i32 noundef %init_val, ptr noun
 entry:
   %Qx = load <8 x i16>, ptr %0, align 16, !tbaa !6
   %Qy = load <8 x i16>, ptr %1, align 16, !tbaa !6
-  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 %init_val)
-  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-  %v3 = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.ld.ip.m(i32 %v1, i32 %v2, <8 x i16> %Qx, <8 x i16> %Qy, ptr %Ptr, i32 16)
-  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 %init_val)
+  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+  %v3 = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.ld.ip(i32 %v1, i32 %v2, <8 x i16> %Qx, <8 x i16> %Qy, ptr %Ptr, i32 16, i32 0)
+  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
   ret i32 %v4
 }
 
@@ -223,10 +223,10 @@ define dso_local i32 @test_vmulas_s16_xacc_ld_xp(i32 noundef %init_val, ptr noun
 entry:
   %Qx = load <8 x i16>, ptr %0, align 16, !tbaa !6
   %Qy = load <8 x i16>, ptr %1, align 16, !tbaa !6
-  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 %init_val)
-  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-  %v3 = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.ld.xp.m(i32 %v1, i32 %v2, <8 x i16> %Qx, <8 x i16> %Qy, ptr %Ptr, i32 %Reg)
-  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 %init_val)
+  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+  %v3 = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.ld.xp(i32 %v1, i32 %v2, <8 x i16> %Qx, <8 x i16> %Qy, ptr %Ptr, i32 %Reg, i32 0)
+  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
   ret i32 %v4
 }
 
@@ -248,10 +248,10 @@ entry:
   %Qu = load <16 x i8>, ptr %0, align 16, !tbaa !6
   %Qx = load <8 x i16>, ptr %1, align 16, !tbaa !6
   %Qy = load <8 x i16>, ptr %2, align 16, !tbaa !6
-  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 %init_val)
-  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-  %v3 = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.st.ip.m(i32 %v1, i32 %v2, <16 x i8> %Qu, <8 x i16> %Qx, <8 x i16> %Qy, ptr %Ptr, i32 16)
-  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 %init_val)
+  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+  %v3 = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.st.ip(i32 %v1, i32 %v2, <16 x i8> %Qu, <8 x i16> %Qx, <8 x i16> %Qy, ptr %Ptr, i32 16, i32 0)
+  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
   ret i32 %v4
 }
 
@@ -273,10 +273,10 @@ entry:
   %Qu = load <16 x i8>, ptr %0, align 16, !tbaa !6
   %Qx = load <8 x i16>, ptr %1, align 16, !tbaa !6
   %Qy = load <8 x i16>, ptr %2, align 16, !tbaa !6
-  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 %init_val)
-  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-  %v3 = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.st.xp.m(i32 %v1, i32 %v2, <16 x i8> %Qu, <8 x i16> %Qx, <8 x i16> %Qy, ptr %Ptr, i32 %Reg)
-  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 %init_val)
+  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+  %v3 = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.st.xp(i32 %v1, i32 %v2, <16 x i8> %Qu, <8 x i16> %Qx, <8 x i16> %Qy, ptr %Ptr, i32 %Reg, i32 0)
+  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
   ret i32 %v4
 }
 
@@ -290,10 +290,10 @@ define dso_local i32 @test_vmulas_s8_xacc_ld_ip(i32 noundef %init_val, ptr nound
 entry:
   %Qx = load <16 x i8>, ptr %0, align 16, !tbaa !6
   %Qy = load <16 x i8>, ptr %1, align 16, !tbaa !6
-  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 %init_val)
-  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-  %v3 = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.ld.ip.m(i32 %v1, i32 %v2, <16 x i8> %Qx, <16 x i8> %Qy, ptr %Ptr, i32 16)
-  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 %init_val)
+  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+  %v3 = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.ld.ip(i32 %v1, i32 %v2, <16 x i8> %Qx, <16 x i8> %Qy, ptr %Ptr, i32 16, i32 0)
+  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
   ret i32 %v4
 }
 
@@ -307,10 +307,10 @@ define dso_local i32 @test_vmulas_s8_xacc_ld_xp(i32 noundef %init_val, ptr nound
 entry:
   %Qx = load <16 x i8>, ptr %0, align 16, !tbaa !6
   %Qy = load <16 x i8>, ptr %1, align 16, !tbaa !6
-  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 %init_val)
-  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-  %v3 = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.ld.xp.m(i32 %v1, i32 %v2, <16 x i8> %Qx, <16 x i8> %Qy, ptr %Ptr, i32 %Reg)
-  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 %init_val)
+  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+  %v3 = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.ld.xp(i32 %v1, i32 %v2, <16 x i8> %Qx, <16 x i8> %Qy, ptr %Ptr, i32 %Reg, i32 0)
+  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
   ret i32 %v4
 }
 
@@ -332,10 +332,10 @@ entry:
   %Qu = load <16 x i8>, ptr %0, align 16, !tbaa !6
   %Qx = load <16 x i8>, ptr %1, align 16, !tbaa !6
   %Qy = load <16 x i8>, ptr %2, align 16, !tbaa !6
-  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 %init_val)
-  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-  %v3 = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.st.ip.m(i32 %v1, i32 %v2, <16 x i8> %Qu, <16 x i8> %Qx, <16 x i8> %Qy, ptr %Ptr, i32 16)
-  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 %init_val)
+  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+  %v3 = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.st.ip(i32 %v1, i32 %v2, <16 x i8> %Qu, <16 x i8> %Qx, <16 x i8> %Qy, ptr %Ptr, i32 16, i32 0)
+  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
   ret i32 %v4
 }
 
@@ -357,10 +357,10 @@ entry:
   %Qu = load <16 x i8>, ptr %0, align 16, !tbaa !6
   %Qx = load <16 x i8>, ptr %1, align 16, !tbaa !6
   %Qy = load <16 x i8>, ptr %2, align 16, !tbaa !6
-  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 %init_val)
-  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-  %v3 = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.st.xp.m(i32 %v1, i32 %v2, <16 x i8> %Qu, <16 x i8> %Qx, <16 x i8> %Qy, ptr %Ptr, i32 %Reg)
-  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 %init_val)
+  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+  %v3 = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.st.xp(i32 %v1, i32 %v2, <16 x i8> %Qu, <16 x i8> %Qx, <16 x i8> %Qy, ptr %Ptr, i32 %Reg, i32 0)
+  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
   ret i32 %v4
 }
 
@@ -374,10 +374,10 @@ define dso_local i32 @test_vmulas_u16_xacc_ld_ip(i32 noundef %init_val, ptr noun
 entry:
   %Qx = load <8 x i16>, ptr %0, align 16, !tbaa !6
   %Qy = load <8 x i16>, ptr %1, align 16, !tbaa !6
-  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 %init_val)
-  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-  %v3 = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.ld.ip.m(i32 %v1, i32 %v2, <8 x i16> %Qx, <8 x i16> %Qy, ptr %Ptr, i32 16)
-  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 %init_val)
+  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+  %v3 = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.ld.ip(i32 %v1, i32 %v2, <8 x i16> %Qx, <8 x i16> %Qy, ptr %Ptr, i32 16, i32 0)
+  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
   ret i32 %v4
 }
 
@@ -391,10 +391,10 @@ define dso_local i32 @test_vmulas_u16_xacc_ld_xp(i32 noundef %init_val, ptr noun
 entry:
   %Qx = load <8 x i16>, ptr %0, align 16, !tbaa !6
   %Qy = load <8 x i16>, ptr %1, align 16, !tbaa !6
-  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 %init_val)
-  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-  %v3 = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.ld.xp.m(i32 %v1, i32 %v2, <8 x i16> %Qx, <8 x i16> %Qy, ptr %Ptr, i32 %Reg)
-  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 %init_val)
+  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+  %v3 = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.ld.xp(i32 %v1, i32 %v2, <8 x i16> %Qx, <8 x i16> %Qy, ptr %Ptr, i32 %Reg, i32 0)
+  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
   ret i32 %v4
 }
 
@@ -416,10 +416,10 @@ entry:
   %Qu = load <16 x i8>, ptr %0, align 16, !tbaa !6
   %Qx = load <8 x i16>, ptr %1, align 16, !tbaa !6
   %Qy = load <8 x i16>, ptr %2, align 16, !tbaa !6
-  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 %init_val)
-  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-  %v3 = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.st.ip.m(i32 %v1, i32 %v2, <16 x i8> %Qu, <8 x i16> %Qx, <8 x i16> %Qy, ptr %Ptr, i32 16)
-  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 %init_val)
+  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+  %v3 = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.st.ip(i32 %v1, i32 %v2, <16 x i8> %Qu, <8 x i16> %Qx, <8 x i16> %Qy, ptr %Ptr, i32 16, i32 0)
+  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
   ret i32 %v4
 }
 
@@ -441,10 +441,10 @@ entry:
   %Qu = load <16 x i8>, ptr %0, align 16, !tbaa !6
   %Qx = load <8 x i16>, ptr %1, align 16, !tbaa !6
   %Qy = load <8 x i16>, ptr %2, align 16, !tbaa !6
-  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 %init_val)
-  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-  %v3 = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.st.xp.m(i32 %v1, i32 %v2, <16 x i8> %Qu, <8 x i16> %Qx, <8 x i16> %Qy, ptr %Ptr, i32 %Reg)
-  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 %init_val)
+  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+  %v3 = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.st.xp(i32 %v1, i32 %v2, <16 x i8> %Qu, <8 x i16> %Qx, <8 x i16> %Qy, ptr %Ptr, i32 %Reg, i32 0)
+  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
   ret i32 %v4
 }
 
@@ -458,10 +458,10 @@ define dso_local i32 @test_vmulas_u8_xacc_ld_ip(i32 noundef %init_val, ptr nound
 entry:
   %Qx = load <16 x i8>, ptr %0, align 16, !tbaa !6
   %Qy = load <16 x i8>, ptr %1, align 16, !tbaa !6
-  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 %init_val)
-  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-  %v3 = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.ld.ip.m(i32 %v1, i32 %v2, <16 x i8> %Qx, <16 x i8> %Qy, ptr %Ptr, i32 16)
-  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 %init_val)
+  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+  %v3 = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.ld.ip(i32 %v1, i32 %v2, <16 x i8> %Qx, <16 x i8> %Qy, ptr %Ptr, i32 16, i32 0)
+  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
   ret i32 %v4
 }
 
@@ -475,10 +475,10 @@ define dso_local i32 @test_vmulas_u8_xacc_ld_xp(i32 noundef %init_val, ptr nound
 entry:
   %Qx = load <16 x i8>, ptr %0, align 16, !tbaa !6
   %Qy = load <16 x i8>, ptr %1, align 16, !tbaa !6
-  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 %init_val)
-  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-  %v3 = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.ld.xp.m(i32 %v1, i32 %v2, <16 x i8> %Qx, <16 x i8> %Qy, ptr %Ptr, i32 %Reg)
-  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 %init_val)
+  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+  %v3 = tail call { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.ld.xp(i32 %v1, i32 %v2, <16 x i8> %Qx, <16 x i8> %Qy, ptr %Ptr, i32 %Reg, i32 0)
+  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
   ret i32 %v4
 }
 
@@ -500,10 +500,10 @@ entry:
   %Qu = load <16 x i8>, ptr %0, align 16, !tbaa !6
   %Qx = load <16 x i8>, ptr %1, align 16, !tbaa !6
   %Qy = load <16 x i8>, ptr %2, align 16, !tbaa !6
-  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 %init_val)
-  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-  %v3 = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.st.ip.m(i32 %v1, i32 %v2, <16 x i8> %Qu, <16 x i8> %Qx, <16 x i8> %Qy, ptr %Ptr, i32 16)
-  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 %init_val)
+  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+  %v3 = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.st.ip(i32 %v1, i32 %v2, <16 x i8> %Qu, <16 x i8> %Qx, <16 x i8> %Qy, ptr %Ptr, i32 16, i32 0)
+  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
   ret i32 %v4
 }
 
@@ -525,44 +525,44 @@ entry:
   %Qu = load <16 x i8>, ptr %0, align 16, !tbaa !6
   %Qx = load <16 x i8>, ptr %1, align 16, !tbaa !6
   %Qy = load <16 x i8>, ptr %2, align 16, !tbaa !6
-  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l.m(i32 %init_val)
-  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h.m(i32 0)
-  %v3 = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.st.xp.m(i32 %v1, i32 %v2, <16 x i8> %Qu, <16 x i8> %Qx, <16 x i8> %Qy, ptr %Ptr, i32 %Reg)
-  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l.m(i32 0)
+  %v1 = tail call i32 @llvm.riscv.esp.movx.w.xacc.l(i32 %init_val)
+  %v2 = tail call i32 @llvm.riscv.esp.movx.w.xacc.h(i32 0)
+  %v3 = tail call { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.st.xp(i32 %v1, i32 %v2, <16 x i8> %Qu, <16 x i8> %Qx, <16 x i8> %Qy, ptr %Ptr, i32 %Reg, i32 0)
+  %v4 = tail call i32 @llvm.riscv.esp.movx.r.xacc.l(i32 0)
   ret i32 %v4
 }
 
-declare { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.ld.ip.m(i32, i32, <8 x i16>, <8 x i16>, ptr, i32) #5
+declare { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.ld.ip(i32, i32, <8 x i16>, <8 x i16>, ptr, i32, i32) #5
 
-declare { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.ld.xp.m(i32, i32, <8 x i16>, <8 x i16>, ptr, i32) #5
+declare { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.ld.xp(i32, i32, <8 x i16>, <8 x i16>, ptr, i32, i32) #5
 
-declare { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.st.ip.m(i32, i32, <16 x i8>, <8 x i16>, <8 x i16>, ptr, i32) #6
+declare { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.st.ip(i32, i32, <16 x i8>, <8 x i16>, <8 x i16>, ptr, i32, i32) #6
 
-declare { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.st.xp.m(i32, i32, <16 x i8>, <8 x i16>, <8 x i16>, ptr, i32) #6
+declare { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s16.xacc.st.xp(i32, i32, <16 x i8>, <8 x i16>, <8 x i16>, ptr, i32, i32) #6
 
-declare { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.ld.ip.m(i32, i32, <16 x i8>, <16 x i8>, ptr, i32) #5
+declare { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.ld.ip(i32, i32, <16 x i8>, <16 x i8>, ptr, i32, i32) #5
 
-declare { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.ld.xp.m(i32, i32, <16 x i8>, <16 x i8>, ptr, i32) #5
+declare { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.ld.xp(i32, i32, <16 x i8>, <16 x i8>, ptr, i32, i32) #5
 
-declare { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.st.ip.m(i32, i32, <16 x i8>, <16 x i8>, <16 x i8>, ptr, i32) #6
+declare { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.st.ip(i32, i32, <16 x i8>, <16 x i8>, <16 x i8>, ptr, i32, i32) #6
 
-declare { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.st.xp.m(i32, i32, <16 x i8>, <16 x i8>, <16 x i8>, ptr, i32) #6
+declare { ptr, i32, i32 } @llvm.riscv.esp.vmulas.s8.xacc.st.xp(i32, i32, <16 x i8>, <16 x i8>, <16 x i8>, ptr, i32, i32) #6
 
-declare { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.ld.ip.m(i32, i32, <8 x i16>, <8 x i16>, ptr, i32) #5
+declare { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.ld.ip(i32, i32, <8 x i16>, <8 x i16>, ptr, i32, i32) #5
 
-declare { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.ld.xp.m(i32, i32, <8 x i16>, <8 x i16>, ptr, i32) #5
+declare { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.ld.xp(i32, i32, <8 x i16>, <8 x i16>, ptr, i32, i32) #5
 
-declare { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.st.ip.m(i32, i32, <16 x i8>, <8 x i16>, <8 x i16>, ptr, i32) #6
+declare { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.st.ip(i32, i32, <16 x i8>, <8 x i16>, <8 x i16>, ptr, i32, i32) #6
 
-declare { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.st.xp.m(i32, i32, <16 x i8>, <8 x i16>, <8 x i16>, ptr, i32) #6
+declare { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u16.xacc.st.xp(i32, i32, <16 x i8>, <8 x i16>, <8 x i16>, ptr, i32, i32) #6
 
-declare { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.ld.ip.m(i32, i32, <16 x i8>, <16 x i8>, ptr, i32) #5
+declare { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.ld.ip(i32, i32, <16 x i8>, <16 x i8>, ptr, i32, i32) #5
 
-declare { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.ld.xp.m(i32, i32, <16 x i8>, <16 x i8>, ptr, i32) #5
+declare { <16 x i8>, ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.ld.xp(i32, i32, <16 x i8>, <16 x i8>, ptr, i32, i32) #5
 
-declare { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.st.ip.m(i32, i32, <16 x i8>, <16 x i8>, <16 x i8>, ptr, i32) #6
+declare { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.st.ip(i32, i32, <16 x i8>, <16 x i8>, <16 x i8>, ptr, i32, i32) #6
 
-declare { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.st.xp.m(i32, i32, <16 x i8>, <16 x i8>, <16 x i8>, ptr, i32) #6
+declare { ptr, i32, i32 } @llvm.riscv.esp.vmulas.u8.xacc.st.xp(i32, i32, <16 x i8>, <16 x i8>, <16 x i8>, ptr, i32, i32) #6
 
 attributes #0 = { "target-features"="+32bit,+xespv" }
 attributes #1 = { nounwind }

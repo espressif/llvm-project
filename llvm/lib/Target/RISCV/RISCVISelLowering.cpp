@@ -13045,6 +13045,9 @@ lowerFixedVectorSegStoreIntrinsics(unsigned IntNo, SDValue Op,
 
 SDValue RISCVTargetLowering::LowerINTRINSIC_VOID(SDValue Op,
                                                  SelectionDAG &DAG) const {
+  if (SDValue V = RISCV::lowerESPVIntrinsicVoid(Op, DAG, Subtarget))
+    return V;
+
   unsigned IntNo = Op.getConstantOperandVal(1);
   switch (IntNo) {
   default:
@@ -16689,13 +16692,14 @@ void RISCVTargetLowering::ReplaceNodeResults(SDNode *N,
     // Handle ESP32P4 intrinsics that return v64i8
     // These need to be lowered to CONCAT_VECTORS first, then split
     if (Subtarget.hasESPVTargetLowering() && VT == MVT::v64i8) {
-      if (IntNo == Intrinsic::riscv_esp_mov_s8_qacc_m ||
-          IntNo == Intrinsic::riscv_esp_mov_s16_qacc_m ||
-          IntNo == Intrinsic::riscv_esp_mov_u8_qacc_m ||
-          IntNo == Intrinsic::riscv_esp_mov_u16_qacc_m ||
-          IntNo == Intrinsic::riscv_esp_vmulas_s8_qacc_m ||
-          IntNo == Intrinsic::riscv_esp_vmulas_u16_qacc_m ||
-          IntNo == Intrinsic::riscv_esp_vmulas_u8_qacc_m) {
+      if (IntNo == Intrinsic::riscv_esp_mov_s8_qacc ||
+          IntNo == Intrinsic::riscv_esp_mov_s16_qacc ||
+          IntNo == Intrinsic::riscv_esp_mov_u8_qacc ||
+          IntNo == Intrinsic::riscv_esp_mov_u16_qacc ||
+          IntNo == Intrinsic::riscv_esp_vmulas_s8_qacc ||
+          IntNo == Intrinsic::riscv_esp_vmulas_s16_qacc ||
+          IntNo == Intrinsic::riscv_esp_vmulas_u16_qacc ||
+          IntNo == Intrinsic::riscv_esp_vmulas_u8_qacc) {
         // Lower the intrinsic to CONCAT_VECTORS first
         SDValue Op = SDValue(N, 0);
         SDValue Lowered = LowerINTRINSIC_WO_CHAIN(Op, DAG);
@@ -27618,6 +27622,9 @@ void RISCVTargetLowering::initializeESPVTargetLowering(
   // Intrinsic operations
   setOperationAction(ISD::INTRINSIC_W_CHAIN, MVT::i1, Custom);
   setOperationAction(ISD::INTRINSIC_W_CHAIN, MVT::Other, Custom);
+  // PIE 2.2 movx.w.cfg masks CFG writes in lowerESPVIntrinsicVoid; 2.1 uses
+  // Pat.
+  setOperationAction(ISD::INTRINSIC_VOID, MVT::Other, Custom);
 
   // Vector load/store operations
   setOperationAction(ISD::LOAD, MVT::v16i8, Custom);

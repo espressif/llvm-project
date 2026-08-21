@@ -13,16 +13,16 @@
 // CHECK-LABEL: define dso_local i32 @test_movx_sar_bytes_write_read(
 // CHECK-SAME: i32 noundef [[RS1_VAL:%.*]]) local_unnamed_addr #[[ATTR0:[0-9]+]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar.bytes.m(i32 [[RS1_VAL]])
-// CHECK-NEXT:    [[TMP1:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.sar.bytes.m(i32 [[TMP0]])
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar.bytes(i32 [[RS1_VAL]])
+// CHECK-NEXT:    [[TMP1:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.sar.bytes(i32 [[TMP0]])
 // CHECK-NEXT:    ret i32 [[TMP1]]
 //
 unsigned int test_movx_sar_bytes_write_read(unsigned int rs1_val) {
     // Write to SAR_BYTES: SAR_BYTES[3:0] = Rs1[3:0] (hardware automatically uses only low 4 bits)
     // SAR_BYTES stores unsigned byte shift amount (0-15)
-    unsigned int sar_bytes = __builtin_riscv_esp_movx_w_sar_bytes_m(rs1_val);
+    unsigned int sar_bytes = __builtin_riscv_esp_movx_w_sar_bytes(rs1_val);
     // Read from SAR_BYTES: rd[31:0] = {28'b0, SAR_BYTES[3:0]} (hardware automatically extracts only low 4 bits from 64-bit SAR_BYTES)
-    return __builtin_riscv_esp_movx_r_sar_bytes_m(sar_bytes);
+    return __builtin_riscv_esp_movx_r_sar_bytes(sar_bytes);
 }
 
 // Test ESP.LD.128.USAR.IP - Load 128-bit and write SAR_BYTES with explicit state passing
@@ -31,19 +31,19 @@ unsigned int test_movx_sar_bytes_write_read(unsigned int rs1_val) {
 // CHECK-LABEL: define dso_local i32 @test_ld_128_usar_ip_sar_bytes(
 // CHECK-SAME: ptr noundef [[SRC:%.*]]) local_unnamed_addr #[[ATTR2:[0-9]+]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[SRC]], i32 16)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip(ptr [[SRC]], i32 16)
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[TMP0]], 2
-// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.sar.bytes.m(i32 [[TMP1]])
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.sar.bytes(i32 [[TMP1]])
 // CHECK-NEXT:    ret i32 [[TMP2]]
 //
 unsigned int test_ld_128_usar_ip_sar_bytes(void *src) {
     // Load Data - ESP.LD.128.USAR.IP writes SAR_BYTES[3:0] = Rs1[3:0]
 esp_vld_usar_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_ld_128_usar_ip_m(src, 16, &Res.Val.V8,
+  Res.Ptr = __builtin_riscv_esp_ld_128_usar_ip(src, 16, &Res.Val.V8,
                                                  &Res.SarBytes);
   // SAR_BYTES is filled by builtin as output parameter
     // Read SAR_BYTES from register using MOVX.R.SAR.BYTES
-    unsigned int sar_bytes = __builtin_riscv_esp_movx_r_sar_bytes_m(Res.SarBytes);
+    unsigned int sar_bytes = __builtin_riscv_esp_movx_r_sar_bytes(Res.SarBytes);
     return sar_bytes;
 }
 
@@ -53,19 +53,19 @@ esp_vld_usar_res_t Res;
 // CHECK-LABEL: define dso_local i32 @test_ld_128_usar_xp_sar_bytes(
 // CHECK-SAME: ptr noundef [[SRC:%.*]], i32 noundef [[INCR:%.*]]) local_unnamed_addr #[[ATTR2]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.xp.m(ptr [[SRC]], i32 [[INCR]])
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.xp(ptr [[SRC]], i32 [[INCR]])
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[TMP0]], 2
-// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.sar.bytes.m(i32 [[TMP1]])
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.sar.bytes(i32 [[TMP1]])
 // CHECK-NEXT:    ret i32 [[TMP2]]
 //
 unsigned int test_ld_128_usar_xp_sar_bytes(void *src, int incr) {
     // Load Data - ESP.LD.128.USAR.XP writes SAR_BYTES[3:0] = Rs1[3:0]
 esp_vld_usar_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_ld_128_usar_xp_m(src, incr, &Res.Val.V8,
+  Res.Ptr = __builtin_riscv_esp_ld_128_usar_xp(src, incr, &Res.Val.V8,
                                                  &Res.SarBytes);
   // SAR_BYTES is filled by builtin as output parameter
     // Read SAR_BYTES from register using MOVX.R.SAR.BYTES
-    unsigned int sar_bytes = __builtin_riscv_esp_movx_r_sar_bytes_m(Res.SarBytes);
+    unsigned int sar_bytes = __builtin_riscv_esp_movx_r_sar_bytes(Res.SarBytes);
     return sar_bytes;
 }
 
@@ -75,27 +75,27 @@ esp_vld_usar_res_t Res;
 // CHECK-LABEL: define dso_local void @test_src_q_with_sar_bytes(
 // CHECK-SAME: ptr noundef [[SRC1:%.*]], ptr noundef [[SRC2:%.*]], ptr noundef [[DST:%.*]]) local_unnamed_addr #[[ATTR4:[0-9]+]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[SRC1]], i32 16)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip(ptr [[SRC1]], i32 16)
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[TMP0]], 0
 // CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[TMP0]], 2
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16)
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC2]], i32 16)
 // CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP3]], 0
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call <16 x i8> @llvm.riscv.esp.src.q.m(i32 [[TMP2]], <16 x i8> [[TMP1]], <16 x i8> [[TMP4]])
-// CHECK-NEXT:    [[TMP6:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP5]], ptr [[DST]], i32 16)
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call <16 x i8> @llvm.riscv.esp.src.q(i32 [[TMP2]], <16 x i8> [[TMP1]], <16 x i8> [[TMP4]])
+// CHECK-NEXT:    [[TMP6:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP5]], ptr [[DST]], i32 16)
 // CHECK-NEXT:    ret void
 //
 void test_src_q_with_sar_bytes(void *src1, void *src2, void *dst) {
     // Load Data - ESP.LD.128.USAR.IP writes SAR_BYTES[3:0] = Rs1[3:0]
 esp_vld_usar_res_t Res1;
-  Res1.Ptr = __builtin_riscv_esp_ld_128_usar_ip_m(src1, 16, &Res1.Val.V8,
+  Res1.Ptr = __builtin_riscv_esp_ld_128_usar_ip(src1, 16, &Res1.Val.V8,
                                                  &Res1.SarBytes);
   // SAR_BYTES is filled by builtin as output parameter
 esp_vld_res_t Res2;
-  Res2.Ptr = __builtin_riscv_esp_vld_128_ip_m(src2, 16, &Res2.Val.V8);
+  Res2.Ptr = __builtin_riscv_esp_vld_128_ip(src2, 16, &Res2.Val.V8);
     // SAR_BYTES comes from Res1.SarBytes (explicit state passing)
     // ESP.SRC.Q with explicit SAR_BYTES input (SAR_BYTES is last parameter)
-    esp_vec128_t Result = __builtin_riscv_esp_src_q_m(Res1.Val.V8, Res2.Val.V8, Res1.SarBytes);
-    (void)__builtin_riscv_esp_vst_128_ip_m(Result, dst, 16);
+    esp_vec128_t Result = __builtin_riscv_esp_src_q(Res1.Val.V8, Res2.Val.V8, Res1.SarBytes);
+    (void)__builtin_riscv_esp_vst_128_ip(Result, dst, 16);
 }
 
 // Test ESP.SRC.Q.LD.IP with explicit SAR_BYTES input
@@ -103,33 +103,33 @@ esp_vld_res_t Res2;
 // CHECK-LABEL: define dso_local void @test_src_q_ld_ip_with_sar_bytes(
 // CHECK-SAME: ptr noundef [[SRC1:%.*]], ptr noundef [[SRC2:%.*]], ptr noundef [[SRC3:%.*]], ptr noundef [[DST_QW:%.*]], ptr noundef [[DST_QU:%.*]]) local_unnamed_addr #[[ATTR4]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[SRC1]], i32 16)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip(ptr [[SRC1]], i32 16)
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[TMP0]], 0
 // CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[TMP0]], 2
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16)
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC2]], i32 16)
 // CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP3]], 0
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP2]], <16 x i8> [[TMP1]], <16 x i8> [[TMP4]], ptr [[SRC3]], i32 16)
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip(i32 [[TMP2]], <16 x i8> [[TMP1]], <16 x i8> [[TMP4]], ptr [[SRC3]], i32 16)
 // CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[TMP5]], 0
 // CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[TMP5]], 1
-// CHECK-NEXT:    [[TMP8:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP6]], ptr [[DST_QW]], i32 16)
-// CHECK-NEXT:    [[TMP9:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP7]], ptr [[DST_QU]], i32 16)
+// CHECK-NEXT:    [[TMP8:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP6]], ptr [[DST_QW]], i32 16)
+// CHECK-NEXT:    [[TMP9:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP7]], ptr [[DST_QU]], i32 16)
 // CHECK-NEXT:    ret void
 //
 void test_src_q_ld_ip_with_sar_bytes(void *src1, void *src2, void *src3, void *dst_qw, void *dst_qu) {
     // Load Data - ESP.LD.128.USAR.IP writes SAR_BYTES[3:0] = Rs1[3:0]
 esp_vld_usar_res_t Res1;
-  Res1.Ptr = __builtin_riscv_esp_ld_128_usar_ip_m(src1, 16, &Res1.Val.V8,
+  Res1.Ptr = __builtin_riscv_esp_ld_128_usar_ip(src1, 16, &Res1.Val.V8,
                                                  &Res1.SarBytes);
   // SAR_BYTES is filled by builtin as output parameter
 esp_vld_res_t Res2;
-  Res2.Ptr = __builtin_riscv_esp_vld_128_ip_m(src2, 16, &Res2.Val.V8);
+  Res2.Ptr = __builtin_riscv_esp_vld_128_ip(src2, 16, &Res2.Val.V8);
     // SAR_BYTES comes from Res1.SarBytes (explicit state passing)
     // ESP.SRC.Q.LD.IP with explicit SAR_BYTES input (SAR_BYTES is last parameter)
 esp_src_q_ld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_src_q_ld_ip_m(Res1.Val.V8, Res2.Val.V8, src3, 16, &Res.Qw,
+  Res.Ptr = __builtin_riscv_esp_src_q_ld_ip(Res1.Val.V8, Res2.Val.V8, src3, 16, &Res.Qw,
                                               &Res.Qu, Res1.SarBytes);
-    (void)__builtin_riscv_esp_vst_128_ip_m(Res.Qw, dst_qw, 16);
-    (void)__builtin_riscv_esp_vst_128_ip_m(Res.Qu, dst_qu, 16);
+    (void)__builtin_riscv_esp_vst_128_ip(Res.Qw, dst_qw, 16);
+    (void)__builtin_riscv_esp_vst_128_ip(Res.Qu, dst_qu, 16);
 }
 
 // Test ESP.SRC.Q.LD.XP with explicit SAR_BYTES input
@@ -137,33 +137,33 @@ esp_src_q_ld_res_t Res;
 // CHECK-LABEL: define dso_local void @test_src_q_ld_xp_with_sar_bytes(
 // CHECK-SAME: ptr noundef [[SRC1:%.*]], ptr noundef [[SRC2:%.*]], ptr noundef [[SRC3:%.*]], ptr noundef [[DST_QW:%.*]], ptr noundef [[DST_QU:%.*]], i32 noundef [[INCR:%.*]]) local_unnamed_addr #[[ATTR4]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.xp.m(ptr [[SRC1]], i32 [[INCR]])
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.xp(ptr [[SRC1]], i32 [[INCR]])
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[TMP0]], 0
 // CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[TMP0]], 2
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16)
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC2]], i32 16)
 // CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP3]], 0
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.xp.m(i32 [[TMP2]], <16 x i8> [[TMP1]], <16 x i8> [[TMP4]], ptr [[SRC3]], i32 [[INCR]])
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.xp(i32 [[TMP2]], <16 x i8> [[TMP1]], <16 x i8> [[TMP4]], ptr [[SRC3]], i32 [[INCR]])
 // CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[TMP5]], 0
 // CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[TMP5]], 1
-// CHECK-NEXT:    [[TMP8:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP6]], ptr [[DST_QW]], i32 16)
-// CHECK-NEXT:    [[TMP9:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP7]], ptr [[DST_QU]], i32 16)
+// CHECK-NEXT:    [[TMP8:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP6]], ptr [[DST_QW]], i32 16)
+// CHECK-NEXT:    [[TMP9:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP7]], ptr [[DST_QU]], i32 16)
 // CHECK-NEXT:    ret void
 //
 void test_src_q_ld_xp_with_sar_bytes(void *src1, void *src2, void *src3, void *dst_qw, void *dst_qu, int incr) {
     // Load Data - ESP.LD.128.USAR.XP writes SAR_BYTES[3:0] = Rs1[3:0]
 esp_vld_usar_res_t Res1;
-  Res1.Ptr = __builtin_riscv_esp_ld_128_usar_xp_m(src1, incr, &Res1.Val.V8,
+  Res1.Ptr = __builtin_riscv_esp_ld_128_usar_xp(src1, incr, &Res1.Val.V8,
                                                  &Res1.SarBytes);
   // SAR_BYTES is filled by builtin as output parameter
 esp_vld_res_t Res2;
-  Res2.Ptr = __builtin_riscv_esp_vld_128_ip_m(src2, 16, &Res2.Val.V8);
+  Res2.Ptr = __builtin_riscv_esp_vld_128_ip(src2, 16, &Res2.Val.V8);
     // SAR_BYTES comes from Res1.SarBytes (explicit state passing)
     // ESP.SRC.Q.LD.XP with explicit SAR_BYTES input (SAR_BYTES is last parameter)
 esp_src_q_ld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_src_q_ld_xp_m(Res1.Val.V8, Res2.Val.V8, src3, incr, &Res.Qw,
+  Res.Ptr = __builtin_riscv_esp_src_q_ld_xp(Res1.Val.V8, Res2.Val.V8, src3, incr, &Res.Qw,
                                               &Res.Qu, Res1.SarBytes);
-    (void)__builtin_riscv_esp_vst_128_ip_m(Res.Qw, dst_qw, 16);
-    (void)__builtin_riscv_esp_vst_128_ip_m(Res.Qu, dst_qu, 16);
+    (void)__builtin_riscv_esp_vst_128_ip(Res.Qw, dst_qw, 16);
+    (void)__builtin_riscv_esp_vst_128_ip(Res.Qu, dst_qu, 16);
 }
 
 // Test ESP.SRC.Q.qup with explicit SAR_BYTES input
@@ -171,32 +171,32 @@ esp_src_q_ld_res_t Res;
 // CHECK-LABEL: define dso_local void @test_src_q_qup_with_sar_bytes(
 // CHECK-SAME: ptr noundef [[SRC1:%.*]], ptr noundef [[SRC2:%.*]], ptr noundef [[DST_QZ:%.*]], ptr noundef [[DST_QW:%.*]]) local_unnamed_addr #[[ATTR4]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[SRC1]], i32 16)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip(ptr [[SRC1]], i32 16)
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[TMP0]], 0
 // CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[TMP0]], 2
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16)
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC2]], i32 16)
 // CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP3]], 0
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call { <16 x i8>, <16 x i8> } @llvm.riscv.esp.src.q.qup.m(i32 [[TMP2]], <16 x i8> [[TMP1]], <16 x i8> [[TMP4]])
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call { <16 x i8>, <16 x i8> } @llvm.riscv.esp.src.q.qup(i32 [[TMP2]], <16 x i8> [[TMP1]], <16 x i8> [[TMP4]])
 // CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8> } [[TMP5]], 0
 // CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, <16 x i8> } [[TMP5]], 1
-// CHECK-NEXT:    [[TMP8:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP6]], ptr [[DST_QZ]], i32 16)
-// CHECK-NEXT:    [[TMP9:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP7]], ptr [[DST_QW]], i32 16)
+// CHECK-NEXT:    [[TMP8:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP6]], ptr [[DST_QZ]], i32 16)
+// CHECK-NEXT:    [[TMP9:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP7]], ptr [[DST_QW]], i32 16)
 // CHECK-NEXT:    ret void
 //
 void test_src_q_qup_with_sar_bytes(void *src1, void *src2, void *dst_qz, void *dst_qw) {
     // Load Data - ESP.LD.128.USAR.IP writes SAR_BYTES[3:0] = Rs1[3:0]
 esp_vld_usar_res_t Res1;
-  Res1.Ptr = __builtin_riscv_esp_ld_128_usar_ip_m(src1, 16, &Res1.Val.V8,
+  Res1.Ptr = __builtin_riscv_esp_ld_128_usar_ip(src1, 16, &Res1.Val.V8,
                                                  &Res1.SarBytes);
   // SAR_BYTES is filled by builtin as output parameter
 esp_vld_res_t Res2;
-  Res2.Ptr = __builtin_riscv_esp_vld_128_ip_m(src2, 16, &Res2.Val.V8);
+  Res2.Ptr = __builtin_riscv_esp_vld_128_ip(src2, 16, &Res2.Val.V8);
     // SAR_BYTES comes from Res1.SarBytes (explicit state passing)
     // ESP.SRC.Q.qup with explicit SAR_BYTES input (SAR_BYTES is last parameter)
 esp_src_q_qup_res_t Res;
-  __builtin_riscv_esp_src_q_qup_m(Res1.Val.V8, Res2.Val.V8, &Res.Qz, &Res.Qw, Res1.SarBytes);
-    (void)__builtin_riscv_esp_vst_128_ip_m(Res.Qz, dst_qz, 16);
-    (void)__builtin_riscv_esp_vst_128_ip_m(Res.Qw, dst_qw, 16);
+  __builtin_riscv_esp_src_q_qup(Res1.Val.V8, Res2.Val.V8, &Res.Qz, &Res.Qw, Res1.SarBytes);
+    (void)__builtin_riscv_esp_vst_128_ip(Res.Qz, dst_qz, 16);
+    (void)__builtin_riscv_esp_vst_128_ip(Res.Qw, dst_qw, 16);
 }
 
 // Test ESP.SRCQ.128.ST.INCP with explicit SAR_BYTES input
@@ -205,25 +205,25 @@ esp_src_q_qup_res_t Res;
 // CHECK-LABEL: define dso_local void @test_srcq_128_st_incp_with_sar_bytes(
 // CHECK-SAME: ptr noundef [[SRC1:%.*]], ptr noundef [[SRC2:%.*]], ptr noundef [[DST:%.*]]) local_unnamed_addr #[[ATTR4]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[SRC1]], i32 16)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip(ptr [[SRC1]], i32 16)
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[TMP0]], 0
 // CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[TMP0]], 2
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16)
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC2]], i32 16)
 // CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP3]], 0
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call ptr @llvm.riscv.esp.srcq.128.st.incp.m(i32 [[TMP2]], <16 x i8> [[TMP1]], <16 x i8> [[TMP4]], ptr [[DST]])
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call ptr @llvm.riscv.esp.srcq.128.st.incp(i32 [[TMP2]], <16 x i8> [[TMP1]], <16 x i8> [[TMP4]], ptr [[DST]])
 // CHECK-NEXT:    ret void
 //
 void test_srcq_128_st_incp_with_sar_bytes(void *src1, void *src2, void *dst) {
     // Load Data - ESP.LD.128.USAR.IP writes SAR_BYTES[3:0] = Rs1[3:0]
 esp_vld_usar_res_t Res1;
-  Res1.Ptr = __builtin_riscv_esp_ld_128_usar_ip_m(src1, 16, &Res1.Val.V8,
+  Res1.Ptr = __builtin_riscv_esp_ld_128_usar_ip(src1, 16, &Res1.Val.V8,
                                                  &Res1.SarBytes);
   // SAR_BYTES is filled by builtin as output parameter
 esp_vld_res_t Res2;
-  Res2.Ptr = __builtin_riscv_esp_vld_128_ip_m(src2, 16, &Res2.Val.V8);
+  Res2.Ptr = __builtin_riscv_esp_vld_128_ip(src2, 16, &Res2.Val.V8);
     // SAR_BYTES comes from Res1.SarBytes (explicit state passing)
     // ESP.SRCQ.128.ST.INCP with explicit SAR_BYTES input (SAR_BYTES is last parameter)
-    __builtin_riscv_esp_srcq_128_st_incp_m(Res1.Val.V8, Res2.Val.V8, dst, Res1.SarBytes);
+    __builtin_riscv_esp_srcq_128_st_incp(Res1.Val.V8, Res2.Val.V8, dst, Res1.SarBytes);
 }
 
 

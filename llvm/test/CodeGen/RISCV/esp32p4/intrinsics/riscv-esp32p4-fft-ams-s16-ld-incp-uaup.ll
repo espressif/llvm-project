@@ -21,36 +21,36 @@ define dso_local void @test_fft_ams_s16_ld_incp_uaup(ptr noundef %src, ptr nound
 ; ASM-NEXT:    esp.vst.128.ip q2, a1, 16
 ; ASM-NEXT:    ret
 entry:
-  %sar = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 0)
-  %sar.1 = tail call i32 @llvm.riscv.esp.movx.w.sar.bytes.m(i32 0)
-  %v1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.ld.ua.state.ip.m(<16 x i8> undef, ptr %src, i32 16)
+  %sar = tail call i32 @llvm.riscv.esp.movx.w.sar(i32 0)
+  %sar.1 = tail call i32 @llvm.riscv.esp.movx.w.sar.bytes(i32 0)
+  %v1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.ld.ua.state.ip(<16 x i8> undef, ptr %src, i32 16)
   %ev1 = extractvalue { <16 x i8>, ptr } %v1, 0
-  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src, i32 16)
   %ev2 = extractvalue { <16 x i8>, ptr } %vld1, 0
   %bc1 = bitcast <16 x i8> %ev2 to <8 x i16>
-  %v2 = tail call { <16 x i8>, <8 x i16>, <8 x i16>, ptr, <16 x i8> } @llvm.riscv.esp.fft.ams.s16.ld.incp.uaup.m(<8 x i16> %bc1, <8 x i16> %bc1, <8 x i16> %bc1, ptr %src, i32 0, <16 x i8> %ev1, i32 %sar.1, i32 %sar)
+  %v2 = tail call { <16 x i8>, <8 x i16>, <8 x i16>, ptr, <16 x i8> } @llvm.riscv.esp.fft.ams.s16.ld.incp.uaup(<8 x i16> %bc1, <8 x i16> %bc1, <8 x i16> %bc1, ptr %src, i32 0, i32 0, <16 x i8> %ev1, i32 %sar.1, i32 %sar)
   %ev3 = extractvalue { <16 x i8>, <8 x i16>, <8 x i16>, ptr, <16 x i8> } %v2, 0
   %ev4 = extractvalue { <16 x i8>, <8 x i16>, <8 x i16>, ptr, <16 x i8> } %v2, 1
   %ev5 = extractvalue { <16 x i8>, <8 x i16>, <8 x i16>, ptr, <16 x i8> } %v2, 2
   %bc2 = bitcast <8 x i16> %ev4 to <16 x i8>
   %bc3 = bitcast <8 x i16> %ev5 to <16 x i8>
-  %vst_ptr = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> %ev3, ptr %dst, i32 16)
-  %vst_ptr.1 = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> %bc2, ptr %dst, i32 16)
-  %vst_ptr.2 = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> %bc3, ptr %dst, i32 16)
+  %vst_ptr = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> %ev3, ptr %dst, i32 16)
+  %vst_ptr.1 = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> %bc2, ptr %dst, i32 16)
+  %vst_ptr.2 = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> %bc3, ptr %dst, i32 16)
   ret void
 }
 
-declare i32 @llvm.riscv.esp.movx.w.sar.m(i32) #1
+declare i32 @llvm.riscv.esp.movx.w.sar(i32) #1
 
-declare i32 @llvm.riscv.esp.movx.w.sar.bytes.m(i32) #1
+declare i32 @llvm.riscv.esp.movx.w.sar.bytes(i32) #1
 
-declare { <16 x i8>, ptr } @llvm.riscv.esp.ld.ua.state.ip.m(<16 x i8>, ptr, i32) #2
+declare { <16 x i8>, ptr } @llvm.riscv.esp.ld.ua.state.ip(<16 x i8>, ptr, i32) #2
 
-declare { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr, i32) #2
+declare { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr, i32) #2
 
-declare { <16 x i8>, <8 x i16>, <8 x i16>, ptr, <16 x i8> } @llvm.riscv.esp.fft.ams.s16.ld.incp.uaup.m(<8 x i16>, <8 x i16>, <8 x i16>, ptr, i32, <16 x i8>, i32, i32) #2
+declare { <16 x i8>, <8 x i16>, <8 x i16>, ptr, <16 x i8> } @llvm.riscv.esp.fft.ams.s16.ld.incp.uaup(<8 x i16>, <8 x i16>, <8 x i16>, ptr, i32, i32, <16 x i8>, i32, i32) #2
 
-declare ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8>, ptr, i32) #3
+declare ptr @llvm.riscv.esp.vst.128.ip(<16 x i8>, ptr, i32) #3
 
 attributes #0 = { "target-features"="+32bit,+xespv" }
 attributes #1 = { nounwind }

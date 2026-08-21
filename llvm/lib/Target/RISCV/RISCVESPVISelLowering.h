@@ -1,4 +1,4 @@
-//===-- RISCVESPVISelLowering.h - ESPV DAG Lowering Interface -*- C++ -*-===//
+//===-- RISCVESPVISelLowering.h - ESPV DAG Lowering Interface ---*- C++ -*-===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
@@ -33,6 +33,8 @@ SDValue lowerESPVIntrinsicWOChain(SDValue Op, SelectionDAG &DAG,
                                   const RISCVSubtarget &Subtarget);
 SDValue lowerESPVIntrinsicWChain(SDValue Op, SelectionDAG &DAG,
                                  const RISCVSubtarget &Subtarget);
+SDValue lowerESPVIntrinsicVoid(SDValue Op, SelectionDAG &DAG,
+                               const RISCVSubtarget &Subtarget);
 SDValue lowerESPVectorShuffle(SDValue Op, SelectionDAG &DAG,
                               const RISCVSubtarget &Subtarget);
 SDValue lowerESPVVectorMaskExt(SDValue Op, SelectionDAG &DAG,

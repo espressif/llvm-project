@@ -11,7 +11,7 @@
 
 // Note: CMUL instructions use SAR register (Shift Amount Register) for shift operations.
 // In _m version, SAR is passed explicitly as a parameter (explicit state passing).
-// SAR must be initialized before using CMUL instructions via __builtin_riscv_esp_movx_w_sar_m().
+// SAR must be initialized before using CMUL instructions via __builtin_riscv_esp_movx_w_sar().
 // Instruction: SAR[5:0] = Rs1[5:0] (only low 6 bits of Rs1 are used)
 // SAR stores unsigned shift amount (0-63), so type is unsigned int (i32)
 
@@ -19,31 +19,31 @@
 // CHECK-LABEL: define dso_local void @test_cmul_u16_ld_incp_with_wrapper(
 // CHECK-SAME: ptr noundef [[SRC1:%.*]], ptr noundef [[SRC2:%.*]], ptr noundef readnone captures(none) [[SRC3:%.*]], ptr noundef readnone captures(none) [[SRC4:%.*]], ptr noundef [[DST:%.*]]) local_unnamed_addr #[[ATTR0:[0-9]+]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 0)
-// CHECK-NEXT:    [[TMP1:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC1]], i32 16)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar(i32 0)
+// CHECK-NEXT:    [[TMP1:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC1]], i32 16)
 // CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP1]], 0
 // CHECK-NEXT:    [[TMP3:%.*]] = bitcast <16 x i8> [[TMP2]] to <8 x i16>
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16)
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC2]], i32 16)
 // CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP4]], 0
 // CHECK-NEXT:    [[TMP6:%.*]] = bitcast <16 x i8> [[TMP5]] to <8 x i16>
 // CHECK-NEXT:    [[TMP7:%.*]] = tail call { <8 x i16>, <16 x i8>, ptr } @llvm.riscv.esp.cmul.u16.ld.incp.m(<8 x i16> undef, <8 x i16> [[TMP3]], <8 x i16> [[TMP6]], ptr [[SRC1]], i32 3, i32 [[TMP0]])
 // CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <8 x i16>, <16 x i8>, ptr } [[TMP7]], 0
 // CHECK-NEXT:    [[TMP9:%.*]] = bitcast <8 x i16> [[TMP8]] to <16 x i8>
-// CHECK-NEXT:    [[TMP10:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP9]], ptr [[DST]], i32 16)
+// CHECK-NEXT:    [[TMP10:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP9]], ptr [[DST]], i32 16)
 // CHECK-NEXT:    ret void
 //
 void test_cmul_u16_ld_incp_with_wrapper(void *src1, void *src2, void *src3, void *src4, void *dst) {
-    unsigned int sar = __builtin_riscv_esp_movx_w_sar_m(0);
+    unsigned int sar = __builtin_riscv_esp_movx_w_sar(0);
 esp_vld_res_t Res1;
-  Res1.Ptr = __builtin_riscv_esp_vld_128_ip_m(src1, 16, &Res1.Val.V8);
+  Res1.Ptr = __builtin_riscv_esp_vld_128_ip(src1, 16, &Res1.Val.V8);
 esp_vld_res_t Res2;
-  Res2.Ptr = __builtin_riscv_esp_vld_128_ip_m(src2, 16, &Res2.Val.V8);
+  Res2.Ptr = __builtin_riscv_esp_vld_128_ip(src2, 16, &Res2.Val.V8);
     esp_vec128_16_t QzInUnused;
     esp_cmul_ld_incp_res_t CmulRes;
     CmulRes.Ptr = __builtin_riscv_esp_cmul_u16_ld_incp_m(
         QzInUnused, Res1.Val.V16, Res2.Val.V16, src1, 3, &CmulRes.Qz, &CmulRes.Qu, sar);
     // Actually use return value to prevent optimization
-    (void)__builtin_riscv_esp_vst_128_ip_m(CmulRes.Qz, dst, 16);
+    (void)__builtin_riscv_esp_vst_128_ip(CmulRes.Qz, dst, 16);
     (void)CmulRes.Qu; (void)CmulRes.Ptr; (void)src3; (void)src4;
 }
 
@@ -51,31 +51,31 @@ esp_vld_res_t Res2;
 // CHECK-LABEL: define dso_local void @test_cmul_s16_ld_incp_with_wrapper(
 // CHECK-SAME: ptr noundef [[SRC1:%.*]], ptr noundef [[SRC2:%.*]], ptr noundef [[DST:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 0)
-// CHECK-NEXT:    [[TMP1:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC1]], i32 16)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar(i32 0)
+// CHECK-NEXT:    [[TMP1:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC1]], i32 16)
 // CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP1]], 0
 // CHECK-NEXT:    [[TMP3:%.*]] = bitcast <16 x i8> [[TMP2]] to <8 x i16>
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16)
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC2]], i32 16)
 // CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP4]], 0
 // CHECK-NEXT:    [[TMP6:%.*]] = bitcast <16 x i8> [[TMP5]] to <8 x i16>
-// CHECK-NEXT:    [[TMP7:%.*]] = tail call { <8 x i16>, <16 x i8>, ptr } @llvm.riscv.esp.cmul.s16.ld.incp.m(<8 x i16> undef, <8 x i16> [[TMP3]], <8 x i16> [[TMP6]], ptr [[SRC1]], i32 3, i32 [[TMP0]])
+// CHECK-NEXT:    [[TMP7:%.*]] = tail call { <8 x i16>, <16 x i8>, ptr } @llvm.riscv.esp.cmul.s16.ld.incp(<8 x i16> undef, <8 x i16> [[TMP3]], <8 x i16> [[TMP6]], ptr [[SRC1]], i32 3, i32 0, i32 7, i32 [[TMP0]])
 // CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <8 x i16>, <16 x i8>, ptr } [[TMP7]], 0
 // CHECK-NEXT:    [[TMP9:%.*]] = bitcast <8 x i16> [[TMP8]] to <16 x i8>
-// CHECK-NEXT:    [[TMP10:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP9]], ptr [[DST]], i32 16)
+// CHECK-NEXT:    [[TMP10:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP9]], ptr [[DST]], i32 16)
 // CHECK-NEXT:    ret void
 //
 void test_cmul_s16_ld_incp_with_wrapper(void *src1, void *src2, void *dst) {
-    unsigned int sar = __builtin_riscv_esp_movx_w_sar_m(0);  // Initialize SAR, chain the return value
+    unsigned int sar = __builtin_riscv_esp_movx_w_sar(0);  // Initialize SAR, chain the return value
 esp_vld_res_t Res1;
-  Res1.Ptr = __builtin_riscv_esp_vld_128_ip_m(src1, 16, &Res1.Val.V8);
+  Res1.Ptr = __builtin_riscv_esp_vld_128_ip(src1, 16, &Res1.Val.V8);
 esp_vld_res_t Res2;
-  Res2.Ptr = __builtin_riscv_esp_vld_128_ip_m(src2, 16, &Res2.Val.V8);
+  Res2.Ptr = __builtin_riscv_esp_vld_128_ip(src2, 16, &Res2.Val.V8);
     esp_vec128_16_t QzInUnused;
     esp_cmul_ld_incp_res_t CmulRes;
-    CmulRes.Ptr = __builtin_riscv_esp_cmul_s16_ld_incp_m(
-        QzInUnused, Res1.Val.V16, Res2.Val.V16, src1, 3, &CmulRes.Qz, &CmulRes.Qu, sar);
+    CmulRes.Ptr = __builtin_riscv_esp_cmul_s16_ld_incp(
+        QzInUnused, Res1.Val.V16, Res2.Val.V16, src1, 3, 0, 7, &CmulRes.Qz, &CmulRes.Qu, sar);
     // Actually use return value to prevent optimization
-    (void)__builtin_riscv_esp_vst_128_ip_m(CmulRes.Qz, dst, 16);
+    (void)__builtin_riscv_esp_vst_128_ip(CmulRes.Qz, dst, 16);
     (void)CmulRes.Qu; (void)CmulRes.Ptr;
 }
 
@@ -83,28 +83,28 @@ esp_vld_res_t Res2;
 // CHECK-LABEL: define dso_local void @test_cmul_u8_ld_incp_with_wrapper(
 // CHECK-SAME: ptr noundef [[SRC1:%.*]], ptr noundef [[SRC2:%.*]], ptr noundef [[DST:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 0)
-// CHECK-NEXT:    [[TMP1:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC1]], i32 16)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar(i32 0)
+// CHECK-NEXT:    [[TMP1:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC1]], i32 16)
 // CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP1]], 0
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16)
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC2]], i32 16)
 // CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP3]], 0
 // CHECK-NEXT:    [[TMP5:%.*]] = tail call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.cmul.u8.ld.incp.m(<16 x i8> undef, <16 x i8> [[TMP2]], <16 x i8> [[TMP4]], ptr [[SRC1]], i32 3, i32 [[TMP0]])
 // CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[TMP5]], 0
-// CHECK-NEXT:    [[TMP7:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP6]], ptr [[DST]], i32 16)
+// CHECK-NEXT:    [[TMP7:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP6]], ptr [[DST]], i32 16)
 // CHECK-NEXT:    ret void
 //
 void test_cmul_u8_ld_incp_with_wrapper(void *src1, void *src2, void *dst) {
-    unsigned int sar = __builtin_riscv_esp_movx_w_sar_m(0);  // Initialize SAR, chain the return value
+    unsigned int sar = __builtin_riscv_esp_movx_w_sar(0);  // Initialize SAR, chain the return value
 esp_vld_res_t Res1;
-  Res1.Ptr = __builtin_riscv_esp_vld_128_ip_m(src1, 16, &Res1.Val.V8);
+  Res1.Ptr = __builtin_riscv_esp_vld_128_ip(src1, 16, &Res1.Val.V8);
 esp_vld_res_t Res2;
-  Res2.Ptr = __builtin_riscv_esp_vld_128_ip_m(src2, 16, &Res2.Val.V8);
+  Res2.Ptr = __builtin_riscv_esp_vld_128_ip(src2, 16, &Res2.Val.V8);
     esp_vec128_t QzInUnused;
     esp_cmul_ld_incp_res_t CmulRes;
     CmulRes.Ptr = __builtin_riscv_esp_cmul_u8_ld_incp_m(
         QzInUnused, Res1.Val.V8, Res2.Val.V8, src1, 3, &CmulRes.Qz, &CmulRes.Qu, sar);
     // Actually use return value to prevent optimization
-    (void)__builtin_riscv_esp_vst_128_ip_m(CmulRes.Qz, dst, 16);
+    (void)__builtin_riscv_esp_vst_128_ip(CmulRes.Qz, dst, 16);
     (void)CmulRes.Qu; (void)CmulRes.Ptr;
 }
 
@@ -112,28 +112,28 @@ esp_vld_res_t Res2;
 // CHECK-LABEL: define dso_local void @test_cmul_s8_ld_incp_with_wrapper(
 // CHECK-SAME: ptr noundef [[SRC1:%.*]], ptr noundef [[SRC2:%.*]], ptr noundef [[DST:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 0)
-// CHECK-NEXT:    [[TMP1:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC1]], i32 16)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar(i32 0)
+// CHECK-NEXT:    [[TMP1:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC1]], i32 16)
 // CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP1]], 0
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16)
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC2]], i32 16)
 // CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP3]], 0
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.cmul.s8.ld.incp.m(<16 x i8> undef, <16 x i8> [[TMP2]], <16 x i8> [[TMP4]], ptr [[SRC1]], i32 3, i32 [[TMP0]])
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.cmul.s8.ld.incp(<16 x i8> undef, <16 x i8> [[TMP2]], <16 x i8> [[TMP4]], ptr [[SRC1]], i32 3, i32 0, i32 7, i32 [[TMP0]])
 // CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[TMP5]], 0
-// CHECK-NEXT:    [[TMP7:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP6]], ptr [[DST]], i32 16)
+// CHECK-NEXT:    [[TMP7:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP6]], ptr [[DST]], i32 16)
 // CHECK-NEXT:    ret void
 //
 void test_cmul_s8_ld_incp_with_wrapper(void *src1, void *src2, void *dst) {
-    unsigned int sar = __builtin_riscv_esp_movx_w_sar_m(0);  // Initialize SAR, chain the return value
+    unsigned int sar = __builtin_riscv_esp_movx_w_sar(0);  // Initialize SAR, chain the return value
 esp_vld_res_t Res1;
-  Res1.Ptr = __builtin_riscv_esp_vld_128_ip_m(src1, 16, &Res1.Val.V8);
+  Res1.Ptr = __builtin_riscv_esp_vld_128_ip(src1, 16, &Res1.Val.V8);
 esp_vld_res_t Res2;
-  Res2.Ptr = __builtin_riscv_esp_vld_128_ip_m(src2, 16, &Res2.Val.V8);
+  Res2.Ptr = __builtin_riscv_esp_vld_128_ip(src2, 16, &Res2.Val.V8);
     esp_vec128_t QzInUnused;
     esp_cmul_ld_incp_res_t CmulRes;
-    CmulRes.Ptr = __builtin_riscv_esp_cmul_s8_ld_incp_m(
-        QzInUnused, Res1.Val.V8, Res2.Val.V8, src1, 3, &CmulRes.Qz, &CmulRes.Qu, sar);
+    CmulRes.Ptr = __builtin_riscv_esp_cmul_s8_ld_incp(
+        QzInUnused, Res1.Val.V8, Res2.Val.V8, src1, 3, 0, 7, &CmulRes.Qz, &CmulRes.Qu, sar);
     // Actually use return value to prevent optimization
-    (void)__builtin_riscv_esp_vst_128_ip_m(CmulRes.Qz, dst, 16);
+    (void)__builtin_riscv_esp_vst_128_ip(CmulRes.Qz, dst, 16);
     (void)CmulRes.Qu; (void)CmulRes.Ptr;
 }
 
@@ -141,26 +141,26 @@ esp_vld_res_t Res2;
 // CHECK-LABEL: define dso_local void @test_cmul_u16_st_incp(
 // CHECK-SAME: ptr noundef [[SRC1:%.*]], ptr noundef [[SRC2:%.*]], ptr noundef [[SRC3:%.*]], ptr noundef [[DST:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 0)
-// CHECK-NEXT:    [[TMP1:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC1]], i32 16)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar(i32 0)
+// CHECK-NEXT:    [[TMP1:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC1]], i32 16)
 // CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP1]], 0
 // CHECK-NEXT:    [[TMP3:%.*]] = bitcast <16 x i8> [[TMP2]] to <8 x i16>
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16)
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC2]], i32 16)
 // CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP4]], 0
 // CHECK-NEXT:    [[TMP6:%.*]] = bitcast <16 x i8> [[TMP5]] to <8 x i16>
 // CHECK-NEXT:    [[TMP7:%.*]] = tail call { <8 x i16>, <16 x i8>, ptr } @llvm.riscv.esp.cmul.u16.ld.incp.m(<8 x i16> undef, <8 x i16> [[TMP3]], <8 x i16> [[TMP6]], ptr [[SRC1]], i32 3, i32 [[TMP0]])
 // CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <8 x i16>, <16 x i8>, ptr } [[TMP7]], 0
-// CHECK-NEXT:    [[TMP9:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC3]], i32 16)
+// CHECK-NEXT:    [[TMP9:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC3]], i32 16)
 // CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP9]], 0
 // CHECK-NEXT:    [[TMP11:%.*]] = tail call { <8 x i16>, ptr } @llvm.riscv.esp.cmul.u16.st.incp.m(<8 x i16> [[TMP8]], <8 x i16> [[TMP3]], <8 x i16> [[TMP6]], <16 x i8> [[TMP10]], ptr [[DST]], i32 3, i32 [[TMP0]])
 // CHECK-NEXT:    ret void
 //
 void test_cmul_u16_st_incp(void *src1, void *src2, void *src3, void *dst) {
-    unsigned int sar = __builtin_riscv_esp_movx_w_sar_m(0);  // Initialize SAR, chain the return value
+    unsigned int sar = __builtin_riscv_esp_movx_w_sar(0);  // Initialize SAR, chain the return value
 esp_vld_res_t Res1;
-  Res1.Ptr = __builtin_riscv_esp_vld_128_ip_m(src1, 16, &Res1.Val.V8);
+  Res1.Ptr = __builtin_riscv_esp_vld_128_ip(src1, 16, &Res1.Val.V8);
 esp_vld_res_t Res2;
-  Res2.Ptr = __builtin_riscv_esp_vld_128_ip_m(src2, 16, &Res2.Val.V8);
+  Res2.Ptr = __builtin_riscv_esp_vld_128_ip(src2, 16, &Res2.Val.V8);
     esp_vec128_16_t QzInUnused;
     esp_cmul_ld_incp_res_t CmulRes;
     CmulRes.Ptr = __builtin_riscv_esp_cmul_u16_ld_incp_m(
@@ -169,7 +169,7 @@ esp_vld_res_t Res2;
     union { esp_vec128_t V8; esp_vec128_16_t V16; } qz_conv = {.V8 = CmulRes.Qz};
     Qz = qz_conv.V16;
 esp_vld_res_t dummy_ld;
-  dummy_ld.Ptr = __builtin_riscv_esp_vld_128_ip_m(src3, 16, &dummy_ld.Val.V8);
+  dummy_ld.Ptr = __builtin_riscv_esp_vld_128_ip(src3, 16, &dummy_ld.Val.V8);
     esp_vec128_t dummy = dummy_ld.Val.V8;
     __builtin_riscv_esp_cmul_u16_st_incp_m(
         Qz, Res1.Val.V16, Res2.Val.V16, dummy, dst, 3, sar);
@@ -179,69 +179,69 @@ esp_vld_res_t dummy_ld;
 // CHECK-LABEL: define dso_local void @test_cmul_s16_st_incp(
 // CHECK-SAME: ptr noundef [[SRC1:%.*]], ptr noundef [[SRC2:%.*]], ptr noundef [[SRC3:%.*]], ptr noundef [[DST:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 0)
-// CHECK-NEXT:    [[TMP1:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC1]], i32 16)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar(i32 0)
+// CHECK-NEXT:    [[TMP1:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC1]], i32 16)
 // CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP1]], 0
 // CHECK-NEXT:    [[TMP3:%.*]] = bitcast <16 x i8> [[TMP2]] to <8 x i16>
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16)
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC2]], i32 16)
 // CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP4]], 0
 // CHECK-NEXT:    [[TMP6:%.*]] = bitcast <16 x i8> [[TMP5]] to <8 x i16>
-// CHECK-NEXT:    [[TMP7:%.*]] = tail call { <8 x i16>, <16 x i8>, ptr } @llvm.riscv.esp.cmul.s16.ld.incp.m(<8 x i16> undef, <8 x i16> [[TMP3]], <8 x i16> [[TMP6]], ptr [[SRC1]], i32 3, i32 [[TMP0]])
+// CHECK-NEXT:    [[TMP7:%.*]] = tail call { <8 x i16>, <16 x i8>, ptr } @llvm.riscv.esp.cmul.s16.ld.incp(<8 x i16> undef, <8 x i16> [[TMP3]], <8 x i16> [[TMP6]], ptr [[SRC1]], i32 3, i32 0, i32 7, i32 [[TMP0]])
 // CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <8 x i16>, <16 x i8>, ptr } [[TMP7]], 0
-// CHECK-NEXT:    [[TMP9:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC3]], i32 16)
+// CHECK-NEXT:    [[TMP9:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC3]], i32 16)
 // CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP9]], 0
-// CHECK-NEXT:    [[TMP11:%.*]] = tail call { <8 x i16>, ptr } @llvm.riscv.esp.cmul.s16.st.incp.m(<8 x i16> [[TMP8]], <8 x i16> [[TMP3]], <8 x i16> [[TMP6]], <16 x i8> [[TMP10]], ptr [[DST]], i32 3, i32 [[TMP0]])
+// CHECK-NEXT:    [[TMP11:%.*]] = tail call { <8 x i16>, ptr } @llvm.riscv.esp.cmul.s16.st.incp(<8 x i16> [[TMP8]], <8 x i16> [[TMP3]], <8 x i16> [[TMP6]], <16 x i8> [[TMP10]], ptr [[DST]], i32 3, i32 0, i32 7, i32 [[TMP0]])
 // CHECK-NEXT:    ret void
 //
 void test_cmul_s16_st_incp(void *src1, void *src2, void *src3, void *dst) {
-    unsigned int sar = __builtin_riscv_esp_movx_w_sar_m(0);  // Initialize SAR, chain the return value
+    unsigned int sar = __builtin_riscv_esp_movx_w_sar(0);  // Initialize SAR, chain the return value
 esp_vld_res_t Res1;
-  Res1.Ptr = __builtin_riscv_esp_vld_128_ip_m(src1, 16, &Res1.Val.V8);
+  Res1.Ptr = __builtin_riscv_esp_vld_128_ip(src1, 16, &Res1.Val.V8);
 esp_vld_res_t Res2;
-  Res2.Ptr = __builtin_riscv_esp_vld_128_ip_m(src2, 16, &Res2.Val.V8);
+  Res2.Ptr = __builtin_riscv_esp_vld_128_ip(src2, 16, &Res2.Val.V8);
     esp_vec128_16_t QzInUnused;
     esp_cmul_ld_incp_res_t CmulRes;
-    CmulRes.Ptr = __builtin_riscv_esp_cmul_s16_ld_incp_m(
-        QzInUnused, Res1.Val.V16, Res2.Val.V16, src1, 3, &CmulRes.Qz, &CmulRes.Qu, sar);
+    CmulRes.Ptr = __builtin_riscv_esp_cmul_s16_ld_incp(
+        QzInUnused, Res1.Val.V16, Res2.Val.V16, src1, 3, 0, 7, &CmulRes.Qz, &CmulRes.Qu, sar);
     esp_vec128_16_t Qz;
     union { esp_vec128_t V8; esp_vec128_16_t V16; } qz_conv = {.V8 = CmulRes.Qz};
     Qz = qz_conv.V16;
 esp_vld_res_t dummy_ld;
-  dummy_ld.Ptr = __builtin_riscv_esp_vld_128_ip_m(src3, 16, &dummy_ld.Val.V8);
+  dummy_ld.Ptr = __builtin_riscv_esp_vld_128_ip(src3, 16, &dummy_ld.Val.V8);
     esp_vec128_t dummy = dummy_ld.Val.V8;
-    __builtin_riscv_esp_cmul_s16_st_incp_m(
-        Qz, Res1.Val.V16, Res2.Val.V16, dummy, dst, 3, sar);
+    __builtin_riscv_esp_cmul_s16_st_incp(
+        Qz, Res1.Val.V16, Res2.Val.V16, dummy, dst, 3, 0, 7, sar);
 }
 
 // CMUL U8 ST.INCP
 // CHECK-LABEL: define dso_local void @test_cmul_u8_st_incp(
 // CHECK-SAME: ptr noundef [[SRC1:%.*]], ptr noundef [[SRC2:%.*]], ptr noundef [[SRC3:%.*]], ptr noundef [[DST:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 0)
-// CHECK-NEXT:    [[TMP1:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC1]], i32 16)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar(i32 0)
+// CHECK-NEXT:    [[TMP1:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC1]], i32 16)
 // CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP1]], 0
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16)
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC2]], i32 16)
 // CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP3]], 0
 // CHECK-NEXT:    [[TMP5:%.*]] = tail call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.cmul.u8.ld.incp.m(<16 x i8> undef, <16 x i8> [[TMP2]], <16 x i8> [[TMP4]], ptr [[SRC1]], i32 3, i32 [[TMP0]])
 // CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[TMP5]], 0
-// CHECK-NEXT:    [[TMP7:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC3]], i32 16)
+// CHECK-NEXT:    [[TMP7:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC3]], i32 16)
 // CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP7]], 0
 // CHECK-NEXT:    [[TMP9:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.cmul.u8.st.incp.m(<16 x i8> [[TMP6]], <16 x i8> [[TMP2]], <16 x i8> [[TMP4]], <16 x i8> [[TMP8]], ptr [[DST]], i32 3, i32 [[TMP0]])
 // CHECK-NEXT:    ret void
 //
 void test_cmul_u8_st_incp(void *src1, void *src2, void *src3, void *dst) {
-    unsigned int sar = __builtin_riscv_esp_movx_w_sar_m(0);  // Initialize SAR, chain the return value
+    unsigned int sar = __builtin_riscv_esp_movx_w_sar(0);  // Initialize SAR, chain the return value
 esp_vld_res_t Res1;
-  Res1.Ptr = __builtin_riscv_esp_vld_128_ip_m(src1, 16, &Res1.Val.V8);
+  Res1.Ptr = __builtin_riscv_esp_vld_128_ip(src1, 16, &Res1.Val.V8);
 esp_vld_res_t Res2;
-  Res2.Ptr = __builtin_riscv_esp_vld_128_ip_m(src2, 16, &Res2.Val.V8);
+  Res2.Ptr = __builtin_riscv_esp_vld_128_ip(src2, 16, &Res2.Val.V8);
     esp_vec128_t QzInUnused;
     esp_cmul_ld_incp_res_t CmulRes;
     CmulRes.Ptr = __builtin_riscv_esp_cmul_u8_ld_incp_m(
         QzInUnused, Res1.Val.V8, Res2.Val.V8, src1, 3, &CmulRes.Qz, &CmulRes.Qu, sar);
     esp_vec128_t Qz = CmulRes.Qz;
 esp_vld_res_t dummy_ld;
-  dummy_ld.Ptr = __builtin_riscv_esp_vld_128_ip_m(src3, 16, &dummy_ld.Val.V8);
+  dummy_ld.Ptr = __builtin_riscv_esp_vld_128_ip(src3, 16, &dummy_ld.Val.V8);
     esp_vec128_t dummy = dummy_ld.Val.V8;
     __builtin_riscv_esp_cmul_u8_st_incp_m(
         Qz, Res1.Val.V8, Res2.Val.V8, dummy, dst, 3, sar);
@@ -251,34 +251,34 @@ esp_vld_res_t dummy_ld;
 // CHECK-LABEL: define dso_local void @test_cmul_s8_st_incp(
 // CHECK-SAME: ptr noundef [[SRC1:%.*]], ptr noundef [[SRC2:%.*]], ptr noundef [[SRC3:%.*]], ptr noundef [[DST:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 0)
-// CHECK-NEXT:    [[TMP1:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC1]], i32 16)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar(i32 0)
+// CHECK-NEXT:    [[TMP1:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC1]], i32 16)
 // CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP1]], 0
-// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16)
+// CHECK-NEXT:    [[TMP3:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC2]], i32 16)
 // CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP3]], 0
-// CHECK-NEXT:    [[TMP5:%.*]] = tail call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.cmul.s8.ld.incp.m(<16 x i8> undef, <16 x i8> [[TMP2]], <16 x i8> [[TMP4]], ptr [[SRC1]], i32 3, i32 [[TMP0]])
+// CHECK-NEXT:    [[TMP5:%.*]] = tail call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.cmul.s8.ld.incp(<16 x i8> undef, <16 x i8> [[TMP2]], <16 x i8> [[TMP4]], ptr [[SRC1]], i32 3, i32 0, i32 7, i32 [[TMP0]])
 // CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[TMP5]], 0
-// CHECK-NEXT:    [[TMP7:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC3]], i32 16)
+// CHECK-NEXT:    [[TMP7:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC3]], i32 16)
 // CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP7]], 0
-// CHECK-NEXT:    [[TMP9:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.cmul.s8.st.incp.m(<16 x i8> [[TMP6]], <16 x i8> [[TMP2]], <16 x i8> [[TMP4]], <16 x i8> [[TMP8]], ptr [[DST]], i32 3, i32 [[TMP0]])
+// CHECK-NEXT:    [[TMP9:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.cmul.s8.st.incp(<16 x i8> [[TMP6]], <16 x i8> [[TMP2]], <16 x i8> [[TMP4]], <16 x i8> [[TMP8]], ptr [[DST]], i32 3, i32 0, i32 7, i32 [[TMP0]])
 // CHECK-NEXT:    ret void
 //
 void test_cmul_s8_st_incp(void *src1, void *src2, void *src3, void *dst) {
-    unsigned int sar = __builtin_riscv_esp_movx_w_sar_m(0);  // Initialize SAR, chain the return value
+    unsigned int sar = __builtin_riscv_esp_movx_w_sar(0);  // Initialize SAR, chain the return value
 esp_vld_res_t Res1;
-  Res1.Ptr = __builtin_riscv_esp_vld_128_ip_m(src1, 16, &Res1.Val.V8);
+  Res1.Ptr = __builtin_riscv_esp_vld_128_ip(src1, 16, &Res1.Val.V8);
 esp_vld_res_t Res2;
-  Res2.Ptr = __builtin_riscv_esp_vld_128_ip_m(src2, 16, &Res2.Val.V8);
+  Res2.Ptr = __builtin_riscv_esp_vld_128_ip(src2, 16, &Res2.Val.V8);
     esp_vec128_t QzInUnused;
     esp_cmul_ld_incp_res_t CmulRes;
-    CmulRes.Ptr = __builtin_riscv_esp_cmul_s8_ld_incp_m(
-        QzInUnused, Res1.Val.V8, Res2.Val.V8, src1, 3, &CmulRes.Qz, &CmulRes.Qu, sar);
+    CmulRes.Ptr = __builtin_riscv_esp_cmul_s8_ld_incp(
+        QzInUnused, Res1.Val.V8, Res2.Val.V8, src1, 3, 0, 7, &CmulRes.Qz, &CmulRes.Qu, sar);
     esp_vec128_t Qz = CmulRes.Qz;
 esp_vld_res_t dummy_ld;
-  dummy_ld.Ptr = __builtin_riscv_esp_vld_128_ip_m(src3, 16, &dummy_ld.Val.V8);
+  dummy_ld.Ptr = __builtin_riscv_esp_vld_128_ip(src3, 16, &dummy_ld.Val.V8);
     esp_vec128_t dummy = dummy_ld.Val.V8;
-    __builtin_riscv_esp_cmul_s8_st_incp_m(
-        Qz, Res1.Val.V8, Res2.Val.V8, dummy, dst, 3, sar);
+    __builtin_riscv_esp_cmul_s8_st_incp(
+        Qz, Res1.Val.V8, Res2.Val.V8, dummy, dst, 3, 0, 7, sar);
 }
 
 
@@ -286,71 +286,68 @@ esp_vld_res_t dummy_ld;
 // CHECK-LABEL: define dso_local void @test_cmul_s16_basic(
 // CHECK-SAME: ptr noundef [[SRC1:%.*]], ptr noundef [[SRC2:%.*]], ptr noundef [[SRC3:%.*]], ptr noundef [[DST:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 0)
-// CHECK-NEXT:    [[TMP1:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC1]], i32 16)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar(i32 0)
+// CHECK-NEXT:    [[TMP1:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC1]], i32 16)
 // CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP1]], 0
 // CHECK-NEXT:    [[TMP3:%.*]] = bitcast <16 x i8> [[TMP2]] to <8 x i16>
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16)
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC2]], i32 16)
 // CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP4]], 0
 // CHECK-NEXT:    [[TMP6:%.*]] = bitcast <16 x i8> [[TMP5]] to <8 x i16>
-// CHECK-NEXT:    [[TMP7:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC3]], i32 16)
+// CHECK-NEXT:    [[TMP7:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC3]], i32 16)
 // CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP7]], 0
 // CHECK-NEXT:    [[TMP9:%.*]] = bitcast <16 x i8> [[TMP8]] to <8 x i16>
-// CHECK-NEXT:    [[TMP10:%.*]] = tail call <8 x i16> @llvm.riscv.esp.cmul.s16.m(<8 x i16> [[TMP9]], <8 x i16> [[TMP3]], <8 x i16> [[TMP6]], i32 0, i32 [[TMP0]])
+// CHECK-NEXT:    [[TMP10:%.*]] = tail call <8 x i16> @llvm.riscv.esp.cmul.s16(<8 x i16> [[TMP9]], <8 x i16> [[TMP3]], <8 x i16> [[TMP6]], i32 0, i32 0, i32 7, i32 [[TMP0]])
 // CHECK-NEXT:    [[TMP11:%.*]] = bitcast <8 x i16> [[TMP10]] to <16 x i8>
-// CHECK-NEXT:    [[TMP12:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP11]], ptr [[DST]], i32 16)
+// CHECK-NEXT:    [[TMP12:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP11]], ptr [[DST]], i32 16)
 // CHECK-NEXT:    ret void
 //
 void test_cmul_s16_basic(void *src1, void *src2, void* src3, void *dst) {
-    unsigned int sar = __builtin_riscv_esp_movx_w_sar_m(0);  // Initialize SAR, chain the return value
+    unsigned int sar = __builtin_riscv_esp_movx_w_sar(0);  // Initialize SAR, chain the return value
 esp_vld_res_t Res1;
-  Res1.Ptr = __builtin_riscv_esp_vld_128_ip_m(src1, 16, &Res1.Val.V8);
+  Res1.Ptr = __builtin_riscv_esp_vld_128_ip(src1, 16, &Res1.Val.V8);
 esp_vld_res_t Res2;
-  Res2.Ptr = __builtin_riscv_esp_vld_128_ip_m(src2, 16, &Res2.Val.V8);
+  Res2.Ptr = __builtin_riscv_esp_vld_128_ip(src2, 16, &Res2.Val.V8);
 esp_vld_res_t res3;
-  res3.Ptr = __builtin_riscv_esp_vld_128_ip_m(src3, 16, &res3.Val.V8);
+  res3.Ptr = __builtin_riscv_esp_vld_128_ip(src3, 16, &res3.Val.V8);
     esp_vec128_16_t qz_in = res3.Val.V16;  // Load initial Data from src3
     // Update low 64-bit (sel4=0) - RMW semantics: qz_in is both input and output
     // High 64-bit (qz_in[127:64]) will be preserved from initial Data
-    qz_in = __builtin_riscv_esp_cmul_s16_m(
-        qz_in,  // qz_in: initial Data from src3, high 64-bit will be preserved
-        Res1.Val.V16, Res2.Val.V16, 0, sar);
-    (void)__builtin_riscv_esp_vst_128_ip_m((esp_vec128_t)qz_in, dst, 16);
+    qz_in = __builtin_riscv_esp_cmul_s16(
+        qz_in, Res1.Val.V16, Res2.Val.V16, 0, 0, 7, sar);
+    (void)__builtin_riscv_esp_vst_128_ip((esp_vec128_t)qz_in, dst, 16);
 }
 
 // Basic CMUL S16 with RMW semantics (building full 128-bit Result)
 // CHECK-LABEL: define dso_local void @test_cmul_s16_rmw(
 // CHECK-SAME: ptr noundef [[SRC1:%.*]], ptr noundef [[SRC2:%.*]], ptr noundef [[DST:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 0)
-// CHECK-NEXT:    [[TMP1:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC1]], i32 16)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar(i32 0)
+// CHECK-NEXT:    [[TMP1:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC1]], i32 16)
 // CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP1]], 0
 // CHECK-NEXT:    [[TMP3:%.*]] = bitcast <16 x i8> [[TMP2]] to <8 x i16>
-// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC2]], i32 16)
+// CHECK-NEXT:    [[TMP4:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC2]], i32 16)
 // CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP4]], 0
 // CHECK-NEXT:    [[TMP6:%.*]] = bitcast <16 x i8> [[TMP5]] to <8 x i16>
-// CHECK-NEXT:    [[TMP7:%.*]] = tail call <8 x i16> @llvm.riscv.esp.cmul.s16.m(<8 x i16> undef, <8 x i16> [[TMP3]], <8 x i16> [[TMP6]], i32 0, i32 [[TMP0]])
-// CHECK-NEXT:    [[TMP8:%.*]] = tail call <8 x i16> @llvm.riscv.esp.cmul.s16.m(<8 x i16> [[TMP7]], <8 x i16> [[TMP3]], <8 x i16> [[TMP6]], i32 1, i32 [[TMP0]])
+// CHECK-NEXT:    [[TMP7:%.*]] = tail call <8 x i16> @llvm.riscv.esp.cmul.s16(<8 x i16> undef, <8 x i16> [[TMP3]], <8 x i16> [[TMP6]], i32 0, i32 0, i32 7, i32 [[TMP0]])
+// CHECK-NEXT:    [[TMP8:%.*]] = tail call <8 x i16> @llvm.riscv.esp.cmul.s16(<8 x i16> [[TMP7]], <8 x i16> [[TMP3]], <8 x i16> [[TMP6]], i32 1, i32 0, i32 7, i32 [[TMP0]])
 // CHECK-NEXT:    [[TMP9:%.*]] = bitcast <8 x i16> [[TMP8]] to <16 x i8>
-// CHECK-NEXT:    [[TMP10:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP9]], ptr [[DST]], i32 16)
+// CHECK-NEXT:    [[TMP10:%.*]] = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP9]], ptr [[DST]], i32 16)
 // CHECK-NEXT:    ret void
 //
 void test_cmul_s16_rmw(void *src1, void *src2, void *dst) {
-    unsigned int sar = __builtin_riscv_esp_movx_w_sar_m(0);  // Initialize SAR, chain the return value
+    unsigned int sar = __builtin_riscv_esp_movx_w_sar(0);  // Initialize SAR, chain the return value
 esp_vld_res_t Res1;
-  Res1.Ptr = __builtin_riscv_esp_vld_128_ip_m(src1, 16, &Res1.Val.V8);
+  Res1.Ptr = __builtin_riscv_esp_vld_128_ip(src1, 16, &Res1.Val.V8);
 esp_vld_res_t Res2;
-  Res2.Ptr = __builtin_riscv_esp_vld_128_ip_m(src2, 16, &Res2.Val.V8);
+  Res2.Ptr = __builtin_riscv_esp_vld_128_ip(src2, 16, &Res2.Val.V8);
     esp_vec128_16_t qz_in;  // Uninitialized - compiler will use poison/undef
     // First call: update low 64-bit (sel4=0)
-    esp_vec128_16_t Result = __builtin_riscv_esp_cmul_s16_m(
-        qz_in,  // qz_in: uninitialized (will be poison/undef)
-        Res1.Val.V16, Res2.Val.V16, 0, sar);
+    esp_vec128_16_t Result = __builtin_riscv_esp_cmul_s16(
+        qz_in, Res1.Val.V16, Res2.Val.V16, 0, 0, 7, sar);
     // Second call: update high 64-bit (sel4=1), preserve low 64-bit
-    Result = __builtin_riscv_esp_cmul_s16_m(
-        Result,  // qz_in: preserve low 64-bit (RMW semantics)
-        Res1.Val.V16, Res2.Val.V16, 1, sar);
-    (void)__builtin_riscv_esp_vst_128_ip_m((esp_vec128_t)Result, dst, 16);
+    Result = __builtin_riscv_esp_cmul_s16(
+        Result, Res1.Val.V16, Res2.Val.V16, 1, 0, 7, sar);
+    (void)__builtin_riscv_esp_vst_128_ip((esp_vec128_t)Result, dst, 16);
 }
 
 // ESP.MOVX.R.SAR - Simple test for reading SAR register
@@ -358,19 +355,19 @@ esp_vld_res_t Res2;
 // CHECK-LABEL: define dso_local i32 @test_movx_r_sar(
 // CHECK-SAME: i32 noundef [[RS1_VAL:%.*]]) local_unnamed_addr #[[ATTR4:[0-9]+]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 [[RS1_VAL]])
-// CHECK-NEXT:    [[TMP1:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.sar.m(i32 [[TMP0]])
-// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.sar.m(i32 [[TMP1]])
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar(i32 [[RS1_VAL]])
+// CHECK-NEXT:    [[TMP1:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.sar(i32 [[TMP0]])
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.sar(i32 [[TMP1]])
 // CHECK-NEXT:    ret i32 [[TMP2]]
 //
 unsigned int test_movx_r_sar(unsigned int rs1_val) {
     // Write to SAR first: SAR[5:0] = Rs1[5:0] (hardware automatically uses only low 6 bits)
     // SAR stores unsigned shift amount (0-63)
-    unsigned int sar = __builtin_riscv_esp_movx_r_sar_m(__builtin_riscv_esp_movx_w_sar_m(rs1_val));
+    unsigned int sar = __builtin_riscv_esp_movx_r_sar(__builtin_riscv_esp_movx_w_sar(rs1_val));
     // ESP.MOVX.R.SAR reads from SAR register
     // Operation: rd[31:0] = {26'b0, SAR[5:0]}
     // Hardware automatically extracts only low 6 bits from SAR register (64-bit unsigned)
-    return __builtin_riscv_esp_movx_r_sar_m(sar);
+    return __builtin_riscv_esp_movx_r_sar(sar);
 }
 
 // ESP.MOVX.W.SAR and ESP.MOVX.R.SAR - Test write and read cycle
@@ -378,14 +375,14 @@ unsigned int test_movx_r_sar(unsigned int rs1_val) {
 // CHECK-LABEL: define dso_local i32 @test_movx_sar_write_read(
 // CHECK-SAME: i32 noundef [[RS1_VAL:%.*]]) local_unnamed_addr #[[ATTR4]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar.m(i32 [[RS1_VAL]])
-// CHECK-NEXT:    [[TMP1:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.sar.m(i32 [[TMP0]])
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call i32 @llvm.riscv.esp.movx.w.sar(i32 [[RS1_VAL]])
+// CHECK-NEXT:    [[TMP1:%.*]] = tail call i32 @llvm.riscv.esp.movx.r.sar(i32 [[TMP0]])
 // CHECK-NEXT:    ret i32 [[TMP1]]
 //
 unsigned int test_movx_sar_write_read(unsigned int rs1_val) {
     // Write to SAR: SAR[5:0] = Rs1[5:0] (hardware automatically uses only low 6 bits)
     // SAR stores unsigned shift amount (0-63)
-    unsigned int sar = __builtin_riscv_esp_movx_w_sar_m(rs1_val);
+    unsigned int sar = __builtin_riscv_esp_movx_w_sar(rs1_val);
     // Read from SAR: rd[31:0] = {26'b0, SAR[5:0]} (hardware automatically extracts only low 6 bits)
-    return __builtin_riscv_esp_movx_r_sar_m(sar);
+    return __builtin_riscv_esp_movx_r_sar(sar);
 }

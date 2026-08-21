@@ -12,9 +12,9 @@
 // CHECK-LABEL: define dso_local void @test_ld_st_ua_state_ip(
 // CHECK-SAME: ptr noundef [[SRC:%.*]], ptr noundef [[DST:%.*]]) local_unnamed_addr #[[ATTR0:[0-9]+]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.ld.ua.state.ip.m(<16 x i8> undef, ptr [[SRC]], i32 16)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.ld.ua.state.ip(<16 x i8> undef, ptr [[SRC]], i32 16)
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP0]], 0
-// CHECK-NEXT:    [[TMP2:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.st.ua.state.ip.m(<16 x i8> [[TMP1]], ptr [[DST]], i32 16)
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.st.ua.state.ip(<16 x i8> [[TMP1]], ptr [[DST]], i32 16)
 // CHECK-NEXT:    ret void
 //
 void test_ld_st_ua_state_ip(void const *src, void *dst) {
@@ -24,8 +24,8 @@ esp_ua_state_res_t Res;
   // Parameters: (src, offset, ua_state_out)
   // Returns: void* (updated pointer)
   // UA_STATE value is returned through output parameter
-  Res.Ptr = __builtin_riscv_esp_ld_ua_state_ip_m(src, 16, &Res.UaState);
+  Res.Ptr = __builtin_riscv_esp_ld_ua_state_ip(src, 16, &Res.UaState);
     // Store UA_STATE register to dst
-    (void)__builtin_riscv_esp_st_ua_state_ip_m(Res.UaState, dst, 16);
+    (void)__builtin_riscv_esp_st_ua_state_ip(Res.UaState, dst, 16);
 }
 

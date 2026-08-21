@@ -4,25 +4,25 @@
 // RUN: | FileCheck %s
 
 #include <riscv_esp32p4.h>
-int __builtin_riscv_esp_max_s8_a_m(esp_vec128_t);
-int __builtin_riscv_esp_min_s8_a_m(esp_vec128_t);
-int __builtin_riscv_esp_max_u8_a_m(esp_vec128_t);
-int __builtin_riscv_esp_min_u8_a_m(esp_vec128_t);
+int __builtin_riscv_esp_max_s8_a(esp_vec128_t);
+int __builtin_riscv_esp_min_s8_a(esp_vec128_t);
+int __builtin_riscv_esp_max_u8_a(esp_vec128_t);
+int __builtin_riscv_esp_min_u8_a(esp_vec128_t);
 
 
 // Reduction operations (max/min) - 8-bit
 // CHECK-LABEL: define dso_local i32 @test_max_s8(
 // CHECK-SAME: ptr noundef [[SRC:%.*]]) local_unnamed_addr #[[ATTR0:[0-9]+]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC]], i32 16)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC]], i32 16)
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP0]], 0
-// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.max.s8.a.m(<16 x i8> [[TMP1]])
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.max.s8.a(<16 x i8> [[TMP1]])
 // CHECK-NEXT:    ret i32 [[TMP2]]
 //
 int test_max_s8(void *src) {
 esp_vld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vld_128_ip_m(src, 16, &Res.Val.V8);
-    return __builtin_riscv_esp_max_s8_a_m(Res.Val.V8);
+  Res.Ptr = __builtin_riscv_esp_vld_128_ip(src, 16, &Res.Val.V8);
+    return __builtin_riscv_esp_max_s8_a(Res.Val.V8);
 }
 
 //
@@ -31,15 +31,15 @@ esp_vld_res_t Res;
 // CHECK-LABEL: define dso_local i32 @test_min_s8(
 // CHECK-SAME: ptr noundef [[SRC:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC]], i32 16)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC]], i32 16)
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP0]], 0
-// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.min.s8.a.m(<16 x i8> [[TMP1]])
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.min.s8.a(<16 x i8> [[TMP1]])
 // CHECK-NEXT:    ret i32 [[TMP2]]
 //
 int test_min_s8(void *src) {
 esp_vld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vld_128_ip_m(src, 16, &Res.Val.V8);
-    return __builtin_riscv_esp_min_s8_a_m(Res.Val.V8);
+  Res.Ptr = __builtin_riscv_esp_vld_128_ip(src, 16, &Res.Val.V8);
+    return __builtin_riscv_esp_min_s8_a(Res.Val.V8);
 }
 
 //
@@ -48,15 +48,15 @@ esp_vld_res_t Res;
 // CHECK-LABEL: define dso_local i32 @test_max_u8(
 // CHECK-SAME: ptr noundef [[SRC:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC]], i32 16)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC]], i32 16)
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP0]], 0
-// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.max.u8.a.m(<16 x i8> [[TMP1]])
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.max.u8.a(<16 x i8> [[TMP1]])
 // CHECK-NEXT:    ret i32 [[TMP2]]
 //
 int test_max_u8(void *src) {
 esp_vld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vld_128_ip_m(src, 16, &Res.Val.V8);
-    return __builtin_riscv_esp_max_u8_a_m(Res.Val.V8);
+  Res.Ptr = __builtin_riscv_esp_vld_128_ip(src, 16, &Res.Val.V8);
+    return __builtin_riscv_esp_max_u8_a(Res.Val.V8);
 }
 
 //
@@ -65,15 +65,15 @@ esp_vld_res_t Res;
 // CHECK-LABEL: define dso_local i32 @test_min_u8(
 // CHECK-SAME: ptr noundef [[SRC:%.*]]) local_unnamed_addr #[[ATTR0]] {
 // CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC]], i32 16)
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC]], i32 16)
 // CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr } [[TMP0]], 0
-// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.min.u8.a.m(<16 x i8> [[TMP1]])
+// CHECK-NEXT:    [[TMP2:%.*]] = tail call i32 @llvm.riscv.esp.min.u8.a(<16 x i8> [[TMP1]])
 // CHECK-NEXT:    ret i32 [[TMP2]]
 //
 int test_min_u8(void *src) {
 esp_vld_res_t Res;
-  Res.Ptr = __builtin_riscv_esp_vld_128_ip_m(src, 16, &Res.Val.V8);
-    return __builtin_riscv_esp_min_u8_a_m(Res.Val.V8);
+  Res.Ptr = __builtin_riscv_esp_vld_128_ip(src, 16, &Res.Val.V8);
+    return __builtin_riscv_esp_min_u8_a(Res.Val.V8);
 }
 
 
