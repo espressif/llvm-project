@@ -146,7 +146,8 @@ def RISCVESP_VCMP_LT_U32 : SDNode<"RISCVISD::ESP_VCMP_LT_U32", SDTIntBinOp>;
 
 // Explicit VCMP selection patterns (each SDNode is type-specific; multiclass
 // cannot map one SDNode to multiple types, so we add one Pat per (SDNode, Inst)).
-// Only enable for ESPV (esp32p4 etc.) so ESP_VCMP_* instructions exist.
+// Gate to HasVendorXespv2p1: EspVInst opcodes (incl. VCMP.EQ.U / VCMP.GT.U).
+// +xespv / 2.2 signed+LT select via ESP_VCMP_*_2P2 Inst patterns instead.
 let Predicates = [HasVendorXespv2p1] in {
 def : Pat<(v16i8 (RISCVESP_VCMP_EQ_S8 v16i8:$qx, v16i8:$qy)), (ESP_VCMP_EQ_S8 QR:$qx, QR:$qy)>;
 def : Pat<(v8i16 (RISCVESP_VCMP_EQ_S16 v8i16:$qx, v8i16:$qy)), (ESP_VCMP_EQ_S16 QR:$qx, QR:$qy)>;

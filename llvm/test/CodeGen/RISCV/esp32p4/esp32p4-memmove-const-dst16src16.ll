@@ -26,14 +26,14 @@ define void @test_src16_dst16_size_16(ptr %a, ptr %b) {
 ; CHECK-NEXT:    [[BLOCKS16_SRC:%.*]] = getelementptr inbounds i8, ptr [[B]], i64 0
 ; CHECK-NEXT:    [[BLOCKS16_DST:%.*]] = getelementptr inbounds i8, ptr [[A]], i64 0
 ; CHECK-NEXT:    [[SRC16_HIGH:%.*]] = getelementptr inbounds i8, ptr [[BLOCKS16_SRC]], i64 8
-; CHECK-NEXT:    [[VLDL64IP_M:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[SRC16_HIGH]], i32 -8) #[[ATTR3:[0-9]+]]
+; CHECK-NEXT:    [[VLDL64IP_M:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[SRC16_HIGH]], i32 -8) #[[ATTR3:[0-9]+]]
 ; CHECK-NEXT:    [[VLDL64IP_M_VEC:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M]], 0
 ; CHECK-NEXT:    [[VLDL64IP_M_NEXTPTR:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M]], 1
-; CHECK-NEXT:    [[VLDL64IP_M1:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[VLDL64IP_M_NEXTPTR]], i32 -8) #[[ATTR3]]
+; CHECK-NEXT:    [[VLDL64IP_M1:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[VLDL64IP_M_NEXTPTR]], i32 -8) #[[ATTR3]]
 ; CHECK-NEXT:    [[VLDL64IP_M_VEC2:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M1]], 0
 ; CHECK-NEXT:    [[VLDL64IP_M_NEXTPTR3:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M1]], 1
 ; CHECK-NEXT:    [[TMP4:%.*]] = shufflevector <8 x i8> [[VLDL64IP_M_VEC2]], <8 x i8> [[VLDL64IP_M_VEC]], <16 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7, i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-; CHECK-NEXT:    [[VST128IP_M:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP4]], ptr [[BLOCKS16_DST]], i32 -16) #[[ATTR3]]
+; CHECK-NEXT:    [[VST128IP_M:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP4]], ptr [[BLOCKS16_DST]], i32 -16) #[[ATTR3]]
 ; CHECK-NEXT:    [[SRC16_PREV:%.*]] = getelementptr inbounds i8, ptr [[BLOCKS16_SRC]], i64 -16
 ; CHECK-NEXT:    br label %[[MEMMOVE_END]]
 ; CHECK:       [[MEMMOVE_END]]:

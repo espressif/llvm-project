@@ -60,6 +60,185 @@ entry:
 declare void @llvm.memcpy.p0.p0.i32(ptr noalias nocapture writeonly, ptr noalias nocapture readonly, i32, i1 immarg)
 
 ; Function Attrs: noinline nounwind
+define internal void @esp32p4MemCpySrc16Dst16Var(i32 %0, i32 %1, i32 %2)  {
+entry:
+  %is.lt.8 = icmp ult i32 %2, 8
+  br i1 %is.lt.8, label %handle.small.size, label %check.mid.range
+
+handle.small.size:                                ; preds = %entry
+  %3 = inttoptr i32 %0 to ptr
+  %4 = inttoptr i32 %1 to ptr
+  tail call void @esp32p4MemCpySrc16Dst16From1To7Opt(ptr %3, ptr %4, i32 %2)
+  br label %return
+
+check.mid.range:                                  ; preds = %entry
+  %is.lt.16 = icmp ult i32 %2, 16
+  br i1 %is.lt.16, label %handle.mid.size, label %handle.large.loop
+
+handle.mid.size:                                  ; preds = %check.mid.range
+  %vldl64ip = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %1, i32 8, i32 0)
+  %vstl64ip = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 0, i32 %0, i32 8)
+  %5 = inttoptr i32 %vstl64ip to ptr
+  %6 = inttoptr i32 %vldl64ip to ptr
+  %size.minus.8 = add nsw i32 %2, -8
+  call void @esp32p4MemCpySrc16Dst16From1To7Opt(ptr %5, ptr %6, i32 %size.minus.8)
+  br label %return
+
+handle.large.loop:                                ; preds = %check.mid.range
+  %num.128B.blocks = lshr i32 %2, 7
+  %num.16B.blocks = lshr i32 %2, 4
+  %remaining.16B.blocks = and i32 %num.16B.blocks, 7
+  %remaining.bytes = and i32 %2, 7
+  %is.lt.128 = icmp ult i32 %2, 128
+  br i1 %is.lt.128, label %loop.exit.cleanup, label %loop.body.128B
+
+return:                                           ; preds = %handle.remaining.bytes, %after.8B.tail, %handle.mid.size, %handle.small.size
+  ret void
+
+loop.exit.cleanup:                                ; preds = %loop.body.128B, %handle.large.loop
+  %src.ptr.after.loop = phi i32 [ %1, %handle.large.loop ], [ %vld128ip7, %loop.body.128B ]
+  %dst.ptr.after.loop = phi i32 [ %0, %handle.large.loop ], [ %vst128ip14, %loop.body.128B ]
+  switch i32 %remaining.16B.blocks, label %invalid.switch.trap [
+  i32 1, label %tail.case.1
+  i32 2, label %tail.case.2
+  i32 3, label %tail.case.3
+  i32 4, label %tail.case.4
+  i32 5, label %tail.case.5
+  i32 6, label %tail.case.6
+  i32 7, label %tail.case.7
+  i32 0, label %handle.tail.switch
+  ]
+
+loop.body.128B:                                   ; preds = %loop.body.128B, %handle.large.loop
+  %loop.index = phi i32 [ 0, %handle.large.loop ], [ %loop.inc, %loop.body.128B ]
+  %src.ptr.loop = phi i32 [ %1, %handle.large.loop ], [ %vld128ip7, %loop.body.128B ]
+  %dst.ptr.loop = phi i32 [ %0, %handle.large.loop ], [ %vst128ip14, %loop.body.128B ]
+  %vld128ip = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %src.ptr.loop, i32 16, i32 0)
+  %vld128ip1 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip, i32 16, i32 1)
+  %vld128ip2 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip1, i32 16, i32 2)
+  %vld128ip3 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip2, i32 16, i32 3)
+  %vld128ip4 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip3, i32 16, i32 4)
+  %vld128ip5 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip4, i32 16, i32 5)
+  %vld128ip6 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip5, i32 16, i32 6)
+  %vld128ip7 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip6, i32 16, i32 7)
+  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 0, i32 %dst.ptr.loop, i32 16)
+  %vst128ip8 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 1, i32 %vst128ip, i32 16)
+  %vst128ip9 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 2, i32 %vst128ip8, i32 16)
+  %vst128ip10 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 3, i32 %vst128ip9, i32 16)
+  %vst128ip11 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 4, i32 %vst128ip10, i32 16)
+  %vst128ip12 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 5, i32 %vst128ip11, i32 16)
+  %vst128ip13 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 6, i32 %vst128ip12, i32 16)
+  %vst128ip14 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 7, i32 %vst128ip13, i32 16)
+  %loop.inc = add nuw nsw i32 %loop.index, 1
+  %loop.done = icmp eq i32 %loop.inc, %num.128B.blocks
+  br i1 %loop.done, label %loop.exit.cleanup, label %loop.body.128B
+
+handle.tail.switch:                               ; preds = %loop.exit.cleanup, %tail.case.7, %tail.case.6, %tail.case.5, %tail.case.4, %tail.case.3, %tail.case.2, %tail.case.1
+  %src.ptr.tail = phi i32 [ %src.ptr.after.loop, %loop.exit.cleanup ], [ %vld128ip15, %tail.case.1 ], [ %vld128ip18, %tail.case.2 ], [ %vld128ip23, %tail.case.3 ], [ %vld128ip30, %tail.case.4 ], [ %vld128ip39, %tail.case.5 ], [ %vld128ip50, %tail.case.6 ], [ %vld128ip63, %tail.case.7 ]
+  %dst.ptr.tail = phi i32 [ %dst.ptr.after.loop, %loop.exit.cleanup ], [ %vst128ip16, %tail.case.1 ], [ %vst128ip20, %tail.case.2 ], [ %vst128ip26, %tail.case.3 ], [ %vst128ip34, %tail.case.4 ], [ %vst128ip44, %tail.case.5 ], [ %vst128ip56, %tail.case.6 ], [ %vst128ip70, %tail.case.7 ]
+  %7 = and i32 %2, 8
+  %8 = icmp eq i32 %7, 0
+  br i1 %8, label %after.8B.tail, label %handle.8B.tail
+
+invalid.switch.trap:                              ; preds = %loop.exit.cleanup
+  unreachable
+
+handle.8B.tail:                                   ; preds = %handle.tail.switch
+  %vldl64ip71 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %src.ptr.tail, i32 8, i32 0)
+  %vstl64ip72 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 0, i32 %dst.ptr.tail, i32 8)
+  br label %after.8B.tail
+
+after.8B.tail:                                    ; preds = %handle.8B.tail, %handle.tail.switch
+  %src.ptr.after.8B = phi i32 [ %src.ptr.tail, %handle.tail.switch ], [ %vldl64ip71, %handle.8B.tail ]
+  %dst.ptr.after.8B = phi i32 [ %dst.ptr.tail, %handle.tail.switch ], [ %vstl64ip72, %handle.8B.tail ]
+  %9 = icmp eq i32 %remaining.bytes, 0
+  br i1 %9, label %return, label %handle.remaining.bytes
+
+tail.case.1:                                      ; preds = %loop.exit.cleanup
+  %vld128ip15 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %src.ptr.after.loop, i32 16, i32 0)
+  %vst128ip16 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 0, i32 %dst.ptr.after.loop, i32 16)
+  br label %handle.tail.switch
+
+tail.case.2:                                      ; preds = %loop.exit.cleanup
+  %vld128ip17 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %src.ptr.after.loop, i32 16, i32 0)
+  %vld128ip18 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip17, i32 16, i32 1)
+  %vst128ip19 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 0, i32 %dst.ptr.after.loop, i32 16)
+  %vst128ip20 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 1, i32 %vst128ip19, i32 16)
+  br label %handle.tail.switch
+
+tail.case.3:                                      ; preds = %loop.exit.cleanup
+  %vld128ip21 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %src.ptr.after.loop, i32 16, i32 0)
+  %vld128ip22 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip21, i32 16, i32 1)
+  %vld128ip23 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip22, i32 16, i32 2)
+  %vst128ip24 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 0, i32 %dst.ptr.after.loop, i32 16)
+  %vst128ip25 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 1, i32 %vst128ip24, i32 16)
+  %vst128ip26 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 2, i32 %vst128ip25, i32 16)
+  br label %handle.tail.switch
+
+tail.case.4:                                      ; preds = %loop.exit.cleanup
+  %vld128ip27 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %src.ptr.after.loop, i32 16, i32 0)
+  %vld128ip28 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip27, i32 16, i32 1)
+  %vld128ip29 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip28, i32 16, i32 2)
+  %vld128ip30 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip29, i32 16, i32 3)
+  %vst128ip31 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 0, i32 %dst.ptr.after.loop, i32 16)
+  %vst128ip32 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 1, i32 %vst128ip31, i32 16)
+  %vst128ip33 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 2, i32 %vst128ip32, i32 16)
+  %vst128ip34 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 3, i32 %vst128ip33, i32 16)
+  br label %handle.tail.switch
+
+tail.case.5:                                      ; preds = %loop.exit.cleanup
+  %vld128ip35 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %src.ptr.after.loop, i32 16, i32 0)
+  %vld128ip36 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip35, i32 16, i32 1)
+  %vld128ip37 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip36, i32 16, i32 2)
+  %vld128ip38 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip37, i32 16, i32 3)
+  %vld128ip39 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip38, i32 16, i32 4)
+  %vst128ip40 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 0, i32 %dst.ptr.after.loop, i32 16)
+  %vst128ip41 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 1, i32 %vst128ip40, i32 16)
+  %vst128ip42 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 2, i32 %vst128ip41, i32 16)
+  %vst128ip43 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 3, i32 %vst128ip42, i32 16)
+  %vst128ip44 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 4, i32 %vst128ip43, i32 16)
+  br label %handle.tail.switch
+
+tail.case.6:                                      ; preds = %loop.exit.cleanup
+  %vld128ip45 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %src.ptr.after.loop, i32 16, i32 0)
+  %vld128ip46 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip45, i32 16, i32 1)
+  %vld128ip47 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip46, i32 16, i32 2)
+  %vld128ip48 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip47, i32 16, i32 3)
+  %vld128ip49 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip48, i32 16, i32 4)
+  %vld128ip50 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip49, i32 16, i32 5)
+  %vst128ip51 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 0, i32 %dst.ptr.after.loop, i32 16)
+  %vst128ip52 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 1, i32 %vst128ip51, i32 16)
+  %vst128ip53 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 2, i32 %vst128ip52, i32 16)
+  %vst128ip54 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 3, i32 %vst128ip53, i32 16)
+  %vst128ip55 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 4, i32 %vst128ip54, i32 16)
+  %vst128ip56 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 5, i32 %vst128ip55, i32 16)
+  br label %handle.tail.switch
+
+tail.case.7:                                      ; preds = %loop.exit.cleanup
+  %vld128ip57 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %src.ptr.after.loop, i32 16, i32 0)
+  %vld128ip58 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip57, i32 16, i32 1)
+  %vld128ip59 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip58, i32 16, i32 2)
+  %vld128ip60 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip59, i32 16, i32 3)
+  %vld128ip61 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip60, i32 16, i32 4)
+  %vld128ip62 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip61, i32 16, i32 5)
+  %vld128ip63 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip62, i32 16, i32 6)
+  %vst128ip64 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 0, i32 %dst.ptr.after.loop, i32 16)
+  %vst128ip65 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 1, i32 %vst128ip64, i32 16)
+  %vst128ip66 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 2, i32 %vst128ip65, i32 16)
+  %vst128ip67 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 3, i32 %vst128ip66, i32 16)
+  %vst128ip68 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 4, i32 %vst128ip67, i32 16)
+  %vst128ip69 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 5, i32 %vst128ip68, i32 16)
+  %vst128ip70 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 6, i32 %vst128ip69, i32 16)
+  br label %handle.tail.switch
+
+handle.remaining.bytes:                           ; preds = %after.8B.tail
+  %10 = inttoptr i32 %src.ptr.after.8B to ptr
+  %11 = inttoptr i32 %dst.ptr.after.8B to ptr
+  call void @esp32p4MemCpySrc16Dst16From1To7Opt(ptr %11, ptr %10, i32 %remaining.bytes)
+  br label %return
+}
+
+; Function Attrs: noinline nounwind
 define internal void @esp32p4MemCpySrc16Dst16From1To7Opt(ptr %dst, ptr %src, i32 %size)  {
 entry:
   switch i32 %size, label %return [
@@ -146,16 +325,231 @@ sw.bb7:                                           ; preds = %entry
 }
 
 ; Function Attrs: nounwind
-declare i32 @llvm.riscv.esp.vld.l.64.ip(i32, i32 immarg, i32 immarg)
+declare i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32, i32 immarg, i32 immarg)
 
 ; Function Attrs: nounwind
-declare i32 @llvm.riscv.esp.vst.l.64.ip(i32 immarg, i32, i32 immarg)
+declare i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 immarg, i32, i32 immarg)
 
 ; Function Attrs: nounwind
-declare i32 @llvm.riscv.esp.vld.128.ip(i32, i32 immarg, i32 immarg)
+declare i32 @llvm.riscv.esp.vld.128.ip.pie(i32, i32 immarg, i32 immarg)
 
 ; Function Attrs: nounwind
-declare i32 @llvm.riscv.esp.vst.128.ip(i32 immarg, i32, i32 immarg)
+declare i32 @llvm.riscv.esp.vst.128.ip.pie(i32 immarg, i32, i32 immarg)
+
+; Function Attrs: noinline nounwind
+define internal void @esp32p4MemCpySrc16Dst8Var(i32 %0, i32 %1, i32 %2)  {
+entry:
+  %is.lt.8 = icmp ult i32 %2, 8
+  br i1 %is.lt.8, label %handle.small.size, label %check.mid.range
+
+handle.small.size:                                ; preds = %entry
+  %3 = inttoptr i32 %0 to ptr
+  %4 = inttoptr i32 %1 to ptr
+  tail call void @esp32p4MemCpySrc16Dst8From1To7Opt(ptr %3, ptr %4, i32 %2)
+  br label %return
+
+check.mid.range:                                  ; preds = %entry
+  %is.lt.16 = icmp ult i32 %2, 16
+  br i1 %is.lt.16, label %handle.mid.size, label %handle.large.loop
+
+handle.mid.size:                                  ; preds = %check.mid.range
+  %vldl64ip = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %1, i32 8, i32 0)
+  %vstl64ip = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 0, i32 %0, i32 8)
+  %5 = inttoptr i32 %vstl64ip to ptr
+  %6 = inttoptr i32 %vldl64ip to ptr
+  %size.minus.8 = add nsw i32 %2, -8
+  call void @esp32p4MemCpySrc16Dst8From1To7Opt(ptr %5, ptr %6, i32 %size.minus.8)
+  br label %return
+
+handle.large.loop:                                ; preds = %check.mid.range
+  %num.128B.blocks = lshr i32 %2, 7
+  %num.16B.blocks = lshr i32 %2, 4
+  %remaining.16B.blocks = and i32 %num.16B.blocks, 7
+  %remaining.bytes = and i32 %2, 7
+  %is.lt.128 = icmp ult i32 %2, 128
+  br i1 %is.lt.128, label %loop.exit.cleanup, label %loop.body.128B
+
+return:                                           ; preds = %handle.remaining.bytes, %after.8B.tail, %handle.mid.size, %handle.small.size
+  ret void
+
+loop.exit.cleanup:                                ; preds = %loop.body.128B, %handle.large.loop
+  %src.ptr.after.loop = phi i32 [ %1, %handle.large.loop ], [ %vld128ip7, %loop.body.128B ]
+  %dst.ptr.after.loop = phi i32 [ %0, %handle.large.loop ], [ %vsth64ip22, %loop.body.128B ]
+  switch i32 %remaining.16B.blocks, label %invalid.switch.trap [
+  i32 1, label %tail.case.1
+  i32 2, label %tail.case.2
+  i32 3, label %tail.case.3
+  i32 4, label %tail.case.4
+  i32 5, label %tail.case.5
+  i32 6, label %tail.case.6
+  i32 7, label %tail.case.7
+  i32 0, label %handle.tail.switch
+  ]
+
+loop.body.128B:                                   ; preds = %loop.body.128B, %handle.large.loop
+  %loop.index = phi i32 [ 0, %handle.large.loop ], [ %loop.inc, %loop.body.128B ]
+  %src.ptr.loop = phi i32 [ %1, %handle.large.loop ], [ %vld128ip7, %loop.body.128B ]
+  %dst.ptr.loop = phi i32 [ %0, %handle.large.loop ], [ %vsth64ip22, %loop.body.128B ]
+  %vld128ip = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %src.ptr.loop, i32 16, i32 0)
+  %vld128ip1 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip, i32 16, i32 1)
+  %vld128ip2 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip1, i32 16, i32 2)
+  %vld128ip3 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip2, i32 16, i32 3)
+  %vld128ip4 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip3, i32 16, i32 4)
+  %vld128ip5 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip4, i32 16, i32 5)
+  %vld128ip6 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip5, i32 16, i32 6)
+  %vld128ip7 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip6, i32 16, i32 7)
+  %vstl64ip8 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 0, i32 %dst.ptr.loop, i32 8)
+  %vsth64ip = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 0, i32 %vstl64ip8, i32 8)
+  %vstl64ip9 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 1, i32 %vsth64ip, i32 8)
+  %vsth64ip10 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 1, i32 %vstl64ip9, i32 8)
+  %vstl64ip11 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 2, i32 %vsth64ip10, i32 8)
+  %vsth64ip12 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 2, i32 %vstl64ip11, i32 8)
+  %vstl64ip13 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 3, i32 %vsth64ip12, i32 8)
+  %vsth64ip14 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 3, i32 %vstl64ip13, i32 8)
+  %vstl64ip15 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 4, i32 %vsth64ip14, i32 8)
+  %vsth64ip16 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 4, i32 %vstl64ip15, i32 8)
+  %vstl64ip17 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 5, i32 %vsth64ip16, i32 8)
+  %vsth64ip18 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 5, i32 %vstl64ip17, i32 8)
+  %vstl64ip19 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 6, i32 %vsth64ip18, i32 8)
+  %vsth64ip20 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 6, i32 %vstl64ip19, i32 8)
+  %vstl64ip21 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 7, i32 %vsth64ip20, i32 8)
+  %vsth64ip22 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 7, i32 %vstl64ip21, i32 8)
+  %loop.inc = add nuw nsw i32 %loop.index, 1
+  %loop.done = icmp eq i32 %loop.inc, %num.128B.blocks
+  br i1 %loop.done, label %loop.exit.cleanup, label %loop.body.128B
+
+handle.tail.switch:                               ; preds = %loop.exit.cleanup, %tail.case.7, %tail.case.6, %tail.case.5, %tail.case.4, %tail.case.3, %tail.case.2, %tail.case.1
+  %src.ptr.tail = phi i32 [ %src.ptr.after.loop, %loop.exit.cleanup ], [ %vld128ip23, %tail.case.1 ], [ %vld128ip27, %tail.case.2 ], [ %vld128ip34, %tail.case.3 ], [ %vld128ip44, %tail.case.4 ], [ %vld128ip57, %tail.case.5 ], [ %vld128ip73, %tail.case.6 ], [ %vld128ip92, %tail.case.7 ]
+  %dst.ptr.tail = phi i32 [ %dst.ptr.after.loop, %loop.exit.cleanup ], [ %vsth64ip25, %tail.case.1 ], [ %vsth64ip31, %tail.case.2 ], [ %vsth64ip40, %tail.case.3 ], [ %vsth64ip52, %tail.case.4 ], [ %vsth64ip67, %tail.case.5 ], [ %vsth64ip85, %tail.case.6 ], [ %vsth64ip106, %tail.case.7 ]
+  %7 = and i32 %2, 8
+  %8 = icmp eq i32 %7, 0
+  br i1 %8, label %after.8B.tail, label %handle.8B.tail
+
+invalid.switch.trap:                              ; preds = %loop.exit.cleanup
+  unreachable
+
+handle.8B.tail:                                   ; preds = %handle.tail.switch
+  %vldl64ip107 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %src.ptr.tail, i32 8, i32 0)
+  %vstl64ip108 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 0, i32 %dst.ptr.tail, i32 8)
+  br label %after.8B.tail
+
+after.8B.tail:                                    ; preds = %handle.8B.tail, %handle.tail.switch
+  %src.ptr.after.8B = phi i32 [ %src.ptr.tail, %handle.tail.switch ], [ %vldl64ip107, %handle.8B.tail ]
+  %dst.ptr.after.8B = phi i32 [ %dst.ptr.tail, %handle.tail.switch ], [ %vstl64ip108, %handle.8B.tail ]
+  %9 = icmp eq i32 %remaining.bytes, 0
+  br i1 %9, label %return, label %handle.remaining.bytes
+
+tail.case.1:                                      ; preds = %loop.exit.cleanup
+  %vld128ip23 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %src.ptr.after.loop, i32 16, i32 0)
+  %vstl64ip24 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 0, i32 %dst.ptr.after.loop, i32 8)
+  %vsth64ip25 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 0, i32 %vstl64ip24, i32 8)
+  br label %handle.tail.switch
+
+tail.case.2:                                      ; preds = %loop.exit.cleanup
+  %vld128ip26 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %src.ptr.after.loop, i32 16, i32 0)
+  %vld128ip27 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip26, i32 16, i32 1)
+  %vstl64ip28 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 0, i32 %dst.ptr.after.loop, i32 8)
+  %vsth64ip29 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 0, i32 %vstl64ip28, i32 8)
+  %vstl64ip30 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 1, i32 %vsth64ip29, i32 8)
+  %vsth64ip31 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 1, i32 %vstl64ip30, i32 8)
+  br label %handle.tail.switch
+
+tail.case.3:                                      ; preds = %loop.exit.cleanup
+  %vld128ip32 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %src.ptr.after.loop, i32 16, i32 0)
+  %vld128ip33 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip32, i32 16, i32 1)
+  %vld128ip34 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip33, i32 16, i32 2)
+  %vstl64ip35 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 0, i32 %dst.ptr.after.loop, i32 8)
+  %vsth64ip36 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 0, i32 %vstl64ip35, i32 8)
+  %vstl64ip37 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 1, i32 %vsth64ip36, i32 8)
+  %vsth64ip38 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 1, i32 %vstl64ip37, i32 8)
+  %vstl64ip39 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 2, i32 %vsth64ip38, i32 8)
+  %vsth64ip40 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 2, i32 %vstl64ip39, i32 8)
+  br label %handle.tail.switch
+
+tail.case.4:                                      ; preds = %loop.exit.cleanup
+  %vld128ip41 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %src.ptr.after.loop, i32 16, i32 0)
+  %vld128ip42 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip41, i32 16, i32 1)
+  %vld128ip43 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip42, i32 16, i32 2)
+  %vld128ip44 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip43, i32 16, i32 3)
+  %vstl64ip45 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 0, i32 %dst.ptr.after.loop, i32 8)
+  %vsth64ip46 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 0, i32 %vstl64ip45, i32 8)
+  %vstl64ip47 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 1, i32 %vsth64ip46, i32 8)
+  %vsth64ip48 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 1, i32 %vstl64ip47, i32 8)
+  %vstl64ip49 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 2, i32 %vsth64ip48, i32 8)
+  %vsth64ip50 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 2, i32 %vstl64ip49, i32 8)
+  %vstl64ip51 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 3, i32 %vsth64ip50, i32 8)
+  %vsth64ip52 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 3, i32 %vstl64ip51, i32 8)
+  br label %handle.tail.switch
+
+tail.case.5:                                      ; preds = %loop.exit.cleanup
+  %vld128ip53 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %src.ptr.after.loop, i32 16, i32 0)
+  %vld128ip54 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip53, i32 16, i32 1)
+  %vld128ip55 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip54, i32 16, i32 2)
+  %vld128ip56 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip55, i32 16, i32 3)
+  %vld128ip57 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip56, i32 16, i32 4)
+  %vstl64ip58 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 0, i32 %dst.ptr.after.loop, i32 8)
+  %vsth64ip59 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 0, i32 %vstl64ip58, i32 8)
+  %vstl64ip60 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 1, i32 %vsth64ip59, i32 8)
+  %vsth64ip61 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 1, i32 %vstl64ip60, i32 8)
+  %vstl64ip62 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 2, i32 %vsth64ip61, i32 8)
+  %vsth64ip63 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 2, i32 %vstl64ip62, i32 8)
+  %vstl64ip64 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 3, i32 %vsth64ip63, i32 8)
+  %vsth64ip65 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 3, i32 %vstl64ip64, i32 8)
+  %vstl64ip66 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 4, i32 %vsth64ip65, i32 8)
+  %vsth64ip67 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 4, i32 %vstl64ip66, i32 8)
+  br label %handle.tail.switch
+
+tail.case.6:                                      ; preds = %loop.exit.cleanup
+  %vld128ip68 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %src.ptr.after.loop, i32 16, i32 0)
+  %vld128ip69 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip68, i32 16, i32 1)
+  %vld128ip70 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip69, i32 16, i32 2)
+  %vld128ip71 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip70, i32 16, i32 3)
+  %vld128ip72 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip71, i32 16, i32 4)
+  %vld128ip73 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip72, i32 16, i32 5)
+  %vstl64ip74 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 0, i32 %dst.ptr.after.loop, i32 8)
+  %vsth64ip75 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 0, i32 %vstl64ip74, i32 8)
+  %vstl64ip76 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 1, i32 %vsth64ip75, i32 8)
+  %vsth64ip77 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 1, i32 %vstl64ip76, i32 8)
+  %vstl64ip78 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 2, i32 %vsth64ip77, i32 8)
+  %vsth64ip79 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 2, i32 %vstl64ip78, i32 8)
+  %vstl64ip80 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 3, i32 %vsth64ip79, i32 8)
+  %vsth64ip81 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 3, i32 %vstl64ip80, i32 8)
+  %vstl64ip82 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 4, i32 %vsth64ip81, i32 8)
+  %vsth64ip83 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 4, i32 %vstl64ip82, i32 8)
+  %vstl64ip84 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 5, i32 %vsth64ip83, i32 8)
+  %vsth64ip85 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 5, i32 %vstl64ip84, i32 8)
+  br label %handle.tail.switch
+
+tail.case.7:                                      ; preds = %loop.exit.cleanup
+  %vld128ip86 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %src.ptr.after.loop, i32 16, i32 0)
+  %vld128ip87 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip86, i32 16, i32 1)
+  %vld128ip88 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip87, i32 16, i32 2)
+  %vld128ip89 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip88, i32 16, i32 3)
+  %vld128ip90 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip89, i32 16, i32 4)
+  %vld128ip91 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip90, i32 16, i32 5)
+  %vld128ip92 = call i32 @llvm.riscv.esp.vld.128.ip.pie(i32 %vld128ip91, i32 16, i32 6)
+  %vstl64ip93 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 0, i32 %dst.ptr.after.loop, i32 8)
+  %vsth64ip94 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 0, i32 %vstl64ip93, i32 8)
+  %vstl64ip95 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 1, i32 %vsth64ip94, i32 8)
+  %vsth64ip96 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 1, i32 %vstl64ip95, i32 8)
+  %vstl64ip97 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 2, i32 %vsth64ip96, i32 8)
+  %vsth64ip98 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 2, i32 %vstl64ip97, i32 8)
+  %vstl64ip99 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 3, i32 %vsth64ip98, i32 8)
+  %vsth64ip100 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 3, i32 %vstl64ip99, i32 8)
+  %vstl64ip101 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 4, i32 %vsth64ip100, i32 8)
+  %vsth64ip102 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 4, i32 %vstl64ip101, i32 8)
+  %vstl64ip103 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 5, i32 %vsth64ip102, i32 8)
+  %vsth64ip104 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 5, i32 %vstl64ip103, i32 8)
+  %vstl64ip105 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 6, i32 %vsth64ip104, i32 8)
+  %vsth64ip106 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 6, i32 %vstl64ip105, i32 8)
+  br label %handle.tail.switch
+
+handle.remaining.bytes:                           ; preds = %after.8B.tail
+  %10 = inttoptr i32 %src.ptr.after.8B to ptr
+  %11 = inttoptr i32 %dst.ptr.after.8B to ptr
+  call void @esp32p4MemCpySrc16Dst8From1To7Opt(ptr %11, ptr %10, i32 %remaining.bytes)
+  br label %return
+}
 
 ; Function Attrs: noinline nounwind
 define internal void @esp32p4MemCpySrc16Dst8From1To7Opt(ptr %dst, ptr %src, i32 %size)  {
@@ -244,7 +638,7 @@ sw.bb7:                                           ; preds = %entry
 }
 
 ; Function Attrs: nounwind
-declare i32 @llvm.riscv.esp.vst.h.64.ip(i32 immarg, i32, i32 immarg)
+declare i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 immarg, i32, i32 immarg)
 
 ; Function Attrs: noinline nounwind
 define internal void @esp32p4MemCpySrc16DstunalignVar(ptr %dst, ptr %src, i32 %size, i32 %dst_align)  {
@@ -654,8 +1048,8 @@ process.main.loop.i:                              ; preds = %esp32p4MemCpySrcUna
   %blocks.48.count.i = udiv i32 %remaining.size, 48
   %.neg = mul i32 %blocks.48.count.i, -48
   %remainder.after.48blocks.i = add i32 %.neg, %remaining.size
-  %ld128usarip.i = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %80, i32 16, i32 0)
-  %ld128usarip1.i = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 %ld128usarip.i, i32 16, i32 1)
+  %ld128usarip.i = call i32 @llvm.riscv.esp.ld.128.usar.ip.pie(i32 %80, i32 16, i32 0)
+  %ld128usarip1.i = call i32 @llvm.riscv.esp.ld.128.usar.ip.pie(i32 %ld128usarip.i, i32 16, i32 1)
   %no.48byte.blocks.i = icmp ult i32 %remaining.size, 48
   br i1 %no.48byte.blocks.i, label %handle.remainder.i, label %main.loop.body.i
 
@@ -669,21 +1063,21 @@ main.loop.body.i:                                 ; preds = %main.loop.body.i, %
   %loop.index.i = phi i32 [ 0, %process.main.loop.i ], [ %loop.index.incremented.i, %main.loop.body.i ]
   %src.ptr.in.loop.i = phi i32 [ %ld128usarip1.i, %process.main.loop.i ], [ %srcqldip4.after.block.i, %main.loop.body.i ]
   %dst.ptr.in.loop.i = phi i32 [ %81, %process.main.loop.i ], [ %vst128ip5.after.block.i, %main.loop.body.i ]
-  %srcqldip.i = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.in.loop.i, i32 0, i32 16, i32 2)
-  %vst128ip.i = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.in.loop.i, i32 16)
-  %srcqldip2.i = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 %srcqldip.i, i32 1, i32 16, i32 0)
-  %vst128ip3.i = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip.i, i32 16)
-  %srcqldip4.after.block.i = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 %srcqldip2.i, i32 2, i32 16, i32 1)
-  %vst128ip5.after.block.i = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 %vst128ip3.i, i32 16)
+  %srcqldip.i = call i32 @llvm.riscv.esp.src.q.ld.ip.pie(i32 1, i32 %src.ptr.in.loop.i, i32 0, i32 16, i32 2)
+  %vst128ip.i = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 0, i32 %dst.ptr.in.loop.i, i32 16)
+  %srcqldip2.i = call i32 @llvm.riscv.esp.src.q.ld.ip.pie(i32 2, i32 %srcqldip.i, i32 1, i32 16, i32 0)
+  %vst128ip3.i = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 1, i32 %vst128ip.i, i32 16)
+  %srcqldip4.after.block.i = call i32 @llvm.riscv.esp.src.q.ld.ip.pie(i32 0, i32 %srcqldip2.i, i32 2, i32 16, i32 1)
+  %vst128ip5.after.block.i = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 2, i32 %vst128ip3.i, i32 16)
   %loop.index.incremented.i = add nuw nsw i32 %loop.index.i, 1
   %loop.completed.i = icmp eq i32 %loop.index.incremented.i, %blocks.48.count.i
   br i1 %loop.completed.i, label %handle.remainder.i, label %main.loop.body.i
 
 process.32byte.tail.i:                            ; preds = %handle.remainder.i
-  %srcqldip6.i = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 %src.ptr.after.main.loop.i, i32 0, i32 0, i32 2)
-  %vst128ip7.i = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.after.main.loop.i, i32 16)
-  call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
-  %vst128ip8.i = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 %vst128ip7.i, i32 16)
+  %srcqldip6.i = call i32 @llvm.riscv.esp.src.q.ld.ip.pie(i32 1, i32 %src.ptr.after.main.loop.i, i32 0, i32 0, i32 2)
+  %vst128ip7.i = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 0, i32 %dst.ptr.after.main.loop.i, i32 16)
+  call void @llvm.riscv.esp.src.q.pie(i32 2, i32 1, i32 1)
+  %vst128ip8.i = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 1, i32 %vst128ip7.i, i32 16)
   %remainder.after.32byte.processing.i = add nsw i32 %remainder.after.48blocks.i, -32
   br label %final.cleanup.i
 
@@ -692,8 +1086,8 @@ check.16byte.tail.i:                              ; preds = %handle.remainder.i
   br i1 %remainder.has.no.16bytes.i, label %skip.tail.processing.i, label %process.16byte.tail.i
 
 process.16byte.tail.i:                            ; preds = %check.16byte.tail.i
-  call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-  %vst128ip9.i = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 %dst.ptr.after.main.loop.i, i32 16)
+  call void @llvm.riscv.esp.src.q.pie(i32 1, i32 0, i32 0)
+  %vst128ip9.i = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 0, i32 %dst.ptr.after.main.loop.i, i32 16)
   %src.after.16byte.processing.i = add i32 %src.ptr.after.main.loop.i, -16
   %remainder.after.16byte.processing.i = add nsw i32 %remainder.after.48blocks.i, -16
   br label %final.cleanup.i
@@ -910,6 +1304,221 @@ return:                                           ; preds = %final.cleanup.i, %c
 }
 
 ; Function Attrs: noinline nounwind
+define internal void @esp32p4MemCpySrc8Dst16Var(i32 %0, i32 %1, i32 %2)  {
+entry:
+  %is.lt.8 = icmp ult i32 %2, 8
+  br i1 %is.lt.8, label %handle.small.size, label %check.mid.range
+
+handle.small.size:                                ; preds = %entry
+  %3 = inttoptr i32 %0 to ptr
+  %4 = inttoptr i32 %1 to ptr
+  tail call void @esp32p4MemCpySrc8Dst16From1To7Opt(ptr %3, ptr %4, i32 %2)
+  br label %return
+
+check.mid.range:                                  ; preds = %entry
+  %is.lt.16 = icmp ult i32 %2, 16
+  br i1 %is.lt.16, label %handle.mid.size, label %handle.large.loop
+
+handle.mid.size:                                  ; preds = %check.mid.range
+  %vldl64ip = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %1, i32 8, i32 0)
+  %vstl64ip = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 0, i32 %0, i32 8)
+  %5 = inttoptr i32 %vstl64ip to ptr
+  %6 = inttoptr i32 %vldl64ip to ptr
+  %size.minus.8 = add nsw i32 %2, -8
+  call void @esp32p4MemCpySrc8Dst16From1To7Opt(ptr %5, ptr %6, i32 %size.minus.8)
+  br label %return
+
+handle.large.loop:                                ; preds = %check.mid.range
+  %num.128B.blocks = lshr i32 %2, 7
+  %num.16B.blocks = lshr i32 %2, 4
+  %remaining.16B.blocks = and i32 %num.16B.blocks, 7
+  %remaining.bytes = and i32 %2, 7
+  %is.lt.128 = icmp ult i32 %2, 128
+  br i1 %is.lt.128, label %loop.exit.cleanup, label %loop.body.128B
+
+return:                                           ; preds = %handle.remaining.bytes, %after.8B.tail, %handle.mid.size, %handle.small.size
+  ret void
+
+loop.exit.cleanup:                                ; preds = %loop.body.128B, %handle.large.loop
+  %src.ptr.after.loop = phi i32 [ %1, %handle.large.loop ], [ %vldh64ip15, %loop.body.128B ]
+  %dst.ptr.after.loop = phi i32 [ %0, %handle.large.loop ], [ %vst128ip22, %loop.body.128B ]
+  switch i32 %remaining.16B.blocks, label %invalid.switch.trap [
+  i32 1, label %tail.case.1
+  i32 2, label %tail.case.2
+  i32 3, label %tail.case.3
+  i32 4, label %tail.case.4
+  i32 5, label %tail.case.5
+  i32 6, label %tail.case.6
+  i32 7, label %tail.case.7
+  i32 0, label %handle.tail.switch
+  ]
+
+loop.body.128B:                                   ; preds = %loop.body.128B, %handle.large.loop
+  %loop.index = phi i32 [ 0, %handle.large.loop ], [ %loop.inc, %loop.body.128B ]
+  %src.ptr.loop = phi i32 [ %1, %handle.large.loop ], [ %vldh64ip15, %loop.body.128B ]
+  %dst.ptr.loop = phi i32 [ %0, %handle.large.loop ], [ %vst128ip22, %loop.body.128B ]
+  %vldl64ip1 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %src.ptr.loop, i32 8, i32 0)
+  %vldh64ip = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip1, i32 8, i32 0)
+  %vldl64ip2 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip, i32 8, i32 1)
+  %vldh64ip3 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip2, i32 8, i32 1)
+  %vldl64ip4 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip3, i32 8, i32 2)
+  %vldh64ip5 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip4, i32 8, i32 2)
+  %vldl64ip6 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip5, i32 8, i32 3)
+  %vldh64ip7 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip6, i32 8, i32 3)
+  %vldl64ip8 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip7, i32 8, i32 4)
+  %vldh64ip9 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip8, i32 8, i32 4)
+  %vldl64ip10 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip9, i32 8, i32 5)
+  %vldh64ip11 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip10, i32 8, i32 5)
+  %vldl64ip12 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip11, i32 8, i32 6)
+  %vldh64ip13 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip12, i32 8, i32 6)
+  %vldl64ip14 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip13, i32 8, i32 7)
+  %vldh64ip15 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip14, i32 8, i32 7)
+  %vst128ip = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 0, i32 %dst.ptr.loop, i32 16)
+  %vst128ip16 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 1, i32 %vst128ip, i32 16)
+  %vst128ip17 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 2, i32 %vst128ip16, i32 16)
+  %vst128ip18 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 3, i32 %vst128ip17, i32 16)
+  %vst128ip19 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 4, i32 %vst128ip18, i32 16)
+  %vst128ip20 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 5, i32 %vst128ip19, i32 16)
+  %vst128ip21 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 6, i32 %vst128ip20, i32 16)
+  %vst128ip22 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 7, i32 %vst128ip21, i32 16)
+  %loop.inc = add nuw nsw i32 %loop.index, 1
+  %loop.done = icmp eq i32 %loop.inc, %num.128B.blocks
+  br i1 %loop.done, label %loop.exit.cleanup, label %loop.body.128B
+
+handle.tail.switch:                               ; preds = %loop.exit.cleanup, %tail.case.7, %tail.case.6, %tail.case.5, %tail.case.4, %tail.case.3, %tail.case.2, %tail.case.1
+  %src.ptr.tail = phi i32 [ %src.ptr.after.loop, %loop.exit.cleanup ], [ %vldh64ip24, %tail.case.1 ], [ %vldh64ip29, %tail.case.2 ], [ %vldh64ip37, %tail.case.3 ], [ %vldh64ip48, %tail.case.4 ], [ %vldh64ip62, %tail.case.5 ], [ %vldh64ip79, %tail.case.6 ], [ %vldh64ip99, %tail.case.7 ]
+  %dst.ptr.tail = phi i32 [ %dst.ptr.after.loop, %loop.exit.cleanup ], [ %vst128ip25, %tail.case.1 ], [ %vst128ip31, %tail.case.2 ], [ %vst128ip40, %tail.case.3 ], [ %vst128ip52, %tail.case.4 ], [ %vst128ip67, %tail.case.5 ], [ %vst128ip85, %tail.case.6 ], [ %vst128ip106, %tail.case.7 ]
+  %7 = and i32 %2, 8
+  %8 = icmp eq i32 %7, 0
+  br i1 %8, label %after.8B.tail, label %handle.8B.tail
+
+invalid.switch.trap:                              ; preds = %loop.exit.cleanup
+  unreachable
+
+handle.8B.tail:                                   ; preds = %handle.tail.switch
+  %vldl64ip107 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %src.ptr.tail, i32 8, i32 0)
+  %vstl64ip108 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 0, i32 %dst.ptr.tail, i32 8)
+  br label %after.8B.tail
+
+after.8B.tail:                                    ; preds = %handle.8B.tail, %handle.tail.switch
+  %src.ptr.after.8B = phi i32 [ %src.ptr.tail, %handle.tail.switch ], [ %vldl64ip107, %handle.8B.tail ]
+  %dst.ptr.after.8B = phi i32 [ %dst.ptr.tail, %handle.tail.switch ], [ %vstl64ip108, %handle.8B.tail ]
+  %9 = icmp eq i32 %remaining.bytes, 0
+  br i1 %9, label %return, label %handle.remaining.bytes
+
+tail.case.1:                                      ; preds = %loop.exit.cleanup
+  %vldl64ip23 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %src.ptr.after.loop, i32 8, i32 0)
+  %vldh64ip24 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip23, i32 8, i32 0)
+  %vst128ip25 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 0, i32 %dst.ptr.after.loop, i32 16)
+  br label %handle.tail.switch
+
+tail.case.2:                                      ; preds = %loop.exit.cleanup
+  %vldl64ip26 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %src.ptr.after.loop, i32 8, i32 0)
+  %vldh64ip27 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip26, i32 8, i32 0)
+  %vldl64ip28 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip27, i32 8, i32 1)
+  %vldh64ip29 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip28, i32 8, i32 1)
+  %vst128ip30 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 0, i32 %dst.ptr.after.loop, i32 16)
+  %vst128ip31 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 1, i32 %vst128ip30, i32 16)
+  br label %handle.tail.switch
+
+tail.case.3:                                      ; preds = %loop.exit.cleanup
+  %vldl64ip32 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %src.ptr.after.loop, i32 8, i32 0)
+  %vldh64ip33 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip32, i32 8, i32 0)
+  %vldl64ip34 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip33, i32 8, i32 1)
+  %vldh64ip35 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip34, i32 8, i32 1)
+  %vldl64ip36 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip35, i32 8, i32 2)
+  %vldh64ip37 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip36, i32 8, i32 2)
+  %vst128ip38 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 0, i32 %dst.ptr.after.loop, i32 16)
+  %vst128ip39 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 1, i32 %vst128ip38, i32 16)
+  %vst128ip40 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 2, i32 %vst128ip39, i32 16)
+  br label %handle.tail.switch
+
+tail.case.4:                                      ; preds = %loop.exit.cleanup
+  %vldl64ip41 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %src.ptr.after.loop, i32 8, i32 0)
+  %vldh64ip42 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip41, i32 8, i32 0)
+  %vldl64ip43 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip42, i32 8, i32 1)
+  %vldh64ip44 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip43, i32 8, i32 1)
+  %vldl64ip45 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip44, i32 8, i32 2)
+  %vldh64ip46 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip45, i32 8, i32 2)
+  %vldl64ip47 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip46, i32 8, i32 3)
+  %vldh64ip48 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip47, i32 8, i32 3)
+  %vst128ip49 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 0, i32 %dst.ptr.after.loop, i32 16)
+  %vst128ip50 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 1, i32 %vst128ip49, i32 16)
+  %vst128ip51 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 2, i32 %vst128ip50, i32 16)
+  %vst128ip52 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 3, i32 %vst128ip51, i32 16)
+  br label %handle.tail.switch
+
+tail.case.5:                                      ; preds = %loop.exit.cleanup
+  %vldl64ip53 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %src.ptr.after.loop, i32 8, i32 0)
+  %vldh64ip54 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip53, i32 8, i32 0)
+  %vldl64ip55 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip54, i32 8, i32 1)
+  %vldh64ip56 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip55, i32 8, i32 1)
+  %vldl64ip57 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip56, i32 8, i32 2)
+  %vldh64ip58 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip57, i32 8, i32 2)
+  %vldl64ip59 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip58, i32 8, i32 3)
+  %vldh64ip60 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip59, i32 8, i32 3)
+  %vldl64ip61 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip60, i32 8, i32 4)
+  %vldh64ip62 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip61, i32 8, i32 4)
+  %vst128ip63 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 0, i32 %dst.ptr.after.loop, i32 16)
+  %vst128ip64 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 1, i32 %vst128ip63, i32 16)
+  %vst128ip65 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 2, i32 %vst128ip64, i32 16)
+  %vst128ip66 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 3, i32 %vst128ip65, i32 16)
+  %vst128ip67 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 4, i32 %vst128ip66, i32 16)
+  br label %handle.tail.switch
+
+tail.case.6:                                      ; preds = %loop.exit.cleanup
+  %vldl64ip68 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %src.ptr.after.loop, i32 8, i32 0)
+  %vldh64ip69 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip68, i32 8, i32 0)
+  %vldl64ip70 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip69, i32 8, i32 1)
+  %vldh64ip71 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip70, i32 8, i32 1)
+  %vldl64ip72 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip71, i32 8, i32 2)
+  %vldh64ip73 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip72, i32 8, i32 2)
+  %vldl64ip74 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip73, i32 8, i32 3)
+  %vldh64ip75 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip74, i32 8, i32 3)
+  %vldl64ip76 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip75, i32 8, i32 4)
+  %vldh64ip77 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip76, i32 8, i32 4)
+  %vldl64ip78 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip77, i32 8, i32 5)
+  %vldh64ip79 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip78, i32 8, i32 5)
+  %vst128ip80 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 0, i32 %dst.ptr.after.loop, i32 16)
+  %vst128ip81 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 1, i32 %vst128ip80, i32 16)
+  %vst128ip82 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 2, i32 %vst128ip81, i32 16)
+  %vst128ip83 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 3, i32 %vst128ip82, i32 16)
+  %vst128ip84 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 4, i32 %vst128ip83, i32 16)
+  %vst128ip85 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 5, i32 %vst128ip84, i32 16)
+  br label %handle.tail.switch
+
+tail.case.7:                                      ; preds = %loop.exit.cleanup
+  %vldl64ip86 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %src.ptr.after.loop, i32 8, i32 0)
+  %vldh64ip87 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip86, i32 8, i32 0)
+  %vldl64ip88 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip87, i32 8, i32 1)
+  %vldh64ip89 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip88, i32 8, i32 1)
+  %vldl64ip90 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip89, i32 8, i32 2)
+  %vldh64ip91 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip90, i32 8, i32 2)
+  %vldl64ip92 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip91, i32 8, i32 3)
+  %vldh64ip93 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip92, i32 8, i32 3)
+  %vldl64ip94 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip93, i32 8, i32 4)
+  %vldh64ip95 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip94, i32 8, i32 4)
+  %vldl64ip96 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip95, i32 8, i32 5)
+  %vldh64ip97 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip96, i32 8, i32 5)
+  %vldl64ip98 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip97, i32 8, i32 6)
+  %vldh64ip99 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip98, i32 8, i32 6)
+  %vst128ip100 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 0, i32 %dst.ptr.after.loop, i32 16)
+  %vst128ip101 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 1, i32 %vst128ip100, i32 16)
+  %vst128ip102 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 2, i32 %vst128ip101, i32 16)
+  %vst128ip103 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 3, i32 %vst128ip102, i32 16)
+  %vst128ip104 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 4, i32 %vst128ip103, i32 16)
+  %vst128ip105 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 5, i32 %vst128ip104, i32 16)
+  %vst128ip106 = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 6, i32 %vst128ip105, i32 16)
+  br label %handle.tail.switch
+
+handle.remaining.bytes:                           ; preds = %after.8B.tail
+  %10 = inttoptr i32 %src.ptr.after.8B to ptr
+  %11 = inttoptr i32 %dst.ptr.after.8B to ptr
+  call void @esp32p4MemCpySrc8Dst16From1To7Opt(ptr %11, ptr %10, i32 %remaining.bytes)
+  br label %return
+}
+
+; Function Attrs: noinline nounwind
 define internal void @esp32p4MemCpySrc8Dst16From1To7Opt(ptr %dst, ptr %src, i32 %size)  {
 entry:
   switch i32 %size, label %return [
@@ -996,7 +1605,258 @@ sw.bb7:                                           ; preds = %entry
 }
 
 ; Function Attrs: nounwind
-declare i32 @llvm.riscv.esp.vld.h.64.ip(i32, i32 immarg, i32 immarg)
+declare i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32, i32 immarg, i32 immarg)
+
+; Function Attrs: noinline nounwind
+define internal void @esp32p4MemCpySrc8Dst8Var(i32 %0, i32 %1, i32 %2)  {
+entry:
+  %is.lt.8 = icmp ult i32 %2, 8
+  br i1 %is.lt.8, label %handle.small.size, label %check.mid.range
+
+handle.small.size:                                ; preds = %entry
+  %3 = inttoptr i32 %0 to ptr
+  %4 = inttoptr i32 %1 to ptr
+  tail call void @esp32p4MemCpySrc8Dst8From1To7Opt(ptr %3, ptr %4, i32 %2)
+  br label %return
+
+check.mid.range:                                  ; preds = %entry
+  %is.lt.16 = icmp ult i32 %2, 16
+  br i1 %is.lt.16, label %handle.mid.size, label %handle.large.loop
+
+handle.mid.size:                                  ; preds = %check.mid.range
+  %vldl64ip = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %1, i32 8, i32 0)
+  %vstl64ip = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 0, i32 %0, i32 8)
+  %5 = inttoptr i32 %vstl64ip to ptr
+  %6 = inttoptr i32 %vldl64ip to ptr
+  %size.minus.8 = add nsw i32 %2, -8
+  call void @esp32p4MemCpySrc8Dst8From1To7Opt(ptr %5, ptr %6, i32 %size.minus.8)
+  br label %return
+
+handle.large.loop:                                ; preds = %check.mid.range
+  %num.128B.blocks = lshr i32 %2, 7
+  %num.16B.blocks = lshr i32 %2, 4
+  %remaining.16B.blocks = and i32 %num.16B.blocks, 7
+  %remaining.bytes = and i32 %2, 7
+  %is.lt.128 = icmp ult i32 %2, 128
+  br i1 %is.lt.128, label %loop.exit.cleanup, label %loop.body.128B
+
+return:                                           ; preds = %handle.remaining.bytes, %after.8B.tail, %handle.mid.size, %handle.small.size
+  ret void
+
+loop.exit.cleanup:                                ; preds = %loop.body.128B, %handle.large.loop
+  %src.ptr.after.loop = phi i32 [ %1, %handle.large.loop ], [ %vldh64ip15, %loop.body.128B ]
+  %dst.ptr.after.loop = phi i32 [ %0, %handle.large.loop ], [ %vsth64ip30, %loop.body.128B ]
+  switch i32 %remaining.16B.blocks, label %invalid.switch.trap [
+  i32 1, label %tail.case.1
+  i32 2, label %tail.case.2
+  i32 3, label %tail.case.3
+  i32 4, label %tail.case.4
+  i32 5, label %tail.case.5
+  i32 6, label %tail.case.6
+  i32 7, label %tail.case.7
+  i32 0, label %handle.tail.switch
+  ]
+
+loop.body.128B:                                   ; preds = %loop.body.128B, %handle.large.loop
+  %loop.index = phi i32 [ 0, %handle.large.loop ], [ %loop.inc, %loop.body.128B ]
+  %src.ptr.loop = phi i32 [ %1, %handle.large.loop ], [ %vldh64ip15, %loop.body.128B ]
+  %dst.ptr.loop = phi i32 [ %0, %handle.large.loop ], [ %vsth64ip30, %loop.body.128B ]
+  %vldl64ip1 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %src.ptr.loop, i32 8, i32 0)
+  %vldh64ip = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip1, i32 8, i32 0)
+  %vldl64ip2 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip, i32 8, i32 1)
+  %vldh64ip3 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip2, i32 8, i32 1)
+  %vldl64ip4 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip3, i32 8, i32 2)
+  %vldh64ip5 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip4, i32 8, i32 2)
+  %vldl64ip6 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip5, i32 8, i32 3)
+  %vldh64ip7 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip6, i32 8, i32 3)
+  %vldl64ip8 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip7, i32 8, i32 4)
+  %vldh64ip9 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip8, i32 8, i32 4)
+  %vldl64ip10 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip9, i32 8, i32 5)
+  %vldh64ip11 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip10, i32 8, i32 5)
+  %vldl64ip12 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip11, i32 8, i32 6)
+  %vldh64ip13 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip12, i32 8, i32 6)
+  %vldl64ip14 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip13, i32 8, i32 7)
+  %vldh64ip15 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip14, i32 8, i32 7)
+  %vstl64ip16 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 0, i32 %dst.ptr.loop, i32 8)
+  %vsth64ip = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 0, i32 %vstl64ip16, i32 8)
+  %vstl64ip17 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 1, i32 %vsth64ip, i32 8)
+  %vsth64ip18 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 1, i32 %vstl64ip17, i32 8)
+  %vstl64ip19 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 2, i32 %vsth64ip18, i32 8)
+  %vsth64ip20 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 2, i32 %vstl64ip19, i32 8)
+  %vstl64ip21 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 3, i32 %vsth64ip20, i32 8)
+  %vsth64ip22 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 3, i32 %vstl64ip21, i32 8)
+  %vstl64ip23 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 4, i32 %vsth64ip22, i32 8)
+  %vsth64ip24 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 4, i32 %vstl64ip23, i32 8)
+  %vstl64ip25 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 5, i32 %vsth64ip24, i32 8)
+  %vsth64ip26 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 5, i32 %vstl64ip25, i32 8)
+  %vstl64ip27 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 6, i32 %vsth64ip26, i32 8)
+  %vsth64ip28 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 6, i32 %vstl64ip27, i32 8)
+  %vstl64ip29 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 7, i32 %vsth64ip28, i32 8)
+  %vsth64ip30 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 7, i32 %vstl64ip29, i32 8)
+  %loop.inc = add nuw nsw i32 %loop.index, 1
+  %loop.done = icmp eq i32 %loop.inc, %num.128B.blocks
+  br i1 %loop.done, label %loop.exit.cleanup, label %loop.body.128B
+
+handle.tail.switch:                               ; preds = %loop.exit.cleanup, %tail.case.7, %tail.case.6, %tail.case.5, %tail.case.4, %tail.case.3, %tail.case.2, %tail.case.1
+  %src.ptr.tail = phi i32 [ %src.ptr.after.loop, %loop.exit.cleanup ], [ %vldh64ip32, %tail.case.1 ], [ %vldh64ip38, %tail.case.2 ], [ %vldh64ip48, %tail.case.3 ], [ %vldh64ip62, %tail.case.4 ], [ %vldh64ip80, %tail.case.5 ], [ %vldh64ip102, %tail.case.6 ], [ %vldh64ip128, %tail.case.7 ]
+  %dst.ptr.tail = phi i32 [ %dst.ptr.after.loop, %loop.exit.cleanup ], [ %vsth64ip34, %tail.case.1 ], [ %vsth64ip42, %tail.case.2 ], [ %vsth64ip54, %tail.case.3 ], [ %vsth64ip70, %tail.case.4 ], [ %vsth64ip90, %tail.case.5 ], [ %vsth64ip114, %tail.case.6 ], [ %vsth64ip142, %tail.case.7 ]
+  %7 = and i32 %2, 8
+  %8 = icmp eq i32 %7, 0
+  br i1 %8, label %after.8B.tail, label %handle.8B.tail
+
+invalid.switch.trap:                              ; preds = %loop.exit.cleanup
+  unreachable
+
+handle.8B.tail:                                   ; preds = %handle.tail.switch
+  %vldl64ip143 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %src.ptr.tail, i32 8, i32 0)
+  %vstl64ip144 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 0, i32 %dst.ptr.tail, i32 8)
+  br label %after.8B.tail
+
+after.8B.tail:                                    ; preds = %handle.8B.tail, %handle.tail.switch
+  %src.ptr.after.8B = phi i32 [ %src.ptr.tail, %handle.tail.switch ], [ %vldl64ip143, %handle.8B.tail ]
+  %dst.ptr.after.8B = phi i32 [ %dst.ptr.tail, %handle.tail.switch ], [ %vstl64ip144, %handle.8B.tail ]
+  %9 = icmp eq i32 %remaining.bytes, 0
+  br i1 %9, label %return, label %handle.remaining.bytes
+
+tail.case.1:                                      ; preds = %loop.exit.cleanup
+  %vldl64ip31 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %src.ptr.after.loop, i32 8, i32 0)
+  %vldh64ip32 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip31, i32 8, i32 0)
+  %vstl64ip33 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 0, i32 %dst.ptr.after.loop, i32 8)
+  %vsth64ip34 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 0, i32 %vstl64ip33, i32 8)
+  br label %handle.tail.switch
+
+tail.case.2:                                      ; preds = %loop.exit.cleanup
+  %vldl64ip35 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %src.ptr.after.loop, i32 8, i32 0)
+  %vldh64ip36 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip35, i32 8, i32 0)
+  %vldl64ip37 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip36, i32 8, i32 1)
+  %vldh64ip38 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip37, i32 8, i32 1)
+  %vstl64ip39 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 0, i32 %dst.ptr.after.loop, i32 8)
+  %vsth64ip40 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 0, i32 %vstl64ip39, i32 8)
+  %vstl64ip41 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 1, i32 %vsth64ip40, i32 8)
+  %vsth64ip42 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 1, i32 %vstl64ip41, i32 8)
+  br label %handle.tail.switch
+
+tail.case.3:                                      ; preds = %loop.exit.cleanup
+  %vldl64ip43 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %src.ptr.after.loop, i32 8, i32 0)
+  %vldh64ip44 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip43, i32 8, i32 0)
+  %vldl64ip45 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip44, i32 8, i32 1)
+  %vldh64ip46 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip45, i32 8, i32 1)
+  %vldl64ip47 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip46, i32 8, i32 2)
+  %vldh64ip48 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip47, i32 8, i32 2)
+  %vstl64ip49 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 0, i32 %dst.ptr.after.loop, i32 8)
+  %vsth64ip50 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 0, i32 %vstl64ip49, i32 8)
+  %vstl64ip51 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 1, i32 %vsth64ip50, i32 8)
+  %vsth64ip52 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 1, i32 %vstl64ip51, i32 8)
+  %vstl64ip53 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 2, i32 %vsth64ip52, i32 8)
+  %vsth64ip54 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 2, i32 %vstl64ip53, i32 8)
+  br label %handle.tail.switch
+
+tail.case.4:                                      ; preds = %loop.exit.cleanup
+  %vldl64ip55 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %src.ptr.after.loop, i32 8, i32 0)
+  %vldh64ip56 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip55, i32 8, i32 0)
+  %vldl64ip57 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip56, i32 8, i32 1)
+  %vldh64ip58 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip57, i32 8, i32 1)
+  %vldl64ip59 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip58, i32 8, i32 2)
+  %vldh64ip60 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip59, i32 8, i32 2)
+  %vldl64ip61 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip60, i32 8, i32 3)
+  %vldh64ip62 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip61, i32 8, i32 3)
+  %vstl64ip63 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 0, i32 %dst.ptr.after.loop, i32 8)
+  %vsth64ip64 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 0, i32 %vstl64ip63, i32 8)
+  %vstl64ip65 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 1, i32 %vsth64ip64, i32 8)
+  %vsth64ip66 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 1, i32 %vstl64ip65, i32 8)
+  %vstl64ip67 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 2, i32 %vsth64ip66, i32 8)
+  %vsth64ip68 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 2, i32 %vstl64ip67, i32 8)
+  %vstl64ip69 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 3, i32 %vsth64ip68, i32 8)
+  %vsth64ip70 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 3, i32 %vstl64ip69, i32 8)
+  br label %handle.tail.switch
+
+tail.case.5:                                      ; preds = %loop.exit.cleanup
+  %vldl64ip71 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %src.ptr.after.loop, i32 8, i32 0)
+  %vldh64ip72 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip71, i32 8, i32 0)
+  %vldl64ip73 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip72, i32 8, i32 1)
+  %vldh64ip74 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip73, i32 8, i32 1)
+  %vldl64ip75 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip74, i32 8, i32 2)
+  %vldh64ip76 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip75, i32 8, i32 2)
+  %vldl64ip77 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip76, i32 8, i32 3)
+  %vldh64ip78 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip77, i32 8, i32 3)
+  %vldl64ip79 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip78, i32 8, i32 4)
+  %vldh64ip80 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip79, i32 8, i32 4)
+  %vstl64ip81 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 0, i32 %dst.ptr.after.loop, i32 8)
+  %vsth64ip82 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 0, i32 %vstl64ip81, i32 8)
+  %vstl64ip83 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 1, i32 %vsth64ip82, i32 8)
+  %vsth64ip84 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 1, i32 %vstl64ip83, i32 8)
+  %vstl64ip85 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 2, i32 %vsth64ip84, i32 8)
+  %vsth64ip86 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 2, i32 %vstl64ip85, i32 8)
+  %vstl64ip87 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 3, i32 %vsth64ip86, i32 8)
+  %vsth64ip88 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 3, i32 %vstl64ip87, i32 8)
+  %vstl64ip89 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 4, i32 %vsth64ip88, i32 8)
+  %vsth64ip90 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 4, i32 %vstl64ip89, i32 8)
+  br label %handle.tail.switch
+
+tail.case.6:                                      ; preds = %loop.exit.cleanup
+  %vldl64ip91 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %src.ptr.after.loop, i32 8, i32 0)
+  %vldh64ip92 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip91, i32 8, i32 0)
+  %vldl64ip93 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip92, i32 8, i32 1)
+  %vldh64ip94 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip93, i32 8, i32 1)
+  %vldl64ip95 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip94, i32 8, i32 2)
+  %vldh64ip96 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip95, i32 8, i32 2)
+  %vldl64ip97 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip96, i32 8, i32 3)
+  %vldh64ip98 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip97, i32 8, i32 3)
+  %vldl64ip99 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip98, i32 8, i32 4)
+  %vldh64ip100 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip99, i32 8, i32 4)
+  %vldl64ip101 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip100, i32 8, i32 5)
+  %vldh64ip102 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip101, i32 8, i32 5)
+  %vstl64ip103 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 0, i32 %dst.ptr.after.loop, i32 8)
+  %vsth64ip104 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 0, i32 %vstl64ip103, i32 8)
+  %vstl64ip105 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 1, i32 %vsth64ip104, i32 8)
+  %vsth64ip106 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 1, i32 %vstl64ip105, i32 8)
+  %vstl64ip107 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 2, i32 %vsth64ip106, i32 8)
+  %vsth64ip108 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 2, i32 %vstl64ip107, i32 8)
+  %vstl64ip109 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 3, i32 %vsth64ip108, i32 8)
+  %vsth64ip110 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 3, i32 %vstl64ip109, i32 8)
+  %vstl64ip111 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 4, i32 %vsth64ip110, i32 8)
+  %vsth64ip112 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 4, i32 %vstl64ip111, i32 8)
+  %vstl64ip113 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 5, i32 %vsth64ip112, i32 8)
+  %vsth64ip114 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 5, i32 %vstl64ip113, i32 8)
+  br label %handle.tail.switch
+
+tail.case.7:                                      ; preds = %loop.exit.cleanup
+  %vldl64ip115 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %src.ptr.after.loop, i32 8, i32 0)
+  %vldh64ip116 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip115, i32 8, i32 0)
+  %vldl64ip117 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip116, i32 8, i32 1)
+  %vldh64ip118 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip117, i32 8, i32 1)
+  %vldl64ip119 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip118, i32 8, i32 2)
+  %vldh64ip120 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip119, i32 8, i32 2)
+  %vldl64ip121 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip120, i32 8, i32 3)
+  %vldh64ip122 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip121, i32 8, i32 3)
+  %vldl64ip123 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip122, i32 8, i32 4)
+  %vldh64ip124 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip123, i32 8, i32 4)
+  %vldl64ip125 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip124, i32 8, i32 5)
+  %vldh64ip126 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip125, i32 8, i32 5)
+  %vldl64ip127 = call i32 @llvm.riscv.esp.vld.l.64.ip.pie(i32 %vldh64ip126, i32 8, i32 6)
+  %vldh64ip128 = call i32 @llvm.riscv.esp.vld.h.64.ip.pie(i32 %vldl64ip127, i32 8, i32 6)
+  %vstl64ip129 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 0, i32 %dst.ptr.after.loop, i32 8)
+  %vsth64ip130 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 0, i32 %vstl64ip129, i32 8)
+  %vstl64ip131 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 1, i32 %vsth64ip130, i32 8)
+  %vsth64ip132 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 1, i32 %vstl64ip131, i32 8)
+  %vstl64ip133 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 2, i32 %vsth64ip132, i32 8)
+  %vsth64ip134 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 2, i32 %vstl64ip133, i32 8)
+  %vstl64ip135 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 3, i32 %vsth64ip134, i32 8)
+  %vsth64ip136 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 3, i32 %vstl64ip135, i32 8)
+  %vstl64ip137 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 4, i32 %vsth64ip136, i32 8)
+  %vsth64ip138 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 4, i32 %vstl64ip137, i32 8)
+  %vstl64ip139 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 5, i32 %vsth64ip138, i32 8)
+  %vsth64ip140 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 5, i32 %vstl64ip139, i32 8)
+  %vstl64ip141 = call i32 @llvm.riscv.esp.vst.l.64.ip.pie(i32 6, i32 %vsth64ip140, i32 8)
+  %vsth64ip142 = call i32 @llvm.riscv.esp.vst.h.64.ip.pie(i32 6, i32 %vstl64ip141, i32 8)
+  br label %handle.tail.switch
+
+handle.remaining.bytes:                           ; preds = %after.8B.tail
+  %10 = inttoptr i32 %src.ptr.after.8B to ptr
+  %11 = inttoptr i32 %dst.ptr.after.8B to ptr
+  call void @esp32p4MemCpySrc8Dst8From1To7Opt(ptr %11, ptr %10, i32 %remaining.bytes)
+  br label %return
+}
 
 ; Function Attrs: noinline nounwind
 define internal void @esp32p4MemCpySrc8Dst8From1To7Opt(ptr %dst, ptr %src, i32 %size)  {
@@ -1134,10 +1994,10 @@ sw.bb7:                                           ; preds = %entry
 ; CHECK-NEXT:    [[DIV_I:%.*]] = udiv i32 [[SIZE]], 48
 ; CHECK-NEXT:    [[DOTNEG:%.*]] = mul i32 [[DIV_I]], -48
 ; CHECK-NEXT:    [[REM_DECOMPOSED_I:%.*]] = add i32 [[DOTNEG]], [[SIZE]]
-; CHECK-NEXT:    [[LD128USARIP_M_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[B]], i32 16)
+; CHECK-NEXT:    [[LD128USARIP_M_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip(ptr [[B]], i32 16)
 ; CHECK-NEXT:    [[TMP0:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 0
 ; CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 1
-; CHECK-NEXT:    [[LD128USARIP_M1_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[TMP1]], i32 16)
+; CHECK-NEXT:    [[LD128USARIP_M1_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip(ptr [[TMP1]], i32 16)
 ; CHECK-NEXT:    [[TMP42:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 0
 ; CHECK-NEXT:    [[TMP43:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 1
 ; CHECK-NEXT:    [[TMP44:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 2
@@ -1156,40 +2016,40 @@ sw.bb7:                                           ; preds = %entry
 ; CHECK-NEXT:    [[DST_PTR_IN_LOOP_I:%.*]] = phi ptr [ [[A]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[VST128IP_M5_I]], %[[MAIN_LOOP_BODY_I]] ]
 ; CHECK-NEXT:    [[V0_I:%.*]] = phi <16 x i8> [ [[TMP0]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[TMP46]], %[[MAIN_LOOP_BODY_I]] ]
 ; CHECK-NEXT:    [[V1_I:%.*]] = phi <16 x i8> [ [[TMP42]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[TMP47]], %[[MAIN_LOOP_BODY_I]] ]
-; CHECK-NEXT:    [[SRCQLDIP_M_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP44]], <16 x i8> [[V1_I]], <16 x i8> [[V0_I]], ptr [[SRC_PTR_IN_LOOP_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip(i32 [[TMP44]], <16 x i8> [[V1_I]], <16 x i8> [[V0_I]], ptr [[SRC_PTR_IN_LOOP_I]], i32 16)
 ; CHECK-NEXT:    [[TMP48:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 0
 ; CHECK-NEXT:    [[TMP49:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 1
 ; CHECK-NEXT:    [[TMP50:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 2
-; CHECK-NEXT:    [[VST128IP_M_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP48]], ptr [[DST_PTR_IN_LOOP_I]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP_M2_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP44]], <16 x i8> [[TMP49]], <16 x i8> [[V1_I]], ptr [[TMP50]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP48]], ptr [[DST_PTR_IN_LOOP_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M2_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip(i32 [[TMP44]], <16 x i8> [[TMP49]], <16 x i8> [[V1_I]], ptr [[TMP50]], i32 16)
 ; CHECK-NEXT:    [[TMP51:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 0
 ; CHECK-NEXT:    [[TMP46]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 1
 ; CHECK-NEXT:    [[TMP52:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 2
-; CHECK-NEXT:    [[VST128IP_M3_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP51]], ptr [[VST128IP_M_I]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP_M4_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP44]], <16 x i8> [[TMP46]], <16 x i8> [[TMP49]], ptr [[TMP52]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M3_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP51]], ptr [[VST128IP_M_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M4_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip(i32 [[TMP44]], <16 x i8> [[TMP46]], <16 x i8> [[TMP49]], ptr [[TMP52]], i32 16)
 ; CHECK-NEXT:    [[TMP53:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M4_I]], 0
 ; CHECK-NEXT:    [[TMP47]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M4_I]], 1
 ; CHECK-NEXT:    [[TMP45]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M4_I]], 2
-; CHECK-NEXT:    [[VST128IP_M5_I]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP53]], ptr [[VST128IP_M3_I]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M5_I]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP53]], ptr [[VST128IP_M3_I]], i32 16)
 ; CHECK-NEXT:    [[INC_I]] = add nuw nsw i32 [[I_022_I]], 1
 ; CHECK-NEXT:    [[EXITCOND_NOT_I:%.*]] = icmp eq i32 [[INC_I]], [[DIV_I]]
 ; CHECK-NEXT:    br i1 [[EXITCOND_NOT_I]], label %[[HANDLE_REMAINDER_I]], label %[[MAIN_LOOP_BODY_I]]
 ; CHECK:       [[PROCESS_32BYTE_TAIL_I]]:
-; CHECK-NEXT:    [[SRCQLDIP_M6_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP44]], <16 x i8> [[V1_AFTER_MAIN_LOOP_I]], <16 x i8> [[V0_AFTER_MAIN_LOOP_I]], ptr [[SRC_PTR_AFTER_MAIN_LOOP_I]], i32 0)
+; CHECK-NEXT:    [[SRCQLDIP_M6_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip(i32 [[TMP44]], <16 x i8> [[V1_AFTER_MAIN_LOOP_I]], <16 x i8> [[V0_AFTER_MAIN_LOOP_I]], ptr [[SRC_PTR_AFTER_MAIN_LOOP_I]], i32 0)
 ; CHECK-NEXT:    [[TMP54:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M6_I]], 0
 ; CHECK-NEXT:    [[TMP55:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M6_I]], 1
 ; CHECK-NEXT:    [[TMP56:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M6_I]], 2
-; CHECK-NEXT:    [[VST128IP_M7_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP54]], ptr [[DST_PTR_AFTER_MAIN_LOOP_I]], i32 16)
-; CHECK-NEXT:    [[SRCQ_M_I:%.*]] = call <16 x i8> @llvm.riscv.esp.src.q.m(i32 [[TMP44]], <16 x i8> [[TMP55]], <16 x i8> [[V1_AFTER_MAIN_LOOP_I]])
-; CHECK-NEXT:    [[VST128IP_M8_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[SRCQ_M_I]], ptr [[VST128IP_M7_I]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M7_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP54]], ptr [[DST_PTR_AFTER_MAIN_LOOP_I]], i32 16)
+; CHECK-NEXT:    [[SRCQ_I:%.*]] = call <16 x i8> @llvm.riscv.esp.src.q(i32 [[TMP44]], <16 x i8> [[TMP55]], <16 x i8> [[V1_AFTER_MAIN_LOOP_I]])
+; CHECK-NEXT:    [[VST128IP_M8_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[SRCQ_I]], ptr [[VST128IP_M7_I]], i32 16)
 ; CHECK-NEXT:    [[SUB1_I:%.*]] = add nsw i32 [[REM_DECOMPOSED_I]], -32
 ; CHECK-NEXT:    br label %[[FINAL_CLEANUP_I]]
 ; CHECK:       [[CHECK_16BYTE_TAIL_I]]:
 ; CHECK-NEXT:    [[TOBOOL5_NOT_I:%.*]] = icmp ult i32 [[REM_DECOMPOSED_I]], 16
 ; CHECK-NEXT:    br i1 [[TOBOOL5_NOT_I]], label %[[SKIP_TAIL_PROCESSING_I:.*]], label %[[PROCESS_16BYTE_TAIL_I:.*]]
 ; CHECK:       [[PROCESS_16BYTE_TAIL_I]]:
-; CHECK-NEXT:    [[SRCQ_M9_I:%.*]] = call <16 x i8> @llvm.riscv.esp.src.q.m(i32 [[TMP44]], <16 x i8> [[V1_AFTER_MAIN_LOOP_I]], <16 x i8> [[V0_AFTER_MAIN_LOOP_I]])
-; CHECK-NEXT:    [[VST128IP_M10_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[SRCQ_M9_I]], ptr [[DST_PTR_AFTER_MAIN_LOOP_I]], i32 16)
+; CHECK-NEXT:    [[SRCQ9_I:%.*]] = call <16 x i8> @llvm.riscv.esp.src.q(i32 [[TMP44]], <16 x i8> [[V1_AFTER_MAIN_LOOP_I]], <16 x i8> [[V0_AFTER_MAIN_LOOP_I]])
+; CHECK-NEXT:    [[VST128IP_M10_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[SRCQ9_I]], ptr [[DST_PTR_AFTER_MAIN_LOOP_I]], i32 16)
 ; CHECK-NEXT:    [[SRC_AFTER_16BYTE_PROCESSING_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_AFTER_MAIN_LOOP_I]], i32 -16
 ; CHECK-NEXT:    [[SUB9_I:%.*]] = add nsw i32 [[REM_DECOMPOSED_I]], -16
 ; CHECK-NEXT:    br label %[[FINAL_CLEANUP_I]]
@@ -1445,12 +2305,8 @@ sw.bb7:                                           ; preds = %entry
 ; CHECK-NEXT:    store i8 [[TMP12]], ptr [[DST_GEP_I818_I]], align 1
 ; CHECK-NEXT:    br label %[[ESP32P4MEMCPYSRCUNALIGNDST8VAR_EXIT]]
 ; CHECK:       [[IF_END_I]]:
-; CHECK-NEXT:    [[TMP13:%.*]] = load i32, ptr [[B]], align 1
-; CHECK-NEXT:    store i32 [[TMP13]], ptr [[A]], align 1
-; CHECK-NEXT:    [[SRC_4_I:%.*]] = getelementptr i8, ptr [[B]], i32 4
-; CHECK-NEXT:    [[DST_4_I:%.*]] = getelementptr i8, ptr [[A]], i32 4
-; CHECK-NEXT:    [[TMP74:%.*]] = load i32, ptr [[SRC_4_I]], align 1
-; CHECK-NEXT:    store i32 [[TMP74]], ptr [[DST_4_I]], align 1
+; CHECK-NEXT:    [[TMP13:%.*]] = load i64, ptr [[B]], align 1
+; CHECK-NEXT:    store i64 [[TMP13]], ptr [[A]], align 1
 ; CHECK-NEXT:    [[TMP14:%.*]] = add i32 [[SIZE]], -8
 ; CHECK-NEXT:    [[TMP15:%.*]] = getelementptr i8, ptr [[A]], i32 8
 ; CHECK-NEXT:    [[TMP16:%.*]] = getelementptr i8, ptr [[B]], i32 8
@@ -1460,10 +2316,10 @@ sw.bb7:                                           ; preds = %entry
 ; CHECK-NEXT:    [[DIV_I:%.*]] = udiv i32 [[TMP14]], 48
 ; CHECK-NEXT:    [[DOTNEG:%.*]] = mul i32 [[DIV_I]], -48
 ; CHECK-NEXT:    [[REM_DECOMPOSED_I:%.*]] = add i32 [[DOTNEG]], [[TMP14]]
-; CHECK-NEXT:    [[LD128USARIP_M_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[TMP16]], i32 16)
+; CHECK-NEXT:    [[LD128USARIP_M_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip(ptr [[TMP16]], i32 16)
 ; CHECK-NEXT:    [[TMP59:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 0
 ; CHECK-NEXT:    [[TMP60:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 1
-; CHECK-NEXT:    [[LD128USARIP_M1_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[TMP60]], i32 16)
+; CHECK-NEXT:    [[LD128USARIP_M1_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip(ptr [[TMP60]], i32 16)
 ; CHECK-NEXT:    [[TMP61:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 0
 ; CHECK-NEXT:    [[TMP17:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 1
 ; CHECK-NEXT:    [[TMP18:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 2
@@ -1482,40 +2338,40 @@ sw.bb7:                                           ; preds = %entry
 ; CHECK-NEXT:    [[DST_PTR_IN_LOOP_I:%.*]] = phi ptr [ [[TMP15]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[VST128IP_M5_I]], %[[MAIN_LOOP_BODY_I]] ]
 ; CHECK-NEXT:    [[V0_I:%.*]] = phi <16 x i8> [ [[TMP59]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[TMP63]], %[[MAIN_LOOP_BODY_I]] ]
 ; CHECK-NEXT:    [[V1_I:%.*]] = phi <16 x i8> [ [[TMP61]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[TMP64]], %[[MAIN_LOOP_BODY_I]] ]
-; CHECK-NEXT:    [[SRCQLDIP_M_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP18]], <16 x i8> [[V1_I]], <16 x i8> [[V0_I]], ptr [[SRC_PTR_IN_LOOP_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip(i32 [[TMP18]], <16 x i8> [[V1_I]], <16 x i8> [[V0_I]], ptr [[SRC_PTR_IN_LOOP_I]], i32 16)
 ; CHECK-NEXT:    [[TMP65:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 0
 ; CHECK-NEXT:    [[TMP66:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 1
 ; CHECK-NEXT:    [[TMP67:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 2
-; CHECK-NEXT:    [[VST128IP_M_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP65]], ptr [[DST_PTR_IN_LOOP_I]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP_M2_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP18]], <16 x i8> [[TMP66]], <16 x i8> [[V1_I]], ptr [[TMP67]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP65]], ptr [[DST_PTR_IN_LOOP_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M2_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip(i32 [[TMP18]], <16 x i8> [[TMP66]], <16 x i8> [[V1_I]], ptr [[TMP67]], i32 16)
 ; CHECK-NEXT:    [[TMP68:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 0
 ; CHECK-NEXT:    [[TMP63]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 1
 ; CHECK-NEXT:    [[TMP69:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 2
-; CHECK-NEXT:    [[VST128IP_M3_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP68]], ptr [[VST128IP_M_I]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP_M4_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP18]], <16 x i8> [[TMP63]], <16 x i8> [[TMP66]], ptr [[TMP69]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M3_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP68]], ptr [[VST128IP_M_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M4_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip(i32 [[TMP18]], <16 x i8> [[TMP63]], <16 x i8> [[TMP66]], ptr [[TMP69]], i32 16)
 ; CHECK-NEXT:    [[TMP70:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M4_I]], 0
 ; CHECK-NEXT:    [[TMP64]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M4_I]], 1
 ; CHECK-NEXT:    [[TMP62]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M4_I]], 2
-; CHECK-NEXT:    [[VST128IP_M5_I]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP70]], ptr [[VST128IP_M3_I]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M5_I]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP70]], ptr [[VST128IP_M3_I]], i32 16)
 ; CHECK-NEXT:    [[INC_I]] = add nuw nsw i32 [[I_022_I]], 1
 ; CHECK-NEXT:    [[EXITCOND_NOT_I:%.*]] = icmp eq i32 [[INC_I]], [[DIV_I]]
 ; CHECK-NEXT:    br i1 [[EXITCOND_NOT_I]], label %[[HANDLE_REMAINDER_I]], label %[[MAIN_LOOP_BODY_I]]
 ; CHECK:       [[PROCESS_32BYTE_TAIL_I]]:
-; CHECK-NEXT:    [[SRCQLDIP_M6_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP18]], <16 x i8> [[V1_AFTER_MAIN_LOOP_I]], <16 x i8> [[V0_AFTER_MAIN_LOOP_I]], ptr [[SRC_PTR_AFTER_MAIN_LOOP_I]], i32 0)
+; CHECK-NEXT:    [[SRCQLDIP_M6_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip(i32 [[TMP18]], <16 x i8> [[V1_AFTER_MAIN_LOOP_I]], <16 x i8> [[V0_AFTER_MAIN_LOOP_I]], ptr [[SRC_PTR_AFTER_MAIN_LOOP_I]], i32 0)
 ; CHECK-NEXT:    [[TMP71:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M6_I]], 0
 ; CHECK-NEXT:    [[TMP72:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M6_I]], 1
 ; CHECK-NEXT:    [[TMP73:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M6_I]], 2
-; CHECK-NEXT:    [[VST128IP_M7_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP71]], ptr [[DST_PTR_AFTER_MAIN_LOOP_I]], i32 16)
-; CHECK-NEXT:    [[SRCQ_M_I:%.*]] = call <16 x i8> @llvm.riscv.esp.src.q.m(i32 [[TMP18]], <16 x i8> [[TMP72]], <16 x i8> [[V1_AFTER_MAIN_LOOP_I]])
-; CHECK-NEXT:    [[VST128IP_M8_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[SRCQ_M_I]], ptr [[VST128IP_M7_I]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M7_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP71]], ptr [[DST_PTR_AFTER_MAIN_LOOP_I]], i32 16)
+; CHECK-NEXT:    [[SRCQ_I:%.*]] = call <16 x i8> @llvm.riscv.esp.src.q(i32 [[TMP18]], <16 x i8> [[TMP72]], <16 x i8> [[V1_AFTER_MAIN_LOOP_I]])
+; CHECK-NEXT:    [[VST128IP_M8_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[SRCQ_I]], ptr [[VST128IP_M7_I]], i32 16)
 ; CHECK-NEXT:    [[SUB1_I:%.*]] = add nsw i32 [[REM_DECOMPOSED_I]], -32
 ; CHECK-NEXT:    br label %[[FINAL_CLEANUP_I]]
 ; CHECK:       [[CHECK_16BYTE_TAIL_I]]:
 ; CHECK-NEXT:    [[TOBOOL5_NOT_I:%.*]] = icmp ult i32 [[REM_DECOMPOSED_I]], 16
 ; CHECK-NEXT:    br i1 [[TOBOOL5_NOT_I]], label %[[SKIP_TAIL_PROCESSING_I:.*]], label %[[PROCESS_16BYTE_TAIL_I:.*]]
 ; CHECK:       [[PROCESS_16BYTE_TAIL_I]]:
-; CHECK-NEXT:    [[SRCQ_M9_I:%.*]] = call <16 x i8> @llvm.riscv.esp.src.q.m(i32 [[TMP18]], <16 x i8> [[V1_AFTER_MAIN_LOOP_I]], <16 x i8> [[V0_AFTER_MAIN_LOOP_I]])
-; CHECK-NEXT:    [[VST128IP_M10_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[SRCQ_M9_I]], ptr [[DST_PTR_AFTER_MAIN_LOOP_I]], i32 16)
+; CHECK-NEXT:    [[SRCQ9_I:%.*]] = call <16 x i8> @llvm.riscv.esp.src.q(i32 [[TMP18]], <16 x i8> [[V1_AFTER_MAIN_LOOP_I]], <16 x i8> [[V0_AFTER_MAIN_LOOP_I]])
+; CHECK-NEXT:    [[VST128IP_M10_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[SRCQ9_I]], ptr [[DST_PTR_AFTER_MAIN_LOOP_I]], i32 16)
 ; CHECK-NEXT:    [[SRC_AFTER_16BYTE_PROCESSING_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_AFTER_MAIN_LOOP_I]], i32 -16
 ; CHECK-NEXT:    [[SUB9_I:%.*]] = add nsw i32 [[REM_DECOMPOSED_I]], -16
 ; CHECK-NEXT:    br label %[[FINAL_CLEANUP_I]]
@@ -1716,10 +2572,10 @@ sw.bb7:                                           ; preds = %entry
 ; CHECK-NEXT:    [[DIV_I:%.*]] = udiv i32 [[SIZE]], 48
 ; CHECK-NEXT:    [[DOTNEG:%.*]] = mul i32 [[DIV_I]], -48
 ; CHECK-NEXT:    [[REM_DECOMPOSED_I:%.*]] = add i32 [[DOTNEG]], [[SIZE]]
-; CHECK-NEXT:    [[LD128USARIP_M_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[B]], i32 16)
+; CHECK-NEXT:    [[LD128USARIP_M_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip(ptr [[B]], i32 16)
 ; CHECK-NEXT:    [[TMP0:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 0
 ; CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M_I]], 1
-; CHECK-NEXT:    [[LD128USARIP_M1_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip.m(ptr [[TMP1]], i32 16)
+; CHECK-NEXT:    [[LD128USARIP_M1_I:%.*]] = call { <16 x i8>, ptr, i32 } @llvm.riscv.esp.ld.128.usar.ip(ptr [[TMP1]], i32 16)
 ; CHECK-NEXT:    [[TMP42:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 0
 ; CHECK-NEXT:    [[TMP43:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 1
 ; CHECK-NEXT:    [[TMP44:%.*]] = extractvalue { <16 x i8>, ptr, i32 } [[LD128USARIP_M1_I]], 2
@@ -1738,40 +2594,40 @@ sw.bb7:                                           ; preds = %entry
 ; CHECK-NEXT:    [[DST_PTR_IN_LOOP_I:%.*]] = phi ptr [ [[A]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[VST128IP_M5_I]], %[[MAIN_LOOP_BODY_I]] ]
 ; CHECK-NEXT:    [[V0_I:%.*]] = phi <16 x i8> [ [[TMP0]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[TMP46]], %[[MAIN_LOOP_BODY_I]] ]
 ; CHECK-NEXT:    [[V1_I:%.*]] = phi <16 x i8> [ [[TMP42]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[TMP47]], %[[MAIN_LOOP_BODY_I]] ]
-; CHECK-NEXT:    [[SRCQLDIP_M_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP44]], <16 x i8> [[V1_I]], <16 x i8> [[V0_I]], ptr [[SRC_PTR_IN_LOOP_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip(i32 [[TMP44]], <16 x i8> [[V1_I]], <16 x i8> [[V0_I]], ptr [[SRC_PTR_IN_LOOP_I]], i32 16)
 ; CHECK-NEXT:    [[TMP48:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 0
 ; CHECK-NEXT:    [[TMP49:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 1
 ; CHECK-NEXT:    [[TMP50:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M_I]], 2
-; CHECK-NEXT:    [[VST128IP_M_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP48]], ptr [[DST_PTR_IN_LOOP_I]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP_M2_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP44]], <16 x i8> [[TMP49]], <16 x i8> [[V1_I]], ptr [[TMP50]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP48]], ptr [[DST_PTR_IN_LOOP_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M2_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip(i32 [[TMP44]], <16 x i8> [[TMP49]], <16 x i8> [[V1_I]], ptr [[TMP50]], i32 16)
 ; CHECK-NEXT:    [[TMP51:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 0
 ; CHECK-NEXT:    [[TMP46]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 1
 ; CHECK-NEXT:    [[TMP52:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M2_I]], 2
-; CHECK-NEXT:    [[VST128IP_M3_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP51]], ptr [[VST128IP_M_I]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP_M4_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP44]], <16 x i8> [[TMP46]], <16 x i8> [[TMP49]], ptr [[TMP52]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M3_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP51]], ptr [[VST128IP_M_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP_M4_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip(i32 [[TMP44]], <16 x i8> [[TMP46]], <16 x i8> [[TMP49]], ptr [[TMP52]], i32 16)
 ; CHECK-NEXT:    [[TMP53:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M4_I]], 0
 ; CHECK-NEXT:    [[TMP47]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M4_I]], 1
 ; CHECK-NEXT:    [[TMP45]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M4_I]], 2
-; CHECK-NEXT:    [[VST128IP_M5_I]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP53]], ptr [[VST128IP_M3_I]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M5_I]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP53]], ptr [[VST128IP_M3_I]], i32 16)
 ; CHECK-NEXT:    [[INC_I]] = add nuw nsw i32 [[I_022_I]], 1
 ; CHECK-NEXT:    [[EXITCOND_NOT_I:%.*]] = icmp eq i32 [[INC_I]], [[DIV_I]]
 ; CHECK-NEXT:    br i1 [[EXITCOND_NOT_I]], label %[[HANDLE_REMAINDER_I]], label %[[MAIN_LOOP_BODY_I]]
 ; CHECK:       [[PROCESS_32BYTE_TAIL_I]]:
-; CHECK-NEXT:    [[SRCQLDIP_M6_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip.m(i32 [[TMP44]], <16 x i8> [[V1_AFTER_MAIN_LOOP_I]], <16 x i8> [[V0_AFTER_MAIN_LOOP_I]], ptr [[SRC_PTR_AFTER_MAIN_LOOP_I]], i32 0)
+; CHECK-NEXT:    [[SRCQLDIP_M6_I:%.*]] = call { <16 x i8>, <16 x i8>, ptr } @llvm.riscv.esp.src.q.ld.ip(i32 [[TMP44]], <16 x i8> [[V1_AFTER_MAIN_LOOP_I]], <16 x i8> [[V0_AFTER_MAIN_LOOP_I]], ptr [[SRC_PTR_AFTER_MAIN_LOOP_I]], i32 0)
 ; CHECK-NEXT:    [[TMP54:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M6_I]], 0
 ; CHECK-NEXT:    [[TMP55:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M6_I]], 1
 ; CHECK-NEXT:    [[TMP56:%.*]] = extractvalue { <16 x i8>, <16 x i8>, ptr } [[SRCQLDIP_M6_I]], 2
-; CHECK-NEXT:    [[VST128IP_M7_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP54]], ptr [[DST_PTR_AFTER_MAIN_LOOP_I]], i32 16)
-; CHECK-NEXT:    [[SRCQ_M_I:%.*]] = call <16 x i8> @llvm.riscv.esp.src.q.m(i32 [[TMP44]], <16 x i8> [[TMP55]], <16 x i8> [[V1_AFTER_MAIN_LOOP_I]])
-; CHECK-NEXT:    [[VST128IP_M8_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[SRCQ_M_I]], ptr [[VST128IP_M7_I]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M7_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP54]], ptr [[DST_PTR_AFTER_MAIN_LOOP_I]], i32 16)
+; CHECK-NEXT:    [[SRCQ_I:%.*]] = call <16 x i8> @llvm.riscv.esp.src.q(i32 [[TMP44]], <16 x i8> [[TMP55]], <16 x i8> [[V1_AFTER_MAIN_LOOP_I]])
+; CHECK-NEXT:    [[VST128IP_M8_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[SRCQ_I]], ptr [[VST128IP_M7_I]], i32 16)
 ; CHECK-NEXT:    [[SUB1_I:%.*]] = add nsw i32 [[REM_DECOMPOSED_I]], -32
 ; CHECK-NEXT:    br label %[[FINAL_CLEANUP_I]]
 ; CHECK:       [[CHECK_16BYTE_TAIL_I]]:
 ; CHECK-NEXT:    [[TOBOOL5_NOT_I:%.*]] = icmp ult i32 [[REM_DECOMPOSED_I]], 16
 ; CHECK-NEXT:    br i1 [[TOBOOL5_NOT_I]], label %[[SKIP_TAIL_PROCESSING_I:.*]], label %[[PROCESS_16BYTE_TAIL_I:.*]]
 ; CHECK:       [[PROCESS_16BYTE_TAIL_I]]:
-; CHECK-NEXT:    [[SRCQ_M9_I:%.*]] = call <16 x i8> @llvm.riscv.esp.src.q.m(i32 [[TMP44]], <16 x i8> [[V1_AFTER_MAIN_LOOP_I]], <16 x i8> [[V0_AFTER_MAIN_LOOP_I]])
-; CHECK-NEXT:    [[VST128IP_M10_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[SRCQ_M9_I]], ptr [[DST_PTR_AFTER_MAIN_LOOP_I]], i32 16)
+; CHECK-NEXT:    [[SRCQ9_I:%.*]] = call <16 x i8> @llvm.riscv.esp.src.q(i32 [[TMP44]], <16 x i8> [[V1_AFTER_MAIN_LOOP_I]], <16 x i8> [[V0_AFTER_MAIN_LOOP_I]])
+; CHECK-NEXT:    [[VST128IP_M10_I:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[SRCQ9_I]], ptr [[DST_PTR_AFTER_MAIN_LOOP_I]], i32 16)
 ; CHECK-NEXT:    [[SRC_AFTER_16BYTE_PROCESSING_I:%.*]] = getelementptr i8, ptr [[SRC_PTR_AFTER_MAIN_LOOP_I]], i32 -16
 ; CHECK-NEXT:    [[SUB9_I:%.*]] = add nsw i32 [[REM_DECOMPOSED_I]], -16
 ; CHECK-NEXT:    br label %[[FINAL_CLEANUP_I]]
@@ -2493,41 +3349,41 @@ sw.bb7:                                           ; preds = %entry
 ; CHECK-NEXT:    [[DIV_I:%.*]] = udiv i32 [[SUB2]], 48
 ; CHECK-NEXT:    [[DOTNEG:%.*]] = mul i32 [[DIV_I]], -48
 ; CHECK-NEXT:    [[REM_DECOMPOSED_I:%.*]] = add i32 [[DOTNEG]], [[SUB2]]
-; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[TMP80]], i32 16, i32 0)
-; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip(i32 [[LD128USARIP_I]], i32 16, i32 1)
+; CHECK-NEXT:    [[LD128USARIP_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip.pie(i32 [[TMP80]], i32 16, i32 0)
+; CHECK-NEXT:    [[LD128USARIP1_I:%.*]] = call i32 @llvm.riscv.esp.ld.128.usar.ip.pie(i32 [[LD128USARIP_I]], i32 16, i32 1)
 ; CHECK-NEXT:    [[CMP21_NOT_I:%.*]] = icmp ult i32 [[SUB2]], 48
 ; CHECK-NEXT:    br i1 [[CMP21_NOT_I]], label %[[HANDLE_REMAINDER_I:.*]], label %[[MAIN_LOOP_BODY_I:.*]]
 ; CHECK:       [[HANDLE_REMAINDER_I]]:
-; CHECK-NEXT:    [[SRC_PTR_AFTERLOOP_I:%.*]] = phi i32 [ [[LD128USARIP1_I]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[SRCQLDIP4_FINAL_I:%.*]], %[[MAIN_LOOP_BODY_I]] ]
-; CHECK-NEXT:    [[DST_PTR_AFTERLOOP_I:%.*]] = phi i32 [ [[TMP81]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[VST128IP5_FINAL_I:%.*]], %[[MAIN_LOOP_BODY_I]] ]
+; CHECK-NEXT:    [[SRC_PTR_AFTERLOOP_I:%.*]] = phi i32 [ [[LD128USARIP1_I]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[SRCQLDIP4_AFTER_BLOCK_I:%.*]], %[[MAIN_LOOP_BODY_I]] ]
+; CHECK-NEXT:    [[DST_PTR_AFTER_MAIN_LOOP_I:%.*]] = phi i32 [ [[TMP81]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[VST128IP5_AFTER_BLOCK_I:%.*]], %[[MAIN_LOOP_BODY_I]] ]
 ; CHECK-NEXT:    [[TOBOOL_NOT_I:%.*]] = icmp ult i32 [[REM_DECOMPOSED_I]], 32
 ; CHECK-NEXT:    br i1 [[TOBOOL_NOT_I]], label %[[CHECK_16BYTE_TAIL_I:.*]], label %[[PROCESS_32BYTE_TAIL_I:.*]]
 ; CHECK:       [[MAIN_LOOP_BODY_I]]:
 ; CHECK-NEXT:    [[I_022_I:%.*]] = phi i32 [ 0, %[[PROCESS_MAIN_LOOP_I]] ], [ [[INC_I:%.*]], %[[MAIN_LOOP_BODY_I]] ]
-; CHECK-NEXT:    [[SRC_PTR_PHI_I:%.*]] = phi i32 [ [[LD128USARIP1_I]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[SRCQLDIP4_FINAL_I]], %[[MAIN_LOOP_BODY_I]] ]
-; CHECK-NEXT:    [[DST_PTR_PHI_I:%.*]] = phi i32 [ [[TMP81]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[VST128IP5_FINAL_I]], %[[MAIN_LOOP_BODY_I]] ]
-; CHECK-NEXT:    [[SRCQLDIP_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_PHI_I]], i32 0, i32 16, i32 2)
-; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_PHI_I]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP2_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 2, i32 [[SRCQLDIP_I]], i32 1, i32 16, i32 0)
-; CHECK-NEXT:    [[VST128IP3_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP_I]], i32 16)
-; CHECK-NEXT:    [[SRCQLDIP4_FINAL_I]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 0, i32 [[SRCQLDIP2_I]], i32 2, i32 16, i32 1)
-; CHECK-NEXT:    [[VST128IP5_FINAL_I]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 2, i32 [[VST128IP3_I]], i32 16)
+; CHECK-NEXT:    [[SRC_PTR_IN_LOOP_I:%.*]] = phi i32 [ [[LD128USARIP1_I]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[SRCQLDIP4_AFTER_BLOCK_I]], %[[MAIN_LOOP_BODY_I]] ]
+; CHECK-NEXT:    [[DST_PTR_IN_LOOP_I:%.*]] = phi i32 [ [[TMP81]], %[[PROCESS_MAIN_LOOP_I]] ], [ [[VST128IP5_AFTER_BLOCK_I]], %[[MAIN_LOOP_BODY_I]] ]
+; CHECK-NEXT:    [[SRCQLDIP_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip.pie(i32 1, i32 [[SRC_PTR_IN_LOOP_I]], i32 0, i32 16, i32 2)
+; CHECK-NEXT:    [[VST128IP_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 0, i32 [[DST_PTR_IN_LOOP_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP2_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip.pie(i32 2, i32 [[SRCQLDIP_I]], i32 1, i32 16, i32 0)
+; CHECK-NEXT:    [[VST128IP3_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 1, i32 [[VST128IP_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP4_AFTER_BLOCK_I]] = call i32 @llvm.riscv.esp.src.q.ld.ip.pie(i32 0, i32 [[SRCQLDIP2_I]], i32 2, i32 16, i32 1)
+; CHECK-NEXT:    [[VST128IP5_AFTER_BLOCK_I]] = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 2, i32 [[VST128IP3_I]], i32 16)
 ; CHECK-NEXT:    [[INC_I]] = add nuw nsw i32 [[I_022_I]], 1
 ; CHECK-NEXT:    [[EXITCOND_NOT_I:%.*]] = icmp eq i32 [[INC_I]], [[DIV_I]]
 ; CHECK-NEXT:    br i1 [[EXITCOND_NOT_I]], label %[[HANDLE_REMAINDER_I]], label %[[MAIN_LOOP_BODY_I]]
 ; CHECK:       [[PROCESS_32BYTE_TAIL_I]]:
-; CHECK-NEXT:    [[SRCQLDIP6_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip(i32 1, i32 [[SRC_PTR_AFTERLOOP_I]], i32 0, i32 0, i32 2)
-; CHECK-NEXT:    [[VST128IP7_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_AFTERLOOP_I]], i32 16)
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 2, i32 1, i32 1)
-; CHECK-NEXT:    [[VST128IP8_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 1, i32 [[VST128IP7_I]], i32 16)
+; CHECK-NEXT:    [[SRCQLDIP6_I:%.*]] = call i32 @llvm.riscv.esp.src.q.ld.ip.pie(i32 1, i32 [[SRC_PTR_AFTERLOOP_I]], i32 0, i32 0, i32 2)
+; CHECK-NEXT:    [[VST128IP7_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 0, i32 [[DST_PTR_AFTER_MAIN_LOOP_I]], i32 16)
+; CHECK-NEXT:    call void @llvm.riscv.esp.src.q.pie(i32 2, i32 1, i32 1)
+; CHECK-NEXT:    [[VST128IP8_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 1, i32 [[VST128IP7_I]], i32 16)
 ; CHECK-NEXT:    [[SUB1_I:%.*]] = add nsw i32 [[REM_DECOMPOSED_I]], -32
 ; CHECK-NEXT:    br label %[[FINAL_CLEANUP_I]]
 ; CHECK:       [[CHECK_16BYTE_TAIL_I]]:
 ; CHECK-NEXT:    [[TOBOOL5_NOT_I:%.*]] = icmp ult i32 [[REM_DECOMPOSED_I]], 16
 ; CHECK-NEXT:    br i1 [[TOBOOL5_NOT_I]], label %[[SKIP_TAIL_PROCESSING_I:.*]], label %[[PROCESS_16BYTE_TAIL_I:.*]]
 ; CHECK:       [[PROCESS_16BYTE_TAIL_I]]:
-; CHECK-NEXT:    call void @llvm.riscv.esp.src.q(i32 1, i32 0, i32 0)
-; CHECK-NEXT:    [[VST128IP9_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip(i32 0, i32 [[DST_PTR_AFTERLOOP_I]], i32 16)
+; CHECK-NEXT:    call void @llvm.riscv.esp.src.q.pie(i32 1, i32 0, i32 0)
+; CHECK-NEXT:    [[VST128IP9_I:%.*]] = call i32 @llvm.riscv.esp.vst.128.ip.pie(i32 0, i32 [[DST_PTR_AFTER_MAIN_LOOP_I]], i32 16)
 ; CHECK-NEXT:    [[SUB_SRC_I:%.*]] = add i32 [[SRC_PTR_AFTERLOOP_I]], -16
 ; CHECK-NEXT:    [[SUB9_I:%.*]] = add nsw i32 [[REM_DECOMPOSED_I]], -16
 ; CHECK-NEXT:    br label %[[FINAL_CLEANUP_I]]
@@ -2536,7 +3392,7 @@ sw.bb7:                                           ; preds = %entry
 ; CHECK-NEXT:    br label %[[FINAL_CLEANUP_I]]
 ; CHECK:       [[FINAL_CLEANUP_I]]:
 ; CHECK-NEXT:    [[SRC_FINAL_I:%.*]] = phi i32 [ [[SRCQLDIP6_I]], %[[PROCESS_32BYTE_TAIL_I]] ], [ [[SUB_SRC_I]], %[[PROCESS_16BYTE_TAIL_I]] ], [ [[TMP80]], %[[ESP32P4MEMCPYSRCUNALIGNDSTUNALIGNFROM1TO15OPT_EXIT]] ], [ [[SRC_END7_I]], %[[SKIP_TAIL_PROCESSING_I]] ]
-; CHECK-NEXT:    [[DST_FINAL_I:%.*]] = phi i32 [ [[VST128IP8_I]], %[[PROCESS_32BYTE_TAIL_I]] ], [ [[VST128IP9_I]], %[[PROCESS_16BYTE_TAIL_I]] ], [ [[TMP81]], %[[ESP32P4MEMCPYSRCUNALIGNDSTUNALIGNFROM1TO15OPT_EXIT]] ], [ [[DST_PTR_AFTERLOOP_I]], %[[SKIP_TAIL_PROCESSING_I]] ]
+; CHECK-NEXT:    [[DST_FINAL_I:%.*]] = phi i32 [ [[VST128IP8_I]], %[[PROCESS_32BYTE_TAIL_I]] ], [ [[VST128IP9_I]], %[[PROCESS_16BYTE_TAIL_I]] ], [ [[TMP81]], %[[ESP32P4MEMCPYSRCUNALIGNDSTUNALIGNFROM1TO15OPT_EXIT]] ], [ [[DST_PTR_AFTER_MAIN_LOOP_I]], %[[SKIP_TAIL_PROCESSING_I]] ]
 ; CHECK-NEXT:    [[REM_FINAL_I:%.*]] = phi i32 [ [[SUB1_I]], %[[PROCESS_32BYTE_TAIL_I]] ], [ [[SUB9_I]], %[[PROCESS_16BYTE_TAIL_I]] ], [ [[SUB2]], %[[ESP32P4MEMCPYSRCUNALIGNDSTUNALIGNFROM1TO15OPT_EXIT]] ], [ [[REM_DECOMPOSED_I]], %[[SKIP_TAIL_PROCESSING_I]] ]
 ; CHECK-NEXT:    [[CMP_FINAL_I:%.*]] = icmp eq i32 [[REM_FINAL_I]], 0
 ; CHECK-NEXT:    br i1 [[CMP_FINAL_I]], label %[[RETURN]], label %[[CALL_SMALL_SIZE_CLEANUP_I:.*]]
@@ -2892,10 +3748,10 @@ sw.bb7:                                           ; preds = %entry
 ; CHECK-NEXT:    [[IS_LT_16:%.*]] = icmp ult i32 [[SIZE]], 16
 ; CHECK-NEXT:    br i1 [[IS_LT_16]], label %[[HANDLE_MID_SIZE:.*]], label %[[HANDLE_LARGE_LOOP:.*]]
 ; CHECK:       [[HANDLE_MID_SIZE]]:
-; CHECK-NEXT:    [[VLDL64IP_M:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[SRC]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[SRC]], i32 8)
 ; CHECK-NEXT:    [[TMP0:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M]], 0
 ; CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M]], 1
-; CHECK-NEXT:    [[VSTL64IP_M:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP0]], ptr [[DST]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP0]], ptr [[DST]], i32 8)
 ; CHECK-NEXT:    [[SIZE_MINUS_8:%.*]] = add nsw i32 [[SIZE]], -8
 ; CHECK-NEXT:    call void @esp32p4MemCpySrc16Dst16From1To7Opt(ptr [[VSTL64IP_M]], ptr [[TMP1]], i32 [[SIZE_MINUS_8]])
 ; CHECK-NEXT:    br label %[[RETURN]]
@@ -2925,38 +3781,38 @@ sw.bb7:                                           ; preds = %entry
 ; CHECK-NEXT:    [[LOOP_INDEX:%.*]] = phi i32 [ 0, %[[HANDLE_LARGE_LOOP]] ], [ [[LOOP_INC:%.*]], %[[LOOP_BODY_128B]] ]
 ; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi ptr [ [[SRC]], %[[HANDLE_LARGE_LOOP]] ], [ [[TMP17]], %[[LOOP_BODY_128B]] ]
 ; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi ptr [ [[DST]], %[[HANDLE_LARGE_LOOP]] ], [ [[VST128IP_M14]], %[[LOOP_BODY_128B]] ]
-; CHECK-NEXT:    [[VLD128IP_M:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC_PTR_LOOP]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC_PTR_LOOP]], i32 16)
 ; CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M]], 0
 ; CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M]], 1
-; CHECK-NEXT:    [[VLD128IP_M1:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP3]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M1:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP3]], i32 16)
 ; CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M1]], 0
 ; CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M1]], 1
-; CHECK-NEXT:    [[VLD128IP_M2:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP5]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M2:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP5]], i32 16)
 ; CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M2]], 0
 ; CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M2]], 1
-; CHECK-NEXT:    [[VLD128IP_M3:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP7]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M3:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP7]], i32 16)
 ; CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M3]], 0
 ; CHECK-NEXT:    [[TMP9:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M3]], 1
-; CHECK-NEXT:    [[VST128IP_M:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP2]], ptr [[DST_PTR_LOOP]], i32 16)
-; CHECK-NEXT:    [[VST128IP_M4:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP4]], ptr [[VST128IP_M]], i32 16)
-; CHECK-NEXT:    [[VST128IP_M5:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP6]], ptr [[VST128IP_M4]], i32 16)
-; CHECK-NEXT:    [[VST128IP_M6:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP8]], ptr [[VST128IP_M5]], i32 16)
-; CHECK-NEXT:    [[VLD128IP_M7:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP9]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP2]], ptr [[DST_PTR_LOOP]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M4:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP4]], ptr [[VST128IP_M]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M5:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP6]], ptr [[VST128IP_M4]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M6:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP8]], ptr [[VST128IP_M5]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M7:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP9]], i32 16)
 ; CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M7]], 0
 ; CHECK-NEXT:    [[TMP11:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M7]], 1
-; CHECK-NEXT:    [[VLD128IP_M8:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP11]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M8:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP11]], i32 16)
 ; CHECK-NEXT:    [[TMP12:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M8]], 0
 ; CHECK-NEXT:    [[TMP13:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M8]], 1
-; CHECK-NEXT:    [[VLD128IP_M9:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP13]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M9:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP13]], i32 16)
 ; CHECK-NEXT:    [[TMP14:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M9]], 0
 ; CHECK-NEXT:    [[TMP15:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M9]], 1
-; CHECK-NEXT:    [[VLD128IP_M10:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP15]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M10:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP15]], i32 16)
 ; CHECK-NEXT:    [[TMP16:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M10]], 0
 ; CHECK-NEXT:    [[TMP17]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M10]], 1
-; CHECK-NEXT:    [[VST128IP_M11:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP10]], ptr [[VST128IP_M6]], i32 16)
-; CHECK-NEXT:    [[VST128IP_M12:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP12]], ptr [[VST128IP_M11]], i32 16)
-; CHECK-NEXT:    [[VST128IP_M13:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP14]], ptr [[VST128IP_M12]], i32 16)
-; CHECK-NEXT:    [[VST128IP_M14]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP16]], ptr [[VST128IP_M13]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M11:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP10]], ptr [[VST128IP_M6]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M12:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP12]], ptr [[VST128IP_M11]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M13:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP14]], ptr [[VST128IP_M12]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M14]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP16]], ptr [[VST128IP_M13]], i32 16)
 ; CHECK-NEXT:    [[LOOP_INC]] = add nuw nsw i32 [[LOOP_INDEX]], 1
 ; CHECK-NEXT:    [[LOOP_DONE:%.*]] = icmp eq i32 [[LOOP_INC]], [[NUM_128B_BLOCKS]]
 ; CHECK-NEXT:    br i1 [[LOOP_DONE]], label %[[LOOP_EXIT_CLEANUP]], label %[[LOOP_BODY_128B]]
@@ -2969,10 +3825,10 @@ sw.bb7:                                           ; preds = %entry
 ; CHECK:       [[INVALID_SWITCH_TRAP]]:
 ; CHECK-NEXT:    unreachable
 ; CHECK:       [[HANDLE_8B_TAIL]]:
-; CHECK-NEXT:    [[VLDL64IP_M71:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[SRC_PTR_TAIL]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M71:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[SRC_PTR_TAIL]], i32 8)
 ; CHECK-NEXT:    [[TMP20:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M71]], 0
 ; CHECK-NEXT:    [[TMP21:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M71]], 1
-; CHECK-NEXT:    [[VSTL64IP_M72:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP20]], ptr [[DST_PTR_TAIL]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M72:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP20]], ptr [[DST_PTR_TAIL]], i32 8)
 ; CHECK-NEXT:    br label %[[AFTER_8B_TAIL]]
 ; CHECK:       [[AFTER_8B_TAIL]]:
 ; CHECK-NEXT:    [[SRC_PTR_AFTER_8B:%.*]] = phi ptr [ [[SRC_PTR_TAIL]], %[[HANDLE_TAIL_SWITCH]] ], [ [[TMP21]], %[[HANDLE_8B_TAIL]] ]
@@ -2980,130 +3836,130 @@ sw.bb7:                                           ; preds = %entry
 ; CHECK-NEXT:    [[TMP22:%.*]] = icmp eq i32 [[REMAINING_BYTES]], 0
 ; CHECK-NEXT:    br i1 [[TMP22]], label %[[RETURN]], label %[[HANDLE_REMAINING_BYTES:.*]]
 ; CHECK:       [[TAIL_CASE_1]]:
-; CHECK-NEXT:    [[VLD128IP_M15:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC_PTR_AFTER_LOOP]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M15:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC_PTR_AFTER_LOOP]], i32 16)
 ; CHECK-NEXT:    [[TMP23:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M15]], 0
 ; CHECK-NEXT:    [[TMP24]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M15]], 1
-; CHECK-NEXT:    [[VST128IP_M16]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP23]], ptr [[DST_PTR_AFTER_LOOP]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M16]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP23]], ptr [[DST_PTR_AFTER_LOOP]], i32 16)
 ; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
 ; CHECK:       [[TAIL_CASE_2]]:
-; CHECK-NEXT:    [[VLD128IP_M17:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC_PTR_AFTER_LOOP]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M17:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC_PTR_AFTER_LOOP]], i32 16)
 ; CHECK-NEXT:    [[TMP25:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M17]], 0
 ; CHECK-NEXT:    [[TMP26:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M17]], 1
-; CHECK-NEXT:    [[VLD128IP_M18:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP26]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M18:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP26]], i32 16)
 ; CHECK-NEXT:    [[TMP27:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M18]], 0
 ; CHECK-NEXT:    [[TMP28]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M18]], 1
-; CHECK-NEXT:    [[VST128IP_M19:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP25]], ptr [[DST_PTR_AFTER_LOOP]], i32 16)
-; CHECK-NEXT:    [[VST128IP_M20]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP27]], ptr [[VST128IP_M19]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M19:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP25]], ptr [[DST_PTR_AFTER_LOOP]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M20]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP27]], ptr [[VST128IP_M19]], i32 16)
 ; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
 ; CHECK:       [[TAIL_CASE_3]]:
-; CHECK-NEXT:    [[VLD128IP_M21:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC_PTR_AFTER_LOOP]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M21:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC_PTR_AFTER_LOOP]], i32 16)
 ; CHECK-NEXT:    [[TMP29:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M21]], 0
 ; CHECK-NEXT:    [[TMP30:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M21]], 1
-; CHECK-NEXT:    [[VLD128IP_M22:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP30]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M22:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP30]], i32 16)
 ; CHECK-NEXT:    [[TMP31:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M22]], 0
 ; CHECK-NEXT:    [[TMP32:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M22]], 1
-; CHECK-NEXT:    [[VLD128IP_M23:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP32]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M23:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP32]], i32 16)
 ; CHECK-NEXT:    [[TMP33:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M23]], 0
 ; CHECK-NEXT:    [[TMP34]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M23]], 1
-; CHECK-NEXT:    [[VST128IP_M24:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP29]], ptr [[DST_PTR_AFTER_LOOP]], i32 16)
-; CHECK-NEXT:    [[VST128IP_M25:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP31]], ptr [[VST128IP_M24]], i32 16)
-; CHECK-NEXT:    [[VST128IP_M26]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP33]], ptr [[VST128IP_M25]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M24:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP29]], ptr [[DST_PTR_AFTER_LOOP]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M25:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP31]], ptr [[VST128IP_M24]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M26]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP33]], ptr [[VST128IP_M25]], i32 16)
 ; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
 ; CHECK:       [[TAIL_CASE_4]]:
-; CHECK-NEXT:    [[VLD128IP_M27:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC_PTR_AFTER_LOOP]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M27:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC_PTR_AFTER_LOOP]], i32 16)
 ; CHECK-NEXT:    [[TMP35:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M27]], 0
 ; CHECK-NEXT:    [[TMP36:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M27]], 1
-; CHECK-NEXT:    [[VLD128IP_M28:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP36]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M28:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP36]], i32 16)
 ; CHECK-NEXT:    [[TMP37:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M28]], 0
 ; CHECK-NEXT:    [[TMP38:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M28]], 1
-; CHECK-NEXT:    [[VLD128IP_M29:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP38]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M29:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP38]], i32 16)
 ; CHECK-NEXT:    [[TMP39:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M29]], 0
 ; CHECK-NEXT:    [[TMP40:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M29]], 1
-; CHECK-NEXT:    [[VLD128IP_M30:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP40]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M30:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP40]], i32 16)
 ; CHECK-NEXT:    [[TMP41:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M30]], 0
 ; CHECK-NEXT:    [[TMP42]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M30]], 1
-; CHECK-NEXT:    [[VST128IP_M31:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP35]], ptr [[DST_PTR_AFTER_LOOP]], i32 16)
-; CHECK-NEXT:    [[VST128IP_M32:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP37]], ptr [[VST128IP_M31]], i32 16)
-; CHECK-NEXT:    [[VST128IP_M33:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP39]], ptr [[VST128IP_M32]], i32 16)
-; CHECK-NEXT:    [[VST128IP_M34]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP41]], ptr [[VST128IP_M33]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M31:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP35]], ptr [[DST_PTR_AFTER_LOOP]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M32:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP37]], ptr [[VST128IP_M31]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M33:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP39]], ptr [[VST128IP_M32]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M34]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP41]], ptr [[VST128IP_M33]], i32 16)
 ; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
 ; CHECK:       [[TAIL_CASE_5]]:
-; CHECK-NEXT:    [[VLD128IP_M35:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC_PTR_AFTER_LOOP]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M35:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC_PTR_AFTER_LOOP]], i32 16)
 ; CHECK-NEXT:    [[TMP43:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M35]], 0
 ; CHECK-NEXT:    [[TMP44:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M35]], 1
-; CHECK-NEXT:    [[VLD128IP_M36:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP44]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M36:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP44]], i32 16)
 ; CHECK-NEXT:    [[TMP45:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M36]], 0
 ; CHECK-NEXT:    [[TMP46:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M36]], 1
-; CHECK-NEXT:    [[VLD128IP_M37:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP46]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M37:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP46]], i32 16)
 ; CHECK-NEXT:    [[TMP47:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M37]], 0
 ; CHECK-NEXT:    [[TMP48:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M37]], 1
-; CHECK-NEXT:    [[VLD128IP_M38:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP48]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M38:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP48]], i32 16)
 ; CHECK-NEXT:    [[TMP49:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M38]], 0
 ; CHECK-NEXT:    [[TMP50:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M38]], 1
-; CHECK-NEXT:    [[VST128IP_M39:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP43]], ptr [[DST_PTR_AFTER_LOOP]], i32 16)
-; CHECK-NEXT:    [[VST128IP_M40:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP45]], ptr [[VST128IP_M39]], i32 16)
-; CHECK-NEXT:    [[VST128IP_M41:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP47]], ptr [[VST128IP_M40]], i32 16)
-; CHECK-NEXT:    [[VST128IP_M42:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP49]], ptr [[VST128IP_M41]], i32 16)
-; CHECK-NEXT:    [[VLD128IP_M43:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP50]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M39:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP43]], ptr [[DST_PTR_AFTER_LOOP]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M40:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP45]], ptr [[VST128IP_M39]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M41:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP47]], ptr [[VST128IP_M40]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M42:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP49]], ptr [[VST128IP_M41]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M43:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP50]], i32 16)
 ; CHECK-NEXT:    [[TMP51:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M43]], 0
 ; CHECK-NEXT:    [[TMP52]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M43]], 1
-; CHECK-NEXT:    [[VST128IP_M44]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP51]], ptr [[VST128IP_M42]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M44]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP51]], ptr [[VST128IP_M42]], i32 16)
 ; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
 ; CHECK:       [[TAIL_CASE_6]]:
-; CHECK-NEXT:    [[VLD128IP_M45:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC_PTR_AFTER_LOOP]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M45:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC_PTR_AFTER_LOOP]], i32 16)
 ; CHECK-NEXT:    [[TMP53:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M45]], 0
 ; CHECK-NEXT:    [[TMP54:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M45]], 1
-; CHECK-NEXT:    [[VLD128IP_M46:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP54]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M46:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP54]], i32 16)
 ; CHECK-NEXT:    [[TMP55:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M46]], 0
 ; CHECK-NEXT:    [[TMP56:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M46]], 1
-; CHECK-NEXT:    [[VLD128IP_M47:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP56]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M47:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP56]], i32 16)
 ; CHECK-NEXT:    [[TMP57:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M47]], 0
 ; CHECK-NEXT:    [[TMP58:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M47]], 1
-; CHECK-NEXT:    [[VLD128IP_M48:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP58]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M48:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP58]], i32 16)
 ; CHECK-NEXT:    [[TMP59:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M48]], 0
 ; CHECK-NEXT:    [[TMP60:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M48]], 1
-; CHECK-NEXT:    [[VST128IP_M49:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP53]], ptr [[DST_PTR_AFTER_LOOP]], i32 16)
-; CHECK-NEXT:    [[VST128IP_M50:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP55]], ptr [[VST128IP_M49]], i32 16)
-; CHECK-NEXT:    [[VST128IP_M51:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP57]], ptr [[VST128IP_M50]], i32 16)
-; CHECK-NEXT:    [[VST128IP_M52:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP59]], ptr [[VST128IP_M51]], i32 16)
-; CHECK-NEXT:    [[VLD128IP_M53:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP60]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M49:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP53]], ptr [[DST_PTR_AFTER_LOOP]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M50:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP55]], ptr [[VST128IP_M49]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M51:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP57]], ptr [[VST128IP_M50]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M52:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP59]], ptr [[VST128IP_M51]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M53:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP60]], i32 16)
 ; CHECK-NEXT:    [[TMP61:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M53]], 0
 ; CHECK-NEXT:    [[TMP62:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M53]], 1
-; CHECK-NEXT:    [[VLD128IP_M54:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP62]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M54:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP62]], i32 16)
 ; CHECK-NEXT:    [[TMP63:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M54]], 0
 ; CHECK-NEXT:    [[TMP64]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M54]], 1
-; CHECK-NEXT:    [[VST128IP_M55:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP61]], ptr [[VST128IP_M52]], i32 16)
-; CHECK-NEXT:    [[VST128IP_M56]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP63]], ptr [[VST128IP_M55]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M55:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP61]], ptr [[VST128IP_M52]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M56]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP63]], ptr [[VST128IP_M55]], i32 16)
 ; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
 ; CHECK:       [[TAIL_CASE_7]]:
-; CHECK-NEXT:    [[VLD128IP_M57:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC_PTR_AFTER_LOOP]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M57:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC_PTR_AFTER_LOOP]], i32 16)
 ; CHECK-NEXT:    [[TMP65:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M57]], 0
 ; CHECK-NEXT:    [[TMP66:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M57]], 1
-; CHECK-NEXT:    [[VLD128IP_M58:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP66]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M58:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP66]], i32 16)
 ; CHECK-NEXT:    [[TMP67:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M58]], 0
 ; CHECK-NEXT:    [[TMP68:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M58]], 1
-; CHECK-NEXT:    [[VLD128IP_M59:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP68]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M59:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP68]], i32 16)
 ; CHECK-NEXT:    [[TMP69:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M59]], 0
 ; CHECK-NEXT:    [[TMP70:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M59]], 1
-; CHECK-NEXT:    [[VLD128IP_M60:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP70]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M60:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP70]], i32 16)
 ; CHECK-NEXT:    [[TMP71:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M60]], 0
 ; CHECK-NEXT:    [[TMP72:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M60]], 1
-; CHECK-NEXT:    [[VST128IP_M61:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP65]], ptr [[DST_PTR_AFTER_LOOP]], i32 16)
-; CHECK-NEXT:    [[VST128IP_M62:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP67]], ptr [[VST128IP_M61]], i32 16)
-; CHECK-NEXT:    [[VST128IP_M63:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP69]], ptr [[VST128IP_M62]], i32 16)
-; CHECK-NEXT:    [[VST128IP_M64:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP71]], ptr [[VST128IP_M63]], i32 16)
-; CHECK-NEXT:    [[VLD128IP_M65:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP72]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M61:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP65]], ptr [[DST_PTR_AFTER_LOOP]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M62:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP67]], ptr [[VST128IP_M61]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M63:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP69]], ptr [[VST128IP_M62]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M64:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP71]], ptr [[VST128IP_M63]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M65:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP72]], i32 16)
 ; CHECK-NEXT:    [[TMP73:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M65]], 0
 ; CHECK-NEXT:    [[TMP74:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M65]], 1
-; CHECK-NEXT:    [[VLD128IP_M66:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP74]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M66:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP74]], i32 16)
 ; CHECK-NEXT:    [[TMP75:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M66]], 0
 ; CHECK-NEXT:    [[TMP76:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M66]], 1
-; CHECK-NEXT:    [[VLD128IP_M67:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP76]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M67:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP76]], i32 16)
 ; CHECK-NEXT:    [[TMP77:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M67]], 0
 ; CHECK-NEXT:    [[TMP78]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M67]], 1
-; CHECK-NEXT:    [[VST128IP_M68:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP73]], ptr [[VST128IP_M64]], i32 16)
-; CHECK-NEXT:    [[VST128IP_M69:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP75]], ptr [[VST128IP_M68]], i32 16)
-; CHECK-NEXT:    [[VST128IP_M70]] = call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> [[TMP77]], ptr [[VST128IP_M69]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M68:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP73]], ptr [[VST128IP_M64]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M69:%.*]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP75]], ptr [[VST128IP_M68]], i32 16)
+; CHECK-NEXT:    [[VST128IP_M70]] = call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> [[TMP77]], ptr [[VST128IP_M69]], i32 16)
 ; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
 ; CHECK:       [[HANDLE_REMAINING_BYTES]]:
 ; CHECK-NEXT:    call void @esp32p4MemCpySrc16Dst16From1To7Opt(ptr [[DST_PTR_AFTER_8B]], ptr [[SRC_PTR_AFTER_8B]], i32 [[REMAINING_BYTES]])
@@ -3122,10 +3978,10 @@ sw.bb7:                                           ; preds = %entry
 ; CHECK-NEXT:    [[IS_LT_16:%.*]] = icmp ult i32 [[SIZE]], 16
 ; CHECK-NEXT:    br i1 [[IS_LT_16]], label %[[HANDLE_MID_SIZE:.*]], label %[[HANDLE_LARGE_LOOP:.*]]
 ; CHECK:       [[HANDLE_MID_SIZE]]:
-; CHECK-NEXT:    [[VLDL64IP_M:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[SRC]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[SRC]], i32 8)
 ; CHECK-NEXT:    [[TMP0:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M]], 0
 ; CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M]], 1
-; CHECK-NEXT:    [[VSTL64IP_M:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP0]], ptr [[DST]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP0]], ptr [[DST]], i32 8)
 ; CHECK-NEXT:    [[SIZE_MINUS_8:%.*]] = add nsw i32 [[SIZE]], -8
 ; CHECK-NEXT:    call void @esp32p4MemCpySrc16Dst8From1To7Opt(ptr [[VSTL64IP_M]], ptr [[TMP1]], i32 [[SIZE_MINUS_8]])
 ; CHECK-NEXT:    br label %[[RETURN]]
@@ -3155,70 +4011,70 @@ sw.bb7:                                           ; preds = %entry
 ; CHECK-NEXT:    [[LOOP_INDEX:%.*]] = phi i32 [ 0, %[[HANDLE_LARGE_LOOP]] ], [ [[LOOP_INC:%.*]], %[[LOOP_BODY_128B]] ]
 ; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi ptr [ [[SRC]], %[[HANDLE_LARGE_LOOP]] ], [ [[TMP33]], %[[LOOP_BODY_128B]] ]
 ; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi ptr [ [[DST]], %[[HANDLE_LARGE_LOOP]] ], [ [[VSTH64IP_M30]], %[[LOOP_BODY_128B]] ]
-; CHECK-NEXT:    [[VLDL64IP_M1:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[SRC_PTR_LOOP]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M1:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[SRC_PTR_LOOP]], i32 8)
 ; CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M1]], 0
 ; CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M1]], 1
-; CHECK-NEXT:    [[VLDH64IP_M:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP3]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP3]], i32 8)
 ; CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M]], 0
 ; CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M]], 1
-; CHECK-NEXT:    [[VLDL64IP_M2:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP5]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M2:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP5]], i32 8)
 ; CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M2]], 0
 ; CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M2]], 1
-; CHECK-NEXT:    [[VLDH64IP_M3:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP7]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M3:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP7]], i32 8)
 ; CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M3]], 0
 ; CHECK-NEXT:    [[TMP9:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M3]], 1
-; CHECK-NEXT:    [[VLDL64IP_M4:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP9]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M4:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP9]], i32 8)
 ; CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M4]], 0
 ; CHECK-NEXT:    [[TMP11:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M4]], 1
-; CHECK-NEXT:    [[VLDH64IP_M5:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP11]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M5:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP11]], i32 8)
 ; CHECK-NEXT:    [[TMP12:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M5]], 0
 ; CHECK-NEXT:    [[TMP13:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M5]], 1
-; CHECK-NEXT:    [[VLDL64IP_M6:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP13]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M6:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP13]], i32 8)
 ; CHECK-NEXT:    [[TMP14:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M6]], 0
 ; CHECK-NEXT:    [[TMP15:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M6]], 1
-; CHECK-NEXT:    [[VLDH64IP_M7:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP15]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M7:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP15]], i32 8)
 ; CHECK-NEXT:    [[TMP16:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M7]], 0
 ; CHECK-NEXT:    [[TMP17:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M7]], 1
-; CHECK-NEXT:    [[VSTL64IP_M8:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP2]], ptr [[DST_PTR_LOOP]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP4]], ptr [[VSTL64IP_M8]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M9:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP6]], ptr [[VSTH64IP_M]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M10:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP8]], ptr [[VSTL64IP_M9]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M11:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP10]], ptr [[VSTH64IP_M10]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M12:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP12]], ptr [[VSTL64IP_M11]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M13:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP14]], ptr [[VSTH64IP_M12]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M14:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP16]], ptr [[VSTL64IP_M13]], i32 8)
-; CHECK-NEXT:    [[VLDL64IP_M15:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP17]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M8:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP2]], ptr [[DST_PTR_LOOP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP4]], ptr [[VSTL64IP_M8]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M9:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP6]], ptr [[VSTH64IP_M]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M10:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP8]], ptr [[VSTL64IP_M9]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M11:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP10]], ptr [[VSTH64IP_M10]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M12:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP12]], ptr [[VSTL64IP_M11]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M13:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP14]], ptr [[VSTH64IP_M12]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M14:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP16]], ptr [[VSTL64IP_M13]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M15:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP17]], i32 8)
 ; CHECK-NEXT:    [[TMP18:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M15]], 0
 ; CHECK-NEXT:    [[TMP19:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M15]], 1
-; CHECK-NEXT:    [[VLDH64IP_M16:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP19]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M16:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP19]], i32 8)
 ; CHECK-NEXT:    [[TMP20:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M16]], 0
 ; CHECK-NEXT:    [[TMP21:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M16]], 1
-; CHECK-NEXT:    [[VLDL64IP_M17:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP21]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M17:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP21]], i32 8)
 ; CHECK-NEXT:    [[TMP22:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M17]], 0
 ; CHECK-NEXT:    [[TMP23:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M17]], 1
-; CHECK-NEXT:    [[VLDH64IP_M18:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP23]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M18:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP23]], i32 8)
 ; CHECK-NEXT:    [[TMP24:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M18]], 0
 ; CHECK-NEXT:    [[TMP25:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M18]], 1
-; CHECK-NEXT:    [[VLDL64IP_M19:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP25]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M19:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP25]], i32 8)
 ; CHECK-NEXT:    [[TMP26:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M19]], 0
 ; CHECK-NEXT:    [[TMP27:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M19]], 1
-; CHECK-NEXT:    [[VLDH64IP_M20:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP27]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M20:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP27]], i32 8)
 ; CHECK-NEXT:    [[TMP28:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M20]], 0
 ; CHECK-NEXT:    [[TMP29:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M20]], 1
-; CHECK-NEXT:    [[VLDL64IP_M21:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP29]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M21:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP29]], i32 8)
 ; CHECK-NEXT:    [[TMP30:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M21]], 0
 ; CHECK-NEXT:    [[TMP31:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M21]], 1
-; CHECK-NEXT:    [[VLDH64IP_M22:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP31]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M22:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP31]], i32 8)
 ; CHECK-NEXT:    [[TMP32:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M22]], 0
 ; CHECK-NEXT:    [[TMP33]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M22]], 1
-; CHECK-NEXT:    [[VSTL64IP_M23:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP18]], ptr [[VSTH64IP_M14]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M24:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP20]], ptr [[VSTL64IP_M23]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M25:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP22]], ptr [[VSTH64IP_M24]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M26:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP24]], ptr [[VSTL64IP_M25]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M27:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP26]], ptr [[VSTH64IP_M26]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M28:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP28]], ptr [[VSTL64IP_M27]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M29:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP30]], ptr [[VSTH64IP_M28]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M30]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP32]], ptr [[VSTL64IP_M29]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M23:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP18]], ptr [[VSTH64IP_M14]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M24:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP20]], ptr [[VSTL64IP_M23]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M25:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP22]], ptr [[VSTH64IP_M24]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M26:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP24]], ptr [[VSTL64IP_M25]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M27:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP26]], ptr [[VSTH64IP_M26]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M28:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP28]], ptr [[VSTL64IP_M27]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M29:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP30]], ptr [[VSTH64IP_M28]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M30]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP32]], ptr [[VSTL64IP_M29]], i32 8)
 ; CHECK-NEXT:    [[LOOP_INC]] = add nuw nsw i32 [[LOOP_INDEX]], 1
 ; CHECK-NEXT:    [[LOOP_DONE:%.*]] = icmp eq i32 [[LOOP_INC]], [[NUM_128B_BLOCKS]]
 ; CHECK-NEXT:    br i1 [[LOOP_DONE]], label %[[LOOP_EXIT_CLEANUP]], label %[[LOOP_BODY_128B]]
@@ -3231,10 +4087,10 @@ sw.bb7:                                           ; preds = %entry
 ; CHECK:       [[INVALID_SWITCH_TRAP]]:
 ; CHECK-NEXT:    unreachable
 ; CHECK:       [[HANDLE_8B_TAIL]]:
-; CHECK-NEXT:    [[VLDL64IP_M114:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[SRC_PTR_TAIL]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M114:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[SRC_PTR_TAIL]], i32 8)
 ; CHECK-NEXT:    [[TMP36:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M114]], 0
 ; CHECK-NEXT:    [[TMP37:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M114]], 1
-; CHECK-NEXT:    [[VSTL64IP_M115:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP36]], ptr [[DST_PTR_TAIL]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M115:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP36]], ptr [[DST_PTR_TAIL]], i32 8)
 ; CHECK-NEXT:    br label %[[AFTER_8B_TAIL]]
 ; CHECK:       [[AFTER_8B_TAIL]]:
 ; CHECK-NEXT:    [[SRC_PTR_AFTER_8B:%.*]] = phi ptr [ [[SRC_PTR_TAIL]], %[[HANDLE_TAIL_SWITCH]] ], [ [[TMP37]], %[[HANDLE_8B_TAIL]] ]
@@ -3242,214 +4098,214 @@ sw.bb7:                                           ; preds = %entry
 ; CHECK-NEXT:    [[TMP38:%.*]] = icmp eq i32 [[REMAINING_BYTES]], 0
 ; CHECK-NEXT:    br i1 [[TMP38]], label %[[RETURN]], label %[[HANDLE_REMAINING_BYTES:.*]]
 ; CHECK:       [[TAIL_CASE_1]]:
-; CHECK-NEXT:    [[VLD128IP_M:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC_PTR_AFTER_LOOP]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC_PTR_AFTER_LOOP]], i32 16)
 ; CHECK-NEXT:    [[TMP39:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M]], 0
 ; CHECK-NEXT:    [[TMP40]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M]], 1
 ; CHECK-NEXT:    [[TMP41:%.*]] = shufflevector <16 x i8> [[TMP39]], <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
 ; CHECK-NEXT:    [[TMP42:%.*]] = shufflevector <16 x i8> [[TMP39]], <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-; CHECK-NEXT:    [[VSTL64IP_M31:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP41]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M32]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP42]], ptr [[VSTL64IP_M31]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M31:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP41]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M32]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP42]], ptr [[VSTL64IP_M31]], i32 8)
 ; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
 ; CHECK:       [[TAIL_CASE_2]]:
-; CHECK-NEXT:    [[VLD128IP_M33:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC_PTR_AFTER_LOOP]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M33:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC_PTR_AFTER_LOOP]], i32 16)
 ; CHECK-NEXT:    [[TMP43:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M33]], 0
 ; CHECK-NEXT:    [[TMP44:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M33]], 1
-; CHECK-NEXT:    [[VLD128IP_M34:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP44]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M34:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP44]], i32 16)
 ; CHECK-NEXT:    [[TMP45:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M34]], 0
 ; CHECK-NEXT:    [[TMP46]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M34]], 1
 ; CHECK-NEXT:    [[TMP47:%.*]] = shufflevector <16 x i8> [[TMP43]], <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
 ; CHECK-NEXT:    [[TMP48:%.*]] = shufflevector <16 x i8> [[TMP43]], <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-; CHECK-NEXT:    [[VSTL64IP_M35:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP47]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M36:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP48]], ptr [[VSTL64IP_M35]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M35:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP47]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M36:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP48]], ptr [[VSTL64IP_M35]], i32 8)
 ; CHECK-NEXT:    [[TMP49:%.*]] = shufflevector <16 x i8> [[TMP45]], <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
 ; CHECK-NEXT:    [[TMP50:%.*]] = shufflevector <16 x i8> [[TMP45]], <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-; CHECK-NEXT:    [[VSTL64IP_M37:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP49]], ptr [[VSTH64IP_M36]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M38]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP50]], ptr [[VSTL64IP_M37]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M37:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP49]], ptr [[VSTH64IP_M36]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M38]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP50]], ptr [[VSTL64IP_M37]], i32 8)
 ; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
 ; CHECK:       [[TAIL_CASE_3]]:
-; CHECK-NEXT:    [[VLD128IP_M39:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC_PTR_AFTER_LOOP]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M39:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC_PTR_AFTER_LOOP]], i32 16)
 ; CHECK-NEXT:    [[TMP51:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M39]], 0
 ; CHECK-NEXT:    [[TMP52:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M39]], 1
-; CHECK-NEXT:    [[VLD128IP_M40:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP52]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M40:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP52]], i32 16)
 ; CHECK-NEXT:    [[TMP53:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M40]], 0
 ; CHECK-NEXT:    [[TMP54:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M40]], 1
-; CHECK-NEXT:    [[VLD128IP_M41:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP54]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M41:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP54]], i32 16)
 ; CHECK-NEXT:    [[TMP55:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M41]], 0
 ; CHECK-NEXT:    [[TMP56]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M41]], 1
 ; CHECK-NEXT:    [[TMP57:%.*]] = shufflevector <16 x i8> [[TMP51]], <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
 ; CHECK-NEXT:    [[TMP58:%.*]] = shufflevector <16 x i8> [[TMP51]], <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-; CHECK-NEXT:    [[VSTL64IP_M42:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP57]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M43:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP58]], ptr [[VSTL64IP_M42]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M42:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP57]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M43:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP58]], ptr [[VSTL64IP_M42]], i32 8)
 ; CHECK-NEXT:    [[TMP59:%.*]] = shufflevector <16 x i8> [[TMP53]], <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
 ; CHECK-NEXT:    [[TMP60:%.*]] = shufflevector <16 x i8> [[TMP53]], <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-; CHECK-NEXT:    [[VSTL64IP_M44:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP59]], ptr [[VSTH64IP_M43]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M45:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP60]], ptr [[VSTL64IP_M44]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M44:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP59]], ptr [[VSTH64IP_M43]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M45:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP60]], ptr [[VSTL64IP_M44]], i32 8)
 ; CHECK-NEXT:    [[TMP61:%.*]] = shufflevector <16 x i8> [[TMP55]], <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
 ; CHECK-NEXT:    [[TMP62:%.*]] = shufflevector <16 x i8> [[TMP55]], <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-; CHECK-NEXT:    [[VSTL64IP_M46:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP61]], ptr [[VSTH64IP_M45]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M47]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP62]], ptr [[VSTL64IP_M46]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M46:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP61]], ptr [[VSTH64IP_M45]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M47]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP62]], ptr [[VSTL64IP_M46]], i32 8)
 ; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
 ; CHECK:       [[TAIL_CASE_4]]:
-; CHECK-NEXT:    [[VLD128IP_M48:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC_PTR_AFTER_LOOP]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M48:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC_PTR_AFTER_LOOP]], i32 16)
 ; CHECK-NEXT:    [[TMP63:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M48]], 0
 ; CHECK-NEXT:    [[TMP64:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M48]], 1
-; CHECK-NEXT:    [[VLD128IP_M49:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP64]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M49:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP64]], i32 16)
 ; CHECK-NEXT:    [[TMP65:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M49]], 0
 ; CHECK-NEXT:    [[TMP66:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M49]], 1
-; CHECK-NEXT:    [[VLD128IP_M50:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP66]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M50:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP66]], i32 16)
 ; CHECK-NEXT:    [[TMP67:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M50]], 0
 ; CHECK-NEXT:    [[TMP68:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M50]], 1
-; CHECK-NEXT:    [[VLD128IP_M51:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP68]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M51:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP68]], i32 16)
 ; CHECK-NEXT:    [[TMP69:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M51]], 0
 ; CHECK-NEXT:    [[TMP70]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M51]], 1
 ; CHECK-NEXT:    [[TMP71:%.*]] = shufflevector <16 x i8> [[TMP63]], <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
 ; CHECK-NEXT:    [[TMP72:%.*]] = shufflevector <16 x i8> [[TMP63]], <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-; CHECK-NEXT:    [[VSTL64IP_M52:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP71]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M53:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP72]], ptr [[VSTL64IP_M52]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M52:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP71]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M53:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP72]], ptr [[VSTL64IP_M52]], i32 8)
 ; CHECK-NEXT:    [[TMP73:%.*]] = shufflevector <16 x i8> [[TMP65]], <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
 ; CHECK-NEXT:    [[TMP74:%.*]] = shufflevector <16 x i8> [[TMP65]], <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-; CHECK-NEXT:    [[VSTL64IP_M54:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP73]], ptr [[VSTH64IP_M53]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M55:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP74]], ptr [[VSTL64IP_M54]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M54:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP73]], ptr [[VSTH64IP_M53]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M55:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP74]], ptr [[VSTL64IP_M54]], i32 8)
 ; CHECK-NEXT:    [[TMP75:%.*]] = shufflevector <16 x i8> [[TMP67]], <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
 ; CHECK-NEXT:    [[TMP76:%.*]] = shufflevector <16 x i8> [[TMP67]], <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-; CHECK-NEXT:    [[VSTL64IP_M56:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP75]], ptr [[VSTH64IP_M55]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M57:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP76]], ptr [[VSTL64IP_M56]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M56:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP75]], ptr [[VSTH64IP_M55]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M57:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP76]], ptr [[VSTL64IP_M56]], i32 8)
 ; CHECK-NEXT:    [[TMP77:%.*]] = shufflevector <16 x i8> [[TMP69]], <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
 ; CHECK-NEXT:    [[TMP78:%.*]] = shufflevector <16 x i8> [[TMP69]], <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-; CHECK-NEXT:    [[VSTL64IP_M58:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP77]], ptr [[VSTH64IP_M57]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M59]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP78]], ptr [[VSTL64IP_M58]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M58:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP77]], ptr [[VSTH64IP_M57]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M59]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP78]], ptr [[VSTL64IP_M58]], i32 8)
 ; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
 ; CHECK:       [[TAIL_CASE_5]]:
-; CHECK-NEXT:    [[VLD128IP_M60:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC_PTR_AFTER_LOOP]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M60:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC_PTR_AFTER_LOOP]], i32 16)
 ; CHECK-NEXT:    [[TMP79:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M60]], 0
 ; CHECK-NEXT:    [[TMP80:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M60]], 1
-; CHECK-NEXT:    [[VLD128IP_M61:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP80]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M61:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP80]], i32 16)
 ; CHECK-NEXT:    [[TMP81:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M61]], 0
 ; CHECK-NEXT:    [[TMP82:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M61]], 1
-; CHECK-NEXT:    [[VLD128IP_M62:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP82]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M62:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP82]], i32 16)
 ; CHECK-NEXT:    [[TMP83:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M62]], 0
 ; CHECK-NEXT:    [[TMP84:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M62]], 1
-; CHECK-NEXT:    [[VLD128IP_M63:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP84]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M63:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP84]], i32 16)
 ; CHECK-NEXT:    [[TMP85:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M63]], 0
 ; CHECK-NEXT:    [[TMP86:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M63]], 1
 ; CHECK-NEXT:    [[TMP87:%.*]] = shufflevector <16 x i8> [[TMP79]], <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
 ; CHECK-NEXT:    [[TMP88:%.*]] = shufflevector <16 x i8> [[TMP79]], <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-; CHECK-NEXT:    [[VSTL64IP_M64:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP87]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M65:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP88]], ptr [[VSTL64IP_M64]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M64:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP87]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M65:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP88]], ptr [[VSTL64IP_M64]], i32 8)
 ; CHECK-NEXT:    [[TMP89:%.*]] = shufflevector <16 x i8> [[TMP81]], <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
 ; CHECK-NEXT:    [[TMP90:%.*]] = shufflevector <16 x i8> [[TMP81]], <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-; CHECK-NEXT:    [[VSTL64IP_M66:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP89]], ptr [[VSTH64IP_M65]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M67:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP90]], ptr [[VSTL64IP_M66]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M66:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP89]], ptr [[VSTH64IP_M65]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M67:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP90]], ptr [[VSTL64IP_M66]], i32 8)
 ; CHECK-NEXT:    [[TMP91:%.*]] = shufflevector <16 x i8> [[TMP83]], <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
 ; CHECK-NEXT:    [[TMP92:%.*]] = shufflevector <16 x i8> [[TMP83]], <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-; CHECK-NEXT:    [[VSTL64IP_M68:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP91]], ptr [[VSTH64IP_M67]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M69:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP92]], ptr [[VSTL64IP_M68]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M68:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP91]], ptr [[VSTH64IP_M67]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M69:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP92]], ptr [[VSTL64IP_M68]], i32 8)
 ; CHECK-NEXT:    [[TMP93:%.*]] = shufflevector <16 x i8> [[TMP85]], <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
 ; CHECK-NEXT:    [[TMP94:%.*]] = shufflevector <16 x i8> [[TMP85]], <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-; CHECK-NEXT:    [[VSTL64IP_M70:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP93]], ptr [[VSTH64IP_M69]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M71:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP94]], ptr [[VSTL64IP_M70]], i32 8)
-; CHECK-NEXT:    [[VLD128IP_M72:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP86]], i32 16)
+; CHECK-NEXT:    [[VSTL64IP_M70:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP93]], ptr [[VSTH64IP_M69]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M71:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP94]], ptr [[VSTL64IP_M70]], i32 8)
+; CHECK-NEXT:    [[VLD128IP_M72:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP86]], i32 16)
 ; CHECK-NEXT:    [[TMP95:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M72]], 0
 ; CHECK-NEXT:    [[TMP96]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M72]], 1
 ; CHECK-NEXT:    [[TMP97:%.*]] = shufflevector <16 x i8> [[TMP95]], <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
 ; CHECK-NEXT:    [[TMP98:%.*]] = shufflevector <16 x i8> [[TMP95]], <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-; CHECK-NEXT:    [[VSTL64IP_M73:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP97]], ptr [[VSTH64IP_M71]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M74]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP98]], ptr [[VSTL64IP_M73]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M73:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP97]], ptr [[VSTH64IP_M71]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M74]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP98]], ptr [[VSTL64IP_M73]], i32 8)
 ; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
 ; CHECK:       [[TAIL_CASE_6]]:
-; CHECK-NEXT:    [[VLD128IP_M75:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC_PTR_AFTER_LOOP]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M75:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC_PTR_AFTER_LOOP]], i32 16)
 ; CHECK-NEXT:    [[TMP99:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M75]], 0
 ; CHECK-NEXT:    [[TMP100:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M75]], 1
-; CHECK-NEXT:    [[VLD128IP_M76:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP100]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M76:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP100]], i32 16)
 ; CHECK-NEXT:    [[TMP101:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M76]], 0
 ; CHECK-NEXT:    [[TMP102:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M76]], 1
-; CHECK-NEXT:    [[VLD128IP_M77:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP102]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M77:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP102]], i32 16)
 ; CHECK-NEXT:    [[TMP103:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M77]], 0
 ; CHECK-NEXT:    [[TMP104:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M77]], 1
-; CHECK-NEXT:    [[VLD128IP_M78:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP104]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M78:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP104]], i32 16)
 ; CHECK-NEXT:    [[TMP105:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M78]], 0
 ; CHECK-NEXT:    [[TMP106:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M78]], 1
 ; CHECK-NEXT:    [[TMP107:%.*]] = shufflevector <16 x i8> [[TMP99]], <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
 ; CHECK-NEXT:    [[TMP108:%.*]] = shufflevector <16 x i8> [[TMP99]], <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-; CHECK-NEXT:    [[VSTL64IP_M79:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP107]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M80:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP108]], ptr [[VSTL64IP_M79]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M79:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP107]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M80:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP108]], ptr [[VSTL64IP_M79]], i32 8)
 ; CHECK-NEXT:    [[TMP109:%.*]] = shufflevector <16 x i8> [[TMP101]], <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
 ; CHECK-NEXT:    [[TMP110:%.*]] = shufflevector <16 x i8> [[TMP101]], <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-; CHECK-NEXT:    [[VSTL64IP_M81:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP109]], ptr [[VSTH64IP_M80]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M82:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP110]], ptr [[VSTL64IP_M81]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M81:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP109]], ptr [[VSTH64IP_M80]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M82:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP110]], ptr [[VSTL64IP_M81]], i32 8)
 ; CHECK-NEXT:    [[TMP111:%.*]] = shufflevector <16 x i8> [[TMP103]], <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
 ; CHECK-NEXT:    [[TMP112:%.*]] = shufflevector <16 x i8> [[TMP103]], <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-; CHECK-NEXT:    [[VSTL64IP_M83:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP111]], ptr [[VSTH64IP_M82]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M84:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP112]], ptr [[VSTL64IP_M83]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M83:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP111]], ptr [[VSTH64IP_M82]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M84:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP112]], ptr [[VSTL64IP_M83]], i32 8)
 ; CHECK-NEXT:    [[TMP113:%.*]] = shufflevector <16 x i8> [[TMP105]], <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
 ; CHECK-NEXT:    [[TMP114:%.*]] = shufflevector <16 x i8> [[TMP105]], <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-; CHECK-NEXT:    [[VSTL64IP_M85:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP113]], ptr [[VSTH64IP_M84]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M86:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP114]], ptr [[VSTL64IP_M85]], i32 8)
-; CHECK-NEXT:    [[VLD128IP_M87:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP106]], i32 16)
+; CHECK-NEXT:    [[VSTL64IP_M85:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP113]], ptr [[VSTH64IP_M84]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M86:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP114]], ptr [[VSTL64IP_M85]], i32 8)
+; CHECK-NEXT:    [[VLD128IP_M87:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP106]], i32 16)
 ; CHECK-NEXT:    [[TMP115:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M87]], 0
 ; CHECK-NEXT:    [[TMP116:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M87]], 1
-; CHECK-NEXT:    [[VLD128IP_M88:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP116]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M88:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP116]], i32 16)
 ; CHECK-NEXT:    [[TMP117:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M88]], 0
 ; CHECK-NEXT:    [[TMP118]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M88]], 1
 ; CHECK-NEXT:    [[TMP119:%.*]] = shufflevector <16 x i8> [[TMP115]], <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
 ; CHECK-NEXT:    [[TMP120:%.*]] = shufflevector <16 x i8> [[TMP115]], <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-; CHECK-NEXT:    [[VSTL64IP_M89:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP119]], ptr [[VSTH64IP_M86]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M90:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP120]], ptr [[VSTL64IP_M89]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M89:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP119]], ptr [[VSTH64IP_M86]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M90:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP120]], ptr [[VSTL64IP_M89]], i32 8)
 ; CHECK-NEXT:    [[TMP121:%.*]] = shufflevector <16 x i8> [[TMP117]], <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
 ; CHECK-NEXT:    [[TMP122:%.*]] = shufflevector <16 x i8> [[TMP117]], <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-; CHECK-NEXT:    [[VSTL64IP_M91:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP121]], ptr [[VSTH64IP_M90]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M92]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP122]], ptr [[VSTL64IP_M91]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M91:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP121]], ptr [[VSTH64IP_M90]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M92]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP122]], ptr [[VSTL64IP_M91]], i32 8)
 ; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
 ; CHECK:       [[TAIL_CASE_7]]:
-; CHECK-NEXT:    [[VLD128IP_M93:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[SRC_PTR_AFTER_LOOP]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M93:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[SRC_PTR_AFTER_LOOP]], i32 16)
 ; CHECK-NEXT:    [[TMP123:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M93]], 0
 ; CHECK-NEXT:    [[TMP124:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M93]], 1
-; CHECK-NEXT:    [[VLD128IP_M94:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP124]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M94:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP124]], i32 16)
 ; CHECK-NEXT:    [[TMP125:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M94]], 0
 ; CHECK-NEXT:    [[TMP126:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M94]], 1
-; CHECK-NEXT:    [[VLD128IP_M95:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP126]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M95:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP126]], i32 16)
 ; CHECK-NEXT:    [[TMP127:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M95]], 0
 ; CHECK-NEXT:    [[TMP128:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M95]], 1
-; CHECK-NEXT:    [[VLD128IP_M96:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP128]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M96:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP128]], i32 16)
 ; CHECK-NEXT:    [[TMP129:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M96]], 0
 ; CHECK-NEXT:    [[TMP130:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M96]], 1
 ; CHECK-NEXT:    [[TMP131:%.*]] = shufflevector <16 x i8> [[TMP123]], <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
 ; CHECK-NEXT:    [[TMP132:%.*]] = shufflevector <16 x i8> [[TMP123]], <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-; CHECK-NEXT:    [[VSTL64IP_M97:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP131]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M98:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP132]], ptr [[VSTL64IP_M97]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M97:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP131]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M98:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP132]], ptr [[VSTL64IP_M97]], i32 8)
 ; CHECK-NEXT:    [[TMP133:%.*]] = shufflevector <16 x i8> [[TMP125]], <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
 ; CHECK-NEXT:    [[TMP134:%.*]] = shufflevector <16 x i8> [[TMP125]], <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-; CHECK-NEXT:    [[VSTL64IP_M99:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP133]], ptr [[VSTH64IP_M98]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M100:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP134]], ptr [[VSTL64IP_M99]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M99:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP133]], ptr [[VSTH64IP_M98]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M100:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP134]], ptr [[VSTL64IP_M99]], i32 8)
 ; CHECK-NEXT:    [[TMP135:%.*]] = shufflevector <16 x i8> [[TMP127]], <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
 ; CHECK-NEXT:    [[TMP136:%.*]] = shufflevector <16 x i8> [[TMP127]], <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-; CHECK-NEXT:    [[VSTL64IP_M101:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP135]], ptr [[VSTH64IP_M100]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M102:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP136]], ptr [[VSTL64IP_M101]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M101:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP135]], ptr [[VSTH64IP_M100]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M102:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP136]], ptr [[VSTL64IP_M101]], i32 8)
 ; CHECK-NEXT:    [[TMP137:%.*]] = shufflevector <16 x i8> [[TMP129]], <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
 ; CHECK-NEXT:    [[TMP138:%.*]] = shufflevector <16 x i8> [[TMP129]], <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-; CHECK-NEXT:    [[VSTL64IP_M103:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP137]], ptr [[VSTH64IP_M102]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M104:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP138]], ptr [[VSTL64IP_M103]], i32 8)
-; CHECK-NEXT:    [[VLD128IP_M105:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP130]], i32 16)
+; CHECK-NEXT:    [[VSTL64IP_M103:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP137]], ptr [[VSTH64IP_M102]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M104:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP138]], ptr [[VSTL64IP_M103]], i32 8)
+; CHECK-NEXT:    [[VLD128IP_M105:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP130]], i32 16)
 ; CHECK-NEXT:    [[TMP139:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M105]], 0
 ; CHECK-NEXT:    [[TMP140:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M105]], 1
-; CHECK-NEXT:    [[VLD128IP_M106:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP140]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M106:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP140]], i32 16)
 ; CHECK-NEXT:    [[TMP141:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M106]], 0
 ; CHECK-NEXT:    [[TMP142:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M106]], 1
-; CHECK-NEXT:    [[VLD128IP_M107:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr [[TMP142]], i32 16)
+; CHECK-NEXT:    [[VLD128IP_M107:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP142]], i32 16)
 ; CHECK-NEXT:    [[TMP143:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M107]], 0
 ; CHECK-NEXT:    [[TMP144]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M107]], 1
 ; CHECK-NEXT:    [[TMP145:%.*]] = shufflevector <16 x i8> [[TMP139]], <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
 ; CHECK-NEXT:    [[TMP146:%.*]] = shufflevector <16 x i8> [[TMP139]], <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-; CHECK-NEXT:    [[VSTL64IP_M108:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP145]], ptr [[VSTH64IP_M104]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M109:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP146]], ptr [[VSTL64IP_M108]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M108:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP145]], ptr [[VSTH64IP_M104]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M109:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP146]], ptr [[VSTL64IP_M108]], i32 8)
 ; CHECK-NEXT:    [[TMP147:%.*]] = shufflevector <16 x i8> [[TMP141]], <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
 ; CHECK-NEXT:    [[TMP148:%.*]] = shufflevector <16 x i8> [[TMP141]], <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-; CHECK-NEXT:    [[VSTL64IP_M110:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP147]], ptr [[VSTH64IP_M109]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M111:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP148]], ptr [[VSTL64IP_M110]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M110:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP147]], ptr [[VSTH64IP_M109]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M111:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP148]], ptr [[VSTL64IP_M110]], i32 8)
 ; CHECK-NEXT:    [[TMP149:%.*]] = shufflevector <16 x i8> [[TMP143]], <16 x i8> poison, <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
 ; CHECK-NEXT:    [[TMP150:%.*]] = shufflevector <16 x i8> [[TMP143]], <16 x i8> poison, <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-; CHECK-NEXT:    [[VSTL64IP_M112:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP149]], ptr [[VSTH64IP_M111]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M113]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP150]], ptr [[VSTL64IP_M112]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M112:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP149]], ptr [[VSTH64IP_M111]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M113]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP150]], ptr [[VSTL64IP_M112]], i32 8)
 ; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
 ; CHECK:       [[HANDLE_REMAINING_BYTES]]:
 ; CHECK-NEXT:    call void @esp32p4MemCpySrc16Dst8From1To7Opt(ptr [[DST_PTR_AFTER_8B]], ptr [[SRC_PTR_AFTER_8B]], i32 [[REMAINING_BYTES]])
@@ -3468,10 +4324,10 @@ sw.bb7:                                           ; preds = %entry
 ; CHECK-NEXT:    [[IS_LT_16:%.*]] = icmp ult i32 [[SIZE]], 16
 ; CHECK-NEXT:    br i1 [[IS_LT_16]], label %[[HANDLE_MID_SIZE:.*]], label %[[HANDLE_LARGE_LOOP:.*]]
 ; CHECK:       [[HANDLE_MID_SIZE]]:
-; CHECK-NEXT:    [[VLDL64IP_M:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[SRC]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[SRC]], i32 8)
 ; CHECK-NEXT:    [[TMP0:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M]], 0
 ; CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M]], 1
-; CHECK-NEXT:    [[VSTL64IP_M:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP0]], ptr [[DST]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP0]], ptr [[DST]], i32 8)
 ; CHECK-NEXT:    [[SIZE_MINUS_8:%.*]] = add nsw i32 [[SIZE]], -8
 ; CHECK-NEXT:    call void @esp32p4MemCpySrc8Dst16From1To7Opt(ptr [[VSTL64IP_M]], ptr [[TMP1]], i32 [[SIZE_MINUS_8]])
 ; CHECK-NEXT:    br label %[[RETURN]]
@@ -3501,70 +4357,70 @@ sw.bb7:                                           ; preds = %entry
 ; CHECK-NEXT:    [[LOOP_INDEX:%.*]] = phi i32 [ 0, %[[HANDLE_LARGE_LOOP]] ], [ [[LOOP_INC:%.*]], %[[LOOP_BODY_128B]] ]
 ; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi ptr [ [[SRC]], %[[HANDLE_LARGE_LOOP]] ], [ [[TMP33]], %[[LOOP_BODY_128B]] ]
 ; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi ptr [ [[DST]], %[[HANDLE_LARGE_LOOP]] ], [ [[VSTH64IP_M30]], %[[LOOP_BODY_128B]] ]
-; CHECK-NEXT:    [[VLDL64IP_M1:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[SRC_PTR_LOOP]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M1:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[SRC_PTR_LOOP]], i32 8)
 ; CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M1]], 0
 ; CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M1]], 1
-; CHECK-NEXT:    [[VLDH64IP_M:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP3]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP3]], i32 8)
 ; CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M]], 0
 ; CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M]], 1
-; CHECK-NEXT:    [[VLDL64IP_M2:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP5]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M2:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP5]], i32 8)
 ; CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M2]], 0
 ; CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M2]], 1
-; CHECK-NEXT:    [[VLDH64IP_M3:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP7]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M3:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP7]], i32 8)
 ; CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M3]], 0
 ; CHECK-NEXT:    [[TMP9:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M3]], 1
-; CHECK-NEXT:    [[VLDL64IP_M4:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP9]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M4:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP9]], i32 8)
 ; CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M4]], 0
 ; CHECK-NEXT:    [[TMP11:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M4]], 1
-; CHECK-NEXT:    [[VLDH64IP_M5:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP11]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M5:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP11]], i32 8)
 ; CHECK-NEXT:    [[TMP12:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M5]], 0
 ; CHECK-NEXT:    [[TMP13:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M5]], 1
-; CHECK-NEXT:    [[VLDL64IP_M6:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP13]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M6:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP13]], i32 8)
 ; CHECK-NEXT:    [[TMP14:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M6]], 0
 ; CHECK-NEXT:    [[TMP15:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M6]], 1
-; CHECK-NEXT:    [[VLDH64IP_M7:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP15]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M7:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP15]], i32 8)
 ; CHECK-NEXT:    [[TMP16:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M7]], 0
 ; CHECK-NEXT:    [[TMP17:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M7]], 1
-; CHECK-NEXT:    [[VSTL64IP_M8:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP2]], ptr [[DST_PTR_LOOP]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP4]], ptr [[VSTL64IP_M8]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M9:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP6]], ptr [[VSTH64IP_M]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M10:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP8]], ptr [[VSTL64IP_M9]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M11:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP10]], ptr [[VSTH64IP_M10]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M12:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP12]], ptr [[VSTL64IP_M11]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M13:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP14]], ptr [[VSTH64IP_M12]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M14:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP16]], ptr [[VSTL64IP_M13]], i32 8)
-; CHECK-NEXT:    [[VLDL64IP_M15:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP17]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M8:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP2]], ptr [[DST_PTR_LOOP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP4]], ptr [[VSTL64IP_M8]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M9:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP6]], ptr [[VSTH64IP_M]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M10:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP8]], ptr [[VSTL64IP_M9]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M11:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP10]], ptr [[VSTH64IP_M10]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M12:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP12]], ptr [[VSTL64IP_M11]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M13:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP14]], ptr [[VSTH64IP_M12]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M14:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP16]], ptr [[VSTL64IP_M13]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M15:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP17]], i32 8)
 ; CHECK-NEXT:    [[TMP18:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M15]], 0
 ; CHECK-NEXT:    [[TMP19:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M15]], 1
-; CHECK-NEXT:    [[VLDH64IP_M16:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP19]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M16:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP19]], i32 8)
 ; CHECK-NEXT:    [[TMP20:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M16]], 0
 ; CHECK-NEXT:    [[TMP21:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M16]], 1
-; CHECK-NEXT:    [[VLDL64IP_M17:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP21]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M17:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP21]], i32 8)
 ; CHECK-NEXT:    [[TMP22:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M17]], 0
 ; CHECK-NEXT:    [[TMP23:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M17]], 1
-; CHECK-NEXT:    [[VLDH64IP_M18:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP23]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M18:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP23]], i32 8)
 ; CHECK-NEXT:    [[TMP24:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M18]], 0
 ; CHECK-NEXT:    [[TMP25:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M18]], 1
-; CHECK-NEXT:    [[VLDL64IP_M19:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP25]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M19:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP25]], i32 8)
 ; CHECK-NEXT:    [[TMP26:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M19]], 0
 ; CHECK-NEXT:    [[TMP27:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M19]], 1
-; CHECK-NEXT:    [[VLDH64IP_M20:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP27]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M20:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP27]], i32 8)
 ; CHECK-NEXT:    [[TMP28:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M20]], 0
 ; CHECK-NEXT:    [[TMP29:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M20]], 1
-; CHECK-NEXT:    [[VLDL64IP_M21:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP29]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M21:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP29]], i32 8)
 ; CHECK-NEXT:    [[TMP30:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M21]], 0
 ; CHECK-NEXT:    [[TMP31:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M21]], 1
-; CHECK-NEXT:    [[VLDH64IP_M22:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP31]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M22:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP31]], i32 8)
 ; CHECK-NEXT:    [[TMP32:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M22]], 0
 ; CHECK-NEXT:    [[TMP33]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M22]], 1
-; CHECK-NEXT:    [[VSTL64IP_M23:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP18]], ptr [[VSTH64IP_M14]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M24:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP20]], ptr [[VSTL64IP_M23]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M25:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP22]], ptr [[VSTH64IP_M24]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M26:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP24]], ptr [[VSTL64IP_M25]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M27:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP26]], ptr [[VSTH64IP_M26]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M28:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP28]], ptr [[VSTL64IP_M27]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M29:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP30]], ptr [[VSTH64IP_M28]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M30]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP32]], ptr [[VSTL64IP_M29]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M23:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP18]], ptr [[VSTH64IP_M14]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M24:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP20]], ptr [[VSTL64IP_M23]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M25:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP22]], ptr [[VSTH64IP_M24]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M26:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP24]], ptr [[VSTL64IP_M25]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M27:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP26]], ptr [[VSTH64IP_M26]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M28:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP28]], ptr [[VSTL64IP_M27]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M29:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP30]], ptr [[VSTH64IP_M28]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M30]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP32]], ptr [[VSTL64IP_M29]], i32 8)
 ; CHECK-NEXT:    [[LOOP_INC]] = add nuw nsw i32 [[LOOP_INDEX]], 1
 ; CHECK-NEXT:    [[LOOP_DONE:%.*]] = icmp eq i32 [[LOOP_INC]], [[NUM_128B_BLOCKS]]
 ; CHECK-NEXT:    br i1 [[LOOP_DONE]], label %[[LOOP_EXIT_CLEANUP]], label %[[LOOP_BODY_128B]]
@@ -3577,10 +4433,10 @@ sw.bb7:                                           ; preds = %entry
 ; CHECK:       [[INVALID_SWITCH_TRAP]]:
 ; CHECK-NEXT:    unreachable
 ; CHECK:       [[HANDLE_8B_TAIL]]:
-; CHECK-NEXT:    [[VLDL64IP_M143:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[SRC_PTR_TAIL]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M143:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[SRC_PTR_TAIL]], i32 8)
 ; CHECK-NEXT:    [[TMP36:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M143]], 0
 ; CHECK-NEXT:    [[TMP37:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M143]], 1
-; CHECK-NEXT:    [[VSTL64IP_M144:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP36]], ptr [[DST_PTR_TAIL]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M144:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP36]], ptr [[DST_PTR_TAIL]], i32 8)
 ; CHECK-NEXT:    br label %[[AFTER_8B_TAIL]]
 ; CHECK:       [[AFTER_8B_TAIL]]:
 ; CHECK-NEXT:    [[SRC_PTR_AFTER_8B:%.*]] = phi ptr [ [[SRC_PTR_TAIL]], %[[HANDLE_TAIL_SWITCH]] ], [ [[TMP37]], %[[HANDLE_8B_TAIL]] ]
@@ -3588,242 +4444,242 @@ sw.bb7:                                           ; preds = %entry
 ; CHECK-NEXT:    [[TMP38:%.*]] = icmp eq i32 [[REMAINING_BYTES]], 0
 ; CHECK-NEXT:    br i1 [[TMP38]], label %[[RETURN]], label %[[HANDLE_REMAINING_BYTES:.*]]
 ; CHECK:       [[TAIL_CASE_1]]:
-; CHECK-NEXT:    [[VLDL64IP_M31:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[SRC_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M31:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[SRC_PTR_AFTER_LOOP]], i32 8)
 ; CHECK-NEXT:    [[TMP39:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M31]], 0
 ; CHECK-NEXT:    [[TMP40:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M31]], 1
-; CHECK-NEXT:    [[VLDH64IP_M32:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP40]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M32:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP40]], i32 8)
 ; CHECK-NEXT:    [[TMP41:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M32]], 0
 ; CHECK-NEXT:    [[TMP42]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M32]], 1
-; CHECK-NEXT:    [[VSTL64IP_M33:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP39]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M34]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP41]], ptr [[VSTL64IP_M33]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M33:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP39]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M34]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP41]], ptr [[VSTL64IP_M33]], i32 8)
 ; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
 ; CHECK:       [[TAIL_CASE_2]]:
-; CHECK-NEXT:    [[VLDL64IP_M35:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[SRC_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M35:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[SRC_PTR_AFTER_LOOP]], i32 8)
 ; CHECK-NEXT:    [[TMP43:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M35]], 0
 ; CHECK-NEXT:    [[TMP44:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M35]], 1
-; CHECK-NEXT:    [[VLDH64IP_M36:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP44]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M36:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP44]], i32 8)
 ; CHECK-NEXT:    [[TMP45:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M36]], 0
 ; CHECK-NEXT:    [[TMP46:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M36]], 1
-; CHECK-NEXT:    [[VLDL64IP_M37:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP46]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M37:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP46]], i32 8)
 ; CHECK-NEXT:    [[TMP47:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M37]], 0
 ; CHECK-NEXT:    [[TMP48:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M37]], 1
-; CHECK-NEXT:    [[VLDH64IP_M38:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP48]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M38:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP48]], i32 8)
 ; CHECK-NEXT:    [[TMP49:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M38]], 0
 ; CHECK-NEXT:    [[TMP50]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M38]], 1
-; CHECK-NEXT:    [[VSTL64IP_M39:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP43]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M40:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP45]], ptr [[VSTL64IP_M39]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M41:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP47]], ptr [[VSTH64IP_M40]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M42]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP49]], ptr [[VSTL64IP_M41]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M39:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP43]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M40:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP45]], ptr [[VSTL64IP_M39]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M41:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP47]], ptr [[VSTH64IP_M40]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M42]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP49]], ptr [[VSTL64IP_M41]], i32 8)
 ; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
 ; CHECK:       [[TAIL_CASE_3]]:
-; CHECK-NEXT:    [[VLDL64IP_M43:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[SRC_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M43:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[SRC_PTR_AFTER_LOOP]], i32 8)
 ; CHECK-NEXT:    [[TMP51:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M43]], 0
 ; CHECK-NEXT:    [[TMP52:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M43]], 1
-; CHECK-NEXT:    [[VLDH64IP_M44:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP52]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M44:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP52]], i32 8)
 ; CHECK-NEXT:    [[TMP53:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M44]], 0
 ; CHECK-NEXT:    [[TMP54:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M44]], 1
-; CHECK-NEXT:    [[VLDL64IP_M45:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP54]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M45:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP54]], i32 8)
 ; CHECK-NEXT:    [[TMP55:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M45]], 0
 ; CHECK-NEXT:    [[TMP56:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M45]], 1
-; CHECK-NEXT:    [[VLDH64IP_M46:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP56]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M46:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP56]], i32 8)
 ; CHECK-NEXT:    [[TMP57:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M46]], 0
 ; CHECK-NEXT:    [[TMP58:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M46]], 1
-; CHECK-NEXT:    [[VLDL64IP_M47:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP58]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M47:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP58]], i32 8)
 ; CHECK-NEXT:    [[TMP59:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M47]], 0
 ; CHECK-NEXT:    [[TMP60:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M47]], 1
-; CHECK-NEXT:    [[VLDH64IP_M48:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP60]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M48:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP60]], i32 8)
 ; CHECK-NEXT:    [[TMP61:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M48]], 0
 ; CHECK-NEXT:    [[TMP62]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M48]], 1
-; CHECK-NEXT:    [[VSTL64IP_M49:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP51]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M50:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP53]], ptr [[VSTL64IP_M49]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M51:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP55]], ptr [[VSTH64IP_M50]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M52:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP57]], ptr [[VSTL64IP_M51]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M53:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP59]], ptr [[VSTH64IP_M52]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M54]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP61]], ptr [[VSTL64IP_M53]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M49:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP51]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M50:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP53]], ptr [[VSTL64IP_M49]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M51:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP55]], ptr [[VSTH64IP_M50]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M52:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP57]], ptr [[VSTL64IP_M51]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M53:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP59]], ptr [[VSTH64IP_M52]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M54]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP61]], ptr [[VSTL64IP_M53]], i32 8)
 ; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
 ; CHECK:       [[TAIL_CASE_4]]:
-; CHECK-NEXT:    [[VLDL64IP_M55:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[SRC_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M55:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[SRC_PTR_AFTER_LOOP]], i32 8)
 ; CHECK-NEXT:    [[TMP63:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M55]], 0
 ; CHECK-NEXT:    [[TMP64:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M55]], 1
-; CHECK-NEXT:    [[VLDH64IP_M56:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP64]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M56:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP64]], i32 8)
 ; CHECK-NEXT:    [[TMP65:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M56]], 0
 ; CHECK-NEXT:    [[TMP66:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M56]], 1
-; CHECK-NEXT:    [[VLDL64IP_M57:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP66]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M57:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP66]], i32 8)
 ; CHECK-NEXT:    [[TMP67:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M57]], 0
 ; CHECK-NEXT:    [[TMP68:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M57]], 1
-; CHECK-NEXT:    [[VLDH64IP_M58:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP68]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M58:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP68]], i32 8)
 ; CHECK-NEXT:    [[TMP69:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M58]], 0
 ; CHECK-NEXT:    [[TMP70:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M58]], 1
-; CHECK-NEXT:    [[VLDL64IP_M59:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP70]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M59:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP70]], i32 8)
 ; CHECK-NEXT:    [[TMP71:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M59]], 0
 ; CHECK-NEXT:    [[TMP72:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M59]], 1
-; CHECK-NEXT:    [[VLDH64IP_M60:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP72]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M60:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP72]], i32 8)
 ; CHECK-NEXT:    [[TMP73:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M60]], 0
 ; CHECK-NEXT:    [[TMP74:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M60]], 1
-; CHECK-NEXT:    [[VLDL64IP_M61:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP74]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M61:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP74]], i32 8)
 ; CHECK-NEXT:    [[TMP75:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M61]], 0
 ; CHECK-NEXT:    [[TMP76:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M61]], 1
-; CHECK-NEXT:    [[VLDH64IP_M62:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP76]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M62:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP76]], i32 8)
 ; CHECK-NEXT:    [[TMP77:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M62]], 0
 ; CHECK-NEXT:    [[TMP78]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M62]], 1
-; CHECK-NEXT:    [[VSTL64IP_M63:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP63]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M64:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP65]], ptr [[VSTL64IP_M63]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M65:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP67]], ptr [[VSTH64IP_M64]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M66:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP69]], ptr [[VSTL64IP_M65]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M67:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP71]], ptr [[VSTH64IP_M66]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M68:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP73]], ptr [[VSTL64IP_M67]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M69:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP75]], ptr [[VSTH64IP_M68]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M70]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP77]], ptr [[VSTL64IP_M69]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M63:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP63]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M64:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP65]], ptr [[VSTL64IP_M63]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M65:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP67]], ptr [[VSTH64IP_M64]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M66:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP69]], ptr [[VSTL64IP_M65]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M67:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP71]], ptr [[VSTH64IP_M66]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M68:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP73]], ptr [[VSTL64IP_M67]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M69:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP75]], ptr [[VSTH64IP_M68]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M70]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP77]], ptr [[VSTL64IP_M69]], i32 8)
 ; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
 ; CHECK:       [[TAIL_CASE_5]]:
-; CHECK-NEXT:    [[VLDL64IP_M71:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[SRC_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M71:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[SRC_PTR_AFTER_LOOP]], i32 8)
 ; CHECK-NEXT:    [[TMP79:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M71]], 0
 ; CHECK-NEXT:    [[TMP80:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M71]], 1
-; CHECK-NEXT:    [[VLDH64IP_M72:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP80]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M72:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP80]], i32 8)
 ; CHECK-NEXT:    [[TMP81:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M72]], 0
 ; CHECK-NEXT:    [[TMP82:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M72]], 1
-; CHECK-NEXT:    [[VLDL64IP_M73:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP82]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M73:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP82]], i32 8)
 ; CHECK-NEXT:    [[TMP83:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M73]], 0
 ; CHECK-NEXT:    [[TMP84:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M73]], 1
-; CHECK-NEXT:    [[VLDH64IP_M74:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP84]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M74:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP84]], i32 8)
 ; CHECK-NEXT:    [[TMP85:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M74]], 0
 ; CHECK-NEXT:    [[TMP86:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M74]], 1
-; CHECK-NEXT:    [[VLDL64IP_M75:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP86]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M75:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP86]], i32 8)
 ; CHECK-NEXT:    [[TMP87:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M75]], 0
 ; CHECK-NEXT:    [[TMP88:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M75]], 1
-; CHECK-NEXT:    [[VLDH64IP_M76:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP88]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M76:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP88]], i32 8)
 ; CHECK-NEXT:    [[TMP89:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M76]], 0
 ; CHECK-NEXT:    [[TMP90:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M76]], 1
-; CHECK-NEXT:    [[VLDL64IP_M77:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP90]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M77:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP90]], i32 8)
 ; CHECK-NEXT:    [[TMP91:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M77]], 0
 ; CHECK-NEXT:    [[TMP92:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M77]], 1
-; CHECK-NEXT:    [[VLDH64IP_M78:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP92]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M78:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP92]], i32 8)
 ; CHECK-NEXT:    [[TMP93:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M78]], 0
 ; CHECK-NEXT:    [[TMP94:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M78]], 1
-; CHECK-NEXT:    [[VSTL64IP_M79:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP79]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M80:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP81]], ptr [[VSTL64IP_M79]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M81:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP83]], ptr [[VSTH64IP_M80]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M82:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP85]], ptr [[VSTL64IP_M81]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M83:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP87]], ptr [[VSTH64IP_M82]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M84:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP89]], ptr [[VSTL64IP_M83]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M85:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP91]], ptr [[VSTH64IP_M84]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M86:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP93]], ptr [[VSTL64IP_M85]], i32 8)
-; CHECK-NEXT:    [[VLDL64IP_M87:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP94]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M79:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP79]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M80:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP81]], ptr [[VSTL64IP_M79]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M81:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP83]], ptr [[VSTH64IP_M80]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M82:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP85]], ptr [[VSTL64IP_M81]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M83:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP87]], ptr [[VSTH64IP_M82]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M84:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP89]], ptr [[VSTL64IP_M83]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M85:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP91]], ptr [[VSTH64IP_M84]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M86:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP93]], ptr [[VSTL64IP_M85]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M87:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP94]], i32 8)
 ; CHECK-NEXT:    [[TMP95:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M87]], 0
 ; CHECK-NEXT:    [[TMP96:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M87]], 1
-; CHECK-NEXT:    [[VLDH64IP_M88:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP96]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M88:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP96]], i32 8)
 ; CHECK-NEXT:    [[TMP97:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M88]], 0
 ; CHECK-NEXT:    [[TMP98]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M88]], 1
-; CHECK-NEXT:    [[VSTL64IP_M89:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP95]], ptr [[VSTH64IP_M86]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M90]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP97]], ptr [[VSTL64IP_M89]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M89:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP95]], ptr [[VSTH64IP_M86]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M90]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP97]], ptr [[VSTL64IP_M89]], i32 8)
 ; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
 ; CHECK:       [[TAIL_CASE_6]]:
-; CHECK-NEXT:    [[VLDL64IP_M91:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[SRC_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M91:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[SRC_PTR_AFTER_LOOP]], i32 8)
 ; CHECK-NEXT:    [[TMP99:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M91]], 0
 ; CHECK-NEXT:    [[TMP100:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M91]], 1
-; CHECK-NEXT:    [[VLDH64IP_M92:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP100]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M92:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP100]], i32 8)
 ; CHECK-NEXT:    [[TMP101:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M92]], 0
 ; CHECK-NEXT:    [[TMP102:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M92]], 1
-; CHECK-NEXT:    [[VLDL64IP_M93:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP102]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M93:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP102]], i32 8)
 ; CHECK-NEXT:    [[TMP103:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M93]], 0
 ; CHECK-NEXT:    [[TMP104:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M93]], 1
-; CHECK-NEXT:    [[VLDH64IP_M94:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP104]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M94:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP104]], i32 8)
 ; CHECK-NEXT:    [[TMP105:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M94]], 0
 ; CHECK-NEXT:    [[TMP106:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M94]], 1
-; CHECK-NEXT:    [[VLDL64IP_M95:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP106]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M95:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP106]], i32 8)
 ; CHECK-NEXT:    [[TMP107:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M95]], 0
 ; CHECK-NEXT:    [[TMP108:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M95]], 1
-; CHECK-NEXT:    [[VLDH64IP_M96:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP108]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M96:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP108]], i32 8)
 ; CHECK-NEXT:    [[TMP109:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M96]], 0
 ; CHECK-NEXT:    [[TMP110:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M96]], 1
-; CHECK-NEXT:    [[VLDL64IP_M97:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP110]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M97:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP110]], i32 8)
 ; CHECK-NEXT:    [[TMP111:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M97]], 0
 ; CHECK-NEXT:    [[TMP112:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M97]], 1
-; CHECK-NEXT:    [[VLDH64IP_M98:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP112]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M98:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP112]], i32 8)
 ; CHECK-NEXT:    [[TMP113:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M98]], 0
 ; CHECK-NEXT:    [[TMP114:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M98]], 1
-; CHECK-NEXT:    [[VSTL64IP_M99:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP99]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M100:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP101]], ptr [[VSTL64IP_M99]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M101:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP103]], ptr [[VSTH64IP_M100]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M102:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP105]], ptr [[VSTL64IP_M101]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M103:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP107]], ptr [[VSTH64IP_M102]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M104:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP109]], ptr [[VSTL64IP_M103]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M105:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP111]], ptr [[VSTH64IP_M104]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M106:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP113]], ptr [[VSTL64IP_M105]], i32 8)
-; CHECK-NEXT:    [[VLDL64IP_M107:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP114]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M99:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP99]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M100:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP101]], ptr [[VSTL64IP_M99]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M101:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP103]], ptr [[VSTH64IP_M100]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M102:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP105]], ptr [[VSTL64IP_M101]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M103:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP107]], ptr [[VSTH64IP_M102]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M104:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP109]], ptr [[VSTL64IP_M103]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M105:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP111]], ptr [[VSTH64IP_M104]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M106:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP113]], ptr [[VSTL64IP_M105]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M107:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP114]], i32 8)
 ; CHECK-NEXT:    [[TMP115:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M107]], 0
 ; CHECK-NEXT:    [[TMP116:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M107]], 1
-; CHECK-NEXT:    [[VLDH64IP_M108:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP116]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M108:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP116]], i32 8)
 ; CHECK-NEXT:    [[TMP117:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M108]], 0
 ; CHECK-NEXT:    [[TMP118:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M108]], 1
-; CHECK-NEXT:    [[VLDL64IP_M109:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP118]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M109:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP118]], i32 8)
 ; CHECK-NEXT:    [[TMP119:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M109]], 0
 ; CHECK-NEXT:    [[TMP120:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M109]], 1
-; CHECK-NEXT:    [[VLDH64IP_M110:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP120]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M110:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP120]], i32 8)
 ; CHECK-NEXT:    [[TMP121:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M110]], 0
 ; CHECK-NEXT:    [[TMP122]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M110]], 1
-; CHECK-NEXT:    [[VSTL64IP_M111:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP115]], ptr [[VSTH64IP_M106]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M112:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP117]], ptr [[VSTL64IP_M111]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M113:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP119]], ptr [[VSTH64IP_M112]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M114]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP121]], ptr [[VSTL64IP_M113]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M111:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP115]], ptr [[VSTH64IP_M106]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M112:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP117]], ptr [[VSTL64IP_M111]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M113:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP119]], ptr [[VSTH64IP_M112]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M114]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP121]], ptr [[VSTL64IP_M113]], i32 8)
 ; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
 ; CHECK:       [[TAIL_CASE_7]]:
-; CHECK-NEXT:    [[VLDL64IP_M115:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[SRC_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M115:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[SRC_PTR_AFTER_LOOP]], i32 8)
 ; CHECK-NEXT:    [[TMP123:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M115]], 0
 ; CHECK-NEXT:    [[TMP124:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M115]], 1
-; CHECK-NEXT:    [[VLDH64IP_M116:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP124]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M116:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP124]], i32 8)
 ; CHECK-NEXT:    [[TMP125:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M116]], 0
 ; CHECK-NEXT:    [[TMP126:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M116]], 1
-; CHECK-NEXT:    [[VLDL64IP_M117:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP126]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M117:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP126]], i32 8)
 ; CHECK-NEXT:    [[TMP127:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M117]], 0
 ; CHECK-NEXT:    [[TMP128:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M117]], 1
-; CHECK-NEXT:    [[VLDH64IP_M118:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP128]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M118:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP128]], i32 8)
 ; CHECK-NEXT:    [[TMP129:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M118]], 0
 ; CHECK-NEXT:    [[TMP130:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M118]], 1
-; CHECK-NEXT:    [[VLDL64IP_M119:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP130]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M119:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP130]], i32 8)
 ; CHECK-NEXT:    [[TMP131:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M119]], 0
 ; CHECK-NEXT:    [[TMP132:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M119]], 1
-; CHECK-NEXT:    [[VLDH64IP_M120:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP132]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M120:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP132]], i32 8)
 ; CHECK-NEXT:    [[TMP133:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M120]], 0
 ; CHECK-NEXT:    [[TMP134:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M120]], 1
-; CHECK-NEXT:    [[VLDL64IP_M121:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP134]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M121:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP134]], i32 8)
 ; CHECK-NEXT:    [[TMP135:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M121]], 0
 ; CHECK-NEXT:    [[TMP136:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M121]], 1
-; CHECK-NEXT:    [[VLDH64IP_M122:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP136]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M122:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP136]], i32 8)
 ; CHECK-NEXT:    [[TMP137:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M122]], 0
 ; CHECK-NEXT:    [[TMP138:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M122]], 1
-; CHECK-NEXT:    [[VSTL64IP_M123:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP123]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M124:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP125]], ptr [[VSTL64IP_M123]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M125:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP127]], ptr [[VSTH64IP_M124]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M126:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP129]], ptr [[VSTL64IP_M125]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M127:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP131]], ptr [[VSTH64IP_M126]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M128:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP133]], ptr [[VSTL64IP_M127]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M129:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP135]], ptr [[VSTH64IP_M128]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M130:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP137]], ptr [[VSTL64IP_M129]], i32 8)
-; CHECK-NEXT:    [[VLDL64IP_M131:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP138]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M123:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP123]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M124:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP125]], ptr [[VSTL64IP_M123]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M125:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP127]], ptr [[VSTH64IP_M124]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M126:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP129]], ptr [[VSTL64IP_M125]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M127:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP131]], ptr [[VSTH64IP_M126]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M128:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP133]], ptr [[VSTL64IP_M127]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M129:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP135]], ptr [[VSTH64IP_M128]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M130:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP137]], ptr [[VSTL64IP_M129]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M131:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP138]], i32 8)
 ; CHECK-NEXT:    [[TMP139:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M131]], 0
 ; CHECK-NEXT:    [[TMP140:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M131]], 1
-; CHECK-NEXT:    [[VLDH64IP_M132:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP140]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M132:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP140]], i32 8)
 ; CHECK-NEXT:    [[TMP141:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M132]], 0
 ; CHECK-NEXT:    [[TMP142:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M132]], 1
-; CHECK-NEXT:    [[VLDL64IP_M133:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP142]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M133:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP142]], i32 8)
 ; CHECK-NEXT:    [[TMP143:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M133]], 0
 ; CHECK-NEXT:    [[TMP144:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M133]], 1
-; CHECK-NEXT:    [[VLDH64IP_M134:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP144]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M134:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP144]], i32 8)
 ; CHECK-NEXT:    [[TMP145:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M134]], 0
 ; CHECK-NEXT:    [[TMP146:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M134]], 1
-; CHECK-NEXT:    [[VLDL64IP_M135:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP146]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M135:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP146]], i32 8)
 ; CHECK-NEXT:    [[TMP147:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M135]], 0
 ; CHECK-NEXT:    [[TMP148:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M135]], 1
-; CHECK-NEXT:    [[VLDH64IP_M136:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP148]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M136:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP148]], i32 8)
 ; CHECK-NEXT:    [[TMP149:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M136]], 0
 ; CHECK-NEXT:    [[TMP150]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M136]], 1
-; CHECK-NEXT:    [[VSTL64IP_M137:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP139]], ptr [[VSTH64IP_M130]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M138:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP141]], ptr [[VSTL64IP_M137]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M139:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP143]], ptr [[VSTH64IP_M138]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M140:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP145]], ptr [[VSTL64IP_M139]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M141:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP147]], ptr [[VSTH64IP_M140]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M142]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP149]], ptr [[VSTL64IP_M141]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M137:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP139]], ptr [[VSTH64IP_M130]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M138:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP141]], ptr [[VSTL64IP_M137]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M139:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP143]], ptr [[VSTH64IP_M138]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M140:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP145]], ptr [[VSTL64IP_M139]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M141:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP147]], ptr [[VSTH64IP_M140]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M142]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP149]], ptr [[VSTL64IP_M141]], i32 8)
 ; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
 ; CHECK:       [[HANDLE_REMAINING_BYTES]]:
 ; CHECK-NEXT:    call void @esp32p4MemCpySrc8Dst16From1To7Opt(ptr [[DST_PTR_AFTER_8B]], ptr [[SRC_PTR_AFTER_8B]], i32 [[REMAINING_BYTES]])
@@ -3842,10 +4698,10 @@ sw.bb7:                                           ; preds = %entry
 ; CHECK-NEXT:    [[IS_LT_16:%.*]] = icmp ult i32 [[SIZE]], 16
 ; CHECK-NEXT:    br i1 [[IS_LT_16]], label %[[HANDLE_MID_SIZE:.*]], label %[[HANDLE_LARGE_LOOP:.*]]
 ; CHECK:       [[HANDLE_MID_SIZE]]:
-; CHECK-NEXT:    [[VLDL64IP_M:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[SRC]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[SRC]], i32 8)
 ; CHECK-NEXT:    [[TMP0:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M]], 0
 ; CHECK-NEXT:    [[TMP1:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M]], 1
-; CHECK-NEXT:    [[VSTL64IP_M:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP0]], ptr [[DST]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP0]], ptr [[DST]], i32 8)
 ; CHECK-NEXT:    [[SIZE_MINUS_8:%.*]] = add nsw i32 [[SIZE]], -8
 ; CHECK-NEXT:    call void @esp32p4MemCpySrc8Dst8From1To7Opt(ptr [[VSTL64IP_M]], ptr [[TMP1]], i32 [[SIZE_MINUS_8]])
 ; CHECK-NEXT:    br label %[[RETURN]]
@@ -3875,70 +4731,70 @@ sw.bb7:                                           ; preds = %entry
 ; CHECK-NEXT:    [[LOOP_INDEX:%.*]] = phi i32 [ 0, %[[HANDLE_LARGE_LOOP]] ], [ [[LOOP_INC:%.*]], %[[LOOP_BODY_128B]] ]
 ; CHECK-NEXT:    [[SRC_PTR_LOOP:%.*]] = phi ptr [ [[SRC]], %[[HANDLE_LARGE_LOOP]] ], [ [[TMP33]], %[[LOOP_BODY_128B]] ]
 ; CHECK-NEXT:    [[DST_PTR_LOOP:%.*]] = phi ptr [ [[DST]], %[[HANDLE_LARGE_LOOP]] ], [ [[VSTH64IP_M30]], %[[LOOP_BODY_128B]] ]
-; CHECK-NEXT:    [[VLDL64IP_M1:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[SRC_PTR_LOOP]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M1:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[SRC_PTR_LOOP]], i32 8)
 ; CHECK-NEXT:    [[TMP2:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M1]], 0
 ; CHECK-NEXT:    [[TMP3:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M1]], 1
-; CHECK-NEXT:    [[VLDH64IP_M:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP3]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP3]], i32 8)
 ; CHECK-NEXT:    [[TMP4:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M]], 0
 ; CHECK-NEXT:    [[TMP5:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M]], 1
-; CHECK-NEXT:    [[VLDL64IP_M2:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP5]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M2:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP5]], i32 8)
 ; CHECK-NEXT:    [[TMP6:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M2]], 0
 ; CHECK-NEXT:    [[TMP7:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M2]], 1
-; CHECK-NEXT:    [[VLDH64IP_M3:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP7]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M3:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP7]], i32 8)
 ; CHECK-NEXT:    [[TMP8:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M3]], 0
 ; CHECK-NEXT:    [[TMP9:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M3]], 1
-; CHECK-NEXT:    [[VLDL64IP_M4:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP9]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M4:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP9]], i32 8)
 ; CHECK-NEXT:    [[TMP10:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M4]], 0
 ; CHECK-NEXT:    [[TMP11:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M4]], 1
-; CHECK-NEXT:    [[VLDH64IP_M5:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP11]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M5:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP11]], i32 8)
 ; CHECK-NEXT:    [[TMP12:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M5]], 0
 ; CHECK-NEXT:    [[TMP13:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M5]], 1
-; CHECK-NEXT:    [[VLDL64IP_M6:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP13]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M6:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP13]], i32 8)
 ; CHECK-NEXT:    [[TMP14:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M6]], 0
 ; CHECK-NEXT:    [[TMP15:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M6]], 1
-; CHECK-NEXT:    [[VLDH64IP_M7:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP15]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M7:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP15]], i32 8)
 ; CHECK-NEXT:    [[TMP16:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M7]], 0
 ; CHECK-NEXT:    [[TMP17:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M7]], 1
-; CHECK-NEXT:    [[VSTL64IP_M8:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP2]], ptr [[DST_PTR_LOOP]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP4]], ptr [[VSTL64IP_M8]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M9:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP6]], ptr [[VSTH64IP_M]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M10:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP8]], ptr [[VSTL64IP_M9]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M11:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP10]], ptr [[VSTH64IP_M10]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M12:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP12]], ptr [[VSTL64IP_M11]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M13:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP14]], ptr [[VSTH64IP_M12]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M14:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP16]], ptr [[VSTL64IP_M13]], i32 8)
-; CHECK-NEXT:    [[VLDL64IP_M15:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP17]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M8:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP2]], ptr [[DST_PTR_LOOP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP4]], ptr [[VSTL64IP_M8]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M9:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP6]], ptr [[VSTH64IP_M]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M10:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP8]], ptr [[VSTL64IP_M9]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M11:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP10]], ptr [[VSTH64IP_M10]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M12:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP12]], ptr [[VSTL64IP_M11]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M13:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP14]], ptr [[VSTH64IP_M12]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M14:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP16]], ptr [[VSTL64IP_M13]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M15:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP17]], i32 8)
 ; CHECK-NEXT:    [[TMP18:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M15]], 0
 ; CHECK-NEXT:    [[TMP19:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M15]], 1
-; CHECK-NEXT:    [[VLDH64IP_M16:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP19]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M16:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP19]], i32 8)
 ; CHECK-NEXT:    [[TMP20:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M16]], 0
 ; CHECK-NEXT:    [[TMP21:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M16]], 1
-; CHECK-NEXT:    [[VLDL64IP_M17:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP21]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M17:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP21]], i32 8)
 ; CHECK-NEXT:    [[TMP22:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M17]], 0
 ; CHECK-NEXT:    [[TMP23:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M17]], 1
-; CHECK-NEXT:    [[VLDH64IP_M18:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP23]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M18:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP23]], i32 8)
 ; CHECK-NEXT:    [[TMP24:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M18]], 0
 ; CHECK-NEXT:    [[TMP25:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M18]], 1
-; CHECK-NEXT:    [[VLDL64IP_M19:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP25]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M19:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP25]], i32 8)
 ; CHECK-NEXT:    [[TMP26:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M19]], 0
 ; CHECK-NEXT:    [[TMP27:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M19]], 1
-; CHECK-NEXT:    [[VLDH64IP_M20:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP27]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M20:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP27]], i32 8)
 ; CHECK-NEXT:    [[TMP28:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M20]], 0
 ; CHECK-NEXT:    [[TMP29:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M20]], 1
-; CHECK-NEXT:    [[VLDL64IP_M21:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP29]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M21:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP29]], i32 8)
 ; CHECK-NEXT:    [[TMP30:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M21]], 0
 ; CHECK-NEXT:    [[TMP31:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M21]], 1
-; CHECK-NEXT:    [[VLDH64IP_M22:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP31]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M22:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP31]], i32 8)
 ; CHECK-NEXT:    [[TMP32:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M22]], 0
 ; CHECK-NEXT:    [[TMP33]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M22]], 1
-; CHECK-NEXT:    [[VSTL64IP_M23:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP18]], ptr [[VSTH64IP_M14]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M24:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP20]], ptr [[VSTL64IP_M23]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M25:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP22]], ptr [[VSTH64IP_M24]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M26:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP24]], ptr [[VSTL64IP_M25]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M27:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP26]], ptr [[VSTH64IP_M26]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M28:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP28]], ptr [[VSTL64IP_M27]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M29:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP30]], ptr [[VSTH64IP_M28]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M30]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP32]], ptr [[VSTL64IP_M29]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M23:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP18]], ptr [[VSTH64IP_M14]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M24:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP20]], ptr [[VSTL64IP_M23]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M25:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP22]], ptr [[VSTH64IP_M24]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M26:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP24]], ptr [[VSTL64IP_M25]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M27:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP26]], ptr [[VSTH64IP_M26]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M28:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP28]], ptr [[VSTL64IP_M27]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M29:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP30]], ptr [[VSTH64IP_M28]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M30]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP32]], ptr [[VSTL64IP_M29]], i32 8)
 ; CHECK-NEXT:    [[LOOP_INC]] = add nuw nsw i32 [[LOOP_INDEX]], 1
 ; CHECK-NEXT:    [[LOOP_DONE:%.*]] = icmp eq i32 [[LOOP_INC]], [[NUM_128B_BLOCKS]]
 ; CHECK-NEXT:    br i1 [[LOOP_DONE]], label %[[LOOP_EXIT_CLEANUP]], label %[[LOOP_BODY_128B]]
@@ -3951,10 +4807,10 @@ sw.bb7:                                           ; preds = %entry
 ; CHECK:       [[INVALID_SWITCH_TRAP]]:
 ; CHECK-NEXT:    unreachable
 ; CHECK:       [[HANDLE_8B_TAIL]]:
-; CHECK-NEXT:    [[VLDL64IP_M143:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[SRC_PTR_TAIL]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M143:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[SRC_PTR_TAIL]], i32 8)
 ; CHECK-NEXT:    [[TMP36:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M143]], 0
 ; CHECK-NEXT:    [[TMP37:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M143]], 1
-; CHECK-NEXT:    [[VSTL64IP_M144:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP36]], ptr [[DST_PTR_TAIL]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M144:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP36]], ptr [[DST_PTR_TAIL]], i32 8)
 ; CHECK-NEXT:    br label %[[AFTER_8B_TAIL]]
 ; CHECK:       [[AFTER_8B_TAIL]]:
 ; CHECK-NEXT:    [[SRC_PTR_AFTER_8B:%.*]] = phi ptr [ [[SRC_PTR_TAIL]], %[[HANDLE_TAIL_SWITCH]] ], [ [[TMP37]], %[[HANDLE_8B_TAIL]] ]
@@ -3962,242 +4818,242 @@ sw.bb7:                                           ; preds = %entry
 ; CHECK-NEXT:    [[TMP38:%.*]] = icmp eq i32 [[REMAINING_BYTES]], 0
 ; CHECK-NEXT:    br i1 [[TMP38]], label %[[RETURN]], label %[[HANDLE_REMAINING_BYTES:.*]]
 ; CHECK:       [[TAIL_CASE_1]]:
-; CHECK-NEXT:    [[VLDL64IP_M31:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[SRC_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M31:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[SRC_PTR_AFTER_LOOP]], i32 8)
 ; CHECK-NEXT:    [[TMP39:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M31]], 0
 ; CHECK-NEXT:    [[TMP40:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M31]], 1
-; CHECK-NEXT:    [[VLDH64IP_M32:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP40]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M32:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP40]], i32 8)
 ; CHECK-NEXT:    [[TMP41:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M32]], 0
 ; CHECK-NEXT:    [[TMP42]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M32]], 1
-; CHECK-NEXT:    [[VSTL64IP_M33:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP39]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M34]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP41]], ptr [[VSTL64IP_M33]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M33:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP39]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M34]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP41]], ptr [[VSTL64IP_M33]], i32 8)
 ; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
 ; CHECK:       [[TAIL_CASE_2]]:
-; CHECK-NEXT:    [[VLDL64IP_M35:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[SRC_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M35:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[SRC_PTR_AFTER_LOOP]], i32 8)
 ; CHECK-NEXT:    [[TMP43:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M35]], 0
 ; CHECK-NEXT:    [[TMP44:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M35]], 1
-; CHECK-NEXT:    [[VLDH64IP_M36:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP44]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M36:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP44]], i32 8)
 ; CHECK-NEXT:    [[TMP45:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M36]], 0
 ; CHECK-NEXT:    [[TMP46:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M36]], 1
-; CHECK-NEXT:    [[VLDL64IP_M37:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP46]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M37:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP46]], i32 8)
 ; CHECK-NEXT:    [[TMP47:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M37]], 0
 ; CHECK-NEXT:    [[TMP48:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M37]], 1
-; CHECK-NEXT:    [[VLDH64IP_M38:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP48]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M38:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP48]], i32 8)
 ; CHECK-NEXT:    [[TMP49:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M38]], 0
 ; CHECK-NEXT:    [[TMP50]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M38]], 1
-; CHECK-NEXT:    [[VSTL64IP_M39:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP43]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M40:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP45]], ptr [[VSTL64IP_M39]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M41:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP47]], ptr [[VSTH64IP_M40]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M42]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP49]], ptr [[VSTL64IP_M41]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M39:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP43]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M40:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP45]], ptr [[VSTL64IP_M39]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M41:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP47]], ptr [[VSTH64IP_M40]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M42]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP49]], ptr [[VSTL64IP_M41]], i32 8)
 ; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
 ; CHECK:       [[TAIL_CASE_3]]:
-; CHECK-NEXT:    [[VLDL64IP_M43:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[SRC_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M43:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[SRC_PTR_AFTER_LOOP]], i32 8)
 ; CHECK-NEXT:    [[TMP51:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M43]], 0
 ; CHECK-NEXT:    [[TMP52:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M43]], 1
-; CHECK-NEXT:    [[VLDH64IP_M44:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP52]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M44:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP52]], i32 8)
 ; CHECK-NEXT:    [[TMP53:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M44]], 0
 ; CHECK-NEXT:    [[TMP54:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M44]], 1
-; CHECK-NEXT:    [[VLDL64IP_M45:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP54]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M45:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP54]], i32 8)
 ; CHECK-NEXT:    [[TMP55:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M45]], 0
 ; CHECK-NEXT:    [[TMP56:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M45]], 1
-; CHECK-NEXT:    [[VLDH64IP_M46:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP56]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M46:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP56]], i32 8)
 ; CHECK-NEXT:    [[TMP57:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M46]], 0
 ; CHECK-NEXT:    [[TMP58:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M46]], 1
-; CHECK-NEXT:    [[VLDL64IP_M47:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP58]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M47:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP58]], i32 8)
 ; CHECK-NEXT:    [[TMP59:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M47]], 0
 ; CHECK-NEXT:    [[TMP60:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M47]], 1
-; CHECK-NEXT:    [[VLDH64IP_M48:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP60]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M48:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP60]], i32 8)
 ; CHECK-NEXT:    [[TMP61:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M48]], 0
 ; CHECK-NEXT:    [[TMP62]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M48]], 1
-; CHECK-NEXT:    [[VSTL64IP_M49:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP51]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M50:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP53]], ptr [[VSTL64IP_M49]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M51:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP55]], ptr [[VSTH64IP_M50]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M52:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP57]], ptr [[VSTL64IP_M51]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M53:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP59]], ptr [[VSTH64IP_M52]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M54]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP61]], ptr [[VSTL64IP_M53]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M49:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP51]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M50:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP53]], ptr [[VSTL64IP_M49]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M51:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP55]], ptr [[VSTH64IP_M50]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M52:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP57]], ptr [[VSTL64IP_M51]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M53:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP59]], ptr [[VSTH64IP_M52]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M54]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP61]], ptr [[VSTL64IP_M53]], i32 8)
 ; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
 ; CHECK:       [[TAIL_CASE_4]]:
-; CHECK-NEXT:    [[VLDL64IP_M55:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[SRC_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M55:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[SRC_PTR_AFTER_LOOP]], i32 8)
 ; CHECK-NEXT:    [[TMP63:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M55]], 0
 ; CHECK-NEXT:    [[TMP64:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M55]], 1
-; CHECK-NEXT:    [[VLDH64IP_M56:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP64]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M56:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP64]], i32 8)
 ; CHECK-NEXT:    [[TMP65:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M56]], 0
 ; CHECK-NEXT:    [[TMP66:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M56]], 1
-; CHECK-NEXT:    [[VLDL64IP_M57:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP66]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M57:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP66]], i32 8)
 ; CHECK-NEXT:    [[TMP67:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M57]], 0
 ; CHECK-NEXT:    [[TMP68:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M57]], 1
-; CHECK-NEXT:    [[VLDH64IP_M58:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP68]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M58:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP68]], i32 8)
 ; CHECK-NEXT:    [[TMP69:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M58]], 0
 ; CHECK-NEXT:    [[TMP70:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M58]], 1
-; CHECK-NEXT:    [[VLDL64IP_M59:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP70]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M59:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP70]], i32 8)
 ; CHECK-NEXT:    [[TMP71:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M59]], 0
 ; CHECK-NEXT:    [[TMP72:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M59]], 1
-; CHECK-NEXT:    [[VLDH64IP_M60:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP72]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M60:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP72]], i32 8)
 ; CHECK-NEXT:    [[TMP73:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M60]], 0
 ; CHECK-NEXT:    [[TMP74:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M60]], 1
-; CHECK-NEXT:    [[VLDL64IP_M61:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP74]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M61:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP74]], i32 8)
 ; CHECK-NEXT:    [[TMP75:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M61]], 0
 ; CHECK-NEXT:    [[TMP76:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M61]], 1
-; CHECK-NEXT:    [[VLDH64IP_M62:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP76]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M62:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP76]], i32 8)
 ; CHECK-NEXT:    [[TMP77:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M62]], 0
 ; CHECK-NEXT:    [[TMP78]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M62]], 1
-; CHECK-NEXT:    [[VSTL64IP_M63:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP63]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M64:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP65]], ptr [[VSTL64IP_M63]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M65:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP67]], ptr [[VSTH64IP_M64]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M66:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP69]], ptr [[VSTL64IP_M65]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M67:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP71]], ptr [[VSTH64IP_M66]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M68:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP73]], ptr [[VSTL64IP_M67]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M69:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP75]], ptr [[VSTH64IP_M68]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M70]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP77]], ptr [[VSTL64IP_M69]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M63:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP63]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M64:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP65]], ptr [[VSTL64IP_M63]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M65:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP67]], ptr [[VSTH64IP_M64]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M66:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP69]], ptr [[VSTL64IP_M65]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M67:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP71]], ptr [[VSTH64IP_M66]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M68:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP73]], ptr [[VSTL64IP_M67]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M69:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP75]], ptr [[VSTH64IP_M68]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M70]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP77]], ptr [[VSTL64IP_M69]], i32 8)
 ; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
 ; CHECK:       [[TAIL_CASE_5]]:
-; CHECK-NEXT:    [[VLDL64IP_M71:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[SRC_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M71:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[SRC_PTR_AFTER_LOOP]], i32 8)
 ; CHECK-NEXT:    [[TMP79:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M71]], 0
 ; CHECK-NEXT:    [[TMP80:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M71]], 1
-; CHECK-NEXT:    [[VLDH64IP_M72:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP80]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M72:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP80]], i32 8)
 ; CHECK-NEXT:    [[TMP81:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M72]], 0
 ; CHECK-NEXT:    [[TMP82:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M72]], 1
-; CHECK-NEXT:    [[VLDL64IP_M73:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP82]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M73:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP82]], i32 8)
 ; CHECK-NEXT:    [[TMP83:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M73]], 0
 ; CHECK-NEXT:    [[TMP84:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M73]], 1
-; CHECK-NEXT:    [[VLDH64IP_M74:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP84]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M74:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP84]], i32 8)
 ; CHECK-NEXT:    [[TMP85:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M74]], 0
 ; CHECK-NEXT:    [[TMP86:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M74]], 1
-; CHECK-NEXT:    [[VLDL64IP_M75:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP86]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M75:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP86]], i32 8)
 ; CHECK-NEXT:    [[TMP87:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M75]], 0
 ; CHECK-NEXT:    [[TMP88:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M75]], 1
-; CHECK-NEXT:    [[VLDH64IP_M76:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP88]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M76:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP88]], i32 8)
 ; CHECK-NEXT:    [[TMP89:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M76]], 0
 ; CHECK-NEXT:    [[TMP90:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M76]], 1
-; CHECK-NEXT:    [[VLDL64IP_M77:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP90]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M77:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP90]], i32 8)
 ; CHECK-NEXT:    [[TMP91:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M77]], 0
 ; CHECK-NEXT:    [[TMP92:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M77]], 1
-; CHECK-NEXT:    [[VLDH64IP_M78:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP92]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M78:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP92]], i32 8)
 ; CHECK-NEXT:    [[TMP93:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M78]], 0
 ; CHECK-NEXT:    [[TMP94:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M78]], 1
-; CHECK-NEXT:    [[VSTL64IP_M79:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP79]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M80:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP81]], ptr [[VSTL64IP_M79]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M81:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP83]], ptr [[VSTH64IP_M80]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M82:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP85]], ptr [[VSTL64IP_M81]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M83:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP87]], ptr [[VSTH64IP_M82]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M84:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP89]], ptr [[VSTL64IP_M83]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M85:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP91]], ptr [[VSTH64IP_M84]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M86:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP93]], ptr [[VSTL64IP_M85]], i32 8)
-; CHECK-NEXT:    [[VLDL64IP_M87:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP94]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M79:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP79]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M80:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP81]], ptr [[VSTL64IP_M79]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M81:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP83]], ptr [[VSTH64IP_M80]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M82:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP85]], ptr [[VSTL64IP_M81]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M83:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP87]], ptr [[VSTH64IP_M82]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M84:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP89]], ptr [[VSTL64IP_M83]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M85:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP91]], ptr [[VSTH64IP_M84]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M86:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP93]], ptr [[VSTL64IP_M85]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M87:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP94]], i32 8)
 ; CHECK-NEXT:    [[TMP95:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M87]], 0
 ; CHECK-NEXT:    [[TMP96:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M87]], 1
-; CHECK-NEXT:    [[VLDH64IP_M88:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP96]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M88:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP96]], i32 8)
 ; CHECK-NEXT:    [[TMP97:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M88]], 0
 ; CHECK-NEXT:    [[TMP98]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M88]], 1
-; CHECK-NEXT:    [[VSTL64IP_M89:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP95]], ptr [[VSTH64IP_M86]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M90]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP97]], ptr [[VSTL64IP_M89]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M89:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP95]], ptr [[VSTH64IP_M86]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M90]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP97]], ptr [[VSTL64IP_M89]], i32 8)
 ; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
 ; CHECK:       [[TAIL_CASE_6]]:
-; CHECK-NEXT:    [[VLDL64IP_M91:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[SRC_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M91:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[SRC_PTR_AFTER_LOOP]], i32 8)
 ; CHECK-NEXT:    [[TMP99:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M91]], 0
 ; CHECK-NEXT:    [[TMP100:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M91]], 1
-; CHECK-NEXT:    [[VLDH64IP_M92:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP100]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M92:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP100]], i32 8)
 ; CHECK-NEXT:    [[TMP101:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M92]], 0
 ; CHECK-NEXT:    [[TMP102:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M92]], 1
-; CHECK-NEXT:    [[VLDL64IP_M93:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP102]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M93:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP102]], i32 8)
 ; CHECK-NEXT:    [[TMP103:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M93]], 0
 ; CHECK-NEXT:    [[TMP104:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M93]], 1
-; CHECK-NEXT:    [[VLDH64IP_M94:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP104]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M94:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP104]], i32 8)
 ; CHECK-NEXT:    [[TMP105:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M94]], 0
 ; CHECK-NEXT:    [[TMP106:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M94]], 1
-; CHECK-NEXT:    [[VLDL64IP_M95:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP106]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M95:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP106]], i32 8)
 ; CHECK-NEXT:    [[TMP107:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M95]], 0
 ; CHECK-NEXT:    [[TMP108:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M95]], 1
-; CHECK-NEXT:    [[VLDH64IP_M96:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP108]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M96:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP108]], i32 8)
 ; CHECK-NEXT:    [[TMP109:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M96]], 0
 ; CHECK-NEXT:    [[TMP110:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M96]], 1
-; CHECK-NEXT:    [[VLDL64IP_M97:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP110]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M97:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP110]], i32 8)
 ; CHECK-NEXT:    [[TMP111:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M97]], 0
 ; CHECK-NEXT:    [[TMP112:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M97]], 1
-; CHECK-NEXT:    [[VLDH64IP_M98:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP112]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M98:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP112]], i32 8)
 ; CHECK-NEXT:    [[TMP113:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M98]], 0
 ; CHECK-NEXT:    [[TMP114:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M98]], 1
-; CHECK-NEXT:    [[VSTL64IP_M99:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP99]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M100:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP101]], ptr [[VSTL64IP_M99]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M101:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP103]], ptr [[VSTH64IP_M100]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M102:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP105]], ptr [[VSTL64IP_M101]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M103:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP107]], ptr [[VSTH64IP_M102]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M104:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP109]], ptr [[VSTL64IP_M103]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M105:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP111]], ptr [[VSTH64IP_M104]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M106:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP113]], ptr [[VSTL64IP_M105]], i32 8)
-; CHECK-NEXT:    [[VLDL64IP_M107:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP114]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M99:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP99]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M100:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP101]], ptr [[VSTL64IP_M99]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M101:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP103]], ptr [[VSTH64IP_M100]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M102:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP105]], ptr [[VSTL64IP_M101]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M103:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP107]], ptr [[VSTH64IP_M102]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M104:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP109]], ptr [[VSTL64IP_M103]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M105:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP111]], ptr [[VSTH64IP_M104]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M106:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP113]], ptr [[VSTL64IP_M105]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M107:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP114]], i32 8)
 ; CHECK-NEXT:    [[TMP115:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M107]], 0
 ; CHECK-NEXT:    [[TMP116:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M107]], 1
-; CHECK-NEXT:    [[VLDH64IP_M108:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP116]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M108:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP116]], i32 8)
 ; CHECK-NEXT:    [[TMP117:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M108]], 0
 ; CHECK-NEXT:    [[TMP118:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M108]], 1
-; CHECK-NEXT:    [[VLDL64IP_M109:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP118]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M109:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP118]], i32 8)
 ; CHECK-NEXT:    [[TMP119:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M109]], 0
 ; CHECK-NEXT:    [[TMP120:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M109]], 1
-; CHECK-NEXT:    [[VLDH64IP_M110:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP120]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M110:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP120]], i32 8)
 ; CHECK-NEXT:    [[TMP121:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M110]], 0
 ; CHECK-NEXT:    [[TMP122]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M110]], 1
-; CHECK-NEXT:    [[VSTL64IP_M111:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP115]], ptr [[VSTH64IP_M106]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M112:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP117]], ptr [[VSTL64IP_M111]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M113:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP119]], ptr [[VSTH64IP_M112]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M114]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP121]], ptr [[VSTL64IP_M113]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M111:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP115]], ptr [[VSTH64IP_M106]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M112:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP117]], ptr [[VSTL64IP_M111]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M113:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP119]], ptr [[VSTH64IP_M112]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M114]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP121]], ptr [[VSTL64IP_M113]], i32 8)
 ; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
 ; CHECK:       [[TAIL_CASE_7]]:
-; CHECK-NEXT:    [[VLDL64IP_M115:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[SRC_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M115:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[SRC_PTR_AFTER_LOOP]], i32 8)
 ; CHECK-NEXT:    [[TMP123:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M115]], 0
 ; CHECK-NEXT:    [[TMP124:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M115]], 1
-; CHECK-NEXT:    [[VLDH64IP_M116:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP124]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M116:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP124]], i32 8)
 ; CHECK-NEXT:    [[TMP125:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M116]], 0
 ; CHECK-NEXT:    [[TMP126:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M116]], 1
-; CHECK-NEXT:    [[VLDL64IP_M117:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP126]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M117:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP126]], i32 8)
 ; CHECK-NEXT:    [[TMP127:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M117]], 0
 ; CHECK-NEXT:    [[TMP128:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M117]], 1
-; CHECK-NEXT:    [[VLDH64IP_M118:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP128]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M118:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP128]], i32 8)
 ; CHECK-NEXT:    [[TMP129:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M118]], 0
 ; CHECK-NEXT:    [[TMP130:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M118]], 1
-; CHECK-NEXT:    [[VLDL64IP_M119:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP130]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M119:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP130]], i32 8)
 ; CHECK-NEXT:    [[TMP131:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M119]], 0
 ; CHECK-NEXT:    [[TMP132:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M119]], 1
-; CHECK-NEXT:    [[VLDH64IP_M120:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP132]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M120:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP132]], i32 8)
 ; CHECK-NEXT:    [[TMP133:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M120]], 0
 ; CHECK-NEXT:    [[TMP134:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M120]], 1
-; CHECK-NEXT:    [[VLDL64IP_M121:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP134]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M121:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP134]], i32 8)
 ; CHECK-NEXT:    [[TMP135:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M121]], 0
 ; CHECK-NEXT:    [[TMP136:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M121]], 1
-; CHECK-NEXT:    [[VLDH64IP_M122:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP136]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M122:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP136]], i32 8)
 ; CHECK-NEXT:    [[TMP137:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M122]], 0
 ; CHECK-NEXT:    [[TMP138:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M122]], 1
-; CHECK-NEXT:    [[VSTL64IP_M123:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP123]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M124:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP125]], ptr [[VSTL64IP_M123]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M125:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP127]], ptr [[VSTH64IP_M124]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M126:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP129]], ptr [[VSTL64IP_M125]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M127:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP131]], ptr [[VSTH64IP_M126]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M128:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP133]], ptr [[VSTL64IP_M127]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M129:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP135]], ptr [[VSTH64IP_M128]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M130:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP137]], ptr [[VSTL64IP_M129]], i32 8)
-; CHECK-NEXT:    [[VLDL64IP_M131:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP138]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M123:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP123]], ptr [[DST_PTR_AFTER_LOOP]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M124:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP125]], ptr [[VSTL64IP_M123]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M125:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP127]], ptr [[VSTH64IP_M124]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M126:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP129]], ptr [[VSTL64IP_M125]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M127:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP131]], ptr [[VSTH64IP_M126]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M128:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP133]], ptr [[VSTL64IP_M127]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M129:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP135]], ptr [[VSTH64IP_M128]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M130:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP137]], ptr [[VSTL64IP_M129]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M131:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP138]], i32 8)
 ; CHECK-NEXT:    [[TMP139:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M131]], 0
 ; CHECK-NEXT:    [[TMP140:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M131]], 1
-; CHECK-NEXT:    [[VLDH64IP_M132:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP140]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M132:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP140]], i32 8)
 ; CHECK-NEXT:    [[TMP141:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M132]], 0
 ; CHECK-NEXT:    [[TMP142:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M132]], 1
-; CHECK-NEXT:    [[VLDL64IP_M133:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP142]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M133:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP142]], i32 8)
 ; CHECK-NEXT:    [[TMP143:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M133]], 0
 ; CHECK-NEXT:    [[TMP144:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M133]], 1
-; CHECK-NEXT:    [[VLDH64IP_M134:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP144]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M134:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP144]], i32 8)
 ; CHECK-NEXT:    [[TMP145:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M134]], 0
 ; CHECK-NEXT:    [[TMP146:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M134]], 1
-; CHECK-NEXT:    [[VLDL64IP_M135:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip.m(ptr [[TMP146]], i32 8)
+; CHECK-NEXT:    [[VLDL64IP_M135:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP146]], i32 8)
 ; CHECK-NEXT:    [[TMP147:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M135]], 0
 ; CHECK-NEXT:    [[TMP148:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M135]], 1
-; CHECK-NEXT:    [[VLDH64IP_M136:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip.m(ptr [[TMP148]], i32 8)
+; CHECK-NEXT:    [[VLDH64IP_M136:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP148]], i32 8)
 ; CHECK-NEXT:    [[TMP149:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M136]], 0
 ; CHECK-NEXT:    [[TMP150]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M136]], 1
-; CHECK-NEXT:    [[VSTL64IP_M137:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP139]], ptr [[VSTH64IP_M130]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M138:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP141]], ptr [[VSTL64IP_M137]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M139:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP143]], ptr [[VSTH64IP_M138]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M140:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP145]], ptr [[VSTL64IP_M139]], i32 8)
-; CHECK-NEXT:    [[VSTL64IP_M141:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip.m(<8 x i8> [[TMP147]], ptr [[VSTH64IP_M140]], i32 8)
-; CHECK-NEXT:    [[VSTH64IP_M142]] = call ptr @llvm.riscv.esp.vst.h.64.ip.m(<8 x i8> [[TMP149]], ptr [[VSTL64IP_M141]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M137:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP139]], ptr [[VSTH64IP_M130]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M138:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP141]], ptr [[VSTL64IP_M137]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M139:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP143]], ptr [[VSTH64IP_M138]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M140:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP145]], ptr [[VSTL64IP_M139]], i32 8)
+; CHECK-NEXT:    [[VSTL64IP_M141:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP147]], ptr [[VSTH64IP_M140]], i32 8)
+; CHECK-NEXT:    [[VSTH64IP_M142]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[TMP149]], ptr [[VSTL64IP_M141]], i32 8)
 ; CHECK-NEXT:    br label %[[HANDLE_TAIL_SWITCH]]
 ; CHECK:       [[HANDLE_REMAINING_BYTES]]:
 ; CHECK-NEXT:    call void @esp32p4MemCpySrc8Dst8From1To7Opt(ptr [[DST_PTR_AFTER_8B]], ptr [[SRC_PTR_AFTER_8B]], i32 [[REMAINING_BYTES]])

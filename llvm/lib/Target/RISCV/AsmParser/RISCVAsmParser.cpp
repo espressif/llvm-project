@@ -4448,7 +4448,8 @@ static bool isZvvfmmScaleOpcode(unsigned Opcode) {
 
 std::unique_ptr<RISCVOperand> RISCVAsmParser::defaultSATOp() const {
   MCContext &Ctx = const_cast<RISCVAsmParser *>(this)->getContext();
-  return RISCVOperand::createExpr(MCConstantExpr::create(1, Ctx), llvm::SMLoc(),
+  // Unified sat operand: 0 = trunc (default), 1 = sat.
+  return RISCVOperand::createExpr(MCConstantExpr::create(0, Ctx), llvm::SMLoc(),
                                   llvm::SMLoc(), isRV64());
 }
 

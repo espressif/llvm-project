@@ -11,14 +11,14 @@ define dso_local void @test_vsat_s8(ptr noundef %src, ptr noundef %dst, i32 noun
 ; ASM-NEXT:    esp.vst.128.ip q0, a1, 16
 ; ASM-NEXT:    ret
 entry:
-  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src, i32 16)
   %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
-  %v1 = tail call <16 x i8> @llvm.riscv.esp.vsat.s8.m(<16 x i8> %ev1, i32 %Rs1, i32 %rs2)
-  %vst_ptr = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> %v1, ptr %dst, i32 16)
+  %v1 = tail call <16 x i8> @llvm.riscv.esp.vsat.s8(<16 x i8> %ev1, i32 %Rs1, i32 %rs2)
+  %vst_ptr = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> %v1, ptr %dst, i32 16)
   ret void
 }
 
-declare <16 x i8> @llvm.riscv.esp.vsat.s8.m(<16 x i8>, i32, i32) #1
+declare <16 x i8> @llvm.riscv.esp.vsat.s8(<16 x i8>, i32, i32) #1
 
 define dso_local void @test_vsat_u8(ptr noundef %src, ptr noundef %dst, i32 noundef %Rs1, i32 noundef %rs2) local_unnamed_addr #0 {
 ; ASM-LABEL: test_vsat_u8:
@@ -28,18 +28,18 @@ define dso_local void @test_vsat_u8(ptr noundef %src, ptr noundef %dst, i32 noun
 ; ASM-NEXT:    esp.vst.128.ip q0, a1, 16
 ; ASM-NEXT:    ret
 entry:
-  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr %src, i32 16)
+  %vld1 = tail call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr %src, i32 16)
   %ev1 = extractvalue { <16 x i8>, ptr } %vld1, 0
-  %v1 = tail call <16 x i8> @llvm.riscv.esp.vsat.u8.m(<16 x i8> %ev1, i32 %Rs1, i32 %rs2)
-  %vst_ptr = tail call ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8> %v1, ptr %dst, i32 16)
+  %v1 = tail call <16 x i8> @llvm.riscv.esp.vsat.u8(<16 x i8> %ev1, i32 %Rs1, i32 %rs2)
+  %vst_ptr = tail call ptr @llvm.riscv.esp.vst.128.ip(<16 x i8> %v1, ptr %dst, i32 16)
   ret void
 }
 
-declare <16 x i8> @llvm.riscv.esp.vsat.u8.m(<16 x i8>, i32, i32) #1
+declare <16 x i8> @llvm.riscv.esp.vsat.u8(<16 x i8>, i32, i32) #1
 
-declare { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip.m(ptr, i32) #2
+declare { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr, i32) #2
 
-declare ptr @llvm.riscv.esp.vst.128.ip.m(<16 x i8>, ptr, i32) #3
+declare ptr @llvm.riscv.esp.vst.128.ip(<16 x i8>, ptr, i32) #3
 
 attributes #0 = { "target-features"="+32bit,+xespv" }
 attributes #1 = { nounwind }

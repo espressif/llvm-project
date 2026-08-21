@@ -1,213 +1,5 @@
 let TargetPrefix = "riscv" in {
-def int_riscv_esp_vcmulas_s16_qacc_h: ClangBuiltin<"__builtin_riscv_esp_vcmulas_s16_qacc_h">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
 
-def int_riscv_esp_vcmulas_s16_qacc_h_ld_ip: ClangBuiltin<"__builtin_riscv_esp_vcmulas_s16_qacc_h_ld_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vcmulas_s16_qacc_h_ld_xp: ClangBuiltin<"__builtin_riscv_esp_vcmulas_s16_qacc_h_ld_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vcmulas_s16_qacc_l: ClangBuiltin<"__builtin_riscv_esp_vcmulas_s16_qacc_l">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_vcmulas_s16_qacc_l_ld_ip: ClangBuiltin<"__builtin_riscv_esp_vcmulas_s16_qacc_l_ld_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vcmulas_s16_qacc_l_ld_xp: ClangBuiltin<"__builtin_riscv_esp_vcmulas_s16_qacc_l_ld_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vcmulas_s8_qacc_h: ClangBuiltin<"__builtin_riscv_esp_vcmulas_s8_qacc_h">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_vcmulas_s8_qacc_h_ld_ip: ClangBuiltin<"__builtin_riscv_esp_vcmulas_s8_qacc_h_ld_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vcmulas_s8_qacc_h_ld_xp: ClangBuiltin<"__builtin_riscv_esp_vcmulas_s8_qacc_h_ld_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vcmulas_s8_qacc_l: ClangBuiltin<"__builtin_riscv_esp_vcmulas_s8_qacc_l">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_vcmulas_s8_qacc_l_ld_ip: ClangBuiltin<"__builtin_riscv_esp_vcmulas_s8_qacc_l_ld_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vcmulas_s8_qacc_l_ld_xp: ClangBuiltin<"__builtin_riscv_esp_vcmulas_s8_qacc_l_ld_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vmulas_s16_qacc: ClangBuiltin<"__builtin_riscv_esp_vmulas_s16_qacc">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_vmulas_s16_qacc_ld_ip: ClangBuiltin<"__builtin_riscv_esp_vmulas_s16_qacc_ld_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vmulas_s16_qacc_ld_xp: ClangBuiltin<"__builtin_riscv_esp_vmulas_s16_qacc_ld_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vmulas_s16_qacc_st_ip: ClangBuiltin<"__builtin_riscv_esp_vmulas_s16_qacc_st_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vmulas_s16_qacc_st_xp: ClangBuiltin<"__builtin_riscv_esp_vmulas_s16_qacc_st_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
-
-def int_riscv_esp_vmulas_s16_xacc: ClangBuiltin<"__builtin_riscv_esp_vmulas_s16_xacc">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_vmulas_s16_xacc_ld_ip: ClangBuiltin<"__builtin_riscv_esp_vmulas_s16_xacc_ld_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vmulas_s16_xacc_ld_xp: ClangBuiltin<"__builtin_riscv_esp_vmulas_s16_xacc_ld_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vmulas_s16_xacc_st_ip: ClangBuiltin<"__builtin_riscv_esp_vmulas_s16_xacc_st_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vmulas_s16_xacc_st_xp: ClangBuiltin<"__builtin_riscv_esp_vmulas_s16_xacc_st_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
-
-def int_riscv_esp_vmulas_s8_qacc: ClangBuiltin<"__builtin_riscv_esp_vmulas_s8_qacc">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_vmulas_s8_qacc_ld_ip: ClangBuiltin<"__builtin_riscv_esp_vmulas_s8_qacc_ld_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vmulas_s8_qacc_ld_xp: ClangBuiltin<"__builtin_riscv_esp_vmulas_s8_qacc_ld_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vmulas_s8_qacc_st_ip: ClangBuiltin<"__builtin_riscv_esp_vmulas_s8_qacc_st_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vmulas_s8_qacc_st_xp: ClangBuiltin<"__builtin_riscv_esp_vmulas_s8_qacc_st_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
-
-def int_riscv_esp_vmulas_s8_xacc: ClangBuiltin<"__builtin_riscv_esp_vmulas_s8_xacc">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_vmulas_s8_xacc_ld_ip: ClangBuiltin<"__builtin_riscv_esp_vmulas_s8_xacc_ld_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vmulas_s8_xacc_ld_xp: ClangBuiltin<"__builtin_riscv_esp_vmulas_s8_xacc_ld_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vmulas_s8_xacc_st_ip: ClangBuiltin<"__builtin_riscv_esp_vmulas_s8_xacc_st_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vmulas_s8_xacc_st_xp: ClangBuiltin<"__builtin_riscv_esp_vmulas_s8_xacc_st_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
-
-def int_riscv_esp_vmulas_u16_qacc: ClangBuiltin<"__builtin_riscv_esp_vmulas_u16_qacc">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_vmulas_u16_qacc_ld_ip: ClangBuiltin<"__builtin_riscv_esp_vmulas_u16_qacc_ld_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vmulas_u16_qacc_ld_xp: ClangBuiltin<"__builtin_riscv_esp_vmulas_u16_qacc_ld_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vmulas_u16_qacc_st_ip: ClangBuiltin<"__builtin_riscv_esp_vmulas_u16_qacc_st_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vmulas_u16_qacc_st_xp: ClangBuiltin<"__builtin_riscv_esp_vmulas_u16_qacc_st_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
-
-def int_riscv_esp_vmulas_u16_xacc: ClangBuiltin<"__builtin_riscv_esp_vmulas_u16_xacc">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_vmulas_u16_xacc_ld_ip: ClangBuiltin<"__builtin_riscv_esp_vmulas_u16_xacc_ld_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vmulas_u16_xacc_ld_xp: ClangBuiltin<"__builtin_riscv_esp_vmulas_u16_xacc_ld_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vmulas_u16_xacc_st_ip: ClangBuiltin<"__builtin_riscv_esp_vmulas_u16_xacc_st_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vmulas_u16_xacc_st_xp: ClangBuiltin<"__builtin_riscv_esp_vmulas_u16_xacc_st_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
-
-def int_riscv_esp_vmulas_u8_qacc: ClangBuiltin<"__builtin_riscv_esp_vmulas_u8_qacc">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_vmulas_u8_qacc_ld_ip: ClangBuiltin<"__builtin_riscv_esp_vmulas_u8_qacc_ld_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vmulas_u8_qacc_ld_xp: ClangBuiltin<"__builtin_riscv_esp_vmulas_u8_qacc_ld_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vmulas_u8_qacc_st_ip: ClangBuiltin<"__builtin_riscv_esp_vmulas_u8_qacc_st_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vmulas_u8_qacc_st_xp: ClangBuiltin<"__builtin_riscv_esp_vmulas_u8_qacc_st_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
-
-def int_riscv_esp_vmulas_u8_xacc: ClangBuiltin<"__builtin_riscv_esp_vmulas_u8_xacc">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_vmulas_u8_xacc_ld_ip: ClangBuiltin<"__builtin_riscv_esp_vmulas_u8_xacc_ld_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vmulas_u8_xacc_ld_xp: ClangBuiltin<"__builtin_riscv_esp_vmulas_u8_xacc_ld_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vmulas_u8_xacc_st_ip: ClangBuiltin<"__builtin_riscv_esp_vmulas_u8_xacc_st_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vmulas_u8_xacc_st_xp: ClangBuiltin<"__builtin_riscv_esp_vmulas_u8_xacc_st_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
-
-def int_riscv_esp_vmulas_s16_qacc_ldbc_incp: ClangBuiltin<"__builtin_riscv_esp_vmulas_s16_qacc_ldbc_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>]>;
-
-def int_riscv_esp_vmulas_s8_qacc_ldbc_incp: ClangBuiltin<"__builtin_riscv_esp_vmulas_s8_qacc_ldbc_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>]>;
-
-def int_riscv_esp_vmulas_u16_qacc_ldbc_incp: ClangBuiltin<"__builtin_riscv_esp_vmulas_u16_qacc_ldbc_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>]>;
-
-def int_riscv_esp_vmulas_u8_qacc_ldbc_incp: ClangBuiltin<"__builtin_riscv_esp_vmulas_u8_qacc_ldbc_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>]>;
-
-def int_riscv_esp_vsmulas_s16_qacc: ClangBuiltin<"__builtin_riscv_esp_vsmulas_s16_qacc">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vsmulas_s16_qacc_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vsmulas_s16_qacc_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vsmulas_s8_qacc: ClangBuiltin<"__builtin_riscv_esp_vsmulas_s8_qacc">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vsmulas_s8_qacc_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vsmulas_s8_qacc_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vsmulas_u16_qacc: ClangBuiltin<"__builtin_riscv_esp_vsmulas_u16_qacc">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vsmulas_u16_qacc_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vsmulas_u16_qacc_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vsmulas_u8_qacc: ClangBuiltin<"__builtin_riscv_esp_vsmulas_u8_qacc">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vsmulas_u8_qacc_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vsmulas_u8_qacc_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_cmul_s16: ClangBuiltin<"__builtin_riscv_esp_cmul_s16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
-
-def int_riscv_esp_cmul_s16_ld_incp: ClangBuiltin<"__builtin_riscv_esp_cmul_s16_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
-
-def int_riscv_esp_cmul_s16_st_incp: ClangBuiltin<"__builtin_riscv_esp_cmul_s16_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
-
-def int_riscv_esp_cmul_s8: ClangBuiltin<"__builtin_riscv_esp_cmul_s8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
-
-def int_riscv_esp_cmul_s8_ld_incp: ClangBuiltin<"__builtin_riscv_esp_cmul_s8_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
-
-def int_riscv_esp_cmul_s8_st_incp: ClangBuiltin<"__builtin_riscv_esp_cmul_s8_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
 def int_riscv_esp_cmul_u16: ClangBuiltin<"__builtin_riscv_esp_cmul_u16">,
 	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
@@ -227,365 +19,115 @@ def int_riscv_esp_cmul_u8_ld_incp: ClangBuiltin<"__builtin_riscv_esp_cmul_u8_ld_
 def int_riscv_esp_cmul_u8_st_incp: ClangBuiltin<"__builtin_riscv_esp_cmul_u8_st_incp">,
 	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_max_s16_a: ClangBuiltin<"__builtin_riscv_esp_max_s16_a">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
 
-def int_riscv_esp_max_s32_a: ClangBuiltin<"__builtin_riscv_esp_max_s32_a">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
 
-def int_riscv_esp_max_s8_a: ClangBuiltin<"__builtin_riscv_esp_max_s8_a">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
 
-def int_riscv_esp_max_u16_a: ClangBuiltin<"__builtin_riscv_esp_max_u16_a">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
 
-def int_riscv_esp_max_u32_a: ClangBuiltin<"__builtin_riscv_esp_max_u32_a">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
 
-def int_riscv_esp_max_u8_a: ClangBuiltin<"__builtin_riscv_esp_max_u8_a">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
 
-def int_riscv_esp_min_s16_a: ClangBuiltin<"__builtin_riscv_esp_min_s16_a">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
 
-def int_riscv_esp_min_s32_a: ClangBuiltin<"__builtin_riscv_esp_min_s32_a">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
 
-def int_riscv_esp_min_s8_a: ClangBuiltin<"__builtin_riscv_esp_min_s8_a">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
 
-def int_riscv_esp_min_u16_a: ClangBuiltin<"__builtin_riscv_esp_min_u16_a">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
 
-def int_riscv_esp_min_u32_a: ClangBuiltin<"__builtin_riscv_esp_min_u32_a">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
 
-def int_riscv_esp_min_u8_a: ClangBuiltin<"__builtin_riscv_esp_min_u8_a">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
 
-def int_riscv_esp_vabs_16: ClangBuiltin<"__builtin_riscv_esp_vabs_16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
 
-def int_riscv_esp_vabs_32: ClangBuiltin<"__builtin_riscv_esp_vabs_32">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
 
-def int_riscv_esp_vabs_8: ClangBuiltin<"__builtin_riscv_esp_vabs_8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
 
-def int_riscv_esp_vadd_s16: ClangBuiltin<"__builtin_riscv_esp_vadd_s16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vadd_s16_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vadd_s16_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vadd_s16_st_incp: ClangBuiltin<"__builtin_riscv_esp_vadd_s16_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vadd_s32: ClangBuiltin<"__builtin_riscv_esp_vadd_s32">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vadd_s32_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vadd_s32_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vadd_s32_st_incp: ClangBuiltin<"__builtin_riscv_esp_vadd_s32_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vadd_s8: ClangBuiltin<"__builtin_riscv_esp_vadd_s8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vadd_s8_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vadd_s8_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vadd_s8_st_incp: ClangBuiltin<"__builtin_riscv_esp_vadd_s8_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vadd_u16: ClangBuiltin<"__builtin_riscv_esp_vadd_u16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vadd_u16_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vadd_u16_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vadd_u16_st_incp: ClangBuiltin<"__builtin_riscv_esp_vadd_u16_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vadd_u32: ClangBuiltin<"__builtin_riscv_esp_vadd_u32">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vadd_u32_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vadd_u32_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vadd_u32_st_incp: ClangBuiltin<"__builtin_riscv_esp_vadd_u32_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vadd_u8: ClangBuiltin<"__builtin_riscv_esp_vadd_u8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vadd_u8_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vadd_u8_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vadd_u8_st_incp: ClangBuiltin<"__builtin_riscv_esp_vadd_u8_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vclamp_s16: ClangBuiltin<"__builtin_riscv_esp_vclamp_s16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmax_s16: ClangBuiltin<"__builtin_riscv_esp_vmax_s16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmax_s16_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vmax_s16_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmax_s16_st_incp: ClangBuiltin<"__builtin_riscv_esp_vmax_s16_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmax_s32: ClangBuiltin<"__builtin_riscv_esp_vmax_s32">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmax_s32_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vmax_s32_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmax_s32_st_incp: ClangBuiltin<"__builtin_riscv_esp_vmax_s32_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmax_s8: ClangBuiltin<"__builtin_riscv_esp_vmax_s8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmax_s8_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vmax_s8_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmax_s8_st_incp: ClangBuiltin<"__builtin_riscv_esp_vmax_s8_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmax_u16: ClangBuiltin<"__builtin_riscv_esp_vmax_u16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmax_u16_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vmax_u16_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmax_u16_st_incp: ClangBuiltin<"__builtin_riscv_esp_vmax_u16_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmax_u32: ClangBuiltin<"__builtin_riscv_esp_vmax_u32">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmax_u32_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vmax_u32_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmax_u32_st_incp: ClangBuiltin<"__builtin_riscv_esp_vmax_u32_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmax_u8: ClangBuiltin<"__builtin_riscv_esp_vmax_u8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmax_u8_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vmax_u8_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmax_u8_st_incp: ClangBuiltin<"__builtin_riscv_esp_vmax_u8_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmin_s16: ClangBuiltin<"__builtin_riscv_esp_vmin_s16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmin_s16_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vmin_s16_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmin_s16_st_incp: ClangBuiltin<"__builtin_riscv_esp_vmin_s16_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmin_s32: ClangBuiltin<"__builtin_riscv_esp_vmin_s32">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmin_s32_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vmin_s32_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmin_s32_st_incp: ClangBuiltin<"__builtin_riscv_esp_vmin_s32_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmin_s8: ClangBuiltin<"__builtin_riscv_esp_vmin_s8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmin_s8_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vmin_s8_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmin_s8_st_incp: ClangBuiltin<"__builtin_riscv_esp_vmin_s8_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmin_u16: ClangBuiltin<"__builtin_riscv_esp_vmin_u16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmin_u16_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vmin_u16_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmin_u16_st_incp: ClangBuiltin<"__builtin_riscv_esp_vmin_u16_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmin_u32: ClangBuiltin<"__builtin_riscv_esp_vmin_u32">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmin_u32_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vmin_u32_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmin_u32_st_incp: ClangBuiltin<"__builtin_riscv_esp_vmin_u32_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmin_u8: ClangBuiltin<"__builtin_riscv_esp_vmin_u8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmin_u8_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vmin_u8_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmin_u8_st_incp: ClangBuiltin<"__builtin_riscv_esp_vmin_u8_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmul_s16: ClangBuiltin<"__builtin_riscv_esp_vmul_s16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmul_s16_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vmul_s16_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmul_s16_s8xs8: ClangBuiltin<"__builtin_riscv_esp_vmul_s16_s8xs8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vmul_s16_st_incp: ClangBuiltin<"__builtin_riscv_esp_vmul_s16_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmul_s32_s16xs16: ClangBuiltin<"__builtin_riscv_esp_vmul_s32_s16xs16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vmul_s8: ClangBuiltin<"__builtin_riscv_esp_vmul_s8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmul_s8_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vmul_s8_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmul_s8_st_incp: ClangBuiltin<"__builtin_riscv_esp_vmul_s8_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmul_u16: ClangBuiltin<"__builtin_riscv_esp_vmul_u16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmul_u16_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vmul_u16_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmul_u16_st_incp: ClangBuiltin<"__builtin_riscv_esp_vmul_u16_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmul_u8: ClangBuiltin<"__builtin_riscv_esp_vmul_u8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmul_u8_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vmul_u8_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmul_u8_st_incp: ClangBuiltin<"__builtin_riscv_esp_vmul_u8_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vprelu_s16: ClangBuiltin<"__builtin_riscv_esp_vprelu_s16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vprelu_s8: ClangBuiltin<"__builtin_riscv_esp_vprelu_s8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vrelu_s16: ClangBuiltin<"__builtin_riscv_esp_vrelu_s16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vrelu_s8: ClangBuiltin<"__builtin_riscv_esp_vrelu_s8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vsadds_s16: ClangBuiltin<"__builtin_riscv_esp_vsadds_s16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vsadds_s8: ClangBuiltin<"__builtin_riscv_esp_vsadds_s8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vsadds_u16: ClangBuiltin<"__builtin_riscv_esp_vsadds_u16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vsadds_u8: ClangBuiltin<"__builtin_riscv_esp_vsadds_u8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vsat_s16: ClangBuiltin<"__builtin_riscv_esp_vsat_s16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vsat_s32: ClangBuiltin<"__builtin_riscv_esp_vsat_s32">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vsat_s8: ClangBuiltin<"__builtin_riscv_esp_vsat_s8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vsat_u16: ClangBuiltin<"__builtin_riscv_esp_vsat_u16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vsat_u32: ClangBuiltin<"__builtin_riscv_esp_vsat_u32">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vsat_u8: ClangBuiltin<"__builtin_riscv_esp_vsat_u8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vssubs_s16: ClangBuiltin<"__builtin_riscv_esp_vssubs_s16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vssubs_s8: ClangBuiltin<"__builtin_riscv_esp_vssubs_s8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vssubs_u16: ClangBuiltin<"__builtin_riscv_esp_vssubs_u16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vssubs_u8: ClangBuiltin<"__builtin_riscv_esp_vssubs_u8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vsub_s16: ClangBuiltin<"__builtin_riscv_esp_vsub_s16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vsub_s16_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vsub_s16_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vsub_s16_st_incp: ClangBuiltin<"__builtin_riscv_esp_vsub_s16_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vsub_s32: ClangBuiltin<"__builtin_riscv_esp_vsub_s32">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vsub_s32_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vsub_s32_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vsub_s32_st_incp: ClangBuiltin<"__builtin_riscv_esp_vsub_s32_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vsub_s8: ClangBuiltin<"__builtin_riscv_esp_vsub_s8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vsub_s8_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vsub_s8_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vsub_s8_st_incp: ClangBuiltin<"__builtin_riscv_esp_vsub_s8_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vsub_u16: ClangBuiltin<"__builtin_riscv_esp_vsub_u16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vsub_u16_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vsub_u16_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vsub_u16_st_incp: ClangBuiltin<"__builtin_riscv_esp_vsub_u16_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vsub_u32: ClangBuiltin<"__builtin_riscv_esp_vsub_u32">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vsub_u32_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vsub_u32_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vsub_u32_st_incp: ClangBuiltin<"__builtin_riscv_esp_vsub_u32_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vsub_u8: ClangBuiltin<"__builtin_riscv_esp_vsub_u8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vsub_u8_ld_incp: ClangBuiltin<"__builtin_riscv_esp_vsub_u8_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vsub_u8_st_incp: ClangBuiltin<"__builtin_riscv_esp_vsub_u8_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
 def int_riscv_esp_addx2: ClangBuiltin<"__builtin_riscv_esp_addx2">,
 	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], []>;
@@ -602,15 +144,6 @@ def int_riscv_esp_subx2: ClangBuiltin<"__builtin_riscv_esp_subx2">,
 def int_riscv_esp_subx4: ClangBuiltin<"__builtin_riscv_esp_subx4">,
 	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], []>;
 
-def int_riscv_esp_vcmp_eq_s16: ClangBuiltin<"__builtin_riscv_esp_vcmp_eq_s16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vcmp_eq_s32: ClangBuiltin<"__builtin_riscv_esp_vcmp_eq_s32">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vcmp_eq_s8: ClangBuiltin<"__builtin_riscv_esp_vcmp_eq_s8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
 def int_riscv_esp_vcmp_eq_u16: ClangBuiltin<"__builtin_riscv_esp_vcmp_eq_u16">,
 	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
@@ -618,15 +151,6 @@ def int_riscv_esp_vcmp_eq_u32: ClangBuiltin<"__builtin_riscv_esp_vcmp_eq_u32">,
 	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
 def int_riscv_esp_vcmp_eq_u8: ClangBuiltin<"__builtin_riscv_esp_vcmp_eq_u8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vcmp_gt_s16: ClangBuiltin<"__builtin_riscv_esp_vcmp_gt_s16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vcmp_gt_s32: ClangBuiltin<"__builtin_riscv_esp_vcmp_gt_s32">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vcmp_gt_s8: ClangBuiltin<"__builtin_riscv_esp_vcmp_gt_s8">,
 	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
 def int_riscv_esp_vcmp_gt_u16: ClangBuiltin<"__builtin_riscv_esp_vcmp_gt_u16">,
@@ -638,237 +162,33 @@ def int_riscv_esp_vcmp_gt_u32: ClangBuiltin<"__builtin_riscv_esp_vcmp_gt_u32">,
 def int_riscv_esp_vcmp_gt_u8: ClangBuiltin<"__builtin_riscv_esp_vcmp_gt_u8">,
 	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vcmp_lt_s16: ClangBuiltin<"__builtin_riscv_esp_vcmp_lt_s16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vcmp_lt_s32: ClangBuiltin<"__builtin_riscv_esp_vcmp_lt_s32">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vcmp_lt_s8: ClangBuiltin<"__builtin_riscv_esp_vcmp_lt_s8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vcmp_lt_u16: ClangBuiltin<"__builtin_riscv_esp_vcmp_lt_u16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vcmp_lt_u32: ClangBuiltin<"__builtin_riscv_esp_vcmp_lt_u32">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vcmp_lt_u8: ClangBuiltin<"__builtin_riscv_esp_vcmp_lt_u8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_mov_s16_qacc: ClangBuiltin<"__builtin_riscv_esp_mov_s16_qacc">,
-	Intrinsic<[], [llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
-
-def int_riscv_esp_mov_s8_qacc: ClangBuiltin<"__builtin_riscv_esp_mov_s8_qacc">,
-	Intrinsic<[], [llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
-
-def int_riscv_esp_mov_u16_qacc: ClangBuiltin<"__builtin_riscv_esp_mov_u16_qacc">,
-	Intrinsic<[], [llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
-
-def int_riscv_esp_mov_u8_qacc: ClangBuiltin<"__builtin_riscv_esp_mov_u8_qacc">,
-	Intrinsic<[], [llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
-
-def int_riscv_esp_movi_16_a: ClangBuiltin<"__builtin_riscv_esp_movi_16_a">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_movi_16_q: ClangBuiltin<"__builtin_riscv_esp_movi_16_q">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_movi_32_a: ClangBuiltin<"__builtin_riscv_esp_movi_32_a">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_movi_32_q: ClangBuiltin<"__builtin_riscv_esp_movi_32_q">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_movi_8_a: ClangBuiltin<"__builtin_riscv_esp_movi_8_a">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_movi_8_q: ClangBuiltin<"__builtin_riscv_esp_movi_8_q">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
 // MOVI - Extract from vector to scalar (_m variants for machine instruction matching)
 // MOVI.16.A - Extract 16-bit from vector to scalar
-def int_riscv_esp_movi_16_a_m : Intrinsic<[llvm_i32_ty], 
+def int_riscv_esp_movi_16_a : Intrinsic<[llvm_i32_ty],
                                           [llvm_v8i16_ty, llvm_i32_ty],  // (vector, index)
                                           [IntrNoMem]>;
 // MOVI.32.A - Extract 32-bit from vector to scalar
-def int_riscv_esp_movi_32_a_m : Intrinsic<[llvm_i32_ty], 
+def int_riscv_esp_movi_32_a : Intrinsic<[llvm_i32_ty],
                                           [llvm_v4i32_ty, llvm_i32_ty],  // (vector, index)
                                           [IntrNoMem]>;
 // MOVI.8.A - Extract 8-bit from vector to scalar
-def int_riscv_esp_movi_8_a_m : Intrinsic<[llvm_i32_ty], 
+def int_riscv_esp_movi_8_a : Intrinsic<[llvm_i32_ty],
                                          [llvm_v16i8_ty, llvm_i32_ty],  // (vector, index)
                                          [IntrNoMem]>;
 
 // MOVI - Insert from scalar to vector (_m variants for machine instruction matching)
 // MOVI.16.Q - Insert 16-bit from scalar to vector
-def int_riscv_esp_movi_16_q_m : Intrinsic<[llvm_v8i16_ty], 
+def int_riscv_esp_movi_16_q : Intrinsic<[llvm_v8i16_ty],
                                           [llvm_v8i16_ty, llvm_i32_ty, llvm_i32_ty],  // (vector, index, value)
                                           [IntrNoMem]>;
 // MOVI.32.Q - Insert 32-bit from scalar to vector
-def int_riscv_esp_movi_32_q_m : Intrinsic<[llvm_v4i32_ty], 
+def int_riscv_esp_movi_32_q : Intrinsic<[llvm_v4i32_ty],
                                           [llvm_v4i32_ty, llvm_i32_ty, llvm_i32_ty],  // (vector, index, value)
                                           [IntrNoMem]>;
 // MOVI.8.Q - Insert 8-bit from scalar to vector
-def int_riscv_esp_movi_8_q_m : Intrinsic<[llvm_v16i8_ty], 
+def int_riscv_esp_movi_8_q : Intrinsic<[llvm_v16i8_ty],
                                          [llvm_v16i8_ty, llvm_i32_ty, llvm_i32_ty],  // (vector, index, value)
                                          [IntrNoMem]>;
-
-def int_riscv_esp_movx_r_cfg: ClangBuiltin<"__builtin_riscv_esp_movx_r_cfg">,
-	Intrinsic<[llvm_i32_ty], [], []>;
-
-def int_riscv_esp_movx_r_fft_bit_width: ClangBuiltin<"__builtin_riscv_esp_movx_r_fft_bit_width">,
-	Intrinsic<[], [llvm_i32_ty], []>;
-
-def int_riscv_esp_movx_r_perf: ClangBuiltin<"__builtin_riscv_esp_movx_r_perf">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], []>;
-
-def int_riscv_esp_movx_r_sar: ClangBuiltin<"__builtin_riscv_esp_movx_r_sar">,
-	Intrinsic<[], [llvm_i32_ty], []>;
-
-def int_riscv_esp_movx_r_sar_bytes: ClangBuiltin<"__builtin_riscv_esp_movx_r_sar_bytes">,
-	Intrinsic<[], [llvm_i32_ty], []>;
-
-def int_riscv_esp_movx_r_xacc_h: ClangBuiltin<"__builtin_riscv_esp_movx_r_xacc_h">,
-	Intrinsic<[], [llvm_i32_ty], []>;
-
-def int_riscv_esp_movx_r_xacc_l: ClangBuiltin<"__builtin_riscv_esp_movx_r_xacc_l">,
-	Intrinsic<[], [llvm_i32_ty], []>;
-
-def int_riscv_esp_movx_w_cfg: ClangBuiltin<"__builtin_riscv_esp_movx_w_cfg">,
-	Intrinsic<[], [llvm_i32_ty], []>;
-
-def int_riscv_esp_movx_w_fft_bit_width: ClangBuiltin<"__builtin_riscv_esp_movx_w_fft_bit_width">,
-	Intrinsic<[], [llvm_i32_ty], []>;
-
-def int_riscv_esp_movx_w_perf: ClangBuiltin<"__builtin_riscv_esp_movx_w_perf">,
-	Intrinsic<[], [llvm_i32_ty], []>;
-
-def int_riscv_esp_movx_w_sar: ClangBuiltin<"__builtin_riscv_esp_movx_w_sar">,
-	Intrinsic<[], [llvm_i32_ty], []>;
-
-def int_riscv_esp_movx_w_sar_bytes: ClangBuiltin<"__builtin_riscv_esp_movx_w_sar_bytes">,
-	Intrinsic<[], [llvm_i32_ty], []>;
-
-def int_riscv_esp_movx_w_xacc_h: ClangBuiltin<"__builtin_riscv_esp_movx_w_xacc_h">,
-	Intrinsic<[], [llvm_i32_ty], []>;
-
-def int_riscv_esp_movx_w_xacc_l: ClangBuiltin<"__builtin_riscv_esp_movx_w_xacc_l">,
-	Intrinsic<[], [llvm_i32_ty], []>;
-
-def int_riscv_esp_vext_s16: ClangBuiltin<"__builtin_riscv_esp_vext_s16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vext_s8: ClangBuiltin<"__builtin_riscv_esp_vext_s8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vext_u16: ClangBuiltin<"__builtin_riscv_esp_vext_u16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vext_u8: ClangBuiltin<"__builtin_riscv_esp_vext_u8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vunzip_16: ClangBuiltin<"__builtin_riscv_esp_vunzip_16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_vunzip_32: ClangBuiltin<"__builtin_riscv_esp_vunzip_32">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_vunzip_8: ClangBuiltin<"__builtin_riscv_esp_vunzip_8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_vunzipt_16: ClangBuiltin<"__builtin_riscv_esp_vunzipt_16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vunzipt_8: ClangBuiltin<"__builtin_riscv_esp_vunzipt_8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vzip_16: ClangBuiltin<"__builtin_riscv_esp_vzip_16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_vzip_32: ClangBuiltin<"__builtin_riscv_esp_vzip_32">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_vzip_8: ClangBuiltin<"__builtin_riscv_esp_vzip_8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_vzipt_16: ClangBuiltin<"__builtin_riscv_esp_vzipt_16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vzipt_8: ClangBuiltin<"__builtin_riscv_esp_vzipt_8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_zero_q: ClangBuiltin<"__builtin_riscv_esp_zero_q">,
-	Intrinsic<[], [llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
-
-def int_riscv_esp_zero_qacc: ClangBuiltin<"__builtin_riscv_esp_zero_qacc">,
-	Intrinsic<[], [], []>;
-
-def int_riscv_esp_zero_xacc: ClangBuiltin<"__builtin_riscv_esp_zero_xacc">,
-	Intrinsic<[], [], []>;
-
-def int_riscv_esp_fft_ams_s16_ld_incp: ClangBuiltin<"__builtin_riscv_esp_fft_ams_s16_ld_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>, ImmArg<ArgIndex<6>>, ImmArg<ArgIndex<7>>]>;
-
-def int_riscv_esp_fft_ams_s16_ld_incp_uaup: ClangBuiltin<"__builtin_riscv_esp_fft_ams_s16_ld_incp_uaup">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>, ImmArg<ArgIndex<6>>, ImmArg<ArgIndex<7>>]>;
-
-def int_riscv_esp_fft_ams_s16_ld_r32_decp: ClangBuiltin<"__builtin_riscv_esp_fft_ams_s16_ld_r32_decp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>, ImmArg<ArgIndex<6>>, ImmArg<ArgIndex<7>>]>;
-
-def int_riscv_esp_fft_ams_s16_st_incp: ClangBuiltin<"__builtin_riscv_esp_fft_ams_s16_st_incp">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<6>>, ImmArg<ArgIndex<7>>]>;
-
-def int_riscv_esp_fft_bitrev: ClangBuiltin<"__builtin_riscv_esp_fft_bitrev">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_fft_cmul_s16_ld_xp: ClangBuiltin<"__builtin_riscv_esp_fft_cmul_s16_ld_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>, ImmArg<ArgIndex<6>>]>;
-
-def int_riscv_esp_fft_cmul_s16_st_xp: ClangBuiltin<"__builtin_riscv_esp_fft_cmul_s16_st_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<5>>, ImmArg<ArgIndex<6>>, ImmArg<ArgIndex<7>>]>;
-
-def int_riscv_esp_fft_r2bf_s16: ClangBuiltin<"__builtin_riscv_esp_fft_r2bf_s16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_fft_r2bf_s16_st_incp: ClangBuiltin<"__builtin_riscv_esp_fft_r2bf_s16_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_fft_vst_r32_decp: ClangBuiltin<"__builtin_riscv_esp_fft_vst_r32_decp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_ld_128_usar_ip: ClangBuiltin<"__builtin_riscv_esp_ld_128_usar_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_ld_128_usar_xp: ClangBuiltin<"__builtin_riscv_esp_ld_128_usar_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_ld_xacc_ip: ClangBuiltin<"__builtin_riscv_esp_ld_xacc_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_ldqa_s16_128_ip: ClangBuiltin<"__builtin_riscv_esp_ldqa_s16_128_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_ldqa_s16_128_xp: ClangBuiltin<"__builtin_riscv_esp_ldqa_s16_128_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], []>;
-
-def int_riscv_esp_ldqa_s8_128_ip: ClangBuiltin<"__builtin_riscv_esp_ldqa_s8_128_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_ldqa_s8_128_xp: ClangBuiltin<"__builtin_riscv_esp_ldqa_s8_128_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], []>;
-
-def int_riscv_esp_ldqa_u16_128_ip: ClangBuiltin<"__builtin_riscv_esp_ldqa_u16_128_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_ldqa_u16_128_xp: ClangBuiltin<"__builtin_riscv_esp_ldqa_u16_128_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], []>;
-
-def int_riscv_esp_ldqa_u8_128_ip: ClangBuiltin<"__builtin_riscv_esp_ldqa_u8_128_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_ldqa_u8_128_xp: ClangBuiltin<"__builtin_riscv_esp_ldqa_u8_128_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], []>;
 
 def int_riscv_esp_vldbc_16_ip: ClangBuiltin<"__builtin_riscv_esp_vldbc_16_ip">,
 	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
@@ -915,335 +235,94 @@ def int_riscv_esp_vldext_u8_xp: ClangBuiltin<"__builtin_riscv_esp_vldext_u8_xp">
 def int_riscv_esp_vldhbc_16_incp: ClangBuiltin<"__builtin_riscv_esp_vldhbc_16_incp">,
 	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_ld_qacc_h_h_128_ip: ClangBuiltin<"__builtin_riscv_esp_ld_qacc_h_h_128_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_ld_qacc_h_l_128_ip: ClangBuiltin<"__builtin_riscv_esp_ld_qacc_h_l_128_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_ld_qacc_l_h_128_ip: ClangBuiltin<"__builtin_riscv_esp_ld_qacc_l_h_128_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_ld_qacc_l_l_128_ip: ClangBuiltin<"__builtin_riscv_esp_ld_qacc_l_l_128_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_ld_ua_state_ip: ClangBuiltin<"__builtin_riscv_esp_ld_ua_state_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_ldxq_32: ClangBuiltin<"__builtin_riscv_esp_ldxq_32">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_st_qacc_h_h_128_ip: ClangBuiltin<"__builtin_riscv_esp_st_qacc_h_h_128_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_st_qacc_h_l_128_ip: ClangBuiltin<"__builtin_riscv_esp_st_qacc_h_l_128_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_st_qacc_l_h_128_ip: ClangBuiltin<"__builtin_riscv_esp_st_qacc_l_h_128_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_st_qacc_l_l_128_ip: ClangBuiltin<"__builtin_riscv_esp_st_qacc_l_l_128_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_st_ua_state_ip: ClangBuiltin<"__builtin_riscv_esp_st_ua_state_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_stxq_32: ClangBuiltin<"__builtin_riscv_esp_stxq_32">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vld_128_ip: ClangBuiltin<"__builtin_riscv_esp_vld_128_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vld_128_xp: ClangBuiltin<"__builtin_riscv_esp_vld_128_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vld_h_64_ip: ClangBuiltin<"__builtin_riscv_esp_vld_h_64_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vld_h_64_xp: ClangBuiltin<"__builtin_riscv_esp_vld_h_64_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vld_l_64_ip: ClangBuiltin<"__builtin_riscv_esp_vld_l_64_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vld_l_64_xp: ClangBuiltin<"__builtin_riscv_esp_vld_l_64_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vst_128_ip: ClangBuiltin<"__builtin_riscv_esp_vst_128_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vst_128_xp: ClangBuiltin<"__builtin_riscv_esp_vst_128_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_vst_h_64_ip: ClangBuiltin<"__builtin_riscv_esp_vst_h_64_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vst_h_64_xp: ClangBuiltin<"__builtin_riscv_esp_vst_h_64_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_vst_l_64_ip: ClangBuiltin<"__builtin_riscv_esp_vst_l_64_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vst_l_64_xp: ClangBuiltin<"__builtin_riscv_esp_vst_l_64_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_slci_2q: ClangBuiltin<"__builtin_riscv_esp_slci_2q">,
+// Legacy Index-form intrinsics retained for RISCVEsp32P4MemIntrin (no Clang builtin).
+// Canonical ESPVM forms live in IntrinsicsRISCVESPVM.td under the non-_pie names.
+def int_riscv_esp_src_q_pie :
 	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_slcxxp_2q: ClangBuiltin<"__builtin_riscv_esp_slcxxp_2q">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
-
-def int_riscv_esp_src_q: ClangBuiltin<"__builtin_riscv_esp_src_q">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_src_q_ld_ip: ClangBuiltin<"__builtin_riscv_esp_src_q_ld_ip">,
+def int_riscv_esp_src_q_ld_ip_pie :
 	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_src_q_ld_xp: ClangBuiltin<"__builtin_riscv_esp_src_q_ld_xp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
+// Legacy Index-form USAR for RISCVEsp32P4MemIntrin (no Clang builtin).
+def int_riscv_esp_ld_128_usar_ip_pie :
+	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_src_q_qup: ClangBuiltin<"__builtin_riscv_esp_src_q_qup">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
+// Legacy Index-form VLD for RISCVEsp32P4MemIntrin (no Clang builtin).
+def int_riscv_esp_vld_128_ip_pie :
+	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_srci_2q: ClangBuiltin<"__builtin_riscv_esp_srci_2q">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
+def int_riscv_esp_vld_h_64_ip_pie :
+	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_srcmb_s16_q_qacc: ClangBuiltin<"__builtin_riscv_esp_srcmb_s16_q_qacc">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
+def int_riscv_esp_vld_l_64_ip_pie :
+	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_srcmb_s16_qacc: ClangBuiltin<"__builtin_riscv_esp_srcmb_s16_qacc">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
+// Legacy Index-form VST for RISCVEsp32P4MemIntrin (no Clang builtin).
+def int_riscv_esp_vst_128_ip_pie :
+	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_srcmb_s8_q_qacc: ClangBuiltin<"__builtin_riscv_esp_srcmb_s8_q_qacc">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
+def int_riscv_esp_vst_h_64_ip_pie :
+	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_srcmb_s8_qacc: ClangBuiltin<"__builtin_riscv_esp_srcmb_s8_qacc">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
+def int_riscv_esp_vst_l_64_ip_pie :
+	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_srcmb_u16_q_qacc: ClangBuiltin<"__builtin_riscv_esp_srcmb_u16_q_qacc">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_srcmb_u16_qacc: ClangBuiltin<"__builtin_riscv_esp_srcmb_u16_qacc">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_srcmb_u8_q_qacc: ClangBuiltin<"__builtin_riscv_esp_srcmb_u8_q_qacc">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_srcmb_u8_qacc: ClangBuiltin<"__builtin_riscv_esp_srcmb_u8_qacc">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_srcq_128_st_incp: ClangBuiltin<"__builtin_riscv_esp_srcq_128_st_incp">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
 
-def int_riscv_esp_srcxxp_2q: ClangBuiltin<"__builtin_riscv_esp_srcxxp_2q">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_srs_s_xacc: ClangBuiltin<"__builtin_riscv_esp_srs_s_xacc">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], []>;
 
-def int_riscv_esp_srs_u_xacc: ClangBuiltin<"__builtin_riscv_esp_srs_u_xacc">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], []>;
 
-def int_riscv_esp_vsl_32: ClangBuiltin<"__builtin_riscv_esp_vsl_32">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
 
-def int_riscv_esp_vsld_16: ClangBuiltin<"__builtin_riscv_esp_vsld_16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vsld_32: ClangBuiltin<"__builtin_riscv_esp_vsld_32">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vsld_8: ClangBuiltin<"__builtin_riscv_esp_vsld_8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vsr_s32: ClangBuiltin<"__builtin_riscv_esp_vsr_s32">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
 
-def int_riscv_esp_vsr_u32: ClangBuiltin<"__builtin_riscv_esp_vsr_u32">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
 
-def int_riscv_esp_vsrd_16: ClangBuiltin<"__builtin_riscv_esp_vsrd_16">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vsrd_32: ClangBuiltin<"__builtin_riscv_esp_vsrd_32">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vsrd_8: ClangBuiltin<"__builtin_riscv_esp_vsrd_8">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_st_s_xacc_ip: ClangBuiltin<"__builtin_riscv_esp_st_s_xacc_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
 
-def int_riscv_esp_st_u_xacc_ip: ClangBuiltin<"__builtin_riscv_esp_st_u_xacc_ip">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
 
-def int_riscv_esp_vcmulas_s16_qacc_h_2p2: ClangBuiltin<"__builtin_riscv_esp_vcmulas_s16_qacc_h_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vcmulas_s16_qacc_h_ld_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_vcmulas_s16_qacc_h_ld_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vcmulas_s16_qacc_h_ld_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_vcmulas_s16_qacc_h_ld_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vcmulas_s16_qacc_l_2p2: ClangBuiltin<"__builtin_riscv_esp_vcmulas_s16_qacc_l_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vcmulas_s16_qacc_l_ld_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_vcmulas_s16_qacc_l_ld_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vcmulas_s16_qacc_l_ld_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_vcmulas_s16_qacc_l_ld_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vcmulas_s8_qacc_h_2p2: ClangBuiltin<"__builtin_riscv_esp_vcmulas_s8_qacc_h_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vcmulas_s8_qacc_h_ld_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_vcmulas_s8_qacc_h_ld_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vcmulas_s8_qacc_h_ld_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_vcmulas_s8_qacc_h_ld_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vcmulas_s8_qacc_l_2p2: ClangBuiltin<"__builtin_riscv_esp_vcmulas_s8_qacc_l_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vcmulas_s8_qacc_l_ld_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_vcmulas_s8_qacc_l_ld_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vcmulas_s8_qacc_l_ld_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_vcmulas_s8_qacc_l_ld_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vmulas_s16_qacc_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_s16_qacc_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmulas_s16_qacc_ld_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_s16_qacc_ld_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vmulas_s16_qacc_ld_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_s16_qacc_ld_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vmulas_s16_qacc_st_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_s16_qacc_st_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vmulas_s16_qacc_st_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_s16_qacc_st_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vmulas_s16_xacc_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_s16_xacc_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmulas_s16_xacc_ld_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_s16_xacc_ld_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vmulas_s16_xacc_ld_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_s16_xacc_ld_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vmulas_s16_xacc_st_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_s16_xacc_st_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vmulas_s16_xacc_st_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_s16_xacc_st_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vmulas_s8_qacc_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_s8_qacc_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmulas_s8_qacc_ld_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_s8_qacc_ld_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vmulas_s8_qacc_ld_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_s8_qacc_ld_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vmulas_s8_qacc_st_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_s8_qacc_st_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vmulas_s8_qacc_st_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_s8_qacc_st_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vmulas_s8_xacc_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_s8_xacc_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmulas_s8_xacc_ld_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_s8_xacc_ld_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vmulas_s8_xacc_ld_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_s8_xacc_ld_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vmulas_s8_xacc_st_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_s8_xacc_st_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vmulas_s8_xacc_st_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_s8_xacc_st_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vmulas_u16_qacc_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_u16_qacc_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmulas_u16_qacc_ld_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_u16_qacc_ld_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vmulas_u16_qacc_ld_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_u16_qacc_ld_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vmulas_u16_qacc_st_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_u16_qacc_st_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vmulas_u16_qacc_st_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_u16_qacc_st_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vmulas_u16_xacc_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_u16_xacc_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vmulas_u16_xacc_ld_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_u16_xacc_ld_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
-
-def int_riscv_esp_vmulas_u16_xacc_ld_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_u16_xacc_ld_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
-
-def int_riscv_esp_vmulas_u16_xacc_st_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_u16_xacc_st_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
-
-def int_riscv_esp_vmulas_u16_xacc_st_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_u16_xacc_st_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<5>>]>;
-
-def int_riscv_esp_vmulas_u8_qacc_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_u8_qacc_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vmulas_u8_qacc_ld_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_u8_qacc_ld_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
-
-def int_riscv_esp_vmulas_u8_qacc_ld_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_u8_qacc_ld_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
-
-def int_riscv_esp_vmulas_u8_qacc_st_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_u8_qacc_st_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
-
-def int_riscv_esp_vmulas_u8_qacc_st_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_u8_qacc_st_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<5>>]>;
-
-def int_riscv_esp_vmulas_u8_xacc_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_u8_xacc_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vmulas_u8_xacc_ld_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_u8_xacc_ld_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
-
-def int_riscv_esp_vmulas_u8_xacc_ld_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_u8_xacc_ld_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
-
-def int_riscv_esp_vmulas_u8_xacc_st_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_u8_xacc_st_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
-
-def int_riscv_esp_vmulas_u8_xacc_st_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_u8_xacc_st_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<5>>]>;
-
-def int_riscv_esp_vmulas_s16_qacc_ldbc_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_s16_qacc_ldbc_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vmulas_s8_qacc_ldbc_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_s8_qacc_ldbc_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vmulas_u16_qacc_ldbc_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_u16_qacc_ldbc_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vmulas_u8_qacc_ldbc_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmulas_u8_qacc_ldbc_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
 def int_riscv_esp_vsmulas_s16_qacc_2p2: ClangBuiltin<"__builtin_riscv_esp_vsmulas_s16_qacc_2p2">,
 	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
@@ -1269,24 +348,6 @@ def int_riscv_esp_vsmulas_u8_qacc_2p2: ClangBuiltin<"__builtin_riscv_esp_vsmulas
 def int_riscv_esp_vsmulas_u8_qacc_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vsmulas_u8_qacc_ld_incp_2p2">,
 	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_cmul_s16_2p2: ClangBuiltin<"__builtin_riscv_esp_cmul_s16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
-
-def int_riscv_esp_cmul_s16_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_cmul_s16_ld_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>, ImmArg<ArgIndex<6>>, ImmArg<ArgIndex<7>>]>;
-
-def int_riscv_esp_cmul_s16_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_cmul_s16_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>, ImmArg<ArgIndex<6>>, ImmArg<ArgIndex<7>>]>;
-
-def int_riscv_esp_cmul_s8_2p2: ClangBuiltin<"__builtin_riscv_esp_cmul_s8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
-
-def int_riscv_esp_cmul_s8_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_cmul_s8_ld_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>, ImmArg<ArgIndex<6>>, ImmArg<ArgIndex<7>>]>;
-
-def int_riscv_esp_cmul_s8_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_cmul_s8_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>, ImmArg<ArgIndex<6>>, ImmArg<ArgIndex<7>>]>;
-
 def int_riscv_esp_cmul_u16_2p2: ClangBuiltin<"__builtin_riscv_esp_cmul_u16_2p2">,
 	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
@@ -1305,365 +366,115 @@ def int_riscv_esp_cmul_u8_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_cmul_u8
 def int_riscv_esp_cmul_u8_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_cmul_u8_st_incp_2p2">,
 	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>, ImmArg<ArgIndex<6>>, ImmArg<ArgIndex<7>>]>;
 
-def int_riscv_esp_max_s16_a_2p2: ClangBuiltin<"__builtin_riscv_esp_max_s16_a_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
 
-def int_riscv_esp_max_s32_a_2p2: ClangBuiltin<"__builtin_riscv_esp_max_s32_a_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
 
-def int_riscv_esp_max_s8_a_2p2: ClangBuiltin<"__builtin_riscv_esp_max_s8_a_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
 
-def int_riscv_esp_max_u16_a_2p2: ClangBuiltin<"__builtin_riscv_esp_max_u16_a_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
 
-def int_riscv_esp_max_u32_a_2p2: ClangBuiltin<"__builtin_riscv_esp_max_u32_a_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
 
-def int_riscv_esp_max_u8_a_2p2: ClangBuiltin<"__builtin_riscv_esp_max_u8_a_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
 
-def int_riscv_esp_min_s16_a_2p2: ClangBuiltin<"__builtin_riscv_esp_min_s16_a_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
 
-def int_riscv_esp_min_s32_a_2p2: ClangBuiltin<"__builtin_riscv_esp_min_s32_a_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
 
-def int_riscv_esp_min_s8_a_2p2: ClangBuiltin<"__builtin_riscv_esp_min_s8_a_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
 
-def int_riscv_esp_min_u16_a_2p2: ClangBuiltin<"__builtin_riscv_esp_min_u16_a_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
 
-def int_riscv_esp_min_u32_a_2p2: ClangBuiltin<"__builtin_riscv_esp_min_u32_a_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
 
-def int_riscv_esp_min_u8_a_2p2: ClangBuiltin<"__builtin_riscv_esp_min_u8_a_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
 
-def int_riscv_esp_vabs_16_2p2: ClangBuiltin<"__builtin_riscv_esp_vabs_16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
 
-def int_riscv_esp_vabs_32_2p2: ClangBuiltin<"__builtin_riscv_esp_vabs_32_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
 
-def int_riscv_esp_vabs_8_2p2: ClangBuiltin<"__builtin_riscv_esp_vabs_8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
 
-def int_riscv_esp_vadd_s16_2p2: ClangBuiltin<"__builtin_riscv_esp_vadd_s16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vadd_s16_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vadd_s16_ld_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vadd_s16_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vadd_s16_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vadd_s32_2p2: ClangBuiltin<"__builtin_riscv_esp_vadd_s32_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vadd_s32_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vadd_s32_ld_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vadd_s32_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vadd_s32_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vadd_s8_2p2: ClangBuiltin<"__builtin_riscv_esp_vadd_s8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vadd_s8_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vadd_s8_ld_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vadd_s8_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vadd_s8_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vadd_u16_2p2: ClangBuiltin<"__builtin_riscv_esp_vadd_u16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vadd_u16_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vadd_u16_ld_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vadd_u16_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vadd_u16_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vadd_u32_2p2: ClangBuiltin<"__builtin_riscv_esp_vadd_u32_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vadd_u32_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vadd_u32_ld_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vadd_u32_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vadd_u32_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vadd_u8_2p2: ClangBuiltin<"__builtin_riscv_esp_vadd_u8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vadd_u8_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vadd_u8_ld_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vadd_u8_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vadd_u8_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vclamp_s16_2p2: ClangBuiltin<"__builtin_riscv_esp_vclamp_s16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmax_s16_2p2: ClangBuiltin<"__builtin_riscv_esp_vmax_s16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmax_s16_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmax_s16_ld_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmax_s16_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmax_s16_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmax_s32_2p2: ClangBuiltin<"__builtin_riscv_esp_vmax_s32_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmax_s32_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmax_s32_ld_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmax_s32_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmax_s32_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmax_s8_2p2: ClangBuiltin<"__builtin_riscv_esp_vmax_s8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmax_s8_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmax_s8_ld_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmax_s8_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmax_s8_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmax_u16_2p2: ClangBuiltin<"__builtin_riscv_esp_vmax_u16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmax_u16_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmax_u16_ld_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmax_u16_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmax_u16_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmax_u32_2p2: ClangBuiltin<"__builtin_riscv_esp_vmax_u32_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmax_u32_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmax_u32_ld_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmax_u32_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmax_u32_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmax_u8_2p2: ClangBuiltin<"__builtin_riscv_esp_vmax_u8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmax_u8_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmax_u8_ld_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmax_u8_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmax_u8_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmin_s16_2p2: ClangBuiltin<"__builtin_riscv_esp_vmin_s16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmin_s16_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmin_s16_ld_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmin_s16_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmin_s16_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmin_s32_2p2: ClangBuiltin<"__builtin_riscv_esp_vmin_s32_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmin_s32_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmin_s32_ld_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmin_s32_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmin_s32_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmin_s8_2p2: ClangBuiltin<"__builtin_riscv_esp_vmin_s8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmin_s8_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmin_s8_ld_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmin_s8_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmin_s8_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmin_u16_2p2: ClangBuiltin<"__builtin_riscv_esp_vmin_u16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmin_u16_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmin_u16_ld_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmin_u16_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmin_u16_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmin_u32_2p2: ClangBuiltin<"__builtin_riscv_esp_vmin_u32_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmin_u32_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmin_u32_ld_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmin_u32_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmin_u32_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmin_u8_2p2: ClangBuiltin<"__builtin_riscv_esp_vmin_u8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
 
-def int_riscv_esp_vmin_u8_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmin_u8_ld_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmin_u8_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmin_u8_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmul_s16_2p2: ClangBuiltin<"__builtin_riscv_esp_vmul_s16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmul_s16_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmul_s16_ld_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>, ImmArg<ArgIndex<6>>]>;
 
-def int_riscv_esp_vmul_s16_s8xs8_2p2: ClangBuiltin<"__builtin_riscv_esp_vmul_s16_s8xs8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmul_s16_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmul_s16_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>, ImmArg<ArgIndex<6>>]>;
 
-def int_riscv_esp_vmul_s32_s16xs16_2p2: ClangBuiltin<"__builtin_riscv_esp_vmul_s32_s16xs16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmul_s8_2p2: ClangBuiltin<"__builtin_riscv_esp_vmul_s8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmul_s8_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmul_s8_ld_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>, ImmArg<ArgIndex<6>>]>;
 
-def int_riscv_esp_vmul_s8_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmul_s8_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>, ImmArg<ArgIndex<6>>]>;
 
-def int_riscv_esp_vmul_u16_2p2: ClangBuiltin<"__builtin_riscv_esp_vmul_u16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmul_u16_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmul_u16_ld_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>, ImmArg<ArgIndex<6>>]>;
 
-def int_riscv_esp_vmul_u16_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmul_u16_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>, ImmArg<ArgIndex<6>>]>;
 
-def int_riscv_esp_vmul_u8_2p2: ClangBuiltin<"__builtin_riscv_esp_vmul_u8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vmul_u8_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmul_u8_ld_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>, ImmArg<ArgIndex<6>>]>;
 
-def int_riscv_esp_vmul_u8_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vmul_u8_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>, ImmArg<ArgIndex<6>>]>;
 
-def int_riscv_esp_vprelu_s16_2p2: ClangBuiltin<"__builtin_riscv_esp_vprelu_s16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vprelu_s8_2p2: ClangBuiltin<"__builtin_riscv_esp_vprelu_s8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vrelu_s16_2p2: ClangBuiltin<"__builtin_riscv_esp_vrelu_s16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vrelu_s8_2p2: ClangBuiltin<"__builtin_riscv_esp_vrelu_s8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
 
-def int_riscv_esp_vsadds_s16_2p2: ClangBuiltin<"__builtin_riscv_esp_vsadds_s16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vsadds_s8_2p2: ClangBuiltin<"__builtin_riscv_esp_vsadds_s8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vsadds_u16_2p2: ClangBuiltin<"__builtin_riscv_esp_vsadds_u16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vsadds_u8_2p2: ClangBuiltin<"__builtin_riscv_esp_vsadds_u8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vsat_s16_2p2: ClangBuiltin<"__builtin_riscv_esp_vsat_s16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vsat_s32_2p2: ClangBuiltin<"__builtin_riscv_esp_vsat_s32_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vsat_s8_2p2: ClangBuiltin<"__builtin_riscv_esp_vsat_s8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vsat_u16_2p2: ClangBuiltin<"__builtin_riscv_esp_vsat_u16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vsat_u32_2p2: ClangBuiltin<"__builtin_riscv_esp_vsat_u32_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vsat_u8_2p2: ClangBuiltin<"__builtin_riscv_esp_vsat_u8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vssubs_s16_2p2: ClangBuiltin<"__builtin_riscv_esp_vssubs_s16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vssubs_s8_2p2: ClangBuiltin<"__builtin_riscv_esp_vssubs_s8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vssubs_u16_2p2: ClangBuiltin<"__builtin_riscv_esp_vssubs_u16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vssubs_u8_2p2: ClangBuiltin<"__builtin_riscv_esp_vssubs_u8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vsub_s16_2p2: ClangBuiltin<"__builtin_riscv_esp_vsub_s16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vsub_s16_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vsub_s16_ld_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vsub_s16_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vsub_s16_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vsub_s32_2p2: ClangBuiltin<"__builtin_riscv_esp_vsub_s32_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vsub_s32_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vsub_s32_ld_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vsub_s32_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vsub_s32_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
-def int_riscv_esp_vsub_s8_2p2: ClangBuiltin<"__builtin_riscv_esp_vsub_s8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
 
-def int_riscv_esp_vsub_s8_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vsub_s8_ld_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
-
-def int_riscv_esp_vsub_s8_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vsub_s8_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
-
-def int_riscv_esp_vsub_u16_2p2: ClangBuiltin<"__builtin_riscv_esp_vsub_u16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
-
-def int_riscv_esp_vsub_u16_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vsub_u16_ld_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
-
-def int_riscv_esp_vsub_u16_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vsub_u16_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
-
-def int_riscv_esp_vsub_u32_2p2: ClangBuiltin<"__builtin_riscv_esp_vsub_u32_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
-
-def int_riscv_esp_vsub_u32_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vsub_u32_ld_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
-
-def int_riscv_esp_vsub_u32_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vsub_u32_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
-
-def int_riscv_esp_vsub_u8_2p2: ClangBuiltin<"__builtin_riscv_esp_vsub_u8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
-
-def int_riscv_esp_vsub_u8_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vsub_u8_ld_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
-
-def int_riscv_esp_vsub_u8_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vsub_u8_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
 
 def int_riscv_esp_addx2_2p2: ClangBuiltin<"__builtin_riscv_esp_addx2_2p2">,
 	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], []>;
@@ -1680,245 +491,17 @@ def int_riscv_esp_subx2_2p2: ClangBuiltin<"__builtin_riscv_esp_subx2_2p2">,
 def int_riscv_esp_subx4_2p2: ClangBuiltin<"__builtin_riscv_esp_subx4_2p2">,
 	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], []>;
 
-def int_riscv_esp_vcmp_eq_s16_2p2: ClangBuiltin<"__builtin_riscv_esp_vcmp_eq_s16_2p2">,
+
+
+
+
+
+
+
+
+
+def int_riscv_esp_vsl_u32_2p2: ClangBuiltin<"__builtin_riscv_esp_vsl_u32_2p2">,
 	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vcmp_eq_s32_2p2: ClangBuiltin<"__builtin_riscv_esp_vcmp_eq_s32_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vcmp_eq_s8_2p2: ClangBuiltin<"__builtin_riscv_esp_vcmp_eq_s8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vcmp_eq_u16_2p2: ClangBuiltin<"__builtin_riscv_esp_vcmp_eq_u16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vcmp_eq_u32_2p2: ClangBuiltin<"__builtin_riscv_esp_vcmp_eq_u32_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vcmp_eq_u8_2p2: ClangBuiltin<"__builtin_riscv_esp_vcmp_eq_u8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vcmp_gt_s16_2p2: ClangBuiltin<"__builtin_riscv_esp_vcmp_gt_s16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vcmp_gt_s32_2p2: ClangBuiltin<"__builtin_riscv_esp_vcmp_gt_s32_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vcmp_gt_s8_2p2: ClangBuiltin<"__builtin_riscv_esp_vcmp_gt_s8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vcmp_gt_u16_2p2: ClangBuiltin<"__builtin_riscv_esp_vcmp_gt_u16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vcmp_gt_u32_2p2: ClangBuiltin<"__builtin_riscv_esp_vcmp_gt_u32_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vcmp_gt_u8_2p2: ClangBuiltin<"__builtin_riscv_esp_vcmp_gt_u8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vcmp_lt_s16_2p2: ClangBuiltin<"__builtin_riscv_esp_vcmp_lt_s16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vcmp_lt_s32_2p2: ClangBuiltin<"__builtin_riscv_esp_vcmp_lt_s32_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vcmp_lt_s8_2p2: ClangBuiltin<"__builtin_riscv_esp_vcmp_lt_s8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vcmp_lt_u16_2p2: ClangBuiltin<"__builtin_riscv_esp_vcmp_lt_u16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vcmp_lt_u32_2p2: ClangBuiltin<"__builtin_riscv_esp_vcmp_lt_u32_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vcmp_lt_u8_2p2: ClangBuiltin<"__builtin_riscv_esp_vcmp_lt_u8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_mov_s16_qacc_2p2: ClangBuiltin<"__builtin_riscv_esp_mov_s16_qacc_2p2">,
-	Intrinsic<[], [llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
-
-def int_riscv_esp_mov_s8_qacc_2p2: ClangBuiltin<"__builtin_riscv_esp_mov_s8_qacc_2p2">,
-	Intrinsic<[], [llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
-
-def int_riscv_esp_mov_u16_qacc_2p2: ClangBuiltin<"__builtin_riscv_esp_mov_u16_qacc_2p2">,
-	Intrinsic<[], [llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
-
-def int_riscv_esp_mov_u8_qacc_2p2: ClangBuiltin<"__builtin_riscv_esp_mov_u8_qacc_2p2">,
-	Intrinsic<[], [llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
-
-def int_riscv_esp_movi_16_a_2p2: ClangBuiltin<"__builtin_riscv_esp_movi_16_a_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_movi_16_q_2p2: ClangBuiltin<"__builtin_riscv_esp_movi_16_q_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_movi_32_a_2p2: ClangBuiltin<"__builtin_riscv_esp_movi_32_a_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_movi_32_q_2p2: ClangBuiltin<"__builtin_riscv_esp_movi_32_q_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_movi_8_a_2p2: ClangBuiltin<"__builtin_riscv_esp_movi_8_a_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_movi_8_q_2p2: ClangBuiltin<"__builtin_riscv_esp_movi_8_q_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_movx_r_cfg_2p2: ClangBuiltin<"__builtin_riscv_esp_movx_r_cfg_2p2">,
-	Intrinsic<[], [llvm_i32_ty], []>;
-
-def int_riscv_esp_movx_r_fft_bit_width_2p2: ClangBuiltin<"__builtin_riscv_esp_movx_r_fft_bit_width_2p2">,
-	Intrinsic<[], [llvm_i32_ty], []>;
-
-def int_riscv_esp_movx_r_perf_2p2: ClangBuiltin<"__builtin_riscv_esp_movx_r_perf_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], []>;
-
-def int_riscv_esp_movx_r_sar_2p2: ClangBuiltin<"__builtin_riscv_esp_movx_r_sar_2p2">,
-	Intrinsic<[], [llvm_i32_ty], []>;
-
-def int_riscv_esp_movx_r_sar_bytes_2p2: ClangBuiltin<"__builtin_riscv_esp_movx_r_sar_bytes_2p2">,
-	Intrinsic<[], [llvm_i32_ty], []>;
-
-def int_riscv_esp_movx_r_xacc_h_2p2: ClangBuiltin<"__builtin_riscv_esp_movx_r_xacc_h_2p2">,
-	Intrinsic<[], [llvm_i32_ty], []>;
-
-def int_riscv_esp_movx_r_xacc_l_2p2: ClangBuiltin<"__builtin_riscv_esp_movx_r_xacc_l_2p2">,
-	Intrinsic<[], [llvm_i32_ty], []>;
-
-def int_riscv_esp_movx_w_cfg_2p2: ClangBuiltin<"__builtin_riscv_esp_movx_w_cfg_2p2">,
-	Intrinsic<[], [llvm_i32_ty], []>;
-
-def int_riscv_esp_movx_w_fft_bit_width_2p2: ClangBuiltin<"__builtin_riscv_esp_movx_w_fft_bit_width_2p2">,
-	Intrinsic<[], [llvm_i32_ty], []>;
-
-def int_riscv_esp_movx_w_perf_2p2: ClangBuiltin<"__builtin_riscv_esp_movx_w_perf_2p2">,
-	Intrinsic<[], [llvm_i32_ty], []>;
-
-def int_riscv_esp_movx_w_sar_2p2: ClangBuiltin<"__builtin_riscv_esp_movx_w_sar_2p2">,
-	Intrinsic<[], [llvm_i32_ty], []>;
-
-def int_riscv_esp_movx_w_sar_bytes_2p2: ClangBuiltin<"__builtin_riscv_esp_movx_w_sar_bytes_2p2">,
-	Intrinsic<[], [llvm_i32_ty], []>;
-
-def int_riscv_esp_movx_w_xacc_h_2p2: ClangBuiltin<"__builtin_riscv_esp_movx_w_xacc_h_2p2">,
-	Intrinsic<[], [llvm_i32_ty], []>;
-
-def int_riscv_esp_movx_w_xacc_l_2p2: ClangBuiltin<"__builtin_riscv_esp_movx_w_xacc_l_2p2">,
-	Intrinsic<[], [llvm_i32_ty], []>;
-
-def int_riscv_esp_vext_s16_2p2: ClangBuiltin<"__builtin_riscv_esp_vext_s16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vext_s8_2p2: ClangBuiltin<"__builtin_riscv_esp_vext_s8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vext_u16_2p2: ClangBuiltin<"__builtin_riscv_esp_vext_u16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vext_u8_2p2: ClangBuiltin<"__builtin_riscv_esp_vext_u8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vunzip_16_2p2: ClangBuiltin<"__builtin_riscv_esp_vunzip_16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_vunzip_32_2p2: ClangBuiltin<"__builtin_riscv_esp_vunzip_32_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_vunzip_8_2p2: ClangBuiltin<"__builtin_riscv_esp_vunzip_8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_vunzipt_16_2p2: ClangBuiltin<"__builtin_riscv_esp_vunzipt_16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vunzipt_8_2p2: ClangBuiltin<"__builtin_riscv_esp_vunzipt_8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vzip_16_2p2: ClangBuiltin<"__builtin_riscv_esp_vzip_16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_vzip_32_2p2: ClangBuiltin<"__builtin_riscv_esp_vzip_32_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_vzip_8_2p2: ClangBuiltin<"__builtin_riscv_esp_vzip_8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_vzipt_16_2p2: ClangBuiltin<"__builtin_riscv_esp_vzipt_16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vzipt_8_2p2: ClangBuiltin<"__builtin_riscv_esp_vzipt_8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_zero_q_2p2: ClangBuiltin<"__builtin_riscv_esp_zero_q_2p2">,
-	Intrinsic<[], [llvm_i32_ty], [ImmArg<ArgIndex<0>>]>;
-
-def int_riscv_esp_zero_qacc_2p2: ClangBuiltin<"__builtin_riscv_esp_zero_qacc_2p2">,
-	Intrinsic<[], [], []>;
-
-def int_riscv_esp_zero_xacc_2p2: ClangBuiltin<"__builtin_riscv_esp_zero_xacc_2p2">,
-	Intrinsic<[], [], []>;
-
-def int_riscv_esp_fft_ams_s16_ld_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_fft_ams_s16_ld_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>, ImmArg<ArgIndex<6>>, ImmArg<ArgIndex<7>>, ImmArg<ArgIndex<8>>]>;
-
-def int_riscv_esp_fft_ams_s16_ld_incp_uaup_2p2: ClangBuiltin<"__builtin_riscv_esp_fft_ams_s16_ld_incp_uaup_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>, ImmArg<ArgIndex<6>>, ImmArg<ArgIndex<7>>, ImmArg<ArgIndex<8>>]>;
-
-def int_riscv_esp_fft_ams_s16_ld_r32_decp_2p2: ClangBuiltin<"__builtin_riscv_esp_fft_ams_s16_ld_r32_decp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>, ImmArg<ArgIndex<6>>, ImmArg<ArgIndex<7>>, ImmArg<ArgIndex<8>>]>;
-
-def int_riscv_esp_fft_ams_s16_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_fft_ams_s16_st_incp_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<6>>, ImmArg<ArgIndex<7>>, ImmArg<ArgIndex<8>>]>;
-
-def int_riscv_esp_fft_bitrev_2p2: ClangBuiltin<"__builtin_riscv_esp_fft_bitrev_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_fft_cmul_s16_ld_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_fft_cmul_s16_ld_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>, ImmArg<ArgIndex<6>>, ImmArg<ArgIndex<7>>]>;
-
-def int_riscv_esp_fft_cmul_s16_st_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_fft_cmul_s16_st_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<5>>, ImmArg<ArgIndex<6>>, ImmArg<ArgIndex<7>>, ImmArg<ArgIndex<8>>]>;
-
-def int_riscv_esp_fft_r2bf_s16_2p2: ClangBuiltin<"__builtin_riscv_esp_fft_r2bf_s16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
-
-def int_riscv_esp_fft_r2bf_s16_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_fft_r2bf_s16_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>, ImmArg<ArgIndex<5>>]>;
-
-def int_riscv_esp_fft_vst_r32_decp_2p2: ClangBuiltin<"__builtin_riscv_esp_fft_vst_r32_decp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_ld_128_usar_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_ld_128_usar_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_ld_128_usar_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_ld_128_usar_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_ld_xacc_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_ld_xacc_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_ldqa_s16_128_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_ldqa_s16_128_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_ldqa_s16_128_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_ldqa_s16_128_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], []>;
-
-def int_riscv_esp_ldqa_s8_128_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_ldqa_s8_128_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_ldqa_s8_128_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_ldqa_s8_128_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], []>;
-
-def int_riscv_esp_ldqa_u16_128_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_ldqa_u16_128_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_ldqa_u16_128_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_ldqa_u16_128_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], []>;
-
-def int_riscv_esp_ldqa_u8_128_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_ldqa_u8_128_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_ldqa_u8_128_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_ldqa_u8_128_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], []>;
 
 def int_riscv_esp_vldbc_16_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_vldbc_16_ip_2p2">,
 	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
@@ -1964,170 +547,5 @@ def int_riscv_esp_vldext_u8_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_vldext_u8_
 
 def int_riscv_esp_vldhbc_16_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_vldhbc_16_incp_2p2">,
 	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_ld_qacc_h_h_128_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_ld_qacc_h_h_128_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_ld_qacc_h_l_128_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_ld_qacc_h_l_128_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_ld_qacc_l_h_128_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_ld_qacc_l_h_128_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_ld_qacc_l_l_128_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_ld_qacc_l_l_128_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_ld_ua_state_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_ld_ua_state_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_ldxq_32_2p2: ClangBuiltin<"__builtin_riscv_esp_ldxq_32_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_st_qacc_h_h_128_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_st_qacc_h_h_128_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_st_qacc_h_l_128_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_st_qacc_h_l_128_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_st_qacc_l_h_128_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_st_qacc_l_h_128_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_st_qacc_l_l_128_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_st_qacc_l_l_128_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_st_ua_state_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_st_ua_state_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_stxq_32_2p2: ClangBuiltin<"__builtin_riscv_esp_stxq_32_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vld_128_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_vld_128_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vld_128_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_vld_128_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vld_h_64_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_vld_h_64_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vld_h_64_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_vld_h_64_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vld_l_64_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_vld_l_64_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vld_l_64_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_vld_l_64_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vst_128_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_vst_128_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vst_128_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_vst_128_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_vst_h_64_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_vst_h_64_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vst_h_64_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_vst_h_64_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_vst_l_64_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_vst_l_64_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vst_l_64_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_vst_l_64_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_slci_2q_2p2: ClangBuiltin<"__builtin_riscv_esp_slci_2q_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_slcxxp_2q_2p2: ClangBuiltin<"__builtin_riscv_esp_slcxxp_2q_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
-
-def int_riscv_esp_src_q_2p2: ClangBuiltin<"__builtin_riscv_esp_src_q_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_src_q_ld_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_src_q_ld_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_src_q_ld_xp_2p2: ClangBuiltin<"__builtin_riscv_esp_src_q_ld_xp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_src_q_qup_2p2: ClangBuiltin<"__builtin_riscv_esp_src_q_qup_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_srci_2q_2p2: ClangBuiltin<"__builtin_riscv_esp_srci_2q_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_srcmb_s16_q_qacc_2p2: ClangBuiltin<"__builtin_riscv_esp_srcmb_s16_q_qacc_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
-
-def int_riscv_esp_srcmb_s16_qacc_2p2: ClangBuiltin<"__builtin_riscv_esp_srcmb_s16_qacc_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
-
-def int_riscv_esp_srcmb_s8_q_qacc_2p2: ClangBuiltin<"__builtin_riscv_esp_srcmb_s8_q_qacc_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
-
-def int_riscv_esp_srcmb_s8_qacc_2p2: ClangBuiltin<"__builtin_riscv_esp_srcmb_s8_qacc_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
-
-def int_riscv_esp_srcmb_u16_q_qacc_2p2: ClangBuiltin<"__builtin_riscv_esp_srcmb_u16_q_qacc_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
-
-def int_riscv_esp_srcmb_u16_qacc_2p2: ClangBuiltin<"__builtin_riscv_esp_srcmb_u16_qacc_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
-
-def int_riscv_esp_srcmb_u8_q_qacc_2p2: ClangBuiltin<"__builtin_riscv_esp_srcmb_u8_q_qacc_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
-
-def int_riscv_esp_srcmb_u8_qacc_2p2: ClangBuiltin<"__builtin_riscv_esp_srcmb_u8_qacc_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
-
-def int_riscv_esp_srcq_128_st_incp_2p2: ClangBuiltin<"__builtin_riscv_esp_srcq_128_st_incp_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_srcxxp_2q_2p2: ClangBuiltin<"__builtin_riscv_esp_srcxxp_2q_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>]>;
-
-def int_riscv_esp_srs_s_xacc_2p2: ClangBuiltin<"__builtin_riscv_esp_srs_s_xacc_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_srs_u_xacc_2p2: ClangBuiltin<"__builtin_riscv_esp_srs_u_xacc_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vsl_s32_2p2: ClangBuiltin<"__builtin_riscv_esp_vsl_s32_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vsl_u32_2p2: ClangBuiltin<"__builtin_riscv_esp_vsl_u32_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vsld_16_2p2: ClangBuiltin<"__builtin_riscv_esp_vsld_16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vsld_32_2p2: ClangBuiltin<"__builtin_riscv_esp_vsld_32_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vsld_8_2p2: ClangBuiltin<"__builtin_riscv_esp_vsld_8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vsr_s32_2p2: ClangBuiltin<"__builtin_riscv_esp_vsr_s32_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vsr_u32_2p2: ClangBuiltin<"__builtin_riscv_esp_vsr_u32_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>]>;
-
-def int_riscv_esp_vsrd_16_2p2: ClangBuiltin<"__builtin_riscv_esp_vsrd_16_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vsrd_32_2p2: ClangBuiltin<"__builtin_riscv_esp_vsrd_32_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_vsrd_8_2p2: ClangBuiltin<"__builtin_riscv_esp_vsrd_8_2p2">,
-	Intrinsic<[], [llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<0>>, ImmArg<ArgIndex<1>>, ImmArg<ArgIndex<2>>, ImmArg<ArgIndex<3>>, ImmArg<ArgIndex<4>>]>;
-
-def int_riscv_esp_st_s_xacc_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_st_s_xacc_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
-
-def int_riscv_esp_st_u_xacc_ip_2p2: ClangBuiltin<"__builtin_riscv_esp_st_u_xacc_ip_2p2">,
-	Intrinsic<[llvm_i32_ty], [llvm_i32_ty, llvm_i32_ty], [ImmArg<ArgIndex<1>>]>;
 
 }

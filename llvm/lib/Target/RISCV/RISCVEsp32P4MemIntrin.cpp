@@ -61,24 +61,6 @@ static bool helperCallTypesMatch(Function *F, Value *DstAddr, Value *SrcAddr,
          FTy->getParamType(2) == Size->getType();
 }
 
-// RV32: copy 8 unaligned bytes as two i32 loads/stores (no i64).
-static void emitUnaligned8ByteCopy(IRBuilder<> &B, Value *Src, Value *Dst) {
-  Value *Load0 = B.CreateAlignedLoad(B.getInt32Ty(), Src, Align(1));
-  B.CreateAlignedStore(Load0, Dst, Align(1));
-  Value *Src4 = B.CreateGEP(B.getInt8Ty(), Src, B.getInt32(4), "src.4");
-  Value *Dst4 = B.CreateGEP(B.getInt8Ty(), Dst, B.getInt32(4), "dst.4");
-  Value *Load1 = B.CreateAlignedLoad(B.getInt32Ty(), Src4, Align(1));
-  B.CreateAlignedStore(Load1, Dst4, Align(1));
-}
-
-#ifndef NDEBUG
-static void verifyMemCpyHelper(Function *F) {
-  if (verifyFunction(*F, &errs()))
-    report_fatal_error(
-        "RISCVEsp32P4MemIntrin: created invalid helper function");
-}
-#endif
-
 bool RISCVEsp32P4MemIntrinBase::useExistingHelperFunction(
     MemCpyInst *M, IRBuilder<> &Builder, const std::string &FuncName,
     Value *DstAddr, Value *SrcAddr, Value *Size) {
@@ -376,7 +358,7 @@ RISCVEsp32P4MemIntrin::createEspVld128Ip(IRBuilder<> &Builder, Value *Src) {
 
   // Get new intrinsic declaration with _m suffix
   Function *IntrinsicFunc = Intrinsic::getOrInsertDeclaration(
-      TheModule, Intrinsic::riscv_esp_vld_128_ip_m, {});
+      TheModule, Intrinsic::riscv_esp_vld_128_ip, {});
   // Create intrinsic call, returns {vector_data, updated_pointer}
   Value *Call = Builder.CreateCall(
       IntrinsicFunc, {Src, ConstantInt::get(i32Ty, 16)}, "vld128ip_m");
@@ -394,7 +376,7 @@ Value *RISCVEsp32P4MemIntrin::createEspVld128Ip(IRBuilder<> &Builder,
   assert(Index >= 0 && Index <= 7 && "Index must be between 0 and 7");
   Type *i32Ty = Builder.getInt32Ty();
   Function *IntrinsicFunc = Intrinsic::getDeclarationIfExists(
-      TheModule, Intrinsic::riscv_esp_vld_128_ip, {});
+      TheModule, Intrinsic::riscv_esp_vld_128_ip_pie, {});
   return Builder.CreateCall(
       IntrinsicFunc,
       {Src, ConstantInt::get(i32Ty, 16), ConstantInt::get(i32Ty, Index)},
@@ -408,7 +390,7 @@ RISCVEsp32P4MemIntrin::createEspVldH64Ip(IRBuilder<> &Builder, Value *Src) {
   Type *i32Ty = Builder.getInt32Ty();
 
   Function *IntrinsicFunc = Intrinsic::getOrInsertDeclaration(
-      TheModule, Intrinsic::riscv_esp_vld_h_64_ip_m, {});
+      TheModule, Intrinsic::riscv_esp_vld_h_64_ip, {});
   Value *Call = Builder.CreateCall(
       IntrinsicFunc, {Src, ConstantInt::get(i32Ty, 8)}, "vldh64ip_m");
 
@@ -424,7 +406,7 @@ Value *RISCVEsp32P4MemIntrin::createEspVldH64Ip(IRBuilder<> &Builder,
   assert(Index >= 0 && Index <= 7 && "Index must be between 0 and 7");
   Type *i32Ty = Builder.getInt32Ty();
   Function *IntrinsicFunc = Intrinsic::getDeclarationIfExists(
-      TheModule, Intrinsic::riscv_esp_vld_h_64_ip, {});
+      TheModule, Intrinsic::riscv_esp_vld_h_64_ip_pie, {});
   return Builder.CreateCall(
       IntrinsicFunc,
       {Src, ConstantInt::get(i32Ty, 8), ConstantInt::get(i32Ty, Index)},
@@ -438,7 +420,7 @@ RISCVEsp32P4MemIntrin::createEspVldL64Ip(IRBuilder<> &Builder, Value *Src) {
   Type *i32Ty = Builder.getInt32Ty();
 
   Function *IntrinsicFunc = Intrinsic::getOrInsertDeclaration(
-      TheModule, Intrinsic::riscv_esp_vld_l_64_ip_m, {});
+      TheModule, Intrinsic::riscv_esp_vld_l_64_ip, {});
   Value *Call = Builder.CreateCall(
       IntrinsicFunc, {Src, ConstantInt::get(i32Ty, 8)}, "vldl64ip_m");
 
@@ -454,7 +436,7 @@ Value *RISCVEsp32P4MemIntrin::createEspVldL64Ip(IRBuilder<> &Builder,
   assert(Index >= 0 && Index <= 7 && "Index must be between 0 and 7");
   Type *i32Ty = Builder.getInt32Ty();
   Function *IntrinsicFunc = Intrinsic::getDeclarationIfExists(
-      TheModule, Intrinsic::riscv_esp_vld_l_64_ip, {});
+      TheModule, Intrinsic::riscv_esp_vld_l_64_ip_pie, {});
   return Builder.CreateCall(
       IntrinsicFunc,
       {Src, ConstantInt::get(i32Ty, 8), ConstantInt::get(i32Ty, Index)},
@@ -468,7 +450,7 @@ Value *RISCVEsp32P4MemIntrin::createEspVst128Ip(IRBuilder<> &Builder,
   Type *i32Ty = Builder.getInt32Ty();
 
   Function *IntrinsicFunc = Intrinsic::getOrInsertDeclaration(
-      TheModule, Intrinsic::riscv_esp_vst_128_ip_m, {});
+      TheModule, Intrinsic::riscv_esp_vst_128_ip, {});
   Value *CallResult = Builder.CreateCall(
       IntrinsicFunc, {VectorData, dst, ConstantInt::get(i32Ty, 16)},
       "vst128ip_m");
@@ -482,7 +464,7 @@ Value *RISCVEsp32P4MemIntrin::createEspVst128Ip(IRBuilder<> &Builder,
   assert(Index >= 0 && Index <= 7 && "Index must be between 0 and 7");
   Type *i32Ty = Builder.getInt32Ty();
   Function *IntrinsicFunc = Intrinsic::getDeclarationIfExists(
-      TheModule, Intrinsic::riscv_esp_vst_128_ip, {});
+      TheModule, Intrinsic::riscv_esp_vst_128_ip_pie, {});
   return Builder.CreateCall(
       IntrinsicFunc,
       {ConstantInt::get(i32Ty, Index), Dst, ConstantInt::get(i32Ty, 16)},
@@ -496,7 +478,7 @@ Value *RISCVEsp32P4MemIntrin::createEspVstH64Ip(IRBuilder<> &Builder,
   Type *i32Ty = Builder.getInt32Ty();
 
   Function *IntrinsicFunc = Intrinsic::getOrInsertDeclaration(
-      TheModule, Intrinsic::riscv_esp_vst_h_64_ip_m, {});
+      TheModule, Intrinsic::riscv_esp_vst_h_64_ip, {});
   Value *CallResult = Builder.CreateCall(
       IntrinsicFunc, {VectorData, dst, ConstantInt::get(i32Ty, 8)},
       "vsth64ip_m");
@@ -510,7 +492,7 @@ Value *RISCVEsp32P4MemIntrin::createEspVstH64Ip(IRBuilder<> &Builder,
   assert(Index >= 0 && Index <= 7 && "Index must be between 0 and 7");
   Type *i32Ty = Builder.getInt32Ty();
   Function *IntrinsicFunc = Intrinsic::getDeclarationIfExists(
-      TheModule, Intrinsic::riscv_esp_vst_h_64_ip, {});
+      TheModule, Intrinsic::riscv_esp_vst_h_64_ip_pie, {});
   return Builder.CreateCall(
       IntrinsicFunc,
       {ConstantInt::get(i32Ty, Index), Dst, ConstantInt::get(i32Ty, 8)},
@@ -524,7 +506,7 @@ Value *RISCVEsp32P4MemIntrin::createEspVstL64Ip(IRBuilder<> &Builder,
   Type *i32Ty = Builder.getInt32Ty();
 
   Function *IntrinsicFunc = Intrinsic::getOrInsertDeclaration(
-      TheModule, Intrinsic::riscv_esp_vst_l_64_ip_m, {});
+      TheModule, Intrinsic::riscv_esp_vst_l_64_ip, {});
   Value *CallResult = Builder.CreateCall(
       IntrinsicFunc, {VectorData, dst, ConstantInt::get(i32Ty, 8)},
       "vstl64ip_m");
@@ -538,7 +520,7 @@ Value *RISCVEsp32P4MemIntrin::createEspVstL64Ip(IRBuilder<> &Builder,
   assert(Index >= 0 && Index <= 7 && "Index must be between 0 and 7");
   Type *i32Ty = Builder.getInt32Ty();
   Function *IntrinsicFunc = Intrinsic::getDeclarationIfExists(
-      TheModule, Intrinsic::riscv_esp_vst_l_64_ip, {});
+      TheModule, Intrinsic::riscv_esp_vst_l_64_ip_pie, {});
   return Builder.CreateCall(
       IntrinsicFunc,
       {ConstantInt::get(i32Ty, Index), Dst, ConstantInt::get(i32Ty, 8)},
@@ -1727,7 +1709,7 @@ RISCVEsp32P4MemIntrin::createEspLd128UsarIp(IRBuilder<> &Builder, Value *Src) {
       Src->getType()->isPointerTy() ? Src : Builder.CreateIntToPtr(Src, PtrTy);
 
   Function *IntrinsicFunc = Intrinsic::getOrInsertDeclaration(
-      TheModule, Intrinsic::riscv_esp_ld_128_usar_ip_m, {});
+      TheModule, Intrinsic::riscv_esp_ld_128_usar_ip, {});
   Value *Call = Builder.CreateCall(
       IntrinsicFunc, {SrcPtr, ConstantInt::get(i32Ty, 16)}, "ld128usarip_m");
 
@@ -1744,14 +1726,14 @@ Value *RISCVEsp32P4MemIntrin::createEspLd128UsarIp(IRBuilder<> &Builder,
   assert(Index >= 0 && Index <= 7 && "Index must be between 0 and 7");
   Type *i32Ty = Builder.getInt32Ty();
   Function *IntrinsicFunc = Intrinsic::getDeclarationIfExists(
-      TheModule, Intrinsic::riscv_esp_ld_128_usar_ip, {});
+      TheModule, Intrinsic::riscv_esp_ld_128_usar_ip_pie, {});
   return Builder.CreateCall(
       IntrinsicFunc,
       {Src, ConstantInt::get(i32Ty, 16), ConstantInt::get(i32Ty, Index)},
       "ld128usarip");
 }
 
-// Return the updated src pointer (i32)
+// Unified SRC.Q.LD.IP: (SarBytes, Qy, Qw, SrcPtr, Imm) -> (QwNew, QuNew, Ptr).
 std::tuple<Value *, Value *, Value *>
 RISCVEsp32P4MemIntrin::createEspSrcQLdIp(IRBuilder<> &Builder, Value *SarBytes,
                                          Value *Qy, Value *Qw, Value *SrcPtr,
@@ -1762,10 +1744,10 @@ RISCVEsp32P4MemIntrin::createEspSrcQLdIp(IRBuilder<> &Builder, Value *SarBytes,
                    ? SrcPtr
                    : Builder.CreateIntToPtr(SrcPtr, PtrTy);
   Function *IntrinsicFunc = Intrinsic::getOrInsertDeclaration(
-      TheModule, Intrinsic::riscv_esp_src_q_ld_ip_m, {});
+      TheModule, Intrinsic::riscv_esp_src_q_ld_ip, {});
   Value *Call = Builder.CreateCall(
       IntrinsicFunc, {SarBytes, Qy, Qw, Ptr, ConstantInt::get(i32Ty, Imm)},
-      "srcqldip_m");
+      "srcqldip");
   Value *QwNew = Builder.CreateExtractValue(Call, 0);
   Value *QuNew = Builder.CreateExtractValue(Call, 1);
   Value *UpdatedPtr = Builder.CreateExtractValue(Call, 2);
@@ -1776,9 +1758,8 @@ Value *RISCVEsp32P4MemIntrin::createEspSrcQM(IRBuilder<> &Builder,
                                              Value *SarBytes, Value *Qy,
                                              Value *Qw) {
   Function *IntrinsicFunc = Intrinsic::getOrInsertDeclaration(
-      TheModule, Intrinsic::riscv_esp_src_q_m, {});
-  Value *Call = Builder.CreateCall(IntrinsicFunc, {SarBytes, Qy, Qw}, "srcq_m");
-  return Call;
+      TheModule, Intrinsic::riscv_esp_src_q, {});
+  return Builder.CreateCall(IntrinsicFunc, {SarBytes, Qy, Qw}, "srcq");
 }
 
 // No pointer returned, pure calculation instructions
@@ -1787,8 +1768,8 @@ void RISCVEsp32P4MemIntrin::createEspSrcQ(IRBuilder<> &Builder, int Index0,
   assert(Index0 >= 0 && Index0 <= 7 && "Index must be between 0 and 7");
   assert(Index1 >= 0 && Index1 <= 7 && "Index must be between 0 and 7");
   assert(Index2 >= 0 && Index2 <= 7 && "Index must be between 0 and 7");
-  Function *IntrinsicFunc =
-      Intrinsic::getOrInsertDeclaration(TheModule, Intrinsic::riscv_esp_src_q);
+  Function *IntrinsicFunc = Intrinsic::getDeclarationIfExists(
+      TheModule, Intrinsic::riscv_esp_src_q_pie);
   Type *i32Ty = Builder.getInt32Ty();
   // Intrinsic arguments: q_idx1, q_idx2, q_idx_dst
   Builder.CreateCall(IntrinsicFunc, {ConstantInt::get(i32Ty, Index2),
@@ -2644,10 +2625,6 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst16Common(
       true, MemCpyType::SrcUnalign_Dst16_Var);
   FuncBuilder.CreateBr(ReturnBB);
 
-#ifndef NDEBUG
-  verifyMemCpyHelper(MemCpyFunc);
-#endif
-
   M->eraseFromParent();
   return true;
 }
@@ -2687,7 +2664,10 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst8Const16(
   Value *SizeArg = MemCpyFunc->arg_begin() + 2;
   SizeArg->setName("size");
 
-  emitUnaligned8ByteCopy(FuncBuilder, SrcArg, DstArg);
+  // Load and store the first 8 bytes in the entry block
+  Value *LoadVal =
+      FuncBuilder.CreateAlignedLoad(FuncBuilder.getInt64Ty(), SrcArg, Align(1));
+  FuncBuilder.CreateAlignedStore(LoadVal, DstArg, Align(1));
 
   // Calculate the remaining size after processing first 8 bytes
   Value *RemainingSizeAfterFirst8Bytes = FuncBuilder.CreateSub(
@@ -2704,10 +2684,6 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst8Const16(
                            Align(1), RemainingSizeAfterFirst8Bytes);
 
   FuncBuilder.CreateRetVoid();
-
-#ifndef NDEBUG
-  verifyMemCpyHelper(MemCpyFunc);
-#endif
 
   M->eraseFromParent();
   return true;
@@ -2788,7 +2764,10 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst8Var(
   // if.then9 block
   FuncBuilder.SetInsertPoint(IfEndBB);
 
-  emitUnaligned8ByteCopy(FuncBuilder, SrcArg, DstArg);
+  // Load and store the first 8 bytes in the entry block
+  Value *LoadVal =
+      FuncBuilder.CreateAlignedLoad(FuncBuilder.getInt64Ty(), SrcArg, Align(1));
+  FuncBuilder.CreateAlignedStore(LoadVal, DstArg, Align(1));
 
   Value *RemainingSizeAfter8Bytes = FuncBuilder.CreateSub(
       SizeArg, FuncBuilder.getInt32(8), "remaining.size.after.8bytes");
@@ -2806,10 +2785,6 @@ bool RISCVEsp32P4MemIntrinPass::processSrcUnalignDst8Var(
 
   FuncBuilder.SetInsertPoint(ReturnBB);
   FuncBuilder.CreateRetVoid();
-
-#ifndef NDEBUG
-  verifyMemCpyHelper(MemCpyFunc);
-#endif
 
   M->eraseFromParent();
 

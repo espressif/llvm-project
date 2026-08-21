@@ -382,7 +382,187 @@ def riscv_esp_cmul_s8_st_incp_m : RVSDNode<"ESP_CMUL_S8_ST_INCP_M", SDT_ESPCMULS
 def riscv_esp_cmul_u16_st_incp_m : RVSDNode<"ESP_CMUL_U16_ST_INCP_M", SDT_ESPCMULU16STINCPM,
                                              [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
 def riscv_esp_cmul_u8_st_incp_m : RVSDNode<"ESP_CMUL_U8_ST_INCP_M", SDT_ESPCMULU8STINCPM,
-                                            [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+                                           [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+
+// CMUL S16/S8 basic (2.1) SDNodes
+def SDT_ESPCMULS16M : SDTypeProfile<1, 5, [
+  SDTCisVT<0, v8i16>,
+  SDTCisVT<1, v8i16>, SDTCisVT<2, v8i16>, SDTCisVT<3, v8i16>,
+  SDTCisVT<4, i32>, SDTCisVT<5, i32>
+]>;
+def riscv_esp_cmul_s16_m : RVSDNode<"ESP_CMUL_S16_M", SDT_ESPCMULS16M, []>;
+def SDT_ESPCMULS8M : SDTypeProfile<1, 5, [
+  SDTCisVT<0, v16i8>,
+  SDTCisVT<1, v16i8>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, i32>, SDTCisVT<5, i32>
+]>;
+def riscv_esp_cmul_s8_m : RVSDNode<"ESP_CMUL_S8_M", SDT_ESPCMULS8M, []>;
+
+// CMUL LD.INCP / ST.INCP 2p2 SDNodes (S8/S16 only)
+def SDT_ESPCMULS8LDINCP2P2M : SDTypeProfile<3, 6, [
+  SDTCisVT<0, v16i8>, SDTCisVT<1, v16i8>, SDTCisPtrTy<2>,
+  SDTCisVT<3, v16i8>, SDTCisVT<4, v16i8>, SDTCisPtrTy<5>,
+  SDTCisVT<6, i32>, SDTCisVT<7, i32>, SDTCisVT<8, i32>
+]>;
+def SDT_ESPCMULS16LDINCP2P2M : SDTypeProfile<3, 6, [
+  SDTCisVT<0, v8i16>, SDTCisVT<1, v16i8>, SDTCisPtrTy<2>,
+  SDTCisVT<3, v8i16>, SDTCisVT<4, v8i16>, SDTCisPtrTy<5>,
+  SDTCisVT<6, i32>, SDTCisVT<7, i32>, SDTCisVT<8, i32>
+]>;
+def SDT_ESPCMULS8STINCP2P2M : SDTypeProfile<2, 7, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>,
+  SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>, SDTCisVT<4, v16i8>, SDTCisPtrTy<5>,
+  SDTCisVT<6, i32>, SDTCisVT<7, i32>, SDTCisVT<8, i32>
+]>;
+def SDT_ESPCMULS16STINCP2P2M : SDTypeProfile<2, 7, [
+  SDTCisVT<0, v8i16>, SDTCisPtrTy<1>,
+  SDTCisVT<2, v8i16>, SDTCisVT<3, v8i16>, SDTCisVT<4, v16i8>, SDTCisPtrTy<5>,
+  SDTCisVT<6, i32>, SDTCisVT<7, i32>, SDTCisVT<8, i32>
+]>;
+def riscv_esp_cmul_s8_ld_incp_pie22_m : RVSDNode<"ESP_CMUL_S8_LD_INCP_PIE22_M", SDT_ESPCMULS8LDINCP2P2M,
+    [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_cmul_s16_ld_incp_pie22_m : RVSDNode<"ESP_CMUL_S16_LD_INCP_PIE22_M", SDT_ESPCMULS16LDINCP2P2M,
+    [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_cmul_s8_st_incp_pie22_m : RVSDNode<"ESP_CMUL_S8_ST_INCP_PIE22_M", SDT_ESPCMULS8STINCP2P2M,
+    [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def riscv_esp_cmul_s16_st_incp_pie22_m : RVSDNode<"ESP_CMUL_S16_ST_INCP_PIE22_M", SDT_ESPCMULS16STINCP2P2M,
+    [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+
+def SDT_ESPCMULS162P2M : SDTypeProfile<1, 5, [
+  SDTCisVT<0, v8i16>,
+  SDTCisVT<1, v8i16>, SDTCisVT<2, v8i16>,
+  SDTCisVT<3, i32>, SDTCisVT<4, i32>, SDTCisVT<5, i32>
+]>;
+def riscv_esp_cmul_s16_pie22_m_node : RVSDNode<"ESP_CMUL_S16_M_PIE22", SDT_ESPCMULS162P2M, []>;
+def SDT_ESPCMULS82P2M : SDTypeProfile<1, 5, [
+  SDTCisVT<0, v16i8>,
+  SDTCisVT<1, v16i8>, SDTCisVT<2, v16i8>,
+  SDTCisVT<3, i32>, SDTCisVT<4, i32>, SDTCisVT<5, i32>
+]>;
+def riscv_esp_cmul_s8_pie22_m_node : RVSDNode<"ESP_CMUL_S8_M_PIE22", SDT_ESPCMULS82P2M, []>;
+
+// VPRELU / VRELU PIE22 SDNodes (unified 2.1/2.2 API)
+def SDT_ESPVPRELUS16PIE22M : SDTypeProfile<1, 5, [
+  SDTCisVT<0, v8i16>,
+  SDTCisVT<1, v8i16>, SDTCisVT<2, v8i16>,
+  SDTCisVT<3, i32>, SDTCisVT<4, i32>, SDTCisVT<5, i32>
+]>;
+def riscv_esp_vprelu_s16_pie22_m : RVSDNode<"ESP_VPRELU_S16_M_PIE22", SDT_ESPVPRELUS16PIE22M, []>;
+def SDT_ESPVPRELUS8PIE22M : SDTypeProfile<1, 5, [
+  SDTCisVT<0, v16i8>,
+  SDTCisVT<1, v16i8>, SDTCisVT<2, v16i8>,
+  SDTCisVT<3, i32>, SDTCisVT<4, i32>, SDTCisVT<5, i32>
+]>;
+def riscv_esp_vprelu_s8_pie22_m : RVSDNode<"ESP_VPRELU_S8_M_PIE22", SDT_ESPVPRELUS8PIE22M, []>;
+def SDT_ESPVRELUS16PIE22M : SDTypeProfile<1, 5, [
+  SDTCisVT<0, v8i16>,
+  SDTCisVT<1, v8i16>,
+  SDTCisVT<2, i32>, SDTCisVT<3, i32>, SDTCisVT<4, i32>, SDTCisVT<5, i32>
+]>;
+def riscv_esp_vrelu_s16_pie22_m : RVSDNode<"ESP_VRELU_S16_M_PIE22", SDT_ESPVRELUS16PIE22M, []>;
+def SDT_ESPVRELUS8PIE22M : SDTypeProfile<1, 5, [
+  SDTCisVT<0, v16i8>,
+  SDTCisVT<1, v16i8>,
+  SDTCisVT<2, i32>, SDTCisVT<3, i32>, SDTCisVT<4, i32>, SDTCisVT<5, i32>
+]>;
+def riscv_esp_vrelu_s8_pie22_m : RVSDNode<"ESP_VRELU_S8_M_PIE22", SDT_ESPVRELUS8PIE22M, []>;
+
+// VSL / VSLD / VSR / VSRD PIE22 SDNodes (unified 2.1/2.2 API)
+def SDT_ESPVSRLD8PIE22M : SDTypeProfile<1, 4, [
+  SDTCisVT<0, v16i8>,
+  SDTCisVT<1, v16i8>, SDTCisVT<2, v16i8>,
+  SDTCisVT<3, i32>, SDTCisVT<4, i32>
+]>;
+def riscv_esp_vsld_8_pie22_m : RVSDNode<"ESP_VSLD_8_M_PIE22", SDT_ESPVSRLD8PIE22M, []>;
+def riscv_esp_vsrd_8_pie22_m : RVSDNode<"ESP_VSRD_8_M_PIE22", SDT_ESPVSRLD8PIE22M, []>;
+def SDT_ESPVSRLD16PIE22M : SDTypeProfile<1, 4, [
+  SDTCisVT<0, v8i16>,
+  SDTCisVT<1, v8i16>, SDTCisVT<2, v8i16>,
+  SDTCisVT<3, i32>, SDTCisVT<4, i32>
+]>;
+def riscv_esp_vsld_16_pie22_m : RVSDNode<"ESP_VSLD_16_M_PIE22", SDT_ESPVSRLD16PIE22M, []>;
+def riscv_esp_vsrd_16_pie22_m : RVSDNode<"ESP_VSRD_16_M_PIE22", SDT_ESPVSRLD16PIE22M, []>;
+def SDT_ESPVSRLD32PIE22M : SDTypeProfile<1, 4, [
+  SDTCisVT<0, v4i32>,
+  SDTCisVT<1, v4i32>, SDTCisVT<2, v4i32>,
+  SDTCisVT<3, i32>, SDTCisVT<4, i32>
+]>;
+def riscv_esp_vsld_32_pie22_m : RVSDNode<"ESP_VSLD_32_M_PIE22", SDT_ESPVSRLD32PIE22M, []>;
+def riscv_esp_vsrd_32_pie22_m : RVSDNode<"ESP_VSRD_32_M_PIE22", SDT_ESPVSRLD32PIE22M, []>;
+def SDT_ESPVSR32PIE22M : SDTypeProfile<1, 2, [
+  SDTCisVT<0, v4i32>,
+  SDTCisVT<1, v4i32>, SDTCisVT<2, i32>
+]>;
+def riscv_esp_vsr_s32_pie22_m : RVSDNode<"ESP_VSR_S32_M_PIE22", SDT_ESPVSR32PIE22M, []>;
+def riscv_esp_vsr_u32_pie22_m : RVSDNode<"ESP_VSR_U32_M_PIE22", SDT_ESPVSR32PIE22M, []>;
+def SDT_ESPVSL32PIE22M : SDTypeProfile<1, 2, [
+  SDTCisVT<0, v4i32>,
+  SDTCisVT<1, v4i32>, SDTCisVT<2, i32>
+]>;
+def riscv_esp_vsl_32_pie22_m : RVSDNode<"ESP_VSL_32_M_PIE22", SDT_ESPVSL32PIE22M, []>;
+
+// FFT PIE22 SDNodes (sat only, unified 2.1/2.2 API)
+def SDT_ESPFFTR2BFS16PIE22M : SDTypeProfile<2, 4, [
+  SDTCisVT<0, v8i16>, SDTCisVT<1, v8i16>,
+  SDTCisVT<2, v8i16>, SDTCisVT<3, v8i16>, SDTCisVT<4, i32>, SDTCisVT<5, i32>
+]>;
+def riscv_esp_fft_r2bf_s16_pie22_m : RVSDNode<"ESP_FFT_R2BF_S16_M_PIE22", SDT_ESPFFTR2BFS16PIE22M, []>;
+
+def SDT_ESPFFTR2BFS16STINCPPIE22M : SDTypeProfile<2, 5, [
+  SDTCisVT<0, v8i16>, SDTCisPtrTy<1>,
+  SDTCisVT<2, v8i16>, SDTCisVT<3, v8i16>, SDTCisPtrTy<4>, SDTCisVT<5, i32>, SDTCisVT<6, i32>
+]>;
+def riscv_esp_fft_r2bf_s16_st_incp_pie22_m : RVSDNode<"ESP_FFT_R2BF_S16_ST_INCP_PIE22_M", SDT_ESPFFTR2BFS16STINCPPIE22M,
+    [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+
+def SDT_ESPFFTAMSS16LDINCPPIE22M : SDTypeProfile<4, 6, [
+  SDTCisVT<0, v16i8>, SDTCisVT<1, v8i16>, SDTCisVT<2, v8i16>, SDTCisPtrTy<3>,
+  SDTCisVT<4, v8i16>, SDTCisVT<5, v8i16>, SDTCisVT<6, v8i16>, SDTCisPtrTy<7>,
+  SDTCisVT<8, i32>, SDTCisVT<9, i32>
+]>;
+def riscv_esp_fft_ams_s16_ld_incp_pie22_m : RVSDNode<"ESP_FFT_AMS_S16_LD_INCP_PIE22_M", SDT_ESPFFTAMSS16LDINCPPIE22M,
+    [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+
+def SDT_ESPFFTAMSS16LDINCPUAUPPIE22M : SDTypeProfile<4, 6, [
+  SDTCisVT<0, v16i8>, SDTCisVT<1, v8i16>, SDTCisVT<2, v8i16>, SDTCisPtrTy<3>,
+  SDTCisVT<4, v8i16>, SDTCisVT<5, v8i16>, SDTCisVT<6, v8i16>, SDTCisPtrTy<7>,
+  SDTCisVT<8, i32>, SDTCisVT<9, i32>
+]>;
+def riscv_esp_fft_ams_s16_ld_incp_uaup_pie22_m : RVSDNode<"ESP_FFT_AMS_S16_LD_INCP_UAUP_PIE22_M", SDT_ESPFFTAMSS16LDINCPUAUPPIE22M,
+    [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+
+def SDT_ESPFFTAMSS16LDR32DECPPIE22M : SDTypeProfile<4, 6, [
+  SDTCisVT<0, v16i8>, SDTCisVT<1, v8i16>, SDTCisVT<2, v8i16>, SDTCisPtrTy<3>,
+  SDTCisVT<4, v8i16>, SDTCisVT<5, v8i16>, SDTCisVT<6, v8i16>, SDTCisPtrTy<7>,
+  SDTCisVT<8, i32>, SDTCisVT<9, i32>
+]>;
+def riscv_esp_fft_ams_s16_ld_r32_decp_pie22_m : RVSDNode<"ESP_FFT_AMS_S16_LD_R32_DECP_PIE22_M", SDT_ESPFFTAMSS16LDR32DECPPIE22M,
+    [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+
+def SDT_ESPFFTAMSS16STINCPPIE22M : SDTypeProfile<3, 8, [
+  SDTCisVT<0, v8i16>, SDTCisPtrTy<1>, SDTCisPtrTy<2>,
+  SDTCisVT<3, v8i16>, SDTCisVT<4, v8i16>, SDTCisVT<5, v8i16>, SDTCisVT<6, v16i8>,
+  SDTCisPtrTy<7>, SDTCisPtrTy<8>, SDTCisVT<9, i32>, SDTCisVT<10, i32>
+]>;
+def riscv_esp_fft_ams_s16_st_incp_pie22_m : RVSDNode<"ESP_FFT_AMS_S16_ST_INCP_PIE22_M", SDT_ESPFFTAMSS16STINCPPIE22M,
+    [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+
+def SDT_ESPFFTCMULS16LDXPPIE22M : SDTypeProfile<3, 6, [
+  SDTCisVT<0, v8i16>, SDTCisVT<1, v16i8>, SDTCisPtrTy<2>,
+  SDTCisVT<3, v8i16>, SDTCisVT<4, v8i16>, SDTCisPtrTy<5>, SDTCisPtrTy<6>,
+  SDTCisVT<7, i32>, SDTCisVT<8, i32>
+]>;
+def riscv_esp_fft_cmul_s16_ld_xp_pie22_m : RVSDNode<"ESP_FFT_CMUL_S16_LD_XP_PIE22_M", SDT_ESPFFTCMULS16LDXPPIE22M,
+    [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+
+def SDT_ESPFFTCMULS16STXPPIE22M : SDTypeProfile<1, 9, [
+  SDTCisPtrTy<0>,
+  SDTCisVT<1, v8i16>, SDTCisVT<2, v8i16>, SDTCisVT<3, v16i8>,
+  SDTCisPtrTy<4>, SDTCisPtrTy<5>, SDTCisVT<6, i32>, SDTCisVT<7, i32>, SDTCisVT<8, i32>, SDTCisVT<9, i32>
+]>;
+def riscv_esp_fft_cmul_s16_st_xp_pie22_m : RVSDNode<"ESP_FFT_CMUL_S16_ST_XP_PIE22_M", SDT_ESPFFTCMULS16STXPPIE22M,
+    [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+
 
 // VLDBC SDNodes
 def SDT_ESPVLDBC8IPM : SDTypeProfile<2, 2, [
@@ -987,7 +1167,81 @@ def riscv_esp_vmul_s8_st_incp_m : RVSDNode<"ESP_VMUL_S8_ST_INCP_M", SDT_ESPVMULS
 def riscv_esp_vmul_u8_st_incp_m : RVSDNode<"ESP_VMUL_U8_ST_INCP_M", SDT_ESPVMULS8STINCPM,
                                            [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
 def riscv_esp_vmul_u16_st_incp_m : RVSDNode<"ESP_VMUL_U16_ST_INCP_M", SDT_ESPVMULS16STINCPM,
-                                           [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+    [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+
+// VMUL PIE22 SDNodes (unified 2.1/2.2 API; +xespv path)
+def SDT_ESPVMULS82P2M : SDTypeProfile<1, 4, [
+  SDTCisVT<0, v16i8>,
+  SDTCisVT<1, v16i8>, SDTCisVT<2, v16i8>,
+  SDTCisVT<3, i32>, SDTCisVT<4, i32>
+]>;
+def riscv_esp_vmul_s8_pie22_m_node : RVSDNode<"ESP_VMUL_S8_M_PIE22", SDT_ESPVMULS82P2M, []>;
+def SDT_ESPVMULU82P2M : SDTypeProfile<1, 4, [
+  SDTCisVT<0, v16i8>,
+  SDTCisVT<1, v16i8>, SDTCisVT<2, v16i8>,
+  SDTCisVT<3, i32>, SDTCisVT<4, i32>
+]>;
+def riscv_esp_vmul_u8_pie22_m_node : RVSDNode<"ESP_VMUL_U8_M_PIE22", SDT_ESPVMULU82P2M, []>;
+def SDT_ESPVMULS162P2M : SDTypeProfile<1, 4, [
+  SDTCisVT<0, v8i16>,
+  SDTCisVT<1, v8i16>, SDTCisVT<2, v8i16>,
+  SDTCisVT<3, i32>, SDTCisVT<4, i32>
+]>;
+def riscv_esp_vmul_s16_pie22_m_node : RVSDNode<"ESP_VMUL_S16_M_PIE22", SDT_ESPVMULS162P2M, []>;
+def SDT_ESPVMULU162P2M : SDTypeProfile<1, 4, [
+  SDTCisVT<0, v8i16>,
+  SDTCisVT<1, v8i16>, SDTCisVT<2, v8i16>,
+  SDTCisVT<3, i32>, SDTCisVT<4, i32>
+]>;
+def riscv_esp_vmul_u16_pie22_m_node : RVSDNode<"ESP_VMUL_U16_M_PIE22", SDT_ESPVMULU162P2M, []>;
+def SDT_ESPVMULS8LDINCP2P2M : SDTypeProfile<3, 5, [
+  SDTCisVT<0, v16i8>, SDTCisVT<1, v16i8>, SDTCisPtrTy<2>,
+  SDTCisVT<3, v16i8>, SDTCisVT<4, v16i8>, SDTCisPtrTy<5>,
+  SDTCisVT<6, i32>, SDTCisVT<7, i32>
+]>;
+def riscv_esp_vmul_s8_ld_incp_pie22_m : RVSDNode<"ESP_VMUL_S8_LD_INCP_PIE22_M", SDT_ESPVMULS8LDINCP2P2M,
+    [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_vmul_u8_ld_incp_pie22_m : RVSDNode<"ESP_VMUL_U8_LD_INCP_PIE22_M", SDT_ESPVMULS8LDINCP2P2M,
+    [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVMULS16LDINCP2P2M : SDTypeProfile<3, 5, [
+  SDTCisVT<0, v8i16>, SDTCisVT<1, v16i8>, SDTCisPtrTy<2>,
+  SDTCisVT<3, v8i16>, SDTCisVT<4, v8i16>, SDTCisPtrTy<5>,
+  SDTCisVT<6, i32>, SDTCisVT<7, i32>
+]>;
+def riscv_esp_vmul_s16_ld_incp_pie22_m : RVSDNode<"ESP_VMUL_S16_LD_INCP_PIE22_M", SDT_ESPVMULS16LDINCP2P2M,
+    [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_vmul_u16_ld_incp_pie22_m : RVSDNode<"ESP_VMUL_U16_LD_INCP_PIE22_M", SDT_ESPVMULS16LDINCP2P2M,
+    [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVMULS8STINCP2P2M : SDTypeProfile<2, 6, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>,
+  SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>, SDTCisVT<4, v16i8>, SDTCisPtrTy<5>,
+  SDTCisVT<6, i32>, SDTCisVT<7, i32>
+]>;
+def riscv_esp_vmul_s8_st_incp_pie22_m : RVSDNode<"ESP_VMUL_S8_ST_INCP_PIE22_M", SDT_ESPVMULS8STINCP2P2M,
+    [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def riscv_esp_vmul_u8_st_incp_pie22_m : RVSDNode<"ESP_VMUL_U8_ST_INCP_PIE22_M", SDT_ESPVMULS8STINCP2P2M,
+    [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def SDT_ESPVMULS16STINCP2P2M : SDTypeProfile<2, 6, [
+  SDTCisVT<0, v8i16>, SDTCisPtrTy<1>,
+  SDTCisVT<2, v8i16>, SDTCisVT<3, v8i16>, SDTCisVT<4, v16i8>, SDTCisPtrTy<5>,
+  SDTCisVT<6, i32>, SDTCisVT<7, i32>
+]>;
+def riscv_esp_vmul_s16_st_incp_pie22_m : RVSDNode<"ESP_VMUL_S16_ST_INCP_PIE22_M", SDT_ESPVMULS16STINCP2P2M,
+    [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def riscv_esp_vmul_u16_st_incp_pie22_m : RVSDNode<"ESP_VMUL_U16_ST_INCP_PIE22_M", SDT_ESPVMULS16STINCP2P2M,
+    [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def SDT_ESPVMULS16S8XS8PIE22M : SDTypeProfile<2, 4, [
+  SDTCisVT<0, v8i16>, SDTCisVT<1, v8i16>,
+  SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, i32>, SDTCisVT<5, i32>
+]>;
+def riscv_esp_vmul_s16_s8xs8_pie22_m : RVSDNode<"ESP_VMUL_S16_S8XS8_PIE22_M", SDT_ESPVMULS16S8XS8PIE22M, []>;
+def SDT_ESPVMULS32S16XS16PIE22M : SDTypeProfile<2, 4, [
+  SDTCisVT<0, v4i32>, SDTCisVT<1, v4i32>,
+  SDTCisVT<2, v8i16>, SDTCisVT<3, v8i16>,
+  SDTCisVT<4, i32>, SDTCisVT<5, i32>
+]>;
+def riscv_esp_vmul_s32_s16xs16_pie22_m : RVSDNode<"ESP_VMUL_S32_S16XS16_PIE22_M", SDT_ESPVMULS32S16XS16PIE22M, []>;
 
 // VCMULAS pure compute SDNodes (no memory access, explicit passthru)
 // Results: v16i8, v16i8 (2x128-bit QACC directly)
@@ -1401,6 +1655,60 @@ def SDT_ESPSRCMBS8QQACCM : SDTypeProfile<1, 6, [
 ]>;
 def riscv_esp_srcmb_s8_q_qacc_m : RVSDNode<"ESP_SRCMB_S8_Q_QACC_M", SDT_ESPSRCMBS8QQACCM>;
 
+// SRCMB.U16.Q.QACC / U8.Q.QACC SDNodes (PIE 2.1; sel2 + sat=0/rm=7 from unified API)
+def riscv_esp_srcmb_u16_q_qacc_m : RVSDNode<"ESP_SRCMB_U16_Q_QACC_M", SDT_ESPSRCMBS16QQACCM>;
+def riscv_esp_srcmb_u8_q_qacc_m : RVSDNode<"ESP_SRCMB_U8_Q_QACC_M", SDT_ESPSRCMBS8QQACCM>;
+
+// SRCMB PIE22 SDNodes (unified 2.1/2.2 API; +xespv path)
+def SDT_ESPSRCMBS16QACCPIE22M : SDTypeProfile<1, 3, [
+  SDTCisVT<0, v8i16>,
+  SDTCisVT<1, i32>, SDTCisVT<2, i32>, SDTCisVT<3, i32>
+]>;
+def riscv_esp_srcmb_s16_qacc_pie22_m : RVSDNode<"ESP_SRCMB_S16_QACC_PIE22", SDT_ESPSRCMBS16QACCPIE22M,
+                                                   [SDNPSideEffect]>;
+def SDT_ESPSRCMBS8QACCPIE22M : SDTypeProfile<1, 3, [
+  SDTCisVT<0, v16i8>,
+  SDTCisVT<1, i32>, SDTCisVT<2, i32>, SDTCisVT<3, i32>
+]>;
+def riscv_esp_srcmb_s8_qacc_pie22_m : RVSDNode<"ESP_SRCMB_S8_QACC_PIE22", SDT_ESPSRCMBS8QACCPIE22M,
+                                                  [SDNPSideEffect]>;
+def SDT_ESPSRCMBU16QACCPIE22M : SDTypeProfile<1, 3, [
+  SDTCisVT<0, v8i16>,
+  SDTCisVT<1, i32>, SDTCisVT<2, i32>, SDTCisVT<3, i32>
+]>;
+def riscv_esp_srcmb_u16_qacc_pie22_m : RVSDNode<"ESP_SRCMB_U16_QACC_PIE22", SDT_ESPSRCMBU16QACCPIE22M,
+                                                   [SDNPSideEffect]>;
+def SDT_ESPSRCMBU8QACCPIE22M : SDTypeProfile<1, 3, [
+  SDTCisVT<0, v16i8>,
+  SDTCisVT<1, i32>, SDTCisVT<2, i32>, SDTCisVT<3, i32>
+]>;
+def riscv_esp_srcmb_u8_qacc_pie22_m : RVSDNode<"ESP_SRCMB_U8_QACC_PIE22", SDT_ESPSRCMBU8QACCPIE22M,
+                                                  [SDNPSideEffect]>;
+def SDT_ESPSRCMBS16QQACCPIE22M : SDTypeProfile<1, 3, [
+  SDTCisVT<0, v8i16>,
+  SDTCisVT<1, v8i16>, SDTCisVT<2, i32>, SDTCisVT<3, i32>
+]>;
+def riscv_esp_srcmb_s16_q_qacc_pie22_m : RVSDNode<"ESP_SRCMB_S16_Q_QACC_PIE22", SDT_ESPSRCMBS16QQACCPIE22M,
+                                                     [SDNPSideEffect]>;
+def SDT_ESPSRCMBS8QQACCPIE22M : SDTypeProfile<1, 3, [
+  SDTCisVT<0, v16i8>,
+  SDTCisVT<1, v16i8>, SDTCisVT<2, i32>, SDTCisVT<3, i32>
+]>;
+def riscv_esp_srcmb_s8_q_qacc_pie22_m : RVSDNode<"ESP_SRCMB_S8_Q_QACC_PIE22", SDT_ESPSRCMBS8QQACCPIE22M,
+                                                    [SDNPSideEffect]>;
+def SDT_ESPSRCMBU16QQACCPIE22M : SDTypeProfile<1, 3, [
+  SDTCisVT<0, v8i16>,
+  SDTCisVT<1, v8i16>, SDTCisVT<2, i32>, SDTCisVT<3, i32>
+]>;
+def riscv_esp_srcmb_u16_q_qacc_pie22_m : RVSDNode<"ESP_SRCMB_U16_Q_QACC_PIE22", SDT_ESPSRCMBU16QQACCPIE22M,
+                                                     [SDNPSideEffect]>;
+def SDT_ESPSRCMBU8QQACCPIE22M : SDTypeProfile<1, 3, [
+  SDTCisVT<0, v16i8>,
+  SDTCisVT<1, v16i8>, SDTCisVT<2, i32>, SDTCisVT<3, i32>
+]>;
+def riscv_esp_srcmb_u8_q_qacc_pie22_m : RVSDNode<"ESP_SRCMB_U8_Q_QACC_PIE22", SDT_ESPSRCMBU8QQACCPIE22M,
+                                                    [SDNPSideEffect]>;
+
 // VMULAS QACC SDNodes - Vector Multiply-Accumulate to QACC with explicit state passing
 // Results: 4x128-bit QACC (v16i8, v16i8, v16i8, v16i8)
 // Operands: 4x128-bit QACC passthru (v16i8, v16i8, v16i8, v16i8) + qx + qy
@@ -1492,6 +1800,32 @@ def riscv_esp_vsmulas_s8_qacc_m : RVSDNode<"ESP_VSMULAS_S8_QACC_M", SDT_ESPVSMUL
 def riscv_esp_vsmulas_u16_qacc_m : RVSDNode<"ESP_VSMULAS_U16_QACC_M", SDT_ESPVSMULASS16QACCM>;
 def riscv_esp_vsmulas_u8_qacc_m : RVSDNode<"ESP_VSMULAS_U8_QACC_M", SDT_ESPVSMULASS8QACCM>;
 
+// VSMULAS PIE22 SDNodes (unified 2.1/2.2 API; +xespv path)
+def SDT_ESPVSMULASS8QACCPIE22M : SDTypeProfile<4, 8, [
+  SDTCisVT<0, v16i8>, SDTCisVT<1, v16i8>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>, SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>,
+  SDTCisVT<8, v16i8>, SDTCisVT<9, v16i8>, SDTCisVT<10, i32>, SDTCisVT<11, i32>
+]>;
+def riscv_esp_vsmulas_s8_qacc_pie22_m : RVSDNode<"ESP_VSMULAS_S8_QACC_PIE22", SDT_ESPVSMULASS8QACCPIE22M, []>;
+def SDT_ESPVSMULASS16QACCPIE22M : SDTypeProfile<4, 8, [
+  SDTCisVT<0, v16i8>, SDTCisVT<1, v16i8>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>, SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>,
+  SDTCisVT<8, v8i16>, SDTCisVT<9, v8i16>, SDTCisVT<10, i32>, SDTCisVT<11, i32>
+]>;
+def riscv_esp_vsmulas_s16_qacc_pie22_m : RVSDNode<"ESP_VSMULAS_S16_QACC_PIE22", SDT_ESPVSMULASS16QACCPIE22M, []>;
+def SDT_ESPVSMULASU8QACCPIE22M : SDTypeProfile<4, 8, [
+  SDTCisVT<0, v16i8>, SDTCisVT<1, v16i8>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>, SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>,
+  SDTCisVT<8, v16i8>, SDTCisVT<9, v16i8>, SDTCisVT<10, i32>, SDTCisVT<11, i32>
+]>;
+def riscv_esp_vsmulas_u8_qacc_pie22_m : RVSDNode<"ESP_VSMULAS_U8_QACC_PIE22", SDT_ESPVSMULASU8QACCPIE22M, []>;
+def SDT_ESPVSMULASU16QACCPIE22M : SDTypeProfile<4, 8, [
+  SDTCisVT<0, v16i8>, SDTCisVT<1, v16i8>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>, SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>,
+  SDTCisVT<8, v8i16>, SDTCisVT<9, v8i16>, SDTCisVT<10, i32>, SDTCisVT<11, i32>
+]>;
+def riscv_esp_vsmulas_u16_qacc_pie22_m : RVSDNode<"ESP_VSMULAS_U16_QACC_PIE22", SDT_ESPVSMULASU16QACCPIE22M, []>;
+
 // VMULAS XACC SDNodes - Vector Multiply-Accumulate to XACC with explicit state passing
 // Results: new XACC (i64, only low 40 bits used) as {i32 low, i32 high}
 // Operands: XACC passthru (i64, only low 40 bits used) as {i32 low, i32 high} + qx + qy
@@ -1555,6 +1889,652 @@ def SDT_ESPSRSUXACCM : SDTypeProfile<3, 3, [
 
 def riscv_esp_srs_s_xacc_m : RVSDNode<"ESP_SRS_S_XACC_M", SDT_ESPSRSSXACCM, []>;
 def riscv_esp_srs_u_xacc_m : RVSDNode<"ESP_SRS_U_XACC_M", SDT_ESPSRSUXACCM, []>;
+
+
+
+// VCMULAS PIE22 SDNodes (unified 2.1/2.2 API; +xespv path)
+def SDT_ESPVCMULASS8QACCHPIE22M : SDTypeProfile<2, 5, [
+  SDTCisVT<0, v16i8>, SDTCisVT<1, v16i8>,
+  SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>, SDTCisVT<6, i32>
+]>;
+def riscv_esp_vcmulas_s8_qacc_h_pie22_m : RVSDNode<"ESP_VCMULAS_S8_QACC_H_PIE22", SDT_ESPVCMULASS8QACCHPIE22M, []>;
+def SDT_ESPVCMULASS8QACCHLDIPPIE22M : SDTypeProfile<4, 7, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>, SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>,
+  SDTCisPtrTy<8>, SDTCisVT<9, i32>, SDTCisVT<10, i32>
+]>;
+def riscv_esp_vcmulas_s8_qacc_h_ld_ip_pie22_m : RVSDNode<"ESP_VCMULAS_S8_QACC_H_LD_IP_PIE22_M", SDT_ESPVCMULASS8QACCHLDIPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVCMULASS8QACCHLDXPPIE22M : SDTypeProfile<4, 7, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>, SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>,
+  SDTCisPtrTy<8>, SDTCisVT<9, i32>, SDTCisVT<10, i32>
+]>;
+def riscv_esp_vcmulas_s8_qacc_h_ld_xp_pie22_m : RVSDNode<"ESP_VCMULAS_S8_QACC_H_LD_XP_PIE22_M", SDT_ESPVCMULASS8QACCHLDXPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVCMULASS8QACCLPIE22M : SDTypeProfile<2, 5, [
+  SDTCisVT<0, v16i8>, SDTCisVT<1, v16i8>,
+  SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>, SDTCisVT<6, i32>
+]>;
+def riscv_esp_vcmulas_s8_qacc_l_pie22_m : RVSDNode<"ESP_VCMULAS_S8_QACC_L_PIE22", SDT_ESPVCMULASS8QACCLPIE22M, []>;
+def SDT_ESPVCMULASS8QACCLLDIPPIE22M : SDTypeProfile<4, 7, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>, SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>,
+  SDTCisPtrTy<8>, SDTCisVT<9, i32>, SDTCisVT<10, i32>
+]>;
+def riscv_esp_vcmulas_s8_qacc_l_ld_ip_pie22_m : RVSDNode<"ESP_VCMULAS_S8_QACC_L_LD_IP_PIE22_M", SDT_ESPVCMULASS8QACCLLDIPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVCMULASS8QACCLLDXPPIE22M : SDTypeProfile<4, 7, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>, SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>,
+  SDTCisPtrTy<8>, SDTCisVT<9, i32>, SDTCisVT<10, i32>
+]>;
+def riscv_esp_vcmulas_s8_qacc_l_ld_xp_pie22_m : RVSDNode<"ESP_VCMULAS_S8_QACC_L_LD_XP_PIE22_M", SDT_ESPVCMULASS8QACCLLDXPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVCMULASS16QACCHPIE22M : SDTypeProfile<2, 5, [
+  SDTCisVT<0, v16i8>, SDTCisVT<1, v16i8>,
+  SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v8i16>, SDTCisVT<5, v8i16>, SDTCisVT<6, i32>
+]>;
+def riscv_esp_vcmulas_s16_qacc_h_pie22_m : RVSDNode<"ESP_VCMULAS_S16_QACC_H_PIE22", SDT_ESPVCMULASS16QACCHPIE22M, []>;
+def SDT_ESPVCMULASS16QACCHLDIPPIE22M : SDTypeProfile<4, 7, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>, SDTCisVT<6, v8i16>, SDTCisVT<7, v8i16>,
+  SDTCisPtrTy<8>, SDTCisVT<9, i32>, SDTCisVT<10, i32>
+]>;
+def riscv_esp_vcmulas_s16_qacc_h_ld_ip_pie22_m : RVSDNode<"ESP_VCMULAS_S16_QACC_H_LD_IP_PIE22_M", SDT_ESPVCMULASS16QACCHLDIPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVCMULASS16QACCHLDXPPIE22M : SDTypeProfile<4, 7, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>, SDTCisVT<6, v8i16>, SDTCisVT<7, v8i16>,
+  SDTCisPtrTy<8>, SDTCisVT<9, i32>, SDTCisVT<10, i32>
+]>;
+def riscv_esp_vcmulas_s16_qacc_h_ld_xp_pie22_m : RVSDNode<"ESP_VCMULAS_S16_QACC_H_LD_XP_PIE22_M", SDT_ESPVCMULASS16QACCHLDXPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVCMULASS16QACCLPIE22M : SDTypeProfile<2, 5, [
+  SDTCisVT<0, v16i8>, SDTCisVT<1, v16i8>,
+  SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v8i16>, SDTCisVT<5, v8i16>, SDTCisVT<6, i32>
+]>;
+def riscv_esp_vcmulas_s16_qacc_l_pie22_m : RVSDNode<"ESP_VCMULAS_S16_QACC_L_PIE22", SDT_ESPVCMULASS16QACCLPIE22M, []>;
+def SDT_ESPVCMULASS16QACCLLDIPPIE22M : SDTypeProfile<4, 7, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>, SDTCisVT<6, v8i16>, SDTCisVT<7, v8i16>,
+  SDTCisPtrTy<8>, SDTCisVT<9, i32>, SDTCisVT<10, i32>
+]>;
+def riscv_esp_vcmulas_s16_qacc_l_ld_ip_pie22_m : RVSDNode<"ESP_VCMULAS_S16_QACC_L_LD_IP_PIE22_M", SDT_ESPVCMULASS16QACCLLDIPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVCMULASS16QACCLLDXPPIE22M : SDTypeProfile<4, 7, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>, SDTCisVT<6, v8i16>, SDTCisVT<7, v8i16>,
+  SDTCisPtrTy<8>, SDTCisVT<9, i32>, SDTCisVT<10, i32>
+]>;
+def riscv_esp_vcmulas_s16_qacc_l_ld_xp_pie22_m : RVSDNode<"ESP_VCMULAS_S16_QACC_L_LD_XP_PIE22_M", SDT_ESPVCMULASS16QACCLLDXPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+
+// VMULAS PIE22 SDNodes (unified 2.1/2.2 API; +xespv path)
+def SDT_ESPVMULASS8QACCPIE22M : SDTypeProfile<4, 7, [
+  SDTCisVT<0, v16i8>, SDTCisVT<1, v16i8>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>, SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>,
+  SDTCisVT<8, v16i8>, SDTCisVT<9, v16i8>, SDTCisVT<10, i32>
+]>;
+def riscv_esp_vmulas_s8_qacc_pie22_m : RVSDNode<"ESP_VMULAS_S8_QACC_PIE22", SDT_ESPVMULASS8QACCPIE22M, []>;
+def SDT_ESPVMULASS16QACCPIE22M : SDTypeProfile<4, 7, [
+  SDTCisVT<0, v16i8>, SDTCisVT<1, v16i8>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>, SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>,
+  SDTCisVT<8, v8i16>, SDTCisVT<9, v8i16>, SDTCisVT<10, i32>
+]>;
+def riscv_esp_vmulas_s16_qacc_pie22_m : RVSDNode<"ESP_VMULAS_S16_QACC_PIE22", SDT_ESPVMULASS16QACCPIE22M, []>;
+def SDT_ESPVMULASU8QACCPIE22M : SDTypeProfile<4, 7, [
+  SDTCisVT<0, v16i8>, SDTCisVT<1, v16i8>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>, SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>,
+  SDTCisVT<8, v16i8>, SDTCisVT<9, v16i8>, SDTCisVT<10, i32>
+]>;
+def riscv_esp_vmulas_u8_qacc_pie22_m : RVSDNode<"ESP_VMULAS_U8_QACC_PIE22", SDT_ESPVMULASU8QACCPIE22M, []>;
+def SDT_ESPVMULASU16QACCPIE22M : SDTypeProfile<4, 7, [
+  SDTCisVT<0, v16i8>, SDTCisVT<1, v16i8>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>, SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>,
+  SDTCisVT<8, v8i16>, SDTCisVT<9, v8i16>, SDTCisVT<10, i32>
+]>;
+def riscv_esp_vmulas_u16_qacc_pie22_m : RVSDNode<"ESP_VMULAS_U16_QACC_PIE22", SDT_ESPVMULASU16QACCPIE22M, []>;
+def SDT_ESPVMULASS8QACCLDIPPIE22M : SDTypeProfile<6, 9, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>,
+  SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>, SDTCisVT<8, v16i8>, SDTCisVT<9, v16i8>,
+  SDTCisVT<10, v16i8>, SDTCisVT<11, v16i8>, SDTCisPtrTy<12>, SDTCisVT<13, i32>, SDTCisVT<14, i32>
+]>;
+def riscv_esp_vmulas_s8_qacc_ld_ip_pie22_m : RVSDNode<"ESP_VMULAS_S8_QACC_LD_IP_PIE22_M", SDT_ESPVMULASS8QACCLDIPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_vsmulas_s8_qacc_ld_incp_pie22_m : RVSDNode<"ESP_VSMULAS_S8_QACC_LD_INCP_PIE22_M", SDT_ESPVMULASS8QACCLDIPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVMULASS16QACCLDIPPIE22M : SDTypeProfile<6, 9, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>,
+  SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>, SDTCisVT<8, v16i8>, SDTCisVT<9, v16i8>,
+  SDTCisVT<10, v8i16>, SDTCisVT<11, v8i16>, SDTCisPtrTy<12>, SDTCisVT<13, i32>, SDTCisVT<14, i32>
+]>;
+def riscv_esp_vmulas_s16_qacc_ld_ip_pie22_m : RVSDNode<"ESP_VMULAS_S16_QACC_LD_IP_PIE22_M", SDT_ESPVMULASS16QACCLDIPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_vsmulas_s16_qacc_ld_incp_pie22_m : RVSDNode<"ESP_VSMULAS_S16_QACC_LD_INCP_PIE22_M", SDT_ESPVMULASS16QACCLDIPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVMULASU8QACCLDIPPIE22M : SDTypeProfile<6, 9, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>,
+  SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>, SDTCisVT<8, v16i8>, SDTCisVT<9, v16i8>,
+  SDTCisVT<10, v16i8>, SDTCisVT<11, v16i8>, SDTCisPtrTy<12>, SDTCisVT<13, i32>, SDTCisVT<14, i32>
+]>;
+def riscv_esp_vmulas_u8_qacc_ld_ip_pie22_m : RVSDNode<"ESP_VMULAS_U8_QACC_LD_IP_PIE22_M", SDT_ESPVMULASU8QACCLDIPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_vsmulas_u8_qacc_ld_incp_pie22_m : RVSDNode<"ESP_VSMULAS_U8_QACC_LD_INCP_PIE22_M", SDT_ESPVMULASU8QACCLDIPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVMULASU16QACCLDIPPIE22M : SDTypeProfile<6, 9, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>,
+  SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>, SDTCisVT<8, v16i8>, SDTCisVT<9, v16i8>,
+  SDTCisVT<10, v8i16>, SDTCisVT<11, v8i16>, SDTCisPtrTy<12>, SDTCisVT<13, i32>, SDTCisVT<14, i32>
+]>;
+def riscv_esp_vmulas_u16_qacc_ld_ip_pie22_m : RVSDNode<"ESP_VMULAS_U16_QACC_LD_IP_PIE22_M", SDT_ESPVMULASU16QACCLDIPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def riscv_esp_vsmulas_u16_qacc_ld_incp_pie22_m : RVSDNode<"ESP_VSMULAS_U16_QACC_LD_INCP_PIE22_M", SDT_ESPVMULASU16QACCLDIPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVMULASS8QACCLDXPPIE22M : SDTypeProfile<6, 9, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>,
+  SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>, SDTCisVT<8, v16i8>, SDTCisVT<9, v16i8>,
+  SDTCisVT<10, v16i8>, SDTCisVT<11, v16i8>, SDTCisPtrTy<12>, SDTCisVT<13, i32>, SDTCisVT<14, i32>
+]>;
+def riscv_esp_vmulas_s8_qacc_ld_xp_pie22_m : RVSDNode<"ESP_VMULAS_S8_QACC_LD_XP_PIE22_M", SDT_ESPVMULASS8QACCLDXPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVMULASS16QACCLDXPPIE22M : SDTypeProfile<6, 9, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>,
+  SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>, SDTCisVT<8, v16i8>, SDTCisVT<9, v16i8>,
+  SDTCisVT<10, v8i16>, SDTCisVT<11, v8i16>, SDTCisPtrTy<12>, SDTCisVT<13, i32>, SDTCisVT<14, i32>
+]>;
+def riscv_esp_vmulas_s16_qacc_ld_xp_pie22_m : RVSDNode<"ESP_VMULAS_S16_QACC_LD_XP_PIE22_M", SDT_ESPVMULASS16QACCLDXPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVMULASU8QACCLDXPPIE22M : SDTypeProfile<6, 9, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>,
+  SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>, SDTCisVT<8, v16i8>, SDTCisVT<9, v16i8>,
+  SDTCisVT<10, v16i8>, SDTCisVT<11, v16i8>, SDTCisPtrTy<12>, SDTCisVT<13, i32>, SDTCisVT<14, i32>
+]>;
+def riscv_esp_vmulas_u8_qacc_ld_xp_pie22_m : RVSDNode<"ESP_VMULAS_U8_QACC_LD_XP_PIE22_M", SDT_ESPVMULASU8QACCLDXPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVMULASU16QACCLDXPPIE22M : SDTypeProfile<6, 9, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>,
+  SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>, SDTCisVT<8, v16i8>, SDTCisVT<9, v16i8>,
+  SDTCisVT<10, v8i16>, SDTCisVT<11, v8i16>, SDTCisPtrTy<12>, SDTCisVT<13, i32>, SDTCisVT<14, i32>
+]>;
+def riscv_esp_vmulas_u16_qacc_ld_xp_pie22_m : RVSDNode<"ESP_VMULAS_U16_QACC_LD_XP_PIE22_M", SDT_ESPVMULASU16QACCLDXPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVMULASS8QACCSTIPPIE22M : SDTypeProfile<5, 10, [
+  SDTCisPtrTy<0>, SDTCisVT<1, v16i8>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>, SDTCisVT<4, v16i8>,
+  SDTCisVT<5, v16i8>, SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>, SDTCisVT<8, v16i8>,
+  SDTCisVT<9, v16i8>, SDTCisVT<10, v16i8>, SDTCisVT<11, v16i8>, SDTCisPtrTy<12>, SDTCisVT<13, i32>, SDTCisVT<14, i32>
+]>;
+def riscv_esp_vmulas_s8_qacc_st_ip_pie22_m : RVSDNode<"ESP_VMULAS_S8_QACC_ST_IP_PIE22_M", SDT_ESPVMULASS8QACCSTIPPIE22M, [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def SDT_ESPVMULASS16QACCSTIPPIE22M : SDTypeProfile<5, 10, [
+  SDTCisPtrTy<0>, SDTCisVT<1, v16i8>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>, SDTCisVT<4, v16i8>,
+  SDTCisVT<5, v16i8>, SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>, SDTCisVT<8, v16i8>,
+  SDTCisVT<9, v16i8>, SDTCisVT<10, v8i16>, SDTCisVT<11, v8i16>, SDTCisPtrTy<12>, SDTCisVT<13, i32>, SDTCisVT<14, i32>
+]>;
+def riscv_esp_vmulas_s16_qacc_st_ip_pie22_m : RVSDNode<"ESP_VMULAS_S16_QACC_ST_IP_PIE22_M", SDT_ESPVMULASS16QACCSTIPPIE22M, [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def SDT_ESPVMULASU8QACCSTIPPIE22M : SDTypeProfile<5, 10, [
+  SDTCisPtrTy<0>, SDTCisVT<1, v16i8>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>, SDTCisVT<4, v16i8>,
+  SDTCisVT<5, v16i8>, SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>, SDTCisVT<8, v16i8>,
+  SDTCisVT<9, v16i8>, SDTCisVT<10, v16i8>, SDTCisVT<11, v16i8>, SDTCisPtrTy<12>, SDTCisVT<13, i32>, SDTCisVT<14, i32>
+]>;
+def riscv_esp_vmulas_u8_qacc_st_ip_pie22_m : RVSDNode<"ESP_VMULAS_U8_QACC_ST_IP_PIE22_M", SDT_ESPVMULASU8QACCSTIPPIE22M, [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def SDT_ESPVMULASU16QACCSTIPPIE22M : SDTypeProfile<5, 10, [
+  SDTCisPtrTy<0>, SDTCisVT<1, v16i8>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>, SDTCisVT<4, v16i8>,
+  SDTCisVT<5, v16i8>, SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>, SDTCisVT<8, v16i8>,
+  SDTCisVT<9, v16i8>, SDTCisVT<10, v8i16>, SDTCisVT<11, v8i16>, SDTCisPtrTy<12>, SDTCisVT<13, i32>, SDTCisVT<14, i32>
+]>;
+def riscv_esp_vmulas_u16_qacc_st_ip_pie22_m : RVSDNode<"ESP_VMULAS_U16_QACC_ST_IP_PIE22_M", SDT_ESPVMULASU16QACCSTIPPIE22M, [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def SDT_ESPVMULASS8QACCSTXPPIE22M : SDTypeProfile<5, 10, [
+  SDTCisPtrTy<0>, SDTCisVT<1, v16i8>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>, SDTCisVT<4, v16i8>,
+  SDTCisVT<5, v16i8>, SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>, SDTCisVT<8, v16i8>,
+  SDTCisVT<9, v16i8>, SDTCisVT<10, v16i8>, SDTCisVT<11, v16i8>, SDTCisPtrTy<12>, SDTCisVT<13, i32>, SDTCisVT<14, i32>
+]>;
+def riscv_esp_vmulas_s8_qacc_st_xp_pie22_m : RVSDNode<"ESP_VMULAS_S8_QACC_ST_XP_PIE22_M", SDT_ESPVMULASS8QACCSTXPPIE22M, [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def SDT_ESPVMULASS16QACCSTXPPIE22M : SDTypeProfile<5, 10, [
+  SDTCisPtrTy<0>, SDTCisVT<1, v16i8>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>, SDTCisVT<4, v16i8>,
+  SDTCisVT<5, v16i8>, SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>, SDTCisVT<8, v16i8>,
+  SDTCisVT<9, v16i8>, SDTCisVT<10, v8i16>, SDTCisVT<11, v8i16>, SDTCisPtrTy<12>, SDTCisVT<13, i32>, SDTCisVT<14, i32>
+]>;
+def riscv_esp_vmulas_s16_qacc_st_xp_pie22_m : RVSDNode<"ESP_VMULAS_S16_QACC_ST_XP_PIE22_M", SDT_ESPVMULASS16QACCSTXPPIE22M, [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def SDT_ESPVMULASU8QACCSTXPPIE22M : SDTypeProfile<5, 10, [
+  SDTCisPtrTy<0>, SDTCisVT<1, v16i8>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>, SDTCisVT<4, v16i8>,
+  SDTCisVT<5, v16i8>, SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>, SDTCisVT<8, v16i8>,
+  SDTCisVT<9, v16i8>, SDTCisVT<10, v16i8>, SDTCisVT<11, v16i8>, SDTCisPtrTy<12>, SDTCisVT<13, i32>, SDTCisVT<14, i32>
+]>;
+def riscv_esp_vmulas_u8_qacc_st_xp_pie22_m : RVSDNode<"ESP_VMULAS_U8_QACC_ST_XP_PIE22_M", SDT_ESPVMULASU8QACCSTXPPIE22M, [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def SDT_ESPVMULASU16QACCSTXPPIE22M : SDTypeProfile<5, 10, [
+  SDTCisPtrTy<0>, SDTCisVT<1, v16i8>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>, SDTCisVT<4, v16i8>,
+  SDTCisVT<5, v16i8>, SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>, SDTCisVT<8, v16i8>,
+  SDTCisVT<9, v16i8>, SDTCisVT<10, v8i16>, SDTCisVT<11, v8i16>, SDTCisPtrTy<12>, SDTCisVT<13, i32>, SDTCisVT<14, i32>
+]>;
+def riscv_esp_vmulas_u16_qacc_st_xp_pie22_m : RVSDNode<"ESP_VMULAS_U16_QACC_ST_XP_PIE22_M", SDT_ESPVMULASU16QACCSTXPPIE22M, [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def SDT_ESPVMULASS8QACCLDBCINCPPIE22M : SDTypeProfile<5, 8, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>,
+  SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>, SDTCisVT<8, v16i8>, SDTCisVT<9, v16i8>,
+  SDTCisVT<10, v16i8>, SDTCisVT<11, v16i8>, SDTCisPtrTy<12>, SDTCisVT<13, i32>
+]>;
+def riscv_esp_vmulas_s8_qacc_ldbc_incp_pie22_m : RVSDNode<"ESP_VMULAS_S8_QACC_LDBC_INCP_PIE22_M", SDT_ESPVMULASS8QACCLDBCINCPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVMULASS16QACCLDBCINCPPIE22M : SDTypeProfile<5, 8, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>,
+  SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>, SDTCisVT<8, v16i8>, SDTCisVT<9, v16i8>,
+  SDTCisVT<10, v8i16>, SDTCisVT<11, v8i16>, SDTCisPtrTy<12>, SDTCisVT<13, i32>
+]>;
+def riscv_esp_vmulas_s16_qacc_ldbc_incp_pie22_m : RVSDNode<"ESP_VMULAS_S16_QACC_LDBC_INCP_PIE22_M", SDT_ESPVMULASS16QACCLDBCINCPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVMULASU8QACCLDBCINCPPIE22M : SDTypeProfile<5, 8, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>,
+  SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>, SDTCisVT<8, v16i8>, SDTCisVT<9, v16i8>,
+  SDTCisVT<10, v16i8>, SDTCisVT<11, v16i8>, SDTCisPtrTy<12>, SDTCisVT<13, i32>
+]>;
+def riscv_esp_vmulas_u8_qacc_ldbc_incp_pie22_m : RVSDNode<"ESP_VMULAS_U8_QACC_LDBC_INCP_PIE22_M", SDT_ESPVMULASU8QACCLDBCINCPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVMULASU16QACCLDBCINCPPIE22M : SDTypeProfile<5, 8, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>, SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>,
+  SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>, SDTCisVT<8, v16i8>, SDTCisVT<9, v16i8>,
+  SDTCisVT<10, v8i16>, SDTCisVT<11, v8i16>, SDTCisPtrTy<12>, SDTCisVT<13, i32>
+]>;
+def riscv_esp_vmulas_u16_qacc_ldbc_incp_pie22_m : RVSDNode<"ESP_VMULAS_U16_QACC_LDBC_INCP_PIE22_M", SDT_ESPVMULASU16QACCLDBCINCPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVMULASS8XACCPIE22M : SDTypeProfile<2, 5, [
+  SDTCisVT<0, i32>, SDTCisVT<1, i32>,
+  SDTCisVT<2, i32>, SDTCisVT<3, i32>, SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>, SDTCisVT<6, i32>
+]>;
+def riscv_esp_vmulas_s8_xacc_pie22_m : RVSDNode<"ESP_VMULAS_S8_XACC_PIE22", SDT_ESPVMULASS8XACCPIE22M, []>;
+def SDT_ESPVMULASS16XACCPIE22M : SDTypeProfile<2, 5, [
+  SDTCisVT<0, i32>, SDTCisVT<1, i32>,
+  SDTCisVT<2, i32>, SDTCisVT<3, i32>, SDTCisVT<4, v8i16>, SDTCisVT<5, v8i16>, SDTCisVT<6, i32>
+]>;
+def riscv_esp_vmulas_s16_xacc_pie22_m : RVSDNode<"ESP_VMULAS_S16_XACC_PIE22", SDT_ESPVMULASS16XACCPIE22M, []>;
+def SDT_ESPVMULASU8XACCPIE22M : SDTypeProfile<2, 5, [
+  SDTCisVT<0, i32>, SDTCisVT<1, i32>,
+  SDTCisVT<2, i32>, SDTCisVT<3, i32>, SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>, SDTCisVT<6, i32>
+]>;
+def riscv_esp_vmulas_u8_xacc_pie22_m : RVSDNode<"ESP_VMULAS_U8_XACC_PIE22", SDT_ESPVMULASU8XACCPIE22M, []>;
+def SDT_ESPVMULASU16XACCPIE22M : SDTypeProfile<2, 5, [
+  SDTCisVT<0, i32>, SDTCisVT<1, i32>,
+  SDTCisVT<2, i32>, SDTCisVT<3, i32>, SDTCisVT<4, v8i16>, SDTCisVT<5, v8i16>, SDTCisVT<6, i32>
+]>;
+def riscv_esp_vmulas_u16_xacc_pie22_m : RVSDNode<"ESP_VMULAS_U16_XACC_PIE22", SDT_ESPVMULASU16XACCPIE22M, []>;
+def SDT_ESPVMULASS8XACCLDIPPIE22M : SDTypeProfile<4, 7, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>, SDTCisVT<2, i32>, SDTCisVT<3, i32>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>, SDTCisPtrTy<6>, SDTCisVT<7, i32>, SDTCisVT<8, i32>
+]>;
+def riscv_esp_vmulas_s8_xacc_ld_ip_pie22_m : RVSDNode<"ESP_VMULAS_S8_XACC_LD_IP_PIE22_M", SDT_ESPVMULASS8XACCLDIPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVMULASS16XACCLDIPPIE22M : SDTypeProfile<4, 7, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>, SDTCisVT<2, i32>, SDTCisVT<3, i32>,
+  SDTCisVT<4, v8i16>, SDTCisVT<5, v8i16>, SDTCisPtrTy<6>, SDTCisVT<7, i32>, SDTCisVT<8, i32>
+]>;
+def riscv_esp_vmulas_s16_xacc_ld_ip_pie22_m : RVSDNode<"ESP_VMULAS_S16_XACC_LD_IP_PIE22_M", SDT_ESPVMULASS16XACCLDIPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVMULASU8XACCLDIPPIE22M : SDTypeProfile<4, 7, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>, SDTCisVT<2, i32>, SDTCisVT<3, i32>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>, SDTCisPtrTy<6>, SDTCisVT<7, i32>, SDTCisVT<8, i32>
+]>;
+def riscv_esp_vmulas_u8_xacc_ld_ip_pie22_m : RVSDNode<"ESP_VMULAS_U8_XACC_LD_IP_PIE22_M", SDT_ESPVMULASU8XACCLDIPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVMULASU16XACCLDIPPIE22M : SDTypeProfile<4, 7, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>, SDTCisVT<2, i32>, SDTCisVT<3, i32>,
+  SDTCisVT<4, v8i16>, SDTCisVT<5, v8i16>, SDTCisPtrTy<6>, SDTCisVT<7, i32>, SDTCisVT<8, i32>
+]>;
+def riscv_esp_vmulas_u16_xacc_ld_ip_pie22_m : RVSDNode<"ESP_VMULAS_U16_XACC_LD_IP_PIE22_M", SDT_ESPVMULASU16XACCLDIPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVMULASS8XACCLDXPPIE22M : SDTypeProfile<4, 7, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>, SDTCisVT<2, i32>, SDTCisVT<3, i32>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>, SDTCisPtrTy<6>, SDTCisVT<7, i32>, SDTCisVT<8, i32>
+]>;
+def riscv_esp_vmulas_s8_xacc_ld_xp_pie22_m : RVSDNode<"ESP_VMULAS_S8_XACC_LD_XP_PIE22_M", SDT_ESPVMULASS8XACCLDXPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVMULASS8XACCSTIPPIE22M : SDTypeProfile<3, 8, [
+  SDTCisPtrTy<0>, SDTCisVT<1, i32>, SDTCisVT<2, i32>,
+  SDTCisVT<3, i32>, SDTCisVT<4, i32>, SDTCisVT<5, v16i8>, SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>,
+  SDTCisPtrTy<8>, SDTCisVT<9, i32>, SDTCisVT<10, i32>
+]>;
+def riscv_esp_vmulas_s8_xacc_st_ip_pie22_m : RVSDNode<"ESP_VMULAS_S8_XACC_ST_IP_PIE22_M", SDT_ESPVMULASS8XACCSTIPPIE22M, [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def SDT_ESPVMULASS8XACCSTXPPIE22M : SDTypeProfile<3, 8, [
+  SDTCisPtrTy<0>, SDTCisVT<1, i32>, SDTCisVT<2, i32>,
+  SDTCisVT<3, i32>, SDTCisVT<4, i32>, SDTCisVT<5, v16i8>, SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>,
+  SDTCisPtrTy<8>, SDTCisVT<9, i32>, SDTCisVT<10, i32>
+]>;
+def riscv_esp_vmulas_s8_xacc_st_xp_pie22_m : RVSDNode<"ESP_VMULAS_S8_XACC_ST_XP_PIE22_M", SDT_ESPVMULASS8XACCSTXPPIE22M, [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def SDT_ESPVMULASS16XACCLDXPPIE22M : SDTypeProfile<4, 7, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>, SDTCisVT<2, i32>, SDTCisVT<3, i32>,
+  SDTCisVT<4, v8i16>, SDTCisVT<5, v8i16>, SDTCisPtrTy<6>, SDTCisVT<7, i32>, SDTCisVT<8, i32>
+]>;
+def riscv_esp_vmulas_s16_xacc_ld_xp_pie22_m : RVSDNode<"ESP_VMULAS_S16_XACC_LD_XP_PIE22_M", SDT_ESPVMULASS16XACCLDXPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVMULASS16XACCSTIPPIE22M : SDTypeProfile<3, 8, [
+  SDTCisPtrTy<0>, SDTCisVT<1, i32>, SDTCisVT<2, i32>,
+  SDTCisVT<3, i32>, SDTCisVT<4, i32>, SDTCisVT<5, v16i8>, SDTCisVT<6, v8i16>, SDTCisVT<7, v8i16>,
+  SDTCisPtrTy<8>, SDTCisVT<9, i32>, SDTCisVT<10, i32>
+]>;
+def riscv_esp_vmulas_s16_xacc_st_ip_pie22_m : RVSDNode<"ESP_VMULAS_S16_XACC_ST_IP_PIE22_M", SDT_ESPVMULASS16XACCSTIPPIE22M, [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def SDT_ESPVMULASS16XACCSTXPPIE22M : SDTypeProfile<3, 8, [
+  SDTCisPtrTy<0>, SDTCisVT<1, i32>, SDTCisVT<2, i32>,
+  SDTCisVT<3, i32>, SDTCisVT<4, i32>, SDTCisVT<5, v16i8>, SDTCisVT<6, v8i16>, SDTCisVT<7, v8i16>,
+  SDTCisPtrTy<8>, SDTCisVT<9, i32>, SDTCisVT<10, i32>
+]>;
+def riscv_esp_vmulas_s16_xacc_st_xp_pie22_m : RVSDNode<"ESP_VMULAS_S16_XACC_ST_XP_PIE22_M", SDT_ESPVMULASS16XACCSTXPPIE22M, [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def SDT_ESPVMULASU8XACCLDXPPIE22M : SDTypeProfile<4, 7, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>, SDTCisVT<2, i32>, SDTCisVT<3, i32>,
+  SDTCisVT<4, v16i8>, SDTCisVT<5, v16i8>, SDTCisPtrTy<6>, SDTCisVT<7, i32>, SDTCisVT<8, i32>
+]>;
+def riscv_esp_vmulas_u8_xacc_ld_xp_pie22_m : RVSDNode<"ESP_VMULAS_U8_XACC_LD_XP_PIE22_M", SDT_ESPVMULASU8XACCLDXPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVMULASU8XACCSTIPPIE22M : SDTypeProfile<3, 8, [
+  SDTCisPtrTy<0>, SDTCisVT<1, i32>, SDTCisVT<2, i32>,
+  SDTCisVT<3, i32>, SDTCisVT<4, i32>, SDTCisVT<5, v16i8>, SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>,
+  SDTCisPtrTy<8>, SDTCisVT<9, i32>, SDTCisVT<10, i32>
+]>;
+def riscv_esp_vmulas_u8_xacc_st_ip_pie22_m : RVSDNode<"ESP_VMULAS_U8_XACC_ST_IP_PIE22_M", SDT_ESPVMULASU8XACCSTIPPIE22M, [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def SDT_ESPVMULASU8XACCSTXPPIE22M : SDTypeProfile<3, 8, [
+  SDTCisPtrTy<0>, SDTCisVT<1, i32>, SDTCisVT<2, i32>,
+  SDTCisVT<3, i32>, SDTCisVT<4, i32>, SDTCisVT<5, v16i8>, SDTCisVT<6, v16i8>, SDTCisVT<7, v16i8>,
+  SDTCisPtrTy<8>, SDTCisVT<9, i32>, SDTCisVT<10, i32>
+]>;
+def riscv_esp_vmulas_u8_xacc_st_xp_pie22_m : RVSDNode<"ESP_VMULAS_U8_XACC_ST_XP_PIE22_M", SDT_ESPVMULASU8XACCSTXPPIE22M, [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def SDT_ESPVMULASU16XACCLDXPPIE22M : SDTypeProfile<4, 7, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>, SDTCisVT<2, i32>, SDTCisVT<3, i32>,
+  SDTCisVT<4, v8i16>, SDTCisVT<5, v8i16>, SDTCisPtrTy<6>, SDTCisVT<7, i32>, SDTCisVT<8, i32>
+]>;
+def riscv_esp_vmulas_u16_xacc_ld_xp_pie22_m : RVSDNode<"ESP_VMULAS_U16_XACC_LD_XP_PIE22_M", SDT_ESPVMULASU16XACCLDXPPIE22M, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVMULASU16XACCSTIPPIE22M : SDTypeProfile<3, 8, [
+  SDTCisPtrTy<0>, SDTCisVT<1, i32>, SDTCisVT<2, i32>,
+  SDTCisVT<3, i32>, SDTCisVT<4, i32>, SDTCisVT<5, v16i8>, SDTCisVT<6, v8i16>, SDTCisVT<7, v8i16>,
+  SDTCisPtrTy<8>, SDTCisVT<9, i32>, SDTCisVT<10, i32>
+]>;
+def riscv_esp_vmulas_u16_xacc_st_ip_pie22_m : RVSDNode<"ESP_VMULAS_U16_XACC_ST_IP_PIE22_M", SDT_ESPVMULASU16XACCSTIPPIE22M, [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def SDT_ESPVMULASU16XACCSTXPPIE22M : SDTypeProfile<3, 8, [
+  SDTCisPtrTy<0>, SDTCisVT<1, i32>, SDTCisVT<2, i32>,
+  SDTCisVT<3, i32>, SDTCisVT<4, i32>, SDTCisVT<5, v16i8>, SDTCisVT<6, v8i16>, SDTCisVT<7, v8i16>,
+  SDTCisPtrTy<8>, SDTCisVT<9, i32>, SDTCisVT<10, i32>
+]>;
+def riscv_esp_vmulas_u16_xacc_st_xp_pie22_m : RVSDNode<"ESP_VMULAS_U16_XACC_ST_XP_PIE22_M", SDT_ESPVMULASU16XACCSTXPPIE22M, [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+// VADD / VSUB / VSADDS / VSSUBS PIE22 SDNodes (unified 2.1/2.2 API; +xespv path)
+//
+// ST_INCP pie22 vs 2.1 (_m SDT_*STINCPM, 2 results / 4 ops): two extra operands —
+//   qv_in : tied vector input for result qv (Esp32V2P2Inst Constraints "$qv = $qv_in")
+//   sat   : saturate mode (i32)
+// Operand order for *STINCPPIE22*: qx, qy, qu, rs1, qv_in, sat.
+def SDT_ESPVADDS8PIE22M : SDTypeProfile<1, 3, [
+  SDTCisVT<0, v16i8>,
+  SDTCisVT<1, v16i8>, SDTCisVT<2, v16i8>,
+  SDTCisVT<3, i32>
+]>;
+def riscv_esp_vadd_s8_pie22_m : RVSDNode<"ESP_VADD_S8_PIE22", SDT_ESPVADDS8PIE22M, []>;
+def SDT_ESPVADDS8LDINCPPIE22M : SDTypeProfile<3, 4, [
+  SDTCisVT<0, v16i8>, SDTCisVT<1, v16i8>, SDTCisPtrTy<2>,
+  SDTCisVT<3, v16i8>, SDTCisVT<4, v16i8>, SDTCisPtrTy<5>,
+  SDTCisVT<6, i32>
+]>;
+def riscv_esp_vadd_s8_ld_incp_pie22_m : RVSDNode<"ESP_VADD_S8_LD_INCP_PIE22_M", SDT_ESPVADDS8LDINCPPIE22M,
+    [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+// Results: qv, rs1r. Ops: qx, qy, qu, rs1, qv_in (tied), sat.
+def SDT_ESPVADDS8STINCPPIE22M : SDTypeProfile<2, 6, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>,
+  SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>, SDTCisVT<4, v16i8>, SDTCisPtrTy<5>,
+  SDTCisVT<6, v16i8>, SDTCisVT<7, i32>
+]>;
+def riscv_esp_vadd_s8_st_incp_pie22_m : RVSDNode<"ESP_VADD_S8_ST_INCP_PIE22_M", SDT_ESPVADDS8STINCPPIE22M,
+    [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def SDT_ESPVADDS16PIE22M : SDTypeProfile<1, 3, [
+  SDTCisVT<0, v8i16>,
+  SDTCisVT<1, v8i16>, SDTCisVT<2, v8i16>,
+  SDTCisVT<3, i32>
+]>;
+def riscv_esp_vadd_s16_pie22_m : RVSDNode<"ESP_VADD_S16_PIE22", SDT_ESPVADDS16PIE22M, []>;
+def SDT_ESPVADDS16LDINCPPIE22M : SDTypeProfile<3, 4, [
+  SDTCisVT<0, v8i16>, SDTCisVT<1, v16i8>, SDTCisPtrTy<2>,
+  SDTCisVT<3, v8i16>, SDTCisVT<4, v8i16>, SDTCisPtrTy<5>,
+  SDTCisVT<6, i32>
+]>;
+def riscv_esp_vadd_s16_ld_incp_pie22_m : RVSDNode<"ESP_VADD_S16_LD_INCP_PIE22_M", SDT_ESPVADDS16LDINCPPIE22M,
+    [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVADDS16STINCPPIE22M : SDTypeProfile<2, 6, [
+  SDTCisVT<0, v8i16>, SDTCisPtrTy<1>,
+  SDTCisVT<2, v8i16>, SDTCisVT<3, v8i16>, SDTCisVT<4, v8i16>, SDTCisPtrTy<5>,
+  SDTCisVT<6, v8i16>, SDTCisVT<7, i32>
+]>;
+def riscv_esp_vadd_s16_st_incp_pie22_m : RVSDNode<"ESP_VADD_S16_ST_INCP_PIE22_M", SDT_ESPVADDS16STINCPPIE22M,
+    [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def SDT_ESPVADDS32PIE22M : SDTypeProfile<1, 3, [
+  SDTCisVT<0, v4i32>,
+  SDTCisVT<1, v4i32>, SDTCisVT<2, v4i32>,
+  SDTCisVT<3, i32>
+]>;
+def riscv_esp_vadd_s32_pie22_m : RVSDNode<"ESP_VADD_S32_PIE22", SDT_ESPVADDS32PIE22M, []>;
+def SDT_ESPVADDS32LDINCPPIE22M : SDTypeProfile<3, 4, [
+  SDTCisVT<0, v4i32>, SDTCisVT<1, v16i8>, SDTCisPtrTy<2>,
+  SDTCisVT<3, v4i32>, SDTCisVT<4, v4i32>, SDTCisPtrTy<5>,
+  SDTCisVT<6, i32>
+]>;
+def riscv_esp_vadd_s32_ld_incp_pie22_m : RVSDNode<"ESP_VADD_S32_LD_INCP_PIE22_M", SDT_ESPVADDS32LDINCPPIE22M,
+    [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVADDS32STINCPPIE22M : SDTypeProfile<2, 6, [
+  SDTCisVT<0, v4i32>, SDTCisPtrTy<1>,
+  SDTCisVT<2, v4i32>, SDTCisVT<3, v4i32>, SDTCisVT<4, v4i32>, SDTCisPtrTy<5>,
+  SDTCisVT<6, v4i32>, SDTCisVT<7, i32>
+]>;
+def riscv_esp_vadd_s32_st_incp_pie22_m : RVSDNode<"ESP_VADD_S32_ST_INCP_PIE22_M", SDT_ESPVADDS32STINCPPIE22M,
+    [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def SDT_ESPVADDU8PIE22M : SDTypeProfile<1, 3, [
+  SDTCisVT<0, v16i8>,
+  SDTCisVT<1, v16i8>, SDTCisVT<2, v16i8>,
+  SDTCisVT<3, i32>
+]>;
+def riscv_esp_vadd_u8_pie22_m : RVSDNode<"ESP_VADD_U8_PIE22", SDT_ESPVADDU8PIE22M, []>;
+def SDT_ESPVADDU8LDINCPPIE22M : SDTypeProfile<3, 4, [
+  SDTCisVT<0, v16i8>, SDTCisVT<1, v16i8>, SDTCisPtrTy<2>,
+  SDTCisVT<3, v16i8>, SDTCisVT<4, v16i8>, SDTCisPtrTy<5>,
+  SDTCisVT<6, i32>
+]>;
+def riscv_esp_vadd_u8_ld_incp_pie22_m : RVSDNode<"ESP_VADD_U8_LD_INCP_PIE22_M", SDT_ESPVADDU8LDINCPPIE22M,
+    [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVADDU8STINCPPIE22M : SDTypeProfile<2, 6, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>,
+  SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>, SDTCisVT<4, v16i8>, SDTCisPtrTy<5>,
+  SDTCisVT<6, v16i8>, SDTCisVT<7, i32>
+]>;
+def riscv_esp_vadd_u8_st_incp_pie22_m : RVSDNode<"ESP_VADD_U8_ST_INCP_PIE22_M", SDT_ESPVADDU8STINCPPIE22M,
+    [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def SDT_ESPVADDU16PIE22M : SDTypeProfile<1, 3, [
+  SDTCisVT<0, v8i16>,
+  SDTCisVT<1, v8i16>, SDTCisVT<2, v8i16>,
+  SDTCisVT<3, i32>
+]>;
+def riscv_esp_vadd_u16_pie22_m : RVSDNode<"ESP_VADD_U16_PIE22", SDT_ESPVADDU16PIE22M, []>;
+def SDT_ESPVADDU16LDINCPPIE22M : SDTypeProfile<3, 4, [
+  SDTCisVT<0, v8i16>, SDTCisVT<1, v16i8>, SDTCisPtrTy<2>,
+  SDTCisVT<3, v8i16>, SDTCisVT<4, v8i16>, SDTCisPtrTy<5>,
+  SDTCisVT<6, i32>
+]>;
+def riscv_esp_vadd_u16_ld_incp_pie22_m : RVSDNode<"ESP_VADD_U16_LD_INCP_PIE22_M", SDT_ESPVADDU16LDINCPPIE22M,
+    [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVADDU16STINCPPIE22M : SDTypeProfile<2, 6, [
+  SDTCisVT<0, v8i16>, SDTCisPtrTy<1>,
+  SDTCisVT<2, v8i16>, SDTCisVT<3, v8i16>, SDTCisVT<4, v8i16>, SDTCisPtrTy<5>,
+  SDTCisVT<6, v8i16>, SDTCisVT<7, i32>
+]>;
+def riscv_esp_vadd_u16_st_incp_pie22_m : RVSDNode<"ESP_VADD_U16_ST_INCP_PIE22_M", SDT_ESPVADDU16STINCPPIE22M,
+    [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def SDT_ESPVADDU32PIE22M : SDTypeProfile<1, 3, [
+  SDTCisVT<0, v4i32>,
+  SDTCisVT<1, v4i32>, SDTCisVT<2, v4i32>,
+  SDTCisVT<3, i32>
+]>;
+def riscv_esp_vadd_u32_pie22_m : RVSDNode<"ESP_VADD_U32_PIE22", SDT_ESPVADDU32PIE22M, []>;
+def SDT_ESPVADDU32LDINCPPIE22M : SDTypeProfile<3, 4, [
+  SDTCisVT<0, v4i32>, SDTCisVT<1, v16i8>, SDTCisPtrTy<2>,
+  SDTCisVT<3, v4i32>, SDTCisVT<4, v4i32>, SDTCisPtrTy<5>,
+  SDTCisVT<6, i32>
+]>;
+def riscv_esp_vadd_u32_ld_incp_pie22_m : RVSDNode<"ESP_VADD_U32_LD_INCP_PIE22_M", SDT_ESPVADDU32LDINCPPIE22M,
+    [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVADDU32STINCPPIE22M : SDTypeProfile<2, 6, [
+  SDTCisVT<0, v4i32>, SDTCisPtrTy<1>,
+  SDTCisVT<2, v4i32>, SDTCisVT<3, v4i32>, SDTCisVT<4, v4i32>, SDTCisPtrTy<5>,
+  SDTCisVT<6, v4i32>, SDTCisVT<7, i32>
+]>;
+def riscv_esp_vadd_u32_st_incp_pie22_m : RVSDNode<"ESP_VADD_U32_ST_INCP_PIE22_M", SDT_ESPVADDU32STINCPPIE22M,
+    [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def SDT_ESPVSUBS8PIE22M : SDTypeProfile<1, 3, [
+  SDTCisVT<0, v16i8>,
+  SDTCisVT<1, v16i8>, SDTCisVT<2, v16i8>,
+  SDTCisVT<3, i32>
+]>;
+def riscv_esp_vsub_s8_pie22_m : RVSDNode<"ESP_VSUB_S8_PIE22", SDT_ESPVSUBS8PIE22M, []>;
+def SDT_ESPVSUBS8LDINCPPIE22M : SDTypeProfile<3, 4, [
+  SDTCisVT<0, v16i8>, SDTCisVT<1, v16i8>, SDTCisPtrTy<2>,
+  SDTCisVT<3, v16i8>, SDTCisVT<4, v16i8>, SDTCisPtrTy<5>,
+  SDTCisVT<6, i32>
+]>;
+def riscv_esp_vsub_s8_ld_incp_pie22_m : RVSDNode<"ESP_VSUB_S8_LD_INCP_PIE22_M", SDT_ESPVSUBS8LDINCPPIE22M,
+    [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVSUBS8STINCPPIE22M : SDTypeProfile<2, 6, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>,
+  SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>, SDTCisVT<4, v16i8>, SDTCisPtrTy<5>,
+  SDTCisVT<6, v16i8>, SDTCisVT<7, i32>
+]>;
+def riscv_esp_vsub_s8_st_incp_pie22_m : RVSDNode<"ESP_VSUB_S8_ST_INCP_PIE22_M", SDT_ESPVSUBS8STINCPPIE22M,
+    [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def SDT_ESPVSUBS16PIE22M : SDTypeProfile<1, 3, [
+  SDTCisVT<0, v8i16>,
+  SDTCisVT<1, v8i16>, SDTCisVT<2, v8i16>,
+  SDTCisVT<3, i32>
+]>;
+def riscv_esp_vsub_s16_pie22_m : RVSDNode<"ESP_VSUB_S16_PIE22", SDT_ESPVSUBS16PIE22M, []>;
+def SDT_ESPVSUBS16LDINCPPIE22M : SDTypeProfile<3, 4, [
+  SDTCisVT<0, v8i16>, SDTCisVT<1, v16i8>, SDTCisPtrTy<2>,
+  SDTCisVT<3, v8i16>, SDTCisVT<4, v8i16>, SDTCisPtrTy<5>,
+  SDTCisVT<6, i32>
+]>;
+def riscv_esp_vsub_s16_ld_incp_pie22_m : RVSDNode<"ESP_VSUB_S16_LD_INCP_PIE22_M", SDT_ESPVSUBS16LDINCPPIE22M,
+    [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVSUBS16STINCPPIE22M : SDTypeProfile<2, 6, [
+  SDTCisVT<0, v8i16>, SDTCisPtrTy<1>,
+  SDTCisVT<2, v8i16>, SDTCisVT<3, v8i16>, SDTCisVT<4, v8i16>, SDTCisPtrTy<5>,
+  SDTCisVT<6, v8i16>, SDTCisVT<7, i32>
+]>;
+def riscv_esp_vsub_s16_st_incp_pie22_m : RVSDNode<"ESP_VSUB_S16_ST_INCP_PIE22_M", SDT_ESPVSUBS16STINCPPIE22M,
+    [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def SDT_ESPVSUBS32PIE22M : SDTypeProfile<1, 3, [
+  SDTCisVT<0, v4i32>,
+  SDTCisVT<1, v4i32>, SDTCisVT<2, v4i32>,
+  SDTCisVT<3, i32>
+]>;
+def riscv_esp_vsub_s32_pie22_m : RVSDNode<"ESP_VSUB_S32_PIE22", SDT_ESPVSUBS32PIE22M, []>;
+def SDT_ESPVSUBS32LDINCPPIE22M : SDTypeProfile<3, 4, [
+  SDTCisVT<0, v4i32>, SDTCisVT<1, v16i8>, SDTCisPtrTy<2>,
+  SDTCisVT<3, v4i32>, SDTCisVT<4, v4i32>, SDTCisPtrTy<5>,
+  SDTCisVT<6, i32>
+]>;
+def riscv_esp_vsub_s32_ld_incp_pie22_m : RVSDNode<"ESP_VSUB_S32_LD_INCP_PIE22_M", SDT_ESPVSUBS32LDINCPPIE22M,
+    [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVSUBS32STINCPPIE22M : SDTypeProfile<2, 6, [
+  SDTCisVT<0, v4i32>, SDTCisPtrTy<1>,
+  SDTCisVT<2, v4i32>, SDTCisVT<3, v4i32>, SDTCisVT<4, v4i32>, SDTCisPtrTy<5>,
+  SDTCisVT<6, v4i32>, SDTCisVT<7, i32>
+]>;
+def riscv_esp_vsub_s32_st_incp_pie22_m : RVSDNode<"ESP_VSUB_S32_ST_INCP_PIE22_M", SDT_ESPVSUBS32STINCPPIE22M,
+    [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def SDT_ESPVSUBU8PIE22M : SDTypeProfile<1, 3, [
+  SDTCisVT<0, v16i8>,
+  SDTCisVT<1, v16i8>, SDTCisVT<2, v16i8>,
+  SDTCisVT<3, i32>
+]>;
+def riscv_esp_vsub_u8_pie22_m : RVSDNode<"ESP_VSUB_U8_PIE22", SDT_ESPVSUBU8PIE22M, []>;
+def SDT_ESPVSUBU8LDINCPPIE22M : SDTypeProfile<3, 4, [
+  SDTCisVT<0, v16i8>, SDTCisVT<1, v16i8>, SDTCisPtrTy<2>,
+  SDTCisVT<3, v16i8>, SDTCisVT<4, v16i8>, SDTCisPtrTy<5>,
+  SDTCisVT<6, i32>
+]>;
+def riscv_esp_vsub_u8_ld_incp_pie22_m : RVSDNode<"ESP_VSUB_U8_LD_INCP_PIE22_M", SDT_ESPVSUBU8LDINCPPIE22M,
+    [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVSUBU8STINCPPIE22M : SDTypeProfile<2, 6, [
+  SDTCisVT<0, v16i8>, SDTCisPtrTy<1>,
+  SDTCisVT<2, v16i8>, SDTCisVT<3, v16i8>, SDTCisVT<4, v16i8>, SDTCisPtrTy<5>,
+  SDTCisVT<6, v16i8>, SDTCisVT<7, i32>
+]>;
+def riscv_esp_vsub_u8_st_incp_pie22_m : RVSDNode<"ESP_VSUB_U8_ST_INCP_PIE22_M", SDT_ESPVSUBU8STINCPPIE22M,
+    [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def SDT_ESPVSUBU16PIE22M : SDTypeProfile<1, 3, [
+  SDTCisVT<0, v8i16>,
+  SDTCisVT<1, v8i16>, SDTCisVT<2, v8i16>,
+  SDTCisVT<3, i32>
+]>;
+def riscv_esp_vsub_u16_pie22_m : RVSDNode<"ESP_VSUB_U16_PIE22", SDT_ESPVSUBU16PIE22M, []>;
+def SDT_ESPVSUBU16LDINCPPIE22M : SDTypeProfile<3, 4, [
+  SDTCisVT<0, v8i16>, SDTCisVT<1, v16i8>, SDTCisPtrTy<2>,
+  SDTCisVT<3, v8i16>, SDTCisVT<4, v8i16>, SDTCisPtrTy<5>,
+  SDTCisVT<6, i32>
+]>;
+def riscv_esp_vsub_u16_ld_incp_pie22_m : RVSDNode<"ESP_VSUB_U16_LD_INCP_PIE22_M", SDT_ESPVSUBU16LDINCPPIE22M,
+    [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVSUBU16STINCPPIE22M : SDTypeProfile<2, 6, [
+  SDTCisVT<0, v8i16>, SDTCisPtrTy<1>,
+  SDTCisVT<2, v8i16>, SDTCisVT<3, v8i16>, SDTCisVT<4, v8i16>, SDTCisPtrTy<5>,
+  SDTCisVT<6, v8i16>, SDTCisVT<7, i32>
+]>;
+def riscv_esp_vsub_u16_st_incp_pie22_m : RVSDNode<"ESP_VSUB_U16_ST_INCP_PIE22_M", SDT_ESPVSUBU16STINCPPIE22M,
+    [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def SDT_ESPVSUBU32PIE22M : SDTypeProfile<1, 3, [
+  SDTCisVT<0, v4i32>,
+  SDTCisVT<1, v4i32>, SDTCisVT<2, v4i32>,
+  SDTCisVT<3, i32>
+]>;
+def riscv_esp_vsub_u32_pie22_m : RVSDNode<"ESP_VSUB_U32_PIE22", SDT_ESPVSUBU32PIE22M, []>;
+def SDT_ESPVSUBU32LDINCPPIE22M : SDTypeProfile<3, 4, [
+  SDTCisVT<0, v4i32>, SDTCisVT<1, v16i8>, SDTCisPtrTy<2>,
+  SDTCisVT<3, v4i32>, SDTCisVT<4, v4i32>, SDTCisPtrTy<5>,
+  SDTCisVT<6, i32>
+]>;
+def riscv_esp_vsub_u32_ld_incp_pie22_m : RVSDNode<"ESP_VSUB_U32_LD_INCP_PIE22_M", SDT_ESPVSUBU32LDINCPPIE22M,
+    [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def SDT_ESPVSUBU32STINCPPIE22M : SDTypeProfile<2, 6, [
+  SDTCisVT<0, v4i32>, SDTCisPtrTy<1>,
+  SDTCisVT<2, v4i32>, SDTCisVT<3, v4i32>, SDTCisVT<4, v4i32>, SDTCisPtrTy<5>,
+  SDTCisVT<6, v4i32>, SDTCisVT<7, i32>
+]>;
+def riscv_esp_vsub_u32_st_incp_pie22_m : RVSDNode<"ESP_VSUB_U32_ST_INCP_PIE22_M", SDT_ESPVSUBU32STINCPPIE22M,
+    [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def SDT_ESPVSADDSS8PIE22M : SDTypeProfile<1, 3, [
+  SDTCisVT<0, v16i8>,
+  SDTCisVT<1, v16i8>, SDTCisVT<2, i32>, SDTCisVT<3, i32>
+]>;
+def riscv_esp_vsadds_s8_pie22_m : RVSDNode<"ESP_VSADDS_S8_PIE22", SDT_ESPVSADDSS8PIE22M, []>;
+def SDT_ESPVSADDSS16PIE22M : SDTypeProfile<1, 3, [
+  SDTCisVT<0, v8i16>,
+  SDTCisVT<1, v8i16>, SDTCisVT<2, i32>, SDTCisVT<3, i32>
+]>;
+def riscv_esp_vsadds_s16_pie22_m : RVSDNode<"ESP_VSADDS_S16_PIE22", SDT_ESPVSADDSS16PIE22M, []>;
+def SDT_ESPVSADDSU8PIE22M : SDTypeProfile<1, 3, [
+  SDTCisVT<0, v16i8>,
+  SDTCisVT<1, v16i8>, SDTCisVT<2, i32>, SDTCisVT<3, i32>
+]>;
+def riscv_esp_vsadds_u8_pie22_m : RVSDNode<"ESP_VSADDS_U8_PIE22", SDT_ESPVSADDSU8PIE22M, []>;
+def SDT_ESPVSADDSU16PIE22M : SDTypeProfile<1, 3, [
+  SDTCisVT<0, v8i16>,
+  SDTCisVT<1, v8i16>, SDTCisVT<2, i32>, SDTCisVT<3, i32>
+]>;
+def riscv_esp_vsadds_u16_pie22_m : RVSDNode<"ESP_VSADDS_U16_PIE22", SDT_ESPVSADDSU16PIE22M, []>;
+def SDT_ESPVSSUBSS8PIE22M : SDTypeProfile<1, 3, [
+  SDTCisVT<0, v16i8>,
+  SDTCisVT<1, v16i8>, SDTCisVT<2, i32>, SDTCisVT<3, i32>
+]>;
+def riscv_esp_vssubs_s8_pie22_m : RVSDNode<"ESP_VSSUBS_S8_PIE22", SDT_ESPVSSUBSS8PIE22M, []>;
+def SDT_ESPVSSUBSS16PIE22M : SDTypeProfile<1, 3, [
+  SDTCisVT<0, v8i16>,
+  SDTCisVT<1, v8i16>, SDTCisVT<2, i32>, SDTCisVT<3, i32>
+]>;
+def riscv_esp_vssubs_s16_pie22_m : RVSDNode<"ESP_VSSUBS_S16_PIE22", SDT_ESPVSSUBSS16PIE22M, []>;
+def SDT_ESPVSSUBSU8PIE22M : SDTypeProfile<1, 3, [
+  SDTCisVT<0, v16i8>,
+  SDTCisVT<1, v16i8>, SDTCisVT<2, i32>, SDTCisVT<3, i32>
+]>;
+def riscv_esp_vssubs_u8_pie22_m : RVSDNode<"ESP_VSSUBS_U8_PIE22", SDT_ESPVSSUBSU8PIE22M, []>;
+def SDT_ESPVSSUBSU16PIE22M : SDTypeProfile<1, 3, [
+  SDTCisVT<0, v8i16>,
+  SDTCisVT<1, v8i16>, SDTCisVT<2, i32>, SDTCisVT<3, i32>
+]>;
+def riscv_esp_vssubs_u16_pie22_m : RVSDNode<"ESP_VSSUBS_U16_PIE22", SDT_ESPVSSUBSU16PIE22M, []>;
+// SRS PIE22 SDNodes (unified 2.1/2.2 API; +xespv path)
+def SDT_ESPSRSSXACCPIE22M : SDTypeProfile<3, 5, [
+  SDTCisVT<0, i32>, SDTCisVT<1, i32>, SDTCisVT<2, i32>,
+  SDTCisVT<3, i32>, SDTCisVT<4, i32>, SDTCisVT<5, i32>, SDTCisVT<6, i32>, SDTCisVT<7, i32>
+]>;
+def riscv_esp_srs_s_xacc_pie22_m : RVSDNode<"ESP_SRS_S_XACC_PIE22", SDT_ESPSRSSXACCPIE22M,
+                                             [SDNPSideEffect]>;
+def SDT_ESPSRSUXACCPIE22M : SDTypeProfile<3, 5, [
+  SDTCisVT<0, i32>, SDTCisVT<1, i32>, SDTCisVT<2, i32>,
+  SDTCisVT<3, i32>, SDTCisVT<4, i32>, SDTCisVT<5, i32>, SDTCisVT<6, i32>, SDTCisVT<7, i32>
+]>;
+def riscv_esp_srs_u_xacc_pie22_m : RVSDNode<"ESP_SRS_U_XACC_PIE22", SDT_ESPSRSUXACCPIE22M,
+                                             [SDNPSideEffect]>;
 
 // VMULAS QACC LD IP SDNodes
 def SDT_ESPVMULASS16QACCLDIPM : SDTypeProfile<6, 8, [
