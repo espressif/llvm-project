@@ -327,7 +327,7 @@ check_commit_message:
       -DCLANG_REPOSITORY_STRING="${GH_REPO_HTTPS}"
       -DCPACK_ARCHIVE_THREADS=0
       --install-prefix=${INSTALL_PATH}
-      -B ${BUILD_PATH} 2>&1 > ${BUILD_PATH}/build.log
+      -B ${BUILD_PATH} > ${BUILD_PATH}/build.log 2>&1
     # Do not run unit tests for cross-builds.
     # Run as non-root user because permission tests fail when run by root.
     - >
@@ -343,20 +343,16 @@ check_commit_message:
           echo "Run LLVM/Clang unit tests";
           touch ${BUILD_PATH}/tests.log;
           chmod o+w ${BUILD_PATH}/tests.log;
-          runuser -u test_runner -- ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} check-all 2>&1 > ${BUILD_PATH}/tests.log;
-          echo "Run LLD unit tests";
-          touch ${BUILD_PATH}/lld-tests.log;
-          chmod o+w ${BUILD_PATH}/lld-tests.log;
-          runuser -u test_runner -- ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} check-lld 2>&1 > ${BUILD_PATH}/lld-tests.log;
+          runuser -u test_runner -- ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} check-all > ${BUILD_PATH}/tests.log 2>&1;
         fi
         if [[ "${RUN_TOOLCHAIN_TESTS}" == "ON" ]]; then
           touch ${BUILD_PATH}/toolchain-tests.log;
           chmod o+w ${BUILD_PATH}/toolchain-tests.log;
           echo "Run toolchain unit tests";
-          time runuser -u test_runner -- ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} check-llvm-toolchain 2>&1 > ${BUILD_PATH}/toolchain-tests.log;
+          time runuser -u test_runner -- ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} check-llvm-toolchain > ${BUILD_PATH}/toolchain-tests.log 2>&1;
           echo "Toolchain unit tests finished";
           echo "Run toolchain runtimes unit tests";
-          time runuser -u test_runner -- ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} check-llvm-toolchain-runtimes 2>&1 >> ${BUILD_PATH}/toolchain-tests.log;
+          time runuser -u test_runner -- ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} check-llvm-toolchain-runtimes >> ${BUILD_PATH}/toolchain-tests.log 2>&1;
           echo "Toolchain runtimes unit tests finished";
         fi
         if [[ "${RUN_PKG_TESTS}" == "ON" ]]; then
@@ -364,7 +360,7 @@ check_commit_message:
           # to avoid test failure "fatal: detected dubious ownership in repository at '/builds/llvm-project'"
           touch ${BUILD_PATH}/pkg-tests.log;
           chmod o+w ${BUILD_PATH}/pkg-tests.log;
-          time runuser -u test_runner -- ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} check-package-llvm-toolchain 2>&1 > ${BUILD_PATH}/pkg-tests.log;
+          time runuser -u test_runner -- ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} check-package-llvm-toolchain > ${BUILD_PATH}/pkg-tests.log 2>&1;
           echo "Toolchain package tests finished";
         fi
         chown -R ${CUR_USER} $PWD/esp-llvm-embedded-toolchain;
@@ -376,7 +372,7 @@ check_commit_message:
     - >
       if [[ "${PACK_TOOLCHAIN}" == "ON" ]]; then
         echo "Pack toolchain";
-        time ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} package-llvm-toolchain 2>&1  >> ${BUILD_PATH}/build.log
+        time ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} package-llvm-toolchain >> ${BUILD_PATH}/build.log 2>&1
         echo "Pack toolchain finished";
         DISTRO_PACK_PATH=$(ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} print-llvm-toolchain-package-path | tail -n 1)
         echo "DISTRO_PACK_PATH=${DISTRO_PACK_PATH}"
@@ -387,11 +383,11 @@ check_commit_message:
     - >
       if [[ "${PACK_EXTRA_TOOLS}" == "ON" ]]; then
         echo "Unpack toolchain";
-        time ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} unpack-llvm-toolchain 2>&1  >> ${BUILD_PATH}/build.log
+        time ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} unpack-llvm-toolchain >> ${BUILD_PATH}/build.log 2>&1
         echo "Unpack toolchain finished";
         # pack clangd
         echo "Pack clangd";
-        time ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} package-clangd 2>&1  >> ${BUILD_PATH}/build.log
+        time ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} package-clangd >> ${BUILD_PATH}/build.log 2>&1
         echo "Pack clangd finished";
         DISTRO_PACK_PATH=$(ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} print-clangd-package-path | tail -n 1)
         echo "DISTRO_PACK_PATH=${DISTRO_PACK_PATH}"
@@ -400,7 +396,7 @@ check_commit_message:
         echo "${ARCHIVE_NAME}" > ${PWD}/${DIST_DIR}/clangd_dist_name_${CONF_HOST}
         # pack lld
         echo "Pack lld";
-        time ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} package-lld 2>&1  >> ${BUILD_PATH}/build.log
+        time ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} package-lld >> ${BUILD_PATH}/build.log 2>&1
         echo "Pack lld finished";
         DISTRO_PACK_PATH=$(ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} print-lld-package-path | tail -n 1)
         echo "DISTRO_PACK_PATH=${DISTRO_PACK_PATH}"
@@ -409,7 +405,7 @@ check_commit_message:
         echo "${ARCHIVE_NAME}" > ${PWD}/${DIST_DIR}/lld_dist_name_${CONF_HOST}
         # re-pack toolchain w/o clangd
         echo "Re-pack toolchain";
-        time ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} repack-llvm-toolchain 2>&1  >> ${BUILD_PATH}/build.log
+        time ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} repack-llvm-toolchain >> ${BUILD_PATH}/build.log 2>&1
         echo "Re-pack toolchain finished";
       fi
     # pack distro with standalone libs
@@ -418,7 +414,7 @@ check_commit_message:
         echo "Clean install dir ${INSTALL_PATH}"
         rm -rf ${INSTALL_PATH}
         echo "Pack standalone libs";
-        time ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} package-llvm-standalone-libs 2>&1  >> ${BUILD_PATH}/build.log
+        time ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} package-llvm-standalone-libs >> ${BUILD_PATH}/build.log 2>&1
         echo "Pack standalone libs finished";
         DISTRO_PACK_PATH=$(ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} print-llvm-standalone-libs-package-path | tail -n 1)
         echo "DISTRO_PACK_PATH=${DISTRO_PACK_PATH}"
@@ -432,7 +428,7 @@ check_commit_message:
         echo "Clean install dir ${INSTALL_PATH}"
         rm -rf ${INSTALL_PATH}
         echo "Pack target libs";
-        time ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} package-llvm-toolchain-target-libs 2>&1  >> ${BUILD_PATH}/build.log
+        time ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} package-llvm-toolchain-target-libs >> ${BUILD_PATH}/build.log 2>&1
         echo "Pack target libs finished";
         DISTRO_PACK_PATH=$(ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} print-llvm-toolchain-target-libs-package-path | tail -n 1)
         echo "DISTRO_PACK_PATH=${DISTRO_PACK_PATH}"
@@ -504,22 +500,55 @@ build_and_test:
       -DLLVM_PARALLEL_LINK_JOBS=${ESP_LLVM_PARALLEL_LINK_JOBS_FORCED}
       -DLLVM_PARALLEL_TABLEGEN_JOBS=${ESP_LLVM_PARALLEL_TABLEGEN_JOBS_FORCED}
       -DLLVM_FORCE_VC_REPOSITORY="${GH_REPO_HTTPS}"
-      -B ${BUILD_PATH} 2>&1 > ${BUILD_PATH}/build.log
+      -B ${BUILD_PATH} > ${BUILD_PATH}/build.log 2>&1
     - export CUR_USER=$(whoami);
     - useradd -m test_runner;
     - chown -R test_runner ${BUILD_PATH};
     - chown -R test_runner ${CCACHE_DIR};
     - runuser -u test_runner -- git config --global --add safe.directory $CI_PROJECT_DIR
+    - |
+      # Pick which lit suites to run from the files this MR touches:
+      #  - pure backend / backend-test changes -> only the RISCV/Xtensa suites;
+      #  - cross-cutting backend files (ISA-info, clang target/driver) also run
+      #    clang driver+preprocessor and the llvm unit tests;
+      #  - anything else, an unavailable diff base, a non-MR pipeline, or the
+      #    'test::all' MR label -> full check-all.
+      TEST_TARGETS="check-all"
+      if [ "${CI_PIPELINE_SOURCE:-}" = "merge_request_event" ] \
+         && ! echo "${CI_MERGE_REQUEST_LABELS:-}" | grep -q "test::all" \
+         && [ -n "${CI_MERGE_REQUEST_DIFF_BASE_SHA:-}" ] \
+         && git cat-file -e "${CI_MERGE_REQUEST_DIFF_BASE_SHA}^{commit}" 2>/dev/null; then
+        CHANGED=$(git diff --name-only "${CI_MERGE_REQUEST_DIFF_BASE_SHA}" HEAD)
+        echo "Changed files in this MR:"; echo "${CHANGED}"
+        # .gitlab-ci.yml is not test-bearing: ignore it so it neither forces
+        # check-all on its own nor vetoes narrowing when bundled with backend
+        # changes. A CI-only change leaves CHANGED empty -> check-all default.
+        CHANGED=$(printf '%s\n' "${CHANGED}" | grep -vxF '.gitlab-ci.yml' || true)
+        RISCV_LOCAL='^(llvm/lib/Target/RISCV/|llvm/test/(CodeGen|MC|MC/Disassembler)/RISCV/|clang/test/CodeGen/RISCV/)'
+        XTENSA_LOCAL='^(llvm/lib/Target/Xtensa/|llvm/test/(CodeGen|MC|MC/Disassembler)/Xtensa/)'
+        RISCV_CROSS='^(llvm/(lib|include/llvm)/TargetParser/RISCV|clang/lib/Basic/Targets/RISCV|clang/lib/Driver/ToolChains/Arch/RISCV|clang/test/(Driver|Preprocessor)/.*riscv)'
+        XTENSA_CROSS='^(clang/lib/Basic/Targets/Xtensa|clang/lib/Driver/ToolChains/.*[Xx]tensa)'
+        LLD='^lld/'
+        KNOWN="${RISCV_LOCAL}|${XTENSA_LOCAL}|${RISCV_CROSS}|${XTENSA_CROSS}|${LLD}"
+        OUTSIDE=$(echo "${CHANGED}" | grep -vE "${KNOWN}" || true)
+        if [ -n "${CHANGED}" ] && [ -z "${OUTSIDE}" ]; then
+          T=""
+          echo "${CHANGED}" | grep -qE "${RISCV_LOCAL}|${RISCV_CROSS}"   && T="${T} check-llvm-codegen-riscv check-llvm-mc-riscv check-llvm-mc-disassembler-riscv check-clang-codegen-riscv"
+          echo "${CHANGED}" | grep -qE "${XTENSA_LOCAL}|${XTENSA_CROSS}" && T="${T} check-llvm-codegen-xtensa check-llvm-mc-xtensa check-llvm-mc-disassembler-xtensa"
+          echo "${CHANGED}" | grep -qE "${RISCV_CROSS}|${XTENSA_CROSS}"  && T="${T} check-clang-driver check-clang-preprocessor check-llvm-unit"
+          echo "${CHANGED}" | grep -qE "${LLD}"                          && T="${T} check-lld"
+          T=$(echo ${T} | tr ' ' '\n' | grep -v '^$' | sort -u | tr '\n' ' ')
+          [ -n "${T}" ] && TEST_TARGETS="${T}"
+        else
+          echo "Changes fall outside the RISCV/Xtensa allowlist; running check-all"
+        fi
+      fi
+      echo "Selected test targets: ${TEST_TARGETS}"
     - echo "Run LLVM/Clang unit tests";
     - touch ${BUILD_PATH}/tests.log;
     - chmod o+w ${BUILD_PATH}/tests.log;
-    - time runuser -u test_runner -- ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} check-all 2>&1 > ${BUILD_PATH}/tests.log;
+    - time runuser -u test_runner -- ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} ${TEST_TARGETS} > ${BUILD_PATH}/tests.log 2>&1;
     - echo "LLVM/Clang unit tests finished";
-    - echo "Run LLD unit tests";
-    - touch ${BUILD_PATH}/lld-tests.log;
-    - chmod o+w ${BUILD_PATH}/lld-tests.log;
-    - time runuser -u test_runner -- ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} check-lld 2>&1 > ${BUILD_PATH}/lld-tests.log;
-    - echo "LLD unit tests finished";
     - chown -R ${CUR_USER} ${BUILD_PATH};
     - chown -R ${CUR_USER} ${CCACHE_DIR};
     - mkdir -p ${PWD}/${DIST_DIR}
