@@ -972,27 +972,56 @@ test_pie_optimizations:
     - echo ${LLVM_PROJECT_PATH}/llvm/utils/update_test_checks.py
     - ./test_all.sh ${LLVM_PROJECT_PATH}/llvm/utils/update_test_checks.py
 
-test_xesppie:
+.test_xesppie_template:
   stage: test
   needs:
     - job: "build_x86_64-linux-gnu"
-  allow_failure: true
-  only:
-    - tags
+  allow_failure: false
+  variables:
+    # Extra arguments for the esp-compiler-tests clone (e.g. branch selection).
+    ESP_COMPILER_TESTS_CLONE_ARGS: ""
+    CONF_TARGET: "riscv32-esp-elf"
   script:
     - cd ${DIST_DIR}/
     - ls -l
     - DISTRO_PACK_FILE=$(cat dist_name_x86_64-linux-gnu)
-    - tar -xf ${DISTRO_PACK_FILE} 
+    - tar -xf ${DISTRO_PACK_FILE}
     - ls -l
     - cd esp-clang
     - ls -l
     - pwd
     - export CC="$(pwd)/bin/clang"
     - export OBJDUMP="$(pwd)/bin/llvm-objdump"
-    - git clone -q --depth=1 "${GITLAB_SERVER_URL}/idf/esp-compiler-tests.git"
+    - git clone -q --depth=1 ${ESP_COMPILER_TESTS_CLONE_ARGS} "${GITLAB_SERVER_URL}/idf/esp-compiler-tests.git"
     - cd esp-compiler-tests/build-only/xesppie
-    - ./test_xesppie.py
+    # Install deps for the interpreter test_xesppie.py actually runs under,
+    # in case plain `pip` in run.sh maps to a different one.
+    - python3 -m pip install -r requirements.txt
+    - ./run.sh
+
+test_xesppie:
+  extends: .test_xesppie_template
+  only:
+    - tags
+
+# Run the xesppie build-only tests whenever the files defining the
+# xespv2p1/xespv2p2 or esploop instruction encodings change: the .td
+# definitions plus the assembler parser and MC code emitter (tag pipelines
+# are already covered by test_xesppie above).
+test_xesppie_td_changes:
+  extends: .test_xesppie_template
+  variables:
+    ESP_COMPILER_TESTS_CLONE_ARGS: "--single-branch --branch xesppie-llvm-objdump-fixes"
+  rules:
+    - if: '$CI_COMMIT_TAG'
+      when: never
+    - changes:
+        - llvm/lib/Target/RISCV/RISCVInstrInfoESPV.td
+        - llvm/lib/Target/RISCV/RISCVInstrInfoESPLOOP.td
+        - llvm/lib/Target/RISCV/RISCVInstrFormatsESP.td
+        - llvm/lib/Target/RISCV/RISCVESPOperands.td
+        - llvm/lib/Target/RISCV/AsmParser/RISCVAsmParser.cpp
+        - llvm/lib/Target/RISCV/MCTargetDesc/RISCVMCCodeEmitter.cpp
 
 upload_to_http:
   stage: private_deploy
