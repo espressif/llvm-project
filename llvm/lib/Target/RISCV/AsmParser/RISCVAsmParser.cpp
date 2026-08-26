@@ -1006,9 +1006,8 @@ public:
   }
 
   bool isImm8() const {
-    return isSImmPred([](int64_t Imm) {
-      return (Imm >= (-32768 - 128)) && (Imm <= (32512 + 127));
-    });
+    return isSImmPred(
+        [](int64_t Imm) { return (Imm >= -128) && (Imm <= 127); });
   }
 
   bool isSelect_2() const {
@@ -1030,9 +1029,7 @@ public:
   }
 
   bool isSelect_16() const {
-    return isSImmPred([](int64_t Imm) {
-      return ((Imm >= 0) && (Imm <= 16));
-    });
+    return isSImmPred([](int64_t Imm) { return ((Imm >= 0) && (Imm <= 15)); });
   }
 
   bool isOffset_16_16() const {
@@ -1783,6 +1780,29 @@ std::string RISCVAsmParser::getCustomOperandDiag(unsigned MatchError) {
     // (uimm13_step4).
     return Range(0, (1 << 13) - 2,
                  "immediate must be a multiple of 2 bytes in the range");
+  case Match_InvalidSImm8:
+    return Range(-(1 << 7), (1 << 7) - 1);
+  case Match_InvalidImm8:
+    return Range(-128, 127);
+  case Match_InvalidSelect_2:
+    return Range(0, 1);
+  case Match_InvalidSelect_4:
+    return Range(0, 3);
+  case Match_InvalidSelect_8:
+    return Range(0, 7);
+  case Match_InvalidSelect_16:
+    return Range(0, 15);
+  case Match_InvalidOffset_16_16:
+    return Range(-128, 112, "immediate must be a multiple of 16 in the range");
+  case Match_InvalidOffset_256_2:
+    return Range(-256, 254, "immediate must be a multiple of 2 in the range");
+  case Match_InvalidOffset_256_4:
+    return Range(-512, 508, "immediate must be a multiple of 4 in the range");
+  case Match_InvalidOffset_256_8:
+    return Range(-1024, 1016, "immediate must be a multiple of 8 in the range");
+  case Match_InvalidOffset_256_16:
+    return Range(-2048, 2032,
+                 "immediate must be a multiple of 16 in the range");
   case Match_InvalidUImm11:
     return Range(0, (1 << 11) - 1);
   case Match_InvalidUImm12:
