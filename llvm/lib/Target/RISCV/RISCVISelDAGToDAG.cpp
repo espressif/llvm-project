@@ -3498,8 +3498,10 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
 
       SDVTList VTs = CurDAG->getVTList(MVT::v4i32, MVT::Other);
       SDValue Ops[] = {Ptr, Qw, Sel4Op, Sel8Op, Chain};
-      SDNode *NewNode =
-          CurDAG->getMachineNode(RISCV::ESP_LDXQ_32, DL, VTs, Ops);
+      unsigned Opc = Subtarget->useESPV2P2Instructions()
+                         ? RISCV::ESP_LDXQ_32_2P2
+                         : RISCV::ESP_LDXQ_32;
+      SDNode *NewNode = CurDAG->getMachineNode(Opc, DL, VTs, Ops);
 
       if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
         MachineMemOperand *MMO = MemNode->getMemOperand();
@@ -3554,7 +3556,10 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       // Operand order must match instruction definition: (ins GPRPIE:$rs2, QR:$qu, GPRPIE:$rs1)
       // Order: [instruction operands..., chain]
       SDValue Ops[] = {Reg, Vec, Ptr, Chain};
-      SDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_VST_128_XP, DL, VTs, Ops);
+      unsigned Opc = Subtarget->useESPV2P2Instructions()
+                         ? RISCV::ESP_VST_128_XP_2P2
+                         : RISCV::ESP_VST_128_XP;
+      SDNode *NewNode = CurDAG->getMachineNode(Opc, DL, VTs, Ops);
 
       // Copy MMO from MemSDNode if present
       if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
@@ -3675,7 +3680,10 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       // Operand order must match instruction definition: (ins GPRPIE:$rs2, GPRPIE:$rs1)
       // Order: [instruction operands..., chain]
       SDValue Ops[] = {Reg, Ptr, Chain};
-      SDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_VLD_H_64_XP, DL, VTs, Ops);
+      unsigned Opc = Subtarget->useESPV2P2Instructions()
+                         ? RISCV::ESP_VLD_H_64_XP_2P2
+                         : RISCV::ESP_VLD_H_64_XP;
+      SDNode *NewNode = CurDAG->getMachineNode(Opc, DL, VTs, Ops);
 
       // Copy MMO from MemSDNode if present
       if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
@@ -3793,7 +3801,10 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       // Operand order must match instruction definition: (ins GPRPIE:$rs2, GPRPIE:$rs1)
       // Order: [instruction operands..., chain]
       SDValue Ops[] = {Reg, Ptr, Chain};
-      SDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_VLD_L_64_XP, DL, VTs, Ops);
+      unsigned Opc = Subtarget->useESPV2P2Instructions()
+                         ? RISCV::ESP_VLD_L_64_XP_2P2
+                         : RISCV::ESP_VLD_L_64_XP;
+      SDNode *NewNode = CurDAG->getMachineNode(Opc, DL, VTs, Ops);
 
       // Copy MMO from MemSDNode if present
       if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
@@ -3922,7 +3933,10 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       // Operand order must match instruction definition: (ins GPRPIE:$rs2, QR_H:$qu, GPRPIE:$rs1)
       // Order: [instruction operands..., chain]
       SDValue Ops[] = {Reg, ConstrainedVec, Ptr, Chain};
-      SDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_VST_H_64_XP, DL, VTs, Ops);
+      unsigned Opc = Subtarget->useESPV2P2Instructions()
+                         ? RISCV::ESP_VST_H_64_XP_2P2
+                         : RISCV::ESP_VST_H_64_XP;
+      SDNode *NewNode = CurDAG->getMachineNode(Opc, DL, VTs, Ops);
 
       // Copy MMO from MemSDNode if present
       if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
@@ -4050,7 +4064,10 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       // Operand order must match instruction definition: (ins GPRPIE:$rs2, QR_L:$qu, GPRPIE:$rs1)
       // Order: [instruction operands..., chain]
       SDValue Ops[] = {Reg, ConstrainedVec, Ptr, Chain};
-      SDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_VST_L_64_XP, DL, VTs, Ops);
+      unsigned Opc = Subtarget->useESPV2P2Instructions()
+                         ? RISCV::ESP_VST_L_64_XP_2P2
+                         : RISCV::ESP_VST_L_64_XP;
+      SDNode *NewNode = CurDAG->getMachineNode(Opc, DL, VTs, Ops);
 
       // Copy MMO from MemSDNode if present
       if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
@@ -4080,9 +4097,11 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
           if (ImmVal >= -2048 && ImmVal <= 2032 && (ImmVal % 16 == 0)) {
             // Create ESP_VLD_128_IP instruction
             SDValue Ops[] = {Ptr, Imm};
+            unsigned Opc = Subtarget->useESPV2P2Instructions()
+                               ? RISCV::ESP_VLD_128_IP_2P2
+                               : RISCV::ESP_VLD_128_IP;
             MachineSDNode *VLDInst = CurDAG->getMachineNode(
-                RISCV::ESP_VLD_128_IP, DL,
-                CurDAG->getVTList(MVT::v16i8, MVT::i32, MVT::Other),
+                Opc, DL, CurDAG->getVTList(MVT::v16i8, MVT::i32, MVT::Other),
                 Ops);
             // Copy memory references from the original node
             if (auto *MemNode = dyn_cast<MemSDNode>(VLDNode)) {
@@ -4172,8 +4191,10 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       // Instruction outputs: (rs1r, chain)
       SDVTList VTs = CurDAG->getVTList(XLenVT, MVT::Other);
       SDValue Ops[] = {QACCL, Ptr, ImmOp, Chain};
-      SDNode *NewNode =
-          CurDAG->getMachineNode(RISCV::ESP_ST_QACC_L_L_128_IP, DL, VTs, Ops);
+      unsigned Opc = Subtarget->useESPV2P2Instructions()
+                         ? RISCV::ESP_ST_QACC_L_L_128_IP_2P2
+                         : RISCV::ESP_ST_QACC_L_L_128_IP;
+      SDNode *NewNode = CurDAG->getMachineNode(Opc, DL, VTs, Ops);
 
       // Copy MMO from MemSDNode if present
       if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
@@ -4256,7 +4277,10 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       SDVTList VTs = CurDAG->getVTList(XLenVT, MVT::Other);
       // Operand order must match instruction definition: (ins QACC_H_HIGH:$src, GPRPIE:$rs1, offset_256_16:$off25616)
       SDValue Ops[] = {QACCH, Ptr, ImmOp, Chain};
-      SDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_ST_QACC_H_H_128_IP, DL, VTs, Ops);
+      unsigned Opc = Subtarget->useESPV2P2Instructions()
+                         ? RISCV::ESP_ST_QACC_H_H_128_IP_2P2
+                         : RISCV::ESP_ST_QACC_H_H_128_IP;
+      SDNode *NewNode = CurDAG->getMachineNode(Opc, DL, VTs, Ops);
 
       // Copy MMO from MemSDNode if present
       if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
@@ -4779,10 +4803,12 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
     switch (Opcode) {
     default: llvm_unreachable("Unexpected opcode");
     case RISCVISD::ESP_ST_S_XACC_IP_M:
-      Opc = RISCV::ESP_ST_S_XACC_IP;
+      Opc = Subtarget->useESPV2P2Instructions() ? RISCV::ESP_ST_S_XACC_IP_2P2
+                                                : RISCV::ESP_ST_S_XACC_IP;
       break;
     case RISCVISD::ESP_ST_U_XACC_IP_M:
-      Opc = RISCV::ESP_ST_U_XACC_IP;
+      Opc = Subtarget->useESPV2P2Instructions() ? RISCV::ESP_ST_U_XACC_IP_2P2
+                                                : RISCV::ESP_ST_U_XACC_IP;
       break;
     }
 
@@ -4865,8 +4891,10 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
                                MVT::v16i8, MVT::Other, MVT::Glue};
     SDVTList VTList = CurDAG->getVTList(VTs);
     SDValue Ops[] = {Chain};
-    SDNode *InstNode =
-        CurDAG->getMachineNode(RISCV::ESP_ZERO_QACC, DL, VTList, Ops);
+    unsigned Opc = Subtarget->useESPV2P2Instructions()
+                       ? RISCV::ESP_ZERO_QACC_2P2
+                       : RISCV::ESP_ZERO_QACC;
+    SDNode *InstNode = CurDAG->getMachineNode(Opc, DL, VTList, Ops);
 
     // Extract results from instruction
     SDValue QaccLLow = SDValue(InstNode, 0);  // Result 0: QACC_L[127:0]
@@ -4899,7 +4927,10 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
     SmallVector<EVT, 4> VTs = {MVT::i32, MVT::i32, MVT::Other, MVT::Glue};
     SDVTList VTList = CurDAG->getVTList(VTs);
     SDValue Ops[] = {Chain};
-    SDNode *InstNode = CurDAG->getMachineNode(RISCV::ESP_ZERO_XACC, DL, VTList, Ops);
+    unsigned Opc = Subtarget->useESPV2P2Instructions()
+                       ? RISCV::ESP_ZERO_XACC_2P2
+                       : RISCV::ESP_ZERO_XACC;
+    SDNode *InstNode = CurDAG->getMachineNode(Opc, DL, VTList, Ops);
 
     // Extract results from instruction
     SDValue XACCLow = SDValue(InstNode, 0);   // Result 0: XACC_LOW (i32, set to 0)
@@ -6777,7 +6808,10 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       SDVTList VTs = CurDAG->getVTList(MVT::v16i8, XLenVT, MVT::Other);
       // Operand order must match instruction definition: (ins GPRPIE:$rs1, offset_256_16:$off25616)
       SDValue Ops[] = {Ptr, ImmOp, Chain};
-      SDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_LD_QACC_L_H_128_IP, DL, VTs, Ops);
+      unsigned Opc = Subtarget->useESPV2P2Instructions()
+                         ? RISCV::ESP_LD_QACC_L_H_128_IP_2P2
+                         : RISCV::ESP_LD_QACC_L_H_128_IP;
+      SDNode *NewNode = CurDAG->getMachineNode(Opc, DL, VTs, Ops);
 
       // Copy MMO from MemSDNode if present
       if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
@@ -6858,7 +6892,10 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       // esp.vld.128.ip
       SDVTList VTs = CurDAG->getVTList(MVT::v16i8, XLenVT, MVT::Other);
       SDValue Ops[] = {Ptr, ImmOp, Chain};
-      SDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_LD_QACC_H_H_128_IP, DL, VTs, Ops);
+      unsigned Opc = Subtarget->useESPV2P2Instructions()
+                         ? RISCV::ESP_LD_QACC_H_H_128_IP_2P2
+                         : RISCV::ESP_LD_QACC_H_H_128_IP;
+      SDNode *NewNode = CurDAG->getMachineNode(Opc, DL, VTs, Ops);
 
       // Copy MMO from MemSDNode if present
       if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
@@ -6939,7 +6976,10 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       // esp.vld.128.ip
       SDVTList VTs = CurDAG->getVTList(MVT::v16i8, XLenVT, MVT::Other);
       SDValue Ops[] = {Ptr, ImmOp, Chain};
-      SDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_LD_QACC_H_L_128_IP, DL, VTs, Ops);
+      unsigned Opc = Subtarget->useESPV2P2Instructions()
+                         ? RISCV::ESP_LD_QACC_H_L_128_IP_2P2
+                         : RISCV::ESP_LD_QACC_H_L_128_IP;
+      SDNode *NewNode = CurDAG->getMachineNode(Opc, DL, VTs, Ops);
 
       // Copy MMO from MemSDNode if present
       if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
@@ -7020,7 +7060,10 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       // esp.vld.128.ip
       SDVTList VTs = CurDAG->getVTList(MVT::v16i8, XLenVT, MVT::Other);
       SDValue Ops[] = {Ptr, ImmOp, Chain};
-      SDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_LD_QACC_L_L_128_IP, DL, VTs, Ops);
+      unsigned Opc = Subtarget->useESPV2P2Instructions()
+                         ? RISCV::ESP_LD_QACC_L_L_128_IP_2P2
+                         : RISCV::ESP_LD_QACC_L_L_128_IP;
+      SDNode *NewNode = CurDAG->getMachineNode(Opc, DL, VTs, Ops);
 
       // Copy MMO from MemSDNode if present
       if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
@@ -7102,7 +7145,10 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       // esp.vst.128.ip
       SDVTList VTs = CurDAG->getVTList(XLenVT, MVT::Other);
       SDValue Ops[] = {QACCH, Ptr, ImmOp, Chain};
-      SDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_ST_QACC_H_L_128_IP, DL, VTs, Ops);
+      unsigned Opc = Subtarget->useESPV2P2Instructions()
+                         ? RISCV::ESP_ST_QACC_H_L_128_IP_2P2
+                         : RISCV::ESP_ST_QACC_H_L_128_IP;
+      SDNode *NewNode = CurDAG->getMachineNode(Opc, DL, VTs, Ops);
 
       // Copy MMO from MemSDNode if present
       if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
@@ -7182,7 +7228,10 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       // Instruction outputs: (rs1r, chain)
       SDVTList VTs = CurDAG->getVTList(XLenVT, MVT::Other);
       SDValue Ops[] = {QACCL, Ptr, ImmOp, Chain};
-      SDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_ST_QACC_L_H_128_IP, DL, VTs, Ops);
+      unsigned Opc = Subtarget->useESPV2P2Instructions()
+                         ? RISCV::ESP_ST_QACC_L_H_128_IP_2P2
+                         : RISCV::ESP_ST_QACC_L_H_128_IP;
+      SDNode *NewNode = CurDAG->getMachineNode(Opc, DL, VTs, Ops);
 
       // Copy MMO from MemSDNode if present
       if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
@@ -7239,7 +7288,10 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
     }
 
     // Create machine instruction node
-    SDNode *InstNode = CurDAG->getMachineNode(RISCV::ESP_LD_XACC_IP, DL, VTList, Ops);
+    unsigned Opc = Subtarget->useESPV2P2Instructions()
+                       ? RISCV::ESP_LD_XACC_IP_2P2
+                       : RISCV::ESP_LD_XACC_IP;
+    SDNode *InstNode = CurDAG->getMachineNode(Opc, DL, VTList, Ops);
 
     // Copy memory operand information (MemOperand) to preserve alias analysis info
     if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
