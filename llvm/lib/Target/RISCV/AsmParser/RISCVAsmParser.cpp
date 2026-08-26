@@ -920,9 +920,8 @@ public:
   }
 
   bool isImm8() const {
-    return isSImmPred([](int64_t Imm) {
-      return (Imm >= (-32768 - 128)) && (Imm <= (32512 + 127));
-    });
+    return isSImmPred(
+        [](int64_t Imm) { return (Imm >= -128) && (Imm <= 127); });
   }
 
   bool isSelect_2() const {
@@ -944,9 +943,7 @@ public:
   }
 
   bool isSelect_16() const {
-    return isSImmPred([](int64_t Imm) {
-      return ((Imm >= 0) && (Imm <= 16));
-    });
+    return isSImmPred([](int64_t Imm) { return ((Imm >= 0) && (Imm <= 15)); });
   }
 
   bool isOffset_16_16() const {
@@ -1692,6 +1689,9 @@ bool RISCVAsmParser::matchAndEmitInstruction(SMLoc IDLoc, unsigned &Opcode,
     return generateImmOutOfRangeError(
         Operands, ErrorInfo, 0, (1 << 9) - 8,
         "immediate must be a multiple of 8 bytes in the range");
+  case Match_InvalidSImm8:
+    return generateImmOutOfRangeError(Operands, ErrorInfo, -(1 << 7),
+                                      (1 << 7) - 1);
   case Match_InvalidSImm8Unsigned:
     return generateImmOutOfRangeError(Operands, ErrorInfo, -(1 << 7),
                                       (1 << 8) - 1);
@@ -1730,6 +1730,36 @@ bool RISCVAsmParser::matchAndEmitInstruction(SMLoc IDLoc, unsigned &Opcode,
     return generateImmOutOfRangeError(
         Operands, ErrorInfo, 0, (1 << 13) - 2,
         "immediate must be a multiple of 2 bytes in the range");
+  case Match_InvalidImm8:
+    return generateImmOutOfRangeError(Operands, ErrorInfo, -128, 127);
+  case Match_InvalidSelect_2:
+    return generateImmOutOfRangeError(Operands, ErrorInfo, 0, 1);
+  case Match_InvalidSelect_4:
+    return generateImmOutOfRangeError(Operands, ErrorInfo, 0, 3);
+  case Match_InvalidSelect_8:
+    return generateImmOutOfRangeError(Operands, ErrorInfo, 0, 7);
+  case Match_InvalidSelect_16:
+    return generateImmOutOfRangeError(Operands, ErrorInfo, 0, 15);
+  case Match_InvalidOffset_16_16:
+    return generateImmOutOfRangeError(
+        Operands, ErrorInfo, -128, 112,
+        "immediate must be a multiple of 16 in the range");
+  case Match_InvalidOffset_256_2:
+    return generateImmOutOfRangeError(
+        Operands, ErrorInfo, -256, 254,
+        "immediate must be a multiple of 2 in the range");
+  case Match_InvalidOffset_256_4:
+    return generateImmOutOfRangeError(
+        Operands, ErrorInfo, -512, 508,
+        "immediate must be a multiple of 4 in the range");
+  case Match_InvalidOffset_256_8:
+    return generateImmOutOfRangeError(
+        Operands, ErrorInfo, -1024, 1016,
+        "immediate must be a multiple of 8 in the range");
+  case Match_InvalidOffset_256_16:
+    return generateImmOutOfRangeError(
+        Operands, ErrorInfo, -2048, 2032,
+        "immediate must be a multiple of 16 in the range");
   case Match_InvalidUImm11:
     return generateImmOutOfRangeError(Operands, ErrorInfo, 0, (1 << 11) - 1);
   case Match_InvalidUImm14Lsb00:
