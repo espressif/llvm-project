@@ -26356,12 +26356,12 @@ def ESP_ZERO_Q_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins),
   let Inst{0} = 1;
 }
 
-def ESP_ZERO_QACC_2P2: Esp32V2P2Inst<(outs), (ins),
-                   "esp.zero.qacc\t", []> 
+def ESP_ZERO_QACC_2P2: Esp32V2P2Inst<(outs QACC_L_LOW:$qacc_l_l, QACC_L_HIGH:$qacc_l_h, QACC_H_LOW:$qacc_h_l, QACC_H_HIGH:$qacc_h_h), (ins),
+                   "esp.zero.qacc\t", []>
 {
   let mayStore = 0;
   let mayLoad = 0;
-  let hasSideEffects = 1;
+  let hasSideEffects = 0;
   
   let Inst{31} = 0;
   let Inst{30} = 0;
@@ -26397,12 +26397,12 @@ def ESP_ZERO_QACC_2P2: Esp32V2P2Inst<(outs), (ins),
   let Inst{0} = 1;
 }
 
-def ESP_ZERO_XACC_2P2: Esp32V2P2Inst<(outs), (ins),
-                   "esp.zero.xacc\t", []> 
+def ESP_ZERO_XACC_2P2: Esp32V2P2Inst<(outs XACC_LOW:$xacc_low, XACC_HIGH:$xacc_high), (ins),
+                   "esp.zero.xacc\t", []>
 {
   let mayStore = 0;
   let mayLoad = 0;
-  let hasSideEffects = 1;
+  let hasSideEffects = 0;
   
   let Inst{31} = 0;
   let Inst{30} = 0;
@@ -26859,8 +26859,10 @@ def ESP_FFT_VST_R32_DECP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR:$qu, GP
   let Inst{0} = 1;
 }
 
-def ESP_LD_128_USAR_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
-                   "esp.ld.128.usar.ip\t $qu, $rs1, $off25616", []> 
+def ESP_LD_128_USAR_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r, SAR_BYTESReg:$sar_bytes_out), (ins GPRPIE:$rs1, offset_256_16:$off25616),
+                   "esp.ld.128.usar.ip\t $qu, $rs1, $off25616",
+                   // Note: SAR_BYTES[3:0] = rs1[3:0] (same hardware side-effect as 2.1; explicit out for shared .m)
+                   [(set QR:$qu, GPRPIE:$rs1r, SAR_BYTESReg:$sar_bytes_out, (riscv_esp_ld_128_usar_ip_m GPRPIE:$rs1, offset_256_16:$off25616))]>
 {
   bits<5> rs1;
   bits<8> off25616;
@@ -26868,7 +26870,7 @@ def ESP_LD_128_USAR_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRP
   bits<5> rs1r;
   let mayStore = 0;
   let mayLoad = 1;
-  let hasSideEffects = 1;
+  let hasSideEffects = 0;
   
   let Constraints = "$rs1r = $rs1";
   
@@ -26896,8 +26898,10 @@ def ESP_LD_128_USAR_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRP
   let Inst{0} = 1;
 }
 
-def ESP_LD_128_USAR_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1),
-                   "esp.ld.128.usar.xp\t $qu, $rs1, $rs2", []> 
+def ESP_LD_128_USAR_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r, SAR_BYTESReg:$sar_bytes_out), (ins GPRPIE:$rs2, GPRPIE:$rs1),
+                   "esp.ld.128.usar.xp\t $qu, $rs1, $rs2",
+                   // Note: SAR_BYTES[3:0] = rs1[3:0] (same hardware side-effect as 2.1; explicit out for shared .m)
+                   [(set QR:$qu, GPRPIE:$rs1r, SAR_BYTESReg:$sar_bytes_out, (riscv_esp_ld_128_usar_xp_m GPRPIE:$rs1, GPRPIE:$rs2))]>
 {
   bits<5> rs2;
   bits<5> rs1;
@@ -26905,7 +26909,7 @@ def ESP_LD_128_USAR_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRP
   bits<5> rs1r;
   let mayStore = 0;
   let mayLoad = 1;
-  let hasSideEffects = 1;
+  let hasSideEffects = 0;
   
   let Constraints = "$rs1r = $rs1";
   
@@ -26937,17 +26941,17 @@ def ESP_LD_128_USAR_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRP
   let Inst{0} = 1;
 }
 
-def ESP_LD_XACC_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_8:$off2568),
-                   "esp.ld.xacc.ip\t $rs1, $off2568", []> 
+def ESP_LD_XACC_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low, XACC_HIGH:$xacc_high), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs1, offset_256_8:$off2568),
+                   "esp.ld.xacc.ip\t $rs1, $off2568", []>
 {
   bits<5> rs1;
   bits<8> off2568;
   bits<5> rs1r;
   let mayStore = 0;
   let mayLoad = 1;
-  let hasSideEffects = 1;
+  let hasSideEffects = 0;
   
-  let Constraints = "$rs1r = $rs1";
+  let Constraints = "$rs1r = $rs1, $xacc_low = $xacc_low_in, $xacc_high = $xacc_high_in";
   
   let Inst{31} = 0;
   let Inst{30} = 0;
@@ -27970,15 +27974,16 @@ def ESP_VLDHBC_16_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, 
 				"!esp_vldhbc_16_incp_2p2_p $qu, $qz, $rs1",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vldhbc_16_incp_2p2 GPRPIE:$rs1, timm:$qu, timm:$qz))]>;
 
-def ESP_LD_QACC_H_H_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
-                   "esp.ld.qacc.h.h.128.ip\t $rs1, $off25616", []> 
+def ESP_LD_QACC_H_H_128_IP_2P2: Esp32V2P2Inst<(outs QACC_H_HIGH:$qacc_h_out, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
+                   "esp.ld.qacc.h.h.128.ip\t $rs1, $off25616",
+                   [(set QACC_H_HIGH:$qacc_h_out, GPRPIE:$rs1r, (riscv_esp_ld_qacc_h_h_128_ip_m GPRPIE:$rs1, offset_256_16:$off25616))]> 
 {
   bits<5> rs1;
   bits<8> off25616;
   bits<5> rs1r;
   let mayStore = 0;
   let mayLoad = 1;
-  let hasSideEffects = 1;
+  let hasSideEffects = 0;
   
   let Constraints = "$rs1r = $rs1";
   
@@ -28009,15 +28014,16 @@ def ESP_LD_QACC_H_H_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$
   let Inst{0} = 1;
 }
 
-def ESP_LD_QACC_H_L_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
-                   "esp.ld.qacc.h.l.128.ip\t $rs1, $off25616", []> 
+def ESP_LD_QACC_H_L_128_IP_2P2: Esp32V2P2Inst<(outs QACC_H_LOW:$qacc_h_out, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
+                   "esp.ld.qacc.h.l.128.ip\t $rs1, $off25616",
+                   [(set QACC_H_LOW:$qacc_h_out, GPRPIE:$rs1r, (riscv_esp_ld_qacc_h_l_128_ip_m GPRPIE:$rs1, offset_256_16:$off25616))]> 
 {
   bits<5> rs1;
   bits<8> off25616;
   bits<5> rs1r;
   let mayStore = 0;
   let mayLoad = 1;
-  let hasSideEffects = 1;
+  let hasSideEffects = 0;
   
   let Constraints = "$rs1r = $rs1";
   
@@ -28048,15 +28054,16 @@ def ESP_LD_QACC_H_L_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$
   let Inst{0} = 1;
 }
 
-def ESP_LD_QACC_L_H_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
-                   "esp.ld.qacc.l.h.128.ip\t $rs1, $off25616", []> 
+def ESP_LD_QACC_L_H_128_IP_2P2: Esp32V2P2Inst<(outs QACC_L_HIGH:$qacc_l_out, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
+                   "esp.ld.qacc.l.h.128.ip\t $rs1, $off25616",
+                   [(set QACC_L_HIGH:$qacc_l_out, GPRPIE:$rs1r, (riscv_esp_ld_qacc_l_h_128_ip_m GPRPIE:$rs1, offset_256_16:$off25616))]> 
 {
   bits<5> rs1;
   bits<8> off25616;
   bits<5> rs1r;
   let mayStore = 0;
   let mayLoad = 1;
-  let hasSideEffects = 1;
+  let hasSideEffects = 0;
   
   let Constraints = "$rs1r = $rs1";
   
@@ -28087,15 +28094,16 @@ def ESP_LD_QACC_L_H_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$
   let Inst{0} = 1;
 }
 
-def ESP_LD_QACC_L_L_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
-                   "esp.ld.qacc.l.l.128.ip\t $rs1, $off25616", []> 
+def ESP_LD_QACC_L_L_128_IP_2P2: Esp32V2P2Inst<(outs QACC_L_LOW:$qacc_l_out, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
+                   "esp.ld.qacc.l.l.128.ip\t $rs1, $off25616",
+                   [(set QACC_L_LOW:$qacc_l_out, GPRPIE:$rs1r, (riscv_esp_ld_qacc_l_l_128_ip_m GPRPIE:$rs1, offset_256_16:$off25616))]> 
 {
   bits<5> rs1;
   bits<8> off25616;
   bits<5> rs1r;
   let mayStore = 0;
   let mayLoad = 1;
-  let hasSideEffects = 1;
+  let hasSideEffects = 0;
   
   let Constraints = "$rs1r = $rs1";
   
@@ -28204,15 +28212,16 @@ def ESP_LDXQ_32_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins GPRPIE:$rs1, QR:$qw, sele
   let Inst{0} = 1;
 }
 
-def ESP_ST_QACC_H_H_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
-                   "esp.st.qacc.h.h.128.ip\t $rs1, $off25616", []> 
+def ESP_ST_QACC_H_H_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QACC_H_HIGH:$src, GPRPIE:$rs1, offset_256_16:$off25616),
+                   "esp.st.qacc.h.h.128.ip\t $rs1, $off25616",
+                   [(set GPRPIE:$rs1r, (riscv_esp_st_qacc_h_h_128_ip_m QACC_H_HIGH:$src, GPRPIE:$rs1, offset_256_16:$off25616))]> 
 {
   bits<5> rs1;
   bits<8> off25616;
   bits<5> rs1r;
   let mayStore = 1;
   let mayLoad = 0;
-  let hasSideEffects = 1;
+  let hasSideEffects = 0;
   
   let Constraints = "$rs1r = $rs1";
   
@@ -28243,15 +28252,16 @@ def ESP_ST_QACC_H_H_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$
   let Inst{0} = 1;
 }
 
-def ESP_ST_QACC_H_L_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
-                   "esp.st.qacc.h.l.128.ip\t $rs1, $off25616", []> 
+def ESP_ST_QACC_H_L_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QACC_H_LOW:$src, GPRPIE:$rs1, offset_256_16:$off25616),
+                   "esp.st.qacc.h.l.128.ip\t $rs1, $off25616",
+                   [(set GPRPIE:$rs1r, (riscv_esp_st_qacc_h_l_128_ip_m QACC_H_LOW:$src, GPRPIE:$rs1, offset_256_16:$off25616))]> 
 {
   bits<5> rs1;
   bits<8> off25616;
   bits<5> rs1r;
   let mayStore = 1;
   let mayLoad = 0;
-  let hasSideEffects = 1;
+  let hasSideEffects = 0;
   
   let Constraints = "$rs1r = $rs1";
   
@@ -28282,15 +28292,16 @@ def ESP_ST_QACC_H_L_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$
   let Inst{0} = 1;
 }
 
-def ESP_ST_QACC_L_H_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
-                   "esp.st.qacc.l.h.128.ip\t $rs1, $off25616", []> 
+def ESP_ST_QACC_L_H_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QACC_L_HIGH:$src, GPRPIE:$rs1, offset_256_16:$off25616),
+                   "esp.st.qacc.l.h.128.ip\t $rs1, $off25616",
+                   [(set GPRPIE:$rs1r, (riscv_esp_st_qacc_l_h_128_ip_m QACC_L_HIGH:$src, GPRPIE:$rs1, offset_256_16:$off25616))]> 
 {
   bits<5> rs1;
   bits<8> off25616;
   bits<5> rs1r;
   let mayStore = 1;
   let mayLoad = 0;
-  let hasSideEffects = 1;
+  let hasSideEffects = 0;
   
   let Constraints = "$rs1r = $rs1";
   
@@ -28321,15 +28332,16 @@ def ESP_ST_QACC_L_H_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$
   let Inst{0} = 1;
 }
 
-def ESP_ST_QACC_L_L_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
-                   "esp.st.qacc.l.l.128.ip\t $rs1, $off25616", []> 
+def ESP_ST_QACC_L_L_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QACC_L_LOW:$src, GPRPIE:$rs1, offset_256_16:$off25616),
+                   "esp.st.qacc.l.l.128.ip\t $rs1, $off25616",
+                   [(set GPRPIE:$rs1r, (riscv_esp_st_qacc_l_l_128_ip_m QACC_L_LOW:$src, GPRPIE:$rs1, offset_256_16:$off25616))]> 
 {
   bits<5> rs1;
   bits<8> off25616;
   bits<5> rs1r;
   let mayStore = 1;
   let mayLoad = 0;
-  let hasSideEffects = 1;
+  let hasSideEffects = 0;
   
   let Constraints = "$rs1r = $rs1";
   
@@ -28712,7 +28724,8 @@ def ESP_VST_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR:$qu, GPRPIE:$
 }
 
 def ESP_VST_128_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qu, GPRPIE:$rs1),
-                   "esp.vst.128.xp\t $qu, $rs1, $rs2", []> 
+                   "esp.vst.128.xp\t $qu, $rs1, $rs2",
+                   [(set GPRPIE:$rs1r, (riscv_esp_vst_128_xp_m QR:$qu, GPRPIE:$rs1, GPRPIE:$rs2))]> 
 {
   bits<5> rs2;
   bits<3> qu;
@@ -28995,15 +29008,17 @@ def ESP_SLCXXP_2Q_2P2: Esp32V2P2Inst<(outs QR:$qyr, QR:$qwr), (ins GPRPIE:$rs1, 
   let Inst{0} = 1;
 }
 
-def ESP_SRC_Q_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qy, QR:$qw),
-                   "esp.src.q\t $qz, $qw, $qy", []> 
+def ESP_SRC_Q_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins SAR_BYTESReg:$sar_bytes_in, QR:$qy, QR:$qw),
+                   "esp.src.q\t $qz, $qw, $qy",
+                   // Note: Shift amount is SAR_BYTES[3:0] << 3 (explicit SAR matches shared intrinsic / MemIntrin)
+                   [(set QR:$qz, (int_riscv_esp_src_q SAR_BYTESReg:$sar_bytes_in, QR:$qy, QR:$qw))]>
 {
   bits<3> qy;
   bits<3> qw;
   bits<3> qz;
   let mayStore = 0;
   let mayLoad = 0;
-  let hasSideEffects = 1;
+  let hasSideEffects = 0;
   
   let Inst{31} = 1;
   let Inst{30} = 0;
@@ -29034,8 +29049,10 @@ def ESP_SRC_Q_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qy, QR:$qw),
   let Inst{0} = 1;
 }
 
-def ESP_SRC_Q_LD_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r, QR:$qwr), (ins QR:$qy, GPRPIE:$rs1, QR:$qw, offset_256_16:$off25616),
-                   "esp.src.q.ld.ip\t $qu, $rs1, $off25616, $qw, $qy", []> 
+def ESP_SRC_Q_LD_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r, QR:$qwr), (ins SAR_BYTESReg:$sar_bytes_in, QR:$qy, GPRPIE:$rs1, QR:$qw, offset_256_16:$off25616),
+                   "esp.src.q.ld.ip\t $qu, $rs1, $off25616, $qw, $qy",
+                   // Note: Shift amount is SAR_BYTES[3:0] << 3 (explicit in matches shared .m / MemIntrin)
+                   [(set QR:$qu, GPRPIE:$rs1r, QR:$qwr, (riscv_esp_src_q_ld_ip_m SAR_BYTESReg:$sar_bytes_in, QR:$qy, QR:$qw, GPRPIE:$rs1, offset_256_16:$off25616))]>
 {
   bits<3> qy;
   bits<5> rs1;
@@ -29046,7 +29063,7 @@ def ESP_SRC_Q_LD_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r, QR:$qwr), (in
   bits<3> qwr;
   let mayStore = 0;
   let mayLoad = 1;
-  let hasSideEffects = 1;
+  let hasSideEffects = 0;
   
   let Constraints = "$rs1r = $rs1, $qwr = $qw";
   
@@ -29072,8 +29089,10 @@ def ESP_SRC_Q_LD_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r, QR:$qwr), (in
   let Inst{0} = 1;
 }
 
-def ESP_SRC_Q_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r, QR:$qwr), (ins GPRPIE:$rs2, QR:$qy, GPRPIE:$rs1, QR:$qw),
-                   "esp.src.q.ld.xp\t $qu, $rs1, $rs2, $qw, $qy", []> 
+def ESP_SRC_Q_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r, QR:$qwr), (ins SAR_BYTESReg:$sar_bytes_in, QR:$qy, QR:$qw, GPRPIE:$rs1, GPRPIE:$rs2),
+                   "esp.src.q.ld.xp\t $qu, $rs1, $rs2, $qw, $qy",
+                   // Note: Shift amount is SAR_BYTES[3:0] << 3 (explicit in matches shared .m / MemIntrin)
+                   [(set QR:$qu, GPRPIE:$rs1r, QR:$qwr, (riscv_esp_src_q_ld_xp_m SAR_BYTESReg:$sar_bytes_in, QR:$qy, QR:$qw, GPRPIE:$rs1, GPRPIE:$rs2))]>
 {
   bits<5> rs2;
   bits<3> qy;
@@ -29084,7 +29103,7 @@ def ESP_SRC_Q_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r, QR:$qwr), (in
   bits<3> qwr;
   let mayStore = 0;
   let mayLoad = 1;
-  let hasSideEffects = 1;
+  let hasSideEffects = 0;
   
   let Constraints = "$rs1r = $rs1, $qwr = $qw";
   
@@ -29113,8 +29132,9 @@ def ESP_SRC_Q_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r, QR:$qwr), (in
   let Inst{0} = 1;
 }
 
-def ESP_SRC_Q_QUP_2P2: Esp32V2P2Inst<(outs QR:$qz, QR:$qwr), (ins QR:$qy, QR:$qw),
-                   "esp.src.q.qup\t $qz, $qw, $qy", []> 
+def ESP_SRC_Q_QUP_2P2: Esp32V2P2Inst<(outs QR:$qz, QR:$qwr), (ins SAR_BYTESReg:$sar_bytes_in, QR:$qy, QR:$qw),
+                   "esp.src.q.qup\t $qz, $qw, $qy",
+                   [(set QR:$qz, QR:$qwr, (int_riscv_esp_src_q_qup SAR_BYTESReg:$sar_bytes_in, QR:$qy, QR:$qw))]>
 {
   bits<3> qy;
   bits<3> qw;
@@ -29122,7 +29142,7 @@ def ESP_SRC_Q_QUP_2P2: Esp32V2P2Inst<(outs QR:$qz, QR:$qwr), (ins QR:$qy, QR:$qw
   bits<3> qwr;
   let mayStore = 0;
   let mayLoad = 0;
-  let hasSideEffects = 1;
+  let hasSideEffects = 0;
   
   let Constraints = "$qwr = $qw";
   
@@ -29514,8 +29534,10 @@ def ESP_SRCMB_U8_QACC_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins GPRPIE:$rs1, sat:$s
   let Inst{0} = 1;
 }
 
-def ESP_SRCQ_128_ST_INCP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR:$qy, QR:$qw, GPRPIE:$rs1),
-                   "esp.srcq.128.st.incp\t $qw, $qy, $rs1", []> 
+def ESP_SRCQ_128_ST_INCP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins SAR_BYTESReg:$sar_bytes_in, QR:$qy, QR:$qw, GPRPIE:$rs1),
+                   "esp.srcq.128.st.incp\t $qw, $qy, $rs1",
+                   // Note: Shift amount is SAR_BYTES[3:0] << 3 (explicit in matches shared .m)
+                   [(set GPRPIE:$rs1r, (riscv_esp_srcq_128_st_incp_m SAR_BYTESReg:$sar_bytes_in, QR:$qy, QR:$qw, GPRPIE:$rs1))]>
 {
   bits<3> qy;
   bits<3> qw;
@@ -29523,7 +29545,7 @@ def ESP_SRCQ_128_ST_INCP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR:$qy, QR
   bits<5> rs1r;
   let mayStore = 1;
   let mayLoad = 0;
-  let hasSideEffects = 1;
+  let hasSideEffects = 0;
   
   let Constraints = "$rs1r = $rs1";
   
@@ -30087,7 +30109,7 @@ def ESP_VSRD_8_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins QR:$qy, QR:$qw, sat:$sat, 
   let Inst{0} = 1;
 }
 
-def ESP_ST_S_XACC_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_8:$off2568),
+def ESP_ST_S_XACC_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs1, offset_256_8:$off2568),
                    "esp.st.s.xacc.ip\t $rs1, $off2568", []> 
 {
   bits<5> rs1;
@@ -30095,9 +30117,9 @@ def ESP_ST_S_XACC_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, o
   bits<5> rs1r;
   let mayStore = 1;
   let mayLoad = 0;
-  let hasSideEffects = 1;
+  let hasSideEffects = 0;
   
-  let Constraints = "$rs1r = $rs1";
+  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
   
   let Inst{31} = 0;
   let Inst{30} = 0;
@@ -30126,7 +30148,7 @@ def ESP_ST_S_XACC_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, o
   let Inst{0} = 1;
 }
 
-def ESP_ST_U_XACC_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_8:$off2568),
+def ESP_ST_U_XACC_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs1, offset_256_8:$off2568),
                    "esp.st.u.xacc.ip\t $rs1, $off2568", []> 
 {
   bits<5> rs1;
@@ -30134,9 +30156,9 @@ def ESP_ST_U_XACC_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, o
   bits<5> rs1r;
   let mayStore = 1;
   let mayLoad = 0;
-  let hasSideEffects = 1;
+  let hasSideEffects = 0;
   
-  let Constraints = "$rs1r = $rs1";
+  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
   
   let Inst{31} = 0;
   let Inst{30} = 0;
