@@ -22,23 +22,23 @@ esp.vclamp.s16 q0, q1, 0
 
 esp.cmul.s16 q2, q3, q4, 3
 // CHECK-2P1: esp.cmul.s16	 q2, q3, q4, 3          # encoding: [0x5f,0xa5,0x07,0x70]
-// CHECK-2P2: esp.cmul.s16	 q2, q3, q4, 3          # encoding: [0x1f,0x9d,0x87,0x73]
+// CHECK-2P2: esp.cmul.s16	 q2, q3, q4, 3, sat     # encoding: [0x1f,0x9d,0x87,0x73]
 
 esp.fft.cmul.s16.ld.xp q0, x8, x9, q1, q2, q3, 7
 // CHECK-2P1: esp.fft.cmul.s16.ld.xp	 q0, s0, s1, q1, q2, q3, 7 # encoding: [0xbf,0x00,0x18,0x6b]
-// CHECK-2P2: esp.fft.cmul.s16.ld.xp	 q0, s0, s1, q1, q2, q3, 7 # encoding: [0xdb,0x60,0x18,0x6b]
+// CHECK-2P2: esp.fft.cmul.s16.ld.xp	 q0, s0, s1, q1, q2, q3, 7, sat # encoding: [0xdb,0x60,0x18,0x6b]
 
 esp.fft.ams.s16.ld.incp q0, x8, q1, q2, q3, q4, q5, 1
 // CHECK-2P1: esp.fft.ams.s16.ld.incp	 q0, s0, q1, q2, q3, q4, q5, 1 # encoding: [0xfb,0x00,0xa8,0x74]
-// CHECK-2P2: esp.fft.ams.s16.ld.incp	 q0, s0, q1, q2, q3, q4, q5, 1 # encoding: [0xdb,0x40,0xa8,0x74]
+// CHECK-2P2: esp.fft.ams.s16.ld.incp	 q0, s0, q1, q2, q3, q4, q5, 1, sat # encoding: [0xdb,0x40,0xa8,0x74]
 
 esp.vcmulas.s16.qacc.h.ld.ip q0, x8, 112, q1, q2
 // CHECK-2P1: esp.vcmulas.s16.qacc.h.ld.ip	 q0, s0, 112, q1, q2 # encoding: [0x3b,0x63,0xb8,0x2b]
-// CHECK-2P2: esp.vcmulas.s16.qacc.h.ld.ip	 q0, s0, 112, q1, q2 # encoding: [0x9f,0x22,0xb8,0x2b]
+// CHECK-2P2: esp.vcmulas.s16.qacc.h.ld.ip	 q0, s0, 112, q1, q2, sat # encoding: [0x9f,0x22,0xb8,0x2b]
 
 esp.vcmulas.s16.qacc.h.ld.ip q0, x8, -128, q1, q2
 // CHECK-2P1: esp.vcmulas.s16.qacc.h.ld.ip	 q0, s0, -128, q1, q2 # encoding: [0x3b,0x63,0xc0,0x2b]
-// CHECK-2P2: esp.vcmulas.s16.qacc.h.ld.ip	 q0, s0, -128, q1, q2 # encoding: [0x9f,0x22,0xc0,0x2b]
+// CHECK-2P2: esp.vcmulas.s16.qacc.h.ld.ip	 q0, s0, -128, q1, q2, sat # encoding: [0x9f,0x22,0xc0,0x2b]
 
 esp.vldbc.16.ip q0, x8, 254
 // CHECK-2P1: esp.vldbc.16.ip	 q0, s0, 254            # encoding: [0x3b,0x22,0xf0,0xb6]

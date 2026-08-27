@@ -24493,6 +24493,234 @@ def ESP_VCMP_LT_U32_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy),
   let Inst{0} = 1;
 }
 
+def ESP_VCMP_EQ_U8_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy),
+                   "esp.vcmp.eq.u8\t $qz, $qx, $qy", []>
+{
+  bits<3> qx;
+  bits<3> qy;
+  bits<3> qz;
+  let mayStore = 0;
+  let mayLoad = 0;
+  let hasSideEffects = 1;
+
+  let Inst{31-29} = qx{2-0};
+  let Inst{28-26} = qy{2-0};
+  let Inst{25} = 1;
+  let Inst{24} = 1;
+  let Inst{23} = 0;
+  let Inst{22} = 1;
+  let Inst{21} = 0;
+  let Inst{20} = 0;
+  let Inst{19} = 0;
+  let Inst{18} = 0;
+  let Inst{17} = 0;
+  let Inst{16} = 0;
+  let Inst{15} = 0;
+  let Inst{14} = 0;
+  let Inst{13} = 0;
+  let Inst{12} = 0;
+  let Inst{11} = 0;
+  let Inst{10} = 0;
+  let Inst{9-7} = qz{2-0};
+  let Inst{6} = 0;
+  let Inst{5} = 0;
+  let Inst{4} = 1;
+  let Inst{3} = 1;
+  let Inst{2} = 1;
+  let Inst{1} = 1;
+  let Inst{0} = 1;
+}
+
+def ESP_VCMP_EQ_U16_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy),
+                   "esp.vcmp.eq.u16\t $qz, $qx, $qy", []>
+{
+  bits<3> qx;
+  bits<3> qy;
+  bits<3> qz;
+  let mayStore = 0;
+  let mayLoad = 0;
+  let hasSideEffects = 1;
+
+  let Inst{31-29} = qx{2-0};
+  let Inst{28-26} = qy{2-0};
+  let Inst{25} = 1;
+  let Inst{24} = 1;
+  let Inst{23} = 0;
+  let Inst{22} = 1;
+  let Inst{21} = 0;
+  let Inst{20} = 0;
+  let Inst{19} = 0;
+  let Inst{18} = 0;
+  let Inst{17} = 0;
+  let Inst{16} = 1;
+  let Inst{15} = 0;
+  let Inst{14} = 0;
+  let Inst{13} = 0;
+  let Inst{12} = 0;
+  let Inst{11} = 0;
+  let Inst{10} = 0;
+  let Inst{9-7} = qz{2-0};
+  let Inst{6} = 0;
+  let Inst{5} = 0;
+  let Inst{4} = 1;
+  let Inst{3} = 1;
+  let Inst{2} = 1;
+  let Inst{1} = 1;
+  let Inst{0} = 1;
+}
+
+def ESP_VCMP_EQ_U32_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy),
+                   "esp.vcmp.eq.u32\t $qz, $qx, $qy", []>
+{
+  bits<3> qx;
+  bits<3> qy;
+  bits<3> qz;
+  let mayStore = 0;
+  let mayLoad = 0;
+  let hasSideEffects = 1;
+
+  let Inst{31-29} = qx{2-0};
+  let Inst{28-26} = qy{2-0};
+  let Inst{25} = 1;
+  let Inst{24} = 1;
+  let Inst{23} = 0;
+  let Inst{22} = 1;
+  let Inst{21} = 0;
+  let Inst{20} = 0;
+  let Inst{19} = 0;
+  let Inst{18} = 0;
+  let Inst{17} = 0;
+  let Inst{16} = 0;
+  let Inst{15} = 0;
+  let Inst{14} = 0;
+  let Inst{13} = 0;
+  let Inst{12} = 0;
+  let Inst{11} = 1;
+  let Inst{10} = 0;
+  let Inst{9-7} = qz{2-0};
+  let Inst{6} = 0;
+  let Inst{5} = 0;
+  let Inst{4} = 1;
+  let Inst{3} = 1;
+  let Inst{2} = 1;
+  let Inst{1} = 1;
+  let Inst{0} = 1;
+}
+
+def ESP_VCMP_GT_U8_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy),
+                   "esp.vcmp.gt.u8\t $qz, $qx, $qy", []>
+{
+  bits<3> qx;
+  bits<3> qy;
+  bits<3> qz;
+  let mayStore = 0;
+  let mayLoad = 0;
+  let hasSideEffects = 1;
+
+  let Inst{31-29} = qx{2-0};
+  let Inst{28-26} = qy{2-0};
+  let Inst{25} = 1;
+  let Inst{24} = 1;
+  let Inst{23} = 0;
+  let Inst{22} = 1;
+  let Inst{21} = 0;
+  let Inst{20} = 0;
+  let Inst{19} = 0;
+  let Inst{18} = 1;
+  let Inst{17} = 0;
+  let Inst{16} = 0;
+  let Inst{15} = 0;
+  let Inst{14} = 0;
+  let Inst{13} = 0;
+  let Inst{12} = 0;
+  let Inst{11} = 0;
+  let Inst{10} = 0;
+  let Inst{9-7} = qz{2-0};
+  let Inst{6} = 0;
+  let Inst{5} = 0;
+  let Inst{4} = 1;
+  let Inst{3} = 1;
+  let Inst{2} = 1;
+  let Inst{1} = 1;
+  let Inst{0} = 1;
+}
+
+def ESP_VCMP_GT_U16_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy),
+                   "esp.vcmp.gt.u16\t $qz, $qx, $qy", []>
+{
+  bits<3> qx;
+  bits<3> qy;
+  bits<3> qz;
+  let mayStore = 0;
+  let mayLoad = 0;
+  let hasSideEffects = 1;
+
+  let Inst{31-29} = qx{2-0};
+  let Inst{28-26} = qy{2-0};
+  let Inst{25} = 1;
+  let Inst{24} = 1;
+  let Inst{23} = 0;
+  let Inst{22} = 1;
+  let Inst{21} = 0;
+  let Inst{20} = 0;
+  let Inst{19} = 0;
+  let Inst{18} = 1;
+  let Inst{17} = 0;
+  let Inst{16} = 1;
+  let Inst{15} = 0;
+  let Inst{14} = 0;
+  let Inst{13} = 0;
+  let Inst{12} = 0;
+  let Inst{11} = 0;
+  let Inst{10} = 0;
+  let Inst{9-7} = qz{2-0};
+  let Inst{6} = 0;
+  let Inst{5} = 0;
+  let Inst{4} = 1;
+  let Inst{3} = 1;
+  let Inst{2} = 1;
+  let Inst{1} = 1;
+  let Inst{0} = 1;
+}
+
+def ESP_VCMP_GT_U32_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy),
+                   "esp.vcmp.gt.u32\t $qz, $qx, $qy", []>
+{
+  bits<3> qx;
+  bits<3> qy;
+  bits<3> qz;
+  let mayStore = 0;
+  let mayLoad = 0;
+  let hasSideEffects = 1;
+
+  let Inst{31-29} = qx{2-0};
+  let Inst{28-26} = qy{2-0};
+  let Inst{25} = 1;
+  let Inst{24} = 1;
+  let Inst{23} = 0;
+  let Inst{22} = 1;
+  let Inst{21} = 0;
+  let Inst{20} = 0;
+  let Inst{19} = 0;
+  let Inst{18} = 1;
+  let Inst{17} = 0;
+  let Inst{16} = 0;
+  let Inst{15} = 0;
+  let Inst{14} = 0;
+  let Inst{13} = 0;
+  let Inst{12} = 0;
+  let Inst{11} = 1;
+  let Inst{10} = 0;
+  let Inst{9-7} = qz{2-0};
+  let Inst{6} = 0;
+  let Inst{5} = 0;
+  let Inst{4} = 1;
+  let Inst{3} = 1;
+  let Inst{2} = 1;
+  let Inst{1} = 1;
+  let Inst{0} = 1;
+}
+
 def ESP_VCMP_LT_U8_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins QR:$qx, QR:$qy),
                    "esp.vcmp.lt.u8\t $qz, $qx, $qy", [(set QR:$qz, (int_riscv_esp_vcmp_lt_u8 QR:$qx, QR:$qy))]> 
 {
