@@ -258,6 +258,12 @@ RISCVESP32P4MemmovePass::getProcessingConfig(AlignmentCombo Combo) {
         [this](IRBuilder<> &Builder, Value *Dst, Value *Src, uint64_t Size) {
           generateOptimizedBackwardCopyDst16Src8(Builder, Dst, Src, Size);
         });
+  case AlignmentCombo::Dst8Src16:
+    return ProcessingConfig(
+        ESP32P4OptimizationConfig::SIMD_REGISTER_SIZE,
+        [this](IRBuilder<> &Builder, Value *Dst, Value *Src, uint64_t Size) {
+          generateOptimizedBackwardCopyDst8Src16(Builder, Dst, Src, Size);
+        });
   case AlignmentCombo::ScalarUnalignedConst:
     return ProcessingConfig(
         8, [this](IRBuilder<> &Builder, Value *Dst, Value *Src, uint64_t Size) {
@@ -303,6 +309,10 @@ RISCVESP32P4MemmovePass::getMemmoveKind(MemMoveInst *M) {
         Config::isDivisibleBy16(DstAlignValue) &&
         !Config::isDivisibleBy16(SrcAlignValue))
       return MemmoveKind::Dst16Src8_Const;
+    if (Config::isDivisibleBy16(SrcAlignValue) &&
+        Config::isDivisibleBy8(DstAlignValue) &&
+        !Config::isDivisibleBy16(DstAlignValue))
+      return MemmoveKind::Dst8Src16_Const;
     return MemmoveKind::DstUnalignSrcUnalign_Const;
   }
   Len = 0;
@@ -323,6 +333,8 @@ bool RISCVESP32P4MemmovePass::processMemmoveToSIMD(MemMoveInst *M,
     return processDst16Src16Const(M, BBI, Kind);
   case MemmoveKind::Dst16Src8_Const:
     return processDst16Src8Const(M, BBI);
+  case MemmoveKind::Dst8Src16_Const:
+    return processDst8Src16Const(M, BBI);
   case MemmoveKind::DstUnalignSrcUnalign_Const:
   case MemmoveKind::Dst16SrcUnalign_Const:
   case MemmoveKind::Dst8SrcUnalign_Const:
@@ -1135,5 +1147,149 @@ RISCVESP32P4MemmovePass::emitBackwardDst16Src8OneBlock_I32(IRBuilder<> &Builder,
   Value *SrcPtr = Builder.CreateIntToPtr(SrcAddrI32, Builder.getPtrTy());
   Value *DstPtr = Builder.CreateIntToPtr(DstAddrI32, Builder.getPtrTy());
   auto [NS, ND] = emitBackwardDst16Src8OneBlock_Ptr(Builder, SrcPtr, DstPtr);
+  return {Builder.CreatePtrToInt(NS, I32Ty), Builder.CreatePtrToInt(ND, I32Ty)};
+}
+
+bool RISCVESP32P4MemmovePass::processDst8Src16Const(MemMoveInst *M,
+                                                    BasicBlock::iterator &BBI) {
+  return processConstantSizeWithAlignment(M, BBI, AlignmentCombo::Dst8Src16);
+}
+
+void RISCVESP32P4MemmovePass::generateOptimizedBackwardCopyDst8Src16(
+    IRBuilder<> &Builder, Value *Dst, Value *Src, uint64_t Size) {
+  // Use backend dispatcher to handle generic logic
+  generateOptimizedBackwardCopyDispatcher(
+      Builder, Dst, Src, Size, /*Alignment=*/16,
+      // Unroll version generator
+      [this](IRBuilder<> &B, Value *Dst, Value *Src, uint64_t Size,
+             uint64_t Remainder, uint64_t Blocks) {
+        generateUnrolledBackwardCopyDst8Src16(B, Dst, Src, Size, Remainder,
+                                              Blocks);
+      },
+      // Loop version generator
+      [this](IRBuilder<> &B, Value *Dst, Value *Src, uint64_t Size,
+             uint64_t Remainder, uint64_t Blocks) {
+        generateLoopBackwardCopyDst8Src16(B, Dst, Src, Size, Remainder, Blocks);
+      });
+}
+
+void RISCVESP32P4MemmovePass::generateUnrolledBackwardCopyDst8Src16(
+    IRBuilder<> &Builder, Value *Dst, Value *Src, uint64_t Size,
+    uint64_t Remainder, uint64_t Blocks16) {
+  // Use unroll dispatcher to handle generic logic
+  // Dst starts at high 8B of the last block: vst.128 needs Align(16), dst is
+  // only Align(8), so emit splits into two vst.l.64 (mirror of Dst16Src8
+  // loads).
+  generateUnrolledDispatcher(
+      Builder, Dst, Src, Size, Remainder, Blocks16, /*BlockSize=*/16,
+      /*SrcOffsetFromEnd=*/-16, /*DstOffsetFromEnd=*/-8, "dst8src16.backward",
+      [this](IRBuilder<> &B, Value *&SrcAddr, Value *&DstAddr, uint64_t I) {
+        (void)I;
+        std::tie(SrcAddr, DstAddr) =
+            emitBackwardDst8Src16OneBlock_I32(B, SrcAddr, DstAddr);
+      });
+}
+
+void RISCVESP32P4MemmovePass::generateLoopBackwardCopyDst8Src16(
+    IRBuilder<> &Builder, Value *Dst, Value *Src, uint64_t Size,
+    uint64_t Remainder, uint64_t Blocks16) {
+  LLVM_DEBUG(dbgs() << "RISCVESP32P4: Loop backward copy dst8-src16, "
+                    << Blocks16 << " blocks\n");
+
+  // Calculate number of 128-byte blocks (8 16-byte blocks) and remaining
+  // 16-byte blocks
+  uint64_t Blocks128 = Blocks16 / 8;   // Number of complete 128-byte blocks
+  uint64_t Remaining16 = Blocks16 % 8; // Number of remaining 16-byte blocks
+
+  LLVM_DEBUG(dbgs() << "RISCVESP32P4: " << Blocks128 << " x 128B blocks + "
+                    << Remaining16 << " x 16B blocks\n");
+
+  // First stage: process 128-byte blocks (if any)
+  if (Blocks128 > 0) {
+    generateLoop128ByteBackwardCopyDst8Src16(Builder, Dst, Src, Size, Remainder,
+                                             Blocks128);
+  }
+
+  // Second stage: process remaining 16-byte blocks (if any)
+  if (Remaining16 > 0) {
+    generateRemaining16ByteBackwardCopyDst8Src16(
+        Builder, Dst, Src, Size, Remainder, Blocks128, Remaining16);
+  }
+}
+
+void RISCVESP32P4MemmovePass::generateLoop128ByteBackwardCopyDst8Src16(
+    IRBuilder<> &Builder, Value *Dst, Value *Src, uint64_t Size,
+    uint64_t Remainder, uint64_t Blocks128) {
+  // Last 16B of the 128B region: src at block start; dst at high 8B (split
+  // vst.l.64).
+  Value *Last128BlockSrc = Builder.CreateConstInBoundsGEP1_64(
+      Builder.getInt8Ty(), Src, Size - Remainder - 16, "last.128block.src");
+  Value *Last128BlockDstHigh = Builder.CreateConstInBoundsGEP1_64(
+      Builder.getInt8Ty(), Dst, Size - Remainder - 8, "last.128block.dst.high");
+
+  generateLoopDispatcher(
+      Builder, Last128BlockSrc, Last128BlockDstHigh, Blocks128, "dst8src16.128",
+      [this](IRBuilder<> &B, Value *&SrcAddr, Value *&DstAddr,
+             Value *LoopIndex) {
+        (void)LoopIndex;
+        for (int I = 0; I < 8; ++I) {
+          std::tie(SrcAddr, DstAddr) =
+              emitBackwardDst8Src16OneBlock_Ptr(B, SrcAddr, DstAddr);
+        }
+      });
+
+  LLVM_DEBUG(dbgs() << "RISCVESP32P4: Generated 128B loop for " << Blocks128
+                    << " iterations\n");
+}
+
+void RISCVESP32P4MemmovePass::generateRemaining16ByteBackwardCopyDst8Src16(
+    IRBuilder<> &Builder, Value *Dst, Value *Src, uint64_t Size,
+    uint64_t Remainder, uint64_t Blocks128, uint64_t Remaining16) {
+  LLVM_DEBUG(dbgs() << "RISCVESP32P4: Processing remaining " << Remaining16
+                    << " x 16B blocks (dst8-src16)\n");
+
+  uint64_t Blocks128Size = Blocks128 * 128;
+
+  // Last remaining 16B block: src at block start; dst at high 8B.
+  Value *Remaining16Src = Builder.CreateConstInBoundsGEP1_64(
+      Builder.getInt8Ty(), Src, Size - Remainder - Blocks128Size - 16,
+      "remaining.src");
+  Value *Remaining16DstHigh = Builder.CreateConstInBoundsGEP1_64(
+      Builder.getInt8Ty(), Dst, Size - Remainder - Blocks128Size - 8,
+      "remaining.dst.high");
+
+  Value *SrcPtr = Remaining16Src;
+  Value *DstPtr = Remaining16DstHigh;
+  for (uint64_t I = 0; I < Remaining16; ++I) {
+    (void)I;
+    std::tie(SrcPtr, DstPtr) =
+        emitBackwardDst8Src16OneBlock_Ptr(Builder, SrcPtr, DstPtr);
+  }
+
+  LLVM_DEBUG(dbgs() << "RISCVESP32P4: Processed remaining " << Remaining16
+                    << " x 16B blocks (dst8-src16)\n");
+}
+
+std::pair<Value *, Value *>
+RISCVESP32P4MemmovePass::emitBackwardDst8Src16OneBlock_Ptr(IRBuilder<> &Builder,
+                                                           Value *SrcPtr,
+                                                           Value *DstPtr) {
+  // Src Align(16): one vld.128. Dst Align(8): two vst.l.64 (high then low).
+  auto [V128, NextSrc] = createEspVld128IpM(Builder, SrcPtr, -16);
+  Value *VL = extractEspV128LowV64(Builder, V128);
+  Value *VH = extractEspV128HighV64(Builder, V128);
+  Value *P1 = createEspVstL64IpM(Builder, VH, DstPtr, -8);
+  Value *NextDst = createEspVstL64IpM(Builder, VL, P1, -8);
+  return {NextSrc, NextDst};
+}
+
+std::pair<Value *, Value *>
+RISCVESP32P4MemmovePass::emitBackwardDst8Src16OneBlock_I32(IRBuilder<> &Builder,
+                                                           Value *SrcAddrI32,
+                                                           Value *DstAddrI32) {
+  Type *I32Ty = Builder.getInt32Ty();
+  Value *SrcPtr = Builder.CreateIntToPtr(SrcAddrI32, Builder.getPtrTy());
+  Value *DstPtr = Builder.CreateIntToPtr(DstAddrI32, Builder.getPtrTy());
+  auto [NS, ND] = emitBackwardDst8Src16OneBlock_Ptr(Builder, SrcPtr, DstPtr);
   return {Builder.CreatePtrToInt(NS, I32Ty), Builder.CreatePtrToInt(ND, I32Ty)};
 }
