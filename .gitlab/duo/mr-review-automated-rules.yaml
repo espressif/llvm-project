@@ -1,0 +1,3 @@
+exclude:
+  source_branches:
+    - sync_fail/* # do not review sync_fail branches automatically

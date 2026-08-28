@@ -1,0 +1,79 @@
+instructions:
+  - name: Generic rules
+    instructions: |
+      1. Ensure that MR description is clear and concise. It should be written in human-readable format and should be easy
+        to understand.
+        If MR introduces a new feature/option, the description should describe how to use it and what its purpose.
+        If MR fixes an issue, the description should include the issue number and a link to the issue.
+        If MR cherry-picks a commit from another MR/PR, the description should include the link to the original MR/PR.
+        If MR improves the performance, there should be some reference measurements to compare the performance before and
+        after the changes.
+      2. Ensure that commit messages are clear and concise and follow LLVM Development Policy (https://llvm.org/docs/DeveloperPolicy.html#commit-messages).
+      3. If MR contains more than 3 commits ask to enable commits squashing and ensure that MR title can be used as commit message
+        and follow LLVM Development Policy.
+      4. Ensure that the changes conform to LLVM coding standards (https://llvm.org/docs/CodingStandards.html).
+      5. Every MR which implements a feature must have test cases which verify functionality including corner cases:
+        expected successes, failures, malformed inputs, misconfigurations, etc.
+      6. Every MR which fixes an issue must have a test case which verifies the fix and related corner cases.
+
+  - name: Changes in Code Base Out of Scope Of Espressif Workflow
+    fileFilters:
+      - "!llvm/**/*"  # Exclude llvm files
+      - "!clang/**/*"  # Exclude clang files
+      - "!compiler-rt/**/*"  # Exclude compiler-rt files
+      - "!libcxx/**/*"  # Exclude libcxx files
+      - "!libcxxabi/**/*"  # Exclude libcxxabi files
+      - "!libunwind/**/*"  # Exclude libunwind files
+      - "!lld/**/*"  # Exclude lld files
+      - "!runtimes/**/*"  # Exclude runtimes files
+      - "!.gitlab/**/*"  # Exclude gitlab files
+      - "!.gitlab-ci.yml"  # Exclude gitlab-ci.yml file
+    instructions: |
+      1. Should be considered to be upstreamed to the corresponding projects.
+      2. Raise discussion to prove that the changes are really necessary.
+
+  - name: Generic Code Base Changes
+    fileFilters:
+      - "llvm/**/*"  # Include llvm files
+      - "clang/**/*"  # Include clang files
+      - "compiler-rt/**/*"  # Include compiler-rt files
+      - "libcxx/**/*"  # Include libcxx files
+      - "libcxxabi/**/*"  # Include libcxxabi files
+      - "libunwind/**/*"  # Include libunwind files
+      - "lld/**/*"  # Include lld files
+      - "runtimes/**/*"  # Include runtimes files
+      - "!llvm/lib/Target/**/*"  # Exclude LLVM target specific files
+      - "!llvm/include/llvm/TargetParser/**/*"  # Exclude LLVM target parser files
+      - "!llvm/test/CodeGen/**/*"  # Exclude LLVM code gen test files
+      - "!llvm/lib/TargetParser/**/*"  # Exclude LLVM target parser files
+      - "!clang/lib/CodeGen/Target*/**/*"  # Exclude clang target specific files
+      - "!clang/lib/Basic/Targets*/**/*"  # Exclude clang target specific files
+      - "!clang/include/clang/Basic/**/*"  # Exclude clang target specific files
+      - "!lld/ELF/Arch/**/*"  # Exclude lld ELF arch files
+    instructions: |
+      1. Should be considered to be upstreamed to the corresponding projects.
+      2. Raise discussion to prove that the changes are really necessary and not impacting the generic functionality
+        of the project.
+
+  - name: Targets Related Changes
+    fileFilters:
+      - "llvm/lib/Target/**/*"  # Include LLVM target specific files
+      - "llvm/include/llvm/TargetParser/**/*"  # Include LLVM target parser files
+      - "llvm/test/CodeGen/**/*"  # Include LLVM code gen test files
+      - "llvm/lib/TargetParser/**/*"  # Include LLVM target parser files
+      - "clang/lib/CodeGen/Target*/**/*"  # Include clang target specific files
+      - "clang/lib/Basic/Targets*/**/*"  # Include clang target specific files
+      - "clang/include/clang/Basic/**/*"  # Include clang target specific files
+      - "lld/ELF/Arch/**/*"  # Include lld ELF arch files
+    instructions: |
+      1. Ensure there is no changes in non-Espressif (other than Xtensa and RISCV) targets related code.
+        If any changes in non-Espressif targets related code are present, raise discussion to prove that the changes are really necessary.
+        Such changes should be considered to be upstreamed.
+      2. Espressif specific changes should be kept isolated as much as possible. Ideally in separate files with minimal changes
+        in generic code base. The examples of isolated changes are
+        a. Simple or conditional function calls from generic code base to Espressif specific code.
+        b. Callbacks registration.
+        c. Inheritance of Espressif specific classes from generic ones.
+        d. Interface implementation.
+        e. etc.
+        Avoid adding functions, definitions and classes in generic code base that are specific to Espressif.
