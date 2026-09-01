@@ -85,6 +85,7 @@ struct RISCVESP32P4MemmovePass : PassInfoMixin<RISCVESP32P4MemmovePass> {
     Dst16Src16,
     Dst16Src8,
     Dst8Src16,
+    Dst8Src8,
     ScalarUnalignedConst
   };
 
@@ -255,6 +256,30 @@ struct RISCVESP32P4MemmovePass : PassInfoMixin<RISCVESP32P4MemmovePass> {
   std::pair<Value *, Value *>
   emitBackwardDst8Src16OneBlock_I32(IRBuilder<> &Builder, Value *SrcAddrI32,
                                     Value *DstAddrI32);
+
+  bool processDst8Src8Const(MemMoveInst *M, BasicBlock::iterator &BBI);
+  void generateOptimizedBackwardCopyDst8Src8(IRBuilder<> &Builder, Value *Dst,
+                                             Value *Src, uint64_t Size);
+  void generateUnrolledBackwardCopyDst8Src8(IRBuilder<> &Builder, Value *Dst,
+                                            Value *Src, uint64_t Size,
+                                            uint64_t Remainder,
+                                            uint64_t Blocks16);
+  void generateLoopBackwardCopyDst8Src8(IRBuilder<> &Builder, Value *Dst,
+                                        Value *Src, uint64_t Size,
+                                        uint64_t Remainder, uint64_t Blocks16);
+  void generateLoop128ByteBackwardCopyDst8Src8(IRBuilder<> &Builder, Value *Dst,
+                                               Value *Src, uint64_t Size,
+                                               uint64_t Remainder,
+                                               uint64_t Blocks128);
+  void generateRemaining16ByteBackwardCopyDst8Src8(
+      IRBuilder<> &Builder, Value *Dst, Value *Src, uint64_t Size,
+      uint64_t Remainder, uint64_t Blocks128, uint64_t Remaining16);
+  std::pair<Value *, Value *>
+  emitBackwardDst8Src8OneBlock_Ptr(IRBuilder<> &Builder, Value *SrcPtr,
+                                   Value *DstPtr);
+  std::pair<Value *, Value *>
+  emitBackwardDst8Src8OneBlock_I32(IRBuilder<> &Builder, Value *SrcAddrI32,
+                                   Value *DstAddrI32);
 
   bool handleInstructionDeletion(Instruction *I, BasicBlock::iterator &BBI);
 };
