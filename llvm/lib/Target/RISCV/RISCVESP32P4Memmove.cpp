@@ -281,9 +281,30 @@ RISCVESP32P4MemmovePass::getProcessingConfig(AlignmentCombo Combo) {
 
 bool RISCVESP32P4MemmovePass::processDstUnalignConstMemIntrinBypass(
     MemMoveInst *M, BasicBlock::iterator &BBI) {
+  using Config = ESP32P4OptimizationConfig;
+
   if (Len == 0)
     return handleInstructionDeletion(M, BBI);
-  // Overlap-slice: always ScalarUnalignedConst runtime dispatch.
+
+  // Forward branch would become @llvm.memcpy and then RISCVEsp32P4MemIntrin may
+  // lower dst-unaligned copies (e.g. Src8 or Src16) to helpers slower than
+  // plain widened loads for sizes through ~47B. Require src>=8 so i64 chunks
+  // in emitForwardSmallCopyBypassingMemCpyIntrinsic are legal.
+  if (Config::shouldSimpleUnroll(Len) && Config::isWellAligned(SrcAlignValue)) {
+    createRuntimeDispatch(
+        M, BBI, /*IsVarSize=*/false,
+        [this](IRBuilder<> &Builder, Value *Dst, Value *Src, Value *Size) {
+          uint64_t constSize = cast<ConstantInt>(Size)->getZExtValue();
+          generateByteWiseBackwardCopy(Builder, Dst, Src, constSize);
+        },
+        [this](IRBuilder<> &Builder, Value *Dst, Value *Src, Value *Size) {
+          uint64_t constSize = cast<ConstantInt>(Size)->getZExtValue();
+          emitForwardSmallCopyBypassingMemCpyIntrinsic(Builder, Dst, Src,
+                                                       constSize);
+        });
+    return true;
+  }
+
   return processConstantSizeWithAlignment(M, BBI,
                                           AlignmentCombo::ScalarUnalignedConst);
 }
@@ -324,6 +345,15 @@ RISCVESP32P4MemmovePass::getMemmoveKind(MemMoveInst *M) {
         !Config::isDivisibleBy16(SrcAlignValue) &&
         !Config::isDivisibleBy16(DstAlignValue))
       return MemmoveKind::Dst8Src8_Const;
+    if (Config::isDivisibleBy16(DstAlignValue) &&
+        !Config::isDivisibleBy8(SrcAlignValue))
+      return MemmoveKind::Dst16SrcUnalign_Const;
+    if (Config::isDivisibleBy8(DstAlignValue) &&
+        !Config::isDivisibleBy8(SrcAlignValue))
+      return MemmoveKind::Dst8SrcUnalign_Const;
+    if (Config::isDivisibleBy16(SrcAlignValue) &&
+        !Config::isDivisibleBy8(DstAlignValue))
+      return MemmoveKind::DstUnalignSrc16_Const;
     return MemmoveKind::DstUnalignSrcUnalign_Const;
   }
   Len = 0;
@@ -348,10 +378,13 @@ bool RISCVESP32P4MemmovePass::processMemmoveToSIMD(MemMoveInst *M,
     return processDst8Src16Const(M, BBI);
   case MemmoveKind::Dst8Src8_Const:
     return processDst8Src8Const(M, BBI);
-  case MemmoveKind::DstUnalignSrcUnalign_Const:
   case MemmoveKind::Dst16SrcUnalign_Const:
+    return processDst16SrcUnalignConst(M, BBI);
   case MemmoveKind::Dst8SrcUnalign_Const:
+    return processDst8SrcUnalignConst(M, BBI);
   case MemmoveKind::DstUnalignSrc16_Const:
+    return processDstUnalignSrc16Const(M, BBI);
+  case MemmoveKind::DstUnalignSrcUnalign_Const:
     return processDstUnalignSrcUnalignConst(M, BBI);
   default:
     return false;
@@ -1452,4 +1485,71 @@ RISCVESP32P4MemmovePass::emitBackwardDst8Src8OneBlock_I32(IRBuilder<> &Builder,
   Value *DstPtr = Builder.CreateIntToPtr(DstAddrI32, Builder.getPtrTy());
   auto [NS, ND] = emitBackwardDst8Src8OneBlock_Ptr(Builder, SrcPtr, DstPtr);
   return {Builder.CreatePtrToInt(NS, I32Ty), Builder.CreatePtrToInt(ND, I32Ty)};
+}
+
+void RISCVESP32P4MemmovePass::emitForwardSmallCopyBypassingMemCpyIntrinsic(
+    IRBuilder<> &Builder, Value *Dst, Value *Src, uint64_t Size) {
+  using Config = ESP32P4OptimizationConfig;
+  assert(Size > 0 && Config::shouldSimpleUnroll(Size) &&
+         "emitForwardSmallCopyBypassingMemCpyIntrinsic: size out of range");
+
+  Type *I8Ty = Builder.getInt8Ty();
+  uint64_t Off = 0;
+
+  while (Off + 8 <= Size) {
+    Value *SP =
+        Builder.CreateConstInBoundsGEP1_64(I8Ty, Src, Off, "fwd.cp.src.i64");
+    Value *V = Builder.CreateAlignedLoad(Builder.getInt64Ty(), SP, Align(8),
+                                         "fwd.cp.ld.i64");
+    Value *DP =
+        Builder.CreateConstInBoundsGEP1_64(I8Ty, Dst, Off, "fwd.cp.dst.i64");
+    Builder.CreateAlignedStore(V, DP, Align(1));
+    Off += 8;
+  }
+  if (Off + 4 <= Size) {
+    Value *SP =
+        Builder.CreateConstInBoundsGEP1_64(I8Ty, Src, Off, "fwd.cp.src.i32");
+    Value *V = Builder.CreateAlignedLoad(Builder.getInt32Ty(), SP, Align(4),
+                                         "fwd.cp.ld.i32");
+    Value *DP =
+        Builder.CreateConstInBoundsGEP1_64(I8Ty, Dst, Off, "fwd.cp.dst.i32");
+    Builder.CreateAlignedStore(V, DP, Align(1));
+    Off += 4;
+  }
+  if (Off + 2 <= Size) {
+    Value *SP =
+        Builder.CreateConstInBoundsGEP1_64(I8Ty, Src, Off, "fwd.cp.src.i16");
+    Value *V = Builder.CreateAlignedLoad(Builder.getInt16Ty(), SP, Align(2),
+                                         "fwd.cp.ld.i16");
+    Value *DP =
+        Builder.CreateConstInBoundsGEP1_64(I8Ty, Dst, Off, "fwd.cp.dst.i16");
+    Builder.CreateAlignedStore(V, DP, Align(1));
+    Off += 2;
+  }
+  if (Off < Size) {
+    assert(Off + 1 == Size && "emitForwardSmallCopy: leftover must be 1 byte");
+    Value *SP =
+        Builder.CreateConstInBoundsGEP1_64(I8Ty, Src, Off, "fwd.cp.src.i8");
+    Value *V = Builder.CreateLoad(I8Ty, SP, "fwd.cp.ld.i8");
+    Value *DP =
+        Builder.CreateConstInBoundsGEP1_64(I8Ty, Dst, Off, "fwd.cp.dst.i8");
+    Builder.CreateStore(V, DP);
+  }
+}
+
+bool RISCVESP32P4MemmovePass::processDst16SrcUnalignConst(
+    MemMoveInst *M, BasicBlock::iterator &BBI) {
+  return processConstantSizeWithAlignment(M, BBI,
+                                          AlignmentCombo::ScalarUnalignedConst);
+}
+
+bool RISCVESP32P4MemmovePass::processDstUnalignSrc16Const(
+    MemMoveInst *M, BasicBlock::iterator &BBI) {
+  return processDstUnalignConstMemIntrinBypass(M, BBI);
+}
+
+bool RISCVESP32P4MemmovePass::processDst8SrcUnalignConst(
+    MemMoveInst *M, BasicBlock::iterator &BBI) {
+  return processConstantSizeWithAlignment(M, BBI,
+                                          AlignmentCombo::ScalarUnalignedConst);
 }

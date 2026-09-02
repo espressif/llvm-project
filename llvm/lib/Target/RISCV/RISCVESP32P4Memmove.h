@@ -281,6 +281,13 @@ struct RISCVESP32P4MemmovePass : PassInfoMixin<RISCVESP32P4MemmovePass> {
   emitBackwardDst8Src8OneBlock_I32(IRBuilder<> &Builder, Value *SrcAddrI32,
                                    Value *DstAddrI32);
 
+  void emitForwardSmallCopyBypassingMemCpyIntrinsic(IRBuilder<> &Builder,
+                                                    Value *Dst, Value *Src,
+                                                    uint64_t Size);
+  bool processDst16SrcUnalignConst(MemMoveInst *M, BasicBlock::iterator &BBI);
+  bool processDstUnalignSrc16Const(MemMoveInst *M, BasicBlock::iterator &BBI);
+  bool processDst8SrcUnalignConst(MemMoveInst *M, BasicBlock::iterator &BBI);
+
   bool handleInstructionDeletion(Instruction *I, BasicBlock::iterator &BBI);
 };
 
