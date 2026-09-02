@@ -288,6 +288,13 @@ struct RISCVESP32P4MemmovePass : PassInfoMixin<RISCVESP32P4MemmovePass> {
   bool processDstUnalignSrc16Const(MemMoveInst *M, BasicBlock::iterator &BBI);
   bool processDst8SrcUnalignConst(MemMoveInst *M, BasicBlock::iterator &BBI);
 
+  void generateCorrectBackwardCopyDst16Src16(IRBuilder<> &Builder, Value *Dst,
+                                             Value *Src, Value *Size32,
+                                             MemmoveKind Kind);
+  bool processVarMemmoveWithKind(MemMoveInst *M, BasicBlock::iterator &BBI,
+                                 MemmoveKind Kind);
+  bool processDst16Src16Var(MemMoveInst *M, BasicBlock::iterator &BBI);
+
   bool handleInstructionDeletion(Instruction *I, BasicBlock::iterator &BBI);
 };
 

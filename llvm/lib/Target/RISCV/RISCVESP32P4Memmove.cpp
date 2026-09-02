@@ -224,8 +224,8 @@ bool RISCVESP32P4MemmovePass::processConstantSizeDispatcher(
       M, BBI, false, // IsVarSize = false
       [this, BackwardGenerator](IRBuilder<> &Builder, Value *Dst, Value *Src,
                                 Value *Size) {
-        uint64_t constSize = cast<ConstantInt>(Size)->getZExtValue();
-        BackwardGenerator(Builder, Dst, Src, constSize);
+        uint64_t ConstSize = cast<ConstantInt>(Size)->getZExtValue();
+        BackwardGenerator(Builder, Dst, Src, ConstSize);
       });
 
   return true;
@@ -294,13 +294,13 @@ bool RISCVESP32P4MemmovePass::processDstUnalignConstMemIntrinBypass(
     createRuntimeDispatch(
         M, BBI, /*IsVarSize=*/false,
         [this](IRBuilder<> &Builder, Value *Dst, Value *Src, Value *Size) {
-          uint64_t constSize = cast<ConstantInt>(Size)->getZExtValue();
-          generateByteWiseBackwardCopy(Builder, Dst, Src, constSize);
+          uint64_t ConstSize = cast<ConstantInt>(Size)->getZExtValue();
+          generateByteWiseBackwardCopy(Builder, Dst, Src, ConstSize);
         },
         [this](IRBuilder<> &Builder, Value *Dst, Value *Src, Value *Size) {
-          uint64_t constSize = cast<ConstantInt>(Size)->getZExtValue();
+          uint64_t ConstSize = cast<ConstantInt>(Size)->getZExtValue();
           emitForwardSmallCopyBypassingMemCpyIntrinsic(Builder, Dst, Src,
-                                                       constSize);
+                                                       ConstSize);
         });
     return true;
   }
@@ -386,6 +386,8 @@ bool RISCVESP32P4MemmovePass::processMemmoveToSIMD(MemMoveInst *M,
     return processDstUnalignSrc16Const(M, BBI);
   case MemmoveKind::DstUnalignSrcUnalign_Const:
     return processDstUnalignSrcUnalignConst(M, BBI);
+  case MemmoveKind::Dst16Src16_Var:
+    return processDst16Src16Var(M, BBI);
   default:
     return false;
   }
@@ -1552,4 +1554,259 @@ bool RISCVESP32P4MemmovePass::processDst8SrcUnalignConst(
     MemMoveInst *M, BasicBlock::iterator &BBI) {
   return processConstantSizeWithAlignment(M, BBI,
                                           AlignmentCombo::ScalarUnalignedConst);
+}
+
+void RISCVESP32P4MemmovePass::generateCorrectBackwardCopyDst16Src16(
+    IRBuilder<> &Builder, Value *Dst, Value *Src, Value *Size32,
+    MemmoveKind Kind) {
+  LLVM_DEBUG(dbgs() << "RISCVESP32P4: Correct backward copy dst16-src16\n");
+
+  // Check if it is medium size (16-127 bytes)
+  Value *IsMedium =
+      Builder.CreateICmpULT(Size32, Builder.getInt32(128), "is.medium");
+
+  Function *F = getCurrentFunction(Builder);
+  BasicBlock *MediumBB =
+      BasicBlock::Create(F->getContext(), "medium.backward", F);
+  BasicBlock *LargeBB =
+      BasicBlock::Create(F->getContext(), "large.backward", F);
+  BasicBlock *ExitBB = BasicBlock::Create(F->getContext(), "backward.exit", F);
+
+  Builder.CreateCondBr(IsMedium, MediumBB, LargeBB);
+
+  // Medium size processing (16-127 bytes): first Remainder, then 16-byte blocks
+  Builder.SetInsertPoint(MediumBB);
+  {
+    // Remainder bytes = size32 % 16; number of full 16-byte blocks = size32
+    // / 16.
+    Value *RemainderBytes =
+        Builder.CreateURem(Size32, Builder.getInt32(16), "Remainder16");
+    Value *Blocks16 =
+        Builder.CreateUDiv(Size32, Builder.getInt32(16), "Blocks16");
+
+    // End of range: src + size and dst + size.
+    Value *SrcEnd =
+        Builder.CreateInBoundsGEP(Builder.getInt8Ty(), Src, Size32, "src.end");
+    Value *DstEnd =
+        Builder.CreateInBoundsGEP(Builder.getInt8Ty(), Dst, Size32, "dst.end");
+
+    // First step: process Remainder bytes (last 0-15 bytes)
+    Value *HasRemainder = Builder.CreateICmpNE(
+        RemainderBytes, Builder.getInt32(0), "has.Remainder");
+
+    BasicBlock *RemainderBB =
+        BasicBlock::Create(F->getContext(), "medium.Remainder", F);
+    BasicBlock *Blocks16BB =
+        BasicBlock::Create(F->getContext(), "medium.Blocks16", F);
+
+    Builder.CreateCondBr(HasRemainder, RemainderBB, Blocks16BB);
+
+    // Process Remainder bytes: use existing generateSmallMemmoveBackward
+    Builder.SetInsertPoint(RemainderBB);
+    {
+      // Calculate start address of Remainder part
+      Value *RemainderSrc = Builder.CreateInBoundsGEP(
+          Builder.getInt8Ty(), SrcEnd, Builder.CreateNeg(RemainderBytes),
+          "Remainder.src");
+      Value *RemainderDst = Builder.CreateInBoundsGEP(
+          Builder.getInt8Ty(), DstEnd, Builder.CreateNeg(RemainderBytes),
+          "Remainder.dst");
+
+      // V1: remainder via memmove; Small/Simple land in later MR.
+      (void)createOptimizedMemMove(Builder, RemainderDst, RemainderSrc,
+                                   RemainderBytes, Align(1), Align(1), false,
+                                   nullptr, /*NoReprocess=*/true);
+      Builder.CreateBr(Blocks16BB);
+    }
+
+    // Correct version: first load, then decrement address
+    Builder.SetInsertPoint(Blocks16BB);
+    {
+      Value *HasBlocks =
+          Builder.CreateICmpNE(Blocks16, Builder.getInt32(0), "has.Blocks16");
+
+      BasicBlock *SIMDLoopBB =
+          BasicBlock::Create(F->getContext(), "simd.loop", F);
+
+      // Initial SIMD pointer: start of the last full 16-byte block in the
+      // block region. E.g. size=64 -> src+48; size=19 -> src+0 after remainder.
+      Value *BlocksEndOffset = Builder.CreateMul(Blocks16, Builder.getInt32(16),
+                                                 "blocks.total.size");
+      Value *LastBlockStart = Builder.CreateSub(
+          BlocksEndOffset, Builder.getInt32(16), "last.block.start");
+      Value *SrcByteOff;
+      Value *DstByteOff;
+      switch (Kind) {
+      case MemmoveKind::Dst16Src16_Var:
+        SrcByteOff = Builder.getInt32(0);
+        DstByteOff = Builder.getInt32(0);
+        break;
+      case MemmoveKind::Dst16Src8_Var:
+        SrcByteOff = Builder.getInt32(8);
+        DstByteOff = Builder.getInt32(0);
+        break;
+      case MemmoveKind::Dst8Src16_Var:
+        // Full vld.128 + vst.128 block covers 16 bytes at dst from block start
+        // (same as dst16/src16); do not offset dst by +8.
+        SrcByteOff = Builder.getInt32(0);
+        DstByteOff = Builder.getInt32(0);
+        break;
+      case MemmoveKind::Dst8Src8_Var:
+        SrcByteOff = Builder.getInt32(8);
+        DstByteOff = Builder.getInt32(8);
+        break;
+      default:
+        SrcByteOff = Builder.getInt32(0);
+        DstByteOff = Builder.getInt32(0);
+        break;
+      }
+      Value *AdjSrc = Builder.CreateAdd(LastBlockStart, SrcByteOff);
+      Value *AdjDst = Builder.CreateAdd(LastBlockStart, DstByteOff);
+      Value *InitialSrcAddr = Builder.CreateInBoundsGEP(
+          Builder.getInt8Ty(), Src, AdjSrc, "initial.src.addr");
+      Value *InitialDstAddr = Builder.CreateInBoundsGEP(
+          Builder.getInt8Ty(), Dst, AdjDst, "initial.dst.addr");
+
+      Builder.CreateCondBr(HasBlocks, SIMDLoopBB, ExitBB);
+
+      Builder.SetInsertPoint(SIMDLoopBB);
+
+      Type *I8PtrTy = PointerType::get(Builder.getInt8Ty(), 0);
+      PHINode *BlockCounter =
+          Builder.CreatePHI(Builder.getInt32Ty(), 2, "block.counter");
+      PHINode *CurrentSrcAddr =
+          Builder.CreatePHI(I8PtrTy, 2, "current.src.addr");
+      PHINode *CurrentDstAddr =
+          Builder.CreatePHI(I8PtrTy, 2, "current.dst.addr");
+
+      BlockCounter->addIncoming(Blocks16, Blocks16BB);
+      CurrentSrcAddr->addIncoming(InitialSrcAddr, Blocks16BB);
+      CurrentDstAddr->addIncoming(InitialDstAddr, Blocks16BB);
+
+      Value *NewSrcAddr = nullptr;
+      Value *NewDstAddr = nullptr;
+      switch (Kind) {
+      case MemmoveKind::Dst16Src16_Var:
+      case MemmoveKind::Dst8Src16_Var:
+        std::tie(NewSrcAddr, NewDstAddr) = createEspVld128IpMThenVst128IpM(
+            Builder, CurrentSrcAddr, CurrentDstAddr, -16);
+        break;
+      case MemmoveKind::Dst16Src8_Var:
+        std::tie(NewSrcAddr, NewDstAddr) = emitBackwardDst16Src8OneBlock_Ptr(
+            Builder, CurrentSrcAddr, CurrentDstAddr);
+        break;
+      case MemmoveKind::Dst8Src8_Var:
+        std::tie(NewSrcAddr, NewDstAddr) = emitBackwardDst8Src8OneBlock_Ptr(
+            Builder, CurrentSrcAddr, CurrentDstAddr);
+        break;
+      default:
+        std::tie(NewSrcAddr, NewDstAddr) = createEspVld128IpMThenVst128IpM(
+            Builder, CurrentSrcAddr, CurrentDstAddr, -16);
+        break;
+      }
+
+      // Update PHI node
+      CurrentSrcAddr->addIncoming(NewSrcAddr, SIMDLoopBB);
+      CurrentDstAddr->addIncoming(NewDstAddr, SIMDLoopBB);
+
+      // Update counter
+      Value *NewCounter =
+          Builder.CreateSub(BlockCounter, Builder.getInt32(1), "new.counter");
+      BlockCounter->addIncoming(NewCounter, SIMDLoopBB);
+
+      // Check loop condition
+      Value *Continue =
+          Builder.CreateICmpNE(NewCounter, Builder.getInt32(0), "continue");
+      Builder.CreateCondBr(Continue, SIMDLoopBB, ExitBB);
+    }
+  }
+
+  // Large size (≥128): V1 fallback; Runtime* land in later MR.
+  Builder.SetInsertPoint(LargeBB);
+  {
+    (void)createOptimizedMemMove(Builder, Dst, Src, Size32, Align(16),
+                                 Align(16), false, nullptr,
+                                 /*NoReprocess=*/true);
+    Builder.CreateBr(ExitBB);
+  }
+
+  Builder.SetInsertPoint(ExitBB);
+}
+
+bool RISCVESP32P4MemmovePass::processVarMemmoveWithKind(
+    MemMoveInst *M, BasicBlock::iterator &BBI, MemmoveKind Kind) {
+  IRBuilder<> Builder(M);
+  Value *Dst = M->getRawDest();
+  Value *Src = M->getRawSource();
+  Value *Size = M->getLength();
+
+  LLVM_DEBUG(dbgs() << "RISCVESP32P4: Processing Dst16Src16Var memmove\n");
+
+  // First step: small size optimization (corresponding to constant version Len
+  // < 16)
+  Value *Size32 = Builder.CreateTrunc(Size, Builder.getInt32Ty());
+  Value *IsSmall =
+      Builder.CreateICmpULT(Size32, Builder.getInt32(16), "is.small");
+
+  // Create basic block structure
+  BasicBlock *CurrentBB = Builder.GetInsertBlock();
+  BasicBlock *RestBB =
+      CurrentBB->splitBasicBlock(std::next(M->getIterator()), "memmove.rest");
+  CurrentBB->getTerminator()->eraseFromParent();
+
+  Function *F = M->getFunction();
+  BasicBlock *SmallBB =
+      BasicBlock::Create(F->getContext(), "small.direct", F, RestBB);
+  BasicBlock *LargeBB =
+      BasicBlock::Create(F->getContext(), "large.dispatch", F, RestBB);
+
+  // First layer branch: small size vs large size
+  Builder.SetInsertPoint(CurrentBB);
+  Builder.CreateCondBr(IsSmall, SmallBB, LargeBB);
+
+  // Small size path: memmove — alignment does not rule out overlap (e.g.
+  // backward_overlap with size < 16).
+  Builder.SetInsertPoint(SmallBB);
+  (void)createOptimizedMemMove(Builder, Dst, Src, Size, M->getDestAlign(),
+                               M->getSourceAlign(), M->isVolatile(), M,
+                               /*NoReprocess=*/true);
+  Builder.CreateBr(RestBB);
+
+  // Large size path: runtime overlap detection + forward/backward dispatch
+  Builder.SetInsertPoint(LargeBB);
+
+  // Runtime overlap detection: dst < src ?
+  Value *DstInt = Builder.CreatePtrToInt(Dst, Builder.getInt32Ty());
+  Value *SrcInt = Builder.CreatePtrToInt(Src, Builder.getInt32Ty());
+  Value *DstLessThanSrc = Builder.CreateICmpULT(DstInt, SrcInt, "dst.lt.src");
+
+  // Create forward and backward basic blocks
+  BasicBlock *ForwardBB =
+      BasicBlock::Create(F->getContext(), "forward.copy", F, RestBB);
+  BasicBlock *BackwardBB =
+      BasicBlock::Create(F->getContext(), "backward.copy", F, RestBB);
+
+  Builder.CreateCondBr(DstLessThanSrc, ForwardBB, BackwardBB);
+
+  // Forward path: keep memmove semantics. Even when dst < src, the ranges may
+  // overlap and lowering llvm.memcpy is not required to preserve forward-copy
+  // order.
+  Builder.SetInsertPoint(ForwardBB);
+  (void)createOptimizedMemMove(Builder, Dst, Src, Size, M->getDestAlign(),
+                               M->getSourceAlign(), M->isVolatile(), M,
+                               /*NoReprocess=*/true);
+  Builder.CreateBr(RestBB);
+
+  // Backward path: use correct order of layered copy
+  Builder.SetInsertPoint(BackwardBB);
+  generateCorrectBackwardCopyDst16Src16(Builder, Dst, Src, Size32, Kind);
+  Builder.CreateBr(RestBB);
+
+  // Delete original memmove instruction
+  return handleInstructionDeletion(M, BBI);
+}
+
+bool RISCVESP32P4MemmovePass::processDst16Src16Var(MemMoveInst *M,
+                                                   BasicBlock::iterator &BBI) {
+  return processVarMemmoveWithKind(M, BBI, MemmoveKind::Dst16Src16_Var);
 }
