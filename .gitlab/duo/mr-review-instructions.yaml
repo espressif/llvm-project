@@ -77,3 +77,16 @@ instructions:
         d. Interface implementation.
         e. etc.
         Avoid adding functions, definitions and classes in generic code base that are specific to Espressif.
+
+        General principle: Prefer isolating Espressif-specific changes from upstream generic LLVM code to minimize rebase friction and improve maintainability.
+        Exception — established LLVM community pattern: When a change follows a pattern already used by other vendors or extensions in the relevant LLVM subsystem, the same approach is acceptable for Espressif-specific code. Do not flag it as a blocking issue.
+        Specifically, a change in generic LLVM code is acceptable without isolation when:
+
+        - An equivalent pattern exists in upstream LLVM for another vendor, architecture, or extension in the same subsystem (e.g., another vendor's operand error handling, encoding function, or instruction definition).
+        - The LLVM subsystem provides no upstream mechanism to inject the change from a separate file without modifying the generic code (e.g., shared TableGen-generated headers, single-dispatch switch statements).
+        - The change is structurally identical to how other vendors have solved the same problem upstream.
+
+        When isolation IS still required: If a pattern does not have precedent in upstream LLVM for the relevant subsystem, the standard isolation rule applies — Espressif-specific logic should be kept in dedicated files and hooked into generic code minimally.
+        How to evaluate: Before flagging an Espressif-specific change in generic LLVM code as blocking, ask:
+        "Does upstream LLVM solve this the same way for other vendors or extensions in this subsystem?"
+        If yes → acceptable as-is. If no → isolation required.
