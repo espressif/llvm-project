@@ -43,8 +43,24 @@ define void @test_src16_dst16_variable_size(ptr %a, ptr %b, i32 %size) {
 ; CHECK-NEXT:    [[REMAINDER_SRC:%.*]] = getelementptr inbounds i8, ptr [[SRC_END]], i32 [[TMP2]]
 ; CHECK-NEXT:    [[TMP3:%.*]] = sub i32 0, [[REMAINDER16]]
 ; CHECK-NEXT:    [[REMAINDER_DST:%.*]] = getelementptr inbounds i8, ptr [[DST_END]], i32 [[TMP3]]
-; CHECK-NEXT:    call void @llvm.memmove.p0.p0.i32(ptr align 1 [[REMAINDER_DST]], ptr align 1 [[REMAINDER_SRC]], i32 [[REMAINDER16]], i1 false), !riscv.esp32p4.memmove.no_reprocess [[META0]]
-; CHECK-NEXT:    br label %[[MEDIUM_BLOCKS16]]
+; CHECK-NEXT:    switch i32 [[REMAINDER16]], label %[[SMALL_BACK_DEFAULT:.*]] [
+; CHECK-NEXT:      i32 0, label %[[SMALL_BACK_CASE_0:.*]]
+; CHECK-NEXT:      i32 1, label %[[SMALL_BACK_CASE_1:.*]]
+; CHECK-NEXT:      i32 2, label %[[SMALL_BACK_CASE_2:.*]]
+; CHECK-NEXT:      i32 3, label %[[SMALL_BACK_CASE_3:.*]]
+; CHECK-NEXT:      i32 4, label %[[SMALL_BACK_CASE_4:.*]]
+; CHECK-NEXT:      i32 5, label %[[SMALL_BACK_CASE_5:.*]]
+; CHECK-NEXT:      i32 6, label %[[SMALL_BACK_CASE_6:.*]]
+; CHECK-NEXT:      i32 7, label %[[SMALL_BACK_CASE_7:.*]]
+; CHECK-NEXT:      i32 8, label %[[SMALL_BACK_CASE_8:.*]]
+; CHECK-NEXT:      i32 9, label %[[SMALL_BACK_CASE_9:.*]]
+; CHECK-NEXT:      i32 10, label %[[SMALL_BACK_CASE_10:.*]]
+; CHECK-NEXT:      i32 11, label %[[SMALL_BACK_CASE_11:.*]]
+; CHECK-NEXT:      i32 12, label %[[SMALL_BACK_CASE_12:.*]]
+; CHECK-NEXT:      i32 13, label %[[SMALL_BACK_CASE_13:.*]]
+; CHECK-NEXT:      i32 14, label %[[SMALL_BACK_CASE_14:.*]]
+; CHECK-NEXT:      i32 15, label %[[SMALL_BACK_CASE_15:.*]]
+; CHECK-NEXT:    ]
 ; CHECK:       [[MEDIUM_BLOCKS16]]:
 ; CHECK-NEXT:    [[HAS_BLOCKS16:%.*]] = icmp ne i32 [[BLOCKS16]], 0
 ; CHECK-NEXT:    [[BLOCKS_TOTAL_SIZE:%.*]] = mul i32 [[BLOCKS16]], 16

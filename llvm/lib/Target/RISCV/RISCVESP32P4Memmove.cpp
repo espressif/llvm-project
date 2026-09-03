@@ -1612,11 +1612,8 @@ void RISCVESP32P4MemmovePass::generateCorrectBackwardCopyDst16Src16(
           Builder.getInt8Ty(), DstEnd, Builder.CreateNeg(RemainderBytes),
           "Remainder.dst");
 
-      // V1: remainder via memmove; Small/Simple land in later MR.
-      (void)createOptimizedMemMove(Builder, RemainderDst, RemainderSrc,
-                                   RemainderBytes, Align(1), Align(1), false,
-                                   nullptr, /*NoReprocess=*/true);
-      Builder.CreateBr(Blocks16BB);
+      generateSmallMemmoveBackward(Builder, RemainderBB, RemainderDst,
+                                   RemainderSrc, RemainderBytes, Blocks16BB);
     }
 
     // Correct version: first load, then decrement address
@@ -1809,4 +1806,219 @@ bool RISCVESP32P4MemmovePass::processVarMemmoveWithKind(
 bool RISCVESP32P4MemmovePass::processDst16Src16Var(MemMoveInst *M,
                                                    BasicBlock::iterator &BBI) {
   return processVarMemmoveWithKind(M, BBI, MemmoveKind::Dst16Src16_Var);
+}
+
+RISCVESP32P4MemmovePass::SimpleSwitchInfo
+RISCVESP32P4MemmovePass::createSimpleSwitch(IRBuilder<> &Builder,
+                                            Value *TestValue,
+                                            const std::string &Prefix,
+                                            unsigned NumCases) {
+  Function *F = Builder.GetInsertBlock()->getParent();
+  auto *Ty = cast<IntegerType>(TestValue->getType());
+
+  SimpleSwitchInfo Info;
+
+  // Create basic block
+  Info.ExitBB = BasicBlock::Create(F->getContext(), Prefix + ".exit", F);
+  Info.DefaultBB = BasicBlock::Create(F->getContext(), Prefix + ".default", F);
+
+  // Create Switch instruction
+  Info.SI = Builder.CreateSwitch(TestValue, Info.DefaultBB, NumCases);
+
+  // Create case basic block
+  Info.CaseBBs.reserve(NumCases);
+  for (unsigned I = 0; I < NumCases; ++I) {
+    BasicBlock *CaseBB = BasicBlock::Create(
+        F->getContext(), Prefix + ".case." + std::to_string(I), F);
+    Info.CaseBBs.push_back(CaseBB);
+    Info.SI->addCase(ConstantInt::get(Ty, I), CaseBB);
+  }
+
+  return Info;
+}
+
+void RISCVESP32P4MemmovePass::generateSimpleBackwardCopy(IRBuilder<> &Builder,
+                                                         Value *Dst, Value *Src,
+                                                         uint64_t Size) {
+  LLVM_DEBUG(dbgs() << "RISCVESP32P4: Simple backward copy, size=" << Size
+                    << "\n");
+
+  // Calculate source and destination end addresses
+  Value *SrcEnd = Builder.CreateConstInBoundsGEP1_64(Builder.getInt8Ty(), Src,
+                                                     Size, "src.end");
+  Value *DstEnd = Builder.CreateConstInBoundsGEP1_64(Builder.getInt8Ty(), Dst,
+                                                     Size, "dst.end");
+
+  // Use decomposition strategy: 8→4→2→1 bytes
+  uint64_t Remaining = Size;
+  Value *CurrentSrc = SrcEnd;
+  Value *CurrentDst = DstEnd;
+
+  // Process 8-byte blocks. At loop entry CurrentSrc = Src + Remaining; after
+  // GEP -8 the chunk starts at offset O8 = Remaining - 8 from Src. With Src
+  // 16-byte aligned, (Src+O) mod k == O mod k. Width: i64 / 2xi32 / 4xi16 /
+  // 8xi8. Opaque ptr: load/store typed value directly (no pointer bitcast).
+  Type *I64Ty = Builder.getInt64Ty();
+  Type *I32Ty = Builder.getInt32Ty();
+  Type *I16Ty = Builder.getInt16Ty();
+  Type *I8Ty = Builder.getInt8Ty();
+  while (Remaining >= 8) {
+    // Invariant at loop entry: CurrentSrc = Src + Remaining (exclusive tail
+    // end).
+    const uint64_t O8 = Remaining - 8;
+    CurrentSrc = Builder.CreateConstInBoundsGEP1_64(
+        Builder.getInt8Ty(), CurrentSrc, -8, "src.back8");
+    CurrentDst = Builder.CreateConstInBoundsGEP1_64(
+        Builder.getInt8Ty(), CurrentDst, -8, "dst.back8");
+
+    if ((O8 % 8) == 0) {
+      Value *Data64 =
+          Builder.CreateAlignedLoad(I64Ty, CurrentSrc, Align(8), "load.8bytes");
+      Builder.CreateAlignedStore(Data64, CurrentDst, Align(8));
+    } else if ((O8 % 4) == 0) {
+      for (unsigned W = 0; W < 2; ++W) {
+        Value *S = Builder.CreateConstInBoundsGEP1_64(I8Ty, CurrentSrc, 4 * W,
+                                                      "src.back8.w");
+        Value *D = Builder.CreateConstInBoundsGEP1_64(I8Ty, CurrentDst, 4 * W,
+                                                      "dst.back8.w");
+        Value *V = Builder.CreateAlignedLoad(I32Ty, S, Align(4), "load.4w");
+        Builder.CreateAlignedStore(V, D, Align(4));
+      }
+    } else if ((O8 % 2) == 0) {
+      for (unsigned H = 0; H < 4; ++H) {
+        Value *S = Builder.CreateConstInBoundsGEP1_64(I8Ty, CurrentSrc, 2 * H,
+                                                      "src.back8.h");
+        Value *D = Builder.CreateConstInBoundsGEP1_64(I8Ty, CurrentDst, 2 * H,
+                                                      "dst.back8.h");
+        Value *V = Builder.CreateAlignedLoad(I16Ty, S, Align(2), "load.2h");
+        Builder.CreateAlignedStore(V, D, Align(2));
+      }
+    } else {
+      for (unsigned Idx = 0; Idx < 8; ++Idx) {
+        Value *S = Builder.CreateConstInBoundsGEP1_64(I8Ty, CurrentSrc, Idx,
+                                                      "src.back8.b");
+        Value *D = Builder.CreateConstInBoundsGEP1_64(I8Ty, CurrentDst, Idx,
+                                                      "dst.back8.b");
+        Value *B = Builder.CreateAlignedLoad(I8Ty, S, Align(1), "load.8b");
+        Builder.CreateAlignedStore(B, D, Align(1));
+      }
+    }
+
+    Remaining -= 8;
+    LLVM_DEBUG(dbgs() << "RISCVESP32P4: Copied 8 bytes backward, remaining="
+                      << Remaining << "\n");
+  }
+
+  // Process 4-byte blocks (offset O4 = Remaining - 4 from Src)
+  if (Remaining >= 4) {
+    const uint64_t O4 = Remaining - 4;
+    CurrentSrc = Builder.CreateConstInBoundsGEP1_64(
+        Builder.getInt8Ty(), CurrentSrc, -4, "src.back4");
+    CurrentDst = Builder.CreateConstInBoundsGEP1_64(
+        Builder.getInt8Ty(), CurrentDst, -4, "dst.back4");
+
+    if ((O4 % 4) == 0) {
+      Value *Data =
+          Builder.CreateAlignedLoad(I32Ty, CurrentSrc, Align(4), "load.4bytes");
+      Builder.CreateAlignedStore(Data, CurrentDst, Align(4));
+    } else if ((O4 % 2) == 0) {
+      for (unsigned H = 0; H < 2; ++H) {
+        Value *S = Builder.CreateConstInBoundsGEP1_64(I8Ty, CurrentSrc, 2 * H,
+                                                      "src.back4.h");
+        Value *D = Builder.CreateConstInBoundsGEP1_64(I8Ty, CurrentDst, 2 * H,
+                                                      "dst.back4.h");
+        Value *V = Builder.CreateAlignedLoad(I16Ty, S, Align(2), "load.2h4");
+        Builder.CreateAlignedStore(V, D, Align(2));
+      }
+    } else {
+      for (unsigned Idx = 0; Idx < 4; ++Idx) {
+        Value *S = Builder.CreateConstInBoundsGEP1_64(I8Ty, CurrentSrc, Idx,
+                                                      "src.back4.b");
+        Value *D = Builder.CreateConstInBoundsGEP1_64(I8Ty, CurrentDst, Idx,
+                                                      "dst.back4.b");
+        Value *B = Builder.CreateAlignedLoad(I8Ty, S, Align(1), "load.4b");
+        Builder.CreateAlignedStore(B, D, Align(1));
+      }
+    }
+
+    Remaining -= 4;
+    LLVM_DEBUG(dbgs() << "RISCVESP32P4: Copied 4 bytes backward, remaining="
+                      << Remaining << "\n");
+  }
+
+  // Process 2-byte blocks (offset O2 = Remaining - 2 from Src)
+  if (Remaining >= 2) {
+    const uint64_t O2 = Remaining - 2;
+    CurrentSrc = Builder.CreateConstInBoundsGEP1_64(
+        Builder.getInt8Ty(), CurrentSrc, -2, "src.back2");
+    CurrentDst = Builder.CreateConstInBoundsGEP1_64(
+        Builder.getInt8Ty(), CurrentDst, -2, "dst.back2");
+
+    if ((O2 % 2) == 0) {
+      Value *Data =
+          Builder.CreateAlignedLoad(I16Ty, CurrentSrc, Align(2), "load.2bytes");
+      Builder.CreateAlignedStore(Data, CurrentDst, Align(2));
+    } else {
+      for (unsigned Idx = 0; Idx < 2; ++Idx) {
+        Value *S = Builder.CreateConstInBoundsGEP1_64(I8Ty, CurrentSrc, Idx,
+                                                      "src.back2.b");
+        Value *D = Builder.CreateConstInBoundsGEP1_64(I8Ty, CurrentDst, Idx,
+                                                      "dst.back2.b");
+        Value *B = Builder.CreateAlignedLoad(I8Ty, S, Align(1), "load.2b");
+        Builder.CreateAlignedStore(B, D, Align(1));
+      }
+    }
+
+    Remaining -= 2;
+    LLVM_DEBUG(dbgs() << "RISCVESP32P4: Copied 2 bytes backward, remaining="
+                      << Remaining << "\n");
+  }
+
+  // Process last 1 byte (offset O1 = Remaining - 1 from Src)
+  if (Remaining >= 1) {
+    CurrentSrc = Builder.CreateConstInBoundsGEP1_64(
+        Builder.getInt8Ty(), CurrentSrc, -1, "src.back1");
+    CurrentDst = Builder.CreateConstInBoundsGEP1_64(
+        Builder.getInt8Ty(), CurrentDst, -1, "dst.back1");
+
+    Value *Data =
+        Builder.CreateAlignedLoad(I8Ty, CurrentSrc, Align(1), "load.1byte");
+    Builder.CreateAlignedStore(Data, CurrentDst, Align(1));
+
+    Remaining -= 1;
+    LLVM_DEBUG(dbgs() << "RISCVESP32P4: Copied 1 byte backward, remaining="
+                      << Remaining << "\n");
+  }
+
+  assert(Remaining == 0 && "All bytes should be copied");
+  LLVM_DEBUG(dbgs() << "RISCVESP32P4: Simple backward copy completed\n");
+}
+
+void RISCVESP32P4MemmovePass::generateSmallMemmoveBackward(
+    IRBuilder<> &Builder, BasicBlock *BB, Value *Dst, Value *Src, Value *Size,
+    BasicBlock *EndBB) {
+  Builder.SetInsertPoint(BB);
+
+  // Dst/Src must be remainder-region starts (not the original memmove bases).
+  // Callers compute Remainder.{dst,src} = *End - RemainderBytes before entry.
+  // Cases 0..15 only; callers (var remainder tails) must keep Size in range.
+  auto SwitchInfo = createSimpleSwitch(Builder, Size, "small.back", 16);
+
+  // Case 0: do nothing
+  Builder.SetInsertPoint(SwitchInfo.CaseBBs[0]);
+  Builder.CreateBr(SwitchInfo.ExitBB);
+
+  // Cases 1-15: call corresponding backward copy
+  for (unsigned I = 1; I <= 15; ++I) {
+    Builder.SetInsertPoint(SwitchInfo.CaseBBs[I]);
+    generateSimpleBackwardCopy(Builder, Dst, Src, I);
+    Builder.CreateBr(SwitchInfo.ExitBB);
+  }
+
+  // Size > 15 is a caller contract violation, not a silent 15-byte under-copy.
+  Builder.SetInsertPoint(SwitchInfo.DefaultBB);
+  Builder.CreateUnreachable();
+
+  Builder.SetInsertPoint(SwitchInfo.ExitBB);
+  Builder.CreateBr(EndBB);
 }
