@@ -31,6 +31,7 @@
 #include <functional>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace llvm {
 
@@ -81,6 +82,13 @@ struct RISCVESP32P4MemmovePass : PassInfoMixin<RISCVESP32P4MemmovePass> {
     DstUnalignSrcUnalign_Const,
     DstUnalignSrcUnalign_Var
   };
+  struct SimpleSwitchInfo {
+    SwitchInst *SI;
+    BasicBlock *DefaultBB;
+    BasicBlock *ExitBB;
+    std::vector<BasicBlock *> CaseBBs;
+  };
+
   enum class AlignmentCombo {
     Dst16Src16,
     Dst16Src8,
@@ -287,6 +295,15 @@ struct RISCVESP32P4MemmovePass : PassInfoMixin<RISCVESP32P4MemmovePass> {
   bool processDst16SrcUnalignConst(MemMoveInst *M, BasicBlock::iterator &BBI);
   bool processDstUnalignSrc16Const(MemMoveInst *M, BasicBlock::iterator &BBI);
   bool processDst8SrcUnalignConst(MemMoveInst *M, BasicBlock::iterator &BBI);
+
+  SimpleSwitchInfo createSimpleSwitch(IRBuilder<> &Builder, Value *TestValue,
+                                      const std::string &Prefix,
+                                      unsigned NumCases);
+  void generateSimpleBackwardCopy(IRBuilder<> &Builder, Value *Dst, Value *Src,
+                                  uint64_t Size);
+  void generateSmallMemmoveBackward(IRBuilder<> &Builder, BasicBlock *BB,
+                                    Value *Dst, Value *Src, Value *Size,
+                                    BasicBlock *EndBB);
 
   void generateCorrectBackwardCopyDst16Src16(IRBuilder<> &Builder, Value *Dst,
                                              Value *Src, Value *Size32,
