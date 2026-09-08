@@ -59,6 +59,10 @@ static cl::opt<bool>
     EnableEsp32P4Optimize("enable-esp32-p4-optimize", cl::init(false),
                           cl::Hidden, cl::desc("enable esp32 p4 optimize"));
 
+static cl::opt<bool> EnableEsp32P4MemOpt(
+    "riscv-esp32p4-memopt", cl::init(false), cl::Hidden,
+    cl::desc("Enable ESP32-P4 memcpy/memmove optimization bundle"));
+
 static cl::opt<bool> EnableRedundantCopyElimination(
     "riscv-enable-copyelim",
     cl::desc("Enable the redundant copy elimination pass"), cl::init(true),
@@ -748,12 +752,21 @@ void RISCVTargetMachine::registerPassBuilderCallbacks(PassBuilder &PB) {
       PM.addPass(createModuleToFunctionPassAdaptor(std::move(FPM)));
     }
     if ((EnableRISCVESP32P4Memmove || EnableRISCVEsp32P4MemIntrin) &&
+        !EnableEsp32P4MemOpt &&
         (Level == OptimizationLevel::O3 || Level == OptimizationLevel::O2)) {
       FunctionPassManager FPM;
       if (EnableRISCVESP32P4Memmove)
         FPM.addPass(RISCVESP32P4MemmovePass());
       if (EnableRISCVEsp32P4MemIntrin)
         FPM.addPass(RISCVEsp32P4MemIntrinPass());
+      PM.addPass(createModuleToFunctionPassAdaptor(std::move(FPM)));
+    }
+    if (EnableEsp32P4MemOpt && (Level == OptimizationLevel::O3)) {
+      FunctionPassManager FPM;
+      EnableRISCVEsp32P4MemIntrin = true;
+      EnableRISCVESP32P4Memmove = true;
+      FPM.addPass(RISCVESP32P4MemmovePass());
+      FPM.addPass(RISCVEsp32P4MemIntrinPass());
       PM.addPass(createModuleToFunctionPassAdaptor(std::move(FPM)));
     }
   });
