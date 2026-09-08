@@ -761,7 +761,8 @@ void RISCVTargetMachine::registerPassBuilderCallbacks(PassBuilder &PB) {
         FPM.addPass(RISCVEsp32P4MemIntrinPass());
       PM.addPass(createModuleToFunctionPassAdaptor(std::move(FPM)));
     }
-    if (EnableEsp32P4MemOpt && (Level == OptimizationLevel::O3)) {
+    if (EnableEsp32P4MemOpt &&
+        (Level == OptimizationLevel::O3 || Level == OptimizationLevel::O2)) {
       FunctionPassManager FPM;
       EnableRISCVEsp32P4MemIntrin = true;
       EnableRISCVESP32P4Memmove = true;
