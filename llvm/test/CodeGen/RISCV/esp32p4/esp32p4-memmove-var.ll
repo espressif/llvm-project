@@ -34,9 +34,13 @@ define void @test_src16_dst16_variable_size(ptr %a, ptr %b, i32 %size) {
 ; CHECK-NEXT:    [[HAS_REMAINDER:%.*]] = icmp ne i32 [[REMAINDER16]], 0
 ; CHECK-NEXT:    br i1 [[HAS_REMAINDER]], label %[[MEDIUM_REMAINDER:.*]], label %[[MEDIUM_BLOCKS16:.*]]
 ; CHECK:       [[LARGE_BACKWARD]]:
-; CHECK-NEXT:    call void @llvm.memmove.p0.p0.i32(ptr align 16 [[A]], ptr align 16 [[B]], i32 [[SIZE]], i1 false), !riscv.esp32p4.memmove.no_reprocess [[META0]]
-; CHECK-NEXT:    br label %[[BACKWARD_EXIT:.*]]
-; CHECK:       [[BACKWARD_EXIT]]:
+; CHECK-NEXT:    [[BLOCKS128:%.*]] = udiv i32 [[SIZE]], 128
+; CHECK-NEXT:    [[REM128:%.*]] = urem i32 [[SIZE]], 128
+; CHECK-NEXT:    [[BLOCKS16_R:%.*]] = udiv i32 [[REM128]], 16
+; CHECK-NEXT:    [[REMAINDER_R:%.*]] = urem i32 [[REM128]], 16
+; CHECK-NEXT:    [[HAS_REMAINDER_R:%.*]] = icmp ne i32 [[REMAINDER_R]], 0
+; CHECK-NEXT:    br i1 [[HAS_REMAINDER_R]], label %[[STEP1_REMAINDER:.*]], label %[[STEP2_BLOCKS16:.*]]
+; CHECK:       [[BACKWARD_EXIT:.*]]:
 ; CHECK-NEXT:    br label %[[MEMMOVE_REST]]
 ; CHECK:       [[MEDIUM_REMAINDER]]:
 ; CHECK-NEXT:    [[TMP2:%.*]] = sub i32 0, [[REMAINDER16]]
