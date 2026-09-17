@@ -305,6 +305,20 @@ struct RISCVESP32P4MemmovePass : PassInfoMixin<RISCVESP32P4MemmovePass> {
                                     Value *Dst, Value *Src, Value *Size,
                                     BasicBlock *EndBB);
 
+  void generateRuntime128BlocksBackwardCopy(IRBuilder<> &Builder, Value *Dst,
+                                            Value *Src, Value *Size32,
+                                            Value *RemainderBytes,
+                                            Value *Blocks16, Value *Blocks128,
+                                            MemmoveKind Kind);
+  void generateRuntime16BlocksBackwardCopy(IRBuilder<> &Builder, Value *Dst,
+                                           Value *Src, Value *Size32,
+                                           Value *RemainderBytes,
+                                           Value *Blocks16, MemmoveKind Kind);
+  void generateRuntimeLargeBackwardCopy(IRBuilder<> &Builder, Value *Dst,
+                                        Value *Src, Value *Size32,
+                                        Value *RemainderBytes, Value *Blocks16,
+                                        Value *Blocks128, MemmoveKind Kind);
+
   void generateCorrectBackwardCopyDst16Src16(IRBuilder<> &Builder, Value *Dst,
                                              Value *Src, Value *Size32,
                                              MemmoveKind Kind);

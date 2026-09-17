@@ -1718,12 +1718,19 @@ void RISCVESP32P4MemmovePass::generateCorrectBackwardCopyDst16Src16(
     }
   }
 
-  // Large size (≥128): V1 fallback; Runtime* land in later MR.
+  // Large size (≥128): Remainder → 16B → 128B via Runtime*.
   Builder.SetInsertPoint(LargeBB);
   {
-    (void)createOptimizedMemMove(Builder, Dst, Src, Size32, Align(16),
-                                 Align(16), false, nullptr,
-                                 /*NoReprocess=*/true);
+    Value *Blocks128 =
+        Builder.CreateUDiv(Size32, Builder.getInt32(128), "Blocks128");
+    Value *Remaining128 =
+        Builder.CreateURem(Size32, Builder.getInt32(128), "rem128");
+    Value *Blocks16 =
+        Builder.CreateUDiv(Remaining128, Builder.getInt32(16), "Blocks16");
+    Value *RemainderBytes =
+        Builder.CreateURem(Remaining128, Builder.getInt32(16), "Remainder");
+    generateRuntimeLargeBackwardCopy(Builder, Dst, Src, Size32, RemainderBytes,
+                                     Blocks16, Blocks128, Kind);
     Builder.CreateBr(ExitBB);
   }
 
@@ -2021,4 +2028,341 @@ void RISCVESP32P4MemmovePass::generateSmallMemmoveBackward(
 
   Builder.SetInsertPoint(SwitchInfo.ExitBB);
   Builder.CreateBr(EndBB);
+}
+
+void RISCVESP32P4MemmovePass::generateRuntime128BlocksBackwardCopy(
+    IRBuilder<> &Builder, Value *Dst, Value *Src, Value *Size32,
+    Value *RemainderBytes, Value *Blocks16, Value *Blocks128,
+    MemmoveKind Kind) {
+  LLVM_DEBUG(dbgs() << "RISCVESP32P4: Runtime 128-byte blocks backward copy\n");
+
+  Function *F = getCurrentFunction(Builder);
+  BasicBlock *LoopHeaderBB =
+      BasicBlock::Create(F->getContext(), "Blocks128.header", F);
+  BasicBlock *LoopBodyBB =
+      BasicBlock::Create(F->getContext(), "Blocks128.body", F);
+  BasicBlock *ExitBB = BasicBlock::Create(F->getContext(), "Blocks128.exit", F);
+
+  BasicBlock *Preheader = Builder.GetInsertBlock();
+  // Loop-invariant region geometry. Use original Blocks128 (not the PHI
+  // counter): region start is fixed for the whole loop.
+  Value *Blocks16TotalSize =
+      Builder.CreateMul(Blocks16, Builder.getInt32(16), "Blocks16.total.size");
+  Value *Blocks128TotalSize = Builder.CreateMul(
+      Blocks128, Builder.getInt32(128), "Blocks128.total.size");
+  // Region start = size - Remainder - Blocks16*16 - Blocks128*128.
+  Value *Blocks128RegionStart = Builder.CreateSub(
+      Builder.CreateSub(
+          Builder.CreateSub(Size32, RemainderBytes, "size.minus.Remainder"),
+          Blocks16TotalSize, "minus.Blocks16"),
+      Blocks128TotalSize, "Blocks128.region.start");
+  Builder.CreateBr(LoopHeaderBB);
+
+  Builder.SetInsertPoint(LoopHeaderBB);
+
+  // PHI node must be at the top
+  PHINode *CurrentBlocks =
+      Builder.CreatePHI(Builder.getInt32Ty(), 2, "current.Blocks128");
+  CurrentBlocks->addIncoming(Blocks128, Preheader);
+
+  Value *HasMoreBlocks = Builder.CreateICmpNE(
+      CurrentBlocks, Builder.getInt32(0), "has.more.Blocks128");
+  Builder.CreateCondBr(HasMoreBlocks, LoopBodyBB, ExitBB);
+
+  // Loop body: correctly process 128-byte blocks
+  Builder.SetInsertPoint(LoopBodyBB);
+  {
+    // Offset of the current 128-byte block within the region (backward loop:
+    // e.g. current==2 -> +128, then current==1 -> +0).
+    Value *BlockIndex =
+        Builder.CreateSub(CurrentBlocks, Builder.getInt32(1), "block.index");
+    Value *BlockOffset =
+        Builder.CreateMul(BlockIndex, Builder.getInt32(128), "block.offset");
+
+    // Calculate start address of current 128-byte block
+    Value *CurrentBlockStart = Builder.CreateAdd(
+        Blocks128RegionStart, BlockOffset, "current.block.start");
+
+    // End offsets within the 128-byte slice (Kind-dependent tail reservation).
+    Value *CurrentBlockSrcEnd, *CurrentBlockDstEnd;
+
+    switch (Kind) {
+    case MemmoveKind::Dst16Src16_Var:
+    case MemmoveKind::Dst8Src16_Var:
+      // vld.128/vst.128 steps of -16: both pointers at slice end - 16 (112).
+      CurrentBlockSrcEnd = Builder.CreateAdd(
+          CurrentBlockStart, Builder.getInt32(112), "current.block.src.end16");
+      CurrentBlockDstEnd = Builder.CreateAdd(
+          CurrentBlockStart, Builder.getInt32(112), "current.block.dst.end16");
+      break;
+
+    case MemmoveKind::Dst16Src8_Var:
+      // Src 8B / dst 16B: reserve 8 and 16 bytes at end of slice (120 / 112).
+      CurrentBlockSrcEnd = Builder.CreateAdd(
+          CurrentBlockStart, Builder.getInt32(120), "current.block.src.end8");
+      CurrentBlockDstEnd = Builder.CreateAdd(
+          CurrentBlockStart, Builder.getInt32(112), "current.block.dst.end16");
+      break;
+
+    case MemmoveKind::Dst8Src8_Var:
+      // Source 8-byte aligned, target 8-byte aligned: both reserve 8 bytes
+      // Source: 128 - 8 = 120, target: 128 - 8 = 120
+      CurrentBlockSrcEnd = Builder.CreateAdd(
+          CurrentBlockStart, Builder.getInt32(120), "current.block.src.end8");
+      CurrentBlockDstEnd = Builder.CreateAdd(
+          CurrentBlockStart, Builder.getInt32(120), "current.block.dst.end8");
+      break;
+    default:
+      llvm_unreachable("unexpected MemmoveKind for 128-block end offsets");
+    }
+
+    // GEP to src/dst end positions for this 128-byte block.
+    Value *Block128SrcEnd = Builder.CreateInBoundsGEP(
+        Builder.getInt8Ty(), Src, CurrentBlockSrcEnd, "block128.src.end");
+    Value *Block128DstEnd = Builder.CreateInBoundsGEP(
+        Builder.getInt8Ty(), Dst, CurrentBlockDstEnd, "block128.dst.end");
+
+    switch (Kind) {
+    case MemmoveKind::Dst16Src16_Var:
+    case MemmoveKind::Dst8Src16_Var: {
+      Value *WorkingSrcPtr = Block128SrcEnd;
+      Value *WorkingDstPtr = Block128DstEnd;
+      for (int I = 0; I < 8; ++I) {
+        std::tie(WorkingSrcPtr, WorkingDstPtr) =
+            createEspVld128IpMThenVst128IpM(Builder, WorkingSrcPtr,
+                                            WorkingDstPtr, -16);
+      }
+      break;
+    }
+
+    case MemmoveKind::Dst16Src8_Var: {
+      Value *WorkingSrcPtr = Block128SrcEnd;
+      Value *WorkingDstPtr = Block128DstEnd;
+      for (int I = 0; I < 8; ++I) {
+        std::tie(WorkingSrcPtr, WorkingDstPtr) =
+            emitBackwardDst16Src8OneBlock_Ptr(Builder, WorkingSrcPtr,
+                                              WorkingDstPtr);
+      }
+      break;
+    }
+
+    case MemmoveKind::Dst8Src8_Var: {
+      Value *WorkingSrcPtr = Block128SrcEnd;
+      Value *WorkingDstPtr = Block128DstEnd;
+      for (int I = 0; I < 8; ++I) {
+        std::tie(WorkingSrcPtr, WorkingDstPtr) =
+            emitBackwardDst8Src8OneBlock_Ptr(Builder, WorkingSrcPtr,
+                                             WorkingDstPtr);
+      }
+      break;
+    }
+    default:
+      llvm_unreachable("unexpected MemmoveKind for 128-block copy");
+    }
+    // Update counter and jump back to loop header
+    Value *NewBlocks =
+        Builder.CreateSub(CurrentBlocks, Builder.getInt32(1), "new.Blocks128");
+    CurrentBlocks->addIncoming(NewBlocks, LoopBodyBB);
+    Builder.CreateBr(LoopHeaderBB);
+  }
+
+  Builder.SetInsertPoint(ExitBB);
+}
+
+void RISCVESP32P4MemmovePass::generateRuntime16BlocksBackwardCopy(
+    IRBuilder<> &Builder, Value *Dst, Value *Src, Value *Size32,
+    Value *RemainderBytes, Value *Blocks16, MemmoveKind Kind) {
+  LLVM_DEBUG(dbgs() << "RISCVESP32P4: Runtime 16-byte blocks backward copy\n");
+
+  // Src/dst byte offsets within each 16-byte block depend on Kind.
+  Value *SrcAddrOffset, *DstAddrOffset;
+  bool UseHighLowPattern = false;
+
+  switch (Kind) {
+  case MemmoveKind::Dst16Src16_Var:
+    // 128-bit instruction: directly from block start position
+    SrcAddrOffset = Builder.getInt32(0);
+    DstAddrOffset = Builder.getInt32(0);
+    UseHighLowPattern = false;
+    break;
+
+  case MemmoveKind::Dst16Src8_Var:
+    // Source 8-byte aligned: need to read high 8 bytes from block start + 8
+    // Target 16-byte aligned: directly store from block start position
+    SrcAddrOffset = Builder.getInt32(8); // Start from high 8 bytes
+    DstAddrOffset = Builder.getInt32(0); // Target from start position
+    UseHighLowPattern = true;
+    break;
+
+  case MemmoveKind::Dst8Src16_Var:
+    // vld.128 + vst.128 covers 16 bytes at block start for both src and dst.
+    SrcAddrOffset = Builder.getInt32(0);
+    DstAddrOffset = Builder.getInt32(0);
+    UseHighLowPattern = false;
+    break;
+
+  case MemmoveKind::Dst8Src8_Var:
+    // Source and target are 8-byte aligned: need to process high 8 bytes from
+    // block start + 8
+    SrcAddrOffset = Builder.getInt32(8); // Start from high 8 bytes
+    DstAddrOffset = Builder.getInt32(8); // Start from high 8 bytes
+    UseHighLowPattern = true;
+    break;
+  default:
+    llvm_unreachable("unexpected MemmoveKind for 16-block offsets");
+  }
+
+  Function *F = getCurrentFunction(Builder);
+  BasicBlock *LoopHeaderBB =
+      BasicBlock::Create(F->getContext(), "Blocks16.header", F);
+  BasicBlock *LoopBodyBB =
+      BasicBlock::Create(F->getContext(), "Blocks16.body", F);
+  BasicBlock *ExitBB = BasicBlock::Create(F->getContext(), "Blocks16.exit", F);
+
+  BasicBlock *Preheader = Builder.GetInsertBlock();
+  // Loop-invariant 16-byte region start (original Blocks16, not PHI counter).
+  Value *Blocks16TotalSize =
+      Builder.CreateMul(Blocks16, Builder.getInt32(16), "Blocks16.total.size");
+  Value *Blocks16RegionStart = Builder.CreateSub(
+      Builder.CreateSub(Size32, RemainderBytes, "size.minus.Remainder"),
+      Blocks16TotalSize, "Blocks16.region.start");
+  Builder.CreateBr(LoopHeaderBB);
+
+  // Loop header: check if there are 16-byte blocks to process
+  Builder.SetInsertPoint(LoopHeaderBB);
+
+  // PHI node must be at the top
+  PHINode *CurrentBlocks =
+      Builder.CreatePHI(Builder.getInt32Ty(), 2, "current.Blocks16");
+  CurrentBlocks->addIncoming(Blocks16, Preheader);
+
+  Value *HasMoreBlocks = Builder.CreateICmpNE(
+      CurrentBlocks, Builder.getInt32(0), "has.more.Blocks16");
+  Builder.CreateCondBr(HasMoreBlocks, LoopBodyBB, ExitBB);
+
+  // Loop body: process one 16-byte block
+  Builder.SetInsertPoint(LoopBodyBB);
+  {
+    // Calculate offset of current block in region
+    Value *BlockIndex =
+        Builder.CreateSub(CurrentBlocks, Builder.getInt32(1), "block.index");
+    Value *BlockOffset =
+        Builder.CreateMul(BlockIndex, Builder.getInt32(16), "block.offset");
+
+    // Calculate start address of current block
+    Value *CurrentBlockStart = Builder.CreateAdd(
+        Blocks16RegionStart, BlockOffset, "current.block.start");
+
+    // Apply Kind-specific in-block offsets from the block start.
+    Value *CurrentSrcOffset = Builder.CreateAdd(
+        CurrentBlockStart, SrcAddrOffset, "current.src.offset");
+    Value *CurrentDstOffset = Builder.CreateAdd(
+        CurrentBlockStart, DstAddrOffset, "current.dst.offset");
+
+    Value *CurrentSrc = Builder.CreateInBoundsGEP(
+        Builder.getInt8Ty(), Src, CurrentSrcOffset, "current.src");
+    Value *CurrentDst = Builder.CreateInBoundsGEP(
+        Builder.getInt8Ty(), Dst, CurrentDstOffset, "current.dst");
+
+    if (UseHighLowPattern) {
+      if (Kind == MemmoveKind::Dst16Src8_Var) {
+        emitBackwardDst16Src8OneBlock_Ptr(Builder, CurrentSrc, CurrentDst);
+      } else { // Dst8Src8_Var
+        emitBackwardDst8Src8OneBlock_Ptr(Builder, CurrentSrc, CurrentDst);
+      }
+    } else {
+      if (Kind == MemmoveKind::Dst16Src16_Var ||
+          Kind == MemmoveKind::Dst8Src16_Var) {
+        // .m: ptr in/out
+        createEspVld128IpMThenVst128IpM(Builder, CurrentSrc, CurrentDst, -16);
+      } else {
+        // Fall back to byte copy
+        generateByteWiseBackwardCopy(Builder, CurrentDst, CurrentSrc, 16);
+      }
+    }
+
+    // Update counter and jump back to loop header
+    Value *NewBlocks =
+        Builder.CreateSub(CurrentBlocks, Builder.getInt32(1), "new.Blocks16");
+    CurrentBlocks->addIncoming(NewBlocks, LoopBodyBB);
+    Builder.CreateBr(LoopHeaderBB);
+  }
+
+  Builder.SetInsertPoint(ExitBB);
+}
+
+void RISCVESP32P4MemmovePass::generateRuntimeLargeBackwardCopy(
+    IRBuilder<> &Builder, Value *Dst, Value *Src, Value *Size32,
+    Value *RemainderBytes, Value *Blocks16, Value *Blocks128,
+    MemmoveKind Kind) {
+  LLVM_DEBUG(dbgs() << "RISCVESP32P4: Runtime large backward copy\n");
+
+  Function *F = getCurrentFunction(Builder);
+  BasicBlock *Step1BB =
+      BasicBlock::Create(F->getContext(), "step1.Remainder", F);
+  BasicBlock *Step2BB =
+      BasicBlock::Create(F->getContext(), "step2.Blocks16", F);
+  BasicBlock *Step3BB =
+      BasicBlock::Create(F->getContext(), "step3.Blocks128", F);
+  BasicBlock *ExitBB = BasicBlock::Create(F->getContext(), "large.exit", F);
+
+  // Step 1: process final Remainder bytes (0-15 bytes)
+  Value *HasRemainder = Builder.CreateICmpNE(
+      RemainderBytes, Builder.getInt32(0), "has.Remainder");
+  Builder.CreateCondBr(HasRemainder, Step1BB, Step2BB);
+
+  Builder.SetInsertPoint(Step1BB);
+  {
+    // Calculate start address of Remainder (from the end of total size)
+    Value *SrcEnd =
+        Builder.CreateInBoundsGEP(Builder.getInt8Ty(), Src, Size32, "src.end");
+    Value *DstEnd =
+        Builder.CreateInBoundsGEP(Builder.getInt8Ty(), Dst, Size32, "dst.end");
+
+    Value *RemainderSrc = Builder.CreateInBoundsGEP(
+        Builder.getInt8Ty(), SrcEnd, Builder.CreateNeg(RemainderBytes),
+        "Remainder.src");
+    Value *RemainderDst = Builder.CreateInBoundsGEP(
+        Builder.getInt8Ty(), DstEnd, Builder.CreateNeg(RemainderBytes),
+        "Remainder.dst");
+
+    // Use existing small size backward copy
+    generateSmallMemmoveBackward(Builder, Step1BB, RemainderDst, RemainderSrc,
+                                 RemainderBytes, Step2BB);
+  }
+
+  // Step 2: process 16-byte blocks
+  Builder.SetInsertPoint(Step2BB);
+  {
+    Value *HasBlocks16 =
+        Builder.CreateICmpNE(Blocks16, Builder.getInt32(0), "has.Blocks16");
+
+    BasicBlock *Process16BB =
+        BasicBlock::Create(F->getContext(), "process.Blocks16", F);
+    Builder.CreateCondBr(HasBlocks16, Process16BB, Step3BB);
+
+    Builder.SetInsertPoint(Process16BB);
+    generateRuntime16BlocksBackwardCopy(Builder, Dst, Src, Size32,
+                                        RemainderBytes, Blocks16, Kind);
+    // Insert point is now Blocks16.exit (moved by the helper), not Process16BB.
+    Builder.CreateBr(Step3BB);
+  }
+
+  // Step 3: process 128-byte blocks
+  Builder.SetInsertPoint(Step3BB);
+  {
+    Value *HasBlocks128 =
+        Builder.CreateICmpNE(Blocks128, Builder.getInt32(0), "has.Blocks128");
+
+    BasicBlock *Process128BB =
+        BasicBlock::Create(F->getContext(), "process.Blocks128", F);
+    Builder.CreateCondBr(HasBlocks128, Process128BB, ExitBB);
+
+    Builder.SetInsertPoint(Process128BB);
+    generateRuntime128BlocksBackwardCopy(
+        Builder, Dst, Src, Size32, RemainderBytes, Blocks16, Blocks128, Kind);
+    Builder.CreateBr(ExitBB);
+  }
+
+  Builder.SetInsertPoint(ExitBB);
 }
