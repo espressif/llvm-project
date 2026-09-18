@@ -26,13 +26,16 @@ define void @test_src16_dst8_size_16(ptr %a, ptr %b) {
 ; CHECK-NEXT:    [[TMP3:%.*]] = ptrtoint ptr [[DST_START_ADDR]] to i32
 ; CHECK-NEXT:    [[TMP4:%.*]] = inttoptr i32 [[TMP2]] to ptr
 ; CHECK-NEXT:    [[TMP5:%.*]] = inttoptr i32 [[TMP3]] to ptr
-; CHECK-NEXT:    [[VLD128IP_M:%.*]] = call { <16 x i8>, ptr } @llvm.riscv.esp.vld.128.ip(ptr [[TMP4]], i32 -16) #[[ATTR3:[0-9]+]]
-; CHECK-NEXT:    [[VLD128IP_M_VEC:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M]], 0
-; CHECK-NEXT:    [[VLD128IP_M_NEXTPTR:%.*]] = extractvalue { <16 x i8>, ptr } [[VLD128IP_M]], 1
-; CHECK-NEXT:    [[TMP8:%.*]] = shufflevector <16 x i8> [[VLD128IP_M_VEC]], <16 x i8> [[VLD128IP_M_VEC]], <8 x i32> <i32 0, i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7>
-; CHECK-NEXT:    [[TMP9:%.*]] = shufflevector <16 x i8> [[VLD128IP_M_VEC]], <16 x i8> [[VLD128IP_M_VEC]], <8 x i32> <i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15>
-; CHECK-NEXT:    [[VSTL64IP_M:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP9]], ptr [[TMP5]], i32 -8) #[[ATTR3]]
-; CHECK-NEXT:    [[VST128IP_M:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[TMP8]], ptr [[VSTL64IP_M]], i32 -8) #[[ATTR3]]
+; CHECK-NEXT:    [[SRC16_HIGH:%.*]] = getelementptr inbounds i8, ptr [[TMP4]], i64 8
+; CHECK-NEXT:    [[VLDH64IP_M:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[SRC16_HIGH]], i32 -8) #[[ATTR3:[0-9]+]]
+; CHECK-NEXT:    [[VLDH64IP_M_VEC:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M]], 0
+; CHECK-NEXT:    [[VLDH64IP_M_NEXTPTR:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDH64IP_M]], 1
+; CHECK-NEXT:    [[VLDL64IP_M:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[VLDH64IP_M_NEXTPTR]], i32 -8) #[[ATTR3]]
+; CHECK-NEXT:    [[VLDL64IP_M_VEC:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M]], 0
+; CHECK-NEXT:    [[VLDL64IP_M_NEXTPTR:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M]], 1
+; CHECK-NEXT:    [[VSTH64IP_M:%.*]] = call ptr @llvm.riscv.esp.vst.h.64.ip(<8 x i8> [[VLDH64IP_M_VEC]], ptr [[TMP5]], i32 -8) #[[ATTR3]]
+; CHECK-NEXT:    [[VST128IP_M:%.*]] = call ptr @llvm.riscv.esp.vst.l.64.ip(<8 x i8> [[VLDL64IP_M_VEC]], ptr [[VSTH64IP_M]], i32 -8) #[[ATTR3]]
+; CHECK-NEXT:    [[VLD128IP_M_NEXTPTR:%.*]] = getelementptr inbounds i8, ptr [[TMP4]], i64 -16
 ; CHECK-NEXT:    [[TMP6:%.*]] = ptrtoint ptr [[VLD128IP_M_NEXTPTR]] to i32
 ; CHECK-NEXT:    [[TMP7:%.*]] = ptrtoint ptr [[VST128IP_M]] to i32
 ; CHECK-NEXT:    br label %[[MEMMOVE_END]]

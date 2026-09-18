@@ -26,7 +26,7 @@ define void @test_src8_dst16_size_16(ptr %a, ptr %b) {
 ; CHECK-NEXT:    [[TMP3:%.*]] = ptrtoint ptr [[DST_START_ADDR]] to i32
 ; CHECK-NEXT:    [[TMP4:%.*]] = inttoptr i32 [[TMP2]] to ptr
 ; CHECK-NEXT:    [[TMP5:%.*]] = inttoptr i32 [[TMP3]] to ptr
-; CHECK-NEXT:    [[VLDL64IP_M:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP4]], i32 -8) #[[ATTR3:[0-9]+]]
+; CHECK-NEXT:    [[VLDL64IP_M:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP4]], i32 -8) #[[ATTR3:[0-9]+]]
 ; CHECK-NEXT:    [[VLDL64IP_M_VEC:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M]], 0
 ; CHECK-NEXT:    [[VLDL64IP_M_NEXTPTR:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M]], 1
 ; CHECK-NEXT:    [[VLDL64IP_M1:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[VLDL64IP_M_NEXTPTR]], i32 -8) #[[ATTR3]]
@@ -114,7 +114,7 @@ define void @test_src8_dst16_size_28(ptr %a, ptr %b) {
 ; CHECK-NEXT:    [[TMP3:%.*]] = ptrtoint ptr [[DST_START_ADDR]] to i32
 ; CHECK-NEXT:    [[TMP4:%.*]] = inttoptr i32 [[TMP2]] to ptr
 ; CHECK-NEXT:    [[TMP5:%.*]] = inttoptr i32 [[TMP3]] to ptr
-; CHECK-NEXT:    [[VLDL64IP_M:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[TMP4]], i32 -8) #[[ATTR3]]
+; CHECK-NEXT:    [[VLDL64IP_M:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.ip(ptr [[TMP4]], i32 -8) #[[ATTR3]]
 ; CHECK-NEXT:    [[VLDL64IP_M_VEC:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M]], 0
 ; CHECK-NEXT:    [[VLDL64IP_M_NEXTPTR:%.*]] = extractvalue { <8 x i8>, ptr } [[VLDL64IP_M]], 1
 ; CHECK-NEXT:    [[VLDL64IP_M34:%.*]] = call { <8 x i8>, ptr } @llvm.riscv.esp.vld.l.64.ip(ptr [[VLDL64IP_M_NEXTPTR]], i32 -8) #[[ATTR3]]
