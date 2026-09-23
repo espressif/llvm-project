@@ -3233,7 +3233,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       if (auto *ImmNode = dyn_cast<ConstantSDNode>(Imm.getNode())) {
         // Direct constant
         int64_t ImmVal = ImmNode->getSExtValue();
-        ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+        ImmOp = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
       } else if (auto *LoadNode = dyn_cast<LoadSDNode>(Imm.getNode())) {
         // Load from memory (O0 optimization level)
         // Try to extract constant value from load
@@ -3264,7 +3264,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
             }
           }
           if (FoundConstant) {
-            ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+            ImmOp = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
           } else {
             // Fallback: select the load node (will generate register)
             // This should not happen for offset_256_16 constraint, but handle gracefully
@@ -3327,7 +3327,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       if (auto *ImmNode = dyn_cast<ConstantSDNode>(Imm.getNode())) {
         // Direct constant
         int64_t ImmVal = ImmNode->getSExtValue();
-        ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+        ImmOp = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
       } else if (auto *LoadNode = dyn_cast<LoadSDNode>(Imm.getNode())) {
         // Load from memory (O0 optimization level)
         // Try to extract constant value from load
@@ -3358,7 +3358,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
             }
           }
           if (FoundConstant) {
-            ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+            ImmOp = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
           } else {
             // Fallback: select the load node (will generate register)
             // This should not happen for offset_256_16 constraint, but handle gracefully
@@ -3421,7 +3421,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
 
       SDValue ImmOp = Imm;
       if (auto *C = dyn_cast<ConstantSDNode>(Imm.getNode()))
-        ImmOp = CurDAG->getTargetConstant(C->getSExtValue(), DL, XLenVT);
+        ImmOp = CurDAG->getSignedTargetConstant(C->getSExtValue(), DL, XLenVT);
       else if (!Imm.getNode()->isMachineOpcode()) {
         Select(Imm.getNode());
         ImmOp = SDValue(Imm.getNode(), 0);
@@ -3451,7 +3451,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
 
       SDValue ImmOp = Imm;
       if (auto *C = dyn_cast<ConstantSDNode>(Imm.getNode()))
-        ImmOp = CurDAG->getTargetConstant(C->getSExtValue(), DL, XLenVT);
+        ImmOp = CurDAG->getSignedTargetConstant(C->getSExtValue(), DL, XLenVT);
       else if (!Imm.getNode()->isMachineOpcode()) {
         Select(Imm.getNode());
         ImmOp = SDValue(Imm.getNode(), 0);
@@ -3482,7 +3482,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
 
       SDValue Sel4Op = Sel4;
       if (auto *C = dyn_cast<ConstantSDNode>(Sel4.getNode()))
-        Sel4Op = CurDAG->getTargetConstant(C->getSExtValue(), DL, XLenVT);
+        Sel4Op = CurDAG->getSignedTargetConstant(C->getSExtValue(), DL, XLenVT);
       else if (!Sel4.getNode()->isMachineOpcode()) {
         Select(Sel4.getNode());
         Sel4Op = Sel4;
@@ -3490,7 +3490,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
 
       SDValue Sel8Op = Sel8;
       if (auto *C = dyn_cast<ConstantSDNode>(Sel8.getNode()))
-        Sel8Op = CurDAG->getTargetConstant(C->getSExtValue(), DL, XLenVT);
+        Sel8Op = CurDAG->getSignedTargetConstant(C->getSExtValue(), DL, XLenVT);
       else if (!Sel8.getNode()->isMachineOpcode()) {
         Select(Sel8.getNode());
         Sel8Op = Sel8;
@@ -3579,7 +3579,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       if (auto *ImmNode = dyn_cast<ConstantSDNode>(Imm.getNode())) {
         // Direct constant
         int64_t ImmVal = ImmNode->getSExtValue();
-        ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+        ImmOp = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
       } else if (auto *LoadNode = dyn_cast<LoadSDNode>(Imm.getNode())) {
         // Load from memory (O0 optimization level)
         // Try to extract constant value from load
@@ -3609,7 +3609,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
             }
           }
           if (FoundConstant) {
-            ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+            ImmOp = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
           } else {
             // Fallback: select the load node (will generate register)
             if (!Imm.getNode()->isMachineOpcode()) {
@@ -3645,7 +3645,11 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       // Operand order must match instruction definition: (ins GPRPIE:$rs1, offset_256_8:$off2568)
       // Order: [instruction operands..., chain]
       SDValue Ops[] = {Ptr, ImmOp, Chain};
-      MachineSDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_VLD_H_64_IP, DL, VTs, Ops);
+      // Mirror ESP_VLD_128_IP_M: pure +xespv2p2 must emit 2P2, not 2.1.
+      unsigned Opc = Subtarget->useESPV2P2Instructions()
+                         ? RISCV::ESP_VLD_H_64_IP_2P2
+                         : RISCV::ESP_VLD_H_64_IP;
+      MachineSDNode *NewNode = CurDAG->getMachineNode(Opc, DL, VTs, Ops);
 
       // Copy MMO from MemSDNode if present
       if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
@@ -3696,7 +3700,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       if (auto *ImmNode = dyn_cast<ConstantSDNode>(Imm.getNode())) {
         // Direct constant
         int64_t ImmVal = ImmNode->getSExtValue();
-        ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+        ImmOp = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
       } else if (auto *LoadNode = dyn_cast<LoadSDNode>(Imm.getNode())) {
         // Load from memory (O0 optimization level)
         // Try to extract constant value from load
@@ -3726,7 +3730,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
             }
           }
           if (FoundConstant) {
-            ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+            ImmOp = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
           } else {
             // Fallback: select the load node (will generate register)
             if (!Imm.getNode()->isMachineOpcode()) {
@@ -3762,7 +3766,8 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       // Operand order must match instruction definition: (ins GPRPIE:$rs1, offset_256_8:$off2568)
       // Order: [instruction operands..., chain]
       SDValue Ops[] = {Ptr, ImmOp, Chain};
-      MachineSDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_VLD_L_64_IP, DL, VTs, Ops);
+      unsigned Opc = Subtarget->getESPReloadL64Opcode();
+      MachineSDNode *NewNode = CurDAG->getMachineNode(Opc, DL, VTs, Ops);
 
       // Copy MMO from MemSDNode if present
       if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
@@ -3814,7 +3819,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       if (auto *ImmNode = dyn_cast<ConstantSDNode>(Imm.getNode())) {
         // Direct constant
         int64_t ImmVal = ImmNode->getSExtValue();
-        ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+        ImmOp = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
       } else if (auto *LoadNode = dyn_cast<LoadSDNode>(Imm.getNode())) {
         // Load from memory (O0 optimization level)
         // Try to extract constant value from load
@@ -3844,7 +3849,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
             }
           }
           if (FoundConstant) {
-            ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+            ImmOp = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
           } else {
             // Fallback: select the load node (will generate register)
             if (!Imm.getNode()->isMachineOpcode()) {
@@ -3882,7 +3887,10 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       // Operand order must match instruction definition: (ins QR_H:$qu, GPRPIE:$rs1, offset_256_8:$off2568)
       // Order: [instruction operands..., chain]
       SDValue Ops[] = {ConstrainedVec, Ptr, ImmOp, Chain};
-      SDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_VST_H_64_IP, DL, VTs, Ops);
+      unsigned Opc = Subtarget->useESPV2P2Instructions()
+                         ? RISCV::ESP_VST_H_64_IP_2P2
+                         : RISCV::ESP_VST_H_64_IP;
+      SDNode *NewNode = CurDAG->getMachineNode(Opc, DL, VTs, Ops);
 
       // Copy MMO from MemSDNode if present
       if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
@@ -3941,7 +3949,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       if (auto *ImmNode = dyn_cast<ConstantSDNode>(Imm.getNode())) {
         // Direct constant
         int64_t ImmVal = ImmNode->getSExtValue();
-        ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+        ImmOp = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
       } else if (auto *LoadNode = dyn_cast<LoadSDNode>(Imm.getNode())) {
         // Load from memory (O0 optimization level)
         // Try to extract constant value from load
@@ -3971,7 +3979,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
             }
           }
           if (FoundConstant) {
-            ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+            ImmOp = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
           } else {
             // Fallback: select the load node (will generate register)
             if (!Imm.getNode()->isMachineOpcode()) {
@@ -4009,7 +4017,8 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       // Operand order must match instruction definition: (ins QR_L:$qu, GPRPIE:$rs1, offset_256_8:$off2568)
       // Order: [instruction operands..., chain]
       SDValue Ops[] = {ConstrainedVec, Ptr, ImmOp, Chain};
-      SDNode *NewNode = CurDAG->getMachineNode(RISCV::ESP_VST_L_64_IP, DL, VTs, Ops);
+      unsigned Opc = Subtarget->getESPSpillL64Opcode();
+      SDNode *NewNode = CurDAG->getMachineNode(Opc, DL, VTs, Ops);
 
       // Copy MMO from MemSDNode if present
       if (auto *MemNode = dyn_cast<MemSDNode>(Node)) {
@@ -4106,7 +4115,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
     SDValue ImmOp = Imm;
     if (auto *ImmNode = dyn_cast<ConstantSDNode>(Imm.getNode())) {
       int64_t ImmVal = ImmNode->getSExtValue();
-      ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+      ImmOp = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
     } else if (auto *LoadNode = dyn_cast<LoadSDNode>(Imm.getNode())) {
       SDValue BasePtr = LoadNode->getBasePtr();
       if (auto *FIN = dyn_cast<FrameIndexSDNode>(BasePtr.getNode())) {
@@ -4134,7 +4143,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
           }
         }
         if (FoundConstant) {
-          ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+          ImmOp = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
         } else {
           if (!Imm.getNode()->isMachineOpcode()) {
             Select(Imm.getNode());
@@ -4189,7 +4198,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       SDValue ImmOp = Imm;
       if (auto *ImmNode = dyn_cast<ConstantSDNode>(Imm.getNode())) {
         int64_t ImmVal = ImmNode->getSExtValue();
-        ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+        ImmOp = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
       } else if (auto *LoadNode = dyn_cast<LoadSDNode>(Imm.getNode())) {
         SDValue BasePtr = LoadNode->getBasePtr();
         if (auto *FIN = dyn_cast<FrameIndexSDNode>(BasePtr.getNode())) {
@@ -4215,7 +4224,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
             }
           }
           if (FoundConstant) {
-            ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+            ImmOp = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
           } else {
             if (!Imm.getNode()->isMachineOpcode()) {
               Select(Imm.getNode());
@@ -4449,7 +4458,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
     Ops.push_back(QX);
     Ops.push_back(QY);
     Ops.push_back(Ptr);
-    Ops.push_back(CurDAG->getTargetConstant(ImmVal, DL, XLenVT));
+    Ops.push_back(CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT));
     Ops.push_back(Chain);
     if (Node->getGluedNode()) {
       Ops.push_back(Node->getOperand(Node->getNumOperands() - 1));
@@ -4638,7 +4647,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
     Ops.push_back(QY);
     Ops.push_back(QU);
     Ops.push_back(Ptr);
-    Ops.push_back(CurDAG->getTargetConstant(ImmVal, DL, XLenVT));
+    Ops.push_back(CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT));
     Ops.push_back(Chain);
     if (Node->getGluedNode()) {
       Ops.push_back(Node->getOperand(Node->getNumOperands() - 1));
@@ -4803,7 +4812,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
     // Note: Operand order must match instruction definition: (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs1, offset_256_8:$off2568)
     SmallVector<SDValue, 6> Ops = {
         XACCLowIn, XACCHighIn, Ptr,
-        CurDAG->getTargetConstant(ImmVal, DL, XLenVT), Chain};
+        CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT), Chain};
 
     // Safely handle Glue operand (fix potential out-of-bounds access)
     // Node->getNumOperands() includes Chain, inputs, and optional Glue
@@ -5315,7 +5324,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
     }
 
     // Convert to TargetConstant
-    SDValue TargetOffset = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+    SDValue TargetOffset = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
 
     // Build VTList (must match MachineInstruction definition)
     // outs: $qu, $rs1r, $v2, $v3 + Chain (remove Glue)
@@ -5397,7 +5406,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       return true;
     }
 
-    SDValue TargetOffset = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+    SDValue TargetOffset = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
 
     SmallVector<EVT, 5> VTs;
     VTs.push_back(MVT::v16i8); // qu
@@ -5467,7 +5476,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       return true;
     }
 
-    SDValue TargetOffset = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+    SDValue TargetOffset = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
 
     SmallVector<EVT, 5> VTs;
     VTs.push_back(MVT::v16i8); // qu
@@ -5537,7 +5546,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       return true;
     }
 
-    SDValue TargetOffset = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+    SDValue TargetOffset = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
 
     SmallVector<EVT, 5> VTs;
     VTs.push_back(MVT::v16i8); // qu
@@ -6063,7 +6072,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
     }
 
     // Convert regular Constant to TargetConstant
-    SDValue TargetOffset = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+    SDValue TargetOffset = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
 
     if (Is2P2VsmulasLdIncp) {
       SmallVector<EVT, 7> VTs2P2 = {MVT::v16i8, XLenVT,     MVT::v16i8,
@@ -6303,7 +6312,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       return true;
     }
 
-    SDValue TargetOffset = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+    SDValue TargetOffset = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
 
     // VTList: (ptr, v0, v1, v2, v3, chain) - 6 outputs (no glue)
     SmallVector<EVT, 6> VTs;
@@ -6587,7 +6596,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
     SmallVector<EVT, 7> VTs = {MVT::v16i8, MVT::v16i8, MVT::v16i8, MVT::v16i8, XLenVT, MVT::Other, MVT::Glue};
     SDVTList VTList = CurDAG->getVTList(VTs);
     // Operand order: [instruction operands..., chain, glue]
-    SDValue ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+    SDValue ImmOp = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
     SDValue Ops[] = {Ptr, ImmOp, Chain, Glue};
     MachineSDNode *Res = CurDAG->getMachineNode(Opc, DL, VTList, Ops);
 
@@ -6701,7 +6710,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       if (auto *ImmNode = dyn_cast<ConstantSDNode>(Imm.getNode())) {
         // Direct constant
         int64_t ImmVal = ImmNode->getSExtValue();
-        ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+        ImmOp = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
       } else if (auto *LoadNode = dyn_cast<LoadSDNode>(Imm.getNode())) {
         // Load from memory (O0 optimization level)
         // Try to extract constant value from load
@@ -6732,7 +6741,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
             }
           }
           if (FoundConstant) {
-            ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+            ImmOp = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
           } else {
             // Fallback: select the load node (will generate register)
             // This should not happen for offset_256_16 constraint, but handle gracefully
@@ -6792,7 +6801,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       SDValue ImmOp = Imm;
       if (auto *ImmNode = dyn_cast<ConstantSDNode>(Imm.getNode())) {
         int64_t ImmVal = ImmNode->getSExtValue();
-        ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+        ImmOp = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
       } else if (auto *LoadNode = dyn_cast<LoadSDNode>(Imm.getNode())) {
         SDValue BasePtr = LoadNode->getBasePtr();
         if (auto *FIN = dyn_cast<FrameIndexSDNode>(BasePtr.getNode())) {
@@ -6818,7 +6827,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
             }
           }
           if (FoundConstant) {
-            ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+            ImmOp = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
           } else {
             if (!Imm.getNode()->isMachineOpcode()) {
               Select(Imm.getNode());
@@ -6873,7 +6882,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       SDValue ImmOp = Imm;
       if (auto *ImmNode = dyn_cast<ConstantSDNode>(Imm.getNode())) {
         int64_t ImmVal = ImmNode->getSExtValue();
-        ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+        ImmOp = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
       } else if (auto *LoadNode = dyn_cast<LoadSDNode>(Imm.getNode())) {
         SDValue BasePtr = LoadNode->getBasePtr();
         if (auto *FIN = dyn_cast<FrameIndexSDNode>(BasePtr.getNode())) {
@@ -6899,7 +6908,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
             }
           }
           if (FoundConstant) {
-            ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+            ImmOp = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
           } else {
             if (!Imm.getNode()->isMachineOpcode()) {
               Select(Imm.getNode());
@@ -6954,7 +6963,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       SDValue ImmOp = Imm;
       if (auto *ImmNode = dyn_cast<ConstantSDNode>(Imm.getNode())) {
         int64_t ImmVal = ImmNode->getSExtValue();
-        ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+        ImmOp = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
       } else if (auto *LoadNode = dyn_cast<LoadSDNode>(Imm.getNode())) {
         SDValue BasePtr = LoadNode->getBasePtr();
         if (auto *FIN = dyn_cast<FrameIndexSDNode>(BasePtr.getNode())) {
@@ -6980,7 +6989,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
             }
           }
           if (FoundConstant) {
-            ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+            ImmOp = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
           } else {
             if (!Imm.getNode()->isMachineOpcode()) {
               Select(Imm.getNode());
@@ -7036,7 +7045,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       SDValue ImmOp = Imm;
       if (auto *ImmNode = dyn_cast<ConstantSDNode>(Imm.getNode())) {
         int64_t ImmVal = ImmNode->getSExtValue();
-        ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+        ImmOp = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
       } else if (auto *LoadNode = dyn_cast<LoadSDNode>(Imm.getNode())) {
         SDValue BasePtr = LoadNode->getBasePtr();
         if (auto *FIN = dyn_cast<FrameIndexSDNode>(BasePtr.getNode())) {
@@ -7062,7 +7071,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
             }
           }
           if (FoundConstant) {
-            ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+            ImmOp = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
           } else {
             if (!Imm.getNode()->isMachineOpcode()) {
               Select(Imm.getNode());
@@ -7118,7 +7127,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
       SDValue ImmOp = Imm;
       if (auto *ImmNode = dyn_cast<ConstantSDNode>(Imm.getNode())) {
         int64_t ImmVal = ImmNode->getSExtValue();
-        ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+        ImmOp = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
       } else if (auto *LoadNode = dyn_cast<LoadSDNode>(Imm.getNode())) {
         SDValue BasePtr = LoadNode->getBasePtr();
         if (auto *FIN = dyn_cast<FrameIndexSDNode>(BasePtr.getNode())) {
@@ -7144,7 +7153,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
             }
           }
           if (FoundConstant) {
-            ImmOp = CurDAG->getTargetConstant(ImmVal, DL, XLenVT);
+            ImmOp = CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT);
           } else {
             if (!Imm.getNode()->isMachineOpcode()) {
               Select(Imm.getNode());
@@ -7220,7 +7229,7 @@ bool RISCVDAGToDAGISel::selectESP(SDNode *Node) {
     // Note: Operand order must match instruction definition: (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs1, offset_256_8:$off2568)
     SmallVector<SDValue, 6> Ops = {
         XACCLowIn, XACCHighIn, Ptr,
-        CurDAG->getTargetConstant(ImmVal, DL, XLenVT), Chain};
+        CurDAG->getSignedTargetConstant(ImmVal, DL, XLenVT), Chain};
 
     // Safely handle Glue operand (fix potential out-of-bounds access)
     // Node->getNumOperands() includes Chain, inputs, and optional Glue
