@@ -3018,7 +3018,7 @@ bool RISCVEsp32P4MemIntrinPass::runImpl(Function &F, TargetLibraryInfo *TLI_,
 
 PreservedAnalyses RISCVEsp32P4MemIntrinPass::run(Function &F,
                                                  FunctionAnalysisManager &AM) {
-  if (!EnableRISCVEsp32P4MemIntrin)
+  if (!EnableRISCVEsp32P4MemIntrin && !EnableEsp32P4MemOpt)
     return PreservedAnalyses::all();
 
   TheModule = F.getParent();

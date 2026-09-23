@@ -59,7 +59,7 @@ static cl::opt<bool>
     EnableEsp32P4Optimize("enable-esp32-p4-optimize", cl::init(false),
                           cl::Hidden, cl::desc("enable esp32 p4 optimize"));
 
-static cl::opt<bool> EnableEsp32P4MemOpt(
+cl::opt<bool> llvm::EnableEsp32P4MemOpt(
     "riscv-esp32p4-memopt", cl::init(false), cl::Hidden,
     cl::desc("Enable ESP32-P4 memcpy/memmove optimization bundle"));
 
@@ -651,7 +651,6 @@ void RISCVPassConfig::addFastRegAlloc() {
   TargetPassConfig::addFastRegAlloc();
 }
 
-
 void RISCVPassConfig::addPostRegAlloc() {
   if (TM->getOptLevel() != CodeGenOptLevel::None &&
       EnableRedundantCopyElimination)
@@ -751,23 +750,16 @@ void RISCVTargetMachine::registerPassBuilderCallbacks(PassBuilder &PB) {
       FPM.addPass(RISCVLoopUnrollAndRemainderPass());
       PM.addPass(createModuleToFunctionPassAdaptor(std::move(FPM)));
     }
-    if ((EnableRISCVESP32P4Memmove || EnableRISCVEsp32P4MemIntrin) &&
-        !EnableEsp32P4MemOpt &&
+    if ((EnableRISCVESP32P4Memmove || EnableRISCVEsp32P4MemIntrin ||
+         EnableEsp32P4MemOpt) &&
         (Level == OptimizationLevel::O3 || Level == OptimizationLevel::O2)) {
       FunctionPassManager FPM;
-      if (EnableRISCVESP32P4Memmove)
+      // Bundle enables both; memmove runs first (same order as with the
+      // individual flags).
+      if (EnableRISCVESP32P4Memmove || EnableEsp32P4MemOpt)
         FPM.addPass(RISCVESP32P4MemmovePass());
-      if (EnableRISCVEsp32P4MemIntrin)
+      if (EnableRISCVEsp32P4MemIntrin || EnableEsp32P4MemOpt)
         FPM.addPass(RISCVEsp32P4MemIntrinPass());
-      PM.addPass(createModuleToFunctionPassAdaptor(std::move(FPM)));
-    }
-    if (EnableEsp32P4MemOpt &&
-        (Level == OptimizationLevel::O3 || Level == OptimizationLevel::O2)) {
-      FunctionPassManager FPM;
-      EnableRISCVEsp32P4MemIntrin = true;
-      EnableRISCVESP32P4Memmove = true;
-      FPM.addPass(RISCVESP32P4MemmovePass());
-      FPM.addPass(RISCVEsp32P4MemIntrinPass());
       PM.addPass(createModuleToFunctionPassAdaptor(std::move(FPM)));
     }
   });
