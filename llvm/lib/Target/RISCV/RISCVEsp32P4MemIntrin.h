@@ -169,6 +169,7 @@ class TypeSize;
 class Value;
 class RecurrenceDescriptor;
 extern cl::opt<bool> EnableRISCVEsp32P4MemIntrin;
+extern cl::opt<bool> EnableEsp32P4MemOpt;
 class Function;
 
 // Source address alignment types:

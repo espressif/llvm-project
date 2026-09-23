@@ -555,7 +555,7 @@ bool RISCVESP32P4MemmovePass::runImpl(Function &F, TargetLibraryInfo *TLI_,
 
 PreservedAnalyses RISCVESP32P4MemmovePass::run(Function &F,
                                                FunctionAnalysisManager &AM) {
-  if (!EnableRISCVESP32P4Memmove)
+  if (!EnableRISCVESP32P4Memmove && !EnableEsp32P4MemOpt)
     return PreservedAnalyses::all();
 
   auto &TLI = AM.getResult<TargetLibraryAnalysis>(F);

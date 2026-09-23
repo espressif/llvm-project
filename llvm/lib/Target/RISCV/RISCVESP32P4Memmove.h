@@ -36,6 +36,7 @@
 namespace llvm {
 
 extern cl::opt<bool> EnableRISCVESP32P4Memmove;
+extern cl::opt<bool> EnableEsp32P4MemOpt;
 
 struct ESP32P4OptimizationConfig {
   static constexpr uint64_t SIMD_REGISTER_SIZE = 16;
