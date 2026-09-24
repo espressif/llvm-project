@@ -28631,7 +28631,7 @@ def ESP_VLD_128_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$
   let Inst{0} = 1;
 }
 
-def ESP_VLD_H_64_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_8:$off2568),
+def ESP_VLD_H_64_IP_2P2: Esp32V2P2Inst<(outs QR_64:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_8:$off2568),
                    "esp.vld.h.64.ip\t $qu, $rs1, $off2568", []> 
 {
   bits<5> rs1;
@@ -28669,7 +28669,7 @@ def ESP_VLD_H_64_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:
   let Inst{0} = 1;
 }
 
-def ESP_VLD_H_64_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1),
+def ESP_VLD_H_64_XP_2P2: Esp32V2P2Inst<(outs QR_64:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1),
                    "esp.vld.h.64.xp\t $qu, $rs1, $rs2", []> 
 {
   bits<5> rs2;
@@ -28710,7 +28710,7 @@ def ESP_VLD_H_64_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:
   let Inst{0} = 1;
 }
 
-def ESP_VLD_L_64_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_8:$off2568),
+def ESP_VLD_L_64_IP_2P2: Esp32V2P2Inst<(outs QR_64:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_8:$off2568),
                    "esp.vld.l.64.ip\t $qu, $rs1, $off2568", []> 
 {
   bits<5> rs1;
@@ -28748,7 +28748,7 @@ def ESP_VLD_L_64_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:
   let Inst{0} = 1;
 }
 
-def ESP_VLD_L_64_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1),
+def ESP_VLD_L_64_XP_2P2: Esp32V2P2Inst<(outs QR_64:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1),
                    "esp.vld.l.64.xp\t $qu, $rs1, $rs2", []> 
 {
   bits<5> rs2;
@@ -28868,7 +28868,7 @@ def ESP_VST_128_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:
   let Inst{0} = 1;
 }
 
-def ESP_VST_H_64_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR:$qu, GPRPIE:$rs1, offset_256_8:$off2568),
+def ESP_VST_H_64_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR_64:$qu, GPRPIE:$rs1, offset_256_8:$off2568),
                    "esp.vst.h.64.ip\t $qu, $rs1, $off2568", []> 
 {
   bits<3> qu;
@@ -28906,7 +28906,7 @@ def ESP_VST_H_64_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR:$qu, GPRPIE:
   let Inst{0} = 1;
 }
 
-def ESP_VST_H_64_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qu, GPRPIE:$rs1),
+def ESP_VST_H_64_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR_64:$qu, GPRPIE:$rs1),
                    "esp.vst.h.64.xp\t $qu, $rs1, $rs2", []> 
 {
   bits<5> rs2;
@@ -28947,7 +28947,7 @@ def ESP_VST_H_64_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR
   let Inst{0} = 1;
 }
 
-def ESP_VST_L_64_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR:$qu, GPRPIE:$rs1, offset_256_8:$off2568),
+def ESP_VST_L_64_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR_64:$qu, GPRPIE:$rs1, offset_256_8:$off2568),
                    "esp.vst.l.64.ip\t $qu, $rs1, $off2568", []> 
 {
   bits<3> qu;
@@ -28985,7 +28985,7 @@ def ESP_VST_L_64_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR:$qu, GPRPIE:
   let Inst{0} = 1;
 }
 
-def ESP_VST_L_64_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qu, GPRPIE:$rs1),
+def ESP_VST_L_64_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR_64:$qu, GPRPIE:$rs1),
                    "esp.vst.l.64.xp\t $qu, $rs1, $rs2", []> 
 {
   bits<5> rs2;
@@ -29025,6 +29025,335 @@ def ESP_VST_L_64_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR
   let Inst{1} = 1;
   let Inst{0} = 1;
 }
+
+let isAsmParserOnly = 1 in {
+
+  // copy of ESP_VLD_H_64_IP_2P2 with a QR operand for the assembler
+  def ESP_VLD_H_64_IP_2P2_ASM: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_8:$off2568),
+                     "esp.vld.h.64.ip\t $qu, $rs1, $off2568", []> 
+  {
+    bits<5> rs1;
+    bits<8> off2568;
+    bits<3> qu;
+    bits<5> rs1r;
+    let mayStore = 0;
+    let mayLoad = 1;
+    let hasSideEffects = 1;
+    
+    let Constraints = "$rs1r = $rs1";
+    
+    let Inst{31} = 0;
+    let Inst{30} = 1;
+    let Inst{29-26} = off2568{7-4};
+    let Inst{25} = 1;
+    let Inst{24} = 1;
+    let Inst{23} = off2568{3};
+    let Inst{22} = 1;
+    let Inst{21} = 1;
+    let Inst{20} = 0;
+    let Inst{19} = 0;
+    let Inst{18} = rs1{4};
+    let Inst{17-15} = rs1{2-0};
+    let Inst{14} = 0;
+    let Inst{13} = 0;
+    let Inst{12-10} = qu{2-0};
+    let Inst{9-7} = off2568{2-0};
+    let Inst{6} = 0;
+    let Inst{5} = 0;
+    let Inst{4} = 1;
+    let Inst{3} = 1;
+    let Inst{2} = 1;
+    let Inst{1} = 1;
+    let Inst{0} = 1;
+  }
+
+  // copy of ESP_VLD_H_64_XP_2P2 with a QR operand for the assembler
+  def ESP_VLD_H_64_XP_2P2_ASM: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1),
+                     "esp.vld.h.64.xp\t $qu, $rs1, $rs2", []> 
+  {
+    bits<5> rs2;
+    bits<5> rs1;
+    bits<3> qu;
+    bits<5> rs1r;
+    let mayStore = 0;
+    let mayLoad = 1;
+    let hasSideEffects = 1;
+    
+    let Constraints = "$rs1r = $rs1";
+    
+    let Inst{31} = 0;
+    let Inst{30} = 1;
+    let Inst{29} = 0;
+    let Inst{28} = 0;
+    let Inst{27} = 0;
+    let Inst{26} = 0;
+    let Inst{25} = 0;
+    let Inst{24} = 1;
+    let Inst{23} = rs2{4};
+    let Inst{22-20} = rs2{2-0};
+    let Inst{19} = 1;
+    let Inst{18} = rs1{4};
+    let Inst{17-15} = rs1{2-0};
+    let Inst{14} = 1;
+    let Inst{13} = 1;
+    let Inst{12-10} = qu{2-0};
+    let Inst{9} = 0;
+    let Inst{8} = 0;
+    let Inst{7} = 0;
+    let Inst{6} = 0;
+    let Inst{5} = 0;
+    let Inst{4} = 1;
+    let Inst{3} = 1;
+    let Inst{2} = 0;
+    let Inst{1} = 1;
+    let Inst{0} = 1;
+  }
+
+  // copy of ESP_VLD_L_64_IP_2P2 with a QR operand for the assembler
+  def ESP_VLD_L_64_IP_2P2_ASM: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_8:$off2568),
+                     "esp.vld.l.64.ip\t $qu, $rs1, $off2568", []> 
+  {
+    bits<5> rs1;
+    bits<8> off2568;
+    bits<3> qu;
+    bits<5> rs1r;
+    let mayStore = 0;
+    let mayLoad = 1;
+    let hasSideEffects = 1;
+    
+    let Constraints = "$rs1r = $rs1";
+    
+    let Inst{31} = 0;
+    let Inst{30} = 0;
+    let Inst{29-26} = off2568{7-4};
+    let Inst{25} = 1;
+    let Inst{24} = 1;
+    let Inst{23} = off2568{3};
+    let Inst{22} = 1;
+    let Inst{21} = 1;
+    let Inst{20} = 0;
+    let Inst{19} = 0;
+    let Inst{18} = rs1{4};
+    let Inst{17-15} = rs1{2-0};
+    let Inst{14} = 0;
+    let Inst{13} = 0;
+    let Inst{12-10} = qu{2-0};
+    let Inst{9-7} = off2568{2-0};
+    let Inst{6} = 0;
+    let Inst{5} = 0;
+    let Inst{4} = 1;
+    let Inst{3} = 1;
+    let Inst{2} = 1;
+    let Inst{1} = 1;
+    let Inst{0} = 1;
+  }
+
+  // copy of ESP_VLD_L_64_XP_2P2 with a QR operand for the assembler
+  def ESP_VLD_L_64_XP_2P2_ASM: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1),
+                     "esp.vld.l.64.xp\t $qu, $rs1, $rs2", []> 
+  {
+    bits<5> rs2;
+    bits<5> rs1;
+    bits<3> qu;
+    bits<5> rs1r;
+    let mayStore = 0;
+    let mayLoad = 1;
+    let hasSideEffects = 1;
+    
+    let Constraints = "$rs1r = $rs1";
+    
+    let Inst{31} = 0;
+    let Inst{30} = 1;
+    let Inst{29} = 0;
+    let Inst{28} = 0;
+    let Inst{27} = 0;
+    let Inst{26} = 0;
+    let Inst{25} = 0;
+    let Inst{24} = 0;
+    let Inst{23} = rs2{4};
+    let Inst{22-20} = rs2{2-0};
+    let Inst{19} = 1;
+    let Inst{18} = rs1{4};
+    let Inst{17-15} = rs1{2-0};
+    let Inst{14} = 1;
+    let Inst{13} = 1;
+    let Inst{12-10} = qu{2-0};
+    let Inst{9} = 0;
+    let Inst{8} = 0;
+    let Inst{7} = 0;
+    let Inst{6} = 0;
+    let Inst{5} = 0;
+    let Inst{4} = 1;
+    let Inst{3} = 1;
+    let Inst{2} = 0;
+    let Inst{1} = 1;
+    let Inst{0} = 1;
+  }
+
+  // copy of ESP_VST_H_64_IP_2P2 with a QR operand for the assembler
+  def ESP_VST_H_64_IP_2P2_ASM: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR:$qu, GPRPIE:$rs1, offset_256_8:$off2568),
+                     "esp.vst.h.64.ip\t $qu, $rs1, $off2568", []> 
+  {
+    bits<3> qu;
+    bits<5> rs1;
+    bits<8> off2568;
+    bits<5> rs1r;
+    let mayStore = 1;
+    let mayLoad = 0;
+    let hasSideEffects = 1;
+    
+    let Constraints = "$rs1r = $rs1";
+    
+    let Inst{31} = 1;
+    let Inst{30} = 1;
+    let Inst{29-26} = off2568{7-4};
+    let Inst{25} = 1;
+    let Inst{24} = 1;
+    let Inst{23} = off2568{3};
+    let Inst{22} = 1;
+    let Inst{21} = 1;
+    let Inst{20} = 0;
+    let Inst{19} = 0;
+    let Inst{18} = rs1{4};
+    let Inst{17-15} = rs1{2-0};
+    let Inst{14} = 0;
+    let Inst{13} = 0;
+    let Inst{12-10} = qu{2-0};
+    let Inst{9-7} = off2568{2-0};
+    let Inst{6} = 0;
+    let Inst{5} = 0;
+    let Inst{4} = 1;
+    let Inst{3} = 1;
+    let Inst{2} = 1;
+    let Inst{1} = 1;
+    let Inst{0} = 1;
+  }
+
+  // copy of ESP_VST_H_64_XP_2P2 with a QR operand for the assembler
+  def ESP_VST_H_64_XP_2P2_ASM: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qu, GPRPIE:$rs1),
+                     "esp.vst.h.64.xp\t $qu, $rs1, $rs2", []> 
+  {
+    bits<5> rs2;
+    bits<3> qu;
+    bits<5> rs1;
+    bits<5> rs1r;
+    let mayStore = 1;
+    let mayLoad = 0;
+    let hasSideEffects = 1;
+    
+    let Constraints = "$rs1r = $rs1";
+    
+    let Inst{31} = 0;
+    let Inst{30} = 1;
+    let Inst{29} = 0;
+    let Inst{28} = 0;
+    let Inst{27} = 0;
+    let Inst{26} = 0;
+    let Inst{25} = 1;
+    let Inst{24} = 1;
+    let Inst{23} = rs2{4};
+    let Inst{22-20} = rs2{2-0};
+    let Inst{19} = 1;
+    let Inst{18} = rs1{4};
+    let Inst{17-15} = rs1{2-0};
+    let Inst{14} = 1;
+    let Inst{13} = 1;
+    let Inst{12-10} = qu{2-0};
+    let Inst{9} = 0;
+    let Inst{8} = 0;
+    let Inst{7} = 0;
+    let Inst{6} = 0;
+    let Inst{5} = 0;
+    let Inst{4} = 1;
+    let Inst{3} = 1;
+    let Inst{2} = 0;
+    let Inst{1} = 1;
+    let Inst{0} = 1;
+  }
+
+  // copy of ESP_VST_L_64_IP_2P2 with a QR operand for the assembler
+  def ESP_VST_L_64_IP_2P2_ASM: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR:$qu, GPRPIE:$rs1, offset_256_8:$off2568),
+                     "esp.vst.l.64.ip\t $qu, $rs1, $off2568", []> 
+  {
+    bits<3> qu;
+    bits<5> rs1;
+    bits<8> off2568;
+    bits<5> rs1r;
+    let mayStore = 1;
+    let mayLoad = 0;
+    let hasSideEffects = 1;
+    
+    let Constraints = "$rs1r = $rs1";
+    
+    let Inst{31} = 1;
+    let Inst{30} = 0;
+    let Inst{29-26} = off2568{7-4};
+    let Inst{25} = 1;
+    let Inst{24} = 1;
+    let Inst{23} = off2568{3};
+    let Inst{22} = 1;
+    let Inst{21} = 1;
+    let Inst{20} = 0;
+    let Inst{19} = 0;
+    let Inst{18} = rs1{4};
+    let Inst{17-15} = rs1{2-0};
+    let Inst{14} = 0;
+    let Inst{13} = 0;
+    let Inst{12-10} = qu{2-0};
+    let Inst{9-7} = off2568{2-0};
+    let Inst{6} = 0;
+    let Inst{5} = 0;
+    let Inst{4} = 1;
+    let Inst{3} = 1;
+    let Inst{2} = 1;
+    let Inst{1} = 1;
+    let Inst{0} = 1;
+  }
+
+  // copy of ESP_VST_L_64_XP_2P2 with a QR operand for the assembler
+  def ESP_VST_L_64_XP_2P2_ASM: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qu, GPRPIE:$rs1),
+                     "esp.vst.l.64.xp\t $qu, $rs1, $rs2", []> 
+  {
+    bits<5> rs2;
+    bits<3> qu;
+    bits<5> rs1;
+    bits<5> rs1r;
+    let mayStore = 1;
+    let mayLoad = 0;
+    let hasSideEffects = 1;
+    
+    let Constraints = "$rs1r = $rs1";
+    
+    let Inst{31} = 0;
+    let Inst{30} = 1;
+    let Inst{29} = 0;
+    let Inst{28} = 0;
+    let Inst{27} = 0;
+    let Inst{26} = 0;
+    let Inst{25} = 1;
+    let Inst{24} = 0;
+    let Inst{23} = rs2{4};
+    let Inst{22-20} = rs2{2-0};
+    let Inst{19} = 1;
+    let Inst{18} = rs1{4};
+    let Inst{17-15} = rs1{2-0};
+    let Inst{14} = 1;
+    let Inst{13} = 1;
+    let Inst{12-10} = qu{2-0};
+    let Inst{9} = 0;
+    let Inst{8} = 0;
+    let Inst{7} = 0;
+    let Inst{6} = 0;
+    let Inst{5} = 0;
+    let Inst{4} = 1;
+    let Inst{3} = 1;
+    let Inst{2} = 0;
+    let Inst{1} = 1;
+    let Inst{0} = 1;
+  }
+
+} // isAsmParserOnly
+
 
 def ESP_SLCI_2Q_2P2: Esp32V2P2Inst<(outs QR:$qyr, QR:$qwr), (ins QR:$qy, QR:$qw, select_16:$sel16),
                    "esp.slci.2q\t $qy, $qw, $sel16", []> 

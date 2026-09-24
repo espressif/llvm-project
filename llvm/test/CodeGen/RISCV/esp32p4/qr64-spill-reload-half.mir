@@ -1,0 +1,58 @@
+# QR_64 spill/reload must pick the H/L opcode from the half.
+#
+# The Q register operand of esp.vld/vst.{h,l}.64 encodes only the Q index;
+# the opcode selects the 64-bit half. Spilling/reloading a Qn_D1 (high half)
+# with the .l.64 form stored/loaded the low half instead (silent miscompile,
+# both PIE 2.1 and 2.2). The 2.2 defs also used a QR operand, which rejected
+# the QR_64 register (-verify-machineinstrs: Illegal physical register).
+
+# RUN: llc -mtriple=riscv32-esp-unknown-elf -mattr=+xespv2p1,+espv-lowering \
+# RUN:   -run-pass=prologepilog -verify-machineinstrs -o - %s \
+# RUN:   | FileCheck %s --check-prefixes=CHECK,P21
+# RUN: llc -mtriple=riscv32-esp-unknown-elf -mattr=+xespv2p2,+espv-lowering \
+# RUN:   -run-pass=prologepilog -verify-machineinstrs -o - %s \
+# RUN:   | FileCheck %s --check-prefixes=CHECK,P22
+# RUN: llc -mtriple=riscv32-esp-unknown-elf -mattr=+xespv2p2,+espv-lowering \
+# RUN:   -start-before=prologepilog -o - %s | FileCheck %s --check-prefix=ASM
+
+# CHECK-LABEL: name: hi_spill_reload
+# P21: ESP_VST_H_64_IP killed $q2_d1,
+# P21: $q1_d1, dead $x10 = ESP_VLD_H_64_IP $x10, 0
+# P22: ESP_VST_H_64_IP_2P2 killed $q2_d1,
+# P22: $q1_d1, dead $x10 = ESP_VLD_H_64_IP_2P2 $x10, 0
+# CHECK-LABEL: name: lo_spill_reload
+# P21: ESP_VST_L_64_IP killed $q2_d0,
+# P21: $q1_d0, dead $x10 = ESP_VLD_L_64_IP $x10, 0
+# P22: ESP_VST_L_64_IP_2P2 killed $q2_d0,
+# P22: $q1_d0, dead $x10 = ESP_VLD_L_64_IP_2P2 $x10, 0
+
+# ASM-LABEL: hi_spill_reload:
+# ASM: esp.vst.h.64.ip q2, a0, 0
+# ASM: esp.vld.h.64.ip q1, a0, 0
+# ASM-LABEL: lo_spill_reload:
+# ASM: esp.vst.l.64.ip q2, a0, 0
+# ASM: esp.vld.l.64.ip q1, a0, 0
+---
+name:            hi_spill_reload
+tracksRegLiveness: true
+stack:
+  - { id: 0, size: 8, alignment: 8 }
+body:             |
+  bb.0:
+    liveins: $q2, $q1
+    PseudoESP_VSPILL_64 killed $q2_d1, %stack.0, 0 :: (store (s64) into %stack.0)
+    $q1_d1 = PseudoESP_VRELOAD_64 %stack.0, 0 :: (load (s64) from %stack.0)
+    PseudoRET implicit $q1
+...
+---
+name:            lo_spill_reload
+tracksRegLiveness: true
+stack:
+  - { id: 0, size: 8, alignment: 8 }
+body:             |
+  bb.0:
+    liveins: $q2, $q1
+    PseudoESP_VSPILL_64 killed $q2_d0, %stack.0, 0 :: (store (s64) into %stack.0)
+    $q1_d0 = PseudoESP_VRELOAD_64 %stack.0, 0 :: (load (s64) from %stack.0)
+    PseudoRET implicit $q1
+...

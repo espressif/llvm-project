@@ -210,6 +210,14 @@ public:
     return useESPV2P2Instructions() ? RISCV::ESP_VLD_L_64_IP_2P2
                                     : RISCV::ESP_VLD_L_64_IP;
   }
+  unsigned getESPSpillH64Opcode() const {
+    return useESPV2P2Instructions() ? RISCV::ESP_VST_H_64_IP_2P2
+                                    : RISCV::ESP_VST_H_64_IP;
+  }
+  unsigned getESPReloadH64Opcode() const {
+    return useESPV2P2Instructions() ? RISCV::ESP_VLD_H_64_IP_2P2
+                                    : RISCV::ESP_VLD_H_64_IP;
+  }
   static bool isESPVFrameIndexSpillOpcode(unsigned Opc) {
     switch (Opc) {
     case RISCV::PseudoESP_VSPILL_128:

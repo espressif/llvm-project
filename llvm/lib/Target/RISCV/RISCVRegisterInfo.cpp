@@ -658,7 +658,11 @@ void RISCVRegisterInfo::lowerESPVSPILL_64(
       .addReg(Base)
       .addImm(Offset);
 
-  unsigned OpcVst = STI.getESPSpillL64Opcode();
+  // The register operand encodes only the Q index; the opcode selects the
+  // half.
+  unsigned OpcVst = getQR64LaneSubIdx(SrcReg) == RISCV::sub_qr_64_hi
+                        ? STI.getESPSpillH64Opcode()
+                        : STI.getESPSpillL64Opcode();
   BuildMI(MBB, II, DL, TII->get(OpcVst))
       .addReg(TempReg, RegState::Define | RegState::Dead)
       .addReg(SrcReg, getKillRegState(II->getOperand(0).isKill()))
@@ -687,7 +691,9 @@ void RISCVRegisterInfo::lowerESPVRELOAD_64(
       .addReg(Base)
       .addImm(Offset);
 
-  unsigned OpcVld = STI.getESPReloadL64Opcode();
+  unsigned OpcVld = getQR64LaneSubIdx(DstReg) == RISCV::sub_qr_64_hi
+                        ? STI.getESPReloadH64Opcode()
+                        : STI.getESPReloadL64Opcode();
   BuildMI(MBB, II, DL, TII->get(OpcVld))
       .addReg(DstReg, RegState::Define)
       .addReg(TempReg, RegState::Define | RegState::Dead)
