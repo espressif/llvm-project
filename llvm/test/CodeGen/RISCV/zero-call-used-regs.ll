@@ -120,7 +120,6 @@ define i32 @all_gpr_arg(i32 noundef %a, i32 noundef %b, i32 noundef %c) #0 "zero
 ; 64-BITS-NEXT:    or a0, a0, a2
 ; 64-BITS-NEXT:    li a1, 0
 ; 64-BITS-NEXT:    li a2, 0
-; 64-BITS-NEXT:    li a3, 0
 ; 64-BITS-NEXT:    li a4, 0
 ; 64-BITS-NEXT:    li a5, 0
 ; 64-BITS-NEXT:    li a6, 0
@@ -133,7 +132,6 @@ define i32 @all_gpr_arg(i32 noundef %a, i32 noundef %b, i32 noundef %c) #0 "zero
 ; 32-BITS-NEXT:    or a0, a0, a2
 ; 32-BITS-NEXT:    li a1, 0
 ; 32-BITS-NEXT:    li a2, 0
-; 32-BITS-NEXT:    li a3, 0
 ; 32-BITS-NEXT:    li a4, 0
 ; 32-BITS-NEXT:    li a5, 0
 ; 32-BITS-NEXT:    li a6, 0
@@ -324,7 +322,6 @@ define double @used_arg_zdinx(double noundef %a, double noundef %b, float nounde
 ; 32-BITS-NEXT:    fcvt.d.s a2, a4
 ; 32-BITS-NEXT:    fmul.d a0, a0, a2
 ; 32-BITS-NEXT:    li a2, 0
-; 32-BITS-NEXT:    li a3, 0
 ; 32-BITS-NEXT:    li a4, 0
 ; 32-BITS-NEXT:    ret
 

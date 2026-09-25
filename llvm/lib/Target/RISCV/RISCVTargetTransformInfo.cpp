@@ -714,8 +714,12 @@ RISCVTTIImpl::getShuffleCost(TTI::ShuffleKind Kind, VectorType *DstTy,
   // P/ESPV fixed vectors are not RVV vectors. Avoid getTypeLegalizationCost and
   // getContainerForFixedLengthVector paths that call
   // getMinRVVVectorSizeInBits().
-  if (shouldUseNonRVVFixedVectorCost(ST, SrcTy))
+  if (shouldUseNonRVVFixedVectorCost(ST, SrcTy)) {
+    // Element reverse selects to a single rev8/rev16/ppairoe.
+    if (Kind == TTI::SK_Reverse)
+      return 1;
     return getScalarizedFixedVectorCost(SrcTy, 1);
+  }
 
   std::pair<InstructionCost, MVT> LT = getTypeLegalizationCost(SrcTy);
 

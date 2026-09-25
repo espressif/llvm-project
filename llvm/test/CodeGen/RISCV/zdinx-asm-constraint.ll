@@ -10,11 +10,11 @@ define dso_local void @zdinx_asm(ptr nocapture noundef writeonly %a, double noun
 ; CHECK-LABEL: zdinx_asm:
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    mv a5, a4
+; CHECK-NEXT:    mv a7, a2
 ; CHECK-NEXT:    mv a4, a3
-; CHECK-NEXT:    mv a3, a2
-; CHECK-NEXT:    mv a2, a1
+; CHECK-NEXT:    mv a6, a1
 ; CHECK-NEXT:    #APP
-; CHECK-NEXT:    fsgnjx.d a2, a2, a4
+; CHECK-NEXT:    fsgnjx.d a2, a6, a4
 ; CHECK-NEXT:    #NO_APP
 ; CHECK-NEXT:    sw a2, 8(a0)
 ; CHECK-NEXT:    sw a3, 12(a0)
@@ -30,11 +30,11 @@ define dso_local void @zdinx_asm_R(ptr nocapture noundef writeonly %a, double no
 ; CHECK-LABEL: zdinx_asm_R:
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    mv a5, a4
+; CHECK-NEXT:    mv a7, a2
 ; CHECK-NEXT:    mv a4, a3
-; CHECK-NEXT:    mv a3, a2
-; CHECK-NEXT:    mv a2, a1
+; CHECK-NEXT:    mv a6, a1
 ; CHECK-NEXT:    #APP
-; CHECK-NEXT:    fsgnjx.d a2, a2, a4
+; CHECK-NEXT:    fsgnjx.d a2, a6, a4
 ; CHECK-NEXT:    #NO_APP
 ; CHECK-NEXT:    sw a2, 8(a0)
 ; CHECK-NEXT:    sw a3, 12(a0)

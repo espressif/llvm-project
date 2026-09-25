@@ -983,10 +983,10 @@ define i64 @bit_20_nz_select_i64(i64 %a, i64 %b, i64 %c) {
 define i64 @bit_31_z_select_i64(i64 %a, i64 %b, i64 %c) {
 ; RV32-LABEL: bit_31_z_select_i64:
 ; RV32:       # %bb.0:
-; RV32-NEXT:    mv a6, a0
 ; RV32-NEXT:    mv a1, a3
+; RV32-NEXT:    mv a3, a0
 ; RV32-NEXT:    mv a0, a2
-; RV32-NEXT:    bgez a6, .LBB29_2
+; RV32-NEXT:    bgez a3, .LBB29_2
 ; RV32-NEXT:  # %bb.1:
 ; RV32-NEXT:    mv a0, a4
 ; RV32-NEXT:    mv a1, a5
@@ -2249,10 +2249,10 @@ define i64 @bit_16_1_z_select_i64(i64 %a, i64 %b, i64 %c) {
 define i64 @bit_16_1_nz_select_i64(i64 %a, i64 %b, i64 %c) {
 ; RV32-LABEL: bit_16_1_nz_select_i64:
 ; RV32:       # %bb.0:
-; RV32-NEXT:    mv a6, a0
 ; RV32-NEXT:    mv a1, a3
+; RV32-NEXT:    mv a3, a0
 ; RV32-NEXT:    mv a0, a2
-; RV32-NEXT:    bnez a6, .LBB76_2
+; RV32-NEXT:    bnez a3, .LBB76_2
 ; RV32-NEXT:  # %bb.1:
 ; RV32-NEXT:    mv a0, a4
 ; RV32-NEXT:    mv a1, a5
@@ -2390,10 +2390,10 @@ define i64 @bit_31_1_nz_select_i64(i64 %a, i64 %b, i64 %c) {
 define i64 @bit_32_1_z_select_i64(i64 %a, i64 %b, i64 %c) {
 ; RV32-LABEL: bit_32_1_z_select_i64:
 ; RV32:       # %bb.0:
-; RV32-NEXT:    mv a6, a0
 ; RV32-NEXT:    mv a1, a3
+; RV32-NEXT:    mv a3, a0
 ; RV32-NEXT:    mv a0, a2
-; RV32-NEXT:    beqz a6, .LBB81_2
+; RV32-NEXT:    beqz a3, .LBB81_2
 ; RV32-NEXT:  # %bb.1:
 ; RV32-NEXT:    mv a0, a4
 ; RV32-NEXT:    mv a1, a5
@@ -2418,10 +2418,10 @@ define i64 @bit_32_1_z_select_i64(i64 %a, i64 %b, i64 %c) {
 define i64 @bit_32_1_nz_select_i64(i64 %a, i64 %b, i64 %c) {
 ; RV32-LABEL: bit_32_1_nz_select_i64:
 ; RV32:       # %bb.0:
-; RV32-NEXT:    mv a6, a0
 ; RV32-NEXT:    mv a1, a3
+; RV32-NEXT:    mv a3, a0
 ; RV32-NEXT:    mv a0, a2
-; RV32-NEXT:    bnez a6, .LBB82_2
+; RV32-NEXT:    bnez a3, .LBB82_2
 ; RV32-NEXT:  # %bb.1:
 ; RV32-NEXT:    mv a0, a4
 ; RV32-NEXT:    mv a1, a5

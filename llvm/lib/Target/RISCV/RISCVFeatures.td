@@ -1680,7 +1680,10 @@ def HasESPV2P2Instructions : Predicate<"Subtarget->useESPV2P2Instructions()">;
 def FeatureVendorXespvLowering : SubtargetFeature<"espv-lowering", "HasVendorXespvLowering", "true",
   "Enable Espressif ESPV target lowering (DAG/instruction selection)">;
 
-def HasVendorEspSAT : Predicate<"Subtarget->hasVendorEspSAT()">, AssemblerPredicate<(any_of FeatureVendorXespdsp, FeatureXespvVersion2p1)>;
+def HasVendorEspSAT
+    : Predicate<"Subtarget->hasVendorEspSAT()">,
+      AssemblerPredicate<(any_of FeatureVendorXespdsp, FeatureXespvVersion2p1),
+                         "'Espressif ESPDSP' or 'Espressif ESPV 2.1'">;
 
 
 // Qualcomm Extensions

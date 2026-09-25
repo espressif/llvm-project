@@ -1,6 +1,6 @@
-# RUN: llc -mtriple=riscv32 -mcpu=generic -mattr=+zcmp,+cm-popret -x mir -start-before=prologepilog -stop-after=riscv-push-pop-opt -verify-machineinstrs -o - %s \
+# RUN: llc -mtriple=riscv32 -mcpu=generic -mattr=+zcmp,+cm-popret -x mir -start-before=prolog-epilog -stop-after=riscv-push-pop-opt -verify-machineinstrs -o - %s \
 # RUN: | FileCheck -check-prefixes=WORKAROUND-NO-OPT %s
-# RUN: llc -mtriple=riscv32 -mcpu=generic -mattr=+zcmp -x mir -start-before=prologepilog -stop-after=riscv-push-pop-opt -verify-machineinstrs -o - %s \
+# RUN: llc -mtriple=riscv32 -mcpu=generic -mattr=+zcmp -x mir -start-before=prolog-epilog -stop-after=riscv-push-pop-opt -verify-machineinstrs -o - %s \
 # RUN: | FileCheck -check-prefixes=GENERIC-OPT %s
 ---
 name: popret_rvlist5

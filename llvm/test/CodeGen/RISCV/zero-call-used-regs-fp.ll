@@ -32,7 +32,6 @@ define double @used(double noundef %a, float noundef %b) "zero-call-used-regs"="
 ; 32-BITS-F-NEXT:    addi sp, sp, 16
 ; 32-BITS-F-NEXT:    .cfi_def_cfa_offset 0
 ; 32-BITS-F-NEXT:    li a2, 0
-; 32-BITS-F-NEXT:    li a3, 0
 ; 32-BITS-F-NEXT:    ret
 ;
 ; 32-BITS-D-LABEL: used:

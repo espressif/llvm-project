@@ -65,10 +65,10 @@ define <32 x i64> @main(i1 %tobool93.not, <32 x i64> %0, <32 x i64> %1) #0 {
   ; CHECK-NEXT: {{  $}}
   ; CHECK-NEXT: bb.8.cond.true128:
   ; CHECK-NEXT:   successors: %bb.9(0x80000000)
-  ; CHECK-NEXT:   liveins: $v0m8:0x0000000000000002, $v24m8
+  ; CHECK-NEXT:   liveins: $v0m8:0x0000000000000200, $v24m8
   ; CHECK-NEXT: {{  $}}
   ; CHECK-NEXT: bb.9.cond.end133:
-  ; CHECK-NEXT:   liveins: $v0m8:0x0000000000000002, $v24m8
+  ; CHECK-NEXT:   liveins: $v0m8:0x0000000000000200, $v24m8
   ; CHECK-NEXT: {{  $}}
   ; CHECK-NEXT:   renamable $v16m8 = PseudoVMV_V_I_M8 undef renamable $v16m8, 0, 16 /* vl */, 6 /* e64 */, 0 /* tu, mu */
   ; CHECK-NEXT:   early-clobber renamable $v8 = PseudoVMSLEU_VV_M8 renamable $v16m8, killed renamable $v24m8, 16 /* vl */, 6 /* e64 */

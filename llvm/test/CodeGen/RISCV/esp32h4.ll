@@ -12,73 +12,73 @@ define void @test(){
 ; CHECK-NEXT:    .cfi_offset s0, -4
 ; CHECK-NEXT:    .cfi_offset s1, -8
 ; CHECK-NEXT:    li a3, 8
-; CHECK-NEXT:    li t3, 3
-; CHECK-NEXT:    li t4, 12
-; CHECK-NEXT:    li a6, 2
-; CHECK-NEXT:    li t6, 1
-; CHECK-NEXT:    li a7, 10
-; CHECK-NEXT:    li a1, 13
-; CHECK-NEXT:    li a4, 4
-; CHECK-NEXT:    li t2, 6
-; CHECK-NEXT:    li a0, 5
-; CHECK-NEXT:    li t0, 11
-; CHECK-NEXT:    lui t1, 266496
-; CHECK-NEXT:    li a5, 7
+; CHECK-NEXT:    li a1, 3
+; CHECK-NEXT:    li a0, 12
+; CHECK-NEXT:    li a5, 2
+; CHECK-NEXT:    li a2, 1
+; CHECK-NEXT:    li a4, 10
+; CHECK-NEXT:    li a6, 13
+; CHECK-NEXT:    li t1, 4
+; CHECK-NEXT:    li a7, 6
+; CHECK-NEXT:    li t0, 5
+; CHECK-NEXT:    li t2, 11
+; CHECK-NEXT:    lui t3, 266496
+; CHECK-NEXT:    li t4, 7
 ; CHECK-NEXT:    lui t5, 263168
-; CHECK-NEXT:    li a2, 14
-; CHECK-NEXT:    esp.muls16ix2 s0, s1, t4, t3, 30
-; CHECK-NEXT:    fmv.w.x fa5, t1
-; CHECK-NEXT:    esp.muls16x2 zero, zero, a6, a3
-; CHECK-NEXT:    esp.muls32i zero, a7, t6, 14
-; CHECK-NEXT:    esp.muls32 zero, a7, a1
-; CHECK-NEXT:    esp.shl zero, a7, a4
-; CHECK-NEXT:    esp.shr zero, t2, a4
+; CHECK-NEXT:    li t6, 14
+; CHECK-NEXT:    esp.muls16ix2 s0, s1, a0, a1, 30
+; CHECK-NEXT:    fmv.w.x fa5, t3
+; CHECK-NEXT:    esp.muls16x2 zero, zero, a5, a3
+; CHECK-NEXT:    esp.muls32i zero, a4, a2, 14
+; CHECK-NEXT:    esp.muls32 zero, a4, a6
+; CHECK-NEXT:    esp.shl zero, a4, t1
+; CHECK-NEXT:    esp.shr zero, a7, t1
 ; CHECK-NEXT:    esp.abs zero, zero
-; CHECK-NEXT:    esp.movr.xacc zero, t6
-; CHECK-NEXT:    esp.min zero, t0, a0
-; CHECK-NEXT:    esp.max zero, a0, t4
+; CHECK-NEXT:    esp.movr.xacc zero, a2
+; CHECK-NEXT:    esp.min zero, t2, t0
+; CHECK-NEXT:    esp.max zero, t0, a0
 ; CHECK-NEXT:    esp.clzs zero, a3
 ; CHECK-NEXT:    esp.flw.ip fa4, a3, -7, 1
-; CHECK-NEXT:    esp.flw.xp fa4, a1, a7
-; CHECK-NEXT:    esp.fsw.ip fa5, a5, 1, 1
+; CHECK-NEXT:    esp.flw.xp fa4, a6, a4
+; CHECK-NEXT:    esp.fsw.ip fa5, t4, 1, 1
 ; CHECK-NEXT:    fmv.w.x fa5, t5
-; CHECK-NEXT:    esp.fsw.xp fa5, a5, a5
-; CHECK-NEXT:    esp.lw.ip zero, a2, 15, 0
-; CHECK-NEXT:    esp.lw.xp zero, t0, t6
-; CHECK-NEXT:    esp.sw.ip a5, a7, -9, 2
-; CHECK-NEXT:    esp.sw.xp a2, t2, a1
-; CHECK-NEXT:    esp.lh.ip zero, t3, 14, 3
-; CHECK-NEXT:    esp.lh.xp zero, a6, a5
-; CHECK-NEXT:    esp.sh.ip a2, a2, -8, 1
-; CHECK-NEXT:    li s1, 9
-; CHECK-NEXT:    esp.sh.xp t4, t0, s1
-; CHECK-NEXT:    esp.lb.ip zero, t4, 8, 3
-; CHECK-NEXT:    esp.lb.xp zero, a1, t2
-; CHECK-NEXT:    esp.sb.ip s1, a0, 10, 3
-; CHECK-NEXT:    esp.sb.xp t6, t6, a3
-; CHECK-NEXT:    esp.lhu.ip zero, t2, -6, 1
-; CHECK-NEXT:    esp.lhu.xp zero, a1, t6
-; CHECK-NEXT:    esp.lbu.ip zero, a5, 14, 1
+; CHECK-NEXT:    esp.fsw.xp fa5, t4, t4
+; CHECK-NEXT:    esp.lw.ip zero, t6, 15, 0
+; CHECK-NEXT:    esp.lw.xp zero, t2, a2
+; CHECK-NEXT:    esp.sw.ip t4, a4, -9, 2
+; CHECK-NEXT:    esp.sw.xp t6, a7, a6
+; CHECK-NEXT:    esp.lh.ip zero, a1, 14, 3
+; CHECK-NEXT:    esp.lh.xp zero, a5, t4
+; CHECK-NEXT:    esp.sh.ip t6, t6, -8, 1
+; CHECK-NEXT:    li t3, 9
+; CHECK-NEXT:    esp.sh.xp a0, t2, t3
+; CHECK-NEXT:    esp.lb.ip zero, a0, 8, 3
+; CHECK-NEXT:    esp.lb.xp zero, a6, a7
+; CHECK-NEXT:    esp.sb.ip t3, t0, 10, 3
+; CHECK-NEXT:    esp.sb.xp a2, a2, a3
+; CHECK-NEXT:    esp.lhu.ip zero, a7, -6, 1
+; CHECK-NEXT:    esp.lhu.xp zero, a6, a2
+; CHECK-NEXT:    esp.lbu.ip zero, t4, 14, 1
 ; CHECK-NEXT:    esp.lbu.xp zero, a3, zero
-; CHECK-NEXT:    esp.movw.xacc a2, a4
-; CHECK-NEXT:    esp.macs32i s1, t2, 32
-; CHECK-NEXT:    esp.macs32 a5, a6
-; CHECK-NEXT:    esp.macs32.ld zero, a3, a1, a5
-; CHECK-NEXT:    esp.macs32.st a4, a0, zero, zero
-; CHECK-NEXT:    esp.macs16ix2 zero, a0, 17
-; CHECK-NEXT:    esp.macs16x2 a6, t4
-; CHECK-NEXT:    esp.macs16x2.ld zero, zero, a4, a1
-; CHECK-NEXT:    esp.macs16x1.ld zero, a4, a3, t3
-; CHECK-NEXT:    esp.macs16x2.st a3, zero, a4, a5
-; CHECK-NEXT:    esp.msus32i a2, a2, 2
-; CHECK-NEXT:    esp.msus32 t6, t3
-; CHECK-NEXT:    esp.msus32.ld zero, s1, a1, a6
-; CHECK-NEXT:    esp.msus32.st t0, t0, t3, a0
-; CHECK-NEXT:    esp.msus16ix2 t0, a0, 5
-; CHECK-NEXT:    esp.msus16x2 a2, a2
-; CHECK-NEXT:    esp.msus16x2.ld zero, a5, a7, t2
-; CHECK-NEXT:    esp.msus16x1.ld zero, a2, t4, t6
-; CHECK-NEXT:    esp.msus16x2.st zero, a0, a0, a0
+; CHECK-NEXT:    esp.movw.xacc t6, t1
+; CHECK-NEXT:    esp.macs32i t3, a7, 32
+; CHECK-NEXT:    esp.macs32 t4, a5
+; CHECK-NEXT:    esp.macs32.ld zero, a3, a6, t4
+; CHECK-NEXT:    esp.macs32.st t1, t0, zero, zero
+; CHECK-NEXT:    esp.macs16ix2 zero, t0, 17
+; CHECK-NEXT:    esp.macs16x2 a5, a0
+; CHECK-NEXT:    esp.macs16x2.ld zero, zero, t1, a6
+; CHECK-NEXT:    esp.macs16x1.ld zero, t1, a3, a1
+; CHECK-NEXT:    esp.macs16x2.st a3, zero, t1, t4
+; CHECK-NEXT:    esp.msus32i t6, t6, 2
+; CHECK-NEXT:    esp.msus32 a2, a1
+; CHECK-NEXT:    esp.msus32.ld zero, t3, a6, a5
+; CHECK-NEXT:    esp.msus32.st t2, t2, a1, t0
+; CHECK-NEXT:    esp.msus16ix2 t2, t0, 5
+; CHECK-NEXT:    esp.msus16x2 t6, t6
+; CHECK-NEXT:    esp.msus16x2.ld zero, t4, a4, a7
+; CHECK-NEXT:    esp.msus16x1.ld zero, t6, a0, a2
+; CHECK-NEXT:    esp.msus16x2.st zero, t0, t0, t0
 ; CHECK-NEXT:    lw s0, 12(sp) # 4-byte Folded Reload
 ; CHECK-NEXT:    lw s1, 8(sp) # 4-byte Folded Reload
 ; CHECK-NEXT:    .cfi_restore s0

@@ -668,18 +668,20 @@ public:
 
   bool isCSRSystemRegister() const { return isSystemRegister(); }
 
-  // If the last operand of the vsetvli/vsetvli instruction is a constant
-  // expression, KindTy is Immediate.
-  bool isVTypeI10() const {
+  // vsetvli/vsetivli accept either a parsed vtype or a constant immediate,
+  // including expressions such as (0xc << N). isUImm<10> also matches bare
+  // symbols, which are not valid vtype immediates and crash in
+  // addVTypeIOperands.
+  bool isVTypeImm(unsigned Width) const {
     if (Kind == KindTy::VType)
       return true;
-    return isUImm<10>();
+    if (!isExpr())
+      return false;
+    int64_t Imm;
+    return getExpr()->evaluateAsAbsolute(Imm) && isUIntN(Width, Imm);
   }
-  bool isVTypeI11() const {
-    if (Kind == KindTy::VType)
-      return true;
-    return isUImm<11>();
-  }
+  bool isVTypeI10() const { return isVTypeImm(10); }
+  bool isVTypeI11() const { return isVTypeImm(11); }
 
   bool isXSfmmVType() const {
     return Kind == KindTy::VType && RISCVVType::isValidXSfmmVType(VType.Val);
@@ -1487,7 +1489,7 @@ public:
     int64_t Imm = 0;
     if (Kind == KindTy::Expression) {
       [[maybe_unused]] bool IsConstantImm =
-          evaluateConstantExpr(getExpr(), Imm);
+          getExpr()->evaluateAsAbsolute(Imm);
       assert(IsConstantImm && "Invalid VTypeI Operand!");
     } else {
       Imm = getVType();
