@@ -691,7 +691,10 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
   // GPR -> SAR_BYTES: Use ESP.MOVX.W.SAR.BYTES
   if (RISCV::SAR_BYTESRegRegClass.contains(DstReg) &&
       RISCV::GPRRegClass.contains(SrcReg)) {
-    BuildMI(MBB, MBBI, DL, get(RISCV::ESP_MOVX_W_SAR_BYTES), DstReg)
+    BuildMI(MBB, MBBI, DL,
+            get(STI.useESPV2P2Instructions() ? RISCV::ESP_MOVX_W_SAR_BYTES_2P2
+                                             : RISCV::ESP_MOVX_W_SAR_BYTES),
+            DstReg)
         .addReg(SrcReg, KillFlag | getRenamableRegState(RenamableSrc));
     return;
   }
@@ -699,7 +702,10 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
   // SAR_BYTES -> GPR: Use ESP.MOVX.R.SAR.BYTES
   if (RISCV::GPRRegClass.contains(DstReg) &&
       RISCV::SAR_BYTESRegRegClass.contains(SrcReg)) {
-    BuildMI(MBB, MBBI, DL, get(RISCV::ESP_MOVX_R_SAR_BYTES), DstReg)
+    BuildMI(MBB, MBBI, DL,
+            get(STI.useESPV2P2Instructions() ? RISCV::ESP_MOVX_R_SAR_BYTES_2P2
+                                             : RISCV::ESP_MOVX_R_SAR_BYTES),
+            DstReg)
         .addReg(SrcReg, KillFlag | getRenamableRegState(RenamableSrc));
     return;
   }
