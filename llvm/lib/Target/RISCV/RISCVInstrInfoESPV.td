@@ -25315,13 +25315,12 @@ def ESP_MOVX_R_SAR_2P2: Esp32V2P2Inst<(outs GPRPIE:$rd), (ins),
   let Inst{0} = 1;
 }
 
-def ESP_MOVX_R_SAR_BYTES_2P2: Esp32V2P2Inst<(outs GPRPIE:$rd), (ins),
-                   "esp.movx.r.sar.bytes\t $rd", []> 
-{
+class ESP_MOVX_R_SAR_BYTES_2P2_Base<dag outs, dag ins, list<dag> pat>
+    : Esp32V2P2Inst<outs, ins, "esp.movx.r.sar.bytes\t $rd", pat> {
   bits<5> rd;
   let mayStore = 0;
   let mayLoad = 0;
-  let hasSideEffects = 1;
+  let hasSideEffects = 0;
   
   let Inst{31} = 1;
   let Inst{30} = 0;
@@ -25353,6 +25352,15 @@ def ESP_MOVX_R_SAR_BYTES_2P2: Esp32V2P2Inst<(outs GPRPIE:$rd), (ins),
   let Inst{2} = 0;
   let Inst{1} = 1;
   let Inst{0} = 1;
+}
+
+let Defs = []<Register>, isCodeGenOnly = 1 in
+def ESP_MOVX_R_SAR_BYTES_2P2
+    : ESP_MOVX_R_SAR_BYTES_2P2_Base<(outs GPRPIE:$rd), (ins SAR_BYTESReg:$sar_bytes_in), [(set GPRPIE:$rd, (int_riscv_esp_movx_r_sar_bytes SAR_BYTESReg:$sar_bytes_in))]>;
+
+def ESP_MOVX_R_SAR_BYTES_2P2_MC
+    : ESP_MOVX_R_SAR_BYTES_2P2_Base<(outs GPRPIE:$rd), (ins), []> {
+  let hasSideEffects = 1;
 }
 
 def ESP_MOVX_R_XACC_H_2P2: Esp32V2P2Inst<(outs GPRPIE:$rd), (ins),
@@ -25606,13 +25614,12 @@ def ESP_MOVX_W_SAR_2P2: Esp32V2P2Inst<(outs), (ins GPRPIE:$rs1),
   let Inst{0} = 1;
 }
 
-def ESP_MOVX_W_SAR_BYTES_2P2: Esp32V2P2Inst<(outs), (ins GPRPIE:$rs1),
-                   "esp.movx.w.sar.bytes\t $rs1", []> 
-{
+class ESP_MOVX_W_SAR_BYTES_2P2_Base<dag outs, dag ins, list<dag> pat>
+    : Esp32V2P2Inst<outs, ins, "esp.movx.w.sar.bytes\t $rs1", pat> {
   bits<5> rs1;
   let mayStore = 0;
   let mayLoad = 0;
-  let hasSideEffects = 1;
+  let hasSideEffects = 0;
   
   let Inst{31} = 1;
   let Inst{30} = 0;
@@ -25644,6 +25651,15 @@ def ESP_MOVX_W_SAR_BYTES_2P2: Esp32V2P2Inst<(outs), (ins GPRPIE:$rs1),
   let Inst{2} = 0;
   let Inst{1} = 1;
   let Inst{0} = 1;
+}
+
+let Defs = []<Register>, isCodeGenOnly = 1 in
+def ESP_MOVX_W_SAR_BYTES_2P2
+    : ESP_MOVX_W_SAR_BYTES_2P2_Base<(outs SAR_BYTESReg:$sar_bytes_out), (ins GPRPIE:$rs1), [(set SAR_BYTESReg:$sar_bytes_out, (int_riscv_esp_movx_w_sar_bytes GPRPIE:$rs1))]>;
+
+def ESP_MOVX_W_SAR_BYTES_2P2_MC
+    : ESP_MOVX_W_SAR_BYTES_2P2_Base<(outs), (ins GPRPIE:$rs1), []> {
+  let hasSideEffects = 1;
 }
 
 def ESP_MOVX_W_XACC_H_2P2: Esp32V2P2Inst<(outs), (ins GPRPIE:$rs1),
