@@ -26859,11 +26859,8 @@ def ESP_FFT_VST_R32_DECP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR:$qu, GP
   let Inst{0} = 1;
 }
 
-def ESP_LD_128_USAR_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r, SAR_BYTESReg:$sar_bytes_out), (ins GPRPIE:$rs1, offset_256_16:$off25616),
-                   "esp.ld.128.usar.ip\t $qu, $rs1, $off25616",
-                   // Note: SAR_BYTES[3:0] = rs1[3:0] (same hardware side-effect as 2.1; explicit out for shared .m)
-                   [(set QR:$qu, GPRPIE:$rs1r, SAR_BYTESReg:$sar_bytes_out, (riscv_esp_ld_128_usar_ip_m GPRPIE:$rs1, offset_256_16:$off25616))]>
-{
+class ESP_LD_128_USAR_IP_2P2_Base<dag outs, dag ins, list<dag> pat, string cstr>
+    : Esp32V2P2Inst<outs, ins, "esp.ld.128.usar.ip\t $qu, $rs1, $off25616", pat> {
   bits<5> rs1;
   bits<8> off25616;
   bits<3> qu;
@@ -26872,7 +26869,6 @@ def ESP_LD_128_USAR_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r, SAR_BYTESR
   let mayLoad = 1;
   let hasSideEffects = 0;
   
-  let Constraints = "$rs1r = $rs1";
   
   let Inst{31-26} = off25616{7-2};
   let Inst{25} = 1;
@@ -26896,13 +26892,21 @@ def ESP_LD_128_USAR_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r, SAR_BYTESR
   let Inst{2} = 1;
   let Inst{1} = 1;
   let Inst{0} = 1;
+  let Constraints = cstr;
 }
 
-def ESP_LD_128_USAR_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r, SAR_BYTESReg:$sar_bytes_out), (ins GPRPIE:$rs2, GPRPIE:$rs1),
-                   "esp.ld.128.usar.xp\t $qu, $rs1, $rs2",
-                   // Note: SAR_BYTES[3:0] = rs1[3:0] (same hardware side-effect as 2.1; explicit out for shared .m)
-                   [(set QR:$qu, GPRPIE:$rs1r, SAR_BYTESReg:$sar_bytes_out, (riscv_esp_ld_128_usar_xp_m GPRPIE:$rs1, GPRPIE:$rs2))]>
-{
+let Defs = []<Register>, isCodeGenOnly = 1 in
+def ESP_LD_128_USAR_IP_2P2
+    : ESP_LD_128_USAR_IP_2P2_Base<(outs QR:$qu, GPRPIE:$rs1r, SAR_BYTESReg:$sar_bytes_out), (ins GPRPIE:$rs1, offset_256_16:$off25616),
+        [(set QR:$qu, GPRPIE:$rs1r, SAR_BYTESReg:$sar_bytes_out, (riscv_esp_ld_128_usar_ip_m GPRPIE:$rs1, offset_256_16:$off25616))], "$rs1r = $rs1">;
+
+def ESP_LD_128_USAR_IP_2P2_MC
+    : ESP_LD_128_USAR_IP_2P2_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616), [], "$rs1r = $rs1"> {
+  let hasSideEffects = 1;
+}
+
+class ESP_LD_128_USAR_XP_2P2_Base<dag outs, dag ins, list<dag> pat, string cstr>
+    : Esp32V2P2Inst<outs, ins, "esp.ld.128.usar.xp\t $qu, $rs1, $rs2", pat> {
   bits<5> rs2;
   bits<5> rs1;
   bits<3> qu;
@@ -26911,7 +26915,6 @@ def ESP_LD_128_USAR_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r, SAR_BYTESR
   let mayLoad = 1;
   let hasSideEffects = 0;
   
-  let Constraints = "$rs1r = $rs1";
   
   let Inst{31} = 0;
   let Inst{30} = 1;
@@ -26939,11 +26942,21 @@ def ESP_LD_128_USAR_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r, SAR_BYTESR
   let Inst{2} = 0;
   let Inst{1} = 1;
   let Inst{0} = 1;
+  let Constraints = cstr;
 }
 
-def ESP_LD_XACC_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low, XACC_HIGH:$xacc_high), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs1, offset_256_8:$off2568),
-                   "esp.ld.xacc.ip\t $rs1, $off2568", []>
-{
+let Defs = []<Register>, isCodeGenOnly = 1 in
+def ESP_LD_128_USAR_XP_2P2
+    : ESP_LD_128_USAR_XP_2P2_Base<(outs QR:$qu, GPRPIE:$rs1r, SAR_BYTESReg:$sar_bytes_out), (ins GPRPIE:$rs2, GPRPIE:$rs1),
+        [(set QR:$qu, GPRPIE:$rs1r, SAR_BYTESReg:$sar_bytes_out, (riscv_esp_ld_128_usar_xp_m GPRPIE:$rs1, GPRPIE:$rs2))], "$rs1r = $rs1">;
+
+def ESP_LD_128_USAR_XP_2P2_MC
+    : ESP_LD_128_USAR_XP_2P2_Base<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1), [], "$rs1r = $rs1"> {
+  let hasSideEffects = 1;
+}
+
+class ESP_LD_XACC_IP_2P2_Base<dag outs, dag ins, list<dag> pat, string cstr>
+    : Esp32V2P2Inst<outs, ins, "esp.ld.xacc.ip\t $rs1, $off2568", pat> {
   bits<5> rs1;
   bits<8> off2568;
   bits<5> rs1r;
@@ -26951,7 +26964,6 @@ def ESP_LD_XACC_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low, XA
   let mayLoad = 1;
   let hasSideEffects = 0;
   
-  let Constraints = "$rs1r = $rs1, $xacc_low = $xacc_low_in, $xacc_high = $xacc_high_in";
   
   let Inst{31} = 0;
   let Inst{30} = 0;
@@ -26978,6 +26990,17 @@ def ESP_LD_XACC_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low, XA
   let Inst{2} = 1;
   let Inst{1} = 1;
   let Inst{0} = 1;
+  let Constraints = cstr;
+}
+
+let Defs = []<Register>, isCodeGenOnly = 1 in
+def ESP_LD_XACC_IP_2P2
+    : ESP_LD_XACC_IP_2P2_Base<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low, XACC_HIGH:$xacc_high), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs1, offset_256_8:$off2568),
+        [], "$rs1r = $rs1, $xacc_low = $xacc_low_in, $xacc_high = $xacc_high_in">;
+
+def ESP_LD_XACC_IP_2P2_MC
+    : ESP_LD_XACC_IP_2P2_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_8:$off2568), [], "$rs1r = $rs1"> {
+  let hasSideEffects = 1;
 }
 
 def ESP_LDQA_S16_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
@@ -27974,10 +27997,8 @@ def ESP_VLDHBC_16_INCP_2P2_P : PseudoEsp<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, 
 				"!esp_vldhbc_16_incp_2p2_p $qu, $qz, $rs1",
 			[(set GPRPIE:$rs1r, (int_riscv_esp_vldhbc_16_incp_2p2 GPRPIE:$rs1, timm:$qu, timm:$qz))]>;
 
-def ESP_LD_QACC_H_H_128_IP_2P2: Esp32V2P2Inst<(outs QACC_H_HIGH:$qacc_h_out, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
-                   "esp.ld.qacc.h.h.128.ip\t $rs1, $off25616",
-                   [(set QACC_H_HIGH:$qacc_h_out, GPRPIE:$rs1r, (riscv_esp_ld_qacc_h_h_128_ip_m GPRPIE:$rs1, offset_256_16:$off25616))]> 
-{
+class ESP_LD_QACC_H_H_128_IP_2P2_Base<dag outs, dag ins, list<dag> pat, string cstr>
+    : Esp32V2P2Inst<outs, ins, "esp.ld.qacc.h.h.128.ip\t $rs1, $off25616", pat> {
   bits<5> rs1;
   bits<8> off25616;
   bits<5> rs1r;
@@ -27985,7 +28006,6 @@ def ESP_LD_QACC_H_H_128_IP_2P2: Esp32V2P2Inst<(outs QACC_H_HIGH:$qacc_h_out, GPR
   let mayLoad = 1;
   let hasSideEffects = 0;
   
-  let Constraints = "$rs1r = $rs1";
   
   let Inst{31} = 0;
   let Inst{30} = 0;
@@ -28012,12 +28032,21 @@ def ESP_LD_QACC_H_H_128_IP_2P2: Esp32V2P2Inst<(outs QACC_H_HIGH:$qacc_h_out, GPR
   let Inst{2} = 1;
   let Inst{1} = 1;
   let Inst{0} = 1;
+  let Constraints = cstr;
 }
 
-def ESP_LD_QACC_H_L_128_IP_2P2: Esp32V2P2Inst<(outs QACC_H_LOW:$qacc_h_out, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
-                   "esp.ld.qacc.h.l.128.ip\t $rs1, $off25616",
-                   [(set QACC_H_LOW:$qacc_h_out, GPRPIE:$rs1r, (riscv_esp_ld_qacc_h_l_128_ip_m GPRPIE:$rs1, offset_256_16:$off25616))]> 
-{
+let Defs = []<Register>, isCodeGenOnly = 1 in
+def ESP_LD_QACC_H_H_128_IP_2P2
+    : ESP_LD_QACC_H_H_128_IP_2P2_Base<(outs QACC_H_HIGH:$qacc_h_out, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
+        [(set QACC_H_HIGH:$qacc_h_out, GPRPIE:$rs1r, (riscv_esp_ld_qacc_h_h_128_ip_m GPRPIE:$rs1, offset_256_16:$off25616))], "$rs1r = $rs1">;
+
+def ESP_LD_QACC_H_H_128_IP_2P2_MC
+    : ESP_LD_QACC_H_H_128_IP_2P2_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616), [], "$rs1r = $rs1"> {
+  let hasSideEffects = 1;
+}
+
+class ESP_LD_QACC_H_L_128_IP_2P2_Base<dag outs, dag ins, list<dag> pat, string cstr>
+    : Esp32V2P2Inst<outs, ins, "esp.ld.qacc.h.l.128.ip\t $rs1, $off25616", pat> {
   bits<5> rs1;
   bits<8> off25616;
   bits<5> rs1r;
@@ -28025,7 +28054,6 @@ def ESP_LD_QACC_H_L_128_IP_2P2: Esp32V2P2Inst<(outs QACC_H_LOW:$qacc_h_out, GPRP
   let mayLoad = 1;
   let hasSideEffects = 0;
   
-  let Constraints = "$rs1r = $rs1";
   
   let Inst{31} = 0;
   let Inst{30} = 0;
@@ -28052,12 +28080,21 @@ def ESP_LD_QACC_H_L_128_IP_2P2: Esp32V2P2Inst<(outs QACC_H_LOW:$qacc_h_out, GPRP
   let Inst{2} = 1;
   let Inst{1} = 1;
   let Inst{0} = 1;
+  let Constraints = cstr;
 }
 
-def ESP_LD_QACC_L_H_128_IP_2P2: Esp32V2P2Inst<(outs QACC_L_HIGH:$qacc_l_out, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
-                   "esp.ld.qacc.l.h.128.ip\t $rs1, $off25616",
-                   [(set QACC_L_HIGH:$qacc_l_out, GPRPIE:$rs1r, (riscv_esp_ld_qacc_l_h_128_ip_m GPRPIE:$rs1, offset_256_16:$off25616))]> 
-{
+let Defs = []<Register>, isCodeGenOnly = 1 in
+def ESP_LD_QACC_H_L_128_IP_2P2
+    : ESP_LD_QACC_H_L_128_IP_2P2_Base<(outs QACC_H_LOW:$qacc_h_out, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
+        [(set QACC_H_LOW:$qacc_h_out, GPRPIE:$rs1r, (riscv_esp_ld_qacc_h_l_128_ip_m GPRPIE:$rs1, offset_256_16:$off25616))], "$rs1r = $rs1">;
+
+def ESP_LD_QACC_H_L_128_IP_2P2_MC
+    : ESP_LD_QACC_H_L_128_IP_2P2_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616), [], "$rs1r = $rs1"> {
+  let hasSideEffects = 1;
+}
+
+class ESP_LD_QACC_L_H_128_IP_2P2_Base<dag outs, dag ins, list<dag> pat, string cstr>
+    : Esp32V2P2Inst<outs, ins, "esp.ld.qacc.l.h.128.ip\t $rs1, $off25616", pat> {
   bits<5> rs1;
   bits<8> off25616;
   bits<5> rs1r;
@@ -28065,7 +28102,6 @@ def ESP_LD_QACC_L_H_128_IP_2P2: Esp32V2P2Inst<(outs QACC_L_HIGH:$qacc_l_out, GPR
   let mayLoad = 1;
   let hasSideEffects = 0;
   
-  let Constraints = "$rs1r = $rs1";
   
   let Inst{31} = 0;
   let Inst{30} = 0;
@@ -28092,12 +28128,21 @@ def ESP_LD_QACC_L_H_128_IP_2P2: Esp32V2P2Inst<(outs QACC_L_HIGH:$qacc_l_out, GPR
   let Inst{2} = 1;
   let Inst{1} = 1;
   let Inst{0} = 1;
+  let Constraints = cstr;
 }
 
-def ESP_LD_QACC_L_L_128_IP_2P2: Esp32V2P2Inst<(outs QACC_L_LOW:$qacc_l_out, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
-                   "esp.ld.qacc.l.l.128.ip\t $rs1, $off25616",
-                   [(set QACC_L_LOW:$qacc_l_out, GPRPIE:$rs1r, (riscv_esp_ld_qacc_l_l_128_ip_m GPRPIE:$rs1, offset_256_16:$off25616))]> 
-{
+let Defs = []<Register>, isCodeGenOnly = 1 in
+def ESP_LD_QACC_L_H_128_IP_2P2
+    : ESP_LD_QACC_L_H_128_IP_2P2_Base<(outs QACC_L_HIGH:$qacc_l_out, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
+        [(set QACC_L_HIGH:$qacc_l_out, GPRPIE:$rs1r, (riscv_esp_ld_qacc_l_h_128_ip_m GPRPIE:$rs1, offset_256_16:$off25616))], "$rs1r = $rs1">;
+
+def ESP_LD_QACC_L_H_128_IP_2P2_MC
+    : ESP_LD_QACC_L_H_128_IP_2P2_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616), [], "$rs1r = $rs1"> {
+  let hasSideEffects = 1;
+}
+
+class ESP_LD_QACC_L_L_128_IP_2P2_Base<dag outs, dag ins, list<dag> pat, string cstr>
+    : Esp32V2P2Inst<outs, ins, "esp.ld.qacc.l.l.128.ip\t $rs1, $off25616", pat> {
   bits<5> rs1;
   bits<8> off25616;
   bits<5> rs1r;
@@ -28105,7 +28150,6 @@ def ESP_LD_QACC_L_L_128_IP_2P2: Esp32V2P2Inst<(outs QACC_L_LOW:$qacc_l_out, GPRP
   let mayLoad = 1;
   let hasSideEffects = 0;
   
-  let Constraints = "$rs1r = $rs1";
   
   let Inst{31} = 0;
   let Inst{30} = 0;
@@ -28132,6 +28176,17 @@ def ESP_LD_QACC_L_L_128_IP_2P2: Esp32V2P2Inst<(outs QACC_L_LOW:$qacc_l_out, GPRP
   let Inst{2} = 1;
   let Inst{1} = 1;
   let Inst{0} = 1;
+  let Constraints = cstr;
+}
+
+let Defs = []<Register>, isCodeGenOnly = 1 in
+def ESP_LD_QACC_L_L_128_IP_2P2
+    : ESP_LD_QACC_L_L_128_IP_2P2_Base<(outs QACC_L_LOW:$qacc_l_out, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
+        [(set QACC_L_LOW:$qacc_l_out, GPRPIE:$rs1r, (riscv_esp_ld_qacc_l_l_128_ip_m GPRPIE:$rs1, offset_256_16:$off25616))], "$rs1r = $rs1">;
+
+def ESP_LD_QACC_L_L_128_IP_2P2_MC
+    : ESP_LD_QACC_L_L_128_IP_2P2_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616), [], "$rs1r = $rs1"> {
+  let hasSideEffects = 1;
 }
 
 def ESP_LD_UA_STATE_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
@@ -28212,10 +28267,8 @@ def ESP_LDXQ_32_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins GPRPIE:$rs1, QR:$qw, sele
   let Inst{0} = 1;
 }
 
-def ESP_ST_QACC_H_H_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QACC_H_HIGH:$src, GPRPIE:$rs1, offset_256_16:$off25616),
-                   "esp.st.qacc.h.h.128.ip\t $rs1, $off25616",
-                   [(set GPRPIE:$rs1r, (riscv_esp_st_qacc_h_h_128_ip_m QACC_H_HIGH:$src, GPRPIE:$rs1, offset_256_16:$off25616))]> 
-{
+class ESP_ST_QACC_H_H_128_IP_2P2_Base<dag outs, dag ins, list<dag> pat, string cstr>
+    : Esp32V2P2Inst<outs, ins, "esp.st.qacc.h.h.128.ip\t $rs1, $off25616", pat> {
   bits<5> rs1;
   bits<8> off25616;
   bits<5> rs1r;
@@ -28223,7 +28276,6 @@ def ESP_ST_QACC_H_H_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QACC_H_H
   let mayLoad = 0;
   let hasSideEffects = 0;
   
-  let Constraints = "$rs1r = $rs1";
   
   let Inst{31} = 0;
   let Inst{30} = 0;
@@ -28250,12 +28302,21 @@ def ESP_ST_QACC_H_H_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QACC_H_H
   let Inst{2} = 1;
   let Inst{1} = 1;
   let Inst{0} = 1;
+  let Constraints = cstr;
 }
 
-def ESP_ST_QACC_H_L_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QACC_H_LOW:$src, GPRPIE:$rs1, offset_256_16:$off25616),
-                   "esp.st.qacc.h.l.128.ip\t $rs1, $off25616",
-                   [(set GPRPIE:$rs1r, (riscv_esp_st_qacc_h_l_128_ip_m QACC_H_LOW:$src, GPRPIE:$rs1, offset_256_16:$off25616))]> 
-{
+let Defs = []<Register>, isCodeGenOnly = 1 in
+def ESP_ST_QACC_H_H_128_IP_2P2
+    : ESP_ST_QACC_H_H_128_IP_2P2_Base<(outs GPRPIE:$rs1r), (ins QACC_H_HIGH:$src, GPRPIE:$rs1, offset_256_16:$off25616),
+        [(set GPRPIE:$rs1r, (riscv_esp_st_qacc_h_h_128_ip_m QACC_H_HIGH:$src, GPRPIE:$rs1, offset_256_16:$off25616))], "$rs1r = $rs1">;
+
+def ESP_ST_QACC_H_H_128_IP_2P2_MC
+    : ESP_ST_QACC_H_H_128_IP_2P2_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616), [], "$rs1r = $rs1"> {
+  let hasSideEffects = 1;
+}
+
+class ESP_ST_QACC_H_L_128_IP_2P2_Base<dag outs, dag ins, list<dag> pat, string cstr>
+    : Esp32V2P2Inst<outs, ins, "esp.st.qacc.h.l.128.ip\t $rs1, $off25616", pat> {
   bits<5> rs1;
   bits<8> off25616;
   bits<5> rs1r;
@@ -28263,7 +28324,6 @@ def ESP_ST_QACC_H_L_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QACC_H_L
   let mayLoad = 0;
   let hasSideEffects = 0;
   
-  let Constraints = "$rs1r = $rs1";
   
   let Inst{31} = 0;
   let Inst{30} = 0;
@@ -28290,12 +28350,21 @@ def ESP_ST_QACC_H_L_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QACC_H_L
   let Inst{2} = 1;
   let Inst{1} = 1;
   let Inst{0} = 1;
+  let Constraints = cstr;
 }
 
-def ESP_ST_QACC_L_H_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QACC_L_HIGH:$src, GPRPIE:$rs1, offset_256_16:$off25616),
-                   "esp.st.qacc.l.h.128.ip\t $rs1, $off25616",
-                   [(set GPRPIE:$rs1r, (riscv_esp_st_qacc_l_h_128_ip_m QACC_L_HIGH:$src, GPRPIE:$rs1, offset_256_16:$off25616))]> 
-{
+let Defs = []<Register>, isCodeGenOnly = 1 in
+def ESP_ST_QACC_H_L_128_IP_2P2
+    : ESP_ST_QACC_H_L_128_IP_2P2_Base<(outs GPRPIE:$rs1r), (ins QACC_H_LOW:$src, GPRPIE:$rs1, offset_256_16:$off25616),
+        [(set GPRPIE:$rs1r, (riscv_esp_st_qacc_h_l_128_ip_m QACC_H_LOW:$src, GPRPIE:$rs1, offset_256_16:$off25616))], "$rs1r = $rs1">;
+
+def ESP_ST_QACC_H_L_128_IP_2P2_MC
+    : ESP_ST_QACC_H_L_128_IP_2P2_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616), [], "$rs1r = $rs1"> {
+  let hasSideEffects = 1;
+}
+
+class ESP_ST_QACC_L_H_128_IP_2P2_Base<dag outs, dag ins, list<dag> pat, string cstr>
+    : Esp32V2P2Inst<outs, ins, "esp.st.qacc.l.h.128.ip\t $rs1, $off25616", pat> {
   bits<5> rs1;
   bits<8> off25616;
   bits<5> rs1r;
@@ -28303,7 +28372,6 @@ def ESP_ST_QACC_L_H_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QACC_L_H
   let mayLoad = 0;
   let hasSideEffects = 0;
   
-  let Constraints = "$rs1r = $rs1";
   
   let Inst{31} = 0;
   let Inst{30} = 0;
@@ -28330,12 +28398,21 @@ def ESP_ST_QACC_L_H_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QACC_L_H
   let Inst{2} = 1;
   let Inst{1} = 1;
   let Inst{0} = 1;
+  let Constraints = cstr;
 }
 
-def ESP_ST_QACC_L_L_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QACC_L_LOW:$src, GPRPIE:$rs1, offset_256_16:$off25616),
-                   "esp.st.qacc.l.l.128.ip\t $rs1, $off25616",
-                   [(set GPRPIE:$rs1r, (riscv_esp_st_qacc_l_l_128_ip_m QACC_L_LOW:$src, GPRPIE:$rs1, offset_256_16:$off25616))]> 
-{
+let Defs = []<Register>, isCodeGenOnly = 1 in
+def ESP_ST_QACC_L_H_128_IP_2P2
+    : ESP_ST_QACC_L_H_128_IP_2P2_Base<(outs GPRPIE:$rs1r), (ins QACC_L_HIGH:$src, GPRPIE:$rs1, offset_256_16:$off25616),
+        [(set GPRPIE:$rs1r, (riscv_esp_st_qacc_l_h_128_ip_m QACC_L_HIGH:$src, GPRPIE:$rs1, offset_256_16:$off25616))], "$rs1r = $rs1">;
+
+def ESP_ST_QACC_L_H_128_IP_2P2_MC
+    : ESP_ST_QACC_L_H_128_IP_2P2_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616), [], "$rs1r = $rs1"> {
+  let hasSideEffects = 1;
+}
+
+class ESP_ST_QACC_L_L_128_IP_2P2_Base<dag outs, dag ins, list<dag> pat, string cstr>
+    : Esp32V2P2Inst<outs, ins, "esp.st.qacc.l.l.128.ip\t $rs1, $off25616", pat> {
   bits<5> rs1;
   bits<8> off25616;
   bits<5> rs1r;
@@ -28343,7 +28420,6 @@ def ESP_ST_QACC_L_L_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QACC_L_L
   let mayLoad = 0;
   let hasSideEffects = 0;
   
-  let Constraints = "$rs1r = $rs1";
   
   let Inst{31} = 0;
   let Inst{30} = 0;
@@ -28370,6 +28446,17 @@ def ESP_ST_QACC_L_L_128_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QACC_L_L
   let Inst{2} = 1;
   let Inst{1} = 1;
   let Inst{0} = 1;
+  let Constraints = cstr;
+}
+
+let Defs = []<Register>, isCodeGenOnly = 1 in
+def ESP_ST_QACC_L_L_128_IP_2P2
+    : ESP_ST_QACC_L_L_128_IP_2P2_Base<(outs GPRPIE:$rs1r), (ins QACC_L_LOW:$src, GPRPIE:$rs1, offset_256_16:$off25616),
+        [(set GPRPIE:$rs1r, (riscv_esp_st_qacc_l_l_128_ip_m QACC_L_LOW:$src, GPRPIE:$rs1, offset_256_16:$off25616))], "$rs1r = $rs1">;
+
+def ESP_ST_QACC_L_L_128_IP_2P2_MC
+    : ESP_ST_QACC_L_L_128_IP_2P2_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616), [], "$rs1r = $rs1"> {
+  let hasSideEffects = 1;
 }
 
 def ESP_ST_UA_STATE_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_16:$off25616),
@@ -29008,11 +29095,8 @@ def ESP_SLCXXP_2Q_2P2: Esp32V2P2Inst<(outs QR:$qyr, QR:$qwr), (ins GPRPIE:$rs1, 
   let Inst{0} = 1;
 }
 
-def ESP_SRC_Q_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins SAR_BYTESReg:$sar_bytes_in, QR:$qy, QR:$qw),
-                   "esp.src.q\t $qz, $qw, $qy",
-                   // Note: Shift amount is SAR_BYTES[3:0] << 3 (explicit SAR matches shared intrinsic / MemIntrin)
-                   [(set QR:$qz, (int_riscv_esp_src_q SAR_BYTESReg:$sar_bytes_in, QR:$qy, QR:$qw))]>
-{
+class ESP_SRC_Q_2P2_Base<dag outs, dag ins, list<dag> pat, string cstr>
+    : Esp32V2P2Inst<outs, ins, "esp.src.q\t $qz, $qw, $qy", pat> {
   bits<3> qy;
   bits<3> qw;
   bits<3> qz;
@@ -29047,13 +29131,21 @@ def ESP_SRC_Q_2P2: Esp32V2P2Inst<(outs QR:$qz), (ins SAR_BYTESReg:$sar_bytes_in,
   let Inst{2} = 0;
   let Inst{1} = 1;
   let Inst{0} = 1;
+  let Constraints = cstr;
 }
 
-def ESP_SRC_Q_LD_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r, QR:$qwr), (ins SAR_BYTESReg:$sar_bytes_in, QR:$qy, GPRPIE:$rs1, QR:$qw, offset_256_16:$off25616),
-                   "esp.src.q.ld.ip\t $qu, $rs1, $off25616, $qw, $qy",
-                   // Note: Shift amount is SAR_BYTES[3:0] << 3 (explicit in matches shared .m / MemIntrin)
-                   [(set QR:$qu, GPRPIE:$rs1r, QR:$qwr, (riscv_esp_src_q_ld_ip_m SAR_BYTESReg:$sar_bytes_in, QR:$qy, QR:$qw, GPRPIE:$rs1, offset_256_16:$off25616))]>
-{
+let Defs = []<Register>, isCodeGenOnly = 1 in
+def ESP_SRC_Q_2P2
+    : ESP_SRC_Q_2P2_Base<(outs QR:$qz), (ins SAR_BYTESReg:$sar_bytes_in, QR:$qy, QR:$qw),
+        [(set QR:$qz, (int_riscv_esp_src_q SAR_BYTESReg:$sar_bytes_in, QR:$qy, QR:$qw))], "">;
+
+def ESP_SRC_Q_2P2_MC
+    : ESP_SRC_Q_2P2_Base<(outs QR:$qz), (ins QR:$qy, QR:$qw), [], ""> {
+  let hasSideEffects = 1;
+}
+
+class ESP_SRC_Q_LD_IP_2P2_Base<dag outs, dag ins, list<dag> pat, string cstr>
+    : Esp32V2P2Inst<outs, ins, "esp.src.q.ld.ip\t $qu, $rs1, $off25616, $qw, $qy", pat> {
   bits<3> qy;
   bits<5> rs1;
   bits<3> qw;
@@ -29065,7 +29157,6 @@ def ESP_SRC_Q_LD_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r, QR:$qwr), (in
   let mayLoad = 1;
   let hasSideEffects = 0;
   
-  let Constraints = "$rs1r = $rs1, $qwr = $qw";
   
   let Inst{31-29} = off25616{7-5};
   let Inst{28-26} = qy{2-0};
@@ -29087,13 +29178,21 @@ def ESP_SRC_Q_LD_IP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r, QR:$qwr), (in
   let Inst{2} = 1;
   let Inst{1} = 1;
   let Inst{0} = 1;
+  let Constraints = cstr;
 }
 
-def ESP_SRC_Q_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r, QR:$qwr), (ins SAR_BYTESReg:$sar_bytes_in, QR:$qy, QR:$qw, GPRPIE:$rs1, GPRPIE:$rs2),
-                   "esp.src.q.ld.xp\t $qu, $rs1, $rs2, $qw, $qy",
-                   // Note: Shift amount is SAR_BYTES[3:0] << 3 (explicit in matches shared .m / MemIntrin)
-                   [(set QR:$qu, GPRPIE:$rs1r, QR:$qwr, (riscv_esp_src_q_ld_xp_m SAR_BYTESReg:$sar_bytes_in, QR:$qy, QR:$qw, GPRPIE:$rs1, GPRPIE:$rs2))]>
-{
+let Defs = []<Register>, isCodeGenOnly = 1 in
+def ESP_SRC_Q_LD_IP_2P2
+    : ESP_SRC_Q_LD_IP_2P2_Base<(outs QR:$qu, GPRPIE:$rs1r, QR:$qwr), (ins SAR_BYTESReg:$sar_bytes_in, QR:$qy, GPRPIE:$rs1, QR:$qw, offset_256_16:$off25616),
+        [(set QR:$qu, GPRPIE:$rs1r, QR:$qwr, (riscv_esp_src_q_ld_ip_m SAR_BYTESReg:$sar_bytes_in, QR:$qy, QR:$qw, GPRPIE:$rs1, offset_256_16:$off25616))], "$rs1r = $rs1, $qwr = $qw">;
+
+def ESP_SRC_Q_LD_IP_2P2_MC
+    : ESP_SRC_Q_LD_IP_2P2_Base<(outs QR:$qu, GPRPIE:$rs1r, QR:$qwr), (ins QR:$qy, GPRPIE:$rs1, QR:$qw, offset_256_16:$off25616), [], "$rs1r = $rs1, $qwr = $qw"> {
+  let hasSideEffects = 1;
+}
+
+class ESP_SRC_Q_LD_XP_2P2_Base<dag outs, dag ins, list<dag> pat, string cstr>
+    : Esp32V2P2Inst<outs, ins, "esp.src.q.ld.xp\t $qu, $rs1, $rs2, $qw, $qy", pat> {
   bits<5> rs2;
   bits<3> qy;
   bits<5> rs1;
@@ -29105,7 +29204,6 @@ def ESP_SRC_Q_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r, QR:$qwr), (in
   let mayLoad = 1;
   let hasSideEffects = 0;
   
-  let Constraints = "$rs1r = $rs1, $qwr = $qw";
   
   let Inst{31} = 1;
   let Inst{30} = 1;
@@ -29130,12 +29228,21 @@ def ESP_SRC_Q_LD_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r, QR:$qwr), (in
   let Inst{2} = 0;
   let Inst{1} = 1;
   let Inst{0} = 1;
+  let Constraints = cstr;
 }
 
-def ESP_SRC_Q_QUP_2P2: Esp32V2P2Inst<(outs QR:$qz, QR:$qwr), (ins SAR_BYTESReg:$sar_bytes_in, QR:$qy, QR:$qw),
-                   "esp.src.q.qup\t $qz, $qw, $qy",
-                   [(set QR:$qz, QR:$qwr, (int_riscv_esp_src_q_qup SAR_BYTESReg:$sar_bytes_in, QR:$qy, QR:$qw))]>
-{
+let Defs = []<Register>, isCodeGenOnly = 1 in
+def ESP_SRC_Q_LD_XP_2P2
+    : ESP_SRC_Q_LD_XP_2P2_Base<(outs QR:$qu, GPRPIE:$rs1r, QR:$qwr), (ins SAR_BYTESReg:$sar_bytes_in, QR:$qy, QR:$qw, GPRPIE:$rs1, GPRPIE:$rs2),
+        [(set QR:$qu, GPRPIE:$rs1r, QR:$qwr, (riscv_esp_src_q_ld_xp_m SAR_BYTESReg:$sar_bytes_in, QR:$qy, QR:$qw, GPRPIE:$rs1, GPRPIE:$rs2))], "$rs1r = $rs1, $qwr = $qw">;
+
+def ESP_SRC_Q_LD_XP_2P2_MC
+    : ESP_SRC_Q_LD_XP_2P2_Base<(outs QR:$qu, GPRPIE:$rs1r, QR:$qwr), (ins GPRPIE:$rs2, QR:$qy, GPRPIE:$rs1, QR:$qw), [], "$rs1r = $rs1, $qwr = $qw"> {
+  let hasSideEffects = 1;
+}
+
+class ESP_SRC_Q_QUP_2P2_Base<dag outs, dag ins, list<dag> pat, string cstr>
+    : Esp32V2P2Inst<outs, ins, "esp.src.q.qup\t $qz, $qw, $qy", pat> {
   bits<3> qy;
   bits<3> qw;
   bits<3> qz;
@@ -29144,7 +29251,6 @@ def ESP_SRC_Q_QUP_2P2: Esp32V2P2Inst<(outs QR:$qz, QR:$qwr), (ins SAR_BYTESReg:$
   let mayLoad = 0;
   let hasSideEffects = 0;
   
-  let Constraints = "$qwr = $qw";
   
   let Inst{31} = 1;
   let Inst{30} = 0;
@@ -29173,6 +29279,17 @@ def ESP_SRC_Q_QUP_2P2: Esp32V2P2Inst<(outs QR:$qz, QR:$qwr), (ins SAR_BYTESReg:$
   let Inst{2} = 0;
   let Inst{1} = 1;
   let Inst{0} = 1;
+  let Constraints = cstr;
+}
+
+let Defs = []<Register>, isCodeGenOnly = 1 in
+def ESP_SRC_Q_QUP_2P2
+    : ESP_SRC_Q_QUP_2P2_Base<(outs QR:$qz, QR:$qwr), (ins SAR_BYTESReg:$sar_bytes_in, QR:$qy, QR:$qw),
+        [(set QR:$qz, QR:$qwr, (int_riscv_esp_src_q_qup SAR_BYTESReg:$sar_bytes_in, QR:$qy, QR:$qw))], "$qwr = $qw">;
+
+def ESP_SRC_Q_QUP_2P2_MC
+    : ESP_SRC_Q_QUP_2P2_Base<(outs QR:$qz, QR:$qwr), (ins QR:$qy, QR:$qw), [], "$qwr = $qw"> {
+  let hasSideEffects = 1;
 }
 
 def ESP_SRCI_2Q_2P2: Esp32V2P2Inst<(outs QR:$qyr, QR:$qwr), (ins QR:$qy, QR:$qw, select_16:$sel16),
@@ -29534,11 +29651,8 @@ def ESP_SRCMB_U8_QACC_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins GPRPIE:$rs1, sat:$s
   let Inst{0} = 1;
 }
 
-def ESP_SRCQ_128_ST_INCP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins SAR_BYTESReg:$sar_bytes_in, QR:$qy, QR:$qw, GPRPIE:$rs1),
-                   "esp.srcq.128.st.incp\t $qw, $qy, $rs1",
-                   // Note: Shift amount is SAR_BYTES[3:0] << 3 (explicit in matches shared .m)
-                   [(set GPRPIE:$rs1r, (riscv_esp_srcq_128_st_incp_m SAR_BYTESReg:$sar_bytes_in, QR:$qy, QR:$qw, GPRPIE:$rs1))]>
-{
+class ESP_SRCQ_128_ST_INCP_2P2_Base<dag outs, dag ins, list<dag> pat, string cstr>
+    : Esp32V2P2Inst<outs, ins, "esp.srcq.128.st.incp\t $qw, $qy, $rs1", pat> {
   bits<3> qy;
   bits<3> qw;
   bits<5> rs1;
@@ -29547,7 +29661,6 @@ def ESP_SRCQ_128_ST_INCP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins SAR_BYTESR
   let mayLoad = 0;
   let hasSideEffects = 0;
   
-  let Constraints = "$rs1r = $rs1";
   
   let Inst{31} = 1;
   let Inst{30} = 0;
@@ -29576,6 +29689,17 @@ def ESP_SRCQ_128_ST_INCP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins SAR_BYTESR
   let Inst{2} = 0;
   let Inst{1} = 1;
   let Inst{0} = 1;
+  let Constraints = cstr;
+}
+
+let Defs = []<Register>, isCodeGenOnly = 1 in
+def ESP_SRCQ_128_ST_INCP_2P2
+    : ESP_SRCQ_128_ST_INCP_2P2_Base<(outs GPRPIE:$rs1r), (ins SAR_BYTESReg:$sar_bytes_in, QR:$qy, QR:$qw, GPRPIE:$rs1),
+        [(set GPRPIE:$rs1r, (riscv_esp_srcq_128_st_incp_m SAR_BYTESReg:$sar_bytes_in, QR:$qy, QR:$qw, GPRPIE:$rs1))], "$rs1r = $rs1">;
+
+def ESP_SRCQ_128_ST_INCP_2P2_MC
+    : ESP_SRCQ_128_ST_INCP_2P2_Base<(outs GPRPIE:$rs1r), (ins QR:$qy, QR:$qw, GPRPIE:$rs1), [], "$rs1r = $rs1"> {
+  let hasSideEffects = 1;
 }
 
 def ESP_SRCXXP_2Q_2P2: Esp32V2P2Inst<(outs QR:$qyr, QR:$qwr), (ins GPRPIE:$rs1, GPRPIE:$rs2, QR:$qy, QR:$qw),
@@ -30109,9 +30233,8 @@ def ESP_VSRD_8_2P2: Esp32V2P2Inst<(outs QR:$qu), (ins QR:$qy, QR:$qw, sat:$sat, 
   let Inst{0} = 1;
 }
 
-def ESP_ST_S_XACC_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs1, offset_256_8:$off2568),
-                   "esp.st.s.xacc.ip\t $rs1, $off2568", []> 
-{
+class ESP_ST_S_XACC_IP_2P2_Base<dag outs, dag ins, list<dag> pat, string cstr>
+    : Esp32V2P2Inst<outs, ins, "esp.st.s.xacc.ip\t $rs1, $off2568", pat> {
   bits<5> rs1;
   bits<8> off2568;
   bits<5> rs1r;
@@ -30119,7 +30242,6 @@ def ESP_ST_S_XACC_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_o
   let mayLoad = 0;
   let hasSideEffects = 0;
   
-  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
   
   let Inst{31} = 0;
   let Inst{30} = 0;
@@ -30146,11 +30268,21 @@ def ESP_ST_S_XACC_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_o
   let Inst{2} = 1;
   let Inst{1} = 1;
   let Inst{0} = 1;
+  let Constraints = cstr;
 }
 
-def ESP_ST_U_XACC_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs1, offset_256_8:$off2568),
-                   "esp.st.u.xacc.ip\t $rs1, $off2568", []> 
-{
+let Defs = []<Register>, isCodeGenOnly = 1 in
+def ESP_ST_S_XACC_IP_2P2
+    : ESP_ST_S_XACC_IP_2P2_Base<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs1, offset_256_8:$off2568),
+        [], "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in">;
+
+def ESP_ST_S_XACC_IP_2P2_MC
+    : ESP_ST_S_XACC_IP_2P2_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_8:$off2568), [], "$rs1r = $rs1"> {
+  let hasSideEffects = 1;
+}
+
+class ESP_ST_U_XACC_IP_2P2_Base<dag outs, dag ins, list<dag> pat, string cstr>
+    : Esp32V2P2Inst<outs, ins, "esp.st.u.xacc.ip\t $rs1, $off2568", pat> {
   bits<5> rs1;
   bits<8> off2568;
   bits<5> rs1r;
@@ -30158,7 +30290,6 @@ def ESP_ST_U_XACC_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_o
   let mayLoad = 0;
   let hasSideEffects = 0;
   
-  let Constraints = "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in";
   
   let Inst{31} = 0;
   let Inst{30} = 0;
@@ -30185,6 +30316,17 @@ def ESP_ST_U_XACC_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_o
   let Inst{2} = 1;
   let Inst{1} = 1;
   let Inst{0} = 1;
+  let Constraints = cstr;
+}
+
+let Defs = []<Register>, isCodeGenOnly = 1 in
+def ESP_ST_U_XACC_IP_2P2
+    : ESP_ST_U_XACC_IP_2P2_Base<(outs GPRPIE:$rs1r, XACC_LOW:$xacc_low_out, XACC_HIGH:$xacc_high_out), (ins XACC_LOW:$xacc_low_in, XACC_HIGH:$xacc_high_in, GPRPIE:$rs1, offset_256_8:$off2568),
+        [], "$rs1r = $rs1, $xacc_low_out = $xacc_low_in, $xacc_high_out = $xacc_high_in">;
+
+def ESP_ST_U_XACC_IP_2P2_MC
+    : ESP_ST_U_XACC_IP_2P2_Base<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_8:$off2568), [], "$rs1r = $rs1"> {
+  let hasSideEffects = 1;
 }
 
 // pie-unify: Pats restored from tip during release-first merge
