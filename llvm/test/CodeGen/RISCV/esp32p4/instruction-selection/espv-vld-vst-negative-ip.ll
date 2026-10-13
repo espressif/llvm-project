@@ -48,7 +48,7 @@ define <8 x i8> @vld_l_64_neg(ptr %src) {
   ; ESPV22-NEXT:   [[COPY:%[0-9]+]]:gprpie = COPY $x11
   ; ESPV22-NEXT:   [[COPY1:%[0-9]+]]:gpr = COPY $x10
   ; ESPV22-NEXT:   [[COPY2:%[0-9]+]]:gprpie = COPY [[COPY1]]
-  ; ESPV22-NEXT:   [[ESP_VLD_L_64_IP_2P2_:%[0-9]+]]:qr, [[ESP_VLD_L_64_IP_2P2_1:%[0-9]+]]:gprpie = ESP_VLD_L_64_IP_2P2 [[COPY]], -8 :: (load (s64) from %ir.src)
+  ; ESPV22-NEXT:   [[ESP_VLD_L_64_IP_2P2_:%[0-9]+]]:qr_64, [[ESP_VLD_L_64_IP_2P2_1:%[0-9]+]]:gprpie = ESP_VLD_L_64_IP_2P2 [[COPY]], -8 :: (load (s64) from %ir.src)
   ; ESPV22-NEXT:   [[ESP_VST_L_64_IP_2P2_:%[0-9]+]]:gprpie = ESP_VST_L_64_IP_2P2 killed [[ESP_VLD_L_64_IP_2P2_]], [[COPY2]], 0 :: (store (s64))
   ; ESPV22-NEXT:   PseudoRET
   ;
