@@ -183,6 +183,9 @@ void XtensaInstrInfo::getLoadStoreOpcodes(const TargetRegisterClass *RC,
   } else if (RC == &Xtensa::FPRRegClass) {
     LoadOpcode = Xtensa::LSI;
     StoreOpcode = Xtensa::SSI;
+  } else if (STI.hasESP32S3Ops() && RC == &Xtensa::QRRegClass) {
+    LoadOpcode = Xtensa::LD_QR;
+    StoreOpcode = Xtensa::ST_QR;
   } else {
     llvm_unreachable("Unsupported regclass to load or store");
   }
