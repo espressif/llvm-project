@@ -29,28 +29,6 @@
 
 using namespace llvm;
 
-std::optional<unsigned> llvm::getQR64LaneSubIdx(MCRegister Reg) {
-  // TableGen interleaves the enums: Q0_D0, Q0_D1, Q1_D0, ..., Q7_D1.
-  static_assert(RISCV::Q0_D1 == RISCV::Q0_D0 + 1 &&
-                RISCV::Q7_D1 == RISCV::Q0_D0 + 15);
-  if (Reg < RISCV::Q0_D0 || Reg > RISCV::Q7_D1)
-    return std::nullopt;
-  return (Reg - RISCV::Q0_D0) % 2 ? RISCV::sub_qr_64_hi : RISCV::sub_qr_64;
-}
-
-std::optional<unsigned>
-llvm::getQR64SubRegIdxForExtractIndex(unsigned OrigIdx, unsigned VecNumElts) {
-  if (OrigIdx == 0)
-    return RISCV::sub_qr_64;
-  if (OrigIdx == VecNumElts / 2)
-    return RISCV::sub_qr_64_hi;
-  return std::nullopt;
-}
-
-unsigned llvm::getQR64HiExtractIndex(unsigned VecNumElts) {
-  return VecNumElts / 2;
-}
-
 static cl::opt<bool> DisableCostPerUse("riscv-disable-cost-per-use",
                                        cl::init(false), cl::Hidden);
 static cl::opt<bool>
