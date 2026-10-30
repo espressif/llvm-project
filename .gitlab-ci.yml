@@ -927,6 +927,18 @@ test_build_idf_hello_world:
   variables:
     TEST_APP_PATH: examples/get-started/hello_world
 
+test_build_idf_llvm_memcpy_opt:
+  extends:
+    - .test_build_idf_app_template
+  variables:
+    TEST_APP_PATH: examples/system/llvm_memcpy_opt
+
+test_build_idf_llvm_opt:
+  extends:
+    - .test_build_idf_app_template
+  variables:
+    TEST_APP_PATH: examples/system/llvm_opt
+
 test_build_esp_dsp:
   extends:
     - .test_build_idf_app_template
