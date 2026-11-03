@@ -22,6 +22,7 @@
 #include "llvm/Analysis/MemoryLocation.h"
 #include "llvm/Analysis/ValueTracking.h"
 #include "llvm/CodeGen/LiveIntervals.h"
+#include "llvm/CodeGen/LivePhysRegs.h"
 #include "llvm/CodeGen/LiveRegUnits.h"
 #include "llvm/CodeGen/LiveVariables.h"
 #include "llvm/CodeGen/MachineCombinerPattern.h"
@@ -783,12 +784,15 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
   }
 
   // Handle QR register copies (ESP32P4)
-  // QR registers are 128-bit, split into two 64-bit subregisters
+  // The PIE manual defines esp.orq as qz = qx | qy, so the idempotent form
+  // `esp.orq qd, qs, qs` is a bit-identical QR move that needs no GPR scratch
+  // (esp.orq has no memory access or other side effects).
   if (RISCV::QRRegClass.contains(DstReg, SrcReg)) {
-    for (unsigned SubIdx : {RISCV::sub_qr_64, RISCV::sub_qr_64_hi}) {
-      BuildMI(MBB, MBBI, DL, get(RISCV::COPY), TRI->getSubReg(DstReg, SubIdx))
-          .addReg(TRI->getSubReg(SrcReg, SubIdx), KillFlag);
-    }
+    if (DstReg == SrcReg)
+      return;
+    BuildMI(MBB, MBBI, DL, get(STI.getESPOrqOpcode()), DstReg)
+        .addReg(SrcReg, getRenamableRegState(RenamableSrc))
+        .addReg(SrcReg, KillFlag | getRenamableRegState(RenamableSrc));
     return;
   }
 
@@ -823,7 +827,8 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
   }
 
   // Handle QR_64 unified subregister copies (ESP32P4). There is no printable
-  // target COPY for QR_64 halves, so copy the two 32-bit lanes through GPRPIE.
+  // target COPY for QR_64 halves; unless the orq form below applies, copy the
+  // two 32-bit lanes through GPRPIE.
   if (RISCV::QR_64RegClass.contains(DstReg) &&
       RISCV::QR_64RegClass.contains(SrcReg)) {
     if (DstReg == SrcReg)
@@ -847,13 +852,40 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
         !getQRSuperAndBaseLane(SrcReg, SrcSuper, SrcBaseLane))
       llvm_unreachable("Unexpected QR_64 register without QR super-register");
 
-    auto getScratchGPRPIE = [&]() -> Register {
-      LiveRegUnits UsedRegs(*TRI);
-      UsedRegs.addLiveOuts(MBB);
-      auto I = MBB.end();
-      while (I != MBBI)
-        UsedRegs.stepBackward(*--I);
+    LiveRegUnits UsedRegs(*TRI);
+    UsedRegs.addLiveOuts(MBB);
+    for (auto I = MBB.end(); I != MBBI;) {
+      --I;
+      if (I != MBBI)
+        UsedRegs.stepBackward(*I);
+    }
 
+    LivePhysRegs DefinedRegs(*TRI);
+    DefinedRegs.addLiveIns(MBB);
+    SmallVector<std::pair<MCPhysReg, const MachineOperand *>, 2> Clobbers;
+    for (auto I = MBB.begin(); I != MBBI; ++I) {
+      DefinedRegs.stepForward(*I, Clobbers);
+      Clobbers.clear();
+    }
+
+    Register DstOther = TRI->getSubReg(
+        DstSuper, DstBaseLane ? RISCV::sub_qr_64 : RISCV::sub_qr_64_hi);
+    bool DstOtherDead =
+        !DefinedRegs.contains(DstOther) || UsedRegs.available(DstOther);
+
+    // Same-lane half copy whose destination other half is dead across the
+    // copy: a full-width idempotent orq writes the wanted half bit-exactly
+    // and only clobbers a dead half.
+    if (DstBaseLane == SrcBaseLane && DstOtherDead) {
+      BuildMI(MBB, MBBI, DL, get(STI.getESPOrqOpcode()), DstSuper)
+          .addReg(SrcSuper)
+          .addReg(SrcSuper);
+      return;
+    }
+
+    auto getScratchGPRPIE = [&]() -> Register {
+      if (MBBI != MBB.end())
+        UsedRegs.stepBackward(*MBBI);
       for (Register Scratch : {RISCV::X24, RISCV::X25, RISCV::X26, RISCV::X27,
                                RISCV::X28, RISCV::X29, RISCV::X30, RISCV::X31,
                                RISCV::X8, RISCV::X9, RISCV::X10, RISCV::X11,
@@ -870,7 +902,9 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
           .addReg(SrcSuper)
           .addImm(SrcBaseLane + Lane);
       BuildMI(MBB, MBBI, DL, get(RISCV::ESP_MOVI_32_Q), DstSuper)
-          .addReg(DstSuper)
+          .addReg(DstSuper, Lane == 0 && DstOtherDead && DstSuper != SrcSuper
+                                ? RegState::Undef
+                                : 0)
           .addReg(Scratch, RegState::Kill)
           .addImm(DstBaseLane + Lane);
     }
@@ -2466,6 +2500,14 @@ RISCVInstrInfo::isCopyInstrImpl(const MachineInstr &MI) const {
   case RISCV::FSGNJ_S_INX:
   case RISCV::FSGNJ_H_INX:
     // The canonical floating-point move is fsgnj rd, rs, rs.
+    if (MI.getOperand(1).isReg() && MI.getOperand(2).isReg() &&
+        MI.getOperand(1).getReg() == MI.getOperand(2).getReg())
+      return DestSourcePair{MI.getOperand(0), MI.getOperand(1)};
+    break;
+  case RISCV::ESP_ORQ:
+  case RISCV::ESP_ORQ_2P2:
+    // The canonical QR move is the idempotent form orq qd, qs, qs
+    // (qz = qx | qy, so x | x = x).
     if (MI.getOperand(1).isReg() && MI.getOperand(2).isReg() &&
         MI.getOperand(1).getReg() == MI.getOperand(2).getReg())
       return DestSourcePair{MI.getOperand(0), MI.getOperand(1)};
