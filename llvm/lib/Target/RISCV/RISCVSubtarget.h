@@ -191,6 +191,9 @@ public:
     return hasVendorXespv2p2() && !hasVendorXespv2p1();
   }
 
+  unsigned getESPOrqOpcode() const {
+    return useESPV2P2Instructions() ? RISCV::ESP_ORQ_2P2 : RISCV::ESP_ORQ;
+  }
   unsigned getESPSpill128Opcode() const {
     return useESPV2P2Instructions() ? RISCV::ESP_VST_128_IP_2P2
                                     : RISCV::ESP_VST_128_IP;

@@ -30,11 +30,12 @@
 using namespace llvm;
 
 std::optional<unsigned> llvm::getQR64LaneSubIdx(MCRegister Reg) {
-  if (Reg >= RISCV::Q0_D0 && Reg <= RISCV::Q7_D0)
-    return RISCV::sub_qr_64;
-  if (Reg >= RISCV::Q0_D1 && Reg <= RISCV::Q7_D1)
-    return RISCV::sub_qr_64_hi;
-  return std::nullopt;
+  // TableGen interleaves the enums: Q0_D0, Q0_D1, Q1_D0, ..., Q7_D1.
+  static_assert(RISCV::Q0_D1 == RISCV::Q0_D0 + 1 &&
+                RISCV::Q7_D1 == RISCV::Q0_D0 + 15);
+  if (Reg < RISCV::Q0_D0 || Reg > RISCV::Q7_D1)
+    return std::nullopt;
+  return (Reg - RISCV::Q0_D0) % 2 ? RISCV::sub_qr_64_hi : RISCV::sub_qr_64;
 }
 
 std::optional<unsigned>
