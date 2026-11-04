@@ -981,6 +981,7 @@ test_pie_optimizations:
     # Extra arguments for the esp-compiler-tests clone (e.g. branch selection).
     ESP_COMPILER_TESTS_CLONE_ARGS: ""
     CONF_TARGET: "riscv32-esp-elf"
+    CHUNK_LINES: "25000"
   script:
     - cd ${DIST_DIR}/
     - ls -l
@@ -997,7 +998,7 @@ test_pie_optimizations:
     # Install deps for the interpreter test_xesppie.py actually runs under,
     # in case plain `pip` in run.sh maps to a different one.
     - python3 -m pip install -r requirements.txt
-    - ./run.sh
+    - ./run.sh -v -j 8
 
 test_xesppie:
   extends: .test_xesppie_template
@@ -1022,6 +1023,8 @@ test_xesppie_td_changes:
         - llvm/lib/Target/RISCV/RISCVESPOperands.td
         - llvm/lib/Target/RISCV/AsmParser/RISCVAsmParser.cpp
         - llvm/lib/Target/RISCV/MCTargetDesc/RISCVMCCodeEmitter.cpp
+        # Self-test: a change to this job's own definition must run it.
+        - .gitlab-ci.yml
 
 upload_to_http:
   stage: private_deploy
