@@ -885,8 +885,18 @@ bool SelectiveDotprodLoopExtractor::extractLoop(Loop *L, LoopInfo &LI,
   AssumptionCache *AC = LookupAssumptionCache(Func);
   CodeExtractorAnalysisCache CEAC(Func);
   CodeExtractor Extractor(L->getBlocks(), &DT, false, nullptr, nullptr, AC);
+  if (!Extractor.isEligible())
+    return false;
+
+  // Drop the loop while its blocks still belong to this function. Erasing
+  // after extraction queries LoopInfo with blocks that now live in the
+  // extracted function and trips the block-number epoch check.
+  LI.erase(L);
   Function *ExtractedFunc = Extractor.extractCodeRegion(CEAC);
-  if (ExtractedFunc) {
+  assert(ExtractedFunc && "CodeExtractor failed to extract an eligible loop");
+  if (!ExtractedFunc)
+    return false;
+
     // Set meaningful names for step arguments (indices 1 and 3)
     unsigned ArgIdx = 0;
     for (Argument &Arg : ExtractedFunc->args()) {
@@ -897,13 +907,10 @@ bool SelectiveDotprodLoopExtractor::extractLoop(Loop *L, LoopInfo &LI,
       }
       ++ArgIdx;
     }
-    LI.erase(L);
     LLVM_DEBUG(dbgs() << "Successfully extracted loop from function "
                       << Func.getName() << "\n");
     return true;
   }
-  return false;
-}
 
 } // end anonymous namespace
 
