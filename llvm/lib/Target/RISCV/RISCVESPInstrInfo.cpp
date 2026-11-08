@@ -148,7 +148,7 @@ bool RISCV::copyESPPhysReg(const RISCVInstrInfo &TII, const RISCVSubtarget &STI,
     auto SubIdx = getQR64LaneSubIdx(SrcReg);
     if (!SubIdx)
       llvm_unreachable("Unexpected QR_64 source register");
-    if (TRI->getSubReg(DstReg, *SubIdx) != MCRegister(SrcReg))
+    if (TRI->getSubReg(DstReg, *SubIdx) != SrcReg.asMCReg())
       BuildMI(MBB, MBBI, DL, TII.get(TargetOpcode::INSERT_SUBREG), DstReg)
           .addReg(DstReg)
           .addReg(SrcReg, SrcFlags)
