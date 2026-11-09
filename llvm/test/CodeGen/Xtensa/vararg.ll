@@ -31,19 +31,19 @@ define void @vararg_fixed_0(...) nounwind {
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    addi a8, a1, -48
 ; CHECK-NEXT:    or a1, a8, a8
-; CHECK-NEXT:    s32i a0, a1, 8 # 4-byte Folded Spill
-; CHECK-NEXT:    s32i a12, a1, 4 # 4-byte Folded Spill
-; CHECK-NEXT:    s32i a7, a1, 32
-; CHECK-NEXT:    s32i a6, a1, 28
-; CHECK-NEXT:    s32i a5, a1, 24
-; CHECK-NEXT:    s32i a4, a1, 20
-; CHECK-NEXT:    s32i a3, a1, 16
-; CHECK-NEXT:    s32i a2, a1, 12
-; CHECK-NEXT:    addi a10, a1, 12
-; CHECK-NEXT:    s32i a10, a1, 4
+; CHECK-NEXT:    s32i a0, a1, 20 # 4-byte Folded Spill
+; CHECK-NEXT:    s32i a12, a1, 16 # 4-byte Folded Spill
+; CHECK-NEXT:    s32i a7, a1, 44
+; CHECK-NEXT:    s32i a6, a1, 40
+; CHECK-NEXT:    s32i a5, a1, 36
+; CHECK-NEXT:    s32i a4, a1, 32
+; CHECK-NEXT:    s32i a3, a1, 28
+; CHECK-NEXT:    s32i a2, a1, 24
+; CHECK-NEXT:    addi a10, a1, 24
+; CHECK-NEXT:    s32i a10, a1, 16
 ; CHECK-NEXT:    addi a8, a1, 48
 ; CHECK-NEXT:    addi a8, a8, -32
-; CHECK-NEXT:    s32i a8, a1, 0
+; CHECK-NEXT:    s32i a8, a1, 12
 ; CHECK-NEXT:    movi a9, 4
 ; CHECK-NEXT:    movi a12, 24
 ; CHECK-NEXT:    blt a12, a9, .LBB1_2
@@ -54,16 +54,16 @@ define void @vararg_fixed_0(...) nounwind {
 ; CHECK-NEXT:  # %bb.3:
 ; CHECK-NEXT:    movi a9, 40
 ; CHECK-NEXT:  .LBB1_4: # %entry
-; CHECK-NEXT:    s32i a9, a1, 8
+; CHECK-NEXT:    s32i a9, a1, 20
 ; CHECK-NEXT:    add a8, a9, a8
 ; CHECK-NEXT:    addi a8, a8, -4
 ; CHECK-NEXT:    l32i a2, a8, 0
 ; CHECK-NEXT:    l32r a8, .LCPI1_0
 ; CHECK-NEXT:    callx0 a8
-; CHECK-NEXT:    l32i a7, a1, 8
+; CHECK-NEXT:    l32i a7, a1, 20
 ; CHECK-NEXT:    addi a10, a7, 4
-; CHECK-NEXT:    l32i a9, a1, 4
-; CHECK-NEXT:    l32i a8, a1, 0
+; CHECK-NEXT:    l32i a9, a1, 16
+; CHECK-NEXT:    l32i a8, a1, 12
 ; CHECK-NEXT:    or a11, a8, a8
 ; CHECK-NEXT:    blt a12, a10, .LBB1_6
 ; CHECK-NEXT:  # %bb.5: # %entry
@@ -73,10 +73,10 @@ define void @vararg_fixed_0(...) nounwind {
 ; CHECK-NEXT:  # %bb.7:
 ; CHECK-NEXT:    addi a10, a7, 40
 ; CHECK-NEXT:  .LBB1_8: # %entry
-; CHECK-NEXT:    s32i a10, a1, 8
+; CHECK-NEXT:    s32i a10, a1, 20
 ; CHECK-NEXT:    add a10, a10, a11
 ; CHECK-NEXT:    addi a7, a10, -4
-; CHECK-NEXT:    l32i a11, a1, 8
+; CHECK-NEXT:    l32i a11, a1, 20
 ; CHECK-NEXT:    addi a10, a11, 4
 ; CHECK-NEXT:    blt a12, a10, .LBB1_10
 ; CHECK-NEXT:  # %bb.9: # %entry
@@ -87,14 +87,14 @@ define void @vararg_fixed_0(...) nounwind {
 ; CHECK-NEXT:  # %bb.11:
 ; CHECK-NEXT:    addi a10, a11, 40
 ; CHECK-NEXT:  .LBB1_12: # %entry
-; CHECK-NEXT:    s32i a10, a1, 8
+; CHECK-NEXT:    s32i a10, a1, 20
 ; CHECK-NEXT:    add a8, a10, a8
 ; CHECK-NEXT:    addi a8, a8, -4
 ; CHECK-NEXT:    l32i a3, a8, 0
 ; CHECK-NEXT:    l32r a8, .LCPI1_1
 ; CHECK-NEXT:    callx0 a8
-; CHECK-NEXT:    l32i a12, a1, 4 # 4-byte Folded Reload
-; CHECK-NEXT:    l32i a0, a1, 8 # 4-byte Folded Reload
+; CHECK-NEXT:    l32i a12, a1, 16 # 4-byte Folded Reload
+; CHECK-NEXT:    l32i a0, a1, 20 # 4-byte Folded Reload
 ; CHECK-NEXT:    addi a8, a1, 48
 ; CHECK-NEXT:    or a1, a8, a8
 ; CHECK-NEXT:    ret
@@ -204,16 +204,16 @@ define void @vararg_fixed_4(i32 %a1, i32 %a2, i32 %a3, i32 %a4, ...) nounwind {
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    addi a8, a1, -32
 ; CHECK-NEXT:    or a1, a8, a8
-; CHECK-NEXT:    s32i a0, a1, 8 # 4-byte Folded Spill
-; CHECK-NEXT:    s32i a12, a1, 4 # 4-byte Folded Spill
-; CHECK-NEXT:    s32i a7, a1, 16
-; CHECK-NEXT:    s32i a6, a1, 12
+; CHECK-NEXT:    s32i a0, a1, 20 # 4-byte Folded Spill
+; CHECK-NEXT:    s32i a12, a1, 16 # 4-byte Folded Spill
+; CHECK-NEXT:    s32i a7, a1, 28
+; CHECK-NEXT:    s32i a6, a1, 24
 ; CHECK-NEXT:    addi a8, a1, 32
 ; CHECK-NEXT:    addi a8, a8, -32
-; CHECK-NEXT:    s32i a8, a1, 0
-; CHECK-NEXT:    addi a9, a1, 12
+; CHECK-NEXT:    s32i a8, a1, 12
+; CHECK-NEXT:    addi a9, a1, 24
 ; CHECK-NEXT:    addi a10, a9, -16
-; CHECK-NEXT:    s32i a10, a1, 4
+; CHECK-NEXT:    s32i a10, a1, 16
 ; CHECK-NEXT:    movi a9, 20
 ; CHECK-NEXT:    movi a12, 24
 ; CHECK-NEXT:    blt a12, a9, .LBB3_2
@@ -224,17 +224,17 @@ define void @vararg_fixed_4(i32 %a1, i32 %a2, i32 %a3, i32 %a4, ...) nounwind {
 ; CHECK-NEXT:  # %bb.3:
 ; CHECK-NEXT:    movi a9, 56
 ; CHECK-NEXT:  .LBB3_4: # %entry
-; CHECK-NEXT:    s32i a9, a1, 8
+; CHECK-NEXT:    s32i a9, a1, 20
 ; CHECK-NEXT:    add a8, a9, a8
 ; CHECK-NEXT:    addi a8, a8, -4
 ; CHECK-NEXT:    l32i a8, a8, 0
 ; CHECK-NEXT:    add a2, a8, a2
 ; CHECK-NEXT:    l32r a8, .LCPI3_0
 ; CHECK-NEXT:    callx0 a8
-; CHECK-NEXT:    l32i a7, a1, 8
+; CHECK-NEXT:    l32i a7, a1, 20
 ; CHECK-NEXT:    addi a10, a7, 4
-; CHECK-NEXT:    l32i a9, a1, 4
-; CHECK-NEXT:    l32i a8, a1, 0
+; CHECK-NEXT:    l32i a9, a1, 16
+; CHECK-NEXT:    l32i a8, a1, 12
 ; CHECK-NEXT:    or a11, a8, a8
 ; CHECK-NEXT:    blt a12, a10, .LBB3_6
 ; CHECK-NEXT:  # %bb.5: # %entry
@@ -244,10 +244,10 @@ define void @vararg_fixed_4(i32 %a1, i32 %a2, i32 %a3, i32 %a4, ...) nounwind {
 ; CHECK-NEXT:  # %bb.7:
 ; CHECK-NEXT:    addi a10, a7, 40
 ; CHECK-NEXT:  .LBB3_8: # %entry
-; CHECK-NEXT:    s32i a10, a1, 8
+; CHECK-NEXT:    s32i a10, a1, 20
 ; CHECK-NEXT:    add a10, a10, a11
 ; CHECK-NEXT:    addi a7, a10, -4
-; CHECK-NEXT:    l32i a11, a1, 8
+; CHECK-NEXT:    l32i a11, a1, 20
 ; CHECK-NEXT:    addi a10, a11, 4
 ; CHECK-NEXT:    blt a12, a10, .LBB3_10
 ; CHECK-NEXT:  # %bb.9: # %entry
@@ -258,14 +258,14 @@ define void @vararg_fixed_4(i32 %a1, i32 %a2, i32 %a3, i32 %a4, ...) nounwind {
 ; CHECK-NEXT:  # %bb.11:
 ; CHECK-NEXT:    addi a10, a11, 40
 ; CHECK-NEXT:  .LBB3_12: # %entry
-; CHECK-NEXT:    s32i a10, a1, 8
+; CHECK-NEXT:    s32i a10, a1, 20
 ; CHECK-NEXT:    add a8, a10, a8
 ; CHECK-NEXT:    addi a8, a8, -4
 ; CHECK-NEXT:    l32i a3, a8, 0
 ; CHECK-NEXT:    l32r a8, .LCPI3_1
 ; CHECK-NEXT:    callx0 a8
-; CHECK-NEXT:    l32i a12, a1, 4 # 4-byte Folded Reload
-; CHECK-NEXT:    l32i a0, a1, 8 # 4-byte Folded Reload
+; CHECK-NEXT:    l32i a12, a1, 16 # 4-byte Folded Reload
+; CHECK-NEXT:    l32i a0, a1, 20 # 4-byte Folded Reload
 ; CHECK-NEXT:    addi a8, a1, 32
 ; CHECK-NEXT:    or a1, a8, a8
 ; CHECK-NEXT:    ret
@@ -375,39 +375,35 @@ define void @vararg_fixed_6(i32 %a1, i32 %a2, i32 %a3, i32 %a4, i32 %a5, i32 %a6
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    addi a8, a1, -16
 ; CHECK-NEXT:    or a1, a8, a8
-; CHECK-NEXT:    s32i a0, a1, 8 # 4-byte Folded Spill
-; CHECK-NEXT:    s32i a12, a1, 4 # 4-byte Folded Spill
-; CHECK-NEXT:    movi a8, 12
-; CHECK-NEXT:    addi a9, a1, 16
-; CHECK-NEXT:    and a10, a9, a8
-; CHECK-NEXT:    addi a8, a10, 36
-; CHECK-NEXT:    movi a11, 32
-; CHECK-NEXT:    or a11, a10, a11
-; CHECK-NEXT:    sub a9, a9, a11
-; CHECK-NEXT:    s32i a9, a1, 0
-; CHECK-NEXT:    addi a11, a1, 0
-; CHECK-NEXT:    addi a11, a11, -24
-; CHECK-NEXT:    s32i a11, a1, 4
+; CHECK-NEXT:    s32i a0, a1, 12 # 4-byte Folded Spill
+; CHECK-NEXT:    s32i a12, a1, 8 # 4-byte Folded Spill
+; CHECK-NEXT:    addi a8, a1, 16
+; CHECK-NEXT:    addi a8, a8, -32
+; CHECK-NEXT:    s32i a8, a1, 4
+; CHECK-NEXT:    addi a9, a1, 4
+; CHECK-NEXT:    addi a10, a9, -24
+; CHECK-NEXT:    s32i a10, a1, 8
+; CHECK-NEXT:    movi a9, 36
 ; CHECK-NEXT:    movi a12, 24
-; CHECK-NEXT:    blt a12, a8, .LBB5_2
+; CHECK-NEXT:    blt a12, a9, .LBB5_2
 ; CHECK-NEXT:  # %bb.1: # %entry
-; CHECK-NEXT:    or a9, a11, a11
+; CHECK-NEXT:    or a8, a10, a10
 ; CHECK-NEXT:  .LBB5_2: # %entry
-; CHECK-NEXT:    bge a12, a8, .LBB5_4
+; CHECK-NEXT:    bge a12, a9, .LBB5_4
 ; CHECK-NEXT:  # %bb.3:
-; CHECK-NEXT:    addi a8, a10, 72
+; CHECK-NEXT:    movi a9, 72
 ; CHECK-NEXT:  .LBB5_4: # %entry
-; CHECK-NEXT:    s32i a8, a1, 8
-; CHECK-NEXT:    add a8, a8, a9
+; CHECK-NEXT:    s32i a9, a1, 12
+; CHECK-NEXT:    add a8, a9, a8
 ; CHECK-NEXT:    addi a8, a8, -4
 ; CHECK-NEXT:    l32i a8, a8, 0
 ; CHECK-NEXT:    add a2, a8, a2
 ; CHECK-NEXT:    l32r a8, .LCPI5_0
 ; CHECK-NEXT:    callx0 a8
-; CHECK-NEXT:    l32i a7, a1, 8
+; CHECK-NEXT:    l32i a7, a1, 12
 ; CHECK-NEXT:    addi a10, a7, 4
-; CHECK-NEXT:    l32i a9, a1, 4
-; CHECK-NEXT:    l32i a8, a1, 0
+; CHECK-NEXT:    l32i a9, a1, 8
+; CHECK-NEXT:    l32i a8, a1, 4
 ; CHECK-NEXT:    or a11, a8, a8
 ; CHECK-NEXT:    blt a12, a10, .LBB5_6
 ; CHECK-NEXT:  # %bb.5: # %entry
@@ -417,10 +413,10 @@ define void @vararg_fixed_6(i32 %a1, i32 %a2, i32 %a3, i32 %a4, i32 %a5, i32 %a6
 ; CHECK-NEXT:  # %bb.7:
 ; CHECK-NEXT:    addi a10, a7, 40
 ; CHECK-NEXT:  .LBB5_8: # %entry
-; CHECK-NEXT:    s32i a10, a1, 8
+; CHECK-NEXT:    s32i a10, a1, 12
 ; CHECK-NEXT:    add a10, a10, a11
 ; CHECK-NEXT:    addi a7, a10, -4
-; CHECK-NEXT:    l32i a11, a1, 8
+; CHECK-NEXT:    l32i a11, a1, 12
 ; CHECK-NEXT:    addi a10, a11, 4
 ; CHECK-NEXT:    blt a12, a10, .LBB5_10
 ; CHECK-NEXT:  # %bb.9: # %entry
@@ -431,14 +427,14 @@ define void @vararg_fixed_6(i32 %a1, i32 %a2, i32 %a3, i32 %a4, i32 %a5, i32 %a6
 ; CHECK-NEXT:  # %bb.11:
 ; CHECK-NEXT:    addi a10, a11, 40
 ; CHECK-NEXT:  .LBB5_12: # %entry
-; CHECK-NEXT:    s32i a10, a1, 8
+; CHECK-NEXT:    s32i a10, a1, 12
 ; CHECK-NEXT:    add a8, a10, a8
 ; CHECK-NEXT:    addi a8, a8, -4
 ; CHECK-NEXT:    l32i a3, a8, 0
 ; CHECK-NEXT:    l32r a8, .LCPI5_1
 ; CHECK-NEXT:    callx0 a8
-; CHECK-NEXT:    l32i a12, a1, 4 # 4-byte Folded Reload
-; CHECK-NEXT:    l32i a0, a1, 8 # 4-byte Folded Reload
+; CHECK-NEXT:    l32i a12, a1, 8 # 4-byte Folded Reload
+; CHECK-NEXT:    l32i a0, a1, 12 # 4-byte Folded Reload
 ; CHECK-NEXT:    addi a8, a1, 16
 ; CHECK-NEXT:    or a1, a8, a8
 ; CHECK-NEXT:    ret
@@ -462,8 +458,8 @@ define void @vararg_fixed_7(i32 %a1, i32 %a2, i32 %a3, i32 %a4, i32 %a5, i32 %a6
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    addi a8, a1, -16
 ; CHECK-NEXT:    or a1, a8, a8
-; CHECK-NEXT:    s32i a0, a1, 8 # 4-byte Folded Spill
-; CHECK-NEXT:    s32i a12, a1, 4 # 4-byte Folded Spill
+; CHECK-NEXT:    s32i a0, a1, 12 # 4-byte Folded Spill
+; CHECK-NEXT:    s32i a12, a1, 8 # 4-byte Folded Spill
 ; CHECK-NEXT:    movi a8, 12
 ; CHECK-NEXT:    addi a9, a1, 20
 ; CHECK-NEXT:    and a10, a9, a8
@@ -471,10 +467,10 @@ define void @vararg_fixed_7(i32 %a1, i32 %a2, i32 %a3, i32 %a4, i32 %a5, i32 %a6
 ; CHECK-NEXT:    movi a11, 32
 ; CHECK-NEXT:    or a11, a10, a11
 ; CHECK-NEXT:    sub a9, a9, a11
-; CHECK-NEXT:    s32i a9, a1, 0
-; CHECK-NEXT:    addi a11, a1, 0
+; CHECK-NEXT:    s32i a9, a1, 4
+; CHECK-NEXT:    addi a11, a1, 4
 ; CHECK-NEXT:    addi a11, a11, -24
-; CHECK-NEXT:    s32i a11, a1, 4
+; CHECK-NEXT:    s32i a11, a1, 8
 ; CHECK-NEXT:    movi a12, 24
 ; CHECK-NEXT:    blt a12, a8, .LBB6_2
 ; CHECK-NEXT:  # %bb.1: # %entry
@@ -484,17 +480,17 @@ define void @vararg_fixed_7(i32 %a1, i32 %a2, i32 %a3, i32 %a4, i32 %a5, i32 %a6
 ; CHECK-NEXT:  # %bb.3:
 ; CHECK-NEXT:    addi a8, a10, 72
 ; CHECK-NEXT:  .LBB6_4: # %entry
-; CHECK-NEXT:    s32i a8, a1, 8
+; CHECK-NEXT:    s32i a8, a1, 12
 ; CHECK-NEXT:    add a8, a8, a9
 ; CHECK-NEXT:    addi a8, a8, -4
 ; CHECK-NEXT:    l32i a8, a8, 0
 ; CHECK-NEXT:    add a2, a8, a2
 ; CHECK-NEXT:    l32r a8, .LCPI6_0
 ; CHECK-NEXT:    callx0 a8
-; CHECK-NEXT:    l32i a7, a1, 8
+; CHECK-NEXT:    l32i a7, a1, 12
 ; CHECK-NEXT:    addi a10, a7, 4
-; CHECK-NEXT:    l32i a9, a1, 4
-; CHECK-NEXT:    l32i a8, a1, 0
+; CHECK-NEXT:    l32i a9, a1, 8
+; CHECK-NEXT:    l32i a8, a1, 4
 ; CHECK-NEXT:    or a11, a8, a8
 ; CHECK-NEXT:    blt a12, a10, .LBB6_6
 ; CHECK-NEXT:  # %bb.5: # %entry
@@ -504,10 +500,10 @@ define void @vararg_fixed_7(i32 %a1, i32 %a2, i32 %a3, i32 %a4, i32 %a5, i32 %a6
 ; CHECK-NEXT:  # %bb.7:
 ; CHECK-NEXT:    addi a10, a7, 40
 ; CHECK-NEXT:  .LBB6_8: # %entry
-; CHECK-NEXT:    s32i a10, a1, 8
+; CHECK-NEXT:    s32i a10, a1, 12
 ; CHECK-NEXT:    add a10, a10, a11
 ; CHECK-NEXT:    addi a7, a10, -4
-; CHECK-NEXT:    l32i a11, a1, 8
+; CHECK-NEXT:    l32i a11, a1, 12
 ; CHECK-NEXT:    addi a10, a11, 4
 ; CHECK-NEXT:    blt a12, a10, .LBB6_10
 ; CHECK-NEXT:  # %bb.9: # %entry
@@ -518,14 +514,14 @@ define void @vararg_fixed_7(i32 %a1, i32 %a2, i32 %a3, i32 %a4, i32 %a5, i32 %a6
 ; CHECK-NEXT:  # %bb.11:
 ; CHECK-NEXT:    addi a10, a11, 40
 ; CHECK-NEXT:  .LBB6_12: # %entry
-; CHECK-NEXT:    s32i a10, a1, 8
+; CHECK-NEXT:    s32i a10, a1, 12
 ; CHECK-NEXT:    add a8, a10, a8
 ; CHECK-NEXT:    addi a8, a8, -4
 ; CHECK-NEXT:    l32i a3, a8, 0
 ; CHECK-NEXT:    l32r a8, .LCPI6_1
 ; CHECK-NEXT:    callx0 a8
-; CHECK-NEXT:    l32i a12, a1, 4 # 4-byte Folded Reload
-; CHECK-NEXT:    l32i a0, a1, 8 # 4-byte Folded Reload
+; CHECK-NEXT:    l32i a12, a1, 8 # 4-byte Folded Reload
+; CHECK-NEXT:    l32i a0, a1, 12 # 4-byte Folded Reload
 ; CHECK-NEXT:    addi a8, a1, 16
 ; CHECK-NEXT:    or a1, a8, a8
 ; CHECK-NEXT:    ret
