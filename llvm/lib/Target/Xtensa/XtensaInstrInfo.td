@@ -71,6 +71,11 @@ def ADDI : RRI8_Inst<0x02, (outs AR:$t), (ins AR:$s, imm8:$imm8),
 
 def : InstAlias<"_addi\t$r, $s, $imm8", (ADDI AR:$r, AR:$s, imm8:$imm8)>;
 
+// LowerImmediate keeps an imm8_sh8 constant as an immediate when its only user
+// is an ADD, expecting ADDMI to absorb it. Prefer ADDMI over ADDX2/4/8 so that
+// (add (shl x, N), imm8_sh8) does not select ADDXN with the constant as a
+// register operand.
+let AddedComplexity = 10 in
 def ADDMI : RRI8_Inst<0x02, (outs AR:$t), (ins AR:$s, imm8_sh8:$imm_sh8),
                      "addmi\t$t, $s, $imm_sh8",
                      [(set AR:$t, (add AR:$s, imm8_sh8:$imm_sh8))]> {
