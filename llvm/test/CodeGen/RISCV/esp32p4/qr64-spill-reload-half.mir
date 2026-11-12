@@ -7,13 +7,13 @@
 # the QR_64 register (-verify-machineinstrs: Illegal physical register).
 
 # RUN: llc -mtriple=riscv32-esp-unknown-elf -mattr=+xespv2p1,+espv-lowering \
-# RUN:   -run-pass=prologepilog -verify-machineinstrs -o - %s \
+# RUN:   -run-pass=prolog-epilog -verify-machineinstrs -o - %s \
 # RUN:   | FileCheck %s --check-prefixes=CHECK,P21
 # RUN: llc -mtriple=riscv32-esp-unknown-elf -mattr=+xespv2p2,+espv-lowering \
-# RUN:   -run-pass=prologepilog -verify-machineinstrs -o - %s \
+# RUN:   -run-pass=prolog-epilog -verify-machineinstrs -o - %s \
 # RUN:   | FileCheck %s --check-prefixes=CHECK,P22
 # RUN: llc -mtriple=riscv32-esp-unknown-elf -mattr=+xespv2p2,+espv-lowering \
-# RUN:   -start-before=prologepilog -o - %s | FileCheck %s --check-prefix=ASM
+# RUN:   -start-before=prolog-epilog -o - %s | FileCheck %s --check-prefix=ASM
 
 # CHECK-LABEL: name: hi_spill_reload
 # P21: ESP_VST_H_64_IP killed $q2_d1,
