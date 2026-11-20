@@ -6,7 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-// REQUIRES: std-at-least-c++26
+// REQUIRES: has-unix-headers, std-at-least-c++26
 // UNSUPPORTED: libcpp-hardening-mode=none
 
 // template <class _Iterator, class _Container, class _ContainerMaxElements>

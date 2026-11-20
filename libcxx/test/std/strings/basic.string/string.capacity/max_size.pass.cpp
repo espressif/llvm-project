@@ -23,6 +23,8 @@
 //    is too large to succeed.
 // UNSUPPORTED: sanitizer-new-delete
 
+// REQUIRES: large_tests
+
 #include <string>
 #include <cassert>
 #include <new>

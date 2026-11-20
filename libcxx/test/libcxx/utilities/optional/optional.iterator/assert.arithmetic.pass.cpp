@@ -10,7 +10,7 @@
 
 // Add to iterator out of bounds.
 
-// REQUIRES: std-at-least-c++26
+// REQUIRES: has-unix-headers, std-at-least-c++26
 // UNSUPPORTED: libcpp-hardening-mode=none, libcpp-has-abi-bounded-iterators-in-optional
 
 #include <optional>

@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 // UNSUPPORTED: c++03, c++11, c++14, c++17, c++20
-// REQUIRES: libcpp-hardening-mode={{fast|extensive|debug}}
+// REQUIRES: has-unix-headers, libcpp-hardening-mode={{fast|extensive|debug}}
 // XFAIL: libcpp-hardening-mode=debug && availability-verbose_abort-missing
 
 // constexpr decltype(auto) operator*() const

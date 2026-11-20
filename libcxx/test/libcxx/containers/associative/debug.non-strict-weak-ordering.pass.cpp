@@ -12,7 +12,7 @@
 // This test ensures that libc++ detects when std::set or std::map are used with a
 // predicate that is not a strict weak ordering when the debug mode is enabled.
 
-// REQUIRES: libcpp-hardening-mode=debug
+// REQUIRES: has-unix-headers, libcpp-hardening-mode=debug
 // UNSUPPORTED: c++03, c++11, c++14
 
 #include <map>

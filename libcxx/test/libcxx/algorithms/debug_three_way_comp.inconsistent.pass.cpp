@@ -12,7 +12,7 @@
 
 // Make sure __debug_three_way_comp asserts when the comparator is not consistent.
 
-// REQUIRES: libcpp-hardening-mode=debug
+// REQUIRES: has-unix-headers, libcpp-hardening-mode=debug
 // UNSUPPORTED: c++03, c++11, c++14, c++17
 
 #include <algorithm>
