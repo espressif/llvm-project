@@ -512,10 +512,10 @@ build_and_test:
       #  - cross-cutting backend files (ISA-info, clang target/driver) also run
       #    clang driver+preprocessor and the llvm unit tests;
       #  - anything else, an unavailable diff base, a non-MR pipeline, or the
-      #    'test::all' MR label -> full check-all.
+      #    'all_llvm_tests' MR label -> full check-all.
       TEST_TARGETS="check-all"
       if [ "${CI_PIPELINE_SOURCE:-}" = "merge_request_event" ] \
-         && ! echo "${CI_MERGE_REQUEST_LABELS:-}" | grep -q "test::all" \
+         && ! echo "${CI_MERGE_REQUEST_LABELS:-}" | grep -q "all_llvm_tests" \
          && [ -n "${CI_MERGE_REQUEST_DIFF_BASE_SHA:-}" ] \
          && git cat-file -e "${CI_MERGE_REQUEST_DIFF_BASE_SHA}^{commit}" 2>/dev/null; then
         CHANGED=$(git diff --name-only "${CI_MERGE_REQUEST_DIFF_BASE_SHA}" HEAD)
