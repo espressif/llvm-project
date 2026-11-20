@@ -36,6 +36,15 @@ variables:
   ESP_LLVM_PARALLEL_LINK_JOBS_FORCED: 4
   ESP_LLVM_PARALLEL_TABLEGEN_JOBS_FORCED: 16
   MAX_NINJA_JOBS: 32
+  # POSIX ERE prefixes for RISCV files. build_and_test uses these to choose lit
+  # suites and PIE tool packing. test_pie_optimizations rules:changes:regexp
+  # uses the same variables. GitLab rejects an expanded regexp longer than 255
+  # characters, so keep each pattern under that limit and do not join them into
+  # one rules:changes:regexp value (the join is 253 characters today).
+  # RISCV_LOCAL_CHANGE_RE: target backend and its CodeGen/MC/Clang CodeGen tests.
+  # RISCV_CROSS_CHANGE_RE: ISA info, Clang target, and driver/preprocessor.
+  RISCV_LOCAL_CHANGE_RE: '^(llvm/lib/Target/RISCV/|llvm/test/(CodeGen|MC|MC/Disassembler)/RISCV/|clang/test/CodeGen/RISCV/)'
+  RISCV_CROSS_CHANGE_RE: '^(llvm/(lib|include/llvm)/TargetParser/RISCV|clang/lib/Basic/Targets/RISCV|clang/lib/Driver/ToolChains/Arch/RISCV|clang/test/(Driver|Preprocessor)/.*riscv)'
 
 workflow:
   rules:
@@ -476,6 +485,7 @@ build_and_test:
       if [ $CI_JOB_STATUS == 'failed' ]; then
         [ ! -f "${BUILD_DIR}/build.log" ] || grep -i "internal compiler error\|Killed" ${BUILD_DIR}/build.log || true
         [ ! -f "${BUILD_DIR}/tests.log" ] || grep -i "internal compiler error\|Killed" ${BUILD_DIR}/tests.log || true
+        [ ! -f "${BUILD_DIR}/pie-tools.log" ] || grep -i "internal compiler error\|Killed" ${BUILD_DIR}/pie-tools.log || true
         [ ! -f "${BUILD_DIR}/lld-tests.log" ] || grep -i "internal compiler error\|Killed" ${BUILD_DIR}/lld-tests.log || true
       fi
     - ccache --show-stats
@@ -513,51 +523,93 @@ build_and_test:
       #    clang driver+preprocessor and the llvm unit tests;
       #  - anything else, an unavailable diff base, a non-MR pipeline, or the
       #    'test::all' MR label -> full check-all.
+      # PIE tools are built when this diff matches $RISCV_LOCAL_CHANGE_RE or
+      # $RISCV_CROSS_CHANGE_RE, and always for tag pipelines.
+      # test_pie_optimizations uses those same CI variables, plus a tag rule.
       TEST_TARGETS="check-all"
+      BUILD_PIE_TOOLS=0
+      if [ -n "${CI_COMMIT_TAG:-}" ]; then
+        BUILD_PIE_TOOLS=1
+        echo "Tag pipeline; building PIE tools"
+      fi
+      XTENSA_BACKEND='^(llvm/lib/Target/Xtensa/|llvm/test/(CodeGen|MC|MC/Disassembler)/Xtensa/)'
+      XTENSA_TARGET_DRIVER='^(clang/lib/Basic/Targets/Xtensa|clang/lib/Driver/ToolChains/.*[Xx]tensa)'
+      LLD='^lld/'
+      DIFF_BASE=""
       if [ "${CI_PIPELINE_SOURCE:-}" = "merge_request_event" ] \
-         && ! echo "${CI_MERGE_REQUEST_LABELS:-}" | grep -q "test::all" \
          && [ -n "${CI_MERGE_REQUEST_DIFF_BASE_SHA:-}" ] \
          && git cat-file -e "${CI_MERGE_REQUEST_DIFF_BASE_SHA}^{commit}" 2>/dev/null; then
-        CHANGED=$(git diff --name-only "${CI_MERGE_REQUEST_DIFF_BASE_SHA}" HEAD)
-        echo "Changed files in this MR:"; echo "${CHANGED}"
-        # .gitlab-ci.yml is not test-bearing: ignore it so it neither forces
-        # check-all on its own nor vetoes narrowing when bundled with backend
-        # changes. A CI-only change leaves CHANGED empty -> check-all default.
-        CHANGED=$(printf '%s\n' "${CHANGED}" | grep -vxF '.gitlab-ci.yml' || true)
-        RISCV_LOCAL='^(llvm/lib/Target/RISCV/|llvm/test/(CodeGen|MC|MC/Disassembler)/RISCV/|clang/test/CodeGen/RISCV/)'
-        XTENSA_LOCAL='^(llvm/lib/Target/Xtensa/|llvm/test/(CodeGen|MC|MC/Disassembler)/Xtensa/)'
-        RISCV_CROSS='^(llvm/(lib|include/llvm)/TargetParser/RISCV|clang/lib/Basic/Targets/RISCV|clang/lib/Driver/ToolChains/Arch/RISCV|clang/test/(Driver|Preprocessor)/.*riscv)'
-        XTENSA_CROSS='^(clang/lib/Basic/Targets/Xtensa|clang/lib/Driver/ToolChains/.*[Xx]tensa)'
-        LLD='^lld/'
-        KNOWN="${RISCV_LOCAL}|${XTENSA_LOCAL}|${RISCV_CROSS}|${XTENSA_CROSS}|${LLD}"
-        OUTSIDE=$(echo "${CHANGED}" | grep -vE "${KNOWN}" || true)
-        if [ -n "${CHANGED}" ] && [ -z "${OUTSIDE}" ]; then
-          T=""
-          echo "${CHANGED}" | grep -qE "${RISCV_LOCAL}|${RISCV_CROSS}"   && T="${T} check-llvm-codegen-riscv check-llvm-mc-riscv check-llvm-mc-disassembler-riscv check-clang-codegen-riscv"
-          echo "${CHANGED}" | grep -qE "${XTENSA_LOCAL}|${XTENSA_CROSS}" && T="${T} check-llvm-codegen-xtensa check-llvm-mc-xtensa check-llvm-mc-disassembler-xtensa"
-          echo "${CHANGED}" | grep -qE "${RISCV_CROSS}|${XTENSA_CROSS}"  && T="${T} check-clang-driver check-clang-preprocessor check-llvm-unit"
-          echo "${CHANGED}" | grep -qE "${LLD}"                          && T="${T} check-lld"
-          T=$(echo ${T} | tr ' ' '\n' | grep -v '^$' | sort -u | tr '\n' ' ')
-          [ -n "${T}" ] && TEST_TARGETS="${T}"
-        else
-          echo "Changes fall outside the RISCV/Xtensa allowlist; running check-all"
+        DIFF_BASE="${CI_MERGE_REQUEST_DIFF_BASE_SHA}"
+      elif [ -n "${CI_COMMIT_BEFORE_SHA:-}" ] \
+           && [ "${CI_COMMIT_BEFORE_SHA}" != "0000000000000000000000000000000000000000" ] \
+           && git cat-file -e "${CI_COMMIT_BEFORE_SHA}^{commit}" 2>/dev/null; then
+        DIFF_BASE="${CI_COMMIT_BEFORE_SHA}"
+      fi
+      if [ -n "${DIFF_BASE}" ]; then
+        CHANGED=$(git diff --name-only "${DIFF_BASE}" HEAD)
+        echo "Changed files:"; echo "${CHANGED}"
+        if echo "${CHANGED}" | grep -qE "${RISCV_LOCAL_CHANGE_RE}|${RISCV_CROSS_CHANGE_RE}"; then
+          BUILD_PIE_TOOLS=1
         fi
+        if [ "${CI_PIPELINE_SOURCE:-}" = "merge_request_event" ] \
+           && ! echo "${CI_MERGE_REQUEST_LABELS:-}" | grep -q "test::all"; then
+          # .gitlab-ci.yml is not test-bearing: ignore it so it neither forces
+          # check-all on its own nor vetoes narrowing when bundled with backend
+          # changes. A CI-only change leaves CHANGED empty -> check-all default.
+          CHANGED=$(printf '%s\n' "${CHANGED}" | grep -vxF '.gitlab-ci.yml' || true)
+          KNOWN="${RISCV_LOCAL_CHANGE_RE}|${XTENSA_BACKEND}|${RISCV_CROSS_CHANGE_RE}|${XTENSA_TARGET_DRIVER}|${LLD}"
+          OUTSIDE=$(echo "${CHANGED}" | grep -vE "${KNOWN}" || true)
+          if [ -n "${CHANGED}" ] && [ -z "${OUTSIDE}" ]; then
+            T=""
+            echo "${CHANGED}" | grep -qE "${RISCV_LOCAL_CHANGE_RE}|${RISCV_CROSS_CHANGE_RE}"   && T="${T} check-llvm-codegen-riscv check-llvm-mc-riscv check-llvm-mc-disassembler-riscv check-clang-codegen-riscv"
+            echo "${CHANGED}" | grep -qE "${XTENSA_BACKEND}|${XTENSA_TARGET_DRIVER}" && T="${T} check-llvm-codegen-xtensa check-llvm-mc-xtensa check-llvm-mc-disassembler-xtensa"
+            echo "${CHANGED}" | grep -qE "${RISCV_CROSS_CHANGE_RE}|${XTENSA_TARGET_DRIVER}"  && T="${T} check-clang-driver check-clang-preprocessor check-llvm-unit"
+            echo "${CHANGED}" | grep -qE "${LLD}"                          && T="${T} check-lld"
+            T=$(echo ${T} | tr ' ' '\n' | grep -v '^$' | sort -u | tr '\n' ' ')
+            [ -n "${T}" ] && TEST_TARGETS="${T}"
+          else
+            echo "Changes fall outside the RISCV/Xtensa allowlist; running check-all"
+          fi
+        fi
+      elif [ "${CI_PIPELINE_SOURCE:-}" = "merge_request_event" ] || [ -n "${CI_COMMIT_BRANCH:-}" ]; then
+        # rules:changes can still schedule test_pie_optimizations when this
+        # clone cannot see the diff. check-all builds clang, so packing works.
+        BUILD_PIE_TOOLS=1
+        echo "No diff base; running check-all and building PIE tools"
+      elif [ -z "${CI_COMMIT_TAG:-}" ]; then
+        echo "No diff base; running check-all and skipping PIE tools"
       fi
       echo "Selected test targets: ${TEST_TARGETS}"
+      echo "BUILD_PIE_TOOLS=${BUILD_PIE_TOOLS}"
+      export BUILD_PIE_TOOLS
     - echo "Run LLVM/Clang unit tests";
     - touch ${BUILD_PATH}/tests.log;
     - chmod o+w ${BUILD_PATH}/tests.log;
     - time runuser -u test_runner -- ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} ${TEST_TARGETS} > ${BUILD_PATH}/tests.log 2>&1;
     - echo "LLVM/Clang unit tests finished";
+    - |
+      if [ "${BUILD_PIE_TOOLS}" = "1" ]; then
+        echo "Build tools for PIE optimization tests"
+        touch ${BUILD_PATH}/pie-tools.log
+        chmod o+w ${BUILD_PATH}/pie-tools.log
+        time runuser -u test_runner -- ninja -C ${BUILD_PATH} -j${MAX_NINJA_JOBS} clang llc llvm-objdump opt > ${BUILD_PATH}/pie-tools.log 2>&1
+      else
+        echo "Skip build of tools for PIE optimization tests"
+      fi
     - chown -R ${CUR_USER} ${BUILD_PATH};
     - chown -R ${CUR_USER} ${CCACHE_DIR};
     - mkdir -p ${PWD}/${DIST_DIR}
-    - PIE_TEST_TOOLS_ARCH=${PWD}/${DIST_DIR}/pie_test_tools.tar.xz
-    - pushd ${BUILD_PATH}
-    - echo "Packing tools for PIE optimization tests"
-    - time ${PACK_TOOL} ${PIE_TEST_TOOLS_ARCH} bin/clang bin/llc bin/llvm-objdump bin/opt lib/clang
-    - echo "Packing tools for PIE optimization tests finished";
-    - popd
+    - |
+      if [ "${BUILD_PIE_TOOLS}" = "1" ]; then
+        PIE_TEST_TOOLS_ARCH=${PWD}/${DIST_DIR}/pie_test_tools.tar.xz
+        pushd ${BUILD_PATH}
+        echo "Packing tools for PIE optimization tests"
+        time ${PACK_TOOL} ${PIE_TEST_TOOLS_ARCH} bin/clang bin/llc bin/llvm-objdump bin/opt lib/clang
+        echo "Packing tools for PIE optimization tests finished"
+        popd
+      else
+        echo "Skip packing tools for PIE optimization tests"
+      fi
     - ls -l ${PWD}/${DIST_DIR}
 
 .build_linux-gnu_template:
@@ -948,10 +1000,22 @@ test_pie_optimizations:
   variables:
     TEST_APP_ESP_DSP_CUSTOM_BRANCH: "llvm-23-optimization-test-v5"
     UNPACK_TOOL: "tar xJvf"
+  # $RISCV_LOCAL_CHANGE_RE and $RISCV_CROSS_CHANGE_RE are separate rules: each expanded
+  # regexp must stay within GitLab's 255-character limit.
   rules:
     - <<: *if-scheduled-sync
       when: never
-    - when: on_success
+    - if: $CI_COMMIT_TAG
+      when: on_success
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH'
+      changes:
+        regexp: $RISCV_LOCAL_CHANGE_RE
+      when: on_success
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH'
+      changes:
+        regexp: $RISCV_CROSS_CHANGE_RE
+      when: on_success
+    - when: never
   allow_failure: true
   script:
     - export LLVM_PROJECT_PATH=$PWD
