@@ -28,7 +28,8 @@
 using namespace llvm;
 
 static const MachineInstrBuilder &
-addFrameReference(const MachineInstrBuilder &MIB, int FI) {
+addFrameReference(const MachineInstrBuilder &MIB, int FI,
+                  int64_t SlotOffset = 0, uint64_t AccessSize = 0) {
   MachineInstr *MI = MIB;
   MachineFunction &MF = *MI->getParent()->getParent();
   MachineFrameInfo &MFFrame = MF.getFrameInfo();
@@ -42,9 +43,11 @@ addFrameReference(const MachineInstrBuilder &MIB, int FI) {
   Align Alignment = MFFrame.getObjectAlign(FI);
 
   MachineMemOperand *MMO =
-      MF.getMachineMemOperand(MachinePointerInfo::getFixedStack(MF, FI, Offset),
-                              Flags, MFFrame.getObjectSize(FI), Alignment);
-  return MIB.addFrameIndex(FI).addImm(Offset).addMemOperand(MMO);
+      MF.getMachineMemOperand(
+          MachinePointerInfo::getFixedStack(MF, FI, Offset + SlotOffset), Flags,
+          AccessSize ? AccessSize : MFFrame.getObjectSize(FI),
+          AccessSize ? Align(4) : Alignment);
+  return MIB.addFrameIndex(FI).addImm(Offset + SlotOffset).addMemOperand(MMO);
 }
 
 XtensaInstrInfo::XtensaInstrInfo(const XtensaSubtarget &STI)
@@ -129,6 +132,9 @@ void XtensaInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
   if (STI.hasSingleFloat() && Xtensa::FPRRegClass.contains(SrcReg) &&
       Xtensa::FPRRegClass.contains(DestReg))
     Opcode = Xtensa::MOV_S;
+  else if (STI.hasESP32S3Ops() && Xtensa::QRRegClass.contains(SrcReg) &&
+           Xtensa::QRRegClass.contains(DestReg))
+    Opcode = Xtensa::mv_QR;
   else if (STI.hasSingleFloat() && Xtensa::FPRRegClass.contains(SrcReg) &&
            Xtensa::ARRegClass.contains(DestReg))
     Opcode = Xtensa::RFR;
@@ -148,6 +154,19 @@ void XtensaInstrInfo::storeRegToStackSlot(
 
     Register VReg, MachineInstr::MIFlag Flags) const {
   DebugLoc DL = MBBI != MBB.end() ? MBBI->getDebugLoc() : DebugLoc();
+  if (RC == &Xtensa::QRRegClass && STI.hasESP32S3Ops()) {
+    MachineRegisterInfo &MRI = MBB.getParent()->getRegInfo();
+    for (unsigned Lane = 0; Lane != 4; ++Lane) {
+      Register Tmp = MRI.createVirtualRegister(&Xtensa::ARRegClass);
+      BuildMI(MBB, MBBI, DL, get(Xtensa::EE_MOVI_32_A), Tmp)
+          .addReg(SrcReg, getKillRegState(isKill && Lane == 3))
+          .addImm(Lane);
+      MachineInstrBuilder Store =
+          BuildMI(MBB, MBBI, DL, get(Xtensa::S32I)).addReg(Tmp, RegState::Kill);
+      addFrameReference(Store, FrameIdx, Lane * 4, 4);
+    }
+    return;
+  }
   unsigned LoadOpcode, StoreOpcode;
   getLoadStoreOpcodes(RC, LoadOpcode, StoreOpcode, FrameIdx);
   MachineInstrBuilder MIB = BuildMI(MBB, MBBI, DL, get(StoreOpcode))
@@ -162,6 +181,21 @@ void XtensaInstrInfo::loadRegFromStackSlot(MachineBasicBlock &MBB,
                                            Register VReg, unsigned SubReg,
                                            MachineInstr::MIFlag Flags) const {
   DebugLoc DL = MBBI != MBB.end() ? MBBI->getDebugLoc() : DebugLoc();
+  if (RC == &Xtensa::QRRegClass && STI.hasESP32S3Ops()) {
+    MachineRegisterInfo &MRI = MBB.getParent()->getRegInfo();
+    BuildMI(MBB, MBBI, DL, get(TargetOpcode::IMPLICIT_DEF), DestReg);
+    for (unsigned Lane = 0; Lane != 4; ++Lane) {
+      Register Scalar = MRI.createVirtualRegister(&Xtensa::ARRegClass);
+      MachineInstrBuilder Load =
+          BuildMI(MBB, MBBI, DL, get(Xtensa::L32I), Scalar);
+      addFrameReference(Load, FrameIdx, Lane * 4, 4);
+      BuildMI(MBB, MBBI, DL, get(Xtensa::EE_MOVI_32_Q), DestReg)
+          .addReg(DestReg)
+          .addReg(Scalar, RegState::Kill)
+          .addImm(Lane);
+    }
+    return;
+  }
   unsigned LoadOpcode, StoreOpcode;
   getLoadStoreOpcodes(RC, LoadOpcode, StoreOpcode, FrameIdx);
   addFrameReference(BuildMI(MBB, MBBI, DL, get(LoadOpcode), DestReg), FrameIdx);

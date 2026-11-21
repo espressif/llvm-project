@@ -846,6 +846,7 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
     MachineOperand &SEL4 = MI.getOperand(2);
     BuildMI(*MBB, MI, DL, TII.get(Opc))
         .addReg(Xtensa::Q0 + QUVal, RegState::Define)
+        .addReg(Xtensa::Q0 + QUVal)
         .addReg(AS.getReg())
         .addImm(SEL4.getImm());
 
@@ -2042,6 +2043,22 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
         .addReg(AS.getReg())
         .addImm(IMM16.getImm());
 
+    MI.eraseFromParent();
+    return MBB;
+  }
+  case Xtensa::EE_VLD_QR_P: {
+    MachineOperand &QU = MI.getOperand(0);
+    MachineOperand &AS = MI.getOperand(1);
+    const TargetRegisterClass *RC = getRegClassFor(MVT::i32);
+    Register UpdatedAS = MRI.createVirtualRegister(RC);
+    MachineInstrBuilder Load =
+        BuildMI(*MBB, MI, DL, TII.get(Xtensa::EE_VLD_128_IP))
+            .addReg(QU.getReg(), RegState::Define)
+            .addReg(UpdatedAS, RegState::Define)
+            .addReg(AS.getReg())
+            .addImm(16);
+    for (MachineMemOperand *MMO : MI.memoperands())
+      Load.addMemOperand(MMO);
     MI.eraseFromParent();
     return MBB;
   }
@@ -4728,6 +4745,22 @@ MachineBasicBlock *XtensaTargetLowering::EmitDSPInstrWithCustomInserter(
         .addReg(AS.getReg())
         .addImm(IMM16.getImm());
 
+    MI.eraseFromParent();
+    return MBB;
+  }
+  case Xtensa::EE_VST_QR_P: {
+    MachineOperand &QV = MI.getOperand(0);
+    MachineOperand &AS = MI.getOperand(1);
+    const TargetRegisterClass *RC = getRegClassFor(MVT::i32);
+    Register UpdatedAS = MRI.createVirtualRegister(RC);
+    MachineInstrBuilder Store =
+        BuildMI(*MBB, MI, DL, TII.get(Xtensa::EE_VST_128_IP))
+            .addReg(UpdatedAS, RegState::Define)
+            .addReg(QV.getReg())
+            .addReg(AS.getReg())
+            .addImm(16);
+    for (MachineMemOperand *MMO : MI.memoperands())
+      Store.addMemOperand(MMO);
     MI.eraseFromParent();
     return MBB;
   }
