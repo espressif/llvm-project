@@ -853,8 +853,8 @@ sign_aarch64-apple-darwin:
   if [ -n "${TEST_APP_IDF_CUSTOM_BRANCH:-}" ]; then
     echo "TEST_APP_IDF_CUSTOM_BRANCH=$TEST_APP_IDF_CUSTOM_BRANCH"
     git remote add gitlab https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}:${CI_SERVER_PORT}/espressif/esp-idf.git
-    git fetch gitlab ${TEST_APP_IDF_CUSTOM_BRANCH}:${TEST_APP_IDF_CUSTOM_BRANCH}
-    git checkout ${TEST_APP_IDF_CUSTOM_BRANCH}
+    git fetch gitlab ${TEST_APP_IDF_CUSTOM_BRANCH}
+    git checkout -B ${TEST_APP_IDF_CUSTOM_BRANCH} FETCH_HEAD
   fi
   if [ -n "${TEST_APP_SUBMODULE_URL:-}" ]; then
     git submodule add ${TEST_APP_SUBMODULE_URL} ${TEST_APP_SUBMODULE_PATH}
@@ -880,8 +880,9 @@ sign_aarch64-apple-darwin:
   needs:
     - job: "build_x86_64-linux-gnu"
   variables:
-    # use IDF 'master' from docker image
-    TEST_APP_IDF_CUSTOM_BRANCH: ""
+    # use the latest IDF 'master' from GL, docker image is updated infrequently
+    # so it may miss our latest fixes
+    TEST_APP_IDF_CUSTOM_BRANCH: "master"
     TEST_APP_PATH: ""
     TEST_APP_SUBMODULE_URL: ""
     TEST_APP_SUBMODULE_PATH: ""
