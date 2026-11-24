@@ -462,6 +462,16 @@ let isAllocatable = 1, CopyCost = -1 in {
                                  (sequence "Q%u_D1", 0, 7))> {
     let DecoderMethod = "DecodeQR_64RegisterClass";
   }
+  // Half-specific views: esp.vld/vst.{l,h}.64 encode only the Q index and
+  // always access the low (D0) or high (D1) half.
+  def QR_64_LO : RegisterClass<"RISCV", [v8i8, v4i16, v2i32], 64,
+                               (sequence "Q%u_D0", 0, 7)> {
+    let DecoderMethod = "DecodeQR_64_LORegisterClass";
+  }
+  def QR_64_HI : RegisterClass<"RISCV", [v8i8, v4i16, v2i32], 64,
+                               (sequence "Q%u_D1", 0, 7)> {
+    let DecoderMethod = "DecodeQR_64_HIRegisterClass";
+  }
 }
 
 def QR : RegisterClass<"RISCV", [v16i8,v8i16,v4i32], 128, (sequence "Q%u", 0, 7)>;

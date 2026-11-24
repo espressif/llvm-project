@@ -127,10 +127,10 @@ body:             |
     ; ESPV22-LABEL: name: qr64copy_live_other
     ; ESPV22: liveins: $q0, $q1
     ; ESPV22-NEXT: {{  $}}
-    ; ESPV22-NEXT: $x24 = ESP_MOVI_32_A $q0, 0
-    ; ESPV22-NEXT: $q1 = ESP_MOVI_32_Q $q1, killed $x24, 0
-    ; ESPV22-NEXT: $x24 = ESP_MOVI_32_A $q0, 1
-    ; ESPV22-NEXT: $q1 = ESP_MOVI_32_Q $q1, killed $x24, 1
+    ; ESPV22-NEXT: $x24 = ESP_MOVI_32_A_2P2 $q0, 0
+    ; ESPV22-NEXT: $q1 = ESP_MOVI_32_Q_2P2 killed $x24, 0, implicit $q1
+    ; ESPV22-NEXT: $x24 = ESP_MOVI_32_A_2P2 $q0, 1
+    ; ESPV22-NEXT: $q1 = ESP_MOVI_32_Q_2P2 killed $x24, 1, implicit $q1
     ; ESPV22-NEXT: $q3 = ESP_ORQ_2P2 $q1, $q1
     ; ESPV22-NEXT: PseudoRET implicit $q3
     ;
@@ -147,10 +147,10 @@ body:             |
     ; MCP22-LABEL: name: qr64copy_live_other
     ; MCP22: liveins: $q0, $q1
     ; MCP22-NEXT: {{  $}}
-    ; MCP22-NEXT: $x24 = ESP_MOVI_32_A $q0, 0
-    ; MCP22-NEXT: $q1 = ESP_MOVI_32_Q $q1, killed $x24, 0
-    ; MCP22-NEXT: $x24 = ESP_MOVI_32_A $q0, 1
-    ; MCP22-NEXT: $q1 = ESP_MOVI_32_Q $q1, killed $x24, 1
+    ; MCP22-NEXT: $x24 = ESP_MOVI_32_A_2P2 $q0, 0
+    ; MCP22-NEXT: $q1 = ESP_MOVI_32_Q_2P2 killed $x24, 0, implicit $q1
+    ; MCP22-NEXT: $x24 = ESP_MOVI_32_A_2P2 $q0, 1
+    ; MCP22-NEXT: $q1 = ESP_MOVI_32_Q_2P2 killed $x24, 1, implicit $q1
     ; MCP22-NEXT: $q3 = ESP_ORQ_2P2 $q1, $q1
     ; MCP22-NEXT: PseudoRET implicit $q3
     ;
@@ -183,24 +183,43 @@ liveins:
 body:             |
   bb.0:
     liveins: $q0, $x24
-    ; CHECK-LABEL: name: qr64copy_scratch_skip
-    ; CHECK: liveins: $q0, $x24
-    ; CHECK-NEXT: {{  $}}
-    ; CHECK-NEXT: $x25 = ESP_MOVI_32_A $q0, 2
-    ; CHECK-NEXT: $q2 = ESP_MOVI_32_Q undef $q2, killed $x25, 0
-    ; CHECK-NEXT: $x25 = ESP_MOVI_32_A $q0, 3
-    ; CHECK-NEXT: $q2 = ESP_MOVI_32_Q $q2, killed $x25, 1
-    ; CHECK-NEXT: dead $x25 = ADDI $x24, 0
-    ; CHECK-NEXT: PseudoRET implicit $q2
+    ; ESPV22-LABEL: name: qr64copy_scratch_skip
+    ; ESPV22: liveins: $q0, $x24
+    ; ESPV22-NEXT: {{  $}}
+    ; ESPV22-NEXT: $x25 = ESP_MOVI_32_A_2P2 $q0, 2
+    ; ESPV22-NEXT: $q2 = ESP_MOVI_32_Q_2P2 killed $x25, 0, implicit undef $q2
+    ; ESPV22-NEXT: $x25 = ESP_MOVI_32_A_2P2 $q0, 3
+    ; ESPV22-NEXT: $q2 = ESP_MOVI_32_Q_2P2 killed $x25, 1, implicit $q2
+    ; ESPV22-NEXT: dead $x25 = ADDI $x24, 0
+    ; ESPV22-NEXT: PseudoRET implicit $q2
     ;
-    ; MCP-LABEL: name: qr64copy_scratch_skip
-    ; MCP: liveins: $q0, $x24
-    ; MCP-NEXT: {{  $}}
-    ; MCP-NEXT: $x25 = ESP_MOVI_32_A $q0, 2
-    ; MCP-NEXT: $q2 = ESP_MOVI_32_Q undef $q2, killed $x25, 0
-    ; MCP-NEXT: $x25 = ESP_MOVI_32_A $q0, 3
-    ; MCP-NEXT: $q2 = ESP_MOVI_32_Q $q2, killed $x25, 1
-    ; MCP-NEXT: PseudoRET implicit $q2
+    ; ESPV21-LABEL: name: qr64copy_scratch_skip
+    ; ESPV21: liveins: $q0, $x24
+    ; ESPV21-NEXT: {{  $}}
+    ; ESPV21-NEXT: $x25 = ESP_MOVI_32_A $q0, 2
+    ; ESPV21-NEXT: $q2 = ESP_MOVI_32_Q undef $q2, killed $x25, 0
+    ; ESPV21-NEXT: $x25 = ESP_MOVI_32_A $q0, 3
+    ; ESPV21-NEXT: $q2 = ESP_MOVI_32_Q $q2, killed $x25, 1
+    ; ESPV21-NEXT: dead $x25 = ADDI $x24, 0
+    ; ESPV21-NEXT: PseudoRET implicit $q2
+    ;
+    ; MCP22-LABEL: name: qr64copy_scratch_skip
+    ; MCP22: liveins: $q0, $x24
+    ; MCP22-NEXT: {{  $}}
+    ; MCP22-NEXT: $x25 = ESP_MOVI_32_A_2P2 $q0, 2
+    ; MCP22-NEXT: $q2 = ESP_MOVI_32_Q_2P2 killed $x25, 0, implicit undef $q2
+    ; MCP22-NEXT: $x25 = ESP_MOVI_32_A_2P2 $q0, 3
+    ; MCP22-NEXT: $q2 = ESP_MOVI_32_Q_2P2 killed $x25, 1, implicit $q2
+    ; MCP22-NEXT: PseudoRET implicit $q2
+    ;
+    ; MCP21-LABEL: name: qr64copy_scratch_skip
+    ; MCP21: liveins: $q0, $x24
+    ; MCP21-NEXT: {{  $}}
+    ; MCP21-NEXT: $x25 = ESP_MOVI_32_A $q0, 2
+    ; MCP21-NEXT: $q2 = ESP_MOVI_32_Q undef $q2, killed $x25, 0
+    ; MCP21-NEXT: $x25 = ESP_MOVI_32_A $q0, 3
+    ; MCP21-NEXT: $q2 = ESP_MOVI_32_Q $q2, killed $x25, 1
+    ; MCP21-NEXT: PseudoRET implicit $q2
     $q2_d0 = COPY $q0_d1
     dead $x25 = ADDI $x24, 0
     PseudoRET implicit $q2
@@ -309,23 +328,41 @@ liveins:
 body:             |
   bb.0:
     liveins: $q0
-    ; CHECK-LABEL: name: qr64copy_same_super
-    ; CHECK: liveins: $q0
-    ; CHECK-NEXT: {{  $}}
-    ; CHECK-NEXT: $x24 = ESP_MOVI_32_A $q0, 2
-    ; CHECK-NEXT: $q0 = ESP_MOVI_32_Q $q0, killed $x24, 0
-    ; CHECK-NEXT: $x24 = ESP_MOVI_32_A $q0, 3
-    ; CHECK-NEXT: $q0 = ESP_MOVI_32_Q $q0, killed $x24, 1
-    ; CHECK-NEXT: PseudoRET implicit $q0_d0
+    ; ESPV22-LABEL: name: qr64copy_same_super
+    ; ESPV22: liveins: $q0
+    ; ESPV22-NEXT: {{  $}}
+    ; ESPV22-NEXT: $x24 = ESP_MOVI_32_A_2P2 $q0, 2
+    ; ESPV22-NEXT: $q0 = ESP_MOVI_32_Q_2P2 killed $x24, 0, implicit $q0
+    ; ESPV22-NEXT: $x24 = ESP_MOVI_32_A_2P2 $q0, 3
+    ; ESPV22-NEXT: $q0 = ESP_MOVI_32_Q_2P2 killed $x24, 1, implicit $q0
+    ; ESPV22-NEXT: PseudoRET implicit $q0_d0
     ;
-    ; MCP-LABEL: name: qr64copy_same_super
-    ; MCP: liveins: $q0
-    ; MCP-NEXT: {{  $}}
-    ; MCP-NEXT: $x24 = ESP_MOVI_32_A $q0, 2
-    ; MCP-NEXT: $q0 = ESP_MOVI_32_Q $q0, killed $x24, 0
-    ; MCP-NEXT: $x24 = ESP_MOVI_32_A $q0, 3
-    ; MCP-NEXT: $q0 = ESP_MOVI_32_Q $q0, killed $x24, 1
-    ; MCP-NEXT: PseudoRET implicit $q0_d0
+    ; ESPV21-LABEL: name: qr64copy_same_super
+    ; ESPV21: liveins: $q0
+    ; ESPV21-NEXT: {{  $}}
+    ; ESPV21-NEXT: $x24 = ESP_MOVI_32_A $q0, 2
+    ; ESPV21-NEXT: $q0 = ESP_MOVI_32_Q $q0, killed $x24, 0
+    ; ESPV21-NEXT: $x24 = ESP_MOVI_32_A $q0, 3
+    ; ESPV21-NEXT: $q0 = ESP_MOVI_32_Q $q0, killed $x24, 1
+    ; ESPV21-NEXT: PseudoRET implicit $q0_d0
+    ;
+    ; MCP22-LABEL: name: qr64copy_same_super
+    ; MCP22: liveins: $q0
+    ; MCP22-NEXT: {{  $}}
+    ; MCP22-NEXT: $x24 = ESP_MOVI_32_A_2P2 $q0, 2
+    ; MCP22-NEXT: $q0 = ESP_MOVI_32_Q_2P2 killed $x24, 0, implicit $q0
+    ; MCP22-NEXT: $x24 = ESP_MOVI_32_A_2P2 $q0, 3
+    ; MCP22-NEXT: $q0 = ESP_MOVI_32_Q_2P2 killed $x24, 1, implicit $q0
+    ; MCP22-NEXT: PseudoRET implicit $q0_d0
+    ;
+    ; MCP21-LABEL: name: qr64copy_same_super
+    ; MCP21: liveins: $q0
+    ; MCP21-NEXT: {{  $}}
+    ; MCP21-NEXT: $x24 = ESP_MOVI_32_A $q0, 2
+    ; MCP21-NEXT: $q0 = ESP_MOVI_32_Q $q0, killed $x24, 0
+    ; MCP21-NEXT: $x24 = ESP_MOVI_32_A $q0, 3
+    ; MCP21-NEXT: $q0 = ESP_MOVI_32_Q $q0, killed $x24, 1
+    ; MCP21-NEXT: PseudoRET implicit $q0_d0
     $q0_d0 = COPY $q0_d1
     PseudoRET implicit $q0_d0
 ...

@@ -266,6 +266,24 @@ static DecodeStatus DecodeQR_64RegisterClass(MCInst &Inst, uint64_t RegNo,
   return MCDisassembler::Success;
 }
 
+static DecodeStatus DecodeQR_64_LORegisterClass(MCInst &Inst, uint64_t RegNo,
+                                                uint64_t Address,
+                                                const void *Decoder) {
+  if (RegNo >= 8)
+    return MCDisassembler::Fail;
+  Inst.addOperand(MCOperand::createReg(QR_64DecoderTable[RegNo]));
+  return MCDisassembler::Success;
+}
+
+static DecodeStatus DecodeQR_64_HIRegisterClass(MCInst &Inst, uint64_t RegNo,
+                                                uint64_t Address,
+                                                const void *Decoder) {
+  if (RegNo >= 8)
+    return MCDisassembler::Fail;
+  Inst.addOperand(MCOperand::createReg(QR_64DecoderTable[RegNo + 8]));
+  return MCDisassembler::Success;
+}
+
 static DecodeStatus DecodeTRM2RegisterClass(MCInst &Inst, uint32_t RegNo,
                                             uint64_t Address,
                                             const MCDisassembler *Decoder) {

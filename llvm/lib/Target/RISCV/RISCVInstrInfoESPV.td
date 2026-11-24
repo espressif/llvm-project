@@ -13711,9 +13711,9 @@ def ESP_VLD_128_XP: EspVInst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRP
   let Inst{0} = 1;
 }
 
-def ESP_VLD_H_64_IP: EspVInst<(outs QR_64:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_8:$off2568),
+def ESP_VLD_H_64_IP: EspVInst<(outs QR_64_HI:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_8:$off2568),
                    "esp.vld.h.64.ip\t $qu, $rs1, $off2568", 
-                   [(set QR_64:$qu, GPRPIE:$rs1r, (riscv_esp_vld_h_64_ip_m GPRPIE:$rs1, offset_256_8:$off2568))]> 
+                   [(set QR_64_HI:$qu, GPRPIE:$rs1r, (riscv_esp_vld_h_64_ip_m GPRPIE:$rs1, offset_256_8:$off2568))]> 
 {
   bits<5> rs1;
   bits<8> off2568;
@@ -13750,9 +13750,9 @@ def ESP_VLD_H_64_IP: EspVInst<(outs QR_64:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs1, 
   let Inst{0} = 1;
 }
 
-def ESP_VLD_H_64_XP: EspVInst<(outs QR_64:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1),
+def ESP_VLD_H_64_XP: EspVInst<(outs QR_64_HI:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1),
                    "esp.vld.h.64.xp\t $qu, $rs1, $rs2", 
-                   [(set QR_64:$qu, GPRPIE:$rs1r, (riscv_esp_vld_h_64_xp_m GPRPIE:$rs1, GPRPIE:$rs2))]> 
+                   [(set QR_64_HI:$qu, GPRPIE:$rs1r, (riscv_esp_vld_h_64_xp_m GPRPIE:$rs1, GPRPIE:$rs2))]> 
 {
   bits<5> rs2;
   bits<5> rs1;
@@ -13792,9 +13792,9 @@ def ESP_VLD_H_64_XP: EspVInst<(outs QR_64:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, 
   let Inst{0} = 1;
 }
 
-def ESP_VLD_L_64_IP: EspVInst<(outs QR_64:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_8:$off2568),
+def ESP_VLD_L_64_IP: EspVInst<(outs QR_64_LO:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_8:$off2568),
 "esp.vld.l.64.ip\t $qu, $rs1, $off2568", 
-                   [(set QR_64:$qu, GPRPIE:$rs1r, (riscv_esp_vld_l_64_ip_m GPRPIE:$rs1, offset_256_8:$off2568))]>
+                   [(set QR_64_LO:$qu, GPRPIE:$rs1r, (riscv_esp_vld_l_64_ip_m GPRPIE:$rs1, offset_256_8:$off2568))]>
 {
   bits<5> rs1;
   bits<8> off2568;
@@ -13831,9 +13831,9 @@ def ESP_VLD_L_64_IP: EspVInst<(outs QR_64:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs1, 
   let Inst{0} = 1;
 }
 
-def ESP_VLD_L_64_XP: EspVInst<(outs QR_64:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1),
+def ESP_VLD_L_64_XP: EspVInst<(outs QR_64_LO:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1),
                    "esp.vld.l.64.xp\t $qu, $rs1, $rs2", 
-                   [(set QR_64:$qu, GPRPIE:$rs1r, (riscv_esp_vld_l_64_xp_m GPRPIE:$rs1, GPRPIE:$rs2))]> 
+                   [(set QR_64_LO:$qu, GPRPIE:$rs1r, (riscv_esp_vld_l_64_xp_m GPRPIE:$rs1, GPRPIE:$rs2))]> 
 {
   bits<5> rs2;
   bits<5> rs1;
@@ -13954,9 +13954,9 @@ def ESP_VST_128_XP: EspVInst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:$qu, GPRP
   let Inst{0} = 1;
 }
 
-def ESP_VST_H_64_IP: EspVInst<(outs GPRPIE:$rs1r), (ins QR_64:$qu, GPRPIE:$rs1, offset_256_8:$off2568),
+def ESP_VST_H_64_IP: EspVInst<(outs GPRPIE:$rs1r), (ins QR_64_HI:$qu, GPRPIE:$rs1, offset_256_8:$off2568),
                    "esp.vst.h.64.ip\t $qu, $rs1, $off2568", 
-                   [(set GPRPIE:$rs1r, (riscv_esp_vst_h_64_ip_m QR_64:$qu, GPRPIE:$rs1, offset_256_8:$off2568))]> 
+                   [(set GPRPIE:$rs1r, (riscv_esp_vst_h_64_ip_m QR_64_HI:$qu, GPRPIE:$rs1, offset_256_8:$off2568))]> 
 {
   bits<3> qu;
   bits<5> rs1;
@@ -13993,9 +13993,9 @@ def ESP_VST_H_64_IP: EspVInst<(outs GPRPIE:$rs1r), (ins QR_64:$qu, GPRPIE:$rs1, 
   let Inst{0} = 1;
 }
 
-def ESP_VST_H_64_XP: EspVInst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR_64:$qu, GPRPIE:$rs1),
+def ESP_VST_H_64_XP: EspVInst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR_64_HI:$qu, GPRPIE:$rs1),
                    "esp.vst.h.64.xp\t $qu, $rs1, $rs2", 
-                   [(set GPRPIE:$rs1r, (riscv_esp_vst_h_64_xp_m QR_64:$qu, GPRPIE:$rs1, GPRPIE:$rs2))]> 
+                   [(set GPRPIE:$rs1r, (riscv_esp_vst_h_64_xp_m QR_64_HI:$qu, GPRPIE:$rs1, GPRPIE:$rs2))]> 
 {
   bits<5> rs2;
   bits<3> qu;
@@ -14035,9 +14035,9 @@ def ESP_VST_H_64_XP: EspVInst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR_64:$qu, 
   let Inst{0} = 1;
 }
 
-def ESP_VST_L_64_IP: EspVInst<(outs GPRPIE:$rs1r), (ins QR_64:$qu, GPRPIE:$rs1, offset_256_8:$off2568),
+def ESP_VST_L_64_IP: EspVInst<(outs GPRPIE:$rs1r), (ins QR_64_LO:$qu, GPRPIE:$rs1, offset_256_8:$off2568),
                    "esp.vst.l.64.ip\t $qu, $rs1, $off2568", 
-                   [(set GPRPIE:$rs1r, (riscv_esp_vst_l_64_ip_m QR_64:$qu, GPRPIE:$rs1, offset_256_8:$off2568))]> 
+                   [(set GPRPIE:$rs1r, (riscv_esp_vst_l_64_ip_m QR_64_LO:$qu, GPRPIE:$rs1, offset_256_8:$off2568))]> 
 {
   bits<3> qu;
   bits<5> rs1;
@@ -14074,9 +14074,9 @@ def ESP_VST_L_64_IP: EspVInst<(outs GPRPIE:$rs1r), (ins QR_64:$qu, GPRPIE:$rs1, 
   let Inst{0} = 1;
 }
 
-def ESP_VST_L_64_XP: EspVInst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR_64:$qu, GPRPIE:$rs1),
+def ESP_VST_L_64_XP: EspVInst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR_64_LO:$qu, GPRPIE:$rs1),
                    "esp.vst.l.64.xp\t $qu, $rs1, $rs2", 
-                   [(set GPRPIE:$rs1r, (riscv_esp_vst_l_64_xp_m QR_64:$qu, GPRPIE:$rs1, GPRPIE:$rs2))]> 
+                   [(set GPRPIE:$rs1r, (riscv_esp_vst_l_64_xp_m QR_64_LO:$qu, GPRPIE:$rs1, GPRPIE:$rs2))]> 
 {
   bits<5> rs2;
   bits<3> qu;
@@ -28631,7 +28631,7 @@ def ESP_VLD_128_XP_2P2: Esp32V2P2Inst<(outs QR:$qu, GPRPIE:$rs1r), (ins GPRPIE:$
   let Inst{0} = 1;
 }
 
-def ESP_VLD_H_64_IP_2P2: Esp32V2P2Inst<(outs QR_64:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_8:$off2568),
+def ESP_VLD_H_64_IP_2P2: Esp32V2P2Inst<(outs QR_64_HI:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_8:$off2568),
                    "esp.vld.h.64.ip\t $qu, $rs1, $off2568", []> 
 {
   bits<5> rs1;
@@ -28669,7 +28669,7 @@ def ESP_VLD_H_64_IP_2P2: Esp32V2P2Inst<(outs QR_64:$qu, GPRPIE:$rs1r), (ins GPRP
   let Inst{0} = 1;
 }
 
-def ESP_VLD_H_64_XP_2P2: Esp32V2P2Inst<(outs QR_64:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1),
+def ESP_VLD_H_64_XP_2P2: Esp32V2P2Inst<(outs QR_64_HI:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1),
                    "esp.vld.h.64.xp\t $qu, $rs1, $rs2", []> 
 {
   bits<5> rs2;
@@ -28710,7 +28710,7 @@ def ESP_VLD_H_64_XP_2P2: Esp32V2P2Inst<(outs QR_64:$qu, GPRPIE:$rs1r), (ins GPRP
   let Inst{0} = 1;
 }
 
-def ESP_VLD_L_64_IP_2P2: Esp32V2P2Inst<(outs QR_64:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_8:$off2568),
+def ESP_VLD_L_64_IP_2P2: Esp32V2P2Inst<(outs QR_64_LO:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs1, offset_256_8:$off2568),
                    "esp.vld.l.64.ip\t $qu, $rs1, $off2568", []> 
 {
   bits<5> rs1;
@@ -28748,7 +28748,7 @@ def ESP_VLD_L_64_IP_2P2: Esp32V2P2Inst<(outs QR_64:$qu, GPRPIE:$rs1r), (ins GPRP
   let Inst{0} = 1;
 }
 
-def ESP_VLD_L_64_XP_2P2: Esp32V2P2Inst<(outs QR_64:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1),
+def ESP_VLD_L_64_XP_2P2: Esp32V2P2Inst<(outs QR_64_LO:$qu, GPRPIE:$rs1r), (ins GPRPIE:$rs2, GPRPIE:$rs1),
                    "esp.vld.l.64.xp\t $qu, $rs1, $rs2", []> 
 {
   bits<5> rs2;
@@ -28868,7 +28868,7 @@ def ESP_VST_128_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR:
   let Inst{0} = 1;
 }
 
-def ESP_VST_H_64_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR_64:$qu, GPRPIE:$rs1, offset_256_8:$off2568),
+def ESP_VST_H_64_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR_64_HI:$qu, GPRPIE:$rs1, offset_256_8:$off2568),
                    "esp.vst.h.64.ip\t $qu, $rs1, $off2568", []> 
 {
   bits<3> qu;
@@ -28906,7 +28906,7 @@ def ESP_VST_H_64_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR_64:$qu, GPRP
   let Inst{0} = 1;
 }
 
-def ESP_VST_H_64_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR_64:$qu, GPRPIE:$rs1),
+def ESP_VST_H_64_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR_64_HI:$qu, GPRPIE:$rs1),
                    "esp.vst.h.64.xp\t $qu, $rs1, $rs2", []> 
 {
   bits<5> rs2;
@@ -28947,7 +28947,7 @@ def ESP_VST_H_64_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR
   let Inst{0} = 1;
 }
 
-def ESP_VST_L_64_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR_64:$qu, GPRPIE:$rs1, offset_256_8:$off2568),
+def ESP_VST_L_64_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR_64_LO:$qu, GPRPIE:$rs1, offset_256_8:$off2568),
                    "esp.vst.l.64.ip\t $qu, $rs1, $off2568", []> 
 {
   bits<3> qu;
@@ -28985,7 +28985,7 @@ def ESP_VST_L_64_IP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins QR_64:$qu, GPRP
   let Inst{0} = 1;
 }
 
-def ESP_VST_L_64_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR_64:$qu, GPRPIE:$rs1),
+def ESP_VST_L_64_XP_2P2: Esp32V2P2Inst<(outs GPRPIE:$rs1r), (ins GPRPIE:$rs2, QR_64_LO:$qu, GPRPIE:$rs1),
                    "esp.vst.l.64.xp\t $qu, $rs1, $rs2", []> 
 {
   bits<5> rs2;

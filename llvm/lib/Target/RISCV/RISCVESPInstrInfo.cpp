@@ -224,13 +224,25 @@ bool RISCV::copyESPPhysReg(const RISCVInstrInfo &TII, const RISCVSubtarget &STI,
       report_fatal_error("no free GPRPIE scratch register for ESPV QR_64 copy");
 
     for (unsigned Lane = 0; Lane != 2; ++Lane) {
-      BuildMI(MBB, MBBI, DL, TII.get(RISCV::ESP_MOVI_32_A), Scratch)
+      RegState DstUseState = Lane == 0 && DstOtherDead && DstSuper != SrcSuper
+                                 ? RegState::Undef
+                                 : RegState::NoFlags;
+      BuildMI(MBB, MBBI, DL,
+              TII.get(IsV2P2 ? RISCV::ESP_MOVI_32_A_2P2 : RISCV::ESP_MOVI_32_A),
+              Scratch)
           .addReg(SrcSuper)
           .addImm(SrcBaseLane + Lane);
+      if (IsV2P2) {
+        // The 2.2 def has no tied input but only writes one lane; the
+        // implicit use keeps the other lanes live through the write.
+        BuildMI(MBB, MBBI, DL, TII.get(RISCV::ESP_MOVI_32_Q_2P2), DstSuper)
+            .addReg(Scratch, RegState::Kill)
+            .addImm(DstBaseLane + Lane)
+            .addReg(DstSuper, RegState::Implicit | DstUseState);
+        continue;
+      }
       BuildMI(MBB, MBBI, DL, TII.get(RISCV::ESP_MOVI_32_Q), DstSuper)
-          .addReg(DstSuper, Lane == 0 && DstOtherDead && DstSuper != SrcSuper
-                                ? RegState::Undef
-                                : RegState::NoFlags)
+          .addReg(DstSuper, DstUseState)
           .addReg(Scratch, RegState::Kill)
           .addImm(DstBaseLane + Lane);
     }

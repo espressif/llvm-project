@@ -81,10 +81,10 @@ define dso_local void @test_vld_64_xp(ptr noundef %src, ptr noundef %dst, i32 no
 ; ASM-LABEL: test_vld_64_xp:
 ; ASM:       # %bb.0: # %entry
 ; ASM-NEXT:    esp.vld.h.64.xp q0, a0, a2
-; ASM-NEXT:    esp.vld.l.64.xp q1, a0, a2
+; ASM-NEXT:    esp.vld.l.64.xp q0, a0, a2
 ; ASM-NEXT:    mv a0, a1
 ; ASM-NEXT:    esp.vst.h.64.xp q0, a0, a2
-; ASM-NEXT:    esp.vst.l.64.xp q1, a1, a2
+; ASM-NEXT:    esp.vst.l.64.xp q0, a1, a2
 ; ASM-NEXT:    ret
 entry:
   %v1 = tail call { <8 x i8>, ptr } @llvm.riscv.esp.vld.h.64.xp(ptr %src, i32 %incr)
