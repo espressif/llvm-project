@@ -67,6 +67,9 @@ bool Xtensa::isValidAddrOffsetForOpcode(unsigned Opcode, int64_t Offset) {
     break;
   case Xtensa::LEA_ADD:
     return (Offset >= -128 && Offset <= 127);
+  case Xtensa::LD_QR:
+  case Xtensa::ST_QR:
+    return (Offset >= -128 && Offset <= 112 && ((Offset & 0xf) == 0));
   default:
     // assume that MI is 32-bit load/store operation
     Scale = 4;
