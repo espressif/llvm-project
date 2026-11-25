@@ -6381,6 +6381,44 @@ def EE_ZERO_QACC_P : Pseudo<(outs), (ins),
 				"!xtensa_ee_zero_qacc_p",
 			[(int_xtensa_ee_zero_qacc)]>;
 
+def LD_QR:  EE_Inst24<(outs QR:$qu), (ins AR:$as, offset_16_16:$imm4),
+                   "ld.qr\t $qu, $as, $imm4", []>, Requires<[HasESP32S3Ops]>
+{
+  bits<3> qu;
+  bits<4> as;
+  bits<4> imm4;
+
+  let mayLoad = 1;
+
+  let Inst{23-22} = 0x3;
+  let Inst{21-20} = qu{2-1};
+  let Inst{19-16} = 0xd;
+  let Inst{15} = qu{0};
+  let Inst{14-12} = 0x2;
+  let Inst{11-8} = imm4{3-0};
+  let Inst{7-4} = as{3-0};
+  let Inst{3-0} = 0x4;
+}
+
+def ST_QR:  EE_Inst24<(outs), (ins QR:$qs, AR:$as, offset_16_16:$imm4),
+                   "st.qr\t $qs, $as, $imm4", []>, Requires<[HasESP32S3Ops]>
+{
+  bits<3> qs;
+  bits<4> as;
+  bits<4> imm4;
+
+  let mayStore = 1;
+
+  let Inst{23-22} = 0x3;
+  let Inst{21-20} = qs{2-1};
+  let Inst{19-16} = 0xd;
+  let Inst{15} = qs{0};
+  let Inst{14-12} = 0x6;
+  let Inst{11-8} = imm4{3-0};
+  let Inst{7-4} = as{3-0};
+  let Inst{3-0} = 0x4;
+}
+
 def RUR_ACCX_0:  EE_Inst24<(outs AR:$arr), (ins),
                    "rur.accx_0\t $arr", []>, Requires<[HasESP32S3Ops]>
 {
