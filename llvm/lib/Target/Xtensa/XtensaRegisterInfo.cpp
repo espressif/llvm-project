@@ -60,7 +60,7 @@ BitVector XtensaRegisterInfo::getReservedRegs(const MachineFunction &MF) const {
   // Reserve stack pointer.
   Reserved.set(Xtensa::SP);
 
-  // Leave the Q registers to hand-written code unless qr-alloc lets the
+  // Leave the Q registers to hand-written code unless qr-lowering flag lets the
   // compiler allocate them.
   if (!Subtarget.hasQRLowering()) {
     Reserved.set(Xtensa::Q0);

@@ -126,6 +126,12 @@ void XtensaInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
     return;
   }
 
+  if (STI.hasESP32S3Ops() && Xtensa::QRRegClass.contains(DestReg, SrcReg)) {
+    BuildMI(MBB, MBBI, DL, get(Xtensa::mv_QR), DestReg)
+        .addReg(SrcReg, getKillRegState(KillSrc));
+    return;
+  }
+
   if (STI.hasSingleFloat() && Xtensa::FPRRegClass.contains(SrcReg) &&
       Xtensa::FPRRegClass.contains(DestReg))
     Opcode = Xtensa::MOV_S;
