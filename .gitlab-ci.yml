@@ -886,6 +886,7 @@ sign_aarch64-apple-darwin:
     TEST_APP_PATH: ""
     TEST_APP_SUBMODULE_URL: ""
     TEST_APP_SUBMODULE_PATH: ""
+    IDF_BUILD_EXTRA_FLAGS: ""
     CONF_HOST: "x86_64-linux-gnu"
     UNPACK_TOOL: "tar xJf"
   rules:
@@ -911,9 +912,11 @@ sign_aarch64-apple-darwin:
       else
         P4ECO4=NO
       fi
-    # Enable ESPV target lowering for test IDF builds (opt-in per code review !296)
-    - echo "set(extra_flags -Xclang=-target-feature -Xclang=+espv-lowering)" >> CMakeLists.txt
-    - echo 'idf_build_set_property(COMPILE_OPTIONS "${extra_flags}" APPEND)' >> CMakeLists.txt
+    - |
+      if [ -n "${IDF_BUILD_EXTRA_FLAGS:-}" ]; then
+        echo "set(extra_flags ${IDF_BUILD_EXTRA_FLAGS})" >> CMakeLists.txt
+        echo 'idf_build_set_property(COMPILE_OPTIONS "${extra_flags}" APPEND)' >> CMakeLists.txt
+      fi
     - idf.py set-target ${CHIP} 2>&1 | tee ${BUILD_LOG}
     - >
       if [ "${P4ECO4}" == "YES" ]; then
@@ -932,12 +935,14 @@ test_build_idf_llvm_memcpy_opt:
     - .test_build_idf_app_template
   variables:
     TEST_APP_PATH: examples/system/llvm_memcpy_opt
+    IDF_BUILD_EXTRA_FLAGS: "-Xclang=-target-feature -Xclang=+espv-lowering"
 
 test_build_idf_llvm_opt:
   extends:
     - .test_build_idf_app_template
   variables:
     TEST_APP_PATH: examples/system/llvm_opt
+    IDF_BUILD_EXTRA_FLAGS: "-Xclang=-target-feature -Xclang=+espv-lowering"
 
 test_build_esp_dsp:
   extends:
@@ -947,6 +952,7 @@ test_build_esp_dsp:
     TEST_APP_PATH: components/esp-dsp/test_app
     TEST_APP_SUBMODULE_URL: https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}:${CI_SERVER_PORT}/idf/esp-dsp.git
     TEST_APP_SUBMODULE_PATH: components/esp-dsp
+    IDF_BUILD_EXTRA_FLAGS: "-Xclang=-target-feature -Xclang=+espv-lowering"
 
 test_pie_optimizations:
   tags: [ "amd64", "build" ]
