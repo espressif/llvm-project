@@ -126,6 +126,12 @@ void XtensaInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
     return;
   }
 
+  if (STI.hasESP32S3Ops() && Xtensa::QRRegClass.contains(DestReg, SrcReg)) {
+    BuildMI(MBB, MBBI, DL, get(Xtensa::mv_QR), DestReg)
+        .addReg(SrcReg, getKillRegState(KillSrc));
+    return;
+  }
+
   if (STI.hasSingleFloat() && Xtensa::FPRRegClass.contains(SrcReg) &&
       Xtensa::FPRRegClass.contains(DestReg))
     Opcode = Xtensa::MOV_S;
@@ -177,6 +183,9 @@ void XtensaInstrInfo::getLoadStoreOpcodes(const TargetRegisterClass *RC,
   } else if (RC == &Xtensa::FPRRegClass) {
     LoadOpcode = Xtensa::LSI;
     StoreOpcode = Xtensa::SSI;
+  } else if (STI.hasESP32S3Ops() && RC == &Xtensa::QRRegClass) {
+    LoadOpcode = Xtensa::LD_QR;
+    StoreOpcode = Xtensa::ST_QR;
   } else {
     llvm_unreachable("Unsupported regclass to load or store");
   }
