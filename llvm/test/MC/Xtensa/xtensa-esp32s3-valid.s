@@ -517,3 +517,11 @@ wur.ua_state_3 a10
 # CHECK: wur	a10, ua_state_3                 # encoding: [0xa0,0x12,0xf3]
 mv.qr q4, q7
 # CHECK: mv.qr	 q4, q7                         # encoding: [0x24,0x0c,0xaf]
+ld.qr q0, a0, -128
+# CHECK: ld.qr	 q0, a0, -128                   # encoding: [0x04,0x28,0xcd]
+ld.qr q7, a15, 112
+# CHECK: ld.qr	 q7, a15, 112                   # encoding: [0xf4,0xa7,0xfd] 
+st.qr q0, a0, -128
+# CHECK: st.qr	 q0, a0, -128                   # encoding: [0x04,0x68,0xcd]
+st.qr q7, a15, 112
+# CHECK: st.qr	 q7, a15, 112                   # encoding: [0xf4,0xe7,0xfd]

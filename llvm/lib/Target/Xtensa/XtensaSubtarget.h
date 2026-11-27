@@ -98,6 +98,7 @@ public:
   bool hasEXPSTATE() const { return HasEXPSTATE; }
   bool hasESP32S2Ops() const { return HasESP32S2Ops; }
   bool hasESP32S3Ops() const { return HasESP32S3Ops; }
+  bool hasQRLowering() const { return HasQRLowering && hasESP32S3Ops(); }
   bool isWindowedABI() const { return hasWindowed(); }
   bool useTextSectionLiterals() const;
 
