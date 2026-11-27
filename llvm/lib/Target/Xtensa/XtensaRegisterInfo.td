@@ -80,7 +80,7 @@ def Q5 : QRReg<5, "q5">;
 def Q6 : QRReg<6, "q6">;
 def Q7 : QRReg<7, "q7">;
 
-def QR : RegisterClass<"Xtensa", [v16i8, v4i32], 128, (sequence "Q%u", 0, 7)>;
+def QR : RegisterClass<"Xtensa", [v16i8, v8i16, v4i32], 128, (sequence "Q%u", 0, 7)>;
 
 //===----------------------------------------------------------------------===//
 // Special-purpose registers

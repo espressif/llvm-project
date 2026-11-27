@@ -64,6 +64,18 @@ XtensaTargetLowering::XtensaTargetLowering(const TargetMachine &TM,
     addRegisterClass(MVT::f32, &Xtensa::FPRRegClass);
   }
 
+  if (Subtarget.hasESP32S3Ops()) {
+    addRegisterClass(MVT::v16i8, &Xtensa::QRRegClass);
+    addRegisterClass(MVT::v8i16, &Xtensa::QRRegClass);
+    addRegisterClass(MVT::v4i32, &Xtensa::QRRegClass);
+    // QR values have no general BUILD_VECTOR instruction. Let the generic
+    // legalizer materialize constants through the constant pool, and expand
+    // non-constant vectors into scalar/vector operations it can select.
+    setOperationAction(ISD::BUILD_VECTOR, MVT::v16i8, Expand);
+    setOperationAction(ISD::BUILD_VECTOR, MVT::v8i16, Expand);
+    setOperationAction(ISD::BUILD_VECTOR, MVT::v4i32, Expand);
+  }
+
   if (Subtarget.hasBoolean()) {
     addRegisterClass(MVT::v1i1, &Xtensa::BRRegClass);
   }
@@ -386,6 +398,7 @@ XtensaTargetLowering::getConstraintType(StringRef Constraint) const {
     case 'a':
     case 'd':
     case 'f':
+    case 'q':
     case 'r':
       return C_RegisterClass;
     default:
@@ -422,6 +435,10 @@ XtensaTargetLowering::getSingleConstraintMatchWeight(
     if (Ty->isFloatingPointTy())
       Weight = CW_Register;
     break;
+  case 'q':
+    if (Ty->isVectorTy())
+      Weight = CW_Register;
+    break;
   }
   return Weight;
 }
@@ -441,6 +458,12 @@ XtensaTargetLowering::getRegForInlineAsmConstraint(
     case 'f': // Floating-point register
       if (Subtarget.hasSingleFloat())
         return std::make_pair(0U, &Xtensa::FPRRegClass);
+      break;
+    case 'q': // ESP32-S3 QR SIMD register
+      if (Subtarget.hasESP32S3Ops() &&
+          (VT == MVT::v16i8 || VT == MVT::v8i16 || VT == MVT::v4i32))
+        return std::make_pair(0U, &Xtensa::QRRegClass);
+      break;
     }
   }
   return TargetLowering::getRegForInlineAsmConstraint(TRI, Constraint, VT);
